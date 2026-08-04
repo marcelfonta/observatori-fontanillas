@@ -57,7 +57,7 @@ function renderDaily(daily) {
   container.innerHTML=daily.time.map((value,index)=>{
     const date=new Date(value); const [symbol,label]=weather(daily.weather_code?.[index]);
     const daylight=hours(daily.daylight_duration?.[index]); const sunshine=hours(daily.sunshine_duration?.[index]); const sunShare=daylight?Math.min(100,sunshine/daylight*100):0;
-    return `<article class="day-card panel ${index===0?'is-today':''}"><header><div><span>${index===0?'Avui':dayName(date)}</span><small>${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(date)}</small></div><i aria-hidden="true">${symbol}</i></header><strong>${label}</strong><div class="day-card__temps"><b>${format(daily.temperature_2m_max?.[index],0)}°</b><span>${format(daily.temperature_2m_min?.[index],0)}°</span></div><div class="day-card__details"><span><b>${format(daily.precipitation_probability_max?.[index],0)}%</b> pluja</span><span><b>${format(daily.precipitation_sum?.[index],1)}</b> mm</span><span><b>${format(daily.wind_gusts_10m_max?.[index],0)}</b> km/h ratxa</span><span><b>${format(daylight,1)}</b> h de llum</span><span><b>${format(sunshine,1)}</b> h de sol previst</span></div><div class="day-card__sun"><i style="width:${sunShare}%"></i></div></article>`;
+    return `<article class="day-card panel ${index===0?'is-today':''}"><header><div><span>${index===0?'Avui':dayName(date)}</span><small>${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(date)}</small></div><i aria-hidden="true">${symbol}</i></header><strong>${label}</strong><div class="day-card__temps"><b>${format(daily.temperature_2m_max?.[index],0)}°</b><span>${format(daily.temperature_2m_min?.[index],0)}°</span></div><div class="day-card__details"><span><b>${format(daily.precipitation_probability_max?.[index],0)}%</b> pluja</span><span><b>${format(daily.precipitation_sum?.[index],1)}</b> mm</span><span><b>${format(daily.wind_gusts_10m_max?.[index],0)}</b> km/h ratxa</span><span><b>${format(daylight,1)}</b> h de llum</span><span><b>${format(sunshine,1)}</b> h de sol previst</span></div><div class="day-card__sun-label"><span>${format(sunShare,0)}% del dia amb sol</span><small>${format(sunshine,1)} de ${format(daylight,1)} h</small></div><div class="day-card__sun" role="img" aria-label="${format(sunShare,0)}% de les hores de llum amb sol previst"><i style="width:${sunShare}%"></i></div></article>`;
   }).join('');
 }
 
@@ -112,16 +112,53 @@ function updateSourceHorizon() {
   setText('source-meteocat-copy',sourceHorizon==='hourly'?'Cel, temperatura, precipitació, humitat, xafogor i vent per hores':'Símbol, màxima, mínima i probabilitat de precipitació per dia');
 }
 
+function loadSourcePanel(panel) {
+  const compactMeteoblue=panel?.dataset.sourcePanel==='meteoblue'&&window.matchMedia('(max-width: 510px)').matches;
+  panel?.querySelectorAll('iframe[data-src]').forEach(frame=>{
+    if (!compactMeteoblue&&!frame.getAttribute('src')) frame.src=frame.dataset.src;
+  });
+  if (panel?.dataset.sourcePanel === 'eltiempo' && !document.getElementById('eltiempo-widget-script')) {
+    const definition=document.getElementById('eltiempo-widget-loader');
+    const placeholder=document.querySelector('#c_24805d485986fb044ec8a4db971cf9bb .widget-placeholder');
+    placeholder?.remove();
+    const script=document.createElement('script');
+    script.id='eltiempo-widget-script'; script.src=definition?.dataset.src || ''; script.async=true;
+    if (script.src) document.body.appendChild(script);
+  }
+}
+
+function activateSource(button, focus=false) {
+  document.querySelectorAll('[data-source-tab]').forEach(item=>{
+    const selected=item===button;
+    item.classList.toggle('is-active',selected);
+    item.setAttribute('aria-selected',String(selected));
+    item.tabIndex=selected?0:-1;
+  });
+  document.querySelectorAll('[data-source-panel]').forEach(panel=>{
+    const selected=panel.dataset.sourcePanel===button.dataset.sourceTab;
+    panel.classList.toggle('is-active',selected);
+    panel.hidden=!selected;
+    if(selected)loadSourcePanel(panel);
+  });
+  if(focus)button.focus();
+}
+
 export function initForecastControls() {
   const strip=document.getElementById('forecast-strip');
   document.getElementById('forecast-prev')?.addEventListener('click',()=>strip?.scrollBy({left:-520,behavior:'smooth'}));
   document.getElementById('forecast-next')?.addEventListener('click',()=>strip?.scrollBy({left:520,behavior:'smooth'}));
   document.getElementById('model-day-prev')?.addEventListener('click',()=>{modelDayIndex=Math.max(0,modelDayIndex-1);renderModelDay();});
   document.getElementById('model-day-next')?.addEventListener('click',()=>{modelDayIndex=Math.min(6,modelDayIndex+1);renderModelDay();});
-  document.querySelectorAll('[data-source-tab]').forEach(button=>button.addEventListener('click',()=>{
-    document.querySelectorAll('[data-source-tab]').forEach(item=>item.classList.toggle('is-active',item===button));
-    document.querySelectorAll('[data-source-panel]').forEach(panel=>panel.classList.toggle('is-active',panel.dataset.sourcePanel===button.dataset.sourceTab));
-  }));
+  const sourceTabs=[...document.querySelectorAll('[data-source-tab]')];
+  sourceTabs.forEach((button,index)=>{
+    button.addEventListener('click',()=>activateSource(button));
+    button.addEventListener('keydown',event=>{
+      if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+      event.preventDefault();
+      const targetIndex=event.key==='Home'?0:event.key==='End'?sourceTabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+sourceTabs.length)%sourceTabs.length;
+      activateSource(sourceTabs[targetIndex],true);
+    });
+  });
   document.querySelectorAll('[data-source-horizon]').forEach(button=>button.addEventListener('click',()=>{
     sourceHorizon=button.dataset.sourceHorizon;
     document.querySelectorAll('[data-source-horizon]').forEach(item=>item.classList.toggle('is-active',item===button));

@@ -12,13 +12,16 @@ import { initRadar } from '../modules/radar.js';
 import { renderAstronomy } from '../modules/astronomia.js';
 import { renderExtremeArchive, initExtremeControls } from '../modules/extrems.js';
 import { initModelViewer } from '../modules/models.js';
+import { initNavigation, initWhenVisible } from '../modules/navigation.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
 let latestHistory = [];
 let historyFetchedAt = 0;
+let currentFetchedAt = 0;
+let forecastFetchedAt = 0;
 
-function updateClock(){ setText('header-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date())); }
+function updateClock(){ setText('header-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Europe/Madrid'}).format(new Date())); }
 function setBrandFavicon(){
   const canvas=document.createElement('canvas'); canvas.width=64; canvas.height=64;
   const ctx=canvas.getContext('2d'); if(!ctx)return;
@@ -35,10 +38,11 @@ async function loadForecastSuite(){
   const [forecastResult,modelsResult]=await Promise.allSettled([fetchForecast(),fetchModelComparison()]);
   if(forecastResult.status==='fulfilled'){renderForecast(forecastResult.value);renderAstronomy(forecastResult.value);}else{renderForecastError();renderAstronomy(null);}
   if(modelsResult.status==='fulfilled')renderModelComparison(modelsResult.value);else renderModelError();
+  forecastFetchedAt=Date.now();
 }
 
 async function loadHistory(){
-  if(latestHistory.length&&Date.now()-historyFetchedAt<30*60*1000)return latestHistory;
+  if(latestHistory.length&&Date.now()-historyFetchedAt<CONFIG.historyCacheMs)return latestHistory;
   let remote;
   try { remote=await fetchStationHistory(365); }
   catch { remote=await fetchStationHistory(31); }
@@ -49,7 +53,6 @@ async function loadHistory(){
 
 async function load(){
   const label=document.getElementById('connection-label');
-  loadForecastSuite();
   try {
     latest=await fetchCurrentWeather();
     let context;
@@ -69,7 +72,26 @@ async function load(){
     console.warn('No s’han pogut carregar les dades en directe.',error); latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); setUpdated(latest.updated);
     if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
   }
+  currentFetchedAt=Date.now();
 }
 const periodLabels={ '24h':'Lectures de les últimes 24 hores','7d':'Evolució dels últims 7 dies','30d':'Evolució dels últims 30 dies','1y':'Evolució de l’últim any disponible' };
 document.querySelectorAll('[data-period]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-period]').forEach(b=>b.classList.remove('is-active'));button.classList.add('is-active');setText('evolution-period-copy',periodLabels[button.dataset.period]||'Històric disponible');renderCharts(latest,latestHistory,button.dataset.period);}));
-setBrandFavicon(); initWebcam(); initContact(); initForecastControls(); initExtremeControls(); initModelViewer(); initRadar(); updateClock(); setInterval(updateClock,1000); load(); setInterval(load,CONFIG.refreshMs);
+setBrandFavicon();
+initNavigation();
+initWebcam();
+initContact();
+initForecastControls();
+initExtremeControls();
+initWhenVisible('.model-viewer',initModelViewer);
+initWhenVisible('#territori',initRadar,'700px 0px');
+updateClock();
+setInterval(updateClock,1000);
+load();
+loadForecastSuite();
+setInterval(load,CONFIG.refreshMs);
+setInterval(loadForecastSuite,CONFIG.forecastRefreshMs);
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)return;
+  if(Date.now()-currentFetchedAt>CONFIG.refreshMs)load();
+  if(Date.now()-forecastFetchedAt>CONFIG.forecastRefreshMs)loadForecastSuite();
+});

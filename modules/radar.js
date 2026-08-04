@@ -8,6 +8,26 @@ let frameIndex = 0;
 let playback;
 let attempts = 0;
 let interactiveStarted = false;
+let leafletPromise;
+
+function ensureLeaflet() {
+  if(window.L)return Promise.resolve();
+  if(leafletPromise)return leafletPromise;
+  leafletPromise=new Promise((resolve,reject)=>{
+    if(!document.getElementById('leaflet-styles')){
+      const styles=document.createElement('link');
+      styles.id='leaflet-styles'; styles.rel='stylesheet'; styles.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; styles.crossOrigin='';
+      document.head.appendChild(styles);
+    }
+    const existing=document.getElementById('leaflet-script');
+    if(existing){existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',reject,{once:true});return;}
+    const script=document.createElement('script');
+    script.id='leaflet-script'; script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; script.crossOrigin=''; script.async=true;
+    script.addEventListener('load',resolve,{once:true}); script.addEventListener('error',reject,{once:true});
+    document.head.appendChild(script);
+  });
+  return leafletPromise;
+}
 
 function formatFrameTime(epoch) {
   return new Intl.DateTimeFormat(CONFIG.locale, { hour:'2-digit', minute:'2-digit' }).format(new Date(epoch * 1000));
@@ -92,12 +112,20 @@ function startInteractiveRadar() {
 }
 
 export function initRadar() {
-  document.querySelectorAll('[data-radar-mode]').forEach(button=>button.addEventListener('click',()=>{
+  const buttons=[...document.querySelectorAll('[data-radar-mode]')];
+  const activate=button=>{
     const mode=button.dataset.radarMode;
-    document.querySelectorAll('[data-radar-mode]').forEach(item=>item.classList.toggle('is-active',item===button));
-    document.querySelectorAll('[data-radar-panel]').forEach(panel=>panel.classList.toggle('is-active',panel.dataset.radarPanel===mode));
-    if(mode==='interactive')startInteractiveRadar();
+    buttons.forEach(item=>{const selected=item===button;item.classList.toggle('is-active',selected);item.setAttribute('aria-selected',String(selected));item.tabIndex=selected?0:-1;});
+    document.querySelectorAll('[data-radar-panel]').forEach(panel=>{const selected=panel.dataset.radarPanel===mode;panel.classList.toggle('is-active',selected);panel.hidden=!selected;if(selected)panel.querySelectorAll('iframe[data-src]').forEach(frame=>{if(!frame.getAttribute('src'))frame.src=frame.dataset.src;});});
+    if(mode==='interactive')ensureLeaflet().then(startInteractiveRadar).catch(()=>{setText('radar-status','Mapa no disponible');setText('radar-loader','No s’ha pogut iniciar el mapa interactiu.');});
     else { stopPlayback(); setText('radar-status','Meteocat oficial'); }
-  }));
-  startInteractiveRadar();
+  };
+  buttons.forEach((button,index)=>{
+    button.addEventListener('click',()=>activate(button));
+    button.addEventListener('keydown',event=>{
+      if(!['ArrowLeft','ArrowRight'].includes(event.key))return;
+      event.preventDefault();const target=buttons[(index+(event.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length];activate(target);target.focus();
+    });
+  });
+  ensureLeaflet().then(startInteractiveRadar).catch(()=>{setText('radar-status','Mapa no disponible');setText('radar-loader','No s’ha pogut iniciar el mapa interactiu.');});
 }

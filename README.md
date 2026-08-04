@@ -2,6 +2,19 @@
 
 Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, sensació tèrmica i Humidex, extrems i tendències reals de Weather Underground, sis famílies de gràfiques de fins a un any, avisos oficials de proximitat, predicció de 48 hores i 7 dies amb hores de llum i sol previst, comparació de cinc fonts fiables, visor temporal de models, radar animat i Meteocat, astronomia solar i nocturna, webcam i contacte privat.
 
+## Novetats de la versió 5.1
+
+- Navegació inferior específica per a mòbil, amb accés ràpid a les seccions principals i menú complementari accessible.
+- Seguiment de la secció activa durant el desplaçament.
+- Ventusky corregit perquè no sobresurti lateralment en pantalles estretes.
+- Meteoblue conserva el giny complet en ordinador i mostra un accés compacte i llegible en mòbil.
+- Pestanyes de fonts i radar accessibles amb teclat, estat ARIA i canvi amb fletxes.
+- Ginys d’AEMET, eltiempo.es, Yr, Meteoblue, Ventusky, Meteocat radar i Leaflet carregats només quan es necessiten.
+- Percentatge de les hores de llum amb sol previst explicat al costat de cada barra diària.
+- Tipografia secundària ampliada, objectius tàctils més còmodes, focus visible i compatibilitat amb reducció de moviment.
+- Dades actuals actualitzades cada 5 minuts, però prediccions i models cada hora per evitar consultes innecessàries.
+- Capçaleres bàsiques de seguretat i revalidació de fitxers per evitar veure versions antigues després d’un desplegament.
+
 ## Posada en marxa
 
 És una web estàtica: no necessita compilació ni dependències. Per provar-la localment, obre una terminal dins la carpeta i executa:
@@ -94,7 +107,7 @@ data/                Catàlegs i dades estàtiques futures
 
 ```bash
 git add .
-git commit -m "Publica la versió 5.0 del dashboard"
+git commit -m "Publica la versió 5.1 del dashboard"
 git push origin main
 ```
 

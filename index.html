@@ -10,15 +10,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/variables.css" />
-    <link rel="stylesheet" href="css/layout.css" />
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="stylesheet" href="css/variables.css?v=5.1.0" />
+    <link rel="stylesheet" href="css/layout.css?v=5.1.0" />
+    <link rel="stylesheet" href="css/style.css?v=5.1.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
-    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/app.js?v=5.1.0"></script>
   </head>
   <body>
+    <a class="skip-link" href="#ara">Saltar al contingut principal</a>
     <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
     <header class="site-header shell">
       <a class="brand" href="#top" aria-label="Observatori Fontanillas, inici">
@@ -26,7 +25,7 @@
         <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span>
       </a>
       <nav class="nav" aria-label="Navegació principal">
-        <a class="is-active" href="#ara">Ara</a><a href="#avisos">Avisos</a><a href="#prediccio">Predicció</a><a href="#tendencies">Tendències</a><a href="#cel-nocturn">Cel nocturn</a><a href="#territori">Radar</a><a href="#contacte">Contacte</a>
+        <a class="is-active" href="#ara" data-section-link="ara">Ara</a><a href="#avisos" data-section-link="avisos">Avisos</a><a href="#prediccio" data-section-link="prediccio">Predicció</a><a href="#tendencies" data-section-link="tendencies">Tendències</a><a href="#cel-nocturn" data-section-link="cel-nocturn">Cel nocturn</a><a href="#territori" data-section-link="territori">Radar</a><a href="#contacte" data-section-link="contacte">Contacte</a>
       </nav>
       <div class="live-pill"><span></span><b id="connection-label">Connectant</b><time id="header-time">--:--</time></div>
     </header>
@@ -161,35 +160,36 @@
         <section class="official-forecast panel" aria-labelledby="official-forecast-title">
           <header><div><p class="eyebrow">Cinc fonts contrastades</p><h3 id="official-forecast-title">Cinc mirades sobre la previsió</h3><p>Meteocat · AEMET · eltiempo.es · Yr · Meteoblue, sense repetir la previsió Open‑Meteo que ja tens just a sobre.</p></div><span class="tag" id="four-look-status">5 fonts fiables</span></header>
           <div class="source-viewer__toolbar">
-            <div class="source-tabs" role="tablist" aria-label="Font de predicció"><button class="is-active" type="button" data-source-tab="meteocat">Meteocat</button><button type="button" data-source-tab="aemet">AEMET</button><button type="button" data-source-tab="eltiempo">eltiempo.es</button><button type="button" data-source-tab="yr">Yr · MET</button><button type="button" data-source-tab="meteoblue">Meteoblue</button></div>
+            <div class="source-tabs" role="tablist" aria-label="Font de predicció"><button class="is-active" id="source-tab-meteocat" type="button" role="tab" aria-selected="true" aria-controls="source-panel-meteocat" tabindex="0" data-source-tab="meteocat">Meteocat</button><button id="source-tab-aemet" type="button" role="tab" aria-selected="false" aria-controls="source-panel-aemet" tabindex="-1" data-source-tab="aemet">AEMET</button><button id="source-tab-eltiempo" type="button" role="tab" aria-selected="false" aria-controls="source-panel-eltiempo" tabindex="-1" data-source-tab="eltiempo">eltiempo.es</button><button id="source-tab-yr" type="button" role="tab" aria-selected="false" aria-controls="source-panel-yr" tabindex="-1" data-source-tab="yr">Yr · MET</button><button id="source-tab-meteoblue" type="button" role="tab" aria-selected="false" aria-controls="source-panel-meteoblue" tabindex="-1" data-source-tab="meteoblue">Meteoblue</button></div>
           </div>
           <div class="source-viewer">
-            <div class="source-panel is-active" data-source-panel="meteocat"><div class="source-official"><header><div><span id="source-meteocat-title">Meteocat · pròximes 72 hores</span><small id="source-meteocat-copy">Cel, temperatura, precipitació, humitat, xafogor i vent per hores</small></div><div class="source-official__actions"><div class="source-horizon" role="group" aria-label="Horitzó de Meteocat"><button class="is-active" type="button" data-source-horizon="hourly">Per hores</button><button type="button" data-source-horizon="daily">Per dies</button></div><a href="https://www.meteo.cat/prediccio/municipal/082021" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></div></header><div class="source-official__frame source-official__frame--meteocat is-hourly" id="source-meteocat-shell"><iframe id="source-meteocat-frame" title="Predicció oficial de Meteocat per a Sant Celoni" loading="lazy" src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=0f2a22&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe></div></div></div>
-            <div class="source-panel" data-source-panel="aemet"><div class="source-official"><header><div><span>AEMET · giny municipal complet</span><small>4 dies · cel, temperatures, sensació, pluja, humitat, vent i avisos</small></div><div class="source-official__links"><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202" target="_blank" rel="noreferrer">48 h per hores ↗</a><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/sant-celoni-id08202" target="_blank" rel="noreferrer">7 dies ↗</a></div></header><div class="source-official__frame source-official__frame--aemet"><iframe name="iframe_aemet_id33044" tabindex="0" id="source-aemet-frame" title="Predicció municipal completa d’AEMET per a Sant Celoni" src="https://www.aemet.es/ca/eltiempo/prediccion/municipios/mostrarwidget/sant-celoni-id08202?w=g4p111111110ohmffffffx4f86d9t95b6e9r1s4n2" loading="lazy" scrolling="auto"></iframe></div></div></div>
-            <div class="source-panel" data-source-panel="eltiempo">
+            <div class="source-panel is-active" id="source-panel-meteocat" role="tabpanel" aria-labelledby="source-tab-meteocat" tabindex="0" data-source-panel="meteocat"><div class="source-official"><header><div><span id="source-meteocat-title">Meteocat · pròximes 72 hores</span><small id="source-meteocat-copy">Cel, temperatura, precipitació, humitat, xafogor i vent per hores</small></div><div class="source-official__actions"><div class="source-horizon" role="group" aria-label="Horitzó de Meteocat"><button class="is-active" type="button" data-source-horizon="hourly">Per hores</button><button type="button" data-source-horizon="daily">Per dies</button></div><a href="https://www.meteo.cat/prediccio/municipal/082021" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></div></header><div class="source-official__frame source-official__frame--meteocat is-hourly" id="source-meteocat-shell"><iframe id="source-meteocat-frame" title="Predicció oficial de Meteocat per a Sant Celoni" loading="lazy" src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=0f2a22&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe></div></div></div>
+            <div class="source-panel" id="source-panel-aemet" role="tabpanel" aria-labelledby="source-tab-aemet" tabindex="0" hidden data-source-panel="aemet"><div class="source-official"><header><div><span>AEMET · giny municipal complet</span><small>4 dies · cel, temperatures, sensació, pluja, humitat, vent i avisos</small></div><div class="source-official__links"><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202" target="_blank" rel="noreferrer">48 h per hores ↗</a><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/sant-celoni-id08202" target="_blank" rel="noreferrer">7 dies ↗</a></div></header><div class="source-official__frame source-official__frame--aemet"><iframe name="iframe_aemet_id33044" tabindex="0" id="source-aemet-frame" title="Predicció municipal completa d’AEMET per a Sant Celoni" data-src="https://www.aemet.es/ca/eltiempo/prediccion/municipios/mostrarwidget/sant-celoni-id08202?w=g4p111111110ohmffffffx4f86d9t95b6e9r1s4n2" loading="lazy" scrolling="auto"></iframe></div></div></div>
+            <div class="source-panel" id="source-panel-eltiempo" role="tabpanel" aria-labelledby="source-tab-eltiempo" tabindex="0" hidden data-source-panel="eltiempo">
               <div class="source-eltiempo">
                 <div class="source-eltiempo__header"><div><span>Previsió oficial · Sant Celoni</span><small>Català · °C · vent en km/h · format complet</small></div><div class="source-official__links"><a href="https://www.eltiempo.es/sant-celoni.html?v=por_hora" target="_blank" rel="noreferrer">Per hores ↗</a><a href="https://www.eltiempo.es/sant-celoni.html" target="_blank" rel="noreferrer">14 dies ↗</a></div></div>
                 <div class="source-eltiempo__body">
                   <div class="source-eltiempo__widget">
-                    <div id="c_24805d485986fb044ec8a4db971cf9bb" class="completo"></div><script type="text/javascript" src="https://ca.eltiempo.es/widget/widget_loader/24805d485986fb044ec8a4db971cf9bb"></script>
+                    <div id="c_24805d485986fb044ec8a4db971cf9bb" class="completo"><span class="widget-placeholder">El giny es carregarà en obrir aquesta font.</span></div><script id="eltiempo-widget-loader" type="text/plain" data-src="https://ca.eltiempo.es/widget/widget_loader/24805d485986fb044ec8a4db971cf9bb"></script>
                     <noscript><a href="https://www.eltiempo.es/sant-celoni.html" target="_blank" rel="noreferrer">Consulta eltiempo.es per a Sant Celoni</a></noscript>
                   </div>
                   <aside class="source-summary" aria-label="Què aporta eltiempo.es"><span class="source-summary__label">Què aporta</span><h4>Una lectura ràpida i visual</h4><div class="source-summary__grid"><span><b>14 dies</b><small>Horitzó ampli</small></span><span><b>Hora a hora</b><small>Detall extern</small></span><span><b>Sol i vent</b><small>Dades quotidianes</small></span></div><p>Ideal per confirmar d’un cop d’ull el patró dels pròxims dies. Els botons superiors obren el detall complet quan necessitis més profunditat.</p></aside>
                 </div>
               </div>
             </div>
-            <div class="source-panel" data-source-panel="yr">
+            <div class="source-panel" id="source-panel-yr" role="tabpanel" aria-labelledby="source-tab-yr" tabindex="0" hidden data-source-panel="yr">
               <div class="source-official source-yr">
                 <header><div><span>Yr · MET Norway</span><small>8 dies · temperatura, precipitació i vent · mode fosc oficial</small></div><a href="https://www.yr.no/en/forecast/daily-table/2-3110813/Spain/Catalonia/Barcelona/Sant%20Celoni" target="_blank" rel="noreferrer">Obrir Yr ↗</a></header>
-                <div class="source-yr__frame"><iframe src="https://www.yr.no/en/content/2-3110813/table.html?mode=dark" title="Predicció de Yr per als pròxims 8 dies a Sant Celoni" loading="lazy"></iframe></div>
+                <div class="source-yr__frame"><iframe data-src="https://www.yr.no/en/content/2-3110813/table.html?mode=dark" title="Predicció de Yr per als pròxims 8 dies a Sant Celoni" loading="lazy"></iframe></div>
               </div>
             </div>
-            <div class="source-panel" data-source-panel="meteoblue">
+            <div class="source-panel" id="source-panel-meteoblue" role="tabpanel" aria-labelledby="source-tab-meteoblue" tabindex="0" hidden data-source-panel="meteoblue">
               <div class="source-official source-meteoblue">
                 <header><div><span>Meteoblue · previsió cada 3 hores</span><small>4 dies · evolució detallada · fons meteorològic oficial</small></div><a href="https://www.meteoblue.com/en/weather/week/sant-celoni_spain_3110813" target="_blank" rel="noreferrer">Obrir Meteoblue ↗</a></header>
                 <div class="source-meteoblue__body">
                   <div class="source-meteoblue__widget">
-                    <iframe src="https://www.meteoblue.com/en/weather/widget/three/sant-celoni_spain_3110813?geoloc=fixed&amp;nocurrent=0&amp;noforecast=0&amp;tempunit=CELSIUS&amp;windunit=KILOMETER_PER_HOUR&amp;days=4&amp;layout=image&amp;user_key=7bcce446b2dbccba&amp;embed_key=8e189cda662c23e4&amp;sig=5c1cf8a111d598387ce588a8973dcc03375477a51238981b7e9430997bcabeb0" frameborder="0" scrolling="NO" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox" style="width: 460px;height: 570px;border: 0;overflow: hidden;" title="Previsió Meteoblue cada 3 hores per a Sant Celoni" loading="lazy"></iframe>
+                    <iframe data-src="https://www.meteoblue.com/en/weather/widget/three/sant-celoni_spain_3110813?geoloc=fixed&amp;nocurrent=0&amp;noforecast=0&amp;tempunit=CELSIUS&amp;windunit=KILOMETER_PER_HOUR&amp;days=4&amp;layout=image&amp;user_key=7bcce446b2dbccba&amp;embed_key=8e189cda662c23e4&amp;sig=5c1cf8a111d598387ce588a8973dcc03375477a51238981b7e9430997bcabeb0" frameborder="0" scrolling="NO" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox" title="Previsió Meteoblue cada 3 hores per a Sant Celoni" loading="lazy"></iframe>
+                    <div class="source-meteoblue__mobile"><strong>Previsió detallada de 4 dies</strong><span>El giny complet necessita més amplada que una pantalla mòbil.</span><a href="https://www.meteoblue.com/en/weather/week/sant-celoni_spain_3110813" target="_blank" rel="noreferrer">Obrir Meteoblue ↗</a></div>
                     <div class="source-meteoblue__credit"><!-- DO NOT REMOVE THIS LINK --><a href="https://www.meteoblue.com/en/weather/week/index" target="_blank" rel="noopener">meteoblue</a></div>
                   </div>
                   <aside class="source-summary" aria-label="Què aporta Meteoblue"><span class="source-summary__label">Què aporta</span><h4>Detall cada tres hores</h4><div class="source-summary__grid"><span><b>4 dies</b><small>Horitzó detallat</small></span><span><b>Pas de 3 h</b><small>Evolució temporal</small></span><span><b>Fons integrat</b><small>Lectura visual</small></span></div><p>Una cinquena mirada especialment útil per veure com canvien la temperatura, la precipitació i el vent al llarg de cada jornada.</p></aside>
@@ -211,7 +211,7 @@
           <section class="model-viewer" aria-labelledby="model-viewer-title">
             <header><div><span id="model-viewer-title">Mapa temporal interactiu</span><small>Arrossega el mapa i mou la línia temporal inferior</small></div><a href="https://www.ventusky.com/" target="_blank" rel="noreferrer">Font: Ventusky ↗</a></header>
             <div class="model-viewer__controls"><div role="group" aria-label="Model del visor"><button class="is-active" data-viewer-model="gfs">GFS</button><button data-viewer-model="icon">ICON</button><button data-viewer-model="gem">GEM</button></div><div role="group" aria-label="Capa del visor"><button class="is-active" data-viewer-layer="rain-3h">Pluja</button><button data-viewer-layer="temperature-2m">Temperatura</button><button data-viewer-layer="wind-10m">Vent</button><button data-viewer-layer="clouds-total">Núvols</button><button data-viewer-layer="pressure">Pressió</button></div></div>
-            <div class="model-viewer__frame"><iframe id="model-viewer-frame" title="Mapa temporal de models meteorològics sobre Catalunya" src="https://embed.ventusky.com/?p=41.69;2.49;6&amp;l=rain-3h&amp;m=gfs" loading="lazy" allowfullscreen></iframe></div>
+            <div class="model-viewer__frame"><iframe id="model-viewer-frame" title="Mapa temporal de models meteorològics sobre Catalunya" data-src="https://embed.ventusky.com/?p=41.69;2.49;6&amp;l=rain-3h&amp;m=gfs" loading="lazy" allowfullscreen></iframe></div>
             <footer><span id="model-viewer-caption">GFS · precipitació cada 3 hores</span><small>El visor inserit ofereix GFS, ICON i GEM. ECMWF continua disponible al visor extern superior.</small></footer>
           </section>
           <p class="model-license-note">La taula superior compara ECMWF, GFS i ICON. El visor cartogràfic utilitza la inserció oficial de Ventusky, que permet animar GFS, ICON i GEM sense reproduir imatges de tercers de manera no autoritzada.</p>
@@ -256,9 +256,9 @@
         </article>
         <article class="radar-card panel">
           <header><div><p class="eyebrow">Radar meteorològic</p><h2>Animació + Meteocat</h2><div class="radar-sources"><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Radar oficial Meteocat ↗</a><a href="https://www.aemet.es/es/eltiempo/observacion/radar?p=GLD" target="_blank" rel="noreferrer">AEMET Barcelona–Gelida ↗</a></div></div><span class="tag" id="radar-status">Carregant animació</span></header>
-          <div class="radar-mode-tabs" role="tablist" aria-label="Tipus de radar"><button class="is-active" type="button" data-radar-mode="interactive">Animació interactiva</button><button type="button" data-radar-mode="meteocat">Meteocat oficial</button></div>
-          <div class="radar-panel is-active" data-radar-panel="interactive"><div class="radar-frame"><div id="radar-map" aria-label="Mapa interactiu del radar de precipitació"></div><div class="radar-loader" id="radar-loader">Carregant les imatges del radar…</div></div><div class="radar-timeline"><button type="button" id="radar-play" aria-label="Reproduir animació del radar">▶</button><input id="radar-slider" type="range" min="0" max="0" value="0" aria-label="Seleccionar hora del radar" /><time id="radar-time">—</time></div><div class="radar-actions"><p>Arrossega i amplia el mapa. La línia temporal recorre les imatges reals disponibles de les últimes dues hores.</p><a href="https://www.rainviewer.com/" target="_blank" rel="noreferrer">Capa temporal: RainViewer ↗</a></div></div>
-          <div class="radar-panel" data-radar-panel="meteocat"><div class="radar-meteocat"><iframe title="Última imatge oficial del radar de Meteocat" src="https://static-m.meteo.cat/ginys/mapaRadar?language=ca&amp;color=0f2a22&amp;target=_blank" loading="lazy"></iframe></div><div class="radar-actions"><p>Imatge oficial de la Xarxa de Radars Meteorològics de Catalunya. Permet ampliar el mapa i obrir l’animació de la darrera hora a Meteocat.</p><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Obrir l’animació i la previsió +1 h →</a></div></div>
+          <div class="radar-mode-tabs" role="tablist" aria-label="Tipus de radar"><button class="is-active" id="radar-tab-interactive" type="button" role="tab" aria-selected="true" aria-controls="radar-panel-interactive" tabindex="0" data-radar-mode="interactive">Animació interactiva</button><button id="radar-tab-meteocat" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-meteocat" tabindex="-1" data-radar-mode="meteocat">Meteocat oficial</button></div>
+          <div class="radar-panel is-active" id="radar-panel-interactive" role="tabpanel" aria-labelledby="radar-tab-interactive" tabindex="0" data-radar-panel="interactive"><div class="radar-frame"><div id="radar-map" aria-label="Mapa interactiu del radar de precipitació"></div><div class="radar-loader" id="radar-loader">Carregant les imatges del radar…</div></div><div class="radar-timeline"><button type="button" id="radar-play" aria-label="Reproduir animació del radar">▶</button><input id="radar-slider" type="range" min="0" max="0" value="0" aria-label="Seleccionar hora del radar" /><time id="radar-time">—</time></div><div class="radar-actions"><p>Arrossega i amplia el mapa. La línia temporal recorre les imatges reals disponibles de les últimes dues hores.</p><a href="https://www.rainviewer.com/" target="_blank" rel="noreferrer">Capa temporal: RainViewer ↗</a></div></div>
+          <div class="radar-panel" id="radar-panel-meteocat" role="tabpanel" aria-labelledby="radar-tab-meteocat" tabindex="0" hidden data-radar-panel="meteocat"><div class="radar-meteocat"><iframe title="Última imatge oficial del radar de Meteocat" data-src="https://static-m.meteo.cat/ginys/mapaRadar?language=ca&amp;color=0f2a22&amp;target=_blank" loading="lazy"></iframe></div><div class="radar-actions"><p>Imatge oficial de la Xarxa de Radars Meteorològics de Catalunya. Permet ampliar el mapa i obrir l’animació de la darrera hora a Meteocat.</p><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Obrir l’animació i la previsió +1 h →</a></div></div>
         </article>
       </section>
 
@@ -283,7 +283,23 @@
         </form>
       </section>
     </main>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny</small><div><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
+    <nav class="mobile-nav" aria-label="Navegació ràpida mòbil">
+      <a class="is-active" href="#ara" data-section-link="ara"><span aria-hidden="true">●</span>Ara</a>
+      <a href="#prediccio" data-section-link="prediccio"><span aria-hidden="true">↗</span>Previsió</a>
+      <a href="#tendencies" data-section-link="tendencies"><span aria-hidden="true">⌁</span>Gràfiques</a>
+      <a href="#territori" data-section-link="territori"><span aria-hidden="true">◎</span>Radar</a>
+      <button type="button" id="mobile-more-button" aria-expanded="false" aria-controls="mobile-more-menu"><span aria-hidden="true">•••</span>Més</button>
+    </nav>
+    <div class="mobile-more" id="mobile-more-menu" hidden>
+      <button class="mobile-more__backdrop" type="button" aria-label="Tancar el menú"></button>
+      <div class="mobile-more__sheet" role="dialog" aria-modal="true" aria-label="Més seccions">
+        <div><strong>Explora l’observatori</strong><button type="button" id="mobile-more-close" aria-label="Tancar">×</button></div>
+        <a href="#avisos" data-section-link="avisos"><span>!</span><div><b>Avisos</b><small>Vigilància oficial</small></div></a>
+        <a href="#cel-nocturn" data-section-link="cel-nocturn"><span>◐</span><div><b>Cel nocturn</b><small>Sol, Lluna i astronomia</small></div></a>
+        <a href="#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
+      </div>
+    </div>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.1</small><div><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   </body>
 </html>

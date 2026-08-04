@@ -18,6 +18,8 @@ function updateViewer() {
 }
 
 export function initModelViewer() {
+  const frame=document.getElementById('model-viewer-frame');
+  if(frame&&!frame.getAttribute('src')&&frame.dataset.src)frame.src=frame.dataset.src;
   document.querySelectorAll('[data-viewer-model]').forEach(button=>button.addEventListener('click',()=>{
     model=button.dataset.viewerModel;
     document.querySelectorAll('[data-viewer-model]').forEach(item=>item.classList.toggle('is-active',item===button));
