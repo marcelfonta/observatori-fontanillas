@@ -1,4 +1,5 @@
 const links = () => [...document.querySelectorAll('[data-section-link]')];
+const MOBILE_VIEW_KEY = 'fontanillas-mobile-view';
 
 function setActiveSection(id) {
   links().forEach(link=>{
@@ -10,14 +11,35 @@ function setActiveSection(id) {
 }
 
 function initSectionTracking() {
-  const sections=['ara','avisos','prediccio','tendencies','cel-nocturn','territori','contacte']
-    .map(id=>document.getElementById(id)).filter(Boolean);
+  const ids=[...new Set(links().map(link=>link.dataset.sectionLink))];
+  const sections=ids.map(id=>document.getElementById(id)).filter(Boolean);
   if(!('IntersectionObserver' in window))return;
   const observer=new IntersectionObserver(entries=>{
     const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
     if(visible)setActiveSection(visible.target.id);
   },{rootMargin:'-22% 0px -62% 0px',threshold:[0,.05,.2]});
   sections.forEach(section=>observer.observe(section));
+}
+
+function applyMobileView(mode,persist=true) {
+  const selected=mode==='essential'?'essential':'full';
+  document.body.classList.toggle('is-essential-mobile',selected==='essential');
+  document.querySelectorAll('[data-mobile-view]').forEach(button=>{
+    const active=button.dataset.mobileView===selected;
+    button.classList.toggle('is-active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  if(persist) {
+    try { localStorage.setItem(MOBILE_VIEW_KEY,selected); } catch(error) { /* Preferència opcional. */ }
+  }
+}
+
+function initMobileView() {
+  let saved='full';
+  try { saved=localStorage.getItem(MOBILE_VIEW_KEY)||'full'; } catch(error) { /* Preferència opcional. */ }
+  applyMobileView(saved,false);
+  document.querySelectorAll('[data-mobile-view]').forEach(button=>button.addEventListener('click',()=>applyMobileView(button.dataset.mobileView)));
+  document.querySelectorAll('[data-requires-full]').forEach(link=>link.addEventListener('click',()=>applyMobileView('full')));
 }
 
 function initMobileMenu() {
@@ -30,6 +52,7 @@ function initMobileMenu() {
   const hide=()=>{
     if(!menu)return;
     menu.hidden=true;
+    menu.setAttribute('aria-hidden','true');
     document.body.classList.remove('has-mobile-menu');
     button?.setAttribute('aria-expanded','false');
     previousFocus?.focus?.();
@@ -38,6 +61,7 @@ function initMobileMenu() {
     if(!menu)return;
     previousFocus=document.activeElement;
     menu.hidden=false;
+    menu.setAttribute('aria-hidden','false');
     document.body.classList.add('has-mobile-menu');
     button?.setAttribute('aria-expanded','true');
     close?.focus();
@@ -59,6 +83,7 @@ function initMobileMenu() {
 }
 
 export function initNavigation() {
+  initMobileView();
   initMobileMenu();
   initSectionTracking();
   links().forEach(link=>link.addEventListener('click',()=>setActiveSection(link.dataset.sectionLink)));

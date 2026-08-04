@@ -2,13 +2,16 @@
 
 Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, sensació tèrmica i Humidex, un arxiu propi persistent amb extrems i tendències, sis famílies de gràfiques de fins a un any, control de qualitat de les dades, avisos oficials de proximitat, predicció de 48 hores i 7 dies amb hores de llum i sol previst, comparació de cinc fonts fiables, visor temporal de models, radar animat i Meteocat, astronomia solar i nocturna, webcam i contacte privat.
 
-## Novetats de la versió 5.4
+## Novetats de la versió 5.5
 
-- Nou centre de vigilància unificat: Meteocat, AEMET i «Què importa ara?» formen una sola zona visual.
-- El resum operatiu queda immediatament sota els avisos oficials, en lloc d’interrompre la lectura de les dades de l’estació.
-- La jerarquia és més clara: primer la informació oficial; després, la interpretació pràctica de pluja, confort/UV i vent.
-- Es conserva la distinció entre «sense avisos actius» i «servei temporalment no disponible».
-- El disseny integrat s’adapta a ordinador, tauleta i mòbil sense duplicar dades ni alterar els càlculs existents.
+- Accés compacte als avisos oficials dins de la lectura ràpida, amb color per nivell, fenòmens, vigència i enllaç directe al centre de vigilància.
+- Menú lateral mòbil complet amb tretze accessos, focus accessible i selector entre vista completa i vista essencial.
+- Substitució del visor Ventusky retirat per un visor Windy funcional amb ECMWF, GFS, ICON-EU i cinc capes meteorològiques.
+- Sistema alternatiu visible si el visor extern no respon, sense ocultar la comparació numèrica dels models.
+- Pestanyes de fonts més descobribles en mòbil i textos secundaris ampliats per millorar la lectura.
+- Favicon i icones estàtiques, manifest instal·lable, memòria cau segura, adreça canònica, dades estructurades i metadades Open Graph/X.
+- Targeta social pròpia de 1200 × 630 píxels per compartir el web a WhatsApp, xarxes socials i aplicacions de missatgeria.
+- Es corregeixen la puntuació duplicada i la lectura resumida quan coincideixen diversos avisos.
 - No cal modificar el Worker, la base D1, el cron ni cap secret de Cloudflare.
 
 ## Posada en marxa
@@ -58,7 +61,7 @@ Les escales de color de les targetes són interpretatives: descriuen confort, in
 - eltiempo.es: giny oficial complet per a Sant Celoni, configurat en català, graus Celsius i vent en km/h.
 - Yr / MET Norway: giny oficial fosc de 8 dies per a Sant Celoni amb temperatura, precipitació i vent.
 - Meteoblue: giny oficial amb fons meteorològic i previsió cada 3 hores durant 4 dies, generat per a Sant Celoni i conservat amb l’enllaç d’atribució obligatori.
-- Ventusky: visor cartogràfic inserit amb línia temporal, capes i canvi entre GFS, ICON i GEM. ECMWF es manté disponible mitjançant el visor extern identificat.
+- Windy: visor cartogràfic inserit amb línia temporal, capes i canvi entre ECMWF, GFS i ICON-EU, amb accés extern alternatiu.
 - RainViewer: mapa de radar interactiu amb les imatges disponibles de les dues últimes hores.
 - AEMET Barcelona–Gelida: accés directe per contrastar el radar oficial.
 
@@ -101,7 +104,7 @@ worker/              Worker Cloudflare V5, còpia V4 i esquema de la base D1
 1. Històric persistent propi a D1, amb Weather Underground com a suport recent.
 2. Línia temporal exacta de 48 hores, previsió de 7 dies amb hores de llum i comparador Meteocat/AEMET/eltiempo.es/Yr/Meteoblue.
 3. Minigràfics de les últimes hores, UV a 3 hores, sis gràfiques compactes i extrems de 24 h, 7 dies, 30 dies i 1 any.
-4. Visor temporal Ventusky, taula diària navegable ECMWF/GFS/ICON, animació RainViewer predeterminada i radar oficial Meteocat alternatiu.
+4. Visor temporal Windy amb ECMWF/GFS/ICON-EU, taula diària navegable, animació RainViewer predeterminada i radar oficial Meteocat alternatiu.
 5. Posició del Sol, hora solar, Lluna, qualitat nocturna, equinoccis, solsticis i esdeveniments observables.
 6. Formulari de contacte sense publicar la bústia privada.
 7. Avisos oficials de Meteocat i lectura automàtica del canal AEMET del Prelitoral de Barcelona.
@@ -119,7 +122,7 @@ worker/              Worker Cloudflare V5, còpia V4 i esquema de la base D1
 
 ```bash
 git add .
-git commit -m "Publica la versió 5.4 amb el centre de vigilància unificat"
+git commit -m "Publica la versió 5.5 preparada per mòbil i xarxes"
 git push origin main
 ```
 

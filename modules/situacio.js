@@ -19,7 +19,11 @@ function alertReading(payload){
   if(!payload?.ok)return setCard('alert','unknown','Verificació no disponible','Cal consultar el canal oficial abans de prendre decisions');
   if(!payload.active)return setCard('alert','good','Sense avisos actius','Darrera comprovació oficial del Prelitoral de Barcelona');
   const labels={yellow:'Avís groc actiu',orange:'Avís taronja actiu',red:'Avís vermell actiu',unknown:'Avís oficial actiu'};
-  return setCard('alert',payload.maxLevel||'high',labels[payload.maxLevel]||labels.unknown,payload.alerts?.[0]?.phenomenon || 'Consulta el detall oficial actualitzat');
+  const plurals={yellow:'avisos grocs actius',orange:'avisos taronges actius',red:'avisos vermells actius',unknown:'avisos oficials actius'};
+  const phenomena=[...new Set((payload.alerts||[]).map(entry=>entry.phenomenon).filter(Boolean))];
+  const copy=phenomena.length?phenomena.join(' i '):'Consulta el detall oficial actualitzat';
+  const title=Number(payload.active)>1?`${payload.active} ${plurals[payload.maxLevel]||plurals.unknown}`:(labels[payload.maxLevel]||labels.unknown);
+  return setCard('alert',payload.maxLevel||'high',title,copy);
 }
 
 function forecastIndices(forecast,hours){
@@ -85,7 +89,8 @@ function render(){
   setText('situation-status',ready?'Lectura actualitzada':'Completant lectura');
   const important=[alert,rain,thermal,wind].filter(item=>['red','orange','yellow','high','moderate','unknown'].includes(item.level));
   if(important.length){
-    setText('situation-summary',important.slice(0,2).map(item=>item.title).join(' · ')+'. La resta d’indicadors no presenta canvis més rellevants.');
+    const headlines=important.slice(0,2).map(item=>item.title.replace(/[.\s]+$/,'')).join(' · ');
+    setText('situation-summary',`${headlines}. La resta d’indicadors no presenta canvis més rellevants.`);
   }else{
     setText('situation-summary','Situació tranquil·la: sense avisos oficials, sense pluja imminent i sense riscos destacats en els indicadors principals.');
   }

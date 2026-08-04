@@ -14,3 +14,15 @@
 
 /css/*
   Cache-Control: no-cache, must-revalidate
+
+/site.webmanifest
+  Cache-Control: no-cache, must-revalidate
+
+/service-worker.js
+  Cache-Control: no-cache, must-revalidate
+
+/assets/images/*
+  Cache-Control: public, max-age=604800
+
+/assets/icons/*
+  Cache-Control: public, max-age=604800

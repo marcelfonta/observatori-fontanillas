@@ -1,0 +1,17 @@
+{
+  "name": "Observatori Meteorològic Fontanillas",
+  "short_name": "Meteo Fontanillas",
+  "description": "Dades meteorològiques locals, previsió, avisos i radar en directe des de Sant Celoni.",
+  "lang": "ca",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#06100e",
+  "theme_color": "#07110f",
+  "categories": ["weather", "utilities", "education"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -4,17 +4,39 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#07110f" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="description" content="Dades meteorològiques en directe des de Sant Celoni, als peus del Montseny." />
     <title>Observatori Fontanillas · Sant Celoni</title>
-    <link rel="icon" id="site-favicon" type="image/png" />
+    <link rel="canonical" href="https://meteo.fontanillas.cat/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ca_ES" />
+    <meta property="og:site_name" content="Observatori Meteorològic Fontanillas" />
+    <meta property="og:title" content="Observatori Meteorològic Fontanillas · Sant Celoni" />
+    <meta property="og:description" content="Dades locals, previsió, avisos, radar i astronomia en directe des de Sant Celoni." />
+    <meta property="og:url" content="https://meteo.fontanillas.cat/" />
+    <meta property="og:image" content="https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-social.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Observatori Meteorològic Fontanillas, dades locals en directe des de Sant Celoni" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Observatori Meteorològic Fontanillas" />
+    <meta name="twitter:description" content="Dades locals, previsió i radar en directe des de Sant Celoni." />
+    <meta name="twitter:image" content="https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-social.png" />
+    <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/variables.css?v=5.4.0" />
-    <link rel="stylesheet" href="css/layout.css?v=5.4.0" />
-    <link rel="stylesheet" href="css/style.css?v=5.4.0" />
+    <link rel="stylesheet" href="css/variables.css?v=5.5.0" />
+    <link rel="stylesheet" href="css/layout.css?v=5.5.0" />
+    <link rel="stylesheet" href="css/style.css?v=5.5.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-    <script type="module" src="js/app.js?v=5.4.0"></script>
+    <script type="module" src="js/app.js?v=5.5.0"></script>
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#ara">Saltar al contingut principal</a>
@@ -49,6 +71,11 @@
           <p id="quick-copy">Esperant les dades de l’estació per generar una lectura contextual.</p>
           <div class="mini-meter"><span id="comfort-meter"></span></div>
           <small id="comfort-label">Confort tèrmic</small>
+          <a class="quick-alert is-pending" id="quick-alert-link" href="#avisos" aria-label="Consultar els avisos meteorològics oficials">
+            <span class="quick-alert__signal" aria-hidden="true">!</span>
+            <span><small id="quick-alert-kicker">Avisos oficials</small><strong id="quick-alert-title">Comprovant la situació</strong></span>
+            <em id="quick-alert-action">Consultar →</em>
+          </a>
         </aside>
       </section>
 
@@ -69,7 +96,7 @@
         <article class="metric panel" id="metric-card-humidex"><div class="metric__head"><span>Temperatura de xafogor</span><span class="metric__icon">Humidex</span></div><div class="metric__value"><span id="humidex">—</span><small>°C eq.</small></div><p id="humidex-reading">Efecte conjunt de calor i humitat</p><div class="metric-context"><span id="level-humidex">Interpretant</span><div><i id="marker-humidex"></i></div></div><div class="metric-spark"><canvas id="spark-humidex" aria-label="Evolució recent de la temperatura de xafogor"></canvas></div></article>
       </section>
 
-      <section class="derived-panel panel" aria-labelledby="derived-title">
+      <section id="calculats" class="derived-panel panel" aria-labelledby="derived-title" data-mobile-advanced>
         <header><div><p class="eyebrow">Diagnosi atmosfèrica</p><h2 id="derived-title">Més lectura, sense inventar sensors</h2></div><span class="tag">Valors calculats</span></header>
         <p class="derived-panel__intro">Indicadors estimats a partir de la temperatura, la humitat, el punt de rosada i el vent mesurats per l’estació.</p>
         <div class="derived-grid">
@@ -84,7 +111,7 @@
         </div>
       </section>
 
-      <section class="insights-section section-block" aria-labelledby="insights-title">
+      <section id="resum-dia" class="insights-section section-block" aria-labelledby="insights-title" data-mobile-advanced>
         <div class="section-heading insights-heading">
           <div><p class="eyebrow">Anàlisi de l’estació</p><h2 id="insights-title">Què ha passat avui?</h2></div>
           <div class="history-source"><span id="remote-history-status">Connectant amb l’històric…</span><a href="https://www.wunderground.com/dashboard/pws/ISANTC198" target="_blank" rel="noreferrer">Weather Underground · suport recent ↗</a></div>
@@ -173,10 +200,11 @@
         </div>
         <div class="forecast-subheading"><div><span>Previsió de 7 dies</span><small>Màximes, mínimes, pluja, vent i hores de llum</small></div></div>
         <div class="daily-forecast" id="daily-forecast" aria-live="polite"><div class="forecast-loading">Preparant la previsió diària…</div></div>
-        <section class="official-forecast panel" aria-labelledby="official-forecast-title">
+        <section id="fonts" class="official-forecast panel" aria-labelledby="official-forecast-title" data-mobile-advanced>
           <header><div><p class="eyebrow">Cinc fonts contrastades</p><h3 id="official-forecast-title">Cinc mirades sobre la previsió</h3><p>Meteocat · AEMET · eltiempo.es · Yr · Meteoblue, sense repetir la previsió Open‑Meteo que ja tens just a sobre.</p></div><span class="tag" id="four-look-status">5 fonts fiables</span></header>
           <div class="source-viewer__toolbar">
             <div class="source-tabs" role="tablist" aria-label="Font de predicció"><button class="is-active" id="source-tab-meteocat" type="button" role="tab" aria-selected="true" aria-controls="source-panel-meteocat" tabindex="0" data-source-tab="meteocat">Meteocat</button><button id="source-tab-aemet" type="button" role="tab" aria-selected="false" aria-controls="source-panel-aemet" tabindex="-1" data-source-tab="aemet">AEMET</button><button id="source-tab-eltiempo" type="button" role="tab" aria-selected="false" aria-controls="source-panel-eltiempo" tabindex="-1" data-source-tab="eltiempo">eltiempo.es</button><button id="source-tab-yr" type="button" role="tab" aria-selected="false" aria-controls="source-panel-yr" tabindex="-1" data-source-tab="yr">Yr · MET</button><button id="source-tab-meteoblue" type="button" role="tab" aria-selected="false" aria-controls="source-panel-meteoblue" tabindex="-1" data-source-tab="meteoblue">Meteoblue</button></div>
+            <span class="source-tabs-hint" id="source-tabs-hint" aria-hidden="true">Llisca per veure més fonts →</span>
           </div>
           <div class="source-viewer">
             <div class="source-panel is-active" id="source-panel-meteocat" role="tabpanel" aria-labelledby="source-tab-meteocat" tabindex="0" data-source-panel="meteocat"><div class="source-official"><header><div><span id="source-meteocat-title">Meteocat · pròximes 72 hores</span><small id="source-meteocat-copy">Cel, temperatura, precipitació, humitat, xafogor i vent per hores</small></div><div class="source-official__actions"><div class="source-horizon" role="group" aria-label="Horitzó de Meteocat"><button class="is-active" type="button" data-source-horizon="hourly">Per hores</button><button type="button" data-source-horizon="daily">Per dies</button></div><a href="https://www.meteo.cat/prediccio/municipal/082021" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></div></header><div class="source-official__frame source-official__frame--meteocat is-hourly" id="source-meteocat-shell"><iframe id="source-meteocat-frame" title="Predicció oficial de Meteocat per a Sant Celoni" loading="lazy" src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=0f2a22&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe></div></div></div>
@@ -215,7 +243,7 @@
           </div>
           <p class="source-comparison__note"><span>i</span> Meteocat permet alternar directament entre previsió horària i diària. AEMET i eltiempo.es conserven els ginys oficials; Yr aporta la previsió de MET Norway i Meteoblue afegeix detall cada tres hores durant quatre dies.</p>
         </section>
-        <article class="model-comparison panel">
+        <article id="models" class="model-comparison panel" data-mobile-advanced>
           <header><div><p class="eyebrow">Convergència de models</p><h3>ECMWF · GFS · ICON</h3></div><div class="model-day-nav"><button type="button" id="model-day-prev" aria-label="Dia anterior">←</button><span id="model-day-label">Demà</span><button type="button" id="model-day-next" aria-label="Dia següent">→</button><span class="tag" id="model-status">Connectant models</span></div></header>
           <div class="model-table" id="model-table"><div class="forecast-loading">Comparant tres models globals…</div></div>
           <p class="model-reading" id="model-reading">La coincidència entre tres models ajuda a entendre la confiança de la predicció.</p>
@@ -231,17 +259,21 @@
             <a href="https://www.windy.com/?iconEu,41.691,2.489,6" target="_blank" rel="noreferrer"><span>ICON-EU</span><b>Obrir mapa temporal ↗</b></a>
           </div>
           <section class="model-viewer" aria-labelledby="model-viewer-title">
-            <header><div><span id="model-viewer-title">Mapa temporal interactiu</span><small>Arrossega el mapa i mou la línia temporal inferior</small></div><a href="https://www.ventusky.com/" target="_blank" rel="noreferrer">Font: Ventusky ↗</a></header>
-            <div class="model-viewer__controls"><div role="group" aria-label="Model del visor"><button class="is-active" data-viewer-model="gfs">GFS</button><button data-viewer-model="icon">ICON</button><button data-viewer-model="gem">GEM</button></div><div role="group" aria-label="Capa del visor"><button class="is-active" data-viewer-layer="rain-3h">Pluja</button><button data-viewer-layer="temperature-2m">Temperatura</button><button data-viewer-layer="wind-10m">Vent</button><button data-viewer-layer="clouds-total">Núvols</button><button data-viewer-layer="pressure">Pressió</button></div></div>
-            <div class="model-viewer__frame"><iframe id="model-viewer-frame" title="Mapa temporal de models meteorològics sobre Catalunya" data-src="https://embed.ventusky.com/?p=41.69;2.49;6&amp;l=rain-3h&amp;m=gfs" loading="lazy" allowfullscreen></iframe></div>
-            <footer><span id="model-viewer-caption">GFS · precipitació cada 3 hores</span><small>El visor inserit ofereix GFS, ICON i GEM. ECMWF continua disponible al visor extern superior.</small></footer>
+            <header><div><span id="model-viewer-title">Mapa temporal interactiu</span><small>Arrossega el mapa i mou la línia temporal inferior</small></div><a href="https://www.windy.com/?41.691,2.489,6" target="_blank" rel="noreferrer">Font: Windy ↗</a></header>
+            <div class="model-viewer__controls"><div role="group" aria-label="Model del visor"><button class="is-active" data-viewer-model="ecmwf">ECMWF</button><button data-viewer-model="gfs">GFS</button><button data-viewer-model="iconEu">ICON-EU</button></div><div role="group" aria-label="Capa del visor"><button class="is-active" data-viewer-layer="rain">Pluja</button><button data-viewer-layer="temp">Temperatura</button><button data-viewer-layer="wind">Vent</button><button data-viewer-layer="clouds">Núvols</button><button data-viewer-layer="pressure">Pressió</button></div></div>
+            <div class="model-viewer__frame is-loading" id="model-viewer-shell">
+              <iframe id="model-viewer-frame" title="Mapa temporal de models meteorològics sobre Catalunya" data-src="https://embed.windy.com/embed2.html?lat=41.691&amp;lon=2.489&amp;detailLat=41.691&amp;detailLon=2.489&amp;width=1200&amp;height=560&amp;zoom=6&amp;level=surface&amp;overlay=rain&amp;product=ecmwf&amp;menu=true&amp;message=true&amp;marker=true&amp;calendar=now&amp;pressure=true&amp;type=map&amp;location=coordinates&amp;detail=&amp;metricWind=km%2Fh&amp;metricTemp=%C2%B0C&amp;radarRange=-1" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+              <div class="model-viewer__loading" id="model-viewer-loading">Carregant el visor temporal…</div>
+              <div class="model-viewer__fallback" id="model-viewer-fallback" hidden><strong>El visor inserit no ha respost</strong><span>La comparació numèrica continua disponible.</span><a href="https://www.windy.com/?41.691,2.489,6" target="_blank" rel="noreferrer">Obrir el mapa temporal ↗</a></div>
+            </div>
+            <footer><span id="model-viewer-caption">ECMWF · precipitació</span><small id="model-viewer-state">Visor temporal de Windy centrat a Sant Celoni.</small></footer>
           </section>
-          <p class="model-license-note">La taula superior compara ECMWF, GFS i ICON. El visor cartogràfic utilitza la inserció oficial de Ventusky, que permet animar GFS, ICON i GEM sense reproduir imatges de tercers de manera no autoritzada.</p>
+          <p class="model-license-note">La taula superior compara ECMWF, GFS i ICON. El visor cartogràfic utilitza la inserció pública de Windy per animar ECMWF, GFS i ICON-EU sense reproduir imatges de tercers.</p>
         </article>
         <p class="forecast-disclaimer">La predicció descriu un escenari de model per a Sant Celoni, no una certesa. L’observació real de l’estació és la referència del temps que està fent.</p>
       </section>
 
-      <section id="tendencies" class="section-block">
+      <section id="tendencies" class="section-block" data-mobile-advanced>
         <div class="section-heading evolution-heading"><div><p class="eyebrow">Evolució</p><h2>Històric meteorològic</h2><p id="evolution-period-copy">Lectures de les últimes 24 hores</p></div><div class="segmented" role="group" aria-label="Període de gràfica"><button class="is-active" data-period="24h">24 h</button><button data-period="7d">7 dies</button><button data-period="30d">30 dies</button><button data-period="1y">1 any</button></div></div>
         <div class="charts-grid">
           <article class="chart-card panel"><header><div><span>Temperatura i punt de rosada</span><strong><b id="chart-temp-now">--</b> °C</strong></div><span class="tag" id="history-status">Iniciant històric</span></header><div class="chart-wrap"><canvas id="temperature-chart"></canvas></div></article>
@@ -254,7 +286,7 @@
         <p class="data-note"><span>i</span> Les corbes combinen l’arxiu propi persistent de l’estació amb Weather Underground com a suport de l’històric recent. La resolució s’adapta automàticament al període seleccionat.</p>
       </section>
 
-      <section id="cel-nocturn" class="astronomy-section section-block" aria-labelledby="astronomy-title">
+      <section id="cel-nocturn" class="astronomy-section section-block" aria-labelledby="astronomy-title" data-mobile-advanced>
         <div class="section-heading astronomy-heading"><div><p class="eyebrow">Astronomia local</p><h2 id="astronomy-title">El cel, de dia i de nit</h2></div><div class="astronomy-source"><span>Càlcul per a 41,6906° N · 2,4890° E</span><a href="https://aa.usno.navy.mil/data/" target="_blank" rel="noreferrer">Efemèrides: USNO ↗</a></div></div>
         <div class="astronomy-overview">
           <article class="moon-card panel"><div class="moon-visual" id="moon-visual" aria-hidden="true">◐</div><div><p class="eyebrow">Lluna actual</p><h3 id="moon-phase">Calculant la fase…</h3><strong><b id="moon-illumination">—</b>% il·luminada</strong><p id="moon-age">Edat lunar pendent</p><p id="moon-times">Sortida i posta pendents</p><div class="moon-facts"><span><small>Pròxima fase</small><b id="moon-next-phase">Calculant</b></span><span><small>Visibilitat</small><b id="moon-visibility">Pendent</b></span></div></div></article>
@@ -284,7 +316,7 @@
         </article>
       </section>
 
-      <section id="qualitat" class="quality-section section-block" aria-labelledby="quality-title">
+      <section id="qualitat" class="quality-section section-block" aria-labelledby="quality-title" data-mobile-advanced>
         <div class="section-heading quality-heading">
           <div><p class="eyebrow">Control de l’observatori</p><h2 id="quality-title">Dades sota control</h2><p>Disponibilitat, cobertura i continuïtat de cada sensor, calculades sobre les lectures guardades.</p></div>
           <span class="quality-badge is-loading" id="quality-badge"><i></i><b id="quality-badge-label">Comprovant el sistema</b></span>
@@ -355,13 +387,27 @@
     <div class="mobile-more" id="mobile-more-menu" hidden>
       <button class="mobile-more__backdrop" type="button" aria-label="Tancar el menú"></button>
       <div class="mobile-more__sheet" role="dialog" aria-modal="true" aria-label="Més seccions">
-        <div><strong>Explora l’observatori</strong><button type="button" id="mobile-more-close" aria-label="Tancar">×</button></div>
-        <a href="#avisos" data-section-link="avisos"><span>!</span><div><b>Avisos</b><small>Vigilància oficial</small></div></a>
-        <a href="#cel-nocturn" data-section-link="cel-nocturn"><span>◐</span><div><b>Cel nocturn</b><small>Sol, Lluna i astronomia</small></div></a>
-        <a href="#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
+        <div class="mobile-more__head"><span><small>Índex de continguts</small><strong>Explora l’observatori</strong></span><button type="button" id="mobile-more-close" aria-label="Tancar">×</button></div>
+        <a class="mobile-alert-shortcut is-pending" id="mobile-alert-shortcut" href="#avisos" data-section-link="avisos"><span>!</span><div><b id="mobile-alert-title">Comprovant avisos</b><small id="mobile-alert-copy">Vigilància oficial</small></div><em>→</em></a>
+        <div class="mobile-view-mode" aria-label="Densitat de contingut mòbil"><span><b>Vista mòbil</b><small>Tria quanta informació vols veure</small></span><div role="group"><button class="is-active" type="button" data-mobile-view="full" aria-pressed="true">Completa</button><button type="button" data-mobile-view="essential" aria-pressed="false">Essencial</button></div></div>
+        <nav class="mobile-more__links" aria-label="Índex complet de l’observatori">
+          <a href="#ara" data-section-link="ara"><span>●</span><div><b>Ara mateix</b><small>Temperatura i lectura ràpida</small></div></a>
+          <a href="#metric-card-temperature"><span>⌁</span><div><b>Valors actuals</b><small>Sensors i minigràfics</small></div></a>
+          <a href="#calculats" data-requires-full><span>Σ</span><div><b>Valors calculats</b><small>Diagnosi atmosfèrica</small></div></a>
+          <a href="#resum-dia" data-requires-full><span>↗</span><div><b>Resum i extrems</b><small>Avui, 7 dies, 30 dies i any</small></div></a>
+          <a href="#avisos" data-section-link="avisos"><span>!</span><div><b>Avisos oficials</b><small>Meteocat i AEMET</small></div></a>
+          <a href="#prediccio" data-section-link="prediccio"><span>☁</span><div><b>Previsió</b><small>48 hores i 7 dies</small></div></a>
+          <a href="#fonts" data-requires-full><span>5</span><div><b>Fonts contrastades</b><small>Cinc serveis meteorològics</small></div></a>
+          <a href="#models" data-requires-full><span>≋</span><div><b>Models</b><small>ECMWF, GFS i ICON</small></div></a>
+          <a href="#tendencies" data-section-link="tendencies" data-requires-full><span>⌁</span><div><b>Evolució</b><small>Gràfiques i històrics</small></div></a>
+          <a href="#cel-nocturn" data-section-link="cel-nocturn" data-requires-full><span>◐</span><div><b>Cel i astronomia</b><small>Sol, Lluna i nit</small></div></a>
+          <a href="#territori" data-section-link="territori"><span>◎</span><div><b>Webcam i radar</b><small>Observació del territori</small></div></a>
+          <a href="#qualitat" data-requires-full><span>✓</span><div><b>Qualitat de les dades</b><small>Estació, API i arxiu D1</small></div></a>
+          <a href="#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
+        </nav>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.4</small><div><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.5</small><div><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   </body>
 </html>

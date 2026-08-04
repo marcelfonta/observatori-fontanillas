@@ -5,6 +5,65 @@ const levelLabels = {
   none:'Sense avisos', unknown:'Estat no determinat'
 };
 
+const pluralLevels = {
+  red:'vermells', orange:'taronges', yellow:'grocs', unknown:'oficials'
+};
+
+function alertExpiry(entry) {
+  const direct=entry?.expires || entry?.endsAt || entry?.end || entry?.until;
+  if(direct) {
+    const parsed=new Date(direct);
+    if(!Number.isNaN(parsed.getTime()))return parsed;
+  }
+  const text=String(entry?.description || '');
+  const matches=[...text.matchAll(/(?:a|fins(?:\s+a)?)\s+(\d{1,2}):(\d{2})\s+(\d{2})-(\d{2})-(\d{4})/gi)];
+  const match=matches.at(-1);
+  if(!match)return null;
+  const parsed=new Date(Number(match[5]),Number(match[4])-1,Number(match[3]),Number(match[1]),Number(match[2]));
+  return Number.isNaN(parsed.getTime())?null:parsed;
+}
+
+function expiryLabel(alerts=[]) {
+  const expiries=alerts.map(alertExpiry).filter(Boolean).sort((a,b)=>b-a);
+  if(!expiries.length)return '';
+  const expiry=expiries[0];
+  const sameDay=expiry.toDateString()===new Date().toDateString();
+  const time=new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(expiry);
+  return sameDay?`Vigent fins a les ${time}`:`Vigent fins al ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(expiry)}`;
+}
+
+function phenomenaLabel(alerts=[]) {
+  const values=[...new Set(alerts.map(entry=>entry.phenomenon || entry.title).filter(Boolean).map(value=>String(value).trim()))];
+  if(!values.length)return 'Consulta el detall oficial';
+  if(values.length===1)return values[0];
+  if(values.length===2)return `${values[0]} i ${values[1].toLocaleLowerCase('ca-ES')}`;
+  return `${values.slice(0,-1).join(', ')} i ${values.at(-1).toLocaleLowerCase('ca-ES')}`;
+}
+
+function renderAlertShortcuts(payload) {
+  const quick=document.getElementById('quick-alert-link');
+  const mobile=document.getElementById('mobile-alert-shortcut');
+  let level='unknown'; let title='Verificació no disponible'; let copy='Consulta els canals oficials'; let action='Comprovar →';
+  if(payload?.ok && Number(payload.active)>0) {
+    level=payload.maxLevel || 'unknown';
+    const count=Number(payload.active);
+    title=count===1 ? (levelLabels[level] || 'Avís oficial actiu') : `${count} avisos ${pluralLevels[level] || 'oficials'} actius`;
+    const expiry=expiryLabel(payload.alerts);
+    copy=[phenomenaLabel(payload.alerts),expiry].filter(Boolean).join(' · ');
+    action='Consultar →';
+  } else if(payload?.ok) {
+    level='clear'; title='Sense avisos oficials actius'; copy='Darrera comprovació oficial actualitzada'; action='Veure fonts →';
+  }
+  [quick,mobile].forEach(element=>{
+    if(!element)return;
+    element.className=element===quick?`quick-alert is-${level}`:`mobile-alert-shortcut is-${level}`;
+    element.setAttribute('aria-label',`${title}. ${copy}. Anar als avisos oficials.`);
+  });
+  setText('quick-alert-kicker',level==='clear'?'Vigilància oficial':'Avisos oficials');
+  setText('quick-alert-title',title); setText('quick-alert-action',action);
+  setText('mobile-alert-title',title); setText('mobile-alert-copy',copy);
+}
+
 function checkedLabel(payload) {
   const value=payload?.checkedAt || payload?.updated;
   if(!value)return 'Comprovació oficial sense hora disponible';
@@ -23,10 +82,14 @@ function alertItem(entry) {
   title.textContent=entry.phenomenon || entry.title || 'Fenomen meteorològic';
   const copy=document.createElement('small');
   copy.textContent=entry.description || entry.title || 'Consulta el detall oficial per conèixer l’abast i la vigència.';
+  const expiry=alertExpiry(entry);
+  const validity=document.createElement('span');
+  validity.className='official-alert-validity';
+  validity.textContent=expiry ? expiryLabel([entry]) : 'Vigència disponible al detall oficial';
   const link=document.createElement('a');
   link.href=entry.link || 'https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&w=hoy';
   link.target='_blank'; link.rel='noreferrer'; link.textContent='Detall oficial ↗';
-  body.append(title,copy,link); article.append(level,body);
+  body.append(title,copy,validity,link); article.append(level,body);
   return article;
 }
 
@@ -35,6 +98,7 @@ export function renderAlerts(payload) {
   const list=document.getElementById('official-alert-list');
   if(!card||!list)return;
   const level=payload?.ok ? (payload.maxLevel || 'none') : 'unknown';
+  renderAlertShortcuts(payload);
   card.className=`alerts-local is-${level}`;
   list.replaceChildren();
   if(!payload?.ok){

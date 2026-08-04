@@ -202,6 +202,17 @@ export function initForecastControls() {
   document.getElementById('model-day-prev')?.addEventListener('click',()=>{modelDayIndex=Math.max(0,modelDayIndex-1);renderModelDay();});
   document.getElementById('model-day-next')?.addEventListener('click',()=>{modelDayIndex=Math.min(6,modelDayIndex+1);renderModelDay();});
   const sourceTabs=[...document.querySelectorAll('[data-source-tab]')];
+  const sourceTabsList=document.querySelector('.source-tabs');
+  const sourceHint=document.getElementById('source-tabs-hint');
+  const updateSourceHint=()=>{
+    if(!sourceTabsList||!sourceHint)return;
+    const overflow=sourceTabsList.scrollWidth-sourceTabsList.clientWidth>8;
+    const atEnd=sourceTabsList.scrollLeft+sourceTabsList.clientWidth>=sourceTabsList.scrollWidth-10;
+    sourceHint.hidden=!overflow||atEnd;
+  };
+  sourceTabsList?.addEventListener('scroll',updateSourceHint,{passive:true});
+  window.addEventListener('resize',updateSourceHint,{passive:true});
+  requestAnimationFrame(updateSourceHint);
   sourceTabs.forEach((button,index)=>{
     button.addEventListener('click',()=>activateSource(button));
     button.addEventListener('keydown',event=>{
