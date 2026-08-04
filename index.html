@@ -127,9 +127,9 @@
         <div class="forecast-subheading"><div><span>Previsió de 7 dies</span><small>Màximes, mínimes, pluja, vent i hores de llum</small></div></div>
         <div class="daily-forecast" id="daily-forecast" aria-live="polite"><div class="forecast-loading">Preparant la previsió diària…</div></div>
         <section class="official-forecast panel" aria-labelledby="official-forecast-title">
-          <header><div><p class="eyebrow">Quatre fonts contrastades</p><h3 id="official-forecast-title">Meteocat · AEMET · eltiempo.es · Yr</h3><p>Compara organismes oficials i serveis de referència sense repetir la previsió Open‑Meteo que ja tens just a sobre.</p></div><span class="tag" id="four-look-status">4 fonts fiables</span></header>
+          <header><div><p class="eyebrow">Cinc fonts contrastades</p><h3 id="official-forecast-title">Cinc mirades sobre la previsió</h3><p>Meteocat · AEMET · eltiempo.es · Yr · Meteoblue, sense repetir la previsió Open‑Meteo que ja tens just a sobre.</p></div><span class="tag" id="four-look-status">5 fonts fiables</span></header>
           <div class="source-viewer__toolbar">
-            <div class="source-tabs" role="tablist" aria-label="Font de predicció"><button class="is-active" type="button" data-source-tab="meteocat">Meteocat</button><button type="button" data-source-tab="aemet">AEMET</button><button type="button" data-source-tab="eltiempo">eltiempo.es</button><button type="button" data-source-tab="yr">Yr · MET</button></div>
+            <div class="source-tabs" role="tablist" aria-label="Font de predicció"><button class="is-active" type="button" data-source-tab="meteocat">Meteocat</button><button type="button" data-source-tab="aemet">AEMET</button><button type="button" data-source-tab="eltiempo">eltiempo.es</button><button type="button" data-source-tab="yr">Yr · MET</button><button type="button" data-source-tab="meteoblue">Meteoblue</button></div>
           </div>
           <div class="source-viewer">
             <div class="source-panel is-active" data-source-panel="meteocat"><div class="source-official"><header><div><span id="source-meteocat-title">Meteocat · pròximes 72 hores</span><small id="source-meteocat-copy">Cel, temperatura, precipitació, humitat, xafogor i vent per hores</small></div><div class="source-official__actions"><div class="source-horizon" role="group" aria-label="Horitzó de Meteocat"><button class="is-active" type="button" data-source-horizon="hourly">Per hores</button><button type="button" data-source-horizon="daily">Per dies</button></div><a href="https://www.meteo.cat/prediccio/municipal/082021" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></div></header><div class="source-official__frame source-official__frame--meteocat is-hourly" id="source-meteocat-shell"><iframe id="source-meteocat-frame" title="Predicció oficial de Meteocat per a Sant Celoni" loading="lazy" src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=0f2a22&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe></div></div></div>
@@ -152,9 +152,20 @@
                 <div class="source-yr__frame"><iframe src="https://www.yr.no/en/content/2-3110813/table.html?mode=dark" title="Predicció de Yr per als pròxims 8 dies a Sant Celoni" loading="lazy"></iframe></div>
               </div>
             </div>
+            <div class="source-panel" data-source-panel="meteoblue">
+              <div class="source-official source-meteoblue">
+                <header><div><span>Meteoblue · previsió cada 3 hores</span><small>4 dies · evolució detallada · giny oficial en mode fosc</small></div><a href="https://www.meteoblue.com/en/weather/week/sant-celoni_spain_3110813" target="_blank" rel="noreferrer">Obrir Meteoblue ↗</a></header>
+                <div class="source-meteoblue__body">
+                  <div class="source-meteoblue__widget">
+                    <iframe src="https://www.meteoblue.com/en/weather/widget/three/sant-celoni_spain_3110813?geoloc=fixed&amp;nocurrent=0&amp;noforecast=0&amp;tempunit=CELSIUS&amp;windunit=KILOMETER_PER_HOUR&amp;days=4&amp;layout=dark&amp;user_key=7bcce446b2dbccba&amp;embed_key=f0ed4a278980fffc&amp;sig=423032c3d46ce23b46fdaa85917edb00a0c8e5aa49d4a7afc70fbca09720c4e9" frameborder="0" scrolling="NO" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox" style="width: 460px;height: 570px;border: 0;overflow: hidden;" title="Previsió Meteoblue cada 3 hores per a Sant Celoni" loading="lazy"></iframe>
+                    <div class="source-meteoblue__credit"><!-- DO NOT REMOVE THIS LINK --><a href="https://www.meteoblue.com/en/weather/week/index" target="_blank" rel="noopener">meteoblue</a></div>
+                  </div>
+                  <aside class="source-summary" aria-label="Què aporta Meteoblue"><span class="source-summary__label">Què aporta</span><h4>Detall cada tres hores</h4><div class="source-summary__grid"><span><b>4 dies</b><small>Horitzó detallat</small></span><span><b>Pas de 3 h</b><small>Evolució temporal</small></span><span><b>Mode fosc</b><small>Integració visual</small></span></div><p>Una cinquena mirada especialment útil per veure com canvien la temperatura, la precipitació i el vent al llarg de cada jornada.</p></aside>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="source-extra"><div><span>Contrast avançat</span><strong>Meteoblue · multimodel</strong><small>Predictabilitat, meteograma i comparació d’escenaris</small></div><a href="https://www.meteoblue.com/en/weather/week/sant-celoni_spain_3110813" target="_blank" rel="noreferrer">Obrir Meteoblue ↗</a></div>
-          <p class="source-comparison__note"><span>i</span> Meteocat permet alternar directament entre previsió horària i diària. AEMET i eltiempo.es conserven els ginys oficials; Yr afegeix una quarta mirada independent de MET Norway. Meteoblue queda com a contrast avançat extern per no sobrecarregar el bloc.</p>
+          <p class="source-comparison__note"><span>i</span> Meteocat permet alternar directament entre previsió horària i diària. AEMET i eltiempo.es conserven els ginys oficials; Yr aporta la previsió de MET Norway i Meteoblue afegeix detall cada tres hores durant quatre dies.</p>
         </section>
         <article class="model-comparison panel">
           <header><div><p class="eyebrow">Convergència de models</p><h3>ECMWF · GFS · ICON</h3></div><div class="model-day-nav"><button type="button" id="model-day-prev" aria-label="Dia anterior">←</button><span id="model-day-label">Demà</span><button type="button" id="model-day-next" aria-label="Dia següent">→</button><span class="tag" id="model-status">Connectant models</span></div></header>

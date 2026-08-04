@@ -152,3 +152,13 @@ body{font-size:var(--type-body)}
 @media (max-width:1120px){.source-eltiempo__body{grid-template-columns:1fr}.source-summary{padding:20px}.source-official__frame--aemet{height:350px}}
 @media (max-width:780px){.source-official__frame--meteocat{height:410px;overflow:auto}.source-official__frame--meteocat.is-daily{height:335px}.source-official__frame--aemet{height:500px}.source-yr__frame{height:540px}.source-extra{align-items:flex-start;flex-direction:column}.source-summary__grid{grid-template-columns:1fr 1fr}.source-summary__grid span:last-child{grid-column:1/-1}}
 @media (max-width:510px){.source-tabs button{flex:1 1 42%}.source-eltiempo__body{display:block}.source-summary{margin-top:12px;padding:17px}.source-summary h4{font-size:21px}.source-summary__grid{grid-template-columns:1fr}.source-summary__grid span:last-child{grid-column:auto}.source-official__frame--meteocat{height:450px}.source-official__frame--meteocat.is-daily{height:370px}.source-official__frame--aemet{height:590px}.source-yr__frame{height:560px}.source-extra>a{width:100%;text-align:center}}
+
+/* V4.8: Meteoblue entra com a previsió, no com a mapa. */
+.source-tabs{width:min(100%,900px)}
+.source-meteoblue__body{display:grid;grid-template-columns:minmax(460px,1.15fr) minmax(280px,.85fr);gap:14px;align-items:stretch}
+.source-meteoblue__widget{display:grid;place-items:center;padding:14px;border:1px solid var(--line);border-radius:15px;background:#111820;overflow:hidden}
+.source-meteoblue__widget iframe{display:block;width:100%!important;max-width:460px;height:570px;border:0}
+.source-meteoblue__credit{width:min(100%,460px);padding-top:7px;text-align:right}
+.source-meteoblue__credit a{color:var(--green);font-size:var(--type-caption);text-decoration:none}
+@media (max-width:980px){.source-meteoblue__body{grid-template-columns:1fr}.source-meteoblue__widget{padding:12px}.source-meteoblue .source-summary{padding:20px}}
+@media (max-width:510px){.source-meteoblue__widget{padding:8px}.source-meteoblue__widget iframe{height:610px}.source-meteoblue .source-summary{margin-top:12px}}
