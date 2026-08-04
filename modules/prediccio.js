@@ -100,8 +100,13 @@ export function renderModelComparison(payload) {
 
 function updateSourceHorizon() {
   const meteocat=document.getElementById('source-meteocat-frame');
+  const shell=document.getElementById('source-meteocat-shell');
   if(meteocat) {
     meteocat.src=sourceHorizon==='hourly'?'https://static-m.meteo.cat/ginys/municipal72h?location=082021&language=ca&color=0f2a22&tempFormat=%20%C2%BAC&windSpeedFormat=km/h&mainChart=estCel&secondaryChart=true&target=_blank':'https://static-m.meteo.cat/ginys/municipal8d?location=082021&language=ca&color=0f2a22&tempFormat=%20%C2%BAC&target=_blank';
+  }
+  if(shell) {
+    shell.classList.toggle('is-hourly',sourceHorizon==='hourly');
+    shell.classList.toggle('is-daily',sourceHorizon==='daily');
   }
   setText('source-meteocat-title',sourceHorizon==='hourly'?'Meteocat · pròximes 72 hores':'Meteocat · previsió de 8 dies');
   setText('source-meteocat-copy',sourceHorizon==='hourly'?'Cel, temperatura, precipitació, humitat, xafogor i vent per hores':'Símbol, màxima, mínima i probabilitat de precipitació per dia');

@@ -1,6 +1,6 @@
 # Observatori Meteorològic Fontanillas
 
-Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, sensació tèrmica i Humidex, extrems i tendències reals de Weather Underground, sis famílies de gràfiques de fins a un any, predicció de 48 hores i 7 dies amb hores de llum i sol previst, consulta de tres fonts oficials, visor temporal de models, radar animat i Meteocat, astronomia solar i nocturna, webcam i contacte privat.
+Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, sensació tèrmica i Humidex, extrems i tendències reals de Weather Underground, sis famílies de gràfiques de fins a un any, predicció de 48 hores i 7 dies amb hores de llum i sol previst, comparació de quatre fonts fiables, visor temporal de models, radar animat i Meteocat, astronomia solar i nocturna, webcam i contacte privat.
 
 ## Posada en marxa
 
@@ -34,11 +34,13 @@ Les escales de color de les targetes són interpretatives: descriuen confort, in
 - Meteocat: ginys oficials municipals de 72 hores i 8 dies, més el giny oficial del radar amb zoom.
 - AEMET: giny municipal oficial configurat en català amb cel, temperatura, sensació tèrmica, pluja, humitat, vent i avisos, més accessos a les taules horàries i de 7 dies.
 - eltiempo.es: giny oficial complet per a Sant Celoni, configurat en català, graus Celsius i vent en km/h.
+- Yr / MET Norway: giny oficial fosc de 8 dies per a Sant Celoni amb temperatura, precipitació i vent.
+- Meteoblue: accés de contrast avançat a la predicció multimodel, la predictabilitat i els meteogrames. El giny es podrà inserir quan es disposi del codi exacte generat al compte de Meteoblue.
 - Ventusky: visor cartogràfic inserit amb línia temporal, capes i canvi entre GFS, ICON i GEM. ECMWF es manté disponible mitjançant el visor extern identificat.
 - RainViewer: mapa de radar interactiu amb les imatges disponibles de les dues últimes hores.
 - AEMET Barcelona–Gelida: accés directe per contrastar el radar oficial.
 
-Els recursos oficials es mostren en pestanyes perquè el seu disseny extern no trenqui la lectura general del dashboard. Els ginys d’AEMET i eltiempo.es s’han generat amb els seus configuradors oficials. Meteocat ofereix dades horàries riques dins del seu propi giny, però el navegador no pot remaquetar el contingut d’un iframe extern. AEMET OpenData necessita una clau d’API per construir una taula nativa, i eltiempo.es no ofereix una API pública equivalent al seu giny. Per això el projecte conserva els ginys i enllaços oficials, sense scraping ni dades simulades.
+Els recursos oficials es mostren en pestanyes perquè el seu disseny extern no trenqui la lectura general del dashboard. Els contenidors de Meteocat i AEMET adapten l’alçada al contingut útil per eliminar grans franges blanques, mentre que eltiempo.es combina el giny amb un resum visual. Meteocat ofereix dades horàries riques dins del seu propi giny, però el navegador no pot remaquetar el contingut d’un iframe extern. AEMET OpenData necessita una clau d’API per construir una taula nativa, i eltiempo.es no ofereix una API pública equivalent al seu giny. Per això el projecte conserva els ginys i enllaços oficials, sense scraping ni dades simulades.
 
 ## Astronomia local
 
@@ -68,7 +70,7 @@ data/                Catàlegs i dades estàtiques futures
 ## Funcions actives
 
 1. Històric horari real de Weather Underground / VEVOR.
-2. Línia temporal exacta de 48 hores, previsió de 7 dies amb hores de llum i comparador oficial Meteocat/AEMET/eltiempo.es.
+2. Línia temporal exacta de 48 hores, previsió de 7 dies amb hores de llum i comparador Meteocat/AEMET/eltiempo.es/Yr, més contrast avançat a Meteoblue.
 3. Minigràfics de les últimes hores, UV a 3 hores, sis gràfiques compactes i extrems de 24 h, 7 dies, 30 dies i 1 any.
 4. Visor temporal Ventusky, taula diària navegable ECMWF/GFS/ICON, animació RainViewer predeterminada i radar oficial Meteocat alternatiu.
 5. Posició del Sol, hora solar, Lluna, qualitat nocturna, equinoccis, solsticis i esdeveniments observables.
@@ -85,7 +87,7 @@ data/                Catàlegs i dades estàtiques futures
 
 ```bash
 git add .
-git commit -m "Publica la versió 4.6 del dashboard"
+git commit -m "Publica la versió 4.7 del dashboard"
 git push origin main
 ```
 

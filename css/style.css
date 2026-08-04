@@ -123,3 +123,32 @@ body{font-size:var(--type-body)}
 .source-official__frame{background:rgba(255,255,255,.025)}.source-official__frame--meteocat{height:430px}.source-official__frame--meteocat iframe{width:min(100%,960px);background:#fff}.source-official__frame--aemet{height:480px;background:#fff}.source-eltiempo__widget{min-height:260px;background:rgba(255,255,255,.025);place-items:center}.source-eltiempo{min-height:0}.source-comparison__note{max-width:1100px}
 @media (max-width:780px){.source-tabs{width:100%}.source-official__actions{align-items:flex-start;justify-content:flex-start}.source-official__frame--aemet{height:560px}.source-eltiempo__widget{min-height:240px}}
 @media (max-width:510px){.source-tabs button{min-width:0;padding:9px 8px}.source-official__actions{width:100%}.source-official__actions .source-horizon{width:100%}.source-official__actions .source-horizon button{flex:1}.source-official__frame--aemet{height:640px}}
+
+/* V4.7: comparador de fonts compacte, equilibrat i amb una quarta mirada independent. */
+.source-tabs{width:min(100%,720px)}
+.source-official__frame--meteocat{height:355px;overflow:hidden;transition:height .24s ease}
+.source-official__frame--meteocat.is-daily{height:300px}
+.source-official__frame--aemet{height:330px;overflow:auto}
+.source-eltiempo__body{display:grid;grid-template-columns:minmax(480px,1.35fr) minmax(260px,.65fr);gap:14px;align-items:stretch}
+.source-eltiempo__widget{min-height:0;padding:14px;background:rgba(255,255,255,.035)}
+.source-summary{display:flex;flex-direction:column;justify-content:center;padding:24px;border:1px solid var(--line);border-radius:15px;background:radial-gradient(circle at 90% 0,rgba(90,184,214,.1),transparent 45%),rgba(11,27,23,.8)}
+.source-summary__label{color:var(--green);font-size:var(--type-caption);font-weight:700;letter-spacing:.11em;text-transform:uppercase}
+.source-summary h4{font:700 24px/1.08 var(--font-display);margin:10px 0 18px}
+.source-summary p{color:var(--muted);font-size:var(--type-small);line-height:1.6;margin:18px 0 0}
+.source-summary__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--line)}
+.source-summary__grid span{padding:12px;background:rgba(7,17,15,.94)}
+.source-summary__grid b,.source-summary__grid small{display:block}
+.source-summary__grid b{font-size:var(--type-small)}
+.source-summary__grid small{color:var(--muted);font-size:var(--type-caption);line-height:1.35;margin-top:4px}
+.source-yr__frame{height:506px;overflow:hidden;border:1px solid var(--line);border-radius:15px;background:#0b1b17}
+.source-yr__frame iframe{display:block;width:100%;height:100%;border:0;background:#0b1b17}
+.source-extra{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:12px;padding:14px 16px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(110deg,rgba(137,214,163,.06),rgba(90,184,214,.035))}
+.source-extra div>span,.source-extra div>strong,.source-extra div>small{display:block}
+.source-extra div>span{color:var(--green);font-size:var(--type-caption);font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.source-extra div>strong{font-size:var(--type-card);margin-top:4px}
+.source-extra div>small{color:var(--muted);font-size:var(--type-caption);margin-top:3px}
+.source-extra>a{flex:none;padding:8px 12px;border:1px solid var(--line-bright);border-radius:100px;color:var(--green);font-size:var(--type-caption);text-decoration:none}
+.source-extra>a:hover{background:rgba(137,214,163,.09)}
+@media (max-width:1120px){.source-eltiempo__body{grid-template-columns:1fr}.source-summary{padding:20px}.source-official__frame--aemet{height:350px}}
+@media (max-width:780px){.source-official__frame--meteocat{height:410px;overflow:auto}.source-official__frame--meteocat.is-daily{height:335px}.source-official__frame--aemet{height:500px}.source-yr__frame{height:540px}.source-extra{align-items:flex-start;flex-direction:column}.source-summary__grid{grid-template-columns:1fr 1fr}.source-summary__grid span:last-child{grid-column:1/-1}}
+@media (max-width:510px){.source-tabs button{flex:1 1 42%}.source-eltiempo__body{display:block}.source-summary{margin-top:12px;padding:17px}.source-summary h4{font-size:21px}.source-summary__grid{grid-template-columns:1fr}.source-summary__grid span:last-child{grid-column:auto}.source-official__frame--meteocat{height:450px}.source-official__frame--meteocat.is-daily{height:370px}.source-official__frame--aemet{height:590px}.source-yr__frame{height:560px}.source-extra>a{width:100%;text-align:center}}
