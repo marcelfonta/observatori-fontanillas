@@ -83,6 +83,24 @@ export function renderModelComparison({ecmwf,gfs,icon}) {
   setText('model-reading',mean<1?'ECMWF, GFS i ICON dibuixen un escenari molt semblant: la confiança tèrmica és alta.':mean<2.5?'Hi ha petites diferències entre els tres models. L’escenari general és útil, però cal seguir-ne l’evolució.':'Els tres models divergeixen de manera notable. La predicció encara té incertesa i convé revisar les properes actualitzacions.');
 }
 
+function fourLookRow(name,source,data) {
+  const daily=data?.daily||{};
+  const [symbol,label]=weather(daily.weather_code?.[1]);
+  return `<div class="four-look-row"><strong>${name}<small>${source}</small></strong><span><small>Escenari demà</small><b><i class="forecast-symbol" aria-hidden="true">${symbol}</i> ${label}</b></span><span><small>Màxima</small><b>${format(daily.temperature_2m_max?.[1],1)} °C</b></span><span><small>Mínima</small><b>${format(daily.temperature_2m_min?.[1],1)} °C</b></span><span><small>Pluja 7 dies</small><b>${format(sum(daily.precipitation_sum||[]),1)} mm</b></span><span><small>Ratxa màxima</small><b>${format(max(daily.wind_gusts_10m_max||[]),0)} km/h</b></span></div>`;
+}
+
+export function renderFourLookComparison({best,ecmwf,gfs,icon}) {
+  const table=document.getElementById('four-look-table'); if(!table)return;
+  table.innerHTML=`<div class="four-look-row four-look-row--head"><strong>Font / model</strong><span>Temps</span><span>Temperatura</span><span>Temperatura</span><span>Precipitació</span><span>Vent</span></div>${fourLookRow('Open-Meteo','Best Match local',best)}${fourLookRow('ECMWF','IFS europeu',ecmwf)}${fourLookRow('GFS','NOAA · global',gfs)}${fourLookRow('ICON','DWD · Europa',icon)}`;
+  setText('four-look-status','4 escenaris actualitzats');
+}
+
+export function renderFourLookError() {
+  setText('four-look-status','Comparació parcial');
+  const table=document.getElementById('four-look-table');
+  if(table)table.innerHTML='<div class="forecast-loading">Ara mateix no s’han pogut reunir els quatre escenaris. La previsió principal continua disponible.</div>';
+}
+
 export function initForecastControls() {
   const strip=document.getElementById('forecast-strip');
   document.getElementById('forecast-prev')?.addEventListener('click',()=>strip?.scrollBy({left:-520,behavior:'smooth'}));

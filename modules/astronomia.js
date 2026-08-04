@@ -1,5 +1,5 @@
 import { CONFIG } from '../js/config.js';
-import { clamp, format, setText } from '../js/utils.js';
+import { cardinal, clamp, format, setText } from '../js/utils.js';
 
 const SYNODIC_MONTH = 29.530588853;
 const KNOWN_NEW_MOON = Date.UTC(2000, 0, 6, 18, 14);
@@ -7,6 +7,21 @@ const phaseNames = [
   ['Lluna nova','🌑'],['Lluna creixent','🌒'],['Quart creixent','🌓'],['Gibosa creixent','🌔'],
   ['Lluna plena','🌕'],['Gibosa minvant','🌖'],['Quart minvant','🌗'],['Lluna minvant','🌘']
 ];
+
+const fallbackSeasons = [
+  ['2025-12-21T15:03:00Z','Hivern','Solstici d’hivern','❄'],
+  ['2026-03-20T14:46:00Z','Primavera','Equinocci de primavera','🌱'],
+  ['2026-06-21T08:24:00Z','Estiu','Solstici d’estiu','☀'],
+  ['2026-09-23T00:05:00Z','Tardor','Equinocci de tardor','🍂'],
+  ['2026-12-21T20:50:00Z','Hivern','Solstici d’hivern','❄'],
+  ['2027-03-20T20:25:00Z','Primavera','Equinocci de primavera','🌱'],
+  ['2027-06-21T14:11:00Z','Estiu','Solstici d’estiu','☀'],
+  ['2027-09-23T06:02:00Z','Tardor','Equinocci de tardor','🍂'],
+  ['2027-12-22T02:42:00Z','Hivern','Solstici d’hivern','❄']
+].map(([date,season,label,symbol])=>({date:new Date(date),season,label,symbol}));
+
+let seasonsRequested = false;
+let seasonsCache = fallbackSeasons;
 
 const events = [
   { date:'2026-08-12T19:30:00+02:00', title:'Eclipsi de Sol', badge:'Excepcional', copy:'Visible al capvespre. Cal horitzó oest lliure i protecció solar homologada.' },
@@ -57,6 +72,7 @@ function renderMoon(moon) {
   setText('moon-illumination', format(moon.illumination, 0));
   setText('moon-age', `${format(moon.age, 1)} dies des de la Lluna nova`);
   setText('moon-visual', moon.symbol);
+  setText('moon-visibility',moon.illumination<15?'Cel especialment fosc':moon.illumination<45?'Llum lunar baixa':moon.illumination<75?'Llum lunar moderada':'Molta llum lunar');
 }
 
 function approximatePhases(now = new Date()) {
@@ -73,6 +89,7 @@ function approximatePhases(now = new Date()) {
 function renderPhases(phases) {
   const container = document.getElementById('moon-phases');
   if (!container) return;
+  if (phases[0]) setText('moon-next-phase',`${phases[0].name} · ${new Intl.DateTimeFormat(CONFIG.locale,{day:'numeric',month:'short'}).format(phases[0].date)}`);
   container.innerHTML = phases.slice(0,4).map(phase => `<div class="moon-phase-item"><i aria-hidden="true">${phase.symbol}</i><b>${phase.name}</b><small>${new Intl.DateTimeFormat(CONFIG.locale,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(phase.date)}</small></div>`).join('');
 }
 
@@ -95,12 +112,95 @@ async function loadUsnoMoon() {
   const moonRise = (data?.moondata || []).find(item => ['R','Rise'].includes(item.phen));
   const moonSet = (data?.moondata || []).find(item => ['S','Set'].includes(item.phen));
   if (moonRise || moonSet) setText('moon-times',`Surt ${moonRise?.time || '—'} · Es pon ${moonSet?.time || '—'}`);
+  const sunRise = (data?.sundata || []).find(item => ['R','Rise'].includes(item.phen));
+  const sunSet = (data?.sundata || []).find(item => ['S','Set'].includes(item.phen));
+  const sunTransit = (data?.sundata || []).find(item => ['U','Upper Transit'].includes(item.phen));
+  if (sunRise) setText('sunrise-time',sunRise.time);
+  if (sunSet) setText('sunset-time',sunSet.time);
+  if (sunTransit) setText('solar-noon',sunTransit.time);
   const phases = (phasePayload?.phasedata || []).map(item => {
     const [translated,symbolValue] = translatePhase(item.phase);
     return { name:translated, symbol:symbolValue, date:new Date(`${item.year}-${String(item.month).padStart(2,'0')}-${String(item.day).padStart(2,'0')}T${item.time || '00:00'}:00Z`) };
   }).filter(item=>!Number.isNaN(item.date.getTime()));
   if (phases.length) renderPhases(phases);
   setText('moon-source-status','USNO · actualitzat');
+}
+
+function solarPosition(date = new Date()) {
+  const rad=Math.PI/180;
+  const days=date.getTime()/86400000-.5+2440588-2451545;
+  const anomaly=rad*(357.5291+.98560028*days);
+  const longitude=anomaly+rad*(1.9148*Math.sin(anomaly)+.02*Math.sin(2*anomaly)+.0003*Math.sin(3*anomaly))+rad*102.9372+Math.PI;
+  const obliquity=rad*23.4397;
+  const declination=Math.asin(Math.sin(longitude)*Math.sin(obliquity));
+  const rightAscension=Math.atan2(Math.sin(longitude)*Math.cos(obliquity),Math.cos(longitude));
+  const latitude=CONFIG.station.latitude*rad;
+  const hourAngle=rad*(280.16+360.9856235*days)+CONFIG.station.longitude*rad-rightAscension;
+  const altitude=Math.asin(Math.sin(latitude)*Math.sin(declination)+Math.cos(latitude)*Math.cos(declination)*Math.cos(hourAngle));
+  const azimuth=Math.atan2(Math.sin(hourAngle),Math.cos(hourAngle)*Math.sin(latitude)-Math.tan(declination)*Math.cos(latitude));
+  return { elevation:altitude/rad, azimuth:(azimuth/rad+180+360)%360 };
+}
+
+function renderSun(forecast) {
+  const now=new Date();
+  const position=solarPosition(now);
+  setText('sun-elevation',format(position.elevation,1));
+  setText('sun-azimuth',format(position.azimuth,0));
+  setText('sun-status',position.elevation>10?`Sol alt cap al ${cardinal(position.azimuth)}`:position.elevation>0?`Sol baix cap al ${cardinal(position.azimuth)}`:`Sol sota l’horitzó · ${cardinal(position.azimuth)}`);
+  const sunrise=new Date(forecast?.daily?.sunrise?.[0]);
+  const sunset=new Date(forecast?.daily?.sunset?.[0]);
+  if (!Number.isNaN(sunrise.getTime())&&!Number.isNaN(sunset.getTime())) {
+    const solarNoon=new Date((sunrise.getTime()+sunset.getTime())/2);
+    const formatter=new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'});
+    setText('sunrise-time',formatter.format(sunrise)); setText('sunset-time',formatter.format(sunset)); setText('solar-noon',formatter.format(solarNoon));
+    const progress=clamp((now-sunrise)/(sunset-sunrise),0,1);
+    const progressBar=document.getElementById('day-progress'); if(progressBar)progressBar.style.width=`${progress*100}%`;
+    const orbit=document.getElementById('sun-orbit-marker');
+    if(orbit){orbit.style.left=`${progress*100}%`;orbit.style.bottom=`${Math.max(0,Math.sin(progress*Math.PI)*72)}%`;}
+  }
+}
+
+function seasonMeta(item) {
+  const month=Number(item.month);
+  if(month===3)return {season:'Primavera',label:'Equinocci de primavera',symbol:'🌱'};
+  if(month===6)return {season:'Estiu',label:'Solstici d’estiu',symbol:'☀'};
+  if(month===9)return {season:'Tardor',label:'Equinocci de tardor',symbol:'🍂'};
+  return {season:'Hivern',label:'Solstici d’hivern',symbol:'❄'};
+}
+
+function parseSeason(item) {
+  const month=Number(item.month); const day=Number(item.day); const year=Number(item.year);
+  const time=String(item.time||'00:00').match(/\d{1,2}:\d{2}/)?.[0]||'00:00';
+  const [hour,minute]=time.split(':').map(Number); const meta=seasonMeta({month});
+  return {...meta,date:new Date(Date.UTC(year,month-1,day,hour,minute))};
+}
+
+function renderSeasons(items) {
+  const sorted=items.filter(item=>item.date instanceof Date&&!Number.isNaN(item.date.getTime())).sort((a,b)=>a.date-b.date);
+  const now=Date.now();
+  const previous=[...sorted].reverse().find(item=>item.date.getTime()<=now)||sorted[0];
+  const next=sorted.find(item=>item.date.getTime()>now)||sorted.at(-1);
+  setText('current-season',previous?.season||'—');
+  if(previous&&next){
+    const progress=clamp((now-previous.date)/(next.date-previous.date),0,1);
+    setText('season-progress-copy',`${format(progress*100,0)}% del recorregut fins a ${next.season.toLowerCase()}`);
+    const gauge=document.getElementById('season-progress'); if(gauge)gauge.style.width=`${progress*100}%`;
+  }
+  const upcoming=sorted.filter(item=>item.date.getTime()>now).slice(0,4);
+  const container=document.getElementById('seasons-timeline'); if(!container)return;
+  container.innerHTML=upcoming.map((item,index)=>`<div class="season-item ${index===0?'is-next':''}"><i aria-hidden="true">${item.symbol}</i><div><b>${item.label}</b><small>${new Intl.DateTimeFormat(CONFIG.locale,{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(item.date)}</small></div></div>`).join('');
+}
+
+async function loadUsnoSeasons() {
+  const year=new Date().getUTCFullYear();
+  const responses=await Promise.all([year,year+1].map(value=>fetch(`https://aa.usno.navy.mil/api/seasons?year=${value}&ID=FONTAMET`,{cache:'no-store'})));
+  if(responses.some(response=>!response.ok))throw new Error('Estacions USNO no disponibles');
+  const payloads=await Promise.all(responses.map(response=>response.json()));
+  const items=payloads.flatMap(payload=>(payload?.data||[]).filter(item=>['Equinox','Solstice'].includes(item.phenom)).map(parseSeason));
+  const previousFallback=fallbackSeasons.filter(item=>item.date.getUTCFullYear()===year-1);
+  seasonsCache=[...previousFallback,...items];
+  renderSeasons(seasonsCache);
+  setText('season-source-status','USNO · actualitzat');
 }
 
 function renderEvents() {
@@ -137,6 +237,9 @@ export function renderAstronomy(forecast) {
   renderPhases(approximatePhases());
   renderEvents();
   renderNightQuality(forecast,moon);
+  renderSun(forecast);
+  renderSeasons(seasonsCache);
   setText('moon-source-status','Càlcul local');
   loadUsnoMoon().catch(error => console.warn('Efemèrides USNO no disponibles; s’utilitza el càlcul local.',error));
+  if(!seasonsRequested){seasonsRequested=true;loadUsnoSeasons().catch(error=>{seasonsRequested=false;console.warn('Estacions USNO no disponibles; s’utilitza el calendari local.',error);});}
 }

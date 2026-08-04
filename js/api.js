@@ -10,8 +10,8 @@ export async function fetchForecast() {
   const { latitude, longitude } = CONFIG.station;
   const params = new URLSearchParams({
     latitude, longitude,
-    hourly: 'temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,cloud_cover',
-    daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max,sunrise,sunset,daylight_duration,sunshine_duration',
+    hourly: 'temperature_2m,apparent_temperature,relative_humidity_2m,dew_point_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,cloud_cover,visibility,uv_index,is_day,shortwave_radiation',
+    daily: 'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max,sunrise,sunset,daylight_duration,sunshine_duration,uv_index_max',
     timezone: 'Europe/Madrid',
     forecast_days: '7'
   });
@@ -24,7 +24,7 @@ async function fetchModel(endpoint) {
   const { latitude, longitude } = CONFIG.station;
   const params = new URLSearchParams({
     latitude, longitude,
-    daily: 'temperature_2m_max,temperature_2m_min,precipitation_sum,wind_gusts_10m_max',
+    daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max',
     timezone: 'Europe/Madrid',
     forecast_days: '7'
   });

@@ -1,3 +1,5 @@
+import { calculateThermalIndices } from './confort.js';
+
 let charts = [];
 let sparklines = [];
 const palette = { grid: 'rgba(197,231,208,.07)', text: '#71877e', green: '#89d6a3', blue: '#77b7c8' };
@@ -8,9 +10,13 @@ function makeChart(canvas, labels, datasets, unit, showLegend = false) {
 }
 export function renderCharts(data, history = [], period='24h') {
   charts.forEach(c=>c?.destroy());
-  const duration = period==='24h'?86400000:period==='7d'?604800000:2592000000;
+  const duration = period==='24h'?86400000:period==='7d'?604800000:period==='30d'?2592000000:31536000000;
   let selected = history.filter(item => item.t >= Date.now() - duration);
   if (!selected.length) selected = [{t:Date.now(),temperature:Number(data.temperature)||20,pressure:Number(data.pressure)||1013}];
+  if (selected.length > 720) {
+    const step = Math.ceil(selected.length / 720);
+    selected = selected.filter((_,index)=>index % step === 0 || index === selected.length - 1);
+  }
   const labels=selected.map(item=>new Intl.DateTimeFormat('ca-ES',period==='24h'?{hour:'2-digit',minute:'2-digit'}:{day:'2-digit',month:'short'}).format(new Date(item.t)));
   const temps=selected.map(item=>item.temperature); const dewPoints=selected.map(item=>item.dewPoint); const pressures=selected.map(item=>item.pressure);
   const status=document.getElementById('history-status'); if(status) status.textContent=selected.length>1?`${selected.length} lectures reals`:'Recollint dades';
@@ -32,18 +38,21 @@ export function renderMetricSparklines(data, history = []) {
   const since = Date.now() - 86400000;
   const recent = history.filter(item => item.t >= since).slice(-24);
   const definitions = [
-    ['spark-temperature','temperature','Temperatura','°C',palette.green],
-    ['spark-humidity','humidity','Humitat','%',palette.blue],
-    ['spark-wind','windSpeed','Vent','km/h',palette.green],
-    ['spark-pressure','pressure','Pressió','hPa',palette.blue],
-    ['spark-rain-total','rainTotal','Pluja acumulada','mm',palette.blue],
-    ['spark-rain-rate','rainRate','Intensitat','mm/h',palette.blue],
-    ['spark-solar','solarRadiation','Radiació','W/m²','#e6c56c'],
-    ['spark-uv','uv','Índex UV','UV','#e6c56c']
+    ['spark-temperature',item=>item.temperature,'Temperatura','°C',palette.green],
+    ['spark-humidity',item=>item.humidity,'Humitat','%',palette.blue],
+    ['spark-wind',item=>item.windSpeed,'Vent','km/h',palette.green],
+    ['spark-pressure',item=>item.pressure,'Pressió','hPa',palette.blue],
+    ['spark-rain-total',item=>item.rainTotal,'Pluja acumulada','mm',palette.blue],
+    ['spark-rain-rate',item=>item.rainRate,'Intensitat','mm/h',palette.blue],
+    ['spark-solar',item=>item.solarRadiation,'Radiació','W/m²','#e6c56c'],
+    ['spark-uv',item=>item.uv,'Índex UV','UV','#e6c56c'],
+    ['spark-apparent',item=>calculateThermalIndices(item).apparent,'Sensació tèrmica','°C','#e6c56c'],
+    ['spark-humidex',item=>calculateThermalIndices(item).humidex,'Humidex','°C eq.','#e6c56c']
   ];
-  sparklines = definitions.map(([id,key,label,unit,color]) => {
-    let points = recent.map(item => ({t:item.t,value:Number(item[key])})).filter(item => Number.isFinite(item.value));
-    if (points.length < 2 && Number.isFinite(Number(data[key]))) points = [{t:Date.now()-300000,value:Number(data[key])},{t:Date.now(),value:Number(data[key])}];
+  sparklines = definitions.map(([id,getter,label,unit,color]) => {
+    let points = recent.map(item => ({t:item.t,value:Number(getter(item))})).filter(item => Number.isFinite(item.value));
+    const current = Number(getter(data));
+    if (points.length < 2 && Number.isFinite(current)) points = [{t:Date.now()-300000,value:current},{t:Date.now(),value:current}];
     return makeSparkline(document.getElementById(id), points, label, unit, color);
   }).filter(Boolean);
 }

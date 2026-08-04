@@ -1,4 +1,5 @@
 import { format, cardinal, setText, clamp, isNumber } from '../js/utils.js';
+import { calculateThermalIndices } from './confort.js';
 
 function interpret(data) {
   const t = Number(data.temperature), h = Number(data.humidity), wind = Number(data.windSpeed), rain = Number(data.rainRate);
@@ -51,8 +52,8 @@ function setLevel(key, value, min, max, label, level = 'good') {
   if (marker && isNumber(value)) marker.style.left = `${clamp((Number(value) - min) / (max - min) * 100, 0, 100)}%`;
 }
 
-function renderLevels(data) {
-  const feels = isNumber(data.feelsLike) ? Number(data.feelsLike) : NaN;
+function renderLevels(data, thermal) {
+  const feels = thermal.apparent;
   setLevel('temperature', feels, -5, 42, !isNumber(feels) ? 'Sense lectura' : feels < 5 ? 'Fred intens' : feels < 15 ? 'Ambient fresc' : feels < 27 ? 'Confortable' : feels < 32 ? 'Calor moderada' : feels < 38 ? 'Calor alta' : 'Calor extrema', !isNumber(feels) ? 'low' : feels < 15 ? 'low' : feels < 27 ? 'good' : feels < 32 ? 'moderate' : feels < 38 ? 'high' : 'extreme');
   const humidity = isNumber(data.humidity) ? Number(data.humidity) : NaN;
   setLevel('humidity', humidity, 0, 100, !isNumber(humidity) ? 'Sense lectura' : humidity < 30 ? 'Aire sec' : humidity <= 60 ? 'Rang confortable' : humidity <= 80 ? 'Ambient humit' : 'Humitat molt alta', !isNumber(humidity) ? 'low' : humidity < 30 ? 'moderate' : humidity <= 60 ? 'good' : humidity <= 80 ? 'moderate' : 'high');
@@ -71,10 +72,15 @@ function renderLevels(data) {
   const uvLabel = !isNumber(data.uv) ? 'Sense lectura' : uv < 3 ? 'Baix · protecció normal' : uv < 6 ? 'Moderat · protegeix-te' : uv < 8 ? 'Alt · evita el migdia' : uv < 11 ? 'Molt alt · màxima protecció' : 'Extrem · evita exposició';
   const uvLevel = !isNumber(data.uv) ? 'low' : uv < 3 ? 'good' : uv < 6 ? 'moderate' : uv < 8 ? 'high' : uv < 11 ? 'high' : 'extreme';
   setLevel('uv', uv, 0, 12, uvLabel, uvLevel);
+  const apparent = thermal.apparent;
+  setLevel('apparent', apparent, -5, 45, !isNumber(apparent) ? 'Sense lectura' : apparent < 5 ? 'Fred intens' : apparent < 15 ? 'Sensació fresca' : apparent < 27 ? 'Confortable' : apparent < 32 ? 'Calor perceptible' : apparent < 38 ? 'Calor intensa' : 'Estrès tèrmic', !isNumber(apparent) ? 'low' : apparent < 15 ? 'low' : apparent < 27 ? 'good' : apparent < 32 ? 'moderate' : apparent < 38 ? 'high' : 'extreme');
+  const humidex = thermal.humidex;
+  setLevel('humidex', humidex, 15, 50, !isNumber(humidex) ? 'Sense càlcul' : humidex < 30 ? 'Poc o gens molest' : humidex < 35 ? 'Xafogor moderada' : humidex < 40 ? 'Xafogor marcada' : humidex < 45 ? 'Gran incomoditat' : 'Perill per calor', !isNumber(humidex) ? 'low' : humidex < 30 ? 'good' : humidex < 35 ? 'moderate' : humidex < 40 ? 'high' : 'extreme');
 }
 
 export function renderStation(data, context = {}) {
-  setText('temperature', format(data.temperature, 1)); setText('metric-temperature', format(data.temperature, 1)); setText('feels-like', `${format(data.feelsLike, 1)} °C`);
+  const thermal = calculateThermalIndices(data);
+  setText('temperature', format(data.temperature, 1)); setText('metric-temperature', format(data.temperature, 1)); setText('feels-like', `${format(thermal.apparent, 1)} °C`);
   setText('humidity', format(data.humidity)); setText('dew-point', `${format(data.dewPoint, 1)} °C`); setText('wind-speed', format(data.windSpeed, 1)); setText('wind-gust', `${format(data.windGust, 1)} km/h`);
   setText('wind-direction', cardinal(data.windDirection)); setText('pressure', format(data.pressure, 1)); setText('rain-today', format(data.rainToday, 1)); setText('rain-rate', format(data.rainRate, 1));
   setText('rain-reading', Number(data.rainRate) > 0 ? 'Precipitació activa' : 'Sense precipitació');
@@ -85,15 +91,17 @@ export function renderStation(data, context = {}) {
   setText('temp-max', `${format(context.stats?.maxTemperature ?? data.temperature, 1)}°`); setText('temp-min', `${format(context.stats?.minTemperature ?? data.temperature, 1)}°`);
   renderTrend('temp-trend', data.temperature, context.previous?.temperature, '°'); renderTrend('pressure-trend', data.pressure, context.previous?.pressure, ' hPa'); renderTrend('chart-pressure-trend', data.pressure, context.previous?.pressure, ' hPa'); renderTrend('wind-trend', data.windSpeed, context.previous?.windSpeed, ' km/h');
   const [title, copy] = interpret(data); setText('quick-title', title); setText('quick-copy', copy); setText('condition-label', Number(data.rainRate) > 0 ? 'Pluja a l’observatori' : Number(data.windSpeed) > 15 ? 'Vent moderat' : 'Observació en directe');
-  const humidityBar = document.getElementById('humidity-bar'); if (humidityBar) humidityBar.style.width = `${clamp(Number(data.humidity), 0, 100)}%`;
-  const comfort = document.getElementById('comfort-meter'); if (comfort) comfort.style.width = `${clamp(100 - Math.abs(Number(data.feelsLike) - 22) * 5, 15, 100)}%`;
-  const marker = document.getElementById('pressure-marker'); if (marker) marker.style.left = `${clamp((Number(data.pressure) - 980) / .65, 0, 100)}%`;
+  const comfort = document.getElementById('comfort-meter'); if (comfort) comfort.style.width = `${isNumber(thermal.apparent)?clamp(100 - Math.abs(thermal.apparent - 22) * 5, 15, 100):0}%`;
   const arrow = document.getElementById('wind-arrow'); if (arrow && isNumber(data.windDirection)) arrow.style.transform = `rotate(${Number(data.windDirection)}deg)`;
   setText('pressure-reading', Number(data.pressure) >= 1015 ? 'Pressió alta' : Number(data.pressure) < 1005 ? 'Pressió baixa' : 'Pressió normal');
   const calculated = derivedValues(data);
   setText('wet-bulb', format(calculated.wetBulb, 1)); setText('vpd', format(calculated.vpd, 2)); setText('cloud-base', format(calculated.cloudBase, 0)); setText('absolute-humidity', format(calculated.absoluteHumidity, 1));
   setText('vpd-reading', !isNumber(calculated.vpd) ? 'Dada no calculable' : calculated.vpd < .4 ? 'Aire gairebé saturat' : calculated.vpd < 1.2 ? 'Demanda baixa o moderada' : calculated.vpd < 2 ? 'Aire força sec' : 'Demanda evaporativa alta');
   const windForce = beaufort(data.windSpeed); setText('beaufort', `${windForce.force} · ${windForce.label}`); setText('beaufort-reading', `${format(data.windSpeed, 1)} km/h segons l’escala Beaufort`);
-  renderLevels(data);
+  setText('apparent-temperature',format(thermal.apparent,1));
+  setText('apparent-reading',Number(data.temperature) <= 10 && Number(data.windSpeed) > 4.8 ? 'Inclou l’efecte de refredament del vent' : Number(data.temperature) >= 26 ? 'Inclou l’efecte de calor i humitat' : 'Combina temperatura, humitat i vent');
+  setText('humidex',format(thermal.humidex,1));
+  setText('humidex-reading',!isNumber(thermal.humidex) ? 'Cal temperatura i punt de rosada' : thermal.humidex < 30 ? 'Poc o gens de malestar per xafogor' : thermal.humidex < 40 ? 'La humitat accentua clarament la calor' : 'Condicions exigents: redueix l’exposició');
+  renderLevels(data,thermal);
   const webcam = document.getElementById('webcam-image'); if (webcam) webcam.src = `${data.webcam}?t=${Date.now()}`;
 }
