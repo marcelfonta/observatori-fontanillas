@@ -26,7 +26,7 @@
         <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span>
       </a>
       <nav class="nav" aria-label="Navegació principal">
-        <a class="is-active" href="#ara">Ara</a><a href="#prediccio">Predicció</a><a href="#tendencies">Tendències</a><a href="#cel-nocturn">Cel nocturn</a><a href="#territori">Radar</a><a href="#contacte">Contacte</a>
+        <a class="is-active" href="#ara">Ara</a><a href="#avisos">Avisos</a><a href="#prediccio">Predicció</a><a href="#tendencies">Tendències</a><a href="#cel-nocturn">Cel nocturn</a><a href="#territori">Radar</a><a href="#contacte">Contacte</a>
       </nav>
       <div class="live-pill"><span></span><b id="connection-label">Connectant</b><time id="header-time">--:--</time></div>
     </header>
@@ -109,6 +109,38 @@
         </section>
       </section>
 
+      <section id="avisos" class="alerts-section section-block" aria-labelledby="alerts-title">
+        <div class="section-heading alerts-heading">
+          <div><p class="eyebrow">Vigilància oficial</p><h2 id="alerts-title">Avisos que poden afectar Sant Celoni</h2><p>Seguiment del Vallès Oriental i del prelitoral de Barcelona amb fonts oficials.</p></div>
+          <span class="tag">Meteocat · AEMET</span>
+        </div>
+        <div class="alerts-layout">
+          <article class="alerts-map panel" aria-labelledby="alerts-map-title">
+            <header><div><span id="alerts-map-title">Mapa de perill a Catalunya</span><small>Situacions Meteorològiques de Perill vigents</small></div><a href="https://www.meteo.cat/prediccio/perill" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></header>
+            <div class="alerts-map__frame">
+              <iframe src="https://static-m.meteo.cat/ginys/mapaAvisos?language=ca&amp;color=2c3e50&amp;target=_blank" title="Mapa oficial d’avisos meteorològics de Meteocat" frameborder="0" scrolling="no" width="297" height="525" loading="lazy"></iframe>
+            </div>
+            <p class="alerts-map__hint"><span>i</span> Selecciona el dia al mateix giny i toca una comarca per consultar-ne el detall.</p>
+          </article>
+          <article class="alerts-local panel" aria-labelledby="alerts-local-title">
+            <div><p class="eyebrow">Lectura de proximitat</p><h3 id="alerts-local-title">Dues zones que cal vigilar</h3><p class="alerts-local__intro">Sant Celoni pertany al Vallès Oriental. AEMET agrupa aquesta àrea dins del Prelitoral de Barcelona; per això convé contrastar tots dos àmbits quan hi ha temps advers.</p></div>
+            <div class="alert-areas">
+              <a href="https://www.meteo.cat/prediccio/perill" target="_blank" rel="noreferrer"><span>Meteocat · comarca</span><strong>Vallès Oriental</strong><small>Perill per intervals de 6 hores ↗</small></a>
+              <a href="https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&amp;w=hoy" target="_blank" rel="noreferrer"><span>AEMET · zona</span><strong>Prelitoral de Barcelona</strong><small>Avisos oficials d’avui ↗</small></a>
+            </div>
+            <div class="alert-scale" aria-label="Escala de perill de Meteocat">
+              <div class="alert-scale__head"><span>Com llegir l’escala de Meteocat</span><small>Grau màxim previst</small></div>
+              <div class="alert-level alert-level--none"><i></i><span><b>Sense perill</b><small>Cap llindar previst</small></span><strong>0</strong></div>
+              <div class="alert-level alert-level--moderate"><i></i><span><b>Perill moderat</b><small>Situació a seguir</small></span><strong>1–2</strong></div>
+              <div class="alert-level alert-level--high"><i></i><span><b>Perill alt</b><small>Cal extremar la prudència</small></span><strong>3–4</strong></div>
+              <div class="alert-level alert-level--very-high"><i></i><span><b>Perill molt alt</b><small>Impacte potencial important</small></span><strong>5–6</strong></div>
+            </div>
+            <div class="alerts-safety"><span aria-hidden="true">!</span><p><b>En una situació adversa</b> consulta el detall oficial actualitzat i segueix les indicacions de Protecció Civil i del 112.</p></div>
+          </article>
+        </div>
+        <p class="alerts-note"><span>i</span> Aquest bloc mostra directament el servei oficial de Meteocat. L’Observatori no modifica ni interpreta automàticament els avisos.</p>
+      </section>
+
       <section id="prediccio" class="forecast-section section-block" aria-labelledby="forecast-title">
         <div class="section-heading forecast-heading">
           <div><p class="eyebrow">Centre de predicció</p><h2 id="forecast-title">Com evolucionarà el temps?</h2></div>
@@ -154,13 +186,13 @@
             </div>
             <div class="source-panel" data-source-panel="meteoblue">
               <div class="source-official source-meteoblue">
-                <header><div><span>Meteoblue · previsió cada 3 hores</span><small>4 dies · evolució detallada · giny oficial en mode fosc</small></div><a href="https://www.meteoblue.com/en/weather/week/sant-celoni_spain_3110813" target="_blank" rel="noreferrer">Obrir Meteoblue ↗</a></header>
+                <header><div><span>Meteoblue · previsió cada 3 hores</span><small>4 dies · evolució detallada · fons meteorològic oficial</small></div><a href="https://www.meteoblue.com/en/weather/week/sant-celoni_spain_3110813" target="_blank" rel="noreferrer">Obrir Meteoblue ↗</a></header>
                 <div class="source-meteoblue__body">
                   <div class="source-meteoblue__widget">
-                    <iframe src="https://www.meteoblue.com/en/weather/widget/three/sant-celoni_spain_3110813?geoloc=fixed&amp;nocurrent=0&amp;noforecast=0&amp;tempunit=CELSIUS&amp;windunit=KILOMETER_PER_HOUR&amp;days=4&amp;layout=dark&amp;user_key=7bcce446b2dbccba&amp;embed_key=f0ed4a278980fffc&amp;sig=423032c3d46ce23b46fdaa85917edb00a0c8e5aa49d4a7afc70fbca09720c4e9" frameborder="0" scrolling="NO" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox" style="width: 460px;height: 570px;border: 0;overflow: hidden;" title="Previsió Meteoblue cada 3 hores per a Sant Celoni" loading="lazy"></iframe>
+                    <iframe src="https://www.meteoblue.com/en/weather/widget/three/sant-celoni_spain_3110813?geoloc=fixed&amp;nocurrent=0&amp;noforecast=0&amp;tempunit=CELSIUS&amp;windunit=KILOMETER_PER_HOUR&amp;days=4&amp;layout=image&amp;user_key=7bcce446b2dbccba&amp;embed_key=8e189cda662c23e4&amp;sig=5c1cf8a111d598387ce588a8973dcc03375477a51238981b7e9430997bcabeb0" frameborder="0" scrolling="NO" allowtransparency="true" sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox" style="width: 460px;height: 570px;border: 0;overflow: hidden;" title="Previsió Meteoblue cada 3 hores per a Sant Celoni" loading="lazy"></iframe>
                     <div class="source-meteoblue__credit"><!-- DO NOT REMOVE THIS LINK --><a href="https://www.meteoblue.com/en/weather/week/index" target="_blank" rel="noopener">meteoblue</a></div>
                   </div>
-                  <aside class="source-summary" aria-label="Què aporta Meteoblue"><span class="source-summary__label">Què aporta</span><h4>Detall cada tres hores</h4><div class="source-summary__grid"><span><b>4 dies</b><small>Horitzó detallat</small></span><span><b>Pas de 3 h</b><small>Evolució temporal</small></span><span><b>Mode fosc</b><small>Integració visual</small></span></div><p>Una cinquena mirada especialment útil per veure com canvien la temperatura, la precipitació i el vent al llarg de cada jornada.</p></aside>
+                  <aside class="source-summary" aria-label="Què aporta Meteoblue"><span class="source-summary__label">Què aporta</span><h4>Detall cada tres hores</h4><div class="source-summary__grid"><span><b>4 dies</b><small>Horitzó detallat</small></span><span><b>Pas de 3 h</b><small>Evolució temporal</small></span><span><b>Fons integrat</b><small>Lectura visual</small></span></div><p>Una cinquena mirada especialment útil per veure com canvien la temperatura, la precipitació i el vent al llarg de cada jornada.</p></aside>
                 </div>
               </div>
             </div>

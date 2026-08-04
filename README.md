@@ -1,6 +1,6 @@
 # Observatori Meteorològic Fontanillas
 
-Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, sensació tèrmica i Humidex, extrems i tendències reals de Weather Underground, sis famílies de gràfiques de fins a un any, predicció de 48 hores i 7 dies amb hores de llum i sol previst, comparació de cinc fonts fiables, visor temporal de models, radar animat i Meteocat, astronomia solar i nocturna, webcam i contacte privat.
+Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, sensació tèrmica i Humidex, extrems i tendències reals de Weather Underground, sis famílies de gràfiques de fins a un any, avisos oficials de proximitat, predicció de 48 hores i 7 dies amb hores de llum i sol previst, comparació de cinc fonts fiables, visor temporal de models, radar animat i Meteocat, astronomia solar i nocturna, webcam i contacte privat.
 
 ## Posada en marxa
 
@@ -35,12 +35,18 @@ Les escales de color de les targetes són interpretatives: descriuen confort, in
 - AEMET: giny municipal oficial configurat en català amb cel, temperatura, sensació tèrmica, pluja, humitat, vent i avisos, més accessos a les taules horàries i de 7 dies.
 - eltiempo.es: giny oficial complet per a Sant Celoni, configurat en català, graus Celsius i vent en km/h.
 - Yr / MET Norway: giny oficial fosc de 8 dies per a Sant Celoni amb temperatura, precipitació i vent.
-- Meteoblue: giny oficial fosc amb previsió cada 3 hores durant 4 dies, generat per a Sant Celoni i conservat amb l’enllaç d’atribució obligatori.
+- Meteoblue: giny oficial amb fons meteorològic i previsió cada 3 hores durant 4 dies, generat per a Sant Celoni i conservat amb l’enllaç d’atribució obligatori.
 - Ventusky: visor cartogràfic inserit amb línia temporal, capes i canvi entre GFS, ICON i GEM. ECMWF es manté disponible mitjançant el visor extern identificat.
 - RainViewer: mapa de radar interactiu amb les imatges disponibles de les dues últimes hores.
 - AEMET Barcelona–Gelida: accés directe per contrastar el radar oficial.
 
-Els recursos oficials es mostren en pestanyes perquè el seu disseny extern no trenqui la lectura general del dashboard. Els contenidors de Meteocat i AEMET adapten l’alçada al contingut útil per eliminar grans franges blanques, mentre que eltiempo.es combina el giny amb un resum visual. Meteocat ofereix dades horàries riques dins del seu propi giny, però el navegador no pot remaquetar el contingut d’un iframe extern. AEMET OpenData necessita una clau d’API per construir una taula nativa, i eltiempo.es no ofereix una API pública equivalent al seu giny. Per això el projecte conserva els ginys i enllaços oficials, sense scraping ni dades simulades.
+## Avisos meteorològics
+
+El bloc de vigilància mostra directament el giny oficial de Situacions Meteorològiques de Perill de Meteocat. La lectura de proximitat identifica els dos àmbits de referència de Sant Celoni: el Vallès Oriental a Meteocat i el Prelitoral de Barcelona a AEMET. També incorpora l’escala de perill de Meteocat i accessos directes a les dues fonts oficials.
+
+Els avisos no es reinterpreten ni es converteixen en un estat propi del dashboard, perquè provenen de serveis externs i poden canviar ràpidament. En cas de temps advers cal consultar el detall oficial i seguir les indicacions de Protecció Civil i del 112. No cal modificar el Worker ni afegir cap clau per utilitzar aquest bloc.
+
+Els recursos oficials es mostren en pestanyes perquè el seu disseny extern no trenqui la lectura general del dashboard. Els contenidors de Meteocat i AEMET adapten l’alçada al contingut útil per eliminar grans franges blanques, mentre que eltiempo.es combina el giny amb un resum visual. En la vista horària de Meteocat també s’ajusta l’amplada al contingut real, i Meteoblue rep un fons fosc propi perquè el seu tema transparent sigui llegible. Meteocat ofereix dades horàries riques dins del seu propi giny, però el navegador no pot remaquetar el contingut d’un iframe extern. AEMET OpenData necessita una clau d’API per construir una taula nativa, i eltiempo.es no ofereix una API pública equivalent al seu giny. Per això el projecte conserva els ginys i enllaços oficials, sense scraping ni dades simulades.
 
 ## Astronomia local
 
@@ -75,7 +81,8 @@ data/                Catàlegs i dades estàtiques futures
 4. Visor temporal Ventusky, taula diària navegable ECMWF/GFS/ICON, animació RainViewer predeterminada i radar oficial Meteocat alternatiu.
 5. Posició del Sol, hora solar, Lluna, qualitat nocturna, equinoccis, solsticis i esdeveniments observables.
 6. Formulari de contacte sense publicar la bústia privada.
-7. Escales interpretatives i explicacions pedagògiques dels valors calculats.
+7. Avisos oficials de Meteocat i accés local d’AEMET per al Vallès Oriental i el Prelitoral de Barcelona.
+8. Escales interpretatives i explicacions pedagògiques dels valors calculats.
 
 ## Desplegament a Cloudflare Pages
 
@@ -87,7 +94,7 @@ data/                Catàlegs i dades estàtiques futures
 
 ```bash
 git add .
-git commit -m "Publica la versió 4.8 del dashboard"
+git commit -m "Publica la versió 5.0 del dashboard"
 git push origin main
 ```
 
