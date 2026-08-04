@@ -20,7 +20,7 @@ export function renderCharts(data, history = [], period='24h') {
   const labels=selected.map(item=>new Intl.DateTimeFormat('ca-ES',period==='24h'?{hour:'2-digit',minute:'2-digit'}:{day:'2-digit',month:'short'}).format(new Date(item.t)));
   const temps=selected.map(item=>item.temperature); const dewPoints=selected.map(item=>item.dewPoint); const pressures=selected.map(item=>item.pressure);
   const humidity=selected.map(item=>item.humidity); const wind=selected.map(item=>item.windSpeed); const gusts=selected.map(item=>item.windGust);
-  const rainTotal=selected.map(item=>item.rainTotal); const rainRate=selected.map(item=>item.rainRate); const solar=selected.map(item=>item.solarRadiation); const uv=selected.map(item=>item.uv);
+  const rainTotal=selected.map(item=>item.rainTotal); const rainRate=selected.map(item=>item.rainRate); const uv=selected.map(item=>item.uv);
   const status=document.getElementById('history-status'); if(status) status.textContent=selected.length>1?`${selected.length} lectures reals`:'Recollint dades';
   charts=[
     makeChart(document.getElementById('temperature-chart'),labels,[{label:'Temperatura',data:temps,borderColor:palette.green,backgroundColor:`${palette.green}16`,fill:true},{label:'Punt de rosada',data:dewPoints,borderColor:palette.blue,backgroundColor:'transparent',borderDash:[5,5],fill:false}],'°C',true),
@@ -28,7 +28,6 @@ export function renderCharts(data, history = [], period='24h') {
     makeChart(document.getElementById('humidity-chart'),labels,[{label:'Humitat',data:humidity,borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true}],' %'),
     makeChart(document.getElementById('wind-chart'),labels,[{label:'Vent mitjà',data:wind,borderColor:palette.green,backgroundColor:`${palette.green}12`,fill:true},{label:'Ratxa',data:gusts,borderColor:palette.amber,backgroundColor:'transparent',borderDash:[5,5],fill:false}],' km/h',true),
     makeChart(document.getElementById('rain-chart'),labels,[{label:'Acumulada',data:rainTotal,unit:'mm',borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true},{label:'Intensitat',data:rainRate,unit:'mm/h',borderColor:palette.violet,backgroundColor:'transparent',borderDash:[5,5],fill:false}],' mm',true),
-    makeChart(document.getElementById('solar-chart'),labels,[{label:'Radiació',data:solar,borderColor:palette.amber,backgroundColor:`${palette.amber}16`,fill:true}],' W/m²'),
     makeChart(document.getElementById('uv-chart'),labels,[{label:'Índex UV',data:uv,borderColor:palette.coral,backgroundColor:`${palette.coral}16`,fill:true}],' UV')
   ].filter(Boolean);
 }

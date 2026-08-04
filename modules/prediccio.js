@@ -17,7 +17,6 @@ const maxIndex = values => values.reduce((best,value,index)=>Number(value)>Numbe
 const hours = seconds => (Number(seconds)||0)/3600;
 let modelPayload = null;
 let modelDayIndex = 1;
-let sourceForecast = null;
 let sourceHorizon = 'hourly';
 
 function weather(code) { return codes[code] || ['◌','Variable']; }
@@ -99,39 +98,13 @@ export function renderModelComparison(payload) {
   renderModelDay();
 }
 
-function renderSourceOpenMeteo() {
-  const container=document.getElementById('source-openmeteo');
-  if(!container||!sourceForecast)return;
-  if(sourceHorizon==='daily'){
-    const daily=sourceForecast.daily||{};
-    container.innerHTML=`<div class="source-native-grid">${(daily.time||[]).map((value,index)=>{const [symbol,label]=weather(daily.weather_code?.[index]);return `<article><time>${index===0?'Avui':dayName(new Date(value))}</time><i>${symbol}</i><b>${label}</b><strong>${format(daily.temperature_2m_max?.[index],0)}° <small>${format(daily.temperature_2m_min?.[index],0)}°</small></strong><div class="source-native-meta"><span><b>${format(daily.precipitation_probability_max?.[index],0)}%</b> pluja · ${format(daily.precipitation_sum?.[index],1)} mm</span><span>Ratxa ${format(daily.wind_gusts_10m_max?.[index],0)} km/h</span><span>${format(hours(daily.daylight_duration?.[index]),1)} h llum · ${format(hours(daily.sunshine_duration?.[index]),1)} h sol</span></div></article>`;}).join('')}</div>`;
-    return;
-  }
-  const now=Date.now(); const hourly=sourceForecast.hourly||{}; let start=(hourly.time||[]).findIndex(value=>new Date(value).getTime()>=now-1800000); if(start<0)start=0;
-  const indexes=Array.from({length:17},(_,index)=>start+index*3).filter(index=>hourly.time?.[index]);
-  container.innerHTML=`<div class="source-native-grid source-native-grid--hourly">${indexes.map((index,position)=>{const [symbol,label]=weather(hourly.weather_code?.[index]);return `<article><time>${timelineLabel(new Date(hourly.time[index]),position)}</time><i>${symbol}</i><b>${label}</b><strong>${format(hourly.temperature_2m?.[index],0)}° <small>${format(hourly.apparent_temperature?.[index],0)}°</small></strong><div class="source-native-meta"><span><b>${format(hourly.precipitation_probability?.[index],0)}%</b> pluja · ${format(hourly.precipitation?.[index],1)} mm</span><span>Vent ${format(hourly.wind_speed_10m?.[index],0)} · ratxa ${format(hourly.wind_gusts_10m?.[index],0)} km/h</span><span>Humitat ${format(hourly.relative_humidity_2m?.[index],0)}%</span></div></article>`;}).join('')}</div>`;
-}
-
 function updateSourceHorizon() {
-  renderSourceOpenMeteo();
   const meteocat=document.getElementById('source-meteocat-frame');
   if(meteocat) {
     meteocat.src=sourceHorizon==='hourly'?'https://static-m.meteo.cat/ginys/municipal72h?location=082021&language=ca&color=0f2a22&tempFormat=%20%C2%BAC&windSpeedFormat=km/h&mainChart=estCel&secondaryChart=true&target=_blank':'https://static-m.meteo.cat/ginys/municipal8d?location=082021&language=ca&color=0f2a22&tempFormat=%20%C2%BAC&target=_blank';
   }
   setText('source-meteocat-title',sourceHorizon==='hourly'?'Meteocat · pròximes 72 hores':'Meteocat · previsió de 8 dies');
   setText('source-meteocat-copy',sourceHorizon==='hourly'?'Cel, temperatura, precipitació, humitat, xafogor i vent per hores':'Símbol, màxima, mínima i probabilitat de precipitació per dia');
-}
-
-export function renderFourLookComparison({best}) {
-  sourceForecast=best;
-  renderSourceOpenMeteo();
-  setText('four-look-status','4 fonts actives');
-}
-
-export function renderFourLookError() {
-  setText('four-look-status','Fonts oficials');
-  const container=document.getElementById('source-openmeteo');
-  if(container)container.innerHTML='<div class="forecast-loading">Open-Meteo no està disponible ara mateix. Les fonts oficials continuen accessibles a les altres pestanyes.</div>';
 }
 
 export function initForecastControls() {

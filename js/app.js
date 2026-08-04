@@ -5,7 +5,7 @@ import { renderStation } from '../modules/estacio.js';
 import { renderCharts, renderMetricSparklines } from '../modules/grafiques.js';
 import { initWebcam } from '../modules/webcams.js';
 import { recordReading, normalizeRemoteHistory, summarizeRemoteHistory } from '../modules/historics.js';
-import { renderForecast, renderForecastError, renderModelComparison, renderModelError, renderFourLookComparison, renderFourLookError, initForecastControls } from '../modules/prediccio.js';
+import { renderForecast, renderForecastError, renderModelComparison, renderModelError, initForecastControls } from '../modules/prediccio.js';
 import { renderSummary, renderSummaryFallback } from '../modules/resum.js';
 import { initContact } from '../modules/contacte.js';
 import { initRadar } from '../modules/radar.js';
@@ -19,12 +19,22 @@ let latestHistory = [];
 let historyFetchedAt = 0;
 
 function updateClock(){ setText('header-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date())); }
+function setBrandFavicon(){
+  const canvas=document.createElement('canvas'); canvas.width=64; canvas.height=64;
+  const ctx=canvas.getContext('2d'); if(!ctx)return;
+  ctx.fillStyle='#0b1b17'; ctx.beginPath(); ctx.roundRect(2,2,60,60,15); ctx.fill();
+  ctx.strokeStyle='rgba(197,231,208,.35)'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='#e6c56c'; ctx.beginPath(); ctx.arc(46,18,7,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#4f8f6b'; ctx.beginPath(); ctx.moveTo(7,49); ctx.lineTo(25,23); ctx.lineTo(38,41); ctx.lineTo(46,32); ctx.lineTo(59,49); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#89d6a3'; ctx.beginPath(); ctx.moveTo(8,51); ctx.lineTo(29,30); ctx.lineTo(42,51); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#77b7c8'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(10,53); ctx.lineTo(20,53); ctx.lineTo(24,47); ctx.lineTo(29,56); ctx.lineTo(35,53); ctx.lineTo(54,53); ctx.stroke();
+  const link=document.getElementById('site-favicon'); if(link)link.href=canvas.toDataURL('image/png');
+}
 function setUpdated(value){ const date=value?new Date(String(value).replace(' ','T')):new Date(); const safe=Number.isNaN(date.getTime())?new Date():date; setText('updated-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(safe)); setText('webcam-time',`Captura ${new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(new Date())}`); const mins=Math.max(0,Math.round((Date.now()-safe.getTime())/60000)); setText('updated-relative',mins<2?'ara mateix':`fa ${mins} min`); }
 async function loadForecastSuite(){
   const [forecastResult,modelsResult]=await Promise.allSettled([fetchForecast(),fetchModelComparison()]);
   if(forecastResult.status==='fulfilled'){renderForecast(forecastResult.value);renderAstronomy(forecastResult.value);}else{renderForecastError();renderAstronomy(null);}
   if(modelsResult.status==='fulfilled')renderModelComparison(modelsResult.value);else renderModelError();
-  if(forecastResult.status==='fulfilled')renderFourLookComparison({best:forecastResult.value});else renderFourLookError();
 }
 
 async function loadHistory(){
@@ -62,4 +72,4 @@ async function load(){
 }
 const periodLabels={ '24h':'Lectures de les últimes 24 hores','7d':'Evolució dels últims 7 dies','30d':'Evolució dels últims 30 dies','1y':'Evolució de l’últim any disponible' };
 document.querySelectorAll('[data-period]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-period]').forEach(b=>b.classList.remove('is-active'));button.classList.add('is-active');setText('evolution-period-copy',periodLabels[button.dataset.period]||'Històric disponible');renderCharts(latest,latestHistory,button.dataset.period);}));
-initWebcam(); initContact(); initForecastControls(); initExtremeControls(); initModelViewer(); initRadar(); updateClock(); setInterval(updateClock,1000); load(); setInterval(load,CONFIG.refreshMs);
+setBrandFavicon(); initWebcam(); initContact(); initForecastControls(); initExtremeControls(); initModelViewer(); initRadar(); updateClock(); setInterval(updateClock,1000); load(); setInterval(load,CONFIG.refreshMs);

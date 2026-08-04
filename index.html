@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#07110f" />
     <meta name="description" content="Dades meteorològiques en directe des de Sant Celoni, als peus del Montseny." />
-    <title>Observatori Fontanillas · Montseny</title>
+    <title>Observatori Fontanillas · Sant Celoni</title>
+    <link rel="icon" id="site-favicon" type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
@@ -21,8 +22,8 @@
     <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
     <header class="site-header shell">
       <a class="brand" href="#top" aria-label="Observatori Fontanillas, inici">
-        <span class="brand__mark" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span><strong>Observatori</strong><small>Fontanillas · Montseny</small></span>
+        <span class="brand__mark" aria-hidden="true"><i class="brand__sun"></i><i class="brand__ridge brand__ridge--back"></i><i class="brand__ridge brand__ridge--front"></i><i class="brand__data"></i></span>
+        <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span>
       </a>
       <nav class="nav" aria-label="Navegació principal">
         <a class="is-active" href="#ara">Ara</a><a href="#prediccio">Predicció</a><a href="#tendencies">Tendències</a><a href="#cel-nocturn">Cel nocturn</a><a href="#territori">Radar</a><a href="#contacte">Contacte</a>
@@ -126,15 +127,13 @@
         <div class="forecast-subheading"><div><span>Previsió de 7 dies</span><small>Màximes, mínimes, pluja, vent i hores de llum</small></div></div>
         <div class="daily-forecast" id="daily-forecast" aria-live="polite"><div class="forecast-loading">Preparant la previsió diària…</div></div>
         <section class="official-forecast panel" aria-labelledby="official-forecast-title">
-          <header><div><p class="eyebrow">Quatre fonts de consulta</p><h3 id="official-forecast-title">Open-Meteo · Meteocat · AEMET · eltiempo.es</h3><p>Canvia de font i d’horitzó. Quan existeix un giny oficial, es mostra directament sense copiar ni alterar les dades.</p></div><span class="tag" id="four-look-status">Fonts oficials</span></header>
+          <header><div><p class="eyebrow">Tres fonts oficials</p><h3 id="official-forecast-title">Meteocat · AEMET · eltiempo.es</h3><p>Compara les fonts oficials sense repetir la previsió Open‑Meteo que ja tens just a sobre.</p></div><span class="tag" id="four-look-status">3 fonts oficials</span></header>
           <div class="source-viewer__toolbar">
-            <div class="source-tabs" role="tablist" aria-label="Font de predicció"><button class="is-active" type="button" data-source-tab="openmeteo">Open-Meteo</button><button type="button" data-source-tab="meteocat">Meteocat</button><button type="button" data-source-tab="aemet">AEMET</button><button type="button" data-source-tab="eltiempo">eltiempo.es</button></div>
-            <div class="source-horizon" role="group" aria-label="Horitzó de predicció"><button class="is-active" type="button" data-source-horizon="hourly">Per hores</button><button type="button" data-source-horizon="daily">Per dies</button></div>
+            <div class="source-tabs" role="tablist" aria-label="Font de predicció"><button class="is-active" type="button" data-source-tab="meteocat">Meteocat</button><button type="button" data-source-tab="aemet">AEMET</button><button type="button" data-source-tab="eltiempo">eltiempo.es</button></div>
           </div>
           <div class="source-viewer">
-            <div class="source-panel is-active" data-source-panel="openmeteo"><div class="source-native" id="source-openmeteo"><div class="forecast-loading">Preparant la previsió Open-Meteo…</div></div></div>
-            <div class="source-panel" data-source-panel="meteocat"><div class="source-official"><header><div><span id="source-meteocat-title">Meteocat · pròximes 72 hores</span><small id="source-meteocat-copy">Cel, temperatura, precipitació, humitat, xafogor i vent per hores</small></div><a href="https://www.meteo.cat/prediccio/municipal/082021" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></header><div class="source-official__frame source-official__frame--meteocat"><iframe id="source-meteocat-frame" title="Predicció oficial de Meteocat per a Sant Celoni" loading="lazy" src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=0f2a22&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe></div></div></div>
-            <div class="source-panel" data-source-panel="aemet"><div class="source-official"><header><div><span>AEMET · giny municipal complet</span><small>4 dies · cel, temperatures, sensació, pluja, humitat, vent i avisos</small></div><div class="source-official__links"><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202" target="_blank" rel="noreferrer">48 h per hores ↗</a><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/sant-celoni-id08202" target="_blank" rel="noreferrer">7 dies ↗</a></div></header><div class="source-official__frame source-official__frame--aemet"><iframe name="iframe_aemet_id33044" tabindex="0" id="source-aemet-frame" title="Predicció municipal completa d’AEMET per a Sant Celoni" src="https://www.aemet.es/ca/eltiempo/prediccion/municipios/mostrarwidget/sant-celoni-id08202?w=g4p111111110ohmffffffx4f86d9t95b6e9r1s4n2" loading="lazy" scrolling="no"></iframe></div></div></div>
+            <div class="source-panel is-active" data-source-panel="meteocat"><div class="source-official"><header><div><span id="source-meteocat-title">Meteocat · pròximes 72 hores</span><small id="source-meteocat-copy">Cel, temperatura, precipitació, humitat, xafogor i vent per hores</small></div><div class="source-official__actions"><div class="source-horizon" role="group" aria-label="Horitzó de Meteocat"><button class="is-active" type="button" data-source-horizon="hourly">Per hores</button><button type="button" data-source-horizon="daily">Per dies</button></div><a href="https://www.meteo.cat/prediccio/municipal/082021" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></div></header><div class="source-official__frame source-official__frame--meteocat"><iframe id="source-meteocat-frame" title="Predicció oficial de Meteocat per a Sant Celoni" loading="lazy" src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=0f2a22&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe></div></div></div>
+            <div class="source-panel" data-source-panel="aemet"><div class="source-official"><header><div><span>AEMET · giny municipal complet</span><small>4 dies · cel, temperatures, sensació, pluja, humitat, vent i avisos</small></div><div class="source-official__links"><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202" target="_blank" rel="noreferrer">48 h per hores ↗</a><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/sant-celoni-id08202" target="_blank" rel="noreferrer">7 dies ↗</a></div></header><div class="source-official__frame source-official__frame--aemet"><iframe name="iframe_aemet_id33044" tabindex="0" id="source-aemet-frame" title="Predicció municipal completa d’AEMET per a Sant Celoni" src="https://www.aemet.es/ca/eltiempo/prediccion/municipios/mostrarwidget/sant-celoni-id08202?w=g4p111111110ohmffffffx4f86d9t95b6e9r1s4n2" loading="lazy" scrolling="auto"></iframe></div></div></div>
             <div class="source-panel" data-source-panel="eltiempo">
               <div class="source-eltiempo">
                 <div class="source-eltiempo__header"><div><span>Previsió oficial · Sant Celoni</span><small>Català · °C · vent en km/h · format complet</small></div><div class="source-official__links"><a href="https://www.eltiempo.es/sant-celoni.html?v=por_hora" target="_blank" rel="noreferrer">Per hores ↗</a><a href="https://www.eltiempo.es/sant-celoni.html" target="_blank" rel="noreferrer">14 dies ↗</a></div></div>
@@ -145,7 +144,7 @@
               </div>
             </div>
           </div>
-          <p class="source-comparison__note"><span>i</span> Open-Meteo es presenta amb el mateix nivell de detall que les previsions principals. Meteocat, AEMET i eltiempo.es utilitzen els ginys oficials més complets disponibles; els enllaços externs cobreixen els horitzons que cada giny no permet inserir.</p>
+          <p class="source-comparison__note"><span>i</span> Meteocat permet alternar directament entre la previsió horària i diària. AEMET i eltiempo.es utilitzen els ginys oficials més complets disponibles; els botons dels seus encapçalaments obren els horitzons addicionals a la font original.</p>
         </section>
         <article class="model-comparison panel">
           <header><div><p class="eyebrow">Convergència de models</p><h3>ECMWF · GFS · ICON</h3></div><div class="model-day-nav"><button type="button" id="model-day-prev" aria-label="Dia anterior">←</button><span id="model-day-label">Demà</span><button type="button" id="model-day-next" aria-label="Dia següent">→</button><span class="tag" id="model-status">Connectant models</span></div></header>
@@ -175,7 +174,6 @@
           <article class="chart-card panel"><header><div><span>Humitat relativa</span><strong><b id="chart-humidity-now">--</b> %</strong></div><span class="tag">Ambient</span></header><div class="chart-wrap"><canvas id="humidity-chart"></canvas></div></article>
           <article class="chart-card panel"><header><div><span>Vent i ratxes</span><strong><b id="chart-wind-now">--</b> km/h</strong></div><span class="tag">Intensitat</span></header><div class="chart-wrap"><canvas id="wind-chart"></canvas></div></article>
           <article class="chart-card panel"><header><div><span>Pluja acumulada i intensitat</span><strong><b id="chart-rain-now">--</b> mm</strong></div><span class="tag">Precipitació</span></header><div class="chart-wrap"><canvas id="rain-chart"></canvas></div></article>
-          <article class="chart-card panel"><header><div><span>Radiació solar</span><strong><b id="chart-solar-now">--</b> W/m²</strong></div><span class="tag">Energia</span></header><div class="chart-wrap"><canvas id="solar-chart"></canvas></div></article>
           <article class="chart-card panel"><header><div><span>Índex UV</span><strong><b id="chart-uv-now">--</b> UV</strong></div><span class="tag">Exposició</span></header><div class="chart-wrap"><canvas id="uv-chart"></canvas></div></article>
         </div>
         <p class="data-note"><span>i</span> Totes les corbes d’aquesta secció provenen de l’històric horari real de l’estació ISANTC198. Els períodes s’aniran omplint a mesura que Weather Underground acumuli lectures.</p>

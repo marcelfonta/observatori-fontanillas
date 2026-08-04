@@ -96,7 +96,7 @@ export function renderStation(data, context = {}) {
   setText('uv-index', isNumber(data.uv) ? format(data.uv, 1) : '—'); setText('uv-reading', isNumber(data.uv) ? (data.uv < 3 ? 'Baix' : data.uv < 6 ? 'Moderat' : 'Alt') : 'No disponible');
   setText('chart-temp-now', format(data.temperature, 1)); setText('chart-pressure-now', format(data.pressure, 1));
   setText('chart-humidity-now',format(data.humidity,0)); setText('chart-wind-now',format(data.windSpeed,1)); setText('chart-rain-now',format(data.rainToday,1));
-  setText('chart-solar-now',isNumber(data.solarRadiation)?format(data.solarRadiation,0):'—'); setText('chart-uv-now',isNumber(data.uv)?format(data.uv,1):'—');
+  setText('chart-uv-now',isNumber(data.uv)?format(data.uv,1):'—');
   setText('temp-max', `${format(context.stats?.maxTemperature ?? data.temperature, 1)}°`); setText('temp-min', `${format(context.stats?.minTemperature ?? data.temperature, 1)}°`);
   renderTrend('temp-trend', data.temperature, context.previous?.temperature, '°'); renderTrend('pressure-trend', data.pressure, context.previous?.pressure, ' hPa'); renderTrend('chart-pressure-trend', data.pressure, context.previous?.pressure, ' hPa'); renderTrend('wind-trend', data.windSpeed, context.previous?.windSpeed, ' km/h');
   const [title, copy] = interpret(data); setText('quick-title', title); setText('quick-copy', copy); setText('condition-label', Number(data.rainRate) > 0 ? 'Pluja a l’observatori' : Number(data.windSpeed) > 15 ? 'Vent moderat' : 'Observació en directe');
