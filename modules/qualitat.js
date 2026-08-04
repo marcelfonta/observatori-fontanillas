@@ -101,7 +101,7 @@ export function renderDataQualityUnavailable() {
   const availabilityBar=document.getElementById('quality-availability-bar');
   if(availabilityBar)availabilityBar.style.width='0%';
   setText('quality-cadence','Cadència pendent');
-  setText('quality-samples','Segueix la guia V5.2 per iniciar l’arxiu propi');
+  setText('quality-samples','L’arxiu propi no respon ara mateix; es tornarà a comprovar');
   setText('quality-updated','Control avançat encara no disponible');
   renderPeriods(0);
   renderSensors({},false);

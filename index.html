@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/variables.css?v=5.2.0" />
-    <link rel="stylesheet" href="css/layout.css?v=5.2.0" />
-    <link rel="stylesheet" href="css/style.css?v=5.2.0" />
+    <link rel="stylesheet" href="css/variables.css?v=5.3.0" />
+    <link rel="stylesheet" href="css/layout.css?v=5.3.0" />
+    <link rel="stylesheet" href="css/style.css?v=5.3.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-    <script type="module" src="js/app.js?v=5.2.0"></script>
+    <script type="module" src="js/app.js?v=5.3.0"></script>
   </head>
   <body>
     <a class="skip-link" href="#ara">Saltar al contingut principal</a>
@@ -69,6 +69,20 @@
         <article class="metric panel" id="metric-card-humidex"><div class="metric__head"><span>Temperatura de xafogor</span><span class="metric__icon">Humidex</span></div><div class="metric__value"><span id="humidex">—</span><small>°C eq.</small></div><p id="humidex-reading">Efecte conjunt de calor i humitat</p><div class="metric-context"><span id="level-humidex">Interpretant</span><div><i id="marker-humidex"></i></div></div><div class="metric-spark"><canvas id="spark-humidex" aria-label="Evolució recent de la temperatura de xafogor"></canvas></div></article>
       </section>
 
+      <section class="situation-panel panel" aria-labelledby="situation-title">
+        <header>
+          <div><p class="eyebrow">Resum operatiu</p><h2 id="situation-title">Què importa ara?</h2></div>
+          <span class="tag" id="situation-status">Creuant dades</span>
+        </header>
+        <p class="situation-lead" id="situation-summary" aria-live="polite">Analitzant l’estació, la previsió immediata i els avisos oficials.</p>
+        <div class="situation-grid" id="situation-grid">
+          <article data-situation="alert"><span>Avisos oficials</span><strong id="situation-alert-title">Comprovant</strong><small id="situation-alert-copy">Consultant el Prelitoral de Barcelona</small></article>
+          <article data-situation="rain"><span>Pròximes 3 hores</span><strong id="situation-rain-title">Calculant pluja</strong><small id="situation-rain-copy">Esperant la previsió horària</small></article>
+          <article data-situation="thermal"><span>Confort i radiació</span><strong id="situation-thermal-title">Analitzant</strong><small id="situation-thermal-copy">Creuant temperatura, humitat i UV</small></article>
+          <article data-situation="wind"><span>Vent i canvi proper</span><strong id="situation-wind-title">Calculant</strong><small id="situation-wind-copy">Esperant les pròximes hores</small></article>
+        </div>
+      </section>
+
       <section class="derived-panel panel" aria-labelledby="derived-title">
         <header><div><p class="eyebrow">Diagnosi atmosfèrica</p><h2 id="derived-title">Més lectura, sense inventar sensors</h2></div><span class="tag">Valors calculats</span></header>
         <p class="derived-panel__intro">Indicadors estimats a partir de la temperatura, la humitat, el punt de rosada i el vent mesurats per l’estació.</p>
@@ -108,46 +122,6 @@
         </section>
       </section>
 
-      <section id="qualitat" class="quality-section section-block" aria-labelledby="quality-title">
-        <div class="section-heading quality-heading">
-          <div><p class="eyebrow">Control de l’observatori</p><h2 id="quality-title">Dades sota control</h2><p>Disponibilitat, cobertura i continuïtat de cada sensor, calculades sobre les lectures guardades.</p></div>
-          <span class="quality-badge is-loading" id="quality-badge"><i></i><b id="quality-badge-label">Comprovant el sistema</b></span>
-        </div>
-        <div class="quality-overview">
-          <article class="quality-state panel">
-            <div class="quality-score" id="quality-score" style="--quality-score:0"><span id="quality-score-value">—</span><small>%</small></div>
-            <div><p class="eyebrow">Estat general</p><h3 id="quality-state-title">Analitzant l’estació</h3><p id="quality-state-copy">Connectant amb el control de salut del Worker.</p><div class="quality-state__meta"><span><small>Última lectura</small><b id="quality-last-reading">—</b></span><span><small>Resposta API</small><b id="quality-latency">—</b></span></div></div>
-          </article>
-          <article class="quality-storage panel">
-            <header><div><span>Arxiu propi</span><small>Base de dades persistent</small></div><span class="tag" id="quality-storage-status">Connectant</span></header>
-            <div class="quality-storage__numbers"><div><strong id="quality-readings">—</strong><span>lectures guardades</span></div><div><strong id="quality-days">—</strong><span>dies de cobertura</span></div></div>
-            <div class="quality-availability"><div><span>Continuïtat de captura · fins a 24 h</span><b id="quality-availability">—%</b></div><div><i id="quality-availability-bar"></i></div><small id="quality-samples">Esperant les primeres mostres</small></div>
-          </article>
-          <article class="quality-horizon panel">
-            <header><div><span>Construcció de l’històric</span><small>Progrés real acumulat</small></div><b id="quality-cadence">Cada 5 min</b></header>
-            <div class="quality-periods">
-              <div data-quality-period="1"><span><b>24 hores</b><small id="quality-period-1-copy">Pendent</small></span><div><i id="quality-period-1"></i></div></div>
-              <div data-quality-period="7"><span><b>7 dies</b><small id="quality-period-7-copy">Pendent</small></span><div><i id="quality-period-7"></i></div></div>
-              <div data-quality-period="30"><span><b>30 dies</b><small id="quality-period-30-copy">Pendent</small></span><div><i id="quality-period-30"></i></div></div>
-              <div data-quality-period="365"><span><b>1 any</b><small id="quality-period-365-copy">Pendent</small></span><div><i id="quality-period-365"></i></div></div>
-            </div>
-          </article>
-        </div>
-        <article class="sensor-quality panel" aria-labelledby="sensor-quality-title">
-          <header><div><span id="sensor-quality-title">Continuïtat dels sensors · últimes 24 hores</span><small>Percentatge de lectures vàlides dins de cada sèrie</small></div><span id="quality-updated">Actualitzant…</span></header>
-          <div class="sensor-quality__grid">
-            <div data-quality-sensor="temperature"><span>Temperatura</span><strong id="quality-sensor-temperature">—%</strong><div><i></i></div></div>
-            <div data-quality-sensor="humidity"><span>Humitat</span><strong id="quality-sensor-humidity">—%</strong><div><i></i></div></div>
-            <div data-quality-sensor="pressure"><span>Pressió</span><strong id="quality-sensor-pressure">—%</strong><div><i></i></div></div>
-            <div data-quality-sensor="wind"><span>Vent</span><strong id="quality-sensor-wind">—%</strong><div><i></i></div></div>
-            <div data-quality-sensor="rain"><span>Pluja</span><strong id="quality-sensor-rain">—%</strong><div><i></i></div></div>
-            <div data-quality-sensor="solar"><span>Radiació</span><strong id="quality-sensor-solar">—%</strong><div><i></i></div></div>
-            <div data-quality-sensor="uv"><span>Índex UV</span><strong id="quality-sensor-uv">—%</strong><div><i></i></div></div>
-          </div>
-        </article>
-        <p class="quality-note"><span>i</span> La cobertura començarà el dia que s’activi l’arxiu propi. Weather Underground continua aportant l’històric horari recent mentre la base de dades creix.</p>
-      </section>
-
       <section id="avisos" class="alerts-section section-block" aria-labelledby="alerts-title">
         <div class="section-heading alerts-heading">
           <div><p class="eyebrow">Vigilància oficial</p><h2 id="alerts-title">Avisos que poden afectar Sant Celoni</h2><p>Seguiment del Vallès Oriental i del prelitoral de Barcelona amb fonts oficials.</p></div>
@@ -161,8 +135,9 @@
             </div>
             <p class="alerts-map__hint"><span>i</span> Selecciona el dia al mateix giny i toca una comarca per consultar-ne el detall.</p>
           </article>
-          <article class="alerts-local panel" aria-labelledby="alerts-local-title">
-            <div><p class="eyebrow">Lectura de proximitat</p><h3 id="alerts-local-title">Dues zones que cal vigilar</h3><p class="alerts-local__intro">Sant Celoni pertany al Vallès Oriental. AEMET agrupa aquesta àrea dins del Prelitoral de Barcelona; per això convé contrastar tots dos àmbits quan hi ha temps advers.</p></div>
+          <article class="alerts-local panel is-loading" id="alerts-local-card" aria-labelledby="alerts-local-title">
+            <div><p class="eyebrow">Lectura automàtica de proximitat</p><h3 id="alerts-local-title">Comprovant avisos oficials</h3><p class="alerts-local__intro" id="alerts-local-copy">Consultant el canal oficial d’AEMET per al Prelitoral de Barcelona.</p><span class="alert-official-badge" id="alerts-local-status">Connectant</span></div>
+            <div class="official-alert-list" id="official-alert-list"><div class="official-alert-empty">Esperant la resposta del servei oficial…</div></div>
             <div class="alert-areas">
               <a href="https://www.meteo.cat/prediccio/perill" target="_blank" rel="noreferrer"><span>Meteocat · comarca</span><strong>Vallès Oriental</strong><small>Perill per intervals de 6 hores ↗</small></a>
               <a href="https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&amp;w=hoy" target="_blank" rel="noreferrer"><span>AEMET · zona</span><strong>Prelitoral de Barcelona</strong><small>Avisos oficials d’avui ↗</small></a>
@@ -177,7 +152,7 @@
             <div class="alerts-safety"><span aria-hidden="true">!</span><p><b>En una situació adversa</b> consulta el detall oficial actualitzat i segueix les indicacions de Protecció Civil i del 112.</p></div>
           </article>
         </div>
-        <p class="alerts-note"><span>i</span> Aquest bloc mostra directament el servei oficial de Meteocat. L’Observatori no modifica ni interpreta automàticament els avisos.</p>
+        <p class="alerts-note"><span>i</span> El mapa és el servei oficial de Meteocat. La lectura local reprodueix el canal CAP/RSS oficial d’AEMET per al Prelitoral de Barcelona i sempre enllaça amb el detall original. <b id="alerts-updated">Actualitzant…</b></p>
       </section>
 
       <section id="prediccio" class="forecast-section section-block" aria-labelledby="forecast-title">
@@ -243,6 +218,12 @@
           <header><div><p class="eyebrow">Convergència de models</p><h3>ECMWF · GFS · ICON</h3></div><div class="model-day-nav"><button type="button" id="model-day-prev" aria-label="Dia anterior">←</button><span id="model-day-label">Demà</span><button type="button" id="model-day-next" aria-label="Dia següent">→</button><span class="tag" id="model-status">Connectant models</span></div></header>
           <div class="model-table" id="model-table"><div class="forecast-loading">Comparant tres models globals…</div></div>
           <p class="model-reading" id="model-reading">La coincidència entre tres models ajuda a entendre la confiança de la predicció.</p>
+          <div class="model-agreement-grid" id="model-agreement" aria-label="Coincidència dels models per variable">
+            <article><span>Temperatura</span><strong>Calculant</strong><small>Dispersió entre models</small></article>
+            <article><span>Pluja</span><strong>Calculant</strong><small>Quantitat i probabilitat</small></article>
+            <article><span>Vent</span><strong>Calculant</strong><small>Ratxa màxima prevista</small></article>
+            <article><span>Estat del cel</span><strong>Calculant</strong><small>Família meteorològica</small></article>
+          </div>
           <div class="model-map-links" aria-label="Visors temporals dels models">
             <a href="https://www.windy.com/?41.691,2.489,6" target="_blank" rel="noreferrer"><span>ECMWF</span><b>Obrir mapa temporal ↗</b></a>
             <a href="https://www.windy.com/?gfs,41.691,2.489,6" target="_blank" rel="noreferrer"><span>GFS</span><b>Obrir mapa temporal ↗</b></a>
@@ -302,6 +283,46 @@
         </article>
       </section>
 
+      <section id="qualitat" class="quality-section section-block" aria-labelledby="quality-title">
+        <div class="section-heading quality-heading">
+          <div><p class="eyebrow">Control de l’observatori</p><h2 id="quality-title">Dades sota control</h2><p>Disponibilitat, cobertura i continuïtat de cada sensor, calculades sobre les lectures guardades.</p></div>
+          <span class="quality-badge is-loading" id="quality-badge"><i></i><b id="quality-badge-label">Comprovant el sistema</b></span>
+        </div>
+        <div class="quality-overview">
+          <article class="quality-state panel">
+            <div class="quality-score" id="quality-score" style="--quality-score:0"><span id="quality-score-value">—</span><small>%</small></div>
+            <div><p class="eyebrow">Estat general</p><h3 id="quality-state-title">Analitzant l’estació</h3><p id="quality-state-copy">Connectant amb el control de salut del Worker.</p><div class="quality-state__meta"><span><small>Última lectura</small><b id="quality-last-reading">—</b></span><span><small>Resposta API</small><b id="quality-latency">—</b></span></div></div>
+          </article>
+          <article class="quality-storage panel">
+            <header><div><span>Arxiu propi</span><small>Base de dades persistent</small></div><span class="tag" id="quality-storage-status">Connectant</span></header>
+            <div class="quality-storage__numbers"><div><strong id="quality-readings">—</strong><span>lectures guardades</span></div><div><strong id="quality-days">—</strong><span>dies de cobertura</span></div></div>
+            <div class="quality-availability"><div><span>Continuïtat de captura · fins a 24 h</span><b id="quality-availability">—%</b></div><div><i id="quality-availability-bar"></i></div><small id="quality-samples">Esperant les primeres mostres</small></div>
+          </article>
+          <article class="quality-horizon panel">
+            <header><div><span>Construcció de l’històric</span><small>Progrés real acumulat</small></div><b id="quality-cadence">Cada 5 min</b></header>
+            <div class="quality-periods">
+              <div data-quality-period="1"><span><b>24 hores</b><small id="quality-period-1-copy">Pendent</small></span><div><i id="quality-period-1"></i></div></div>
+              <div data-quality-period="7"><span><b>7 dies</b><small id="quality-period-7-copy">Pendent</small></span><div><i id="quality-period-7"></i></div></div>
+              <div data-quality-period="30"><span><b>30 dies</b><small id="quality-period-30-copy">Pendent</small></span><div><i id="quality-period-30"></i></div></div>
+              <div data-quality-period="365"><span><b>1 any</b><small id="quality-period-365-copy">Pendent</small></span><div><i id="quality-period-365"></i></div></div>
+            </div>
+          </article>
+        </div>
+        <article class="sensor-quality panel" aria-labelledby="sensor-quality-title">
+          <header><div><span id="sensor-quality-title">Continuïtat dels sensors · últimes 24 hores</span><small>Percentatge de lectures vàlides dins de cada sèrie</small></div><span id="quality-updated">Actualitzant…</span></header>
+          <div class="sensor-quality__grid">
+            <div data-quality-sensor="temperature"><span>Temperatura</span><strong id="quality-sensor-temperature">—%</strong><div><i></i></div></div>
+            <div data-quality-sensor="humidity"><span>Humitat</span><strong id="quality-sensor-humidity">—%</strong><div><i></i></div></div>
+            <div data-quality-sensor="pressure"><span>Pressió</span><strong id="quality-sensor-pressure">—%</strong><div><i></i></div></div>
+            <div data-quality-sensor="wind"><span>Vent</span><strong id="quality-sensor-wind">—%</strong><div><i></i></div></div>
+            <div data-quality-sensor="rain"><span>Pluja</span><strong id="quality-sensor-rain">—%</strong><div><i></i></div></div>
+            <div data-quality-sensor="solar"><span>Radiació</span><strong id="quality-sensor-solar">—%</strong><div><i></i></div></div>
+            <div data-quality-sensor="uv"><span>Índex UV</span><strong id="quality-sensor-uv">—%</strong><div><i></i></div></div>
+          </div>
+        </article>
+        <p class="quality-note"><span>i</span> L’arxiu propi ja desa una lectura cada cinc minuts. La cobertura i els històrics llargs aniran guanyant valor automàticament amb el temps.</p>
+      </section>
+
       <section id="contacte" class="contact-section section-block" aria-labelledby="contact-title">
         <article class="contact-intro panel">
           <p class="eyebrow">Contacte privat</p>
@@ -339,7 +360,7 @@
         <a href="#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.2</small><div><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.3</small><div><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   </body>
 </html>

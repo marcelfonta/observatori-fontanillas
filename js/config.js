@@ -1,6 +1,7 @@
 export const CONFIG = {
   apiUrl: 'https://fonta-meteo.marcelfonta.workers.dev',
   refreshMs: 5 * 60 * 1000,
+  alertsRefreshMs: 10 * 60 * 1000,
   forecastRefreshMs: 60 * 60 * 1000,
   historyCacheMs: 30 * 60 * 1000,
   locale: 'ca-ES',

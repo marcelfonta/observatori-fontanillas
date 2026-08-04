@@ -78,6 +78,52 @@ function modelRow(name,data,index) {
   return `<div class="model-row"><strong>${name}<small>${symbol} ${label}</small></strong><span><small>Màxima</small><b>${format(daily.temperature_2m_max?.[index],1)} °C</b></span><span><small>Mínima</small><b>${format(daily.temperature_2m_min?.[index],1)} °C</b></span><span><small>Pluja</small><b>${format(daily.precipitation_sum?.[index],1)} mm</b></span><span><small>Ratxa màxima</small><b>${format(daily.wind_gusts_10m_max?.[index],0)} km/h</b></span></div>`;
 }
 
+function numeric(models,key,index){return models.map(model=>Number(model?.daily?.[key]?.[index])).filter(Number.isFinite);}
+function range(values){return values.length?Math.max(...values)-Math.min(...values):null;}
+function agreement(level,detail){
+  const scores={high:3,moderate:2,low:1,unknown:0};
+  const labels={high:'Alta',moderate:'Moderada',low:'Baixa',unknown:'Pendent'};
+  return {level,label:labels[level],score:scores[level],detail};
+}
+function skyFamily(code){
+  const value=Number(code);
+  if([0,1].includes(value))return 'serè';
+  if([2,3,45,48].includes(value))return 'núvols';
+  if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(value))return 'pluja';
+  if([71,73,75,77,85,86].includes(value))return 'neu';
+  if([95,96,99].includes(value))return 'tempesta';
+  return 'variable';
+}
+
+function modelAgreements(models,index){
+  const maxima=numeric(models,'temperature_2m_max',index);
+  const minima=numeric(models,'temperature_2m_min',index);
+  const tempRange=Math.max(range(maxima)??99,range(minima)??99);
+  const temperature=agreement(maxima.length<3||minima.length<3?'unknown':tempRange<=2?'high':tempRange<=4?'moderate':'low',tempRange<99?`rang màxim de ${format(tempRange,1)} °C`:'dades incompletes');
+
+  const rain=numeric(models,'precipitation_sum',index);
+  const rainChance=numeric(models,'precipitation_probability_max',index);
+  const rainRange=range(rain); const chanceRange=range(rainChance);
+  const wet=rain.map(value=>value>=0.5); const occurrenceAgreement=wet.length===3&&(wet.every(Boolean)||wet.every(value=>!value));
+  const rainLevel=rain.length<3?'unknown':occurrenceAgreement&&(rainRange??99)<=2.5&&(chanceRange??0)<=25?'high':(rainRange??99)<=6&&(chanceRange??0)<=50?'moderate':'low';
+  const precipitation=agreement(rainLevel,rainRange===null?'dades incompletes':`${format(Math.min(...rain),1)}–${format(Math.max(...rain),1)} mm`);
+
+  const gusts=numeric(models,'wind_gusts_10m_max',index); const gustRange=range(gusts);
+  const wind=agreement(gusts.length<3?'unknown':gustRange<=10?'high':gustRange<=20?'moderate':'low',gustRange===null?'dades incompletes':`${format(Math.min(...gusts),0)}–${format(Math.max(...gusts),0)} km/h`);
+
+  const families=models.map(model=>skyFamily(model?.daily?.weather_code?.[index]));
+  const counts=families.reduce((result,family)=>({...result,[family]:(result[family]||0)+1}),{});
+  const largest=Math.max(...Object.values(counts));
+  const sky=agreement(families.length<3?'unknown':largest===3?'high':largest===2?'moderate':'low',families.join(' · '));
+  return {temperature,precipitation,wind,sky};
+}
+
+function renderAgreementCards(items){
+  const container=document.getElementById('model-agreement'); if(!container)return;
+  const definitions=[['Temperatura',items.temperature],['Pluja',items.precipitation],['Vent',items.wind],['Estat del cel',items.sky]];
+  container.innerHTML=definitions.map(([name,item])=>`<article class="is-${item.level}"><span>${name}</span><strong>Coincidència ${item.label.toLowerCase()}</strong><small>${item.detail}</small></article>`).join('');
+}
+
 function renderModelDay() {
   if(!modelPayload)return;
   const {ecmwf,gfs,icon}=modelPayload;
@@ -85,10 +131,16 @@ function renderModelDay() {
   table.innerHTML=`<div class="model-row model-row--head"><strong>Model</strong><span>Temperatura</span><span>Temperatura</span><span>Precipitació</span><span>Vent</span></div>${modelRow('ECMWF',ecmwf,modelDayIndex)}${modelRow('GFS',gfs,modelDayIndex)}${modelRow('ICON',icon,modelDayIndex)}`;
   const selectedDate=new Date(ecmwf?.daily?.time?.[modelDayIndex]||Date.now());
   setText('model-day-label',modelDayIndex===0?`Avui · ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(selectedDate)}`:modelDayIndex===1?`Demà · ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(selectedDate)}`:`${dayName(selectedDate)} · ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(selectedDate)}`);
-  const values=[ecmwf,gfs,icon].map(model=>Number(model?.daily?.temperature_2m_max?.[modelDayIndex])).filter(Number.isFinite);
-  const spread=values.length===3?Math.max(...values)-Math.min(...values):99;
-  const agreement=spread<1?'Alta':spread<2.5?'Moderada':'Baixa'; setText('model-status',`Coincidència ${agreement.toLowerCase()}`);
-  setText('model-reading',spread<1?`Els tres models gairebé coincideixen per al dia seleccionat: només ${format(spread,1)} °C de diferència entre màximes.`:spread<2.5?`Hi ha petites diferències per al dia seleccionat (${format(spread,1)} °C entre màximes). L’escenari general és prou consistent.`:`La dispersió per al dia seleccionat és de ${format(spread,1)} °C. La confiança baixa i convé revisar les properes actualitzacions.`);
+  const items=modelAgreements([ecmwf,gfs,icon],modelDayIndex);
+  renderAgreementCards(items);
+  const available=Object.values(items).filter(item=>item.score>0);
+  const mean=available.length?available.reduce((total,item)=>total+item.score,0)/available.length:0;
+  const overall=mean>=2.5?'alta':mean>=1.75?'moderada':'baixa';
+  setText('model-status',`Confiança general ${overall}`);
+  const weakest=available.sort((a,b)=>a.score-b.score)[0];
+  const weakestName=Object.entries(items).find(([,item])=>item===weakest)?.[0];
+  const names={temperature:'la temperatura',precipitation:'la pluja',wind:'el vent',sky:'l’estat del cel'};
+  setText('model-reading',overall==='alta'?'Els tres models dibuixen un escenari consistent en totes les variables principals.':`La confiança conjunta és ${overall}. El punt amb més diferències és ${names[weakestName] || 'una de les variables'} (${weakest?.detail || 'dades incompletes'}).`);
   const previous=document.getElementById('model-day-prev'); const next=document.getElementById('model-day-next');
   if(previous)previous.disabled=modelDayIndex<=0; if(next)next.disabled=modelDayIndex>=6;
 }
@@ -172,4 +224,4 @@ export function renderForecastError() {
   const daily=document.getElementById('daily-forecast'); if(daily) daily.innerHTML='<div class="forecast-loading">No s’ha pogut carregar la previsió diària.</div>';
 }
 
-export function renderModelError() { setText('model-status','Models no disponibles'); setText('model-reading','La comparació ECMWF/GFS/ICON tornarà a intentar-se en la pròxima actualització.'); }
+export function renderModelError() { setText('model-status','Models no disponibles'); setText('model-reading','La comparació ECMWF/GFS/ICON tornarà a intentar-se en la pròxima actualització.'); const agreement=document.getElementById('model-agreement'); if(agreement)agreement.innerHTML='<article class="is-unknown"><span>Comparació multivariable</span><strong>Temporalment no disponible</strong><small>Nou intent en la pròxima actualització</small></article>'; }

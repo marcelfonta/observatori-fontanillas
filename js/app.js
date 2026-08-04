@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchModelComparison, fetchStationHistory } from './api.js';
+import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchModelComparison, fetchStationHistory } from './api.js';
 import { setText } from './utils.js';
 import { renderStation } from '../modules/estacio.js';
 import { renderCharts, renderMetricSparklines } from '../modules/grafiques.js';
@@ -14,6 +14,8 @@ import { renderExtremeArchive, initExtremeControls } from '../modules/extrems.js
 import { initModelViewer } from '../modules/models.js';
 import { initNavigation, initWhenVisible } from '../modules/navigation.js';
 import { renderDataQuality, renderDataQualityUnavailable } from '../modules/qualitat.js';
+import { renderAlerts, renderAlertsUnavailable } from '../modules/avisos.js';
+import { updateSituation } from '../modules/situacio.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -22,6 +24,7 @@ let historyFetchedAt = 0;
 let currentFetchedAt = 0;
 let forecastFetchedAt = 0;
 let qualityFetchedAt = 0;
+let alertsFetchedAt = 0;
 
 function updateClock(){ setText('header-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Europe/Madrid'}).format(new Date())); }
 function setBrandFavicon(){
@@ -38,7 +41,7 @@ function setBrandFavicon(){
 function setUpdated(value){ const date=value?new Date(String(value).replace(' ','T')):new Date(); const safe=Number.isNaN(date.getTime())?new Date():date; setText('updated-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(safe)); setText('webcam-time',`Captura ${new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(new Date())}`); const mins=Math.max(0,Math.round((Date.now()-safe.getTime())/60000)); setText('updated-relative',mins<2?'ara mateix':`fa ${mins} min`); }
 async function loadForecastSuite(){
   const [forecastResult,modelsResult]=await Promise.allSettled([fetchForecast(),fetchModelComparison()]);
-  if(forecastResult.status==='fulfilled'){renderForecast(forecastResult.value);renderAstronomy(forecastResult.value);}else{renderForecastError();renderAstronomy(null);}
+  if(forecastResult.status==='fulfilled'){renderForecast(forecastResult.value);renderAstronomy(forecastResult.value);updateSituation({forecast:forecastResult.value});}else{renderForecastError();renderAstronomy(null);updateSituation({forecast:null});}
   if(modelsResult.status==='fulfilled')renderModelComparison(modelsResult.value);else renderModelError();
   forecastFetchedAt=Date.now();
 }
@@ -65,6 +68,19 @@ async function loadQuality(){
   qualityFetchedAt=Date.now();
 }
 
+async function loadAlerts(){
+  try {
+    const payload=await fetchAlerts();
+    renderAlerts(payload);
+    updateSituation({alerts:payload});
+  } catch(error) {
+    console.warn('Avisos oficials no disponibles.',error);
+    renderAlertsUnavailable();
+    updateSituation({alerts:null});
+  }
+  alertsFetchedAt=Date.now();
+}
+
 async function load(){
   const label=document.getElementById('connection-label');
   try {
@@ -80,10 +96,10 @@ async function load(){
       latestHistory=context.history;
       renderSummaryFallback();
     }
-    renderStation(latest,context); renderCharts(latest,latestHistory); renderMetricSparklines(latest,latestHistory); renderExtremeArchive(latestHistory); setUpdated(latest.updated);
+    renderStation(latest,context); renderCharts(latest,latestHistory); renderMetricSparklines(latest,latestHistory); renderExtremeArchive(latestHistory); setUpdated(latest.updated); updateSituation({current:latest});
     if(label){label.textContent='En directe';label.parentElement.classList.remove('is-offline');}
   } catch(error) {
-    console.warn('No s’han pogut carregar les dades en directe.',error); latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); setUpdated(latest.updated);
+    console.warn('No s’han pogut carregar les dades en directe.',error); latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); setUpdated(latest.updated); updateSituation({current:latest});
     if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
   }
   currentFetchedAt=Date.now();
@@ -102,13 +118,16 @@ updateClock();
 setInterval(updateClock,1000);
 load();
 loadQuality();
+loadAlerts();
 loadForecastSuite();
 setInterval(load,CONFIG.refreshMs);
 setInterval(loadQuality,CONFIG.refreshMs);
+setInterval(loadAlerts,CONFIG.alertsRefreshMs);
 setInterval(loadForecastSuite,CONFIG.forecastRefreshMs);
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden)return;
   if(Date.now()-currentFetchedAt>CONFIG.refreshMs)load();
   if(Date.now()-qualityFetchedAt>CONFIG.refreshMs)loadQuality();
+  if(Date.now()-alertsFetchedAt>CONFIG.alertsRefreshMs)loadAlerts();
   if(Date.now()-forecastFetchedAt>CONFIG.forecastRefreshMs)loadForecastSuite();
 });

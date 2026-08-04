@@ -49,3 +49,9 @@ export async function fetchDataQuality() {
   if (!response.ok) throw new Error(`Quality API ${response.status}`);
   return response.json();
 }
+
+export async function fetchAlerts() {
+  const response = await fetch(`${CONFIG.apiUrl}/alerts`, { headers:{ Accept:'application/json' }, cache:'no-store' });
+  if (!response.ok) throw new Error(`Alerts API ${response.status}`);
+  return response.json();
+}
