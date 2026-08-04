@@ -1,6 +1,6 @@
 # Observatori Meteorològic Fontanillas
 
-Dashboard meteorològic modular per a Sant Celoni i el Montseny. La primera versió mostra les observacions actuals de l’estació, una lectura contextual, indicadors de tendència preparats, gràfiques demostratives i la webcam.
+Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació, una lectura contextual, tendències locals, gràfiques de lectures reals, previsió horària de suport i la webcam.
 
 ## Posada en marxa
 
@@ -20,7 +20,7 @@ La configuració de l’API és a `js/config.js`. El dashboard consulta:
 
 `https://fonta-meteo.marcelfonta.workers.dev`
 
-Si l’API no està disponible, la interfície activa un mode demo identificat clarament. Les gràfiques són simulades fins que s’integri un endpoint històric.
+Si l’API no està disponible, la interfície activa un mode demo identificat clarament. El navegador conserva fins a set dies de lectures locals; l’històric complet arribarà amb Weather Underground/VEVOR. La previsió horària de suport utilitza Open-Meteo i està identificada com a dada de model.
 
 ## Arquitectura
 

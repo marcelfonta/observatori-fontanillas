@@ -58,23 +58,34 @@
         </article>
         <article class="metric panel"><div class="metric__head"><span>Humitat</span><span class="metric__icon">H₂O</span></div><div class="metric__value"><span id="humidity">--</span><small>%</small></div><p>Punt de rosada <b id="dew-point">-- °C</b></p><div class="bar"><span id="humidity-bar"></span></div></article>
         <article class="metric panel"><div class="metric__head"><span>Vent</span><span class="trend" id="wind-trend">→ estable</span></div><div class="wind-row"><div class="metric__value"><span id="wind-speed">--</span><small>km/h</small></div><div class="compass"><span id="wind-arrow">↑</span></div></div><p><b id="wind-direction">--</b> · Ratxa <b id="wind-gust">-- km/h</b></p></article>
-        <article class="metric panel"><div class="metric__head"><span>Pressió</span><span class="trend trend--up">↗</span></div><div class="metric__value"><span id="pressure">----</span><small>hPa</small></div><p id="pressure-reading">Tendència pendent</p><div class="pressure-scale"><span></span><i id="pressure-marker"></i></div></article>
+        <article class="metric panel"><div class="metric__head"><span>Pressió</span><span class="trend" id="pressure-trend">Recollint</span></div><div class="metric__value"><span id="pressure">----</span><small>hPa</small></div><p id="pressure-reading">Tendència pendent</p><div class="pressure-scale"><span></span><i id="pressure-marker"></i></div></article>
         <article class="metric panel"><div class="metric__head"><span>Pluja avui</span><span class="metric__icon">☂</span></div><div class="metric__value"><span id="rain-today">--</span><small>mm</small></div><p>Intensitat <b id="rain-rate">-- mm/h</b></p><div class="rain-drops" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
         <article class="metric panel"><div class="metric__head"><span>Índex UV</span><span class="tag tag--muted">Sensor futur</span></div><div class="metric__value"><span id="uv-index">—</span><small>UV</small></div><p id="uv-reading">No disponible</p><div class="uv-scale"><i></i></div></article>
+      </section>
+
+      <section class="forecast-section section-block" aria-labelledby="forecast-title">
+        <div class="section-heading forecast-heading">
+          <div><p class="eyebrow">Properes hores</p><h2 id="forecast-title">Com evolucionarà el temps?</h2></div>
+          <div class="forecast-source"><span id="forecast-status">Actualitzant model…</span><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Font: Open-Meteo ↗</a></div>
+        </div>
+        <div class="forecast-strip panel" id="forecast-strip" aria-live="polite">
+          <div class="forecast-loading">Carregant la predicció horària per a Sant Celoni…</div>
+        </div>
+        <p class="forecast-disclaimer">Predicció de model per a l’entorn de Sant Celoni. Cal interpretar-la conjuntament amb l’observació real de l’estació.</p>
       </section>
 
       <section id="tendencies" class="section-block">
         <div class="section-heading"><div><p class="eyebrow">Evolució</p><h2>El dia, d’un cop d’ull</h2></div><div class="segmented" role="group" aria-label="Període de gràfica"><button class="is-active" data-period="24h">24 h</button><button data-period="7d">7 dies</button><button data-period="30d">30 dies</button></div></div>
         <div class="charts-grid">
-          <article class="chart-card panel"><header><div><span>Temperatura</span><strong><b id="chart-temp-now">--</b> °C</strong></div><span class="tag">Històric simulat</span></header><div class="chart-wrap"><canvas id="temperature-chart"></canvas></div></article>
-          <article class="chart-card panel"><header><div><span>Pressió atmosfèrica</span><strong><b id="chart-pressure-now">----</b> hPa</strong></div><span class="trend trend--up">↗ estable</span></header><div class="chart-wrap"><canvas id="pressure-chart"></canvas></div></article>
+          <article class="chart-card panel"><header><div><span>Temperatura</span><strong><b id="chart-temp-now">--</b> °C</strong></div><span class="tag" id="history-status">Iniciant històric</span></header><div class="chart-wrap"><canvas id="temperature-chart"></canvas></div></article>
+          <article class="chart-card panel"><header><div><span>Pressió atmosfèrica</span><strong><b id="chart-pressure-now">----</b> hPa</strong></div><span class="trend" id="chart-pressure-trend">Recollint dades</span></header><div class="chart-wrap"><canvas id="pressure-chart"></canvas></div></article>
         </div>
-        <p class="data-note"><span>i</span> Les corbes són demostratives fins que connectem l’històric de Weather Underground/VEVOR. Els valors actuals sí que provenen de l’estació.</p>
+        <p class="data-note"><span>i</span> A partir d’ara el navegador conserva una lectura real cada cinc minuts. L’històric complet de Weather Underground/VEVOR permetrà omplir retroactivament els períodes llargs.</p>
       </section>
 
       <section id="territori" class="territory-grid section-block">
         <article class="webcam-card panel">
-          <header><div><p class="eyebrow">Mirada al territori</p><h2>Webcam en directe</h2></div><span class="live-pill"><span></span>Imatge actual</span></header>
+          <header><div><p class="eyebrow">Mirada al territori</p><h2>Webcam en directe</h2><a class="source-link" href="https://www.alvar.cat/" target="_blank" rel="noreferrer">Font: alvar.cat ↗</a></div><span class="live-pill"><span></span>Imatge actual</span></header>
           <div class="webcam-frame"><img id="webcam-image" alt="Webcam meteorològica de l’entorn del Montseny" /><div class="webcam-overlay"><span id="webcam-time">Ara</span><b>Sant Celoni · Montseny</b></div></div>
         </article>
         <aside class="next-card panel">
