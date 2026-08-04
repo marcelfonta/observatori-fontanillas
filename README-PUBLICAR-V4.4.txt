@@ -18,4 +18,4 @@ git push origin main
 
 5. Si encara veus la versió anterior, recarrega meteo.fontanillas.cat amb Command + Shift + R.
 
-No cal modificar el Worker ni les claus secretes per publicar aquesta versió. Meteocat i AEMET s’integren mitjançant recursos oficials externs; el radar animat es carrega només quan se selecciona la pestanya corresponent.
+No cal modificar el Worker ni les claus secretes per publicar aquesta versió. Meteocat, AEMET i eltiempo.es s’integren mitjançant recursos oficials externs; el radar animat es carrega només quan se selecciona la pestanya corresponent.

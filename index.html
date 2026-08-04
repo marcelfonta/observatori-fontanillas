@@ -135,9 +135,17 @@
             <div class="source-panel is-active" data-source-panel="openmeteo"><div class="source-native" id="source-openmeteo"><div class="forecast-loading">Preparant la previsió Open-Meteo…</div></div></div>
             <div class="source-panel" data-source-panel="meteocat"><iframe id="source-meteocat-frame" title="Predicció oficial de Meteocat per a Sant Celoni" loading="lazy" src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=0f2a22&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe></div>
             <div class="source-panel" data-source-panel="aemet"><iframe id="source-aemet-frame" title="Predicció oficial d’AEMET per a Sant Celoni" loading="lazy" src="https://www.aemet.es/es/eltiempo/prediccion/municipios/widget/sant-celoni-id08202"></iframe></div>
-            <div class="source-panel" data-source-panel="eltiempo"><div class="source-unavailable"><span>04</span><div><h4>eltiempo.es</h4><p>La font ofereix un giny oficial, però necessita generar un codi específic des del seu configurador. Mentrestant pots consultar la previsió horària i de 14 dies directament.</p><a href="https://www.eltiempo.es/sant-celoni.html?v=por_hora" target="_blank" rel="noreferrer">Obrir eltiempo.es per a Sant Celoni ↗</a></div></div></div>
+            <div class="source-panel" data-source-panel="eltiempo">
+              <div class="source-eltiempo">
+                <div class="source-eltiempo__header"><div><span>Previsió oficial · Sant Celoni</span><small>Català · °C · vent en km/h · format complet</small></div><a href="https://www.eltiempo.es/sant-celoni.html" target="_blank" rel="noreferrer">Veure la previsió completa ↗</a></div>
+                <div class="source-eltiempo__widget">
+                  <div id="c_24805d485986fb044ec8a4db971cf9bb" class="completo"></div><script type="text/javascript" src="https://ca.eltiempo.es/widget/widget_loader/24805d485986fb044ec8a4db971cf9bb"></script>
+                  <noscript><a href="https://www.eltiempo.es/sant-celoni.html" target="_blank" rel="noreferrer">Consulta eltiempo.es per a Sant Celoni</a></noscript>
+                </div>
+              </div>
+            </div>
           </div>
-          <p class="source-comparison__note"><span>i</span> Open-Meteo es presenta amb el disseny propi del dashboard. Meteocat i AEMET s’insereixen mitjançant recursos oficials; eltiempo.es queda identificat sense extracció automatitzada ni dades simulades.</p>
+          <p class="source-comparison__note"><span>i</span> Open-Meteo es presenta amb el disseny propi del dashboard. Meteocat, AEMET i eltiempo.es s’insereixen mitjançant els seus recursos oficials, sense extracció automàtica ni dades simulades.</p>
         </section>
         <article class="model-comparison panel">
           <header><div><p class="eyebrow">Convergència de models</p><h3>ECMWF · GFS · ICON</h3></div><div class="model-day-nav"><button type="button" id="model-day-prev" aria-label="Dia anterior">←</button><span id="model-day-label">Demà</span><button type="button" id="model-day-next" aria-label="Dia següent">→</button><span class="tag" id="model-status">Connectant models</span></div></header>

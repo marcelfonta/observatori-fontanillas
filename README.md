@@ -33,12 +33,12 @@ Les escales de color de les targetes són interpretatives: descriuen confort, in
 - Open-Meteo: previsió horària i diària pròpia del dashboard.
 - Meteocat: ginys oficials municipals de 72 hores i 8 dies, més el giny oficial del radar amb zoom.
 - AEMET: recurs oficial de predicció municipal per a Sant Celoni.
-- eltiempo.es: accés identificat a la previsió horària i de 14 dies. No se n’extreuen dades automàticament.
+- eltiempo.es: giny oficial complet per a Sant Celoni, configurat en català, graus Celsius i vent en km/h.
 - Ventusky: visor cartogràfic inserit amb línia temporal, capes i canvi entre GFS, ICON i GEM. ECMWF es manté disponible mitjançant el visor extern identificat.
 - RainViewer: mapa de radar interactiu amb les imatges disponibles de les dues últimes hores.
 - AEMET Barcelona–Gelida: accés directe per contrastar el radar oficial.
 
-Els recursos oficials es mostren en pestanyes perquè el seu disseny extern no trenqui la lectura general del dashboard. Per convertir totes quatre fonts en una única taula numèrica homogènia caldria disposar de les vies d’integració oficials corresponents. El projecte no extreu dades d’altres webs mitjançant scraping ni inventa valors quan una font no ofereix accés estructurat.
+Els recursos oficials es mostren en pestanyes perquè el seu disseny extern no trenqui la lectura general del dashboard. El giny d’eltiempo.es s’ha generat amb el seu configurador oficial i conserva l’enllaç a la previsió completa. Per convertir totes quatre fonts en una única taula numèrica homogènia caldria disposar de les vies d’integració oficials corresponents. El projecte no extreu dades d’altres webs mitjançant scraping ni inventa valors quan una font no ofereix accés estructurat.
 
 ## Astronomia local
 
