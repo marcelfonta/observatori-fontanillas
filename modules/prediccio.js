@@ -17,6 +17,15 @@ const maxIndex = values => values.reduce((best,value,index)=>Number(value)>Numbe
 
 function weather(code) { return codes[code] || ['◌','Variable']; }
 
+function timelineLabel(date, position) {
+  if (position === 0) return 'Ara';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const target = new Date(date); target.setHours(0,0,0,0);
+  const dayDifference = Math.round((target - today) / 86400000);
+  const prefix = dayDifference === 0 ? 'Avui' : dayDifference === 1 ? 'Demà' : dayName(date);
+  return `${prefix} · ${shortTime(date)}`;
+}
+
 function forecastNarrative(daily) {
   const rainTotal=sum(daily.precipitation_sum||[]);
   const rainChance=max(daily.precipitation_probability_max||[]);
@@ -50,10 +59,10 @@ function renderDaily(daily) {
 export function renderForecast(data) {
   const strip=document.getElementById('forecast-strip'); if(!strip||!data?.hourly) return;
   const now=Date.now(); let start=data.hourly.time.findIndex(time=>new Date(time).getTime()>=now-1800000); if(start<0) start=0;
-  const indices=Array.from({length:12},(_,index)=>start+(index*4)).filter(index=>data.hourly.time[index]);
+  const indices=Array.from({length:17},(_,index)=>start+(index*3)).filter(index=>data.hourly.time[index]);
   strip.innerHTML=indices.map((index,position)=>{
     const time=new Date(data.hourly.time[index]); const [symbol,label]=weather(data.hourly.weather_code[index]); const rain=Number(data.hourly.precipitation_probability[index])||0;
-    return `<article class="forecast-item ${position===0?'is-now':''}"><div class="forecast-item__time"><span>${position===0?'Ara':new Intl.DateTimeFormat('ca-ES',{weekday:'short',hour:'2-digit'}).format(time)}</span>${position===0?'<i></i>':''}</div><div class="forecast-item__condition"><span class="forecast-symbol" aria-hidden="true">${symbol}</span><b>${label}</b></div><div class="forecast-item__temp">${format(data.hourly.temperature_2m[index],0)}°</div><div class="forecast-item__meta"><span><b>${format(rain,0)}%</b> pluja</span><span>${format(data.hourly.wind_speed_10m[index],0)} km/h</span></div><div class="forecast-mini-rain"><span style="width:${Math.min(100,rain)}%"></span></div></article>`;
+    return `<article class="forecast-item ${position===0?'is-now':''}"><div class="forecast-item__time"><span>${timelineLabel(time,position)}</span>${position===0?'<i></i>':''}</div><div class="forecast-item__condition"><span class="forecast-symbol" aria-hidden="true">${symbol}</span><b>${label}</b></div><div class="forecast-item__temp">${format(data.hourly.temperature_2m[index],0)}°</div><div class="forecast-item__meta"><span><b>${format(rain,0)}%</b> pluja</span><span>${format(data.hourly.wind_speed_10m[index],0)} km/h</span></div><div class="forecast-mini-rain"><span style="width:${Math.min(100,rain)}%"></span></div></article>`;
   }).join('');
   renderOverview(data.daily); renderDaily(data.daily);
   setText('forecast-status',`Actualitzat · ${new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit'}).format(new Date())}`);
@@ -64,14 +73,20 @@ function modelRow(name,data) {
   return `<div class="model-row"><strong>${name}</strong><span><small>Màxima demà</small><b>${format(daily.temperature_2m_max?.[1],1)} °C</b></span><span><small>Mínima demà</small><b>${format(daily.temperature_2m_min?.[1],1)} °C</b></span><span><small>Pluja 7 dies</small><b>${format(rain,1)} mm</b></span><span><small>Ratxa màxima</small><b>${format(gust,0)} km/h</b></span></div>`;
 }
 
-export function renderModelComparison({ecmwf,gfs}) {
+export function renderModelComparison({ecmwf,gfs,icon}) {
   const table=document.getElementById('model-table'); if(!table) return;
-  table.innerHTML=`<div class="model-row model-row--head"><strong>Model</strong><span>Temperatura</span><span>Temperatura</span><span>Precipitació</span><span>Vent</span></div>${modelRow('ECMWF',ecmwf)}${modelRow('GFS',gfs)}`;
-  const ecmwfTemps=ecmwf?.daily?.temperature_2m_max||[]; const gfsTemps=gfs?.daily?.temperature_2m_max||[];
-  const differences=ecmwfTemps.map((value,index)=>Math.abs(Number(value)-Number(gfsTemps[index]))).filter(Number.isFinite);
+  table.innerHTML=`<div class="model-row model-row--head"><strong>Model</strong><span>Temperatura</span><span>Temperatura</span><span>Precipitació</span><span>Vent</span></div>${modelRow('ECMWF',ecmwf)}${modelRow('GFS',gfs)}${modelRow('ICON',icon)}`;
+  const series=[ecmwf,gfs,icon].map(model=>model?.daily?.temperature_2m_max||[]);
+  const differences=(series[0]||[]).map((_,index)=>{const values=series.map(items=>Number(items[index])).filter(Number.isFinite);return values.length===3?Math.max(...values)-Math.min(...values):null;}).filter(Number.isFinite);
   const mean=differences.length?sum(differences)/differences.length:99;
   const agreement=mean<1?'Alta':mean<2.5?'Moderada':'Baixa'; setText('model-status',`Coincidència ${agreement.toLowerCase()}`);
-  setText('model-reading',mean<1?'ECMWF i GFS dibuixen un escenari molt semblant: la confiança tèrmica és alta.':mean<2.5?'Hi ha petites diferències entre ECMWF i GFS. L’escenari general és útil, però cal seguir-ne l’evolució.':'Els models divergeixen de manera notable. La predicció encara té incertesa i convé revisar les properes actualitzacions.');
+  setText('model-reading',mean<1?'ECMWF, GFS i ICON dibuixen un escenari molt semblant: la confiança tèrmica és alta.':mean<2.5?'Hi ha petites diferències entre els tres models. L’escenari general és útil, però cal seguir-ne l’evolució.':'Els tres models divergeixen de manera notable. La predicció encara té incertesa i convé revisar les properes actualitzacions.');
+}
+
+export function initForecastControls() {
+  const strip=document.getElementById('forecast-strip');
+  document.getElementById('forecast-prev')?.addEventListener('click',()=>strip?.scrollBy({left:-520,behavior:'smooth'}));
+  document.getElementById('forecast-next')?.addEventListener('click',()=>strip?.scrollBy({left:520,behavior:'smooth'}));
 }
 
 export function renderForecastError() {
@@ -80,4 +95,4 @@ export function renderForecastError() {
   const daily=document.getElementById('daily-forecast'); if(daily) daily.innerHTML='<div class="forecast-loading">No s’ha pogut carregar la previsió diària.</div>';
 }
 
-export function renderModelError() { setText('model-status','Models no disponibles'); setText('model-reading','La comparació ECMWF/GFS tornarà a intentar-se en la pròxima actualització.'); }
+export function renderModelError() { setText('model-status','Models no disponibles'); setText('model-reading','La comparació ECMWF/GFS/ICON tornarà a intentar-se en la pròxima actualització.'); }

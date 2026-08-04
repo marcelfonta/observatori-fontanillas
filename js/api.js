@@ -34,8 +34,8 @@ async function fetchModel(endpoint) {
 }
 
 export async function fetchModelComparison() {
-  const [ecmwf, gfs] = await Promise.all([fetchModel('/v1/ecmwf'), fetchModel('/v1/gfs')]);
-  return { ecmwf, gfs };
+  const [ecmwf, gfs, icon] = await Promise.all([fetchModel('/v1/ecmwf'), fetchModel('/v1/gfs'), fetchModel('/v1/dwd-icon')]);
+  return { ecmwf, gfs, icon };
 }
 
 export async function fetchStationHistory(days = 31) {

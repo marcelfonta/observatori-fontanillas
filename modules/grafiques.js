@@ -1,4 +1,5 @@
 let charts = [];
+let sparklines = [];
 const palette = { grid: 'rgba(197,231,208,.07)', text: '#71877e', green: '#89d6a3', blue: '#77b7c8' };
 function makeChart(canvas, labels, datasets, unit, showLegend = false) {
   if (!window.Chart || !canvas) return null;
@@ -14,4 +15,35 @@ export function renderCharts(data, history = [], period='24h') {
   const temps=selected.map(item=>item.temperature); const dewPoints=selected.map(item=>item.dewPoint); const pressures=selected.map(item=>item.pressure);
   const status=document.getElementById('history-status'); if(status) status.textContent=selected.length>1?`${selected.length} lectures reals`:'Recollint dades';
   charts=[makeChart(document.getElementById('temperature-chart'),labels,[{label:'Temperatura',data:temps,borderColor:palette.green,backgroundColor:`${palette.green}16`,fill:true},{label:'Punt de rosada',data:dewPoints,borderColor:palette.blue,backgroundColor:'transparent',borderDash:[5,5],fill:false}],'°C',true),makeChart(document.getElementById('pressure-chart'),labels,[{label:'Pressió',data:pressures,borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true}],' hPa')];
+}
+
+function makeSparkline(canvas, points, label, unit, color) {
+  if (!window.Chart || !canvas || points.length < 2) return null;
+  const labels = points.map(item => new Intl.DateTimeFormat('ca-ES', { hour:'2-digit', minute:'2-digit' }).format(new Date(item.t)));
+  return new Chart(canvas, {
+    type:'line',
+    data:{labels,datasets:[{label,data:points.map(item=>item.value),borderColor:color,backgroundColor:`${color}18`,borderWidth:1.6,tension:.4,fill:true,pointRadius:0,pointHoverRadius:3,spanGaps:true}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'nearest'},plugins:{legend:{display:false},tooltip:{displayColors:false,backgroundColor:'#0c1b17',borderColor:'rgba(197,231,208,.18)',borderWidth:1,titleFont:{size:9},bodyFont:{size:10},callbacks:{label:context=>`${context.formattedValue} ${unit}`}}},scales:{x:{display:false},y:{display:false}}}
+  });
+}
+
+export function renderMetricSparklines(data, history = []) {
+  sparklines.forEach(chart => chart?.destroy());
+  const since = Date.now() - 86400000;
+  const recent = history.filter(item => item.t >= since).slice(-24);
+  const definitions = [
+    ['spark-temperature','temperature','Temperatura','°C',palette.green],
+    ['spark-humidity','humidity','Humitat','%',palette.blue],
+    ['spark-wind','windSpeed','Vent','km/h',palette.green],
+    ['spark-pressure','pressure','Pressió','hPa',palette.blue],
+    ['spark-rain-total','rainTotal','Pluja acumulada','mm',palette.blue],
+    ['spark-rain-rate','rainRate','Intensitat','mm/h',palette.blue],
+    ['spark-solar','solarRadiation','Radiació','W/m²','#e6c56c'],
+    ['spark-uv','uv','Índex UV','UV','#e6c56c']
+  ];
+  sparklines = definitions.map(([id,key,label,unit,color]) => {
+    let points = recent.map(item => ({t:item.t,value:Number(item[key])})).filter(item => Number.isFinite(item.value));
+    if (points.length < 2 && Number.isFinite(Number(data[key]))) points = [{t:Date.now()-300000,value:Number(data[key])},{t:Date.now(),value:Number(data[key])}];
+    return makeSparkline(document.getElementById(id), points, label, unit, color);
+  }).filter(Boolean);
 }

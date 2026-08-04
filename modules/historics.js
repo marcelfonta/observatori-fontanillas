@@ -37,6 +37,14 @@ export function normalizeRemoteHistory(payload) {
 function numeric(items, key) { return items.map(item => Number(item[key])).filter(Number.isFinite); }
 function extreme(items, key, mode) { return items.filter(item => Number.isFinite(Number(item[key]))).reduce((best,item) => !best || (mode === 'max' ? Number(item[key]) > Number(best[key]) : Number(item[key]) < Number(best[key])) ? item : best, null); }
 function closest(items, target) { return items.reduce((best,item) => Math.abs(item.t-target) < Math.abs((best?.t ?? 0)-target) ? item : best, null); }
+function accumulatedRain(items) {
+  return items.reduce((result,item,index) => {
+    const current=Number(item.rainTotal); const previous=Number(items[index-1]?.rainTotal);
+    if (!Number.isFinite(current)) return result;
+    if (!Number.isFinite(previous)) return result;
+    return result + (current >= previous ? current - previous : current);
+  },0);
+}
 
 export function summarizeRemoteHistory(data, history) {
   const currentTime = new Date(String(data.updated).replace(' ', 'T')).getTime() || Date.now();
@@ -47,9 +55,10 @@ export function summarizeRemoteHistory(data, history) {
   const high = extreme(today, 'temperatureMax', 'max') || extreme(today, 'temperature', 'max');
   const low = extreme(today, 'temperatureMin', 'min') || extreme(today, 'temperature', 'min');
   const gust = extreme(today, 'windGust', 'max');
-  const rain24h = numeric(recent24h, 'rainTotal').reduce((sum,value) => sum + value, 0);
-  const rainToday = numeric(today, 'rainTotal').reduce((sum,value) => sum + value, 0);
-  const wetHours = recent24h.filter(item => Number(item.rainTotal) > 0 || Number(item.rainRate) > 0).length;
+  const rain24h = accumulatedRain(recent24h);
+  const todayTotals = numeric(today, 'rainTotal');
+  const rainToday = todayTotals.length ? todayTotals[todayTotals.length - 1] : Number(data.rainToday) || 0;
+  const wetHours = recent24h.filter((item,index) => Number(item.rainRate) > 0 || Number(item.rainTotal) > Number(recent24h[index-1]?.rainTotal)).length;
   return {
     history,
     previous: compare,

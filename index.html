@@ -8,7 +8,7 @@
     <title>Observatori Fontanillas · Montseny</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css" />
     <link rel="stylesheet" href="css/layout.css" />
     <link rel="stylesheet" href="css/style.css" />
@@ -23,7 +23,7 @@
         <span><strong>Observatori</strong><small>Fontanillas · Montseny</small></span>
       </a>
       <nav class="nav" aria-label="Navegació principal">
-        <a class="is-active" href="#ara">Ara</a><a href="#prediccio">Predicció</a><a href="#tendencies">Tendències</a><a href="#territori">Territori</a><a href="#contacte">Contacte</a>
+        <a class="is-active" href="#ara">Ara</a><a href="#prediccio">Predicció</a><a href="#tendencies">Tendències</a><a href="#territori">Radar i webcam</a><a href="#contacte">Contacte</a>
       </nav>
       <div class="live-pill"><span></span><b id="connection-label">Connectant</b><time id="header-time">--:--</time></div>
     </header>
@@ -50,17 +50,31 @@
         </aside>
       </section>
 
-      <section class="metrics-grid" aria-label="Mesures actuals">
+      <section class="metrics-grid" aria-label="Mesures actuals de l’estació">
         <article class="metric panel metric--featured">
           <div class="metric__head"><span>Temperatura</span><span class="trend trend--up" id="temp-trend">↗ <b>+0,0°</b></span></div>
           <div class="metric__value"><span id="metric-temperature">--</span><small>°C</small></div>
-          <p>Sensació <b id="feels-like">-- °C</b></p><div class="sparkline" id="temp-spark" aria-hidden="true"></div>
+          <p>Sensació <b id="feels-like">-- °C</b></p><div class="metric-spark"><canvas id="spark-temperature" aria-label="Evolució recent de la temperatura"></canvas></div>
         </article>
-        <article class="metric panel"><div class="metric__head"><span>Humitat</span><span class="metric__icon">H₂O</span></div><div class="metric__value"><span id="humidity">--</span><small>%</small></div><p>Punt de rosada <b id="dew-point">-- °C</b></p><div class="bar"><span id="humidity-bar"></span></div></article>
-        <article class="metric panel"><div class="metric__head"><span>Vent</span><span class="trend" id="wind-trend">→ estable</span></div><div class="wind-row"><div class="metric__value"><span id="wind-speed">--</span><small>km/h</small></div><div class="compass"><span id="wind-arrow">↑</span></div></div><p><b id="wind-direction">--</b> · Ratxa <b id="wind-gust">-- km/h</b></p></article>
-        <article class="metric panel"><div class="metric__head"><span>Pressió</span><span class="trend" id="pressure-trend">Recollint</span></div><div class="metric__value"><span id="pressure">----</span><small>hPa</small></div><p id="pressure-reading">Tendència pendent</p><div class="pressure-scale"><span></span><i id="pressure-marker"></i></div></article>
-        <article class="metric panel"><div class="metric__head"><span>Pluja avui</span><span class="metric__icon">☂</span></div><div class="metric__value"><span id="rain-today">--</span><small>mm</small></div><p>Intensitat <b id="rain-rate">-- mm/h</b></p><div class="rain-drops" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
-        <article class="metric panel"><div class="metric__head"><span>Índex UV</span><span class="tag tag--muted">Sensor futur</span></div><div class="metric__value"><span id="uv-index">—</span><small>UV</small></div><p id="uv-reading">No disponible</p><div class="uv-scale"><i></i></div></article>
+        <article class="metric panel"><div class="metric__head"><span>Humitat</span><span class="metric__icon">Sensor</span></div><div class="metric__value"><span id="humidity">--</span><small>%</small></div><p>Punt de rosada <b id="dew-point">-- °C</b></p><div class="metric-spark"><canvas id="spark-humidity" aria-label="Evolució recent de la humitat"></canvas></div></article>
+        <article class="metric panel"><div class="metric__head"><span>Vent</span><span class="trend" id="wind-trend">→ estable</span></div><div class="wind-row"><div class="metric__value"><span id="wind-speed">--</span><small>km/h</small></div><div class="compass"><span id="wind-arrow">↑</span></div></div><p><b id="wind-direction">--</b> · Ratxa <b id="wind-gust">-- km/h</b></p><div class="metric-spark"><canvas id="spark-wind" aria-label="Evolució recent del vent"></canvas></div></article>
+        <article class="metric panel"><div class="metric__head"><span>Pressió</span><span class="trend" id="pressure-trend">Recollint</span></div><div class="metric__value"><span id="pressure">----</span><small>hPa</small></div><p id="pressure-reading">Tendència pendent</p><div class="metric-spark"><canvas id="spark-pressure" aria-label="Evolució recent de la pressió"></canvas></div></article>
+        <article class="metric panel"><div class="metric__head"><span>Pluja avui</span><span class="metric__icon">Acumulada</span></div><div class="metric__value"><span id="rain-today">--</span><small>mm</small></div><p>Des de les 00:00</p><div class="metric-spark"><canvas id="spark-rain-total" aria-label="Evolució recent de la pluja acumulada"></canvas></div></article>
+        <article class="metric panel"><div class="metric__head"><span>Intensitat de pluja</span><span class="metric__icon">Sensor</span></div><div class="metric__value"><span id="rain-rate">--</span><small>mm/h</small></div><p id="rain-reading">Sense precipitació</p><div class="metric-spark"><canvas id="spark-rain-rate" aria-label="Evolució recent de la intensitat de pluja"></canvas></div></article>
+        <article class="metric panel"><div class="metric__head"><span>Radiació solar</span><span class="metric__icon">Sensor</span></div><div class="metric__value"><span id="solar-radiation">—</span><small>W/m²</small></div><p id="solar-reading">Lectura pendent</p><div class="metric-spark"><canvas id="spark-solar" aria-label="Evolució recent de la radiació solar"></canvas></div></article>
+        <article class="metric panel"><div class="metric__head"><span>Índex UV</span><span class="metric__icon">Sensor</span></div><div class="metric__value"><span id="uv-index">—</span><small>UV</small></div><p id="uv-reading">No disponible</p><div class="metric-spark"><canvas id="spark-uv" aria-label="Evolució recent de l’índex UV"></canvas></div></article>
+      </section>
+
+      <section class="derived-panel panel" aria-labelledby="derived-title">
+        <header><div><p class="eyebrow">Diagnosi atmosfèrica</p><h2 id="derived-title">Més lectura, sense inventar sensors</h2></div><span class="tag">Valors calculats</span></header>
+        <p class="derived-panel__intro">Indicadors estimats a partir de la temperatura, la humitat, el punt de rosada i el vent mesurats per l’estació.</p>
+        <div class="derived-grid">
+          <div><span>Temp. de bulb humit</span><strong><b id="wet-bulb">—</b> °C</strong><small>Capacitat de refredament per evaporació</small></div>
+          <div><span>Dèficit de vapor</span><strong><b id="vpd">—</b> kPa</strong><small id="vpd-reading">Demanda d’humitat de l’aire</small></div>
+          <div><span>Base del núvol estimada</span><strong><b id="cloud-base">—</b> m</strong><small>Estimació sobre el nivell de l’estació</small></div>
+          <div><span>Humitat absoluta</span><strong><b id="absolute-humidity">—</b> g/m³</strong><small>Vapor d’aigua present a l’aire</small></div>
+          <div><span>Escala de Beaufort</span><strong><b id="beaufort">—</b></strong><small id="beaufort-reading">Força del vent estimada</small></div>
+        </div>
       </section>
 
       <section class="insights-section section-block" aria-labelledby="insights-title">
@@ -87,16 +101,33 @@
           <article class="forecast-stat panel"><span>Ratxa màxima</span><strong><b id="forecast-gust-max">—</b><small> km/h</small></strong><p id="forecast-gust-day">Calculant el dia</p></article>
           <article class="forecast-stat panel"><span>Llum avui</span><strong><b id="forecast-daylight">—</b><small> h</small></strong><p id="forecast-sun-times">Sortida i posta del sol</p></article>
         </div>
-        <div class="forecast-subheading"><div><span>Pròximes 48 hores</span><small>Intervals de 4 hores</small></div><span>Desplaça per veure tota l’evolució →</span></div>
+        <div class="forecast-subheading forecast-subheading--controls"><div><span>Pròximes 48 hores exactes</span><small>17 punts · intervals de 3 hores · hora local</small></div><div class="forecast-controls"><button id="forecast-prev" type="button" aria-label="Veure hores anteriors">←</button><span>Desplaça o utilitza les fletxes</span><button id="forecast-next" type="button" aria-label="Veure hores posteriors">→</button></div></div>
         <div class="forecast-strip panel" id="forecast-strip" aria-live="polite">
           <div class="forecast-loading">Carregant la predicció de 48 hores per a Sant Celoni…</div>
         </div>
         <div class="forecast-subheading"><div><span>Previsió de 7 dies</span><small>Màximes, mínimes, pluja i vent</small></div></div>
         <div class="daily-forecast" id="daily-forecast" aria-live="polite"><div class="forecast-loading">Preparant la previsió diària…</div></div>
+        <section class="official-forecast panel" aria-labelledby="official-forecast-title">
+          <header><div><p class="eyebrow">Triple font de consulta</p><h3 id="official-forecast-title">Contrasta la previsió oficial</h3></div><span class="tag">Sant Celoni</span></header>
+          <div class="official-forecast__grid">
+            <div class="official-forecast__viewer"><iframe title="Predicció municipal de 72 hores de Meteocat per a Sant Celoni" loading="lazy" src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=2c3e50&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe><a href="https://www.meteo.cat/prediccio/municipal/082021" target="_blank" rel="noreferrer">Meteocat · obrir previsió completa ↗</a></div>
+            <div class="official-forecast__links">
+              <a href="https://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202" target="_blank" rel="noreferrer"><span>AEMET</span><strong>Predicció horària oficial</strong><small>Consulta directa per a Sant Celoni</small><i>Obrir ↗</i></a>
+              <a href="https://www.eltiempo.es/sant-celoni.html?v=por_hora" target="_blank" rel="noreferrer"><span>eltiempo.es</span><strong>Predicció per hores</strong><small>Segona font independent de contrast</small><i>Obrir ↗</i></a>
+              <p><b>Pròxim pas:</b> la comparació numèrica unificada dins del dashboard necessita una clau gratuïta d’AEMET i una via oficial d’integració d’eltiempo.es. No es farà extracció no autoritzada de cap web.</p>
+            </div>
+          </div>
+        </section>
         <article class="model-comparison panel">
-          <header><div><p class="eyebrow">Convergència de models</p><h3>ECMWF vs GFS</h3></div><span class="tag" id="model-status">Connectant models</span></header>
-          <div class="model-table" id="model-table"><div class="forecast-loading">Comparant els dos grans models globals…</div></div>
-          <p class="model-reading" id="model-reading">La coincidència entre models ajuda a entendre la confiança de la predicció.</p>
+          <header><div><p class="eyebrow">Convergència de models</p><h3>ECMWF · GFS · ICON</h3></div><span class="tag" id="model-status">Connectant models</span></header>
+          <div class="model-table" id="model-table"><div class="forecast-loading">Comparant tres models globals…</div></div>
+          <p class="model-reading" id="model-reading">La coincidència entre tres models ajuda a entendre la confiança de la predicció.</p>
+          <div class="model-map-links" aria-label="Visors temporals dels models">
+            <a href="https://www.windy.com/?41.691,2.489,6" target="_blank" rel="noreferrer"><span>ECMWF</span><b>Obrir mapa temporal ↗</b></a>
+            <a href="https://www.windy.com/?gfs,41.691,2.489,6" target="_blank" rel="noreferrer"><span>GFS</span><b>Obrir mapa temporal ↗</b></a>
+            <a href="https://www.windy.com/?iconEu,41.691,2.489,6" target="_blank" rel="noreferrer"><span>ICON-EU</span><b>Obrir mapa temporal ↗</b></a>
+          </div>
+          <p class="model-license-note">Els tres visors s’obren amb controls d’hores. La inserció conjunta dels tres mapes dins del web requereix una llicència cartogràfica de producció; la taula de dades, en canvi, ja compara els tres models gratuïtament.</p>
         </article>
         <p class="forecast-disclaimer">La predicció descriu un escenari de model per a Sant Celoni, no una certesa. L’observació real de l’estació és la referència del temps que està fent.</p>
       </section>
@@ -115,10 +146,11 @@
           <header><div><p class="eyebrow">Mirada al territori</p><h2>Webcam en directe</h2><a class="source-link" href="https://www.alvar.cat/" target="_blank" rel="noreferrer">Font: alvar.cat ↗</a></div><span class="live-pill"><span></span>Imatge actual</span></header>
           <div class="webcam-frame"><img id="webcam-image" alt="Webcam meteorològica de l’entorn del Montseny" /><div class="webcam-overlay"><span id="webcam-time">Ara</span><b>Sant Celoni · Montseny</b></div></div>
         </article>
-        <aside class="next-card panel">
-          <p class="eyebrow">Pròximes capes</p><h2>Una visió 360° del temps</h2><p>Aquesta base està preparada per creuar observació local, predicció i models globals.</p>
-          <ul><li><span>01</span><div><b>Radar i llamps</b><small>Meteocat · AEMET</small></div><i>Properament</i></li><li><span>02</span><div><b>Predicció local</b><small>AEMET · Meteocat · eltiempo.es</small></div><i>Properament</i></li><li><span>03</span><div><b>Models numèrics</b><small>ECMWF · GFS</small></div><i>Fase 2</i></li><li><span>04</span><div><b>Històrics i rècords</b><small>WU · VEVOR</small></div><i>Fase 2</i></li></ul>
-        </aside>
+        <article class="radar-card panel">
+          <header><div><p class="eyebrow">Precipitació a Catalunya</p><h2>Radar Meteocat</h2><a class="source-link" href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Font oficial: Meteocat ↗</a></div><span class="tag">Actualització ~6 min</span></header>
+          <div class="radar-frame"><iframe title="Radar meteorològic de Catalunya de Meteocat" loading="lazy" src="https://static-m.meteo.cat/ginys/mapaRadar?language=ca&amp;color=2c3e50&amp;target=_blank"></iframe></div>
+          <div class="radar-actions"><p>El giny mostra l’última imatge i permet ampliar el mapa. La seqüència temporal completa es consulta al visor oficial.</p><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Obrir animació i previsió +1 h →</a></div>
+        </article>
       </section>
 
       <section id="contacte" class="contact-section section-block" aria-labelledby="contact-title">
