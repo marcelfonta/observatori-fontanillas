@@ -1,6 +1,6 @@
 # Full de ruta per a xarxes socials autònomes
 
-Aquest document deixa preparada l’arquitectura de la futura fase social. **La V5.3 no publica res a cap xarxa** i no necessita cap contrasenya ni token nou.
+Aquest document deixa preparada l’arquitectura de la futura fase social. **La V5.4 no publica res a cap xarxa** i no necessita cap contrasenya ni token nou.
 
 ## Objectiu
 
@@ -52,4 +52,4 @@ S’activen els avisos oficials i els episodis destacables amb límits estrictes
 - Si les publicacions inclouran webcam, gràfics o targetes generades.
 - Quin tipus de contingut podrà ser totalment autònom i quin requerirà aprovació.
 
-La V5.3 ja centralitza la lectura «Què importa ara?» i els avisos locals. Aquests blocs serviran de base conceptual, però el futur publicador reconstruirà el missatge al servidor a partir de dades fiables, sense dependre del text visible al navegador.
+La V5.4 ja centralitza la lectura «Què importa ara?» i els avisos locals dins d’un únic centre de vigilància. Aquest bloc servirà de base conceptual, però el futur publicador reconstruirà el missatge al servidor a partir de dades fiables, sense dependre del text visible al navegador.

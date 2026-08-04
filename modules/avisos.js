@@ -35,7 +35,7 @@ export function renderAlerts(payload) {
   const list=document.getElementById('official-alert-list');
   if(!card||!list)return;
   const level=payload?.ok ? (payload.maxLevel || 'none') : 'unknown';
-  card.className=`alerts-local panel is-${level}`;
+  card.className=`alerts-local is-${level}`;
   list.replaceChildren();
   if(!payload?.ok){
     setText('alerts-local-title','No s’ha pogut verificar ara mateix');

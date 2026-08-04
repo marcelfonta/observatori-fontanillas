@@ -303,3 +303,13 @@ body{font-size:var(--type-body)}
 @media (max-width:1120px){.situation-grid,.model-agreement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:780px){.situation-panel{padding:23px}.situation-panel>header{align-items:flex-start;flex-direction:column}.official-alert-item{grid-template-columns:1fr}.model-agreement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:510px){.situation-panel{padding:19px}.situation-grid,.model-agreement-grid{grid-template-columns:1fr}.official-alert-list{margin-block:16px}.model-agreement-grid article{padding:14px}.quality-section::before{top:38px}}
+
+/* V5.4: avisos oficials i lectura operativa reunits en un únic centre de vigilància. */
+.alerts-hub{padding:0;overflow:hidden;box-shadow:none;background:linear-gradient(145deg,rgba(16,36,30,.88),rgba(6,16,14,.8))}
+.alerts-hub .alerts-layout{gap:0}
+.alerts-hub .alerts-map{border-right:1px solid var(--line);background:rgba(7,17,15,.3)}
+.alerts-hub .alerts-local{background:radial-gradient(circle at 92% 4%,rgba(233,184,114,.08),transparent 35%),linear-gradient(145deg,rgba(24,44,37,.76),rgba(8,20,17,.68))}
+.situation-panel--alerts{margin:0;padding:27px 29px 29px;border-top:1px solid var(--line);background:radial-gradient(circle at 8% 15%,rgba(119,183,200,.11),transparent 30%),linear-gradient(140deg,rgba(14,33,29,.78),rgba(7,18,15,.58))}
+.alerts-hub>.alerts-note{margin:0;padding:15px 29px 18px;border-top:1px solid var(--line);background:rgba(3,12,9,.22)}
+@media (max-width:780px){.alerts-hub .alerts-map{border-right:0;border-bottom:1px solid var(--line)}.situation-panel--alerts{padding:23px}.alerts-hub>.alerts-note{padding:15px 23px 18px}}
+@media (max-width:510px){.situation-panel--alerts{padding:19px}.alerts-hub>.alerts-note{padding:14px 19px 17px}}

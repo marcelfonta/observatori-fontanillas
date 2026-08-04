@@ -1,4 +1,5 @@
 const STATION_ID = "ISANTC198";
+const WORKER_VERSION = "5.3.1";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const WEBCAM_URL = "https://www.alvar.cat/WebCam/Imatge-Camera.jpg";
@@ -576,6 +577,7 @@ function parseAemetFeed(xml) {
   const blocks = [...String(xml).matchAll(/<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi)].map(match => match[1]);
   const channelUpdated = xmlTag(xml, "lastBuildDate") || xmlTag(xml, "pubDate") || null;
   const noAlertPattern = /sin avisos|sense avisos|no hay avisos|no existen avisos|no se han emitido avisos/i;
+  const metadataPattern = /estado completo de avisos|estat complet d.?avisos|fichero tar\.gz|fitxer tar\.gz|contiene todos los avisos|conté tots els avisos/i;
   const entries = blocks.map(block => {
     const title = plainAlertText(xmlTag(block, "title"));
     const description = plainAlertText(xmlTag(block, "description"));
@@ -590,7 +592,7 @@ function parseAemetFeed(xml) {
       rank:level.rank,
       published:xmlTag(block, "pubDate") || null,
       link:xmlTag(block, "link") || AEMET_PRELITORAL_PAGE,
-      active:!noAlertPattern.test(combined) && level.key !== "none",
+      active:!noAlertPattern.test(combined) && !metadataPattern.test(combined) && level.key !== "none",
     };
   });
   const activeAlerts = entries.filter(entry => entry.active).sort((a, b) => b.rank - a.rank);
@@ -611,6 +613,7 @@ async function alerts() {
     const parsed = parseAemetFeed(xml);
     return json({
       ok:true,
+      version:WORKER_VERSION,
       status:parsed.activeAlerts.length ? "active" : "clear",
       source:{ name:"AEMET", area:"Prelitoral de Barcelona", url:AEMET_PRELITORAL_PAGE, feed:AEMET_PRELITORAL_FEED },
       updated:parsed.channelUpdated,
@@ -624,6 +627,7 @@ async function alerts() {
     console.error("AEMET alerts error", error);
     return json({
       ok:false,
+      version:WORKER_VERSION,
       status:"unavailable",
       source:{ name:"AEMET", area:"Prelitoral de Barcelona", url:AEMET_PRELITORAL_PAGE, feed:AEMET_PRELITORAL_FEED },
       checkedAt:new Date().toISOString(),

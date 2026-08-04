@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/variables.css?v=5.3.0" />
-    <link rel="stylesheet" href="css/layout.css?v=5.3.0" />
-    <link rel="stylesheet" href="css/style.css?v=5.3.0" />
+    <link rel="stylesheet" href="css/variables.css?v=5.4.0" />
+    <link rel="stylesheet" href="css/layout.css?v=5.4.0" />
+    <link rel="stylesheet" href="css/style.css?v=5.4.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-    <script type="module" src="js/app.js?v=5.3.0"></script>
+    <script type="module" src="js/app.js?v=5.4.0"></script>
   </head>
   <body>
     <a class="skip-link" href="#ara">Saltar al contingut principal</a>
@@ -69,20 +69,6 @@
         <article class="metric panel" id="metric-card-humidex"><div class="metric__head"><span>Temperatura de xafogor</span><span class="metric__icon">Humidex</span></div><div class="metric__value"><span id="humidex">—</span><small>°C eq.</small></div><p id="humidex-reading">Efecte conjunt de calor i humitat</p><div class="metric-context"><span id="level-humidex">Interpretant</span><div><i id="marker-humidex"></i></div></div><div class="metric-spark"><canvas id="spark-humidex" aria-label="Evolució recent de la temperatura de xafogor"></canvas></div></article>
       </section>
 
-      <section class="situation-panel panel" aria-labelledby="situation-title">
-        <header>
-          <div><p class="eyebrow">Resum operatiu</p><h2 id="situation-title">Què importa ara?</h2></div>
-          <span class="tag" id="situation-status">Creuant dades</span>
-        </header>
-        <p class="situation-lead" id="situation-summary" aria-live="polite">Analitzant l’estació, la previsió immediata i els avisos oficials.</p>
-        <div class="situation-grid" id="situation-grid">
-          <article data-situation="alert"><span>Avisos oficials</span><strong id="situation-alert-title">Comprovant</strong><small id="situation-alert-copy">Consultant el Prelitoral de Barcelona</small></article>
-          <article data-situation="rain"><span>Pròximes 3 hores</span><strong id="situation-rain-title">Calculant pluja</strong><small id="situation-rain-copy">Esperant la previsió horària</small></article>
-          <article data-situation="thermal"><span>Confort i radiació</span><strong id="situation-thermal-title">Analitzant</strong><small id="situation-thermal-copy">Creuant temperatura, humitat i UV</small></article>
-          <article data-situation="wind"><span>Vent i canvi proper</span><strong id="situation-wind-title">Calculant</strong><small id="situation-wind-copy">Esperant les pròximes hores</small></article>
-        </div>
-      </section>
-
       <section class="derived-panel panel" aria-labelledby="derived-title">
         <header><div><p class="eyebrow">Diagnosi atmosfèrica</p><h2 id="derived-title">Més lectura, sense inventar sensors</h2></div><span class="tag">Valors calculats</span></header>
         <p class="derived-panel__intro">Indicadors estimats a partir de la temperatura, la humitat, el punt de rosada i el vent mesurats per l’estació.</p>
@@ -127,15 +113,16 @@
           <div><p class="eyebrow">Vigilància oficial</p><h2 id="alerts-title">Avisos que poden afectar Sant Celoni</h2><p>Seguiment del Vallès Oriental i del prelitoral de Barcelona amb fonts oficials.</p></div>
           <span class="tag">Meteocat · AEMET</span>
         </div>
-        <div class="alerts-layout">
-          <article class="alerts-map panel" aria-labelledby="alerts-map-title">
+        <div class="alerts-hub panel">
+          <div class="alerts-layout">
+          <article class="alerts-map" aria-labelledby="alerts-map-title">
             <header><div><span id="alerts-map-title">Mapa de perill a Catalunya</span><small>Situacions Meteorològiques de Perill vigents</small></div><a href="https://www.meteo.cat/prediccio/perill" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></header>
             <div class="alerts-map__frame">
               <iframe src="https://static-m.meteo.cat/ginys/mapaAvisos?language=ca&amp;color=2c3e50&amp;target=_blank" title="Mapa oficial d’avisos meteorològics de Meteocat" frameborder="0" scrolling="no" width="297" height="525" loading="lazy"></iframe>
             </div>
             <p class="alerts-map__hint"><span>i</span> Selecciona el dia al mateix giny i toca una comarca per consultar-ne el detall.</p>
           </article>
-          <article class="alerts-local panel is-loading" id="alerts-local-card" aria-labelledby="alerts-local-title">
+          <article class="alerts-local is-loading" id="alerts-local-card" aria-labelledby="alerts-local-title">
             <div><p class="eyebrow">Lectura automàtica de proximitat</p><h3 id="alerts-local-title">Comprovant avisos oficials</h3><p class="alerts-local__intro" id="alerts-local-copy">Consultant el canal oficial d’AEMET per al Prelitoral de Barcelona.</p><span class="alert-official-badge" id="alerts-local-status">Connectant</span></div>
             <div class="official-alert-list" id="official-alert-list"><div class="official-alert-empty">Esperant la resposta del servei oficial…</div></div>
             <div class="alert-areas">
@@ -151,8 +138,22 @@
             </div>
             <div class="alerts-safety"><span aria-hidden="true">!</span><p><b>En una situació adversa</b> consulta el detall oficial actualitzat i segueix les indicacions de Protecció Civil i del 112.</p></div>
           </article>
+          </div>
+          <section class="situation-panel situation-panel--alerts" aria-labelledby="situation-title">
+            <header>
+              <div><p class="eyebrow">Lectura operativa</p><h2 id="situation-title">Què importa ara?</h2></div>
+              <span class="tag" id="situation-status">Creuant dades</span>
+            </header>
+            <p class="situation-lead" id="situation-summary" aria-live="polite">Analitzant l’estació, la previsió immediata i els avisos oficials.</p>
+            <div class="situation-grid" id="situation-grid">
+              <article data-situation="alert"><span>Avisos oficials</span><strong id="situation-alert-title">Comprovant</strong><small id="situation-alert-copy">Consultant el Prelitoral de Barcelona</small></article>
+              <article data-situation="rain"><span>Pròximes 3 hores</span><strong id="situation-rain-title">Calculant pluja</strong><small id="situation-rain-copy">Esperant la previsió horària</small></article>
+              <article data-situation="thermal"><span>Confort i radiació</span><strong id="situation-thermal-title">Analitzant</strong><small id="situation-thermal-copy">Creuant temperatura, humitat i UV</small></article>
+              <article data-situation="wind"><span>Vent i canvi proper</span><strong id="situation-wind-title">Calculant</strong><small id="situation-wind-copy">Esperant les pròximes hores</small></article>
+            </div>
+          </section>
+          <p class="alerts-note"><span>i</span> El mapa és el servei oficial de Meteocat. La lectura local reprodueix el canal CAP/RSS oficial d’AEMET per al Prelitoral de Barcelona i sempre enllaça amb el detall original. <b id="alerts-updated">Actualitzant…</b></p>
         </div>
-        <p class="alerts-note"><span>i</span> El mapa és el servei oficial de Meteocat. La lectura local reprodueix el canal CAP/RSS oficial d’AEMET per al Prelitoral de Barcelona i sempre enllaça amb el detall original. <b id="alerts-updated">Actualitzant…</b></p>
       </section>
 
       <section id="prediccio" class="forecast-section section-block" aria-labelledby="forecast-title">
@@ -360,7 +361,7 @@
         <a href="#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.3</small><div><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.4</small><div><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   </body>
 </html>
