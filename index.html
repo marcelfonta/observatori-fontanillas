@@ -23,7 +23,7 @@
         <span><strong>Observatori</strong><small>Fontanillas · Montseny</small></span>
       </a>
       <nav class="nav" aria-label="Navegació principal">
-        <a class="is-active" href="#ara">Ara</a><a href="#tendencies">Tendències</a><a href="#territori">Territori</a>
+        <a class="is-active" href="#ara">Ara</a><a href="#prediccio">Predicció</a><a href="#tendencies">Tendències</a><a href="#territori">Territori</a><a href="#contacte">Contacte</a>
       </nav>
       <div class="live-pill"><span></span><b id="connection-label">Connectant</b><time id="header-time">--:--</time></div>
     </header>
@@ -76,15 +76,29 @@
         </div>
       </section>
 
-      <section class="forecast-section section-block" aria-labelledby="forecast-title">
+      <section id="prediccio" class="forecast-section section-block" aria-labelledby="forecast-title">
         <div class="section-heading forecast-heading">
-          <div><p class="eyebrow">Properes hores</p><h2 id="forecast-title">Com evolucionarà el temps?</h2></div>
-          <div class="forecast-source"><span id="forecast-status">Actualitzant model…</span><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Font: Open-Meteo ↗</a></div>
+          <div><p class="eyebrow">Centre de predicció</p><h2 id="forecast-title">Com evolucionarà el temps?</h2></div>
+          <div class="forecast-source"><span id="forecast-status">Actualitzant models…</span><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Dades de model: Open-Meteo ↗</a></div>
         </div>
+        <div class="forecast-overview">
+          <article class="forecast-lead panel"><span class="forecast-kicker">Lectura dels pròxims 7 dies</span><strong id="forecast-headline">Analitzant l’escenari meteorològic…</strong><p id="forecast-headline-copy">Creuant temperatura, precipitació i vent per generar una lectura ràpida.</p></article>
+          <article class="forecast-stat panel"><span>Pluja prevista</span><strong><b id="forecast-rain-total">—</b><small> mm</small></strong><p id="forecast-rain-signal">Calculant probabilitat</p></article>
+          <article class="forecast-stat panel"><span>Ratxa màxima</span><strong><b id="forecast-gust-max">—</b><small> km/h</small></strong><p id="forecast-gust-day">Calculant el dia</p></article>
+          <article class="forecast-stat panel"><span>Llum avui</span><strong><b id="forecast-daylight">—</b><small> h</small></strong><p id="forecast-sun-times">Sortida i posta del sol</p></article>
+        </div>
+        <div class="forecast-subheading"><div><span>Pròximes 48 hores</span><small>Intervals de 4 hores</small></div><span>Desplaça per veure tota l’evolució →</span></div>
         <div class="forecast-strip panel" id="forecast-strip" aria-live="polite">
-          <div class="forecast-loading">Carregant la predicció horària per a Sant Celoni…</div>
+          <div class="forecast-loading">Carregant la predicció de 48 hores per a Sant Celoni…</div>
         </div>
-        <p class="forecast-disclaimer">Predicció de model per a l’entorn de Sant Celoni. Cal interpretar-la conjuntament amb l’observació real de l’estació.</p>
+        <div class="forecast-subheading"><div><span>Previsió de 7 dies</span><small>Màximes, mínimes, pluja i vent</small></div></div>
+        <div class="daily-forecast" id="daily-forecast" aria-live="polite"><div class="forecast-loading">Preparant la previsió diària…</div></div>
+        <article class="model-comparison panel">
+          <header><div><p class="eyebrow">Convergència de models</p><h3>ECMWF vs GFS</h3></div><span class="tag" id="model-status">Connectant models</span></header>
+          <div class="model-table" id="model-table"><div class="forecast-loading">Comparant els dos grans models globals…</div></div>
+          <p class="model-reading" id="model-reading">La coincidència entre models ajuda a entendre la confiança de la predicció.</p>
+        </article>
+        <p class="forecast-disclaimer">La predicció descriu un escenari de model per a Sant Celoni, no una certesa. L’observació real de l’estació és la referència del temps que està fent.</p>
       </section>
 
       <section id="tendencies" class="section-block">
@@ -106,8 +120,29 @@
           <ul><li><span>01</span><div><b>Radar i llamps</b><small>Meteocat · AEMET</small></div><i>Properament</i></li><li><span>02</span><div><b>Predicció local</b><small>AEMET · Meteocat · eltiempo.es</small></div><i>Properament</i></li><li><span>03</span><div><b>Models numèrics</b><small>ECMWF · GFS</small></div><i>Fase 2</i></li><li><span>04</span><div><b>Històrics i rècords</b><small>WU · VEVOR</small></div><i>Fase 2</i></li></ul>
         </aside>
       </section>
+
+      <section id="contacte" class="contact-section section-block" aria-labelledby="contact-title">
+        <article class="contact-intro panel">
+          <p class="eyebrow">Contacte privat</p>
+          <h2 id="contact-title">Parlem de meteorologia.</h2>
+          <p>Has detectat una dada estranya, vols proposar una font o tens una consulta sobre l’observatori? Envia un missatge directament des d’aquí.</p>
+          <ul><li><span>01</span><div><b>Adreça protegida</b><small>El correu personal no apareix al web ni a GitHub.</small></div></li><li><span>02</span><div><b>Resposta directa</b><small>Rebràs la resposta a l’adreça que indiquis.</small></div></li><li><span>03</span><div><b>Ús responsable</b><small>Les dades només s’utilitzen per respondre el missatge.</small></div></li></ul>
+        </article>
+        <form class="contact-form panel" id="contact-form" novalidate>
+          <input class="contact-trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <input type="hidden" name="startedAt" id="contact-started-at" />
+          <div class="form-grid">
+            <label><span>Nom</span><input type="text" name="name" minlength="2" maxlength="80" autocomplete="name" required placeholder="Com et dius?" /></label>
+            <label><span>Correu de resposta</span><input type="email" name="email" maxlength="254" autocomplete="email" required placeholder="nom@exemple.cat" /></label>
+          </div>
+          <label><span>Motiu del contacte</span><select name="topic" required><option value="">Selecciona una opció</option><option value="Dades de l’estació">Dades de l’estació</option><option value="Predicció i models">Predicció i models</option><option value="Webcam o fonts">Webcam o fonts</option><option value="Proposta de col·laboració">Proposta de col·laboració</option><option value="Altres">Altres</option></select></label>
+          <label><span>Missatge</span><textarea name="message" minlength="20" maxlength="3000" required placeholder="Explica breument la teva consulta…"></textarea></label>
+          <label class="consent"><input type="checkbox" name="consent" required /><span>Accepto que les dades facilitades s’utilitzin exclusivament per respondre aquesta consulta.</span></label>
+          <div class="contact-actions"><button type="submit" id="contact-submit">Enviar missatge <span>→</span></button><p id="contact-status" role="status" aria-live="polite">Resposta habitual tan aviat com sigui possible.</p></div>
+        </form>
+      </section>
     </main>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny</small><a href="#top">Tornar amunt ↑</a></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny</small><div><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   </body>
 </html>
