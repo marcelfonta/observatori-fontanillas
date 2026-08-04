@@ -60,5 +60,6 @@ async function load(){
     if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
   }
 }
-document.querySelectorAll('[data-period]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-period]').forEach(b=>b.classList.remove('is-active'));button.classList.add('is-active');renderCharts(latest,latestHistory,button.dataset.period);}));
+const periodLabels={ '24h':'Lectures de les últimes 24 hores','7d':'Evolució dels últims 7 dies','30d':'Evolució dels últims 30 dies','1y':'Evolució de l’últim any disponible' };
+document.querySelectorAll('[data-period]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-period]').forEach(b=>b.classList.remove('is-active'));button.classList.add('is-active');setText('evolution-period-copy',periodLabels[button.dataset.period]||'Històric disponible');renderCharts(latest,latestHistory,button.dataset.period);}));
 initWebcam(); initContact(); initForecastControls(); initExtremeControls(); initModelViewer(); initRadar(); updateClock(); setInterval(updateClock,1000); load(); setInterval(load,CONFIG.refreshMs);

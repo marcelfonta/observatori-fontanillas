@@ -14,6 +14,7 @@ const shortTime = value => new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minut
 const sum = values => values.reduce((total,value)=>total+(Number(value)||0),0);
 const max = values => Math.max(...values.map(value=>Number(value)||0));
 const maxIndex = values => values.reduce((best,value,index)=>Number(value)>Number(values[best])?index:best,0);
+const hours = seconds => (Number(seconds)||0)/3600;
 let modelPayload = null;
 let modelDayIndex = 1;
 let sourceForecast = null;
@@ -56,7 +57,8 @@ function renderDaily(daily) {
   const container=document.getElementById('daily-forecast'); if(!container||!daily?.time) return;
   container.innerHTML=daily.time.map((value,index)=>{
     const date=new Date(value); const [symbol,label]=weather(daily.weather_code?.[index]);
-    return `<article class="day-card panel ${index===0?'is-today':''}"><header><div><span>${index===0?'Avui':dayName(date)}</span><small>${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(date)}</small></div><i aria-hidden="true">${symbol}</i></header><strong>${label}</strong><div class="day-card__temps"><b>${format(daily.temperature_2m_max?.[index],0)}°</b><span>${format(daily.temperature_2m_min?.[index],0)}°</span></div><div class="day-card__details"><span><b>${format(daily.precipitation_probability_max?.[index],0)}%</b> pluja</span><span>${format(daily.precipitation_sum?.[index],1)} mm</span><span>Ratxa ${format(daily.wind_gusts_10m_max?.[index],0)}</span></div></article>`;
+    const daylight=hours(daily.daylight_duration?.[index]); const sunshine=hours(daily.sunshine_duration?.[index]); const sunShare=daylight?Math.min(100,sunshine/daylight*100):0;
+    return `<article class="day-card panel ${index===0?'is-today':''}"><header><div><span>${index===0?'Avui':dayName(date)}</span><small>${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(date)}</small></div><i aria-hidden="true">${symbol}</i></header><strong>${label}</strong><div class="day-card__temps"><b>${format(daily.temperature_2m_max?.[index],0)}°</b><span>${format(daily.temperature_2m_min?.[index],0)}°</span></div><div class="day-card__details"><span><b>${format(daily.precipitation_probability_max?.[index],0)}%</b> pluja</span><span><b>${format(daily.precipitation_sum?.[index],1)}</b> mm</span><span><b>${format(daily.wind_gusts_10m_max?.[index],0)}</b> km/h ratxa</span><span><b>${format(daylight,1)}</b> h de llum</span><span><b>${format(sunshine,1)}</b> h de sol previst</span></div><div class="day-card__sun"><i style="width:${sunShare}%"></i></div></article>`;
   }).join('');
 }
 
@@ -102,12 +104,12 @@ function renderSourceOpenMeteo() {
   if(!container||!sourceForecast)return;
   if(sourceHorizon==='daily'){
     const daily=sourceForecast.daily||{};
-    container.innerHTML=`<div class="source-native-grid">${(daily.time||[]).map((value,index)=>{const [symbol,label]=weather(daily.weather_code?.[index]);return `<article><time>${index===0?'Avui':dayName(new Date(value))}</time><i>${symbol}</i><b>${label}</b><strong>${format(daily.temperature_2m_max?.[index],0)}° <small>${format(daily.temperature_2m_min?.[index],0)}°</small></strong><span>${format(daily.precipitation_probability_max?.[index],0)}% pluja · ${format(daily.wind_gusts_10m_max?.[index],0)} km/h</span></article>`;}).join('')}</div>`;
+    container.innerHTML=`<div class="source-native-grid">${(daily.time||[]).map((value,index)=>{const [symbol,label]=weather(daily.weather_code?.[index]);return `<article><time>${index===0?'Avui':dayName(new Date(value))}</time><i>${symbol}</i><b>${label}</b><strong>${format(daily.temperature_2m_max?.[index],0)}° <small>${format(daily.temperature_2m_min?.[index],0)}°</small></strong><div class="source-native-meta"><span><b>${format(daily.precipitation_probability_max?.[index],0)}%</b> pluja · ${format(daily.precipitation_sum?.[index],1)} mm</span><span>Ratxa ${format(daily.wind_gusts_10m_max?.[index],0)} km/h</span><span>${format(hours(daily.daylight_duration?.[index]),1)} h llum · ${format(hours(daily.sunshine_duration?.[index]),1)} h sol</span></div></article>`;}).join('')}</div>`;
     return;
   }
   const now=Date.now(); const hourly=sourceForecast.hourly||{}; let start=(hourly.time||[]).findIndex(value=>new Date(value).getTime()>=now-1800000); if(start<0)start=0;
-  const indexes=Array.from({length:13},(_,index)=>start+index*4).filter(index=>hourly.time?.[index]);
-  container.innerHTML=`<div class="source-native-grid source-native-grid--hourly">${indexes.map((index,position)=>{const [symbol,label]=weather(hourly.weather_code?.[index]);return `<article><time>${position===0?'Ara':shortTime(hourly.time[index])}</time><i>${symbol}</i><b>${label}</b><strong>${format(hourly.temperature_2m?.[index],0)}°</strong><span>${format(hourly.precipitation_probability?.[index],0)}% pluja · ${format(hourly.wind_speed_10m?.[index],0)} km/h</span></article>`;}).join('')}</div>`;
+  const indexes=Array.from({length:17},(_,index)=>start+index*3).filter(index=>hourly.time?.[index]);
+  container.innerHTML=`<div class="source-native-grid source-native-grid--hourly">${indexes.map((index,position)=>{const [symbol,label]=weather(hourly.weather_code?.[index]);return `<article><time>${timelineLabel(new Date(hourly.time[index]),position)}</time><i>${symbol}</i><b>${label}</b><strong>${format(hourly.temperature_2m?.[index],0)}° <small>${format(hourly.apparent_temperature?.[index],0)}°</small></strong><div class="source-native-meta"><span><b>${format(hourly.precipitation_probability?.[index],0)}%</b> pluja · ${format(hourly.precipitation?.[index],1)} mm</span><span>Vent ${format(hourly.wind_speed_10m?.[index],0)} · ratxa ${format(hourly.wind_gusts_10m?.[index],0)} km/h</span><span>Humitat ${format(hourly.relative_humidity_2m?.[index],0)}%</span></div></article>`;}).join('')}</div>`;
 }
 
 function updateSourceHorizon() {
@@ -116,14 +118,14 @@ function updateSourceHorizon() {
   if(meteocat) {
     meteocat.src=sourceHorizon==='hourly'?'https://static-m.meteo.cat/ginys/municipal72h?location=082021&language=ca&color=0f2a22&tempFormat=%20%C2%BAC&windSpeedFormat=km/h&mainChart=estCel&secondaryChart=true&target=_blank':'https://static-m.meteo.cat/ginys/municipal8d?location=082021&language=ca&color=0f2a22&tempFormat=%20%C2%BAC&target=_blank';
   }
-  const aemet=document.getElementById('source-aemet-frame');
-  if(aemet)aemet.src=sourceHorizon==='hourly'?'https://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202':'https://www.aemet.es/es/eltiempo/prediccion/municipios/widget/sant-celoni-id08202';
+  setText('source-meteocat-title',sourceHorizon==='hourly'?'Meteocat · pròximes 72 hores':'Meteocat · previsió de 8 dies');
+  setText('source-meteocat-copy',sourceHorizon==='hourly'?'Cel, temperatura, precipitació, humitat, xafogor i vent per hores':'Símbol, màxima, mínima i probabilitat de precipitació per dia');
 }
 
 export function renderFourLookComparison({best}) {
   sourceForecast=best;
   renderSourceOpenMeteo();
-  setText('four-look-status','4 fonts identificades');
+  setText('four-look-status','4 fonts actives');
 }
 
 export function renderFourLookError() {

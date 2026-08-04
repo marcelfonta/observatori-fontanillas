@@ -99,4 +99,5 @@ export function initRadar() {
     if(mode==='interactive')startInteractiveRadar();
     else { stopPlayback(); setText('radar-status','Meteocat oficial'); }
   }));
+  startInteractiveRadar();
 }

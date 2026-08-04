@@ -1,6 +1,6 @@
 # Observatori Meteorològic Fontanillas
 
-Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, sensació tèrmica i Humidex, extrems i tendències reals de Weather Underground, set famílies de gràfiques de fins a un any, predicció de 48 hores i 7 dies, consulta de fonts oficials, visor temporal de models, radar Meteocat i radar animat, astronomia solar i nocturna, webcam i contacte privat.
+Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, sensació tèrmica i Humidex, extrems i tendències reals de Weather Underground, set famílies de gràfiques de fins a un any, predicció de 48 hores i 7 dies amb hores de llum i sol previst, consulta de fonts oficials, visor temporal de models, radar animat i Meteocat, astronomia solar i nocturna, webcam i contacte privat.
 
 ## Posada en marxa
 
@@ -30,15 +30,15 @@ Les escales de color de les targetes són interpretatives: descriuen confort, in
 
 ## Fonts de predicció i radar
 
-- Open-Meteo: previsió horària i diària pròpia del dashboard.
+- Open-Meteo: previsió horària i diària pròpia del dashboard amb el mateix detall que les franges de 48 hores i 7 dies.
 - Meteocat: ginys oficials municipals de 72 hores i 8 dies, més el giny oficial del radar amb zoom.
-- AEMET: recurs oficial de predicció municipal per a Sant Celoni.
+- AEMET: giny municipal oficial configurat en català amb cel, temperatura, sensació tèrmica, pluja, humitat, vent i avisos, més accessos a les taules horàries i de 7 dies.
 - eltiempo.es: giny oficial complet per a Sant Celoni, configurat en català, graus Celsius i vent en km/h.
 - Ventusky: visor cartogràfic inserit amb línia temporal, capes i canvi entre GFS, ICON i GEM. ECMWF es manté disponible mitjançant el visor extern identificat.
 - RainViewer: mapa de radar interactiu amb les imatges disponibles de les dues últimes hores.
 - AEMET Barcelona–Gelida: accés directe per contrastar el radar oficial.
 
-Els recursos oficials es mostren en pestanyes perquè el seu disseny extern no trenqui la lectura general del dashboard. El giny d’eltiempo.es s’ha generat amb el seu configurador oficial i conserva l’enllaç a la previsió completa. Per convertir totes quatre fonts en una única taula numèrica homogènia caldria disposar de les vies d’integració oficials corresponents. El projecte no extreu dades d’altres webs mitjançant scraping ni inventa valors quan una font no ofereix accés estructurat.
+Els recursos oficials es mostren en pestanyes perquè el seu disseny extern no trenqui la lectura general del dashboard. Els ginys d’AEMET i eltiempo.es s’han generat amb els seus configuradors oficials. Meteocat ofereix dades horàries riques dins del seu propi giny, però el navegador no pot remaquetar el contingut d’un iframe extern. AEMET OpenData necessita una clau d’API per construir una taula nativa, i eltiempo.es no ofereix una API pública equivalent al seu giny. Per això el projecte conserva els ginys i enllaços oficials, sense scraping ni dades simulades.
 
 ## Astronomia local
 
@@ -68,9 +68,9 @@ data/                Catàlegs i dades estàtiques futures
 ## Funcions actives
 
 1. Històric horari real de Weather Underground / VEVOR.
-2. Línia temporal exacta de 48 hores, previsió de 7 dies i selector Open-Meteo/Meteocat/AEMET/eltiempo.es.
-3. Minigràfics de les últimes hores, UV a 3 hores, set gràfiques i extrems de 24 h, 7 dies, 30 dies i 1 any.
-4. Visor temporal Ventusky, taula diària navegable ECMWF/GFS/ICON, radar oficial Meteocat i animació RainViewer.
+2. Línia temporal exacta de 48 hores, previsió de 7 dies amb hores de llum i selector Open-Meteo/Meteocat/AEMET/eltiempo.es.
+3. Minigràfics de les últimes hores, UV a 3 hores, set gràfiques compactes i extrems de 24 h, 7 dies, 30 dies i 1 any.
+4. Visor temporal Ventusky, taula diària navegable ECMWF/GFS/ICON, animació RainViewer predeterminada i radar oficial Meteocat alternatiu.
 5. Posició del Sol, hora solar, Lluna, qualitat nocturna, equinoccis, solsticis i esdeveniments observables.
 6. Formulari de contacte sense publicar la bústia privada.
 7. Escales interpretatives i explicacions pedagògiques dels valors calculats.
@@ -85,7 +85,7 @@ data/                Catàlegs i dades estàtiques futures
 
 ```bash
 git add .
-git commit -m "Millora fonts, gràfiques, models i radar Meteocat"
+git commit -m "Publica la versió 4.5 del dashboard"
 git push origin main
 ```
 

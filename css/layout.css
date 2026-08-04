@@ -17,17 +17,17 @@ main { padding: 24px 0 64px; }
 .daily-forecast { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; }
 .official-forecast__grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, .75fr); gap: 16px; }
 .source-comparison { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.charts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.chart-card { padding: 28px; min-width: 0; }
-.chart-wrap { position: relative; height: 270px; margin-top: 24px; }
-.territory-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; }
-.webcam-card, .radar-card { padding: 28px; }
+.charts-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.chart-card { padding: 20px; min-width: 0; }
+.chart-wrap { position: relative; height: 185px; margin-top: 16px; }
+.territory-grid { display: grid; grid-template-columns: 1.1fr 1fr; align-items: stretch; gap: 16px; }
+.webcam-card, .radar-card { min-width: 0; height: 100%; padding: 26px; }
 .astronomy-overview { display: grid; grid-template-columns: 1.2fr 1.15fr 1fr .72fr; gap: 14px; }
-.astronomy-grid { display: grid; grid-template-columns: .9fr 1fr 1.35fr; align-items: start; gap: 16px; margin-top: 16px; }
+.astronomy-grid { display: grid; grid-template-columns: 1fr 1fr 1.25fr; align-items: stretch; gap: 16px; margin-top: 16px; }
 .contact-section { display: grid; grid-template-columns: .8fr 1.3fr; gap: 16px; }
 .contact-intro, .contact-form { padding: 34px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 footer { min-height: 110px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-@media (max-width: 1120px) { .hero { grid-template-columns: 1fr 1fr; } .hero__insight { grid-column: 1/-1; } .metrics-grid { grid-template-columns: repeat(3, 1fr); } .derived-grid { grid-template-columns: repeat(3, 1fr); } .insights-grid { grid-template-columns: repeat(2, 1fr); } .forecast-overview { grid-template-columns: repeat(3,1fr); } .forecast-lead { grid-column: 1/-1; } .daily-forecast { grid-template-columns: repeat(4,1fr); } .astronomy-overview { grid-template-columns: 1fr 1fr; } .astronomy-grid { grid-template-columns: 1fr 1fr; } .events-card { grid-column: 1/-1; } }
+@media (max-width: 1120px) { .hero { grid-template-columns: 1fr 1fr; } .hero__insight { grid-column: 1/-1; } .metrics-grid { grid-template-columns: repeat(3, 1fr); } .derived-grid { grid-template-columns: repeat(3, 1fr); } .insights-grid { grid-template-columns: repeat(2, 1fr); } .forecast-overview { grid-template-columns: repeat(3,1fr); } .forecast-lead { grid-column: 1/-1; } .daily-forecast { grid-template-columns: repeat(4,1fr); } .charts-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .astronomy-overview { grid-template-columns: 1fr 1fr; } .astronomy-grid { grid-template-columns: 1fr 1fr; } .events-card { grid-column: 1/-1; } }
 @media (max-width: 780px) { .shell { width: min(100% - 28px, 680px); } .site-header { height: 76px; } .nav { display: none !important; } main { padding-top: 8px; } .hero { padding: 28px; grid-template-columns: 1fr; gap: 32px; } .hero__insight { grid-column: auto; } .metrics-grid { grid-template-columns: repeat(2, 1fr); } .derived-grid { grid-template-columns: repeat(2, 1fr); } .charts-grid, .territory-grid, .contact-section, .official-forecast__grid, .astronomy-grid { grid-template-columns: 1fr; } .events-card { grid-column:auto; } .section-block { padding-top: 64px; } .section-heading { align-items: flex-start; gap: 22px; flex-direction: column; } .forecast-overview { grid-template-columns: 1fr 1fr; } .forecast-lead { grid-column:1/-1; } .daily-forecast { display:flex;overflow-x:auto;scroll-snap-type:x mandatory; } .source-comparison { display:flex;overflow-x:auto;scroll-snap-type:x mandatory; } footer { align-items: flex-start; flex-direction: column; padding: 28px 0; } }
 @media (max-width: 510px) { .metrics-grid, .derived-grid, .insights-grid, .forecast-overview, .form-grid, .astronomy-overview { grid-template-columns: 1fr; } .darkness-card { grid-column:auto; } .forecast-lead { grid-column:auto; } .metric { min-height: 180px; } .live-pill time { display: none; } .current-temp__value { font-size: 76px !important; } .contact-intro,.contact-form{padding:24px;} }

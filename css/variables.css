@@ -5,4 +5,5 @@
   --text: #f3f7f3; --muted: #93a79f; --green: #89d6a3; --lime: #c6e889; --amber: #e9b872; --blue: #77b7c8; --red: #f06f68; --purple: #bd8ce8;
   --font-display: "Manrope", sans-serif; --font-body: "DM Sans", sans-serif;
   --radius-xl: 26px; --radius-lg: 20px; --shadow: 0 24px 80px rgba(0,0,0,.28);
+  --type-caption: 10px; --type-small: 11px; --type-body: 13px; --type-card: 14px;
 }
