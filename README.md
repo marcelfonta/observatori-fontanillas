@@ -1,6 +1,6 @@
 # Observatori Meteorològic Fontanillas
 
-Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, extrems i tendències reals de Weather Underground, minigràfics, gràfiques històriques, predicció de 48 hores i 7 dies, comparació ECMWF/GFS/ICON, contrast oficial de fonts, radar Meteocat, webcam i contacte privat.
+Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, extrems i tendències reals de Weather Underground, minigràfics, gràfiques històriques, predicció de 48 hores i 7 dies, comparació ECMWF/GFS/ICON, contrast de fonts, radar interactiu, astronomia local, webcam i contacte privat.
 
 ## Posada en marxa
 
@@ -24,13 +24,20 @@ Si l’API no està disponible, la interfície activa un mode demo identificat c
 
 Les targetes principals mostren temperatura, sensació, humitat, punt de rosada, vent, ratxa i direcció, pressió, pluja acumulada, intensitat de precipitació, radiació solar i índex UV quan el sensor els facilita. El panell de diagnosi afegeix valors derivats —bulb humit, dèficit de pressió de vapor, base estimada del núvol, humitat absoluta i Beaufort— i els identifica sempre com a càlculs, no com a sensors addicionals.
 
+Les escales de color de les targetes són interpretatives: descriuen confort, intensitat o risc, però no representen encara una anomalia respecte d’una normal climàtica. L’índex UV segueix les categories internacionals emprades per AEMET: baix, moderat, alt, molt alt i extrem.
+
 ## Fonts de predicció i radar
 
 - Open-Meteo: previsió horària i diària i comparació dels models ECMWF, GFS i ICON.
-- Meteocat: giny municipal oficial de 72 hores i giny oficial de radar.
-- AEMET i eltiempo.es: accessos directes a la predicció horària de Sant Celoni.
+- Meteocat, AEMET i eltiempo.es: centre de contrast compacte, sense ginys visuals externs.
+- RainViewer: mapa de radar interactiu amb les imatges disponibles de les dues últimes hores.
+- Meteocat i AEMET Barcelona–Gelida: accessos directes per contrastar el radar oficial.
 
 Per convertir AEMET i eltiempo.es en una comparació numèrica unificada cal disposar d’una clau d’AEMET OpenData i d’una via oficial d’integració d’eltiempo.es. El projecte no extreu dades d’altres webs mitjançant scraping.
+
+## Astronomia local
+
+El mòdul nocturn calcula la fase i la il·luminació lunar, les pròximes fases, la durada de la nit i una puntuació orientativa per observar el cel segons els núvols, la pluja prevista i la llum de la Lluna. Quan és accessible, contrasta les fases i els horaris amb l’API d’efemèrides de l’Observatori Naval dels Estats Units (USNO). Els esdeveniments destacats de 2026 utilitzen com a referència l’IGN i el calendari de pluges de meteors de l’IMO.
 
 ## Contacte privat
 
@@ -58,8 +65,9 @@ data/                Catàlegs i dades estàtiques futures
 1. Històric horari real de Weather Underground / VEVOR.
 2. Línia temporal exacta de 48 hores, previsió de 7 dies i comparació ECMWF/GFS/ICON.
 3. Minigràfics de les últimes hores a les targetes disponibles.
-4. Radar oficial de Meteocat i contrast Meteocat/AEMET/eltiempo.es.
+4. Radar interactiu RainViewer, contrast oficial Meteocat i centre Meteocat/AEMET/eltiempo.es.
 5. Formulari de contacte sense publicar la bústia privada.
+6. Escales interpretatives, explicacions pedagògiques i mòdul de cel nocturn.
 
 ## Desplegament a Cloudflare Pages
 

@@ -43,6 +43,36 @@ function derivedValues(data) {
   };
 }
 
+function setLevel(key, value, min, max, label, level = 'good') {
+  const card = document.getElementById(`metric-card-${key}`);
+  const marker = document.getElementById(`marker-${key}`);
+  setText(`level-${key}`, label);
+  if (card) card.dataset.level = level;
+  if (marker && isNumber(value)) marker.style.left = `${clamp((Number(value) - min) / (max - min) * 100, 0, 100)}%`;
+}
+
+function renderLevels(data) {
+  const feels = isNumber(data.feelsLike) ? Number(data.feelsLike) : NaN;
+  setLevel('temperature', feels, -5, 42, !isNumber(feels) ? 'Sense lectura' : feels < 5 ? 'Fred intens' : feels < 15 ? 'Ambient fresc' : feels < 27 ? 'Confortable' : feels < 32 ? 'Calor moderada' : feels < 38 ? 'Calor alta' : 'Calor extrema', !isNumber(feels) ? 'low' : feels < 15 ? 'low' : feels < 27 ? 'good' : feels < 32 ? 'moderate' : feels < 38 ? 'high' : 'extreme');
+  const humidity = isNumber(data.humidity) ? Number(data.humidity) : NaN;
+  setLevel('humidity', humidity, 0, 100, !isNumber(humidity) ? 'Sense lectura' : humidity < 30 ? 'Aire sec' : humidity <= 60 ? 'Rang confortable' : humidity <= 80 ? 'Ambient humit' : 'Humitat molt alta', !isNumber(humidity) ? 'low' : humidity < 30 ? 'moderate' : humidity <= 60 ? 'good' : humidity <= 80 ? 'moderate' : 'high');
+  const wind = isNumber(data.windSpeed) ? Number(data.windSpeed) : NaN;
+  const windScale = beaufort(wind);
+  setLevel('wind', wind, 0, 100, `${windScale.force} Beaufort · ${windScale.label}`, !isNumber(wind) ? 'low' : wind < 20 ? 'good' : wind < 40 ? 'moderate' : wind < 70 ? 'high' : 'extreme');
+  const pressure = isNumber(data.pressure) ? Number(data.pressure) : NaN;
+  setLevel('pressure', pressure, 980, 1040, !isNumber(pressure) ? 'Sense lectura' : pressure < 995 ? 'Pressió baixa' : pressure <= 1025 ? 'Rang habitual' : pressure <= 1035 ? 'Pressió alta' : 'Molt alta', !isNumber(pressure) ? 'low' : pressure < 995 || pressure > 1035 ? 'moderate' : 'good');
+  const rainTotal = isNumber(data.rainToday) ? Number(data.rainToday) : NaN;
+  setLevel('rain-total', rainTotal, 0, 50, !isNumber(rainTotal) || rainTotal === 0 ? 'Sense acumulació' : rainTotal < 5 ? 'Acumulació baixa' : rainTotal < 20 ? 'Acumulació moderada' : rainTotal < 50 ? 'Acumulació alta' : 'Acumulació molt alta', !isNumber(rainTotal) || rainTotal === 0 ? 'good' : rainTotal < 20 ? 'low' : rainTotal < 50 ? 'moderate' : 'high');
+  const rainRate = isNumber(data.rainRate) ? Number(data.rainRate) : NaN;
+  setLevel('rain-rate', rainRate, 0, 50, !isNumber(rainRate) || rainRate === 0 ? 'Sense precipitació' : rainRate < 2 ? 'Pluja feble' : rainRate < 10 ? 'Pluja moderada' : rainRate < 30 ? 'Pluja intensa' : 'Pluja torrencial', !isNumber(rainRate) || rainRate === 0 ? 'good' : rainRate < 2 ? 'low' : rainRate < 10 ? 'moderate' : rainRate < 30 ? 'high' : 'extreme');
+  const solar = isNumber(data.solarRadiation) ? Number(data.solarRadiation) : NaN;
+  setLevel('solar', solar, 0, 1000, !isNumber(data.solarRadiation) ? 'Sense lectura' : solar < 100 ? 'Radiació feble' : solar < 500 ? 'Radiació moderada' : solar < 800 ? 'Radiació alta' : 'Radiació molt alta', !isNumber(data.solarRadiation) ? 'low' : solar < 500 ? 'good' : solar < 800 ? 'moderate' : 'high');
+  const uv = isNumber(data.uv) ? Number(data.uv) : NaN;
+  const uvLabel = !isNumber(data.uv) ? 'Sense lectura' : uv < 3 ? 'Baix · protecció normal' : uv < 6 ? 'Moderat · protegeix-te' : uv < 8 ? 'Alt · evita el migdia' : uv < 11 ? 'Molt alt · màxima protecció' : 'Extrem · evita exposició';
+  const uvLevel = !isNumber(data.uv) ? 'low' : uv < 3 ? 'good' : uv < 6 ? 'moderate' : uv < 8 ? 'high' : uv < 11 ? 'high' : 'extreme';
+  setLevel('uv', uv, 0, 12, uvLabel, uvLevel);
+}
+
 export function renderStation(data, context = {}) {
   setText('temperature', format(data.temperature, 1)); setText('metric-temperature', format(data.temperature, 1)); setText('feels-like', `${format(data.feelsLike, 1)} °C`);
   setText('humidity', format(data.humidity)); setText('dew-point', `${format(data.dewPoint, 1)} °C`); setText('wind-speed', format(data.windSpeed, 1)); setText('wind-gust', `${format(data.windGust, 1)} km/h`);
@@ -64,5 +94,6 @@ export function renderStation(data, context = {}) {
   setText('wet-bulb', format(calculated.wetBulb, 1)); setText('vpd', format(calculated.vpd, 2)); setText('cloud-base', format(calculated.cloudBase, 0)); setText('absolute-humidity', format(calculated.absoluteHumidity, 1));
   setText('vpd-reading', !isNumber(calculated.vpd) ? 'Dada no calculable' : calculated.vpd < .4 ? 'Aire gairebé saturat' : calculated.vpd < 1.2 ? 'Demanda baixa o moderada' : calculated.vpd < 2 ? 'Aire força sec' : 'Demanda evaporativa alta');
   const windForce = beaufort(data.windSpeed); setText('beaufort', `${windForce.force} · ${windForce.label}`); setText('beaufort-reading', `${format(data.windSpeed, 1)} km/h segons l’escala Beaufort`);
+  renderLevels(data);
   const webcam = document.getElementById('webcam-image'); if (webcam) webcam.src = `${data.webcam}?t=${Date.now()}`;
 }
