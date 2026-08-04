@@ -1,19 +1,18 @@
 # Observatori Meteorològic Fontanillas
 
-Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, sensació tèrmica i Humidex, extrems i tendències reals de Weather Underground, sis famílies de gràfiques de fins a un any, avisos oficials de proximitat, predicció de 48 hores i 7 dies amb hores de llum i sol previst, comparació de cinc fonts fiables, visor temporal de models, radar animat i Meteocat, astronomia solar i nocturna, webcam i contacte privat.
+Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, sensació tèrmica i Humidex, un arxiu propi persistent amb extrems i tendències, sis famílies de gràfiques de fins a un any, control de qualitat de les dades, avisos oficials de proximitat, predicció de 48 hores i 7 dies amb hores de llum i sol previst, comparació de cinc fonts fiables, visor temporal de models, radar animat i Meteocat, astronomia solar i nocturna, webcam i contacte privat.
 
-## Novetats de la versió 5.1
+## Novetats de la versió 5.2
 
-- Navegació inferior específica per a mòbil, amb accés ràpid a les seccions principals i menú complementari accessible.
-- Seguiment de la secció activa durant el desplaçament.
-- Ventusky corregit perquè no sobresurti lateralment en pantalles estretes.
-- Meteoblue conserva el giny complet en ordinador i mostra un accés compacte i llegible en mòbil.
-- Pestanyes de fonts i radar accessibles amb teclat, estat ARIA i canvi amb fletxes.
-- Ginys d’AEMET, eltiempo.es, Yr, Meteoblue, Ventusky, Meteocat radar i Leaflet carregats només quan es necessiten.
-- Percentatge de les hores de llum amb sol previst explicat al costat de cada barra diària.
-- Tipografia secundària ampliada, objectius tàctils més còmodes, focus visible i compatibilitat amb reducció de moviment.
-- Dades actuals actualitzades cada 5 minuts, però prediccions i models cada hora per evitar consultes innecessàries.
-- Capçaleres bàsiques de seguretat i revalidació de fitxers per evitar veure versions antigues després d’un desplegament.
+- Base de dades pròpia Cloudflare D1 preparada per conservar les observacions de l’estació sense el límit temporal de Weather Underground.
+- Captura automàtica cada cinc minuts mitjançant un Cron Trigger del Worker, sense duplicar lectures.
+- Històric híbrid: la base pròpia té prioritat i Weather Underground continua actuant com a suport recent mentre l’arxiu creix.
+- Resolució automàtica segons l’horitzó: detall brut per als períodes curts, resum horari fins a 45 dies i resum diari per als períodes llargs.
+- Nou panell «Dades sota control» amb salut general, latència, antiguitat de la lectura, disponibilitat de les últimes 24 hores i cobertura de 24 h, 7 dies, 30 dies i un any.
+- Control individual de temperatura, humitat, pressió, vent, pluja, radiació solar i UV per detectar sensors incomplets.
+- Pluja acumulada calculada amb increments reals entre observacions, evitant sumar repetidament els totals diaris.
+- Rutes noves del Worker: `/quality` per a l’observabilitat i `/history` ampliada fins a 366 dies.
+- Funcionament progressiu: el dashboard continua sent compatible amb el Worker anterior fins que s’activi D1.
 
 ## Posada en marxa
 
@@ -33,11 +32,24 @@ La configuració de l’API és a `js/config.js`. El dashboard consulta:
 
 `https://fonta-meteo.marcelfonta.workers.dev`
 
-Si l’API no està disponible, la interfície activa un mode demo identificat clarament. El Worker ofereix dades actuals a `/`, històric horari real a `/history`, control de qualitat a `/health` i recepció segura del formulari a `POST /contact`. La predicció utilitza Open-Meteo i està identificada com a dada de model.
+Si l’API no està disponible, la interfície activa un mode demo identificat clarament. El Worker ofereix dades actuals a `/`, històric propi i de suport a `/history`, diagnosi tècnica a `/health`, qualitat i cobertura a `/quality` i recepció segura del formulari a `POST /contact`. La predicció utilitza Open-Meteo i està identificada com a dada de model.
 
 Les targetes principals mostren temperatura, sensació tèrmica, temperatura de xafogor o Humidex, humitat, punt de rosada, vent, ratxa i direcció, pressió, pluja acumulada, intensitat de precipitació, radiació solar i índex UV. El Worker ja facilita les lectures directes i el navegador calcula la sensació i l’Humidex amb fórmules meteorològiques. El panell de diagnosi afegeix bulb humit, dèficit de pressió de vapor, base estimada del núvol, humitat absoluta, Beaufort, pressió de vapor, raó de mescla i densitat de l’aire, sempre identificats com a càlculs.
 
-L’arxiu d’extrems permet seleccionar 24 hores, 7 dies, 30 dies o 1 any i resumeix temperatura, pluja, vent, radiació, UV, pressió i humitat. Si l’estació encara no té tot el període, el web mostra la cobertura real disponible en comptes d’omplir els buits.
+L’arxiu d’extrems permet seleccionar 24 hores, 7 dies, 30 dies o 1 any i resumeix temperatura, pluja, vent, radiació, UV, pressió i humitat. Si l’estació encara no té tot el període, el web mostra la cobertura real disponible en comptes d’omplir els buits. La V5.2 crea una observació D1 cada cinc minuts i adapta la resolució abans d’enviar-la al navegador, de manera que l’històric anual es manté àgil.
+
+## Històric persistent i qualitat
+
+El directori `worker/` inclou el Worker V4 i l’esquema SQL de referència. El Worker crea automàticament la taula necessària quan detecta la vinculació D1 `DB`, desa les lectures programades i conserva Weather Underground com a font de suport. La ruta `/quality` calcula:
+
+- estat i antiguitat de l’última observació;
+- latència de la consulta a l’estació;
+- nombre de lectures pròpies desades;
+- disponibilitat real de les últimes 24 hores;
+- cobertura temporal acumulada;
+- completitud de cada família de sensors.
+
+Per activar aquesta part cal seguir `GUIA-ACTIVAR-DADES-V5.2.md`. No s’ha de publicar cap clau API al repositori.
 
 Les escales de color de les targetes són interpretatives: descriuen confort, intensitat o risc, però no representen encara una anomalia respecte d’una normal climàtica. L’índex UV segueix les categories internacionals emprades per AEMET: baix, moderat, alt, molt alt i extrem.
 
@@ -84,11 +96,12 @@ js/                  Arrencada, API, configuració i utilitats
 modules/             Estació, gràfiques i connectors futurs
 assets/              Logotips, icones i imatges
 data/                Catàlegs i dades estàtiques futures
+worker/              Worker Cloudflare V4 i esquema de la base D1
 ```
 
 ## Funcions actives
 
-1. Històric horari real de Weather Underground / VEVOR.
+1. Històric persistent propi a D1, amb Weather Underground com a suport recent.
 2. Línia temporal exacta de 48 hores, previsió de 7 dies amb hores de llum i comparador Meteocat/AEMET/eltiempo.es/Yr/Meteoblue.
 3. Minigràfics de les últimes hores, UV a 3 hores, sis gràfiques compactes i extrems de 24 h, 7 dies, 30 dies i 1 any.
 4. Visor temporal Ventusky, taula diària navegable ECMWF/GFS/ICON, animació RainViewer predeterminada i radar oficial Meteocat alternatiu.
@@ -96,6 +109,7 @@ data/                Catàlegs i dades estàtiques futures
 6. Formulari de contacte sense publicar la bústia privada.
 7. Avisos oficials de Meteocat i accés local d’AEMET per al Vallès Oriental i el Prelitoral de Barcelona.
 8. Escales interpretatives i explicacions pedagògiques dels valors calculats.
+9. Panell de qualitat, disponibilitat, cobertura i salut individual dels sensors.
 
 ## Desplegament a Cloudflare Pages
 
@@ -107,7 +121,7 @@ data/                Catàlegs i dades estàtiques futures
 
 ```bash
 git add .
-git commit -m "Publica la versió 5.1 del dashboard"
+git commit -m "Publica la versió 5.2 amb historial propi"
 git push origin main
 ```
 

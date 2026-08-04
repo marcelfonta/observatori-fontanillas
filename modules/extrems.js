@@ -12,6 +12,8 @@ function mean(items) {
 }
 
 function accumulatedRain(items) {
+  const increments = items.map(item=>Number(item.rainIncrement)).filter(Number.isFinite);
+  if (increments.length) return increments.reduce((total,value)=>total+Math.max(0,value),0);
   return items.reduce((total,item,index) => {
     const current = Number(item.rainTotal);
     const previous = Number(items[index-1]?.rainTotal);

@@ -20,8 +20,15 @@ export function renderCharts(data, history = [], period='24h') {
   const labels=selected.map(item=>new Intl.DateTimeFormat('ca-ES',period==='24h'?{hour:'2-digit',minute:'2-digit'}:{day:'2-digit',month:'short'}).format(new Date(item.t)));
   const temps=selected.map(item=>item.temperature); const dewPoints=selected.map(item=>item.dewPoint); const pressures=selected.map(item=>item.pressure);
   const humidity=selected.map(item=>item.humidity); const wind=selected.map(item=>item.windSpeed); const gusts=selected.map(item=>item.windGust);
-  const rainTotal=selected.map(item=>item.rainTotal); const rainRate=selected.map(item=>item.rainRate); const uv=selected.map(item=>item.uv);
-  const status=document.getElementById('history-status'); if(status) status.textContent=selected.length>1?`${selected.length} lectures reals`:'Recollint dades';
+  let accumulated=0;
+  const hasRainIncrements=selected.some(item=>Number.isFinite(Number(item.rainIncrement)));
+  const rainTotal=selected.map(item=>{
+    if(!hasRainIncrements)return item.rainTotal;
+    accumulated+=Math.max(0,Number(item.rainIncrement)||0);
+    return accumulated;
+  });
+  const rainRate=selected.map(item=>item.rainRate); const uv=selected.map(item=>item.uv);
+  const status=document.getElementById('history-status'); if(status) status.textContent=selected.length>1?`${selected.length} punts reals`:'Recollint dades';
   charts=[
     makeChart(document.getElementById('temperature-chart'),labels,[{label:'Temperatura',data:temps,borderColor:palette.green,backgroundColor:`${palette.green}16`,fill:true},{label:'Punt de rosada',data:dewPoints,borderColor:palette.blue,backgroundColor:'transparent',borderDash:[5,5],fill:false}],'°C',true),
     makeChart(document.getElementById('pressure-chart'),labels,[{label:'Pressió',data:pressures,borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true}],' hPa'),

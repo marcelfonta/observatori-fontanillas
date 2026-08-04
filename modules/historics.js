@@ -38,6 +38,8 @@ function numeric(items, key) { return items.map(item => Number(item[key])).filte
 function extreme(items, key, mode) { return items.filter(item => Number.isFinite(Number(item[key]))).reduce((best,item) => !best || (mode === 'max' ? Number(item[key]) > Number(best[key]) : Number(item[key]) < Number(best[key])) ? item : best, null); }
 function closest(items, target) { return items.reduce((best,item) => Math.abs(item.t-target) < Math.abs((best?.t ?? 0)-target) ? item : best, null); }
 function accumulatedRain(items) {
+  const increments=items.map(item=>Number(item.rainIncrement)).filter(Number.isFinite);
+  if(increments.length)return increments.reduce((total,value)=>total+Math.max(0,value),0);
   return items.reduce((result,item,index) => {
     const current=Number(item.rainTotal); const previous=Number(items[index-1]?.rainTotal);
     if (!Number.isFinite(current)) return result;

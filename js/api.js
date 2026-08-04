@@ -38,8 +38,14 @@ export async function fetchModelComparison() {
   return { ecmwf, gfs, icon };
 }
 
-export async function fetchStationHistory(days = 31) {
-  const response = await fetch(`${CONFIG.apiUrl}/history?days=${days}`, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+export async function fetchStationHistory(days = 31, resolution = 'auto') {
+  const response = await fetch(`${CONFIG.apiUrl}/history?days=${days}&resolution=${resolution}`, { headers: { Accept: 'application/json' }, cache: 'no-store' });
   if (!response.ok) throw new Error(`History API ${response.status}`);
+  return response.json();
+}
+
+export async function fetchDataQuality() {
+  const response = await fetch(`${CONFIG.apiUrl}/quality`, { headers: { Accept:'application/json' }, cache:'no-store' });
+  if (!response.ok) throw new Error(`Quality API ${response.status}`);
   return response.json();
 }

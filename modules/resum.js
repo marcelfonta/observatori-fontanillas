@@ -8,7 +8,7 @@ function delta(id, value, suffix) {
 }
 
 export function renderSummary(summary, count) {
-  setText('remote-history-status',`${count} lectures horàries reals disponibles`);
+  setText('remote-history-status',`${count} punts històrics reals disponibles`);
   setText('today-high',format(summary.high?.temperatureMax ?? summary.high?.temperature,1)); setText('today-high-time',time(summary.high));
   setText('today-low',format(summary.low?.temperatureMin ?? summary.low?.temperature,1)); setText('today-low-time',time(summary.low));
   setText('trend-period',summary.comparisonHours?`Fa ${summary.comparisonHours} h`:'Sense comparativa');

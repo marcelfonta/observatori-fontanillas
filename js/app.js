@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { fetchCurrentWeather, fetchForecast, fetchModelComparison, fetchStationHistory } from './api.js';
+import { fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchModelComparison, fetchStationHistory } from './api.js';
 import { setText } from './utils.js';
 import { renderStation } from '../modules/estacio.js';
 import { renderCharts, renderMetricSparklines } from '../modules/grafiques.js';
@@ -13,6 +13,7 @@ import { renderAstronomy } from '../modules/astronomia.js';
 import { renderExtremeArchive, initExtremeControls } from '../modules/extrems.js';
 import { initModelViewer } from '../modules/models.js';
 import { initNavigation, initWhenVisible } from '../modules/navigation.js';
+import { renderDataQuality, renderDataQualityUnavailable } from '../modules/qualitat.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -20,6 +21,7 @@ let latestHistory = [];
 let historyFetchedAt = 0;
 let currentFetchedAt = 0;
 let forecastFetchedAt = 0;
+let qualityFetchedAt = 0;
 
 function updateClock(){ setText('header-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Europe/Madrid'}).format(new Date())); }
 function setBrandFavicon(){
@@ -43,12 +45,24 @@ async function loadForecastSuite(){
 
 async function loadHistory(){
   if(latestHistory.length&&Date.now()-historyFetchedAt<CONFIG.historyCacheMs)return latestHistory;
-  let remote;
-  try { remote=await fetchStationHistory(365); }
-  catch { remote=await fetchStationHistory(31); }
-  latestHistory=normalizeRemoteHistory(remote);
+  const [recentResult,archiveResult]=await Promise.allSettled([
+    fetchStationHistory(45,'hourly'),
+    fetchStationHistory(365,'daily')
+  ]);
+  if(recentResult.status==='rejected'&&archiveResult.status==='rejected')throw recentResult.reason;
+  const recent=recentResult.status==='fulfilled'?normalizeRemoteHistory(recentResult.value):[];
+  const archive=archiveResult.status==='fulfilled'?normalizeRemoteHistory(archiveResult.value):[];
+  const recentStart=recent[0]?.t ?? Infinity;
+  const combined=[...archive.filter(item=>item.t<recentStart),...recent];
+  latestHistory=[...new Map(combined.map(item=>[item.t,item])).values()].sort((a,b)=>a.t-b.t);
   historyFetchedAt=Date.now();
   return latestHistory;
+}
+
+async function loadQuality(){
+  try { renderDataQuality(await fetchDataQuality()); }
+  catch(error){ console.warn('Control avançat de qualitat no disponible.',error); renderDataQualityUnavailable(); }
+  qualityFetchedAt=Date.now();
 }
 
 async function load(){
@@ -87,11 +101,14 @@ initWhenVisible('#territori',initRadar,'700px 0px');
 updateClock();
 setInterval(updateClock,1000);
 load();
+loadQuality();
 loadForecastSuite();
 setInterval(load,CONFIG.refreshMs);
+setInterval(loadQuality,CONFIG.refreshMs);
 setInterval(loadForecastSuite,CONFIG.forecastRefreshMs);
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden)return;
   if(Date.now()-currentFetchedAt>CONFIG.refreshMs)load();
+  if(Date.now()-qualityFetchedAt>CONFIG.refreshMs)loadQuality();
   if(Date.now()-forecastFetchedAt>CONFIG.forecastRefreshMs)loadForecastSuite();
 });
