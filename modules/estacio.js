@@ -32,15 +32,22 @@ function derivedValues(data) {
   const temperature = Number(data.temperature);
   const humidity = clamp(Number(data.humidity), 0, 100);
   const dewPoint = Number(data.dewPoint);
+  const pressure = Number(data.pressure);
   if (![temperature, humidity, dewPoint].every(Number.isFinite)) return {};
   const saturationPressure = 6.112 * Math.exp((17.67 * temperature) / (temperature + 243.5));
   const actualPressure = saturationPressure * humidity / 100;
   const wetBulb = temperature * Math.atan(.151977 * Math.sqrt(humidity + 8.313659)) + Math.atan(temperature + humidity) - Math.atan(humidity - 1.676331) + .00391838 * humidity ** 1.5 * Math.atan(.023101 * humidity) - 4.686035;
+  const kelvin = temperature + 273.15;
+  const dryPressurePa = Number.isFinite(pressure) ? Math.max(0, pressure - actualPressure) * 100 : NaN;
+  const vaporPressurePa = actualPressure * 100;
   return {
     wetBulb,
     vpd: (saturationPressure - actualPressure) / 10,
     cloudBase: Math.max(0, (temperature - dewPoint) * 125),
-    absoluteHumidity: 216.7 * actualPressure / (temperature + 273.15)
+    absoluteHumidity: 216.7 * actualPressure / kelvin,
+    vaporPressure: actualPressure,
+    mixingRatio: Number.isFinite(pressure) && pressure > actualPressure ? 621.98 * actualPressure / (pressure - actualPressure) : NaN,
+    airDensity: Number.isFinite(dryPressurePa) ? dryPressurePa / (287.05 * kelvin) + vaporPressurePa / (461.495 * kelvin) : NaN
   };
 }
 
@@ -88,6 +95,8 @@ export function renderStation(data, context = {}) {
   setText('solar-reading', !isNumber(data.solarRadiation) ? 'No disponible' : Number(data.solarRadiation) < 20 ? 'Radiació molt baixa' : Number(data.solarRadiation) < 300 ? 'Radiació moderada' : Number(data.solarRadiation) < 700 ? 'Radiació alta' : 'Radiació molt alta');
   setText('uv-index', isNumber(data.uv) ? format(data.uv, 1) : '—'); setText('uv-reading', isNumber(data.uv) ? (data.uv < 3 ? 'Baix' : data.uv < 6 ? 'Moderat' : 'Alt') : 'No disponible');
   setText('chart-temp-now', format(data.temperature, 1)); setText('chart-pressure-now', format(data.pressure, 1));
+  setText('chart-humidity-now',format(data.humidity,0)); setText('chart-wind-now',format(data.windSpeed,1)); setText('chart-rain-now',format(data.rainToday,1));
+  setText('chart-solar-now',isNumber(data.solarRadiation)?format(data.solarRadiation,0):'—'); setText('chart-uv-now',isNumber(data.uv)?format(data.uv,1):'—');
   setText('temp-max', `${format(context.stats?.maxTemperature ?? data.temperature, 1)}°`); setText('temp-min', `${format(context.stats?.minTemperature ?? data.temperature, 1)}°`);
   renderTrend('temp-trend', data.temperature, context.previous?.temperature, '°'); renderTrend('pressure-trend', data.pressure, context.previous?.pressure, ' hPa'); renderTrend('chart-pressure-trend', data.pressure, context.previous?.pressure, ' hPa'); renderTrend('wind-trend', data.windSpeed, context.previous?.windSpeed, ' km/h');
   const [title, copy] = interpret(data); setText('quick-title', title); setText('quick-copy', copy); setText('condition-label', Number(data.rainRate) > 0 ? 'Pluja a l’observatori' : Number(data.windSpeed) > 15 ? 'Vent moderat' : 'Observació en directe');
@@ -96,6 +105,8 @@ export function renderStation(data, context = {}) {
   setText('pressure-reading', Number(data.pressure) >= 1015 ? 'Pressió alta' : Number(data.pressure) < 1005 ? 'Pressió baixa' : 'Pressió normal');
   const calculated = derivedValues(data);
   setText('wet-bulb', format(calculated.wetBulb, 1)); setText('vpd', format(calculated.vpd, 2)); setText('cloud-base', format(calculated.cloudBase, 0)); setText('absolute-humidity', format(calculated.absoluteHumidity, 1));
+  setText('vapor-pressure',format(calculated.vaporPressure,1)); setText('mixing-ratio',format(calculated.mixingRatio,1)); setText('air-density',format(calculated.airDensity,3));
+  setText('air-density-reading',!isNumber(calculated.airDensity)?'Dada no calculable':calculated.airDensity<1.15?'Aire poc dens':calculated.airDensity<1.25?'Densitat habitual':'Aire dens');
   setText('vpd-reading', !isNumber(calculated.vpd) ? 'Dada no calculable' : calculated.vpd < .4 ? 'Aire gairebé saturat' : calculated.vpd < 1.2 ? 'Demanda baixa o moderada' : calculated.vpd < 2 ? 'Aire força sec' : 'Demanda evaporativa alta');
   const windForce = beaufort(data.windSpeed); setText('beaufort', `${windForce.force} · ${windForce.label}`); setText('beaufort-reading', `${format(data.windSpeed, 1)} km/h segons l’escala Beaufort`);
   setText('apparent-temperature',format(thermal.apparent,1));

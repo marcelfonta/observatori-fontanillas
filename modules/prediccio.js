@@ -14,6 +14,10 @@ const shortTime = value => new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minut
 const sum = values => values.reduce((total,value)=>total+(Number(value)||0),0);
 const max = values => Math.max(...values.map(value=>Number(value)||0));
 const maxIndex = values => values.reduce((best,value,index)=>Number(value)>Number(values[best])?index:best,0);
+let modelPayload = null;
+let modelDayIndex = 1;
+let sourceForecast = null;
+let sourceHorizon = 'hourly';
 
 function weather(code) { return codes[code] || ['◌','Variable']; }
 
@@ -68,43 +72,81 @@ export function renderForecast(data) {
   setText('forecast-status',`Actualitzat · ${new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit'}).format(new Date())}`);
 }
 
-function modelRow(name,data) {
-  const daily=data?.daily||{}; const rain=sum(daily.precipitation_sum||[]); const gust=max(daily.wind_gusts_10m_max||[]);
-  return `<div class="model-row"><strong>${name}</strong><span><small>Màxima demà</small><b>${format(daily.temperature_2m_max?.[1],1)} °C</b></span><span><small>Mínima demà</small><b>${format(daily.temperature_2m_min?.[1],1)} °C</b></span><span><small>Pluja 7 dies</small><b>${format(rain,1)} mm</b></span><span><small>Ratxa màxima</small><b>${format(gust,0)} km/h</b></span></div>`;
+function modelRow(name,data,index) {
+  const daily=data?.daily||{}; const [symbol,label]=weather(daily.weather_code?.[index]);
+  return `<div class="model-row"><strong>${name}<small>${symbol} ${label}</small></strong><span><small>Màxima</small><b>${format(daily.temperature_2m_max?.[index],1)} °C</b></span><span><small>Mínima</small><b>${format(daily.temperature_2m_min?.[index],1)} °C</b></span><span><small>Pluja</small><b>${format(daily.precipitation_sum?.[index],1)} mm</b></span><span><small>Ratxa màxima</small><b>${format(daily.wind_gusts_10m_max?.[index],0)} km/h</b></span></div>`;
 }
 
-export function renderModelComparison({ecmwf,gfs,icon}) {
+function renderModelDay() {
+  if(!modelPayload)return;
+  const {ecmwf,gfs,icon}=modelPayload;
   const table=document.getElementById('model-table'); if(!table) return;
-  table.innerHTML=`<div class="model-row model-row--head"><strong>Model</strong><span>Temperatura</span><span>Temperatura</span><span>Precipitació</span><span>Vent</span></div>${modelRow('ECMWF',ecmwf)}${modelRow('GFS',gfs)}${modelRow('ICON',icon)}`;
-  const series=[ecmwf,gfs,icon].map(model=>model?.daily?.temperature_2m_max||[]);
-  const differences=(series[0]||[]).map((_,index)=>{const values=series.map(items=>Number(items[index])).filter(Number.isFinite);return values.length===3?Math.max(...values)-Math.min(...values):null;}).filter(Number.isFinite);
-  const mean=differences.length?sum(differences)/differences.length:99;
-  const agreement=mean<1?'Alta':mean<2.5?'Moderada':'Baixa'; setText('model-status',`Coincidència ${agreement.toLowerCase()}`);
-  setText('model-reading',mean<1?'ECMWF, GFS i ICON dibuixen un escenari molt semblant: la confiança tèrmica és alta.':mean<2.5?'Hi ha petites diferències entre els tres models. L’escenari general és útil, però cal seguir-ne l’evolució.':'Els tres models divergeixen de manera notable. La predicció encara té incertesa i convé revisar les properes actualitzacions.');
+  table.innerHTML=`<div class="model-row model-row--head"><strong>Model</strong><span>Temperatura</span><span>Temperatura</span><span>Precipitació</span><span>Vent</span></div>${modelRow('ECMWF',ecmwf,modelDayIndex)}${modelRow('GFS',gfs,modelDayIndex)}${modelRow('ICON',icon,modelDayIndex)}`;
+  const selectedDate=new Date(ecmwf?.daily?.time?.[modelDayIndex]||Date.now());
+  setText('model-day-label',modelDayIndex===0?`Avui · ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(selectedDate)}`:modelDayIndex===1?`Demà · ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(selectedDate)}`:`${dayName(selectedDate)} · ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(selectedDate)}`);
+  const values=[ecmwf,gfs,icon].map(model=>Number(model?.daily?.temperature_2m_max?.[modelDayIndex])).filter(Number.isFinite);
+  const spread=values.length===3?Math.max(...values)-Math.min(...values):99;
+  const agreement=spread<1?'Alta':spread<2.5?'Moderada':'Baixa'; setText('model-status',`Coincidència ${agreement.toLowerCase()}`);
+  setText('model-reading',spread<1?`Els tres models gairebé coincideixen per al dia seleccionat: només ${format(spread,1)} °C de diferència entre màximes.`:spread<2.5?`Hi ha petites diferències per al dia seleccionat (${format(spread,1)} °C entre màximes). L’escenari general és prou consistent.`:`La dispersió per al dia seleccionat és de ${format(spread,1)} °C. La confiança baixa i convé revisar les properes actualitzacions.`);
+  const previous=document.getElementById('model-day-prev'); const next=document.getElementById('model-day-next');
+  if(previous)previous.disabled=modelDayIndex<=0; if(next)next.disabled=modelDayIndex>=6;
 }
 
-function fourLookRow(name,source,data) {
-  const daily=data?.daily||{};
-  const [symbol,label]=weather(daily.weather_code?.[1]);
-  return `<div class="four-look-row"><strong>${name}<small>${source}</small></strong><span><small>Escenari demà</small><b><i class="forecast-symbol" aria-hidden="true">${symbol}</i> ${label}</b></span><span><small>Màxima</small><b>${format(daily.temperature_2m_max?.[1],1)} °C</b></span><span><small>Mínima</small><b>${format(daily.temperature_2m_min?.[1],1)} °C</b></span><span><small>Pluja 7 dies</small><b>${format(sum(daily.precipitation_sum||[]),1)} mm</b></span><span><small>Ratxa màxima</small><b>${format(max(daily.wind_gusts_10m_max||[]),0)} km/h</b></span></div>`;
+export function renderModelComparison(payload) {
+  modelPayload=payload;
+  renderModelDay();
 }
 
-export function renderFourLookComparison({best,ecmwf,gfs,icon}) {
-  const table=document.getElementById('four-look-table'); if(!table)return;
-  table.innerHTML=`<div class="four-look-row four-look-row--head"><strong>Font / model</strong><span>Temps</span><span>Temperatura</span><span>Temperatura</span><span>Precipitació</span><span>Vent</span></div>${fourLookRow('Open-Meteo','Best Match local',best)}${fourLookRow('ECMWF','IFS europeu',ecmwf)}${fourLookRow('GFS','NOAA · global',gfs)}${fourLookRow('ICON','DWD · Europa',icon)}`;
-  setText('four-look-status','4 escenaris actualitzats');
+function renderSourceOpenMeteo() {
+  const container=document.getElementById('source-openmeteo');
+  if(!container||!sourceForecast)return;
+  if(sourceHorizon==='daily'){
+    const daily=sourceForecast.daily||{};
+    container.innerHTML=`<div class="source-native-grid">${(daily.time||[]).map((value,index)=>{const [symbol,label]=weather(daily.weather_code?.[index]);return `<article><time>${index===0?'Avui':dayName(new Date(value))}</time><i>${symbol}</i><b>${label}</b><strong>${format(daily.temperature_2m_max?.[index],0)}° <small>${format(daily.temperature_2m_min?.[index],0)}°</small></strong><span>${format(daily.precipitation_probability_max?.[index],0)}% pluja · ${format(daily.wind_gusts_10m_max?.[index],0)} km/h</span></article>`;}).join('')}</div>`;
+    return;
+  }
+  const now=Date.now(); const hourly=sourceForecast.hourly||{}; let start=(hourly.time||[]).findIndex(value=>new Date(value).getTime()>=now-1800000); if(start<0)start=0;
+  const indexes=Array.from({length:13},(_,index)=>start+index*4).filter(index=>hourly.time?.[index]);
+  container.innerHTML=`<div class="source-native-grid source-native-grid--hourly">${indexes.map((index,position)=>{const [symbol,label]=weather(hourly.weather_code?.[index]);return `<article><time>${position===0?'Ara':shortTime(hourly.time[index])}</time><i>${symbol}</i><b>${label}</b><strong>${format(hourly.temperature_2m?.[index],0)}°</strong><span>${format(hourly.precipitation_probability?.[index],0)}% pluja · ${format(hourly.wind_speed_10m?.[index],0)} km/h</span></article>`;}).join('')}</div>`;
+}
+
+function updateSourceHorizon() {
+  renderSourceOpenMeteo();
+  const meteocat=document.getElementById('source-meteocat-frame');
+  if(meteocat) {
+    meteocat.src=sourceHorizon==='hourly'?'https://static-m.meteo.cat/ginys/municipal72h?location=082021&language=ca&color=0f2a22&tempFormat=%20%C2%BAC&windSpeedFormat=km/h&mainChart=estCel&secondaryChart=true&target=_blank':'https://static-m.meteo.cat/ginys/municipal8d?location=082021&language=ca&color=0f2a22&tempFormat=%20%C2%BAC&target=_blank';
+  }
+  const aemet=document.getElementById('source-aemet-frame');
+  if(aemet)aemet.src=sourceHorizon==='hourly'?'https://www.aemet.es/es/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202':'https://www.aemet.es/es/eltiempo/prediccion/municipios/widget/sant-celoni-id08202';
+}
+
+export function renderFourLookComparison({best}) {
+  sourceForecast=best;
+  renderSourceOpenMeteo();
+  setText('four-look-status','4 fonts identificades');
 }
 
 export function renderFourLookError() {
-  setText('four-look-status','Comparació parcial');
-  const table=document.getElementById('four-look-table');
-  if(table)table.innerHTML='<div class="forecast-loading">Ara mateix no s’han pogut reunir els quatre escenaris. La previsió principal continua disponible.</div>';
+  setText('four-look-status','Fonts oficials');
+  const container=document.getElementById('source-openmeteo');
+  if(container)container.innerHTML='<div class="forecast-loading">Open-Meteo no està disponible ara mateix. Les fonts oficials continuen accessibles a les altres pestanyes.</div>';
 }
 
 export function initForecastControls() {
   const strip=document.getElementById('forecast-strip');
   document.getElementById('forecast-prev')?.addEventListener('click',()=>strip?.scrollBy({left:-520,behavior:'smooth'}));
   document.getElementById('forecast-next')?.addEventListener('click',()=>strip?.scrollBy({left:520,behavior:'smooth'}));
+  document.getElementById('model-day-prev')?.addEventListener('click',()=>{modelDayIndex=Math.max(0,modelDayIndex-1);renderModelDay();});
+  document.getElementById('model-day-next')?.addEventListener('click',()=>{modelDayIndex=Math.min(6,modelDayIndex+1);renderModelDay();});
+  document.querySelectorAll('[data-source-tab]').forEach(button=>button.addEventListener('click',()=>{
+    document.querySelectorAll('[data-source-tab]').forEach(item=>item.classList.toggle('is-active',item===button));
+    document.querySelectorAll('[data-source-panel]').forEach(panel=>panel.classList.toggle('is-active',panel.dataset.sourcePanel===button.dataset.sourceTab));
+  }));
+  document.querySelectorAll('[data-source-horizon]').forEach(button=>button.addEventListener('click',()=>{
+    sourceHorizon=button.dataset.sourceHorizon;
+    document.querySelectorAll('[data-source-horizon]').forEach(item=>item.classList.toggle('is-active',item===button));
+    updateSourceHorizon();
+  }));
 }
 
 export function renderForecastError() {

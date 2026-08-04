@@ -12,7 +12,7 @@ export function renderSummary(summary, count) {
   setText('today-high',format(summary.high?.temperatureMax ?? summary.high?.temperature,1)); setText('today-high-time',time(summary.high));
   setText('today-low',format(summary.low?.temperatureMin ?? summary.low?.temperature,1)); setText('today-low-time',time(summary.low));
   setText('trend-period',summary.comparisonHours?`Fa ${summary.comparisonHours} h`:'Sense comparativa');
-  delta('change-temp',summary.deltaTemperature,' °C'); delta('change-pressure',summary.deltaPressure,' hPa'); delta('change-humidity',summary.deltaHumidity,' %');
+  delta('change-temp',summary.deltaTemperature,' °C'); delta('change-pressure',summary.deltaPressure,' hPa'); delta('change-humidity',summary.deltaHumidity,' %'); delta('change-uv',summary.deltaUv,' UV');
   setText('max-gust',format(summary.gust?.windGust,1)); setText('max-gust-direction',cardinal(summary.gust?.windDirection)); setText('max-gust-time',time(summary.gust));
   setText('rain-24h',format(summary.rain24h,1)); setText('rain-observed-today',`${format(summary.rainToday,1)} mm`); setText('wet-hours',`${summary.wetHours} ${summary.wetHours===1?'hora':'hores'} amb pluja`);
 }

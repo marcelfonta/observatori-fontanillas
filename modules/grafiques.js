@@ -2,25 +2,35 @@ import { calculateThermalIndices } from './confort.js';
 
 let charts = [];
 let sparklines = [];
-const palette = { grid: 'rgba(197,231,208,.07)', text: '#71877e', green: '#89d6a3', blue: '#77b7c8' };
+const palette = { grid: 'rgba(197,231,208,.07)', text: '#71877e', green: '#89d6a3', blue: '#77b7c8', amber:'#e6c56c', violet:'#b98ce8', coral:'#e88f73' };
 function makeChart(canvas, labels, datasets, unit, showLegend = false) {
   if (!window.Chart || !canvas) return null;
   const normalized=datasets.map(dataset=>({...dataset,tension:.42,borderWidth:2,pointRadius:labels.length<3?3:0,spanGaps:true}));
-  return new Chart(canvas, { type:'line', data:{ labels, datasets:normalized }, options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{display:showLegend,position:'bottom',align:'start',labels:{color:palette.text,usePointStyle:true,boxWidth:7,font:{size:10},padding:18}},tooltip:{backgroundColor:'#0c1b17',borderColor:'rgba(197,231,208,.18)',borderWidth:1,displayColors:true,callbacks:{label:c=>`${c.dataset.label}: ${c.formattedValue} ${unit}`}}},scales:{x:{grid:{display:false},ticks:{color:palette.text,maxTicksLimit:6,font:{size:10}}},y:{border:{display:false},grid:{color:palette.grid},ticks:{color:palette.text,maxTicksLimit:5,font:{size:10},callback:v=>`${v}${unit}`}}}}});
+  return new Chart(canvas, { type:'line', data:{ labels, datasets:normalized }, options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{display:showLegend,position:'bottom',align:'start',labels:{color:palette.text,usePointStyle:true,boxWidth:7,font:{size:10},padding:18}},tooltip:{backgroundColor:'#0c1b17',borderColor:'rgba(197,231,208,.18)',borderWidth:1,displayColors:true,callbacks:{label:c=>`${c.dataset.label}: ${c.formattedValue} ${c.dataset.unit ?? unit}`}}},scales:{x:{grid:{display:false},ticks:{color:palette.text,maxTicksLimit:6,font:{size:10}}},y:{border:{display:false},grid:{color:palette.grid},ticks:{color:palette.text,maxTicksLimit:5,font:{size:10},callback:v=>`${v}${unit}`}}}}});
 }
 export function renderCharts(data, history = [], period='24h') {
   charts.forEach(c=>c?.destroy());
   const duration = period==='24h'?86400000:period==='7d'?604800000:period==='30d'?2592000000:31536000000;
   let selected = history.filter(item => item.t >= Date.now() - duration);
-  if (!selected.length) selected = [{t:Date.now(),temperature:Number(data.temperature)||20,pressure:Number(data.pressure)||1013}];
+  if (!selected.length) selected = [{t:Date.now(),temperature:Number(data.temperature)||20,dewPoint:Number(data.dewPoint),pressure:Number(data.pressure)||1013,humidity:Number(data.humidity),windSpeed:Number(data.windSpeed),windGust:Number(data.windGust),rainTotal:Number(data.rainToday),rainRate:Number(data.rainRate),solarRadiation:Number(data.solarRadiation),uv:Number(data.uv)}];
   if (selected.length > 720) {
     const step = Math.ceil(selected.length / 720);
     selected = selected.filter((_,index)=>index % step === 0 || index === selected.length - 1);
   }
   const labels=selected.map(item=>new Intl.DateTimeFormat('ca-ES',period==='24h'?{hour:'2-digit',minute:'2-digit'}:{day:'2-digit',month:'short'}).format(new Date(item.t)));
   const temps=selected.map(item=>item.temperature); const dewPoints=selected.map(item=>item.dewPoint); const pressures=selected.map(item=>item.pressure);
+  const humidity=selected.map(item=>item.humidity); const wind=selected.map(item=>item.windSpeed); const gusts=selected.map(item=>item.windGust);
+  const rainTotal=selected.map(item=>item.rainTotal); const rainRate=selected.map(item=>item.rainRate); const solar=selected.map(item=>item.solarRadiation); const uv=selected.map(item=>item.uv);
   const status=document.getElementById('history-status'); if(status) status.textContent=selected.length>1?`${selected.length} lectures reals`:'Recollint dades';
-  charts=[makeChart(document.getElementById('temperature-chart'),labels,[{label:'Temperatura',data:temps,borderColor:palette.green,backgroundColor:`${palette.green}16`,fill:true},{label:'Punt de rosada',data:dewPoints,borderColor:palette.blue,backgroundColor:'transparent',borderDash:[5,5],fill:false}],'°C',true),makeChart(document.getElementById('pressure-chart'),labels,[{label:'Pressió',data:pressures,borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true}],' hPa')];
+  charts=[
+    makeChart(document.getElementById('temperature-chart'),labels,[{label:'Temperatura',data:temps,borderColor:palette.green,backgroundColor:`${palette.green}16`,fill:true},{label:'Punt de rosada',data:dewPoints,borderColor:palette.blue,backgroundColor:'transparent',borderDash:[5,5],fill:false}],'°C',true),
+    makeChart(document.getElementById('pressure-chart'),labels,[{label:'Pressió',data:pressures,borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true}],' hPa'),
+    makeChart(document.getElementById('humidity-chart'),labels,[{label:'Humitat',data:humidity,borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true}],' %'),
+    makeChart(document.getElementById('wind-chart'),labels,[{label:'Vent mitjà',data:wind,borderColor:palette.green,backgroundColor:`${palette.green}12`,fill:true},{label:'Ratxa',data:gusts,borderColor:palette.amber,backgroundColor:'transparent',borderDash:[5,5],fill:false}],' km/h',true),
+    makeChart(document.getElementById('rain-chart'),labels,[{label:'Acumulada',data:rainTotal,unit:'mm',borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true},{label:'Intensitat',data:rainRate,unit:'mm/h',borderColor:palette.violet,backgroundColor:'transparent',borderDash:[5,5],fill:false}],' mm',true),
+    makeChart(document.getElementById('solar-chart'),labels,[{label:'Radiació',data:solar,borderColor:palette.amber,backgroundColor:`${palette.amber}16`,fill:true}],' W/m²'),
+    makeChart(document.getElementById('uv-chart'),labels,[{label:'Índex UV',data:uv,borderColor:palette.coral,backgroundColor:`${palette.coral}16`,fill:true}],' UV')
+  ].filter(Boolean);
 }
 
 function makeSparkline(canvas, points, label, unit, color) {

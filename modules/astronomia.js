@@ -90,7 +90,10 @@ function renderPhases(phases) {
   const container = document.getElementById('moon-phases');
   if (!container) return;
   if (phases[0]) setText('moon-next-phase',`${phases[0].name} · ${new Intl.DateTimeFormat(CONFIG.locale,{day:'numeric',month:'short'}).format(phases[0].date)}`);
-  container.innerHTML = phases.slice(0,4).map(phase => `<div class="moon-phase-item"><i aria-hidden="true">${phase.symbol}</i><b>${phase.name}</b><small>${new Intl.DateTimeFormat(CONFIG.locale,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(phase.date)}</small></div>`).join('');
+  container.innerHTML = phases.slice(0,4).map(phase => {
+    const days=Math.max(1,Math.round((phase.date-Date.now())/86400000));
+    return `<div class="moon-phase-item"><i aria-hidden="true">${phase.symbol}</i><div><b>${phase.name}</b><small>${new Intl.DateTimeFormat(CONFIG.locale,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(phase.date)}</small><span>D’aquí ${days} ${days===1?'dia':'dies'}</span></div></div>`;
+  }).join('');
 }
 
 async function loadUsnoMoon() {
@@ -141,11 +144,30 @@ function solarPosition(date = new Date()) {
   return { elevation:altitude/rad, azimuth:(azimuth/rad+180+360)%360 };
 }
 
+function apparentSolarClock(date = new Date()) {
+  const year=date.getUTCFullYear();
+  const start=Date.UTC(year,0,0); const day=Math.floor((date.getTime()-start)/86400000);
+  const angle=2*Math.PI*(day-81)/364;
+  const equation=9.87*Math.sin(2*angle)-7.53*Math.cos(angle)-1.5*Math.sin(angle);
+  const zoneOffset=madridOffsetHours(date);
+  const correction=4*(CONFIG.station.longitude-zoneOffset*15)+equation;
+  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Madrid',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(date).map(part=>[part.type,part.value]));
+  const officialMinutes=Number(parts.hour)*60+Number(parts.minute);
+  const solarMinutes=(officialMinutes+correction+1440)%1440;
+  const hour=Math.floor(solarMinutes/60); const minute=Math.round(solarMinutes%60);
+  const normalizedHour=(hour+(minute===60?1:0))%24; const normalizedMinute=minute===60?0:minute;
+  return { time:`${String(normalizedHour).padStart(2,'0')}:${String(normalizedMinute).padStart(2,'0')}`, correction };
+}
+
 function renderSun(forecast) {
   const now=new Date();
   const position=solarPosition(now);
+  const solarClock=apparentSolarClock(now);
   setText('sun-elevation',format(position.elevation,1));
   setText('sun-azimuth',format(position.azimuth,0));
+  setText('solar-time',solarClock.time);
+  const difference=Math.abs(Math.round(solarClock.correction)); const differenceHours=Math.floor(difference/60); const differenceMinutes=difference%60;
+  setText('solar-offset',`${differenceHours?`${differenceHours} h `:''}${differenceMinutes} min ${solarClock.correction<0?'per darrere':'per davant'} de l’hora oficial`);
   setText('sun-status',position.elevation>10?`Sol alt cap al ${cardinal(position.azimuth)}`:position.elevation>0?`Sol baix cap al ${cardinal(position.azimuth)}`:`Sol sota l’horitzó · ${cardinal(position.azimuth)}`);
   const sunrise=new Date(forecast?.daily?.sunrise?.[0]);
   const sunset=new Date(forecast?.daily?.sunset?.[0]);

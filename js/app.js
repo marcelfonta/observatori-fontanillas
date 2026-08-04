@@ -24,7 +24,7 @@ async function loadForecastSuite(){
   const [forecastResult,modelsResult]=await Promise.allSettled([fetchForecast(),fetchModelComparison()]);
   if(forecastResult.status==='fulfilled'){renderForecast(forecastResult.value);renderAstronomy(forecastResult.value);}else{renderForecastError();renderAstronomy(null);}
   if(modelsResult.status==='fulfilled')renderModelComparison(modelsResult.value);else renderModelError();
-  if(forecastResult.status==='fulfilled'&&modelsResult.status==='fulfilled')renderFourLookComparison({best:forecastResult.value,...modelsResult.value});else renderFourLookError();
+  if(forecastResult.status==='fulfilled')renderFourLookComparison({best:forecastResult.value});else renderFourLookError();
 }
 
 async function loadHistory(){

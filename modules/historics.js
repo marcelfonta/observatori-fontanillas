@@ -72,6 +72,7 @@ export function summarizeRemoteHistory(data, history) {
       deltaTemperature: compare ? Number(data.temperature) - Number(compare.temperature) : null,
       deltaPressure: compare ? Number(data.pressure) - Number(compare.pressure) : null,
       deltaHumidity: compare ? Number(data.humidity) - Number(compare.humidity) : null,
+      deltaUv: compare && Number.isFinite(Number(data.uv)) && Number.isFinite(Number(compare.uv)) ? Number(data.uv) - Number(compare.uv) : null,
     }
   };
 }

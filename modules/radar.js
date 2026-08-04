@@ -7,6 +7,7 @@ let frames = [];
 let frameIndex = 0;
 let playback;
 let attempts = 0;
+let interactiveStarted = false;
 
 function formatFrameTime(epoch) {
   return new Intl.DateTimeFormat(CONFIG.locale, { hour:'2-digit', minute:'2-digit' }).format(new Date(epoch * 1000));
@@ -68,13 +69,18 @@ async function loadFrames() {
   document.getElementById('radar-loader')?.classList.add('is-hidden');
 }
 
-export function initRadar() {
+function startInteractiveRadar() {
+  if (interactiveStarted) {
+    window.setTimeout(()=>map?.invalidateSize(),80);
+    return;
+  }
   if (!window.L) {
     attempts += 1;
-    if (attempts < 8) window.setTimeout(initRadar, 400);
+    if (attempts < 8) window.setTimeout(startInteractiveRadar, 400);
     else { setText('radar-status', 'Mapa no disponible'); setText('radar-loader', 'No s’ha pogut iniciar el mapa interactiu.'); }
     return;
   }
+  interactiveStarted = true;
   buildMap();
   document.getElementById('radar-slider')?.addEventListener('input', event => { stopPlayback(); showFrame(event.target.value); }, { once:false });
   document.getElementById('radar-play')?.addEventListener('click', togglePlayback, { once:false });
@@ -83,4 +89,14 @@ export function initRadar() {
     setText('radar-status', 'Temporalment no disponible');
     setText('radar-loader', 'Ara mateix no es poden carregar les imatges. Consulta el radar oficial de Meteocat.');
   });
+}
+
+export function initRadar() {
+  document.querySelectorAll('[data-radar-mode]').forEach(button=>button.addEventListener('click',()=>{
+    const mode=button.dataset.radarMode;
+    document.querySelectorAll('[data-radar-mode]').forEach(item=>item.classList.toggle('is-active',item===button));
+    document.querySelectorAll('[data-radar-panel]').forEach(panel=>panel.classList.toggle('is-active',panel.dataset.radarPanel===mode));
+    if(mode==='interactive')startInteractiveRadar();
+    else { stopPlayback(); setText('radar-status','Meteocat oficial'); }
+  }));
 }
