@@ -18,3 +18,9 @@ export async function fetchHourlyForecast() {
   if (!response.ok) throw new Error(`Forecast API ${response.status}`);
   return response.json();
 }
+
+export async function fetchStationHistory(days = 31) {
+  const response = await fetch(`${CONFIG.apiUrl}/history?days=${days}`, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+  if (!response.ok) throw new Error(`History API ${response.status}`);
+  return response.json();
+}

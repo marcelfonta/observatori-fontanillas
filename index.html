@@ -63,6 +63,19 @@
         <article class="metric panel"><div class="metric__head"><span>Índex UV</span><span class="tag tag--muted">Sensor futur</span></div><div class="metric__value"><span id="uv-index">—</span><small>UV</small></div><p id="uv-reading">No disponible</p><div class="uv-scale"><i></i></div></article>
       </section>
 
+      <section class="insights-section section-block" aria-labelledby="insights-title">
+        <div class="section-heading insights-heading">
+          <div><p class="eyebrow">Anàlisi de l’estació</p><h2 id="insights-title">Què ha passat avui?</h2></div>
+          <div class="history-source"><span id="remote-history-status">Connectant amb l’històric…</span><a href="https://www.wunderground.com/dashboard/pws/ISANTC198" target="_blank" rel="noreferrer">Weather Underground · ISANTC198 ↗</a></div>
+        </div>
+        <div class="insights-grid">
+          <article class="insight-card panel"><div class="insight-card__head"><span>Extrems tèrmics</span><i>Avui</i></div><div class="extremes"><div><small>Màxima</small><strong><b id="today-high">—</b>°</strong><span id="today-high-time">—</span></div><div><small>Mínima</small><strong><b id="today-low">—</b>°</strong><span id="today-low-time">—</span></div></div></article>
+          <article class="insight-card panel"><div class="insight-card__head"><span>Canvi en 3 hores</span><i id="trend-period">Comparativa</i></div><div class="change-list"><div><span>Temperatura</span><b id="change-temp">—</b></div><div><span>Pressió</span><b id="change-pressure">—</b></div><div><span>Humitat</span><b id="change-humidity">—</b></div></div></article>
+          <article class="insight-card panel"><div class="insight-card__head"><span>Vent destacat</span><i>Avui</i></div><div class="big-stat"><strong><b id="max-gust">—</b><small> km/h</small></strong><span>Ratxa màxima</span></div><p><b id="max-gust-direction">—</b> · <span id="max-gust-time">—</span></p></article>
+          <article class="insight-card panel"><div class="insight-card__head"><span>Balanç de pluja</span><i>Observat</i></div><div class="big-stat big-stat--rain"><strong><b id="rain-24h">—</b><small> mm</small></strong><span>Últimes 24 hores</span></div><p>Avui <b id="rain-observed-today">— mm</b> · <span id="wet-hours">— hores amb pluja</span></p></article>
+        </div>
+      </section>
+
       <section class="forecast-section section-block" aria-labelledby="forecast-title">
         <div class="section-heading forecast-heading">
           <div><p class="eyebrow">Properes hores</p><h2 id="forecast-title">Com evolucionarà el temps?</h2></div>
@@ -77,10 +90,10 @@
       <section id="tendencies" class="section-block">
         <div class="section-heading"><div><p class="eyebrow">Evolució</p><h2>El dia, d’un cop d’ull</h2></div><div class="segmented" role="group" aria-label="Període de gràfica"><button class="is-active" data-period="24h">24 h</button><button data-period="7d">7 dies</button><button data-period="30d">30 dies</button></div></div>
         <div class="charts-grid">
-          <article class="chart-card panel"><header><div><span>Temperatura</span><strong><b id="chart-temp-now">--</b> °C</strong></div><span class="tag" id="history-status">Iniciant històric</span></header><div class="chart-wrap"><canvas id="temperature-chart"></canvas></div></article>
+          <article class="chart-card panel"><header><div><span>Temperatura i punt de rosada</span><strong><b id="chart-temp-now">--</b> °C</strong></div><span class="tag" id="history-status">Iniciant històric</span></header><div class="chart-wrap"><canvas id="temperature-chart"></canvas></div></article>
           <article class="chart-card panel"><header><div><span>Pressió atmosfèrica</span><strong><b id="chart-pressure-now">----</b> hPa</strong></div><span class="trend" id="chart-pressure-trend">Recollint dades</span></header><div class="chart-wrap"><canvas id="pressure-chart"></canvas></div></article>
         </div>
-        <p class="data-note"><span>i</span> A partir d’ara el navegador conserva una lectura real cada cinc minuts. L’històric complet de Weather Underground/VEVOR permetrà omplir retroactivament els períodes llargs.</p>
+        <p class="data-note"><span>i</span> Totes les corbes d’aquesta secció provenen de l’històric horari real de l’estació ISANTC198. Els períodes s’aniran omplint a mesura que Weather Underground acumuli lectures.</p>
       </section>
 
       <section id="territori" class="territory-grid section-block">
