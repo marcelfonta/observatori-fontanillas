@@ -1,12 +1,89 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ca">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Observatori Meteorològic Fontanillas</title>
-</head>
-<body>
-  <h1>Observatori Meteorològic Fontanillas</h1>
-  <p>Primer desplegament correcte 🚀</p>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07110f" />
+    <meta name="description" content="Dades meteorològiques en directe des de Sant Celoni, als peus del Montseny." />
+    <title>Observatori Fontanillas · Montseny</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+    <script type="module" src="js/app.js"></script>
+  </head>
+  <body>
+    <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
+    <header class="site-header shell">
+      <a class="brand" href="#top" aria-label="Observatori Fontanillas, inici">
+        <span class="brand__mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span><strong>Observatori</strong><small>Fontanillas · Montseny</small></span>
+      </a>
+      <nav class="nav" aria-label="Navegació principal">
+        <a class="is-active" href="#ara">Ara</a><a href="#tendencies">Tendències</a><a href="#territori">Territori</a>
+      </nav>
+      <div class="live-pill"><span></span><b id="connection-label">Connectant</b><time id="header-time">--:--</time></div>
+    </header>
+
+    <main id="top" class="shell">
+      <section id="ara" class="hero panel">
+        <div class="hero__copy">
+          <p class="eyebrow">Sant Celoni · Vallès Oriental</p>
+          <h1>El Montseny,<br /><em>mesurat al moment.</em></h1>
+          <p class="hero__intro">Lectura en directe des de l’estació Fontanillas. Una mirada precisa al temps que fa i al que està canviant.</p>
+          <div class="freshness"><span class="freshness__dot"></span><span>Actualitzat <b id="updated-relative">ara mateix</b></span><span class="separator">·</span><time id="updated-time">--:--</time></div>
+        </div>
+        <div class="current-temp">
+          <div class="current-temp__value"><span id="temperature">--</span><sup>°C</sup></div>
+          <p id="condition-label">Carregant observació…</p>
+          <div class="temperature-range"><span><i class="range-dot range-dot--max"></i>Màx. <b id="temp-max">--°</b></span><span><i class="range-dot range-dot--min"></i>Mín. <b id="temp-min">--°</b></span></div>
+        </div>
+        <aside class="hero__insight">
+          <p class="eyebrow">Lectura ràpida</p>
+          <strong id="quick-title">Analitzant l’ambient</strong>
+          <p id="quick-copy">Esperant les dades de l’estació per generar una lectura contextual.</p>
+          <div class="mini-meter"><span id="comfort-meter"></span></div>
+          <small id="comfort-label">Confort tèrmic</small>
+        </aside>
+      </section>
+
+      <section class="metrics-grid" aria-label="Mesures actuals">
+        <article class="metric panel metric--featured">
+          <div class="metric__head"><span>Temperatura</span><span class="trend trend--up" id="temp-trend">↗ <b>+0,0°</b></span></div>
+          <div class="metric__value"><span id="metric-temperature">--</span><small>°C</small></div>
+          <p>Sensació <b id="feels-like">-- °C</b></p><div class="sparkline" id="temp-spark" aria-hidden="true"></div>
+        </article>
+        <article class="metric panel"><div class="metric__head"><span>Humitat</span><span class="metric__icon">H₂O</span></div><div class="metric__value"><span id="humidity">--</span><small>%</small></div><p>Punt de rosada <b id="dew-point">-- °C</b></p><div class="bar"><span id="humidity-bar"></span></div></article>
+        <article class="metric panel"><div class="metric__head"><span>Vent</span><span class="trend" id="wind-trend">→ estable</span></div><div class="wind-row"><div class="metric__value"><span id="wind-speed">--</span><small>km/h</small></div><div class="compass"><span id="wind-arrow">↑</span></div></div><p><b id="wind-direction">--</b> · Ratxa <b id="wind-gust">-- km/h</b></p></article>
+        <article class="metric panel"><div class="metric__head"><span>Pressió</span><span class="trend trend--up">↗</span></div><div class="metric__value"><span id="pressure">----</span><small>hPa</small></div><p id="pressure-reading">Tendència pendent</p><div class="pressure-scale"><span></span><i id="pressure-marker"></i></div></article>
+        <article class="metric panel"><div class="metric__head"><span>Pluja avui</span><span class="metric__icon">☂</span></div><div class="metric__value"><span id="rain-today">--</span><small>mm</small></div><p>Intensitat <b id="rain-rate">-- mm/h</b></p><div class="rain-drops" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+        <article class="metric panel"><div class="metric__head"><span>Índex UV</span><span class="tag tag--muted">Sensor futur</span></div><div class="metric__value"><span id="uv-index">—</span><small>UV</small></div><p id="uv-reading">No disponible</p><div class="uv-scale"><i></i></div></article>
+      </section>
+
+      <section id="tendencies" class="section-block">
+        <div class="section-heading"><div><p class="eyebrow">Evolució</p><h2>El dia, d’un cop d’ull</h2></div><div class="segmented" role="group" aria-label="Període de gràfica"><button class="is-active" data-period="24h">24 h</button><button data-period="7d">7 dies</button><button data-period="30d">30 dies</button></div></div>
+        <div class="charts-grid">
+          <article class="chart-card panel"><header><div><span>Temperatura</span><strong><b id="chart-temp-now">--</b> °C</strong></div><span class="tag">Històric simulat</span></header><div class="chart-wrap"><canvas id="temperature-chart"></canvas></div></article>
+          <article class="chart-card panel"><header><div><span>Pressió atmosfèrica</span><strong><b id="chart-pressure-now">----</b> hPa</strong></div><span class="trend trend--up">↗ estable</span></header><div class="chart-wrap"><canvas id="pressure-chart"></canvas></div></article>
+        </div>
+        <p class="data-note"><span>i</span> Les corbes són demostratives fins que connectem l’històric de Weather Underground/VEVOR. Els valors actuals sí que provenen de l’estació.</p>
+      </section>
+
+      <section id="territori" class="territory-grid section-block">
+        <article class="webcam-card panel">
+          <header><div><p class="eyebrow">Mirada al territori</p><h2>Webcam en directe</h2></div><span class="live-pill"><span></span>Imatge actual</span></header>
+          <div class="webcam-frame"><img id="webcam-image" alt="Webcam meteorològica de l’entorn del Montseny" /><div class="webcam-overlay"><span id="webcam-time">Ara</span><b>Sant Celoni · Montseny</b></div></div>
+        </article>
+        <aside class="next-card panel">
+          <p class="eyebrow">Pròximes capes</p><h2>Una visió 360° del temps</h2><p>Aquesta base està preparada per creuar observació local, predicció i models globals.</p>
+          <ul><li><span>01</span><div><b>Radar i llamps</b><small>Meteocat · AEMET</small></div><i>Properament</i></li><li><span>02</span><div><b>Predicció local</b><small>AEMET · Meteocat · eltiempo.es</small></div><i>Properament</i></li><li><span>03</span><div><b>Models numèrics</b><small>ECMWF · GFS</small></div><i>Fase 2</i></li><li><span>04</span><div><b>Històrics i rècords</b><small>WU · VEVOR</small></div><i>Fase 2</i></li></ul>
+        </aside>
+      </section>
+    </main>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny</small><a href="#top">Tornar amunt ↑</a></footer>
+    <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
+  </body>
 </html>
