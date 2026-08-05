@@ -108,45 +108,15 @@
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 
-<style>
-  #btnTop {
-    position: fixed !important;
-    bottom: 30px !important;
-    right: 30px !important;
-    width: 50px;
-    height: 50px;
-    background-color: var(--accent, #007bff);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 9999 !important;
-    display: none; 
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  }
-  .share-btn-new {
-    background: var(--panel-bg);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    vertical-align: middle;
-    margin-left: 10px;
-    text-transform: uppercase;
-    font-weight: bold;
-  }
-</style>
+
+
 
 <style>
-#btnTop{position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;background:#0066cc;color:#fff;border:0;font-size:22px;cursor:pointer;z-index:9999;display:none;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4);}
-#btnTop:hover{background:#005bb5;}
-.share-btn{position:relative;background:#0066cc;color:#fff;border:0;padding:8px 14px;border-radius:20px;cursor:pointer;font-weight:bold;font-size:0.85rem;margin-left:10px;vertical-align:middle;}
-.share-btn:hover{background:#005bb5;}
+/* === FASE 2: Botons flotant i compartir === */
+#btnTop{position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;background:#0066cc;color:#fff;border:0;font-size:22px;cursor:pointer;z-index:9999;display:none;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4);transition:transform .2s;}
+#btnTop:hover{background:#005bb5;transform:scale(1.05);}
+.header__share{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#0066cc;color:#fff;border-radius:20px;font-size:0.8rem;font-weight:bold;cursor:pointer;border:0;text-decoration:none;}
+.header__share:hover{background:#005bb5;}
 </style>
 </head>
   <body>
@@ -521,18 +491,20 @@
     </div>
     <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
-  <button id="btnTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+  
+<button id="btnTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 <script>
 (function(){
   var btn=document.getElementById('btnTop');
-  function onScroll(){btn.style.display=(window.scrollY>400||document.documentElement.scrollTop>400)?'flex':'none';}
-  window.addEventListener('scroll',onScroll);
-  onScroll();
+  function toggle(){if(!btn)return;btn.style.display=(window.scrollY>300||document.documentElement.scrollTop>300)?'flex':'none';}
+  window.addEventListener('scroll',toggle);
+  toggle();
 })();
 function sharePage(){
-  var t='Consulta l'Observatori Fontanillas (Sant Celoni, Montseny): '+location.href;
-  if(navigator.share){navigator.share({title:'Meteo Fontanillas',text:t,url:location.href});}
-  else{navigator.clipboard.writeText(t).then(function(){alert('Enllaç copiat al porta-retalls!');});}
+  var url=location.href,title='Meteo Fontanillas',text='Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny): '+url;
+  if(navigator.share){navigator.share({title:title,text:text,url:url}).catch(function(){});}
+  else if(navigator.clipboard){navigator.clipboard.writeText(text+' | '+url).then(function(){alert('Enllaç copiat al porta-retalls!');});}
+  else{prompt('Copia aquest enllaç:',url);}
 }
 </script>
 </body>
