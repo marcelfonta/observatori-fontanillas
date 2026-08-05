@@ -47,7 +47,12 @@
   #metodologia .section-heading { margin-bottom: 1.5rem; }
   .btn-back { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--panel-bg); border: 1px solid var(--accent); color: var(--accent); border-radius: 50px; text-decoration: none; font-weight: bold; transition: all 0.2s; }
   .btn-back:hover { background: var(--accent); color: var(--bg); }
-</style>
+
+    .brand { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }
+    .brand:hover { opacity: 0.8 !important; }
+    .nav a:hover { color: var(--accent) !important; }
+    #metodologia .panel { padding: 2.5rem; } /* Millora padding */
+    </style>
 </head>
   <body>
     <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
@@ -130,7 +135,7 @@
         </nav>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="/#contacte">Contacte</a><a href="/">Tornar amunt ↑</a><a href="javascript:void(0);" onclick="openShare(); return false;">Compartir</a></div></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="/#contacte">Contacte</a><a href="/">Tornar amunt ↑</a><a href="javascript:void(0);" id="btnShareFooterFixed" style="cursor:pointer;text-decoration:none;">Compartir</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   
 <div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
@@ -233,5 +238,36 @@ function doShare(type) {
 }
 </script>
 
+
+<script>
+/* Fix Compartir per a entorns online (Cloudflare) */
+(function() {
+    function setupFixedShare() {
+        var btn = document.getElementById('btnShareFooterFixed');
+        if (btn) {
+            btn.onclick = function(e) {
+                e.preventDefault();
+                console.log("Crida a compartir...");
+                if (typeof openShare === 'function') {
+                    openShare();
+                } else {
+                    var m = document.getElementById('shareModal');
+                    if (m) m.style.display = 'flex';
+                }
+            };
+        }
+    }
+    // Intentar configurar immediatament i al carregar DOM
+    setupFixedShare();
+    document.addEventListener('DOMContentLoaded', setupFixedShare);
+    // Interval de seguretat per si el DOM triga
+    var checks = 0;
+    var timer = setInterval(function() {
+        if (document.getElementById('btnShareFooterFixed') || checks > 10) clearInterval(timer);
+        setupFixedShare();
+        checks++;
+    }, 500);
+})();
+</script>
 </body>
 </html>
