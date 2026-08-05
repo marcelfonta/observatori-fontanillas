@@ -39,7 +39,7 @@
     </script>
   <style>
   /* === Fase 2: Botó flotant Tornar amunt === */
-  .back-to-top {
+  .old-top {
     position: fixed;
     bottom: 24px;
     right: 24px;
@@ -61,15 +61,15 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     pointer-events: none;
   }
-  .back-to-top.visible {
+  .old-top.visible {
     opacity: 1;
     transform: translateY(0);
     pointer-events: all;
   }
-  .back-to-top:hover { opacity: 0.9; transform: scale(1.05); }
+  .old-top:hover { opacity: 0.9; transform: scale(1.05); }
 
   /* === Fase 2: Botó Compartir === */
-  .share-btn {
+  .old-share {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -85,8 +85,8 @@
     transition: all 0.2s;
     margin-left: auto;
   }
-  .share-btn:hover { background: var(--accent); color: var(--bg); }
-  .share-btn svg { width: 18px; height: 18px; fill: currentColor; }
+  .old-share:hover { background: var(--accent); color: var(--bg); }
+  .old-share svg { width: 18px; height: 18px; fill: currentColor; }
   .share-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
   /* Toast notificació */
@@ -107,6 +107,41 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
+
+<style>
+  #btnTop {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    width: 50px;
+    height: 50px;
+    background-color: var(--accent, #007bff);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 9999 !important;
+    display: none; 
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+  .share-btn-new {
+    background: var(--panel-bg);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    vertical-align: middle;
+    margin-left: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+</style>
+
 </head>
   <body>
     <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
@@ -480,7 +515,7 @@
     </div>
     <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
-  <button id="btnTop" class="back-to-top" aria-label="Tornar amunt">↑</button>
+  <button id="btnTop" class="old-top" aria-label="Tornar amunt">↑</button>
 <script>
   /* === Fase 2: Botó flotant + Compartir === */
   (function() {
@@ -510,5 +545,27 @@
     setTimeout(() => t.classList.remove('show'), 2500);
   }
 </script>
+
+<button id="btnTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" aria-label="Amunt">↑</button>
+<script>
+  window.onscroll = function() {
+    if (document.body.scrollTop > 400 || document.documentElement.scrollTop > 400) {
+      document.getElementById('btnTop').style.display = 'flex';
+    } else {
+      document.getElementById('btnTop').style.display = 'none';
+    }
+  };
+
+  function sharePage() {
+    const text = 'Consulta l'Observatori Fontanillas a Sant Celoni: ' + window.location.href;
+    if (navigator.share) {
+      navigator.share({ title: 'Meteo Fontanillas', text: text, url: window.location.href });
+    } else {
+      navigator.clipboard.writeText(text);
+      alert('Enllaç copiat al porta-retalls!');
+    }
+  }
+</script>
+
 </body>
 </html>
