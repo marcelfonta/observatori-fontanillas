@@ -146,7 +146,7 @@
           <p class="eyebrow">Projecte</p>
           <h1>Metodologia i Equipament</h1>
         </div>
-        <a href="index.html" class="btn-back">← Tornar a l’inici</a>
+        <a href="index.html" class="btn-back" style="display:inline-flex; opacity:1 !important; visibility:visible !important; color:var(--accent) !important;">← Tornar a l’inici</a>
       </div>
 
       <div class="panel">
@@ -208,14 +208,32 @@
     <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="index.html#contacte">Contacte</a><a href="index.html#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   
-<button id="btnTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-<script>
+
+
+<button id="btnTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="position:fixed;bottom:25px;right:25px;width:55px;height:55px;border-radius:50%;background:#0066cc;color:#ffffff;border:none;font-size:24px;cursor:pointer;z-index:99999;display:none;align-items:center;justify-content:center;box-shadow:0 5px 15px rgba(0,0,0,0.5);font-family:sans-serif;">↑</button>
+
+<script id="fase2-js">
 (function(){
-  var btn=document.getElementById('btnTop');
-  function toggle(){if(!btn)return;btn.style.display=(window.scrollY>300||document.documentElement.scrollTop>300)?'flex':'none';}
-  window.addEventListener('scroll',toggle);
-  toggle();
+  var t = document.getElementById('btnTop');
+  window.addEventListener('scroll', function(){
+    if(t) t.style.display = (window.scrollY > 400) ? 'flex' : 'none';
+  });
 })();
+function sharePage(){
+  var url = window.location.href;
+  var text = 'Consulta l\'Observatori Fontanillas (Sant Celoni): ';
+  if(navigator.share){
+    navigator.share({title:'Meteo Fontanillas', text:text, url:url}).catch(function(){});
+  } else {
+    var dummy = document.createElement('input');
+    document.body.appendChild(dummy);
+    dummy.value = text + url;
+    dummy.select();
+    document.execCommand('copy');
+    document.body.removeChild(dummy);
+    alert('Enllaç copyat al porta-retalls!');
+  }
+}
 </script>
 </body>
 </html>

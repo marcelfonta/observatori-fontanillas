@@ -37,87 +37,7 @@
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
     </script>
-  <style>
-  /* === Fase 2: Botó flotant Tornar amunt === */
-  .old-top {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--bg);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.4rem;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.3s, transform 0.3s, box-shadow 0.3s;
-    z-index: 999;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    pointer-events: none;
-  }
-  .old-top.visible {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: all;
-  }
-  .old-top:hover { opacity: 0.9; transform: scale(1.05); }
-
-  /* === Fase 2: Botó Compartir === */
-  .old-share {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    background: var(--panel-bg);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-left: auto;
-  }
-  .old-share:hover { background: var(--accent); color: var(--bg); }
-  .old-share svg { width: 18px; height: 18px; fill: currentColor; }
-  .share-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-
-  /* Toast notificació */
-  .toast {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--accent);
-    color: var(--bg);
-    padding: 10px 20px;
-    border-radius: 50px;
-    font-weight: bold;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    z-index: 1000;
-    pointer-events: none;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-</style>
-
-
-
-
-<style>
-/* === FASE 2: Botons flotant i compartir === */
-#btnTop{position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;background:#0066cc;color:#fff;border:0;font-size:22px;cursor:pointer;z-index:9999;display:none;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4);transition:transform .2s;}
-#btnTop:hover{background:#005bb5;transform:scale(1.05);}
-.header__share{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#0066cc;color:#fff;border-radius:20px;font-size:0.8rem;font-weight:bold;cursor:pointer;border:0;text-decoration:none;}
-.header__share:hover{background:#005bb5;}
-</style>
+  
 </head>
   <body>
     <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
@@ -492,19 +412,32 @@
     <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   
-<button id="btnTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-<script>
+
+
+<button id="btnTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="position:fixed;bottom:25px;right:25px;width:55px;height:55px;border-radius:50%;background:#0066cc;color:#ffffff;border:none;font-size:24px;cursor:pointer;z-index:99999;display:none;align-items:center;justify-content:center;box-shadow:0 5px 15px rgba(0,0,0,0.5);font-family:sans-serif;">↑</button>
+<button id="btnShare" onclick="sharePage()" style="position:fixed;top:80px;right:20px;background:#0066cc;color:#ffffff;border:none;padding:10px 18px;border-radius:25px;font-weight:bold;cursor:pointer;z-index:99999;box-shadow:0 4px 10px rgba(0,0,0,0.3);font-family:sans-serif;font-size:14px;">🔗 Compartir</button>
+
+<script id="fase2-js">
 (function(){
-  var btn=document.getElementById('btnTop');
-  function toggle(){if(!btn)return;btn.style.display=(window.scrollY>300||document.documentElement.scrollTop>300)?'flex':'none';}
-  window.addEventListener('scroll',toggle);
-  toggle();
+  var t = document.getElementById('btnTop');
+  window.addEventListener('scroll', function(){
+    if(t) t.style.display = (window.scrollY > 400) ? 'flex' : 'none';
+  });
 })();
 function sharePage(){
-  var url=location.href,title='Meteo Fontanillas',text='Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny): '+url;
-  if(navigator.share){navigator.share({title:title,text:text,url:url}).catch(function(){});}
-  else if(navigator.clipboard){navigator.clipboard.writeText(text+' | '+url).then(function(){alert('Enllaç copiat al porta-retalls!');});}
-  else{prompt('Copia aquest enllaç:',url);}
+  var url = window.location.href;
+  var text = 'Consulta l\'Observatori Fontanillas (Sant Celoni): ';
+  if(navigator.share){
+    navigator.share({title:'Meteo Fontanillas', text:text, url:url}).catch(function(){});
+  } else {
+    var dummy = document.createElement('input');
+    document.body.appendChild(dummy);
+    dummy.value = text + url;
+    dummy.select();
+    document.execCommand('copy');
+    document.body.removeChild(dummy);
+    alert('Enllaç copyat al porta-retalls!');
+  }
 }
 </script>
 </body>
