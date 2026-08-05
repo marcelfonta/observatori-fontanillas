@@ -118,6 +118,10 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
+<style>
+#btnTop{position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;background:#0066cc;color:#fff;border:0;font-size:22px;cursor:pointer;z-index:9999;display:none;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4);}
+#btnTop:hover{background:#005bb5;}
+</style>
 </head>
   <body>
     <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
@@ -129,7 +133,7 @@
         <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span>
       </a>
       <nav class="nav" aria-label="Navegació principal">
-        <a class="is-active" href="#ara" data-section-link="ara">Ara</a><a href="#avisos" data-section-link="avisos">Avisos</a><a href="#prediccio" data-section-link="prediccio">Predicció</a><a href="#tendencies" data-section-link="tendencies">Tendències</a><a href="#cel-nocturn" data-section-link="cel-nocturn">Cel nocturn</a><a href="#territori" data-section-link="territori">Radar</a><a href="#contacte" data-section-link="contacte">Contacte</a>
+        <a class="is-active" href="#ara" data-section-link="ara">Ara</a><a href="#avisos" data-section-link="avisos">Avisos</a><a href="index.html#prediccio" data-section-link="prediccio">Predicció</a><a href="#tendencies" data-section-link="tendencies">Tendències</a><a href="index.html#cel-nocturn" data-section-link="cel-nocturn">Cel nocturn</a><a href="#territori" data-section-link="territori">Radar</a><a href="index.html#contacte" data-section-link="contacte">Contacte</a>
       </nav>
       <div class="live-pill"><span></span><b id="connection-label">Connectant</b><time id="header-time">--:--</time></div>
     </header>
@@ -141,7 +145,7 @@
           <p class="eyebrow">Projecte</p>
           <h1>Metodologia i Equipament</h1>
         </div>
-        <a href="/" class="btn-back">← Tornar a l’inici</a>
+        <a href="index.html" class="btn-back">← Tornar a l’inici</a>
       </div>
 
       <div class="panel">
@@ -172,7 +176,7 @@
   </main>
     <nav class="mobile-nav" aria-label="Navegació ràpida mòbil">
       <a class="is-active" href="#ara" data-section-link="ara"><span aria-hidden="true">●</span>Ara</a>
-      <a href="#prediccio" data-section-link="prediccio"><span aria-hidden="true">↗</span>Previsió</a>
+      <a href="index.html#prediccio" data-section-link="prediccio"><span aria-hidden="true">↗</span>Previsió</a>
       <a href="#tendencies" data-section-link="tendencies"><span aria-hidden="true">⌁</span>Gràfiques</a>
       <a href="#territori" data-section-link="territori"><span aria-hidden="true">◎</span>Radar</a>
       <button type="button" id="mobile-more-button" aria-expanded="false" aria-controls="mobile-more-menu"><span aria-hidden="true">•••</span>Més</button>
@@ -189,48 +193,27 @@
           <a href="#calculats" data-requires-full><span>Σ</span><div><b>Valors calculats</b><small>Diagnosi atmosfèrica</small></div></a>
           <a href="#resum-dia" data-requires-full><span>↗</span><div><b>Resum i extrems</b><small>Avui, 7 dies, 30 dies i any</small></div></a>
           <a href="#avisos" data-section-link="avisos"><span>!</span><div><b>Avisos oficials</b><small>Meteocat i AEMET</small></div></a>
-          <a href="#prediccio" data-section-link="prediccio"><span>☁</span><div><b>Previsió</b><small>48 hores i 7 dies</small></div></a>
+          <a href="index.html#prediccio" data-section-link="prediccio"><span>☁</span><div><b>Previsió</b><small>48 hores i 7 dies</small></div></a>
           <a href="#fonts" data-requires-full><span>5</span><div><b>Fonts contrastades</b><small>Cinc serveis meteorològics</small></div></a>
           <a href="#models" data-requires-full><span>≋</span><div><b>Models</b><small>ECMWF, GFS i ICON</small></div></a>
           <a href="#tendencies" data-section-link="tendencies" data-requires-full><span>⌁</span><div><b>Evolució</b><small>Gràfiques i històrics</small></div></a>
-          <a href="#cel-nocturn" data-section-link="cel-nocturn" data-requires-full><span>◐</span><div><b>Cel i astronomia</b><small>Sol, Lluna i nit</small></div></a>
+          <a href="index.html#cel-nocturn" data-section-link="cel-nocturn" data-requires-full><span>◐</span><div><b>Cel i astronomia</b><small>Sol, Lluna i nit</small></div></a>
           <a href="#territori" data-section-link="territori"><span>◎</span><div><b>Webcam i radar</b><small>Observació del territori</small></div></a>
           <a href="#qualitat" data-requires-full><span>✓</span><div><b>Qualitat de les dades</b><small>Estació, API i arxiu D1</small></div></a>
-          <a href="#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
+          <a href="index.html#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
         </nav>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="index.html#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
-  <button id="btnTop" class="back-to-top" aria-label="Tornar amunt">↑</button>
+  <button id="btnTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 <script>
-  /* === Fase 2: Botó flotant + Compartir === */
-  (function() {
-    const btn = document.getElementById('btnTop');
-    if (!btn) return;
-    window.addEventListener('scroll', () => {
-      btn.classList.toggle('visible', window.scrollY > 350);
-    });
-    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  })();
-
-  function sharePage() {
-    const url = location.href;
-    const title = document.title;
-    const text = 'Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny).';
-    if (navigator.share) {
-      navigator.share({ title, text, url }).catch(()=>{});
-    } else {
-      navigator.clipboard.writeText(url + ' — ' + text).then(() => showToast('Enllaç copiat!'));
-    }
-  }
-  function showToast(msg) {
-    let t = document.getElementById('toast');
-    if (!t) { t = document.createElement('div'); t.id='toast'; t.className='toast'; document.body.appendChild(t); }
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
-  }
+(function(){
+  var btn=document.getElementById('btnTop');
+  function onScroll(){btn.style.display=(window.scrollY>400||document.documentElement.scrollTop>400)?'flex':'none';}
+  window.addEventListener('scroll',onScroll);
+  onScroll();
+})();
 </script>
 </body>
 </html>

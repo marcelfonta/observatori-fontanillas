@@ -142,6 +142,12 @@
   }
 </style>
 
+<style>
+#btnTop{position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;background:#0066cc;color:#fff;border:0;font-size:22px;cursor:pointer;z-index:9999;display:none;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4);}
+#btnTop:hover{background:#005bb5;}
+.share-btn{position:relative;background:#0066cc;color:#fff;border:0;padding:8px 14px;border-radius:20px;cursor:pointer;font-weight:bold;font-size:0.85rem;margin-left:10px;vertical-align:middle;}
+.share-btn:hover{background:#005bb5;}
+</style>
 </head>
   <body>
     <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
@@ -515,57 +521,19 @@
     </div>
     <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
-  <button id="btnTop" class="old-top" aria-label="Tornar amunt">↑</button>
+  <button id="btnTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 <script>
-  /* === Fase 2: Botó flotant + Compartir === */
-  (function() {
-    const btn = document.getElementById('btnTop');
-    if (!btn) return;
-    window.addEventListener('scroll', () => {
-      btn.classList.toggle('visible', window.scrollY > 350);
-    });
-    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  })();
-
-  function sharePage() {
-    const url = location.href;
-    const title = document.title;
-    const text = 'Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny).';
-    if (navigator.share) {
-      navigator.share({ title, text, url }).catch(()=>{});
-    } else {
-      navigator.clipboard.writeText(url + ' — ' + text).then(() => showToast('Enllaç copiat!'));
-    }
-  }
-  function showToast(msg) {
-    let t = document.getElementById('toast');
-    if (!t) { t = document.createElement('div'); t.id='toast'; t.className='toast'; document.body.appendChild(t); }
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
-  }
+(function(){
+  var btn=document.getElementById('btnTop');
+  function onScroll(){btn.style.display=(window.scrollY>400||document.documentElement.scrollTop>400)?'flex':'none';}
+  window.addEventListener('scroll',onScroll);
+  onScroll();
+})();
+function sharePage(){
+  var t='Consulta l'Observatori Fontanillas (Sant Celoni, Montseny): '+location.href;
+  if(navigator.share){navigator.share({title:'Meteo Fontanillas',text:t,url:location.href});}
+  else{navigator.clipboard.writeText(t).then(function(){alert('Enllaç copiat al porta-retalls!');});}
+}
 </script>
-
-<button id="btnTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" aria-label="Amunt">↑</button>
-<script>
-  window.onscroll = function() {
-    if (document.body.scrollTop > 400 || document.documentElement.scrollTop > 400) {
-      document.getElementById('btnTop').style.display = 'flex';
-    } else {
-      document.getElementById('btnTop').style.display = 'none';
-    }
-  };
-
-  function sharePage() {
-    const text = 'Consulta l'Observatori Fontanillas a Sant Celoni: ' + window.location.href;
-    if (navigator.share) {
-      navigator.share({ title: 'Meteo Fontanillas', text: text, url: window.location.href });
-    } else {
-      navigator.clipboard.writeText(text);
-      alert('Enllaç copiat al porta-retalls!');
-    }
-  }
-</script>
-
 </body>
 </html>
