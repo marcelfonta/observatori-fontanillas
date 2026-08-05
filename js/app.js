@@ -34,7 +34,7 @@ function updateClock(){ setText('header-time',new Intl.DateTimeFormat(CONFIG.loc
 function setUpdated(value){ const date=value?new Date(String(value).replace(' ','T')):new Date(); const safe=Number.isNaN(date.getTime())?new Date():date; setText('updated-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(safe)); setText('webcam-time',`Captura ${new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(new Date())}`); const mins=Math.max(0,Math.round((Date.now()-safe.getTime())/60000)); setText('updated-relative',mins<2?'ara mateix':`fa ${mins} min`); }
 async function loadForecastSuite(){
   const [forecastResult,modelsResult]=await Promise.allSettled([fetchForecast(),fetchModelComparison()]);
-  if(forecastResult.status==='fulfilled'){renderForecast(forecastResult.value);renderAstronomy(forecastResult.value);updateSituation({forecast:forecastResult.value});}else{renderForecastError();renderAstronomy(null);updateSituation({forecast:null});}
+  if(forecastResult.status==='fulfilled'){renderForecast(forecastResult.value);initWhenVisible('#cel-nocturn', () => renderAstronomy(forecastResult.value));updateSituation({forecast:forecastResult.value});}else{renderForecastError();initWhenVisible('#cel-nocturn', () => renderAstronomy(null));updateSituation({forecast:null});}
   if(modelsResult.status==='fulfilled')renderModelComparison(modelsResult.value);else renderModelError();
   forecastFetchedAt=Date.now();
 }
