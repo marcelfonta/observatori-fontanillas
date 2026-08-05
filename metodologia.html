@@ -151,34 +151,85 @@
 </div>
 
 <script>
-function openShare(){
-  var m=document.getElementById('shareModal');
-  if(m){m.style.display='flex';}
+/* Configuració global de compartició */
+var SHARE_URL = "https://meteo.fontanillas.cat/";
+var SHARE_TEXT = "Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny):";
+
+function openShare() {
+    var m = document.getElementById('shareModal');
+    if (m) { m.style.display = 'flex'; }
 }
-function closeShare(){
-  var m=document.getElementById('shareModal');
-  if(m){m.style.display='none';}
+
+function closeShare() {
+    var m = document.getElementById('shareModal');
+    if (m) { m.style.display = 'none'; }
 }
-function doShare(type){
-  var url=encodeURIComponent(location.href);
-  var text=encodeURIComponent("Consulta les dades meteorologiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny): ");
-  if(type==="copy"){
-    if(navigator.clipboard){navigator.clipboard.writeText(location.href).then(function(){alert("Enllac copiat!");closeShare();});}
-    else{var d=document.createElement("input");document.body.appendChild(d);d.value=location.href;d.select();document.execCommand("copy");document.body.removeChild(d);alert("Enllac copiat!");closeShare();}
-  }
-  else if(type==="whatsapp"){window.open("https://wa.me/?text="+text+"%20"+url,"_blank");closeShare();}
-  else if(type==="x"){window.open("https://x.com/intent/tweet?text="+text+"&url="+url,"_blank");closeShare();}
-  else if(type==="facebook"){window.open("https://www.facebook.com/sharer/sharer.php?u="+url,"_blank");closeShare();}
-  else if(type==="email"){window.open("mailto:?subject=Observatori Fontanillas&body="+text+"%20"+url);closeShare();}
-  else if(type==="instagram" || type==="tiktok" || type==="native"){
-    if(navigator.share){
-      navigator.share({title:"Meteo Fontanillas",text:decodeURIComponent(text),url:location.href}).catch(function(){});
-      closeShare();
-    }else{
-      if(navigator.clipboard){navigator.clipboard.writeText(location.href).then(function(){alert("Enllac copiat. Obre "+(type==="instagram" ? "Instagram" : type==="tiktok" ? "TikTok" : "l'app que vulguis")+" i enganxa'l a la teva publicacio.");closeShare();});}
-      else{alert("El teu navegador no permet compartir directament. Copia l'enllac i enganxa'l a l'app que vulguis.");}
+
+function handleNativeShare(altLabel) {
+    if (navigator.share) {
+        navigator.share({
+            title: "Meteo Fontanillas",
+            text: SHARE_TEXT,
+            url: SHARE_URL
+        }).catch(function() {});
+        closeShare();
+    } else {
+        copyText(SHARE_URL, "Enllaç copiat. Obre " + altLabel + " i enganxa'l.");
     }
-  }
+}
+
+function copyText(txt, msg) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(txt).then(function() {
+            alert(msg || "Enllaç copiat!");
+            closeShare();
+        });
+    } else {
+        var d = document.createElement("input");
+        d.value = txt;
+        document.body.appendChild(d);
+        d.select();
+        try { document.execCommand("copy"); } catch (e) {}
+        document.body.removeChild(d);
+        alert(msg || "Enllaç copiat!");
+        closeShare();
+    }
+}
+
+function doShare(type) {
+    var urlEnc = encodeURIComponent(SHARE_URL);
+    var textEnc = encodeURIComponent(SHARE_TEXT);
+
+    switch (type) {
+        case 'copy':
+            copyText(SHARE_URL, "Enllaç de meteo.fontanillas.cat copiat!");
+            break;
+        case 'whatsapp':
+            window.open("https://wa.me/?text=" + textEnc + "%20" + urlEnc, "_blank");
+            closeShare();
+            break;
+        case 'x':
+            window.open("https://x.com/intent/tweet?text=" + textEnc + "&url=" + urlEnc, "_blank");
+            closeShare();
+            break;
+        case 'facebook':
+            window.open("https://www.facebook.com/sharer/sharer.php?u=" + urlEnc, "_blank");
+            closeShare();
+            break;
+        case 'email':
+            window.location.href = "mailto:?subject=Observatori Fontanillas&body=" + textEnc + "%20" + urlEnc;
+            closeShare();
+            break;
+        case 'instagram':
+            handleNativeShare("Instagram");
+            break;
+        case 'tiktok':
+            handleNativeShare("TikTok");
+            break;
+        case 'native':
+            handleNativeShare("l'app que vulguis");
+            break;
+    }
 }
 </script>
 
