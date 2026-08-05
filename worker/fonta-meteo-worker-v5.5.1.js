@@ -1,6 +1,5 @@
-// Còpia històrica. Per a la correcció actual utilitza fonta-meteo-worker-v5.5.1.js.
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "5.3.1";
+const WORKER_VERSION = "5.5.1";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const WEBCAM_URL = "https://www.alvar.cat/WebCam/Imatge-Camera.jpg";
@@ -574,6 +573,18 @@ function alertPhenomenon(text) {
   return phenomena.find(([pattern]) => pattern.test(value))?.[1] || "Fenomen meteorològic";
 }
 
+function alertExpiry(text) {
+  const value = plainAlertText(text);
+  const matches = [...value.matchAll(/(?:a|hasta|fins(?:\s+a)?)\s+(\d{1,2}):(\d{2})\s+(\d{2})-(\d{2})-(\d{4})(?:[^()]*\(UTC\s*([+-]\d{1,2})\))?/gi)];
+  const match = matches.at(-1);
+  if (!match) return null;
+  const [, hour, minute, day, month, year, offsetText] = match;
+  const offset = Number(offsetText || 0);
+  const valueUtc = Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour) - offset, Number(minute));
+  const parsed = new Date(valueUtc);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 function parseAemetFeed(xml) {
   const blocks = [...String(xml).matchAll(/<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi)].map(match => match[1]);
   const channelUpdated = xmlTag(xml, "lastBuildDate") || xmlTag(xml, "pubDate") || null;
@@ -584,6 +595,8 @@ function parseAemetFeed(xml) {
     const description = plainAlertText(xmlTag(block, "description"));
     const combined = `${title} ${description}`;
     const level = alertLevel(combined);
+    const expires = alertExpiry(combined);
+    const isCurrent = !expires || expires.getTime() > Date.now();
     return {
       title:title || alertPhenomenon(combined),
       description:description.slice(0, 650),
@@ -592,8 +605,9 @@ function parseAemetFeed(xml) {
       levelLabel:level.label,
       rank:level.rank,
       published:xmlTag(block, "pubDate") || null,
+      expires:expires?.toISOString() || null,
       link:xmlTag(block, "link") || AEMET_PRELITORAL_PAGE,
-      active:!noAlertPattern.test(combined) && !metadataPattern.test(combined) && level.key !== "none",
+      active:!noAlertPattern.test(combined) && !metadataPattern.test(combined) && level.key !== "none" && isCurrent,
     };
   });
   const activeAlerts = entries.filter(entry => entry.active).sort((a, b) => b.rank - a.rank);
@@ -623,7 +637,7 @@ async function alerts() {
       active:parsed.activeAlerts.length,
       maxLevel:parsed.maxLevel,
       alerts:parsed.activeAlerts,
-    }, 200, "public, max-age=300");
+    }, 200, "no-store");
   } catch (error) {
     console.error("AEMET alerts error", error);
     return json({

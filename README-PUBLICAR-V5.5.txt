@@ -1,4 +1,7 @@
-OBSERVATORI FONTANILLAS · PUBLICAR LA VERSIÓ 5.5
+OBSERVATORI FONTANILLAS · GUIA ANTERIOR DE LA VERSIÓ 5.5
+
+ATENCIÓ: per a la correcció actual utilitza README-PUBLICAR-V5.5.1.txt.
+La guia nova inclou el canvi necessari del Worker perquè els avisos vençuts desapareguin automàticament.
 
 LA V5.5 NOMÉS NECESSITA PUBLICAR EL DASHBOARD.
 

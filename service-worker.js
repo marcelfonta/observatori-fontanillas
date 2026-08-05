@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v5.5.0';
+const CACHE = 'observatori-fontanillas-v5.5.1';
 const APP_SHELL = [
   '/', '/index.html', '/site.webmanifest',
   '/css/variables.css', '/css/layout.css', '/css/style.css',

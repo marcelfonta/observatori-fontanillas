@@ -2,6 +2,16 @@
 
 Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les observacions actuals de l’estació ISANTC198, sensació tèrmica i Humidex, un arxiu propi persistent amb extrems i tendències, sis famílies de gràfiques de fins a un any, control de qualitat de les dades, avisos oficials de proximitat, predicció de 48 hores i 7 dies amb hores de llum i sol previst, comparació de cinc fonts fiables, visor temporal de models, radar animat i Meteocat, astronomia solar i nocturna, webcam i contacte privat.
 
+## Correcció de manteniment 5.5.1
+
+- Els avisos d’AEMET es filtren per la seva data i hora de finalització, encara que continuïn publicats al canal RSS.
+- El navegador torna a validar els avisos, els elimina exactament quan caduquen i actualitza també la capçalera i «Què importa ara?».
+- La consulta d’avisos evita memòries cau antigues i conserva l’estat desconegut si la font oficial no respon.
+- El selector mòbil «Completa / Essencial» ja no hereta la mida circular del botó de tancament i s’adapta també a pantalles molt estretes.
+- Les peticions principals tenen un temps màxim de resposta i el radar renova automàticament els fotogrames cada cinc minuts.
+
+> Aquesta correcció sí que requereix substituir el Worker pel fitxer `worker/fonta-meteo-worker-v5.5.1.js`. No cal tocar la base D1, la vinculació `DB`, el cron ni els secrets.
+
 ## Novetats de la versió 5.5
 
 - Accés compacte als avisos oficials dins de la lectura ràpida, amb color per nivell, fenòmens, vigència i enllaç directe al centre de vigilància.
@@ -12,7 +22,7 @@ Dashboard meteorològic modular per a Sant Celoni i el Montseny. Mostra les obse
 - Favicon i icones estàtiques, manifest instal·lable, memòria cau segura, adreça canònica, dades estructurades i metadades Open Graph/X.
 - Targeta social pròpia de 1200 × 630 píxels per compartir el web a WhatsApp, xarxes socials i aplicacions de missatgeria.
 - Es corregeixen la puntuació duplicada i la lectura resumida quan coincideixen diversos avisos.
-- No cal modificar el Worker, la base D1, el cron ni cap secret de Cloudflare.
+- La V5.5 original no requeria canvis de Worker; la correcció 5.5.1 sí que n’actualitza el filtratge d’avisos.
 
 ## Posada en marxa
 
@@ -49,7 +59,7 @@ El directori `worker/` inclou el Worker V5, la versió V4 anterior com a còpia 
 - cobertura temporal acumulada;
 - completitud de cada família de sensors.
 
-La base D1 ja queda preparada des de la V5.2. En aquesta actualització només cal substituir el codi del Worker pel fitxer V5; no s’ha de tocar la vinculació `DB`, el cron ni cap secret.
+La base D1 ja queda preparada des de la V5.2. En aquesta correcció només cal substituir el codi del Worker pel fitxer `fonta-meteo-worker-v5.5.1.js`; no s’ha de tocar la vinculació `DB`, el cron ni cap secret.
 
 Les escales de color de les targetes són interpretatives: descriuen confort, intensitat o risc, però no representen encara una anomalia respecte d’una normal climàtica. L’índex UV segueix les categories internacionals emprades per AEMET: baix, moderat, alt, molt alt i extrem.
 
@@ -67,7 +77,7 @@ Les escales de color de les targetes són interpretatives: descriuen confort, in
 
 ## Avisos meteorològics
 
-El bloc de vigilància mostra directament el giny oficial de Situacions Meteorològiques de Perill de Meteocat. A més, el Worker consulta el canal públic CAP/RSS d’AEMET específic del Prelitoral de Barcelona, retorna els avisos actius, el nivell màxim i els enllaços originals i conserva un temps de memòria cau de cinc minuts.
+El bloc de vigilància mostra directament el giny oficial de Situacions Meteorològiques de Perill de Meteocat. A més, el Worker consulta el canal públic CAP/RSS d’AEMET específic del Prelitoral de Barcelona, retorna els avisos actius, el nivell màxim i els enllaços originals. La versió 5.5.1 interpreta la data final de cada avís i el descarta quan venç, encara que AEMET encara el conservi al canal.
 
 El dashboard resumeix el nivell i el fenomen per facilitar la lectura, però sempre identifica AEMET com a font i enllaça amb l’avís original. Si el servei no respon, mostra «estat desconegut» i mai «sense avisos». En cas de temps advers cal consultar el detall oficial i seguir les indicacions de Protecció Civil i del 112. No cal cap clau nova d’AEMET.
 
@@ -122,7 +132,7 @@ worker/              Worker Cloudflare V5, còpia V4 i esquema de la base D1
 
 ```bash
 git add .
-git commit -m "Publica la versió 5.5 preparada per mòbil i xarxes"
+git commit -m "Corregeix avisos caducats i menu mobil"
 git push origin main
 ```
 

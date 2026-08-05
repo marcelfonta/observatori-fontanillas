@@ -61,11 +61,9 @@ async function loadAlerts(){
   try {
     const payload=await fetchAlerts();
     renderAlerts(payload);
-    updateSituation({alerts:payload});
   } catch(error) {
     console.warn('Avisos oficials no disponibles.',error);
     renderAlertsUnavailable();
-    updateSituation({alerts:null});
   }
   alertsFetchedAt=Date.now();
 }
@@ -100,6 +98,7 @@ initWebcam();
 initContact();
 initForecastControls();
 initExtremeControls();
+document.addEventListener('observatori:alerts-updated',event=>updateSituation({alerts:event.detail}));
 initWhenVisible('.model-viewer',initModelViewer);
 initWhenVisible('#territori',initRadar,'700px 0px');
 updateClock();

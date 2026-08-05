@@ -9,6 +9,9 @@ const pluralLevels = {
   red:'vermells', orange:'taronges', yellow:'grocs', unknown:'oficials'
 };
 
+const levelRanks = { red:4, orange:3, yellow:2, unknown:0, none:-1 };
+let expiryTimer=null;
+
 function alertExpiry(entry) {
   const direct=entry?.expires || entry?.endsAt || entry?.end || entry?.until;
   if(direct) {
@@ -21,6 +24,44 @@ function alertExpiry(entry) {
   if(!match)return null;
   const parsed=new Date(Number(match[5]),Number(match[4])-1,Number(match[3]),Number(match[1]),Number(match[2]));
   return Number.isNaN(parsed.getTime())?null:parsed;
+}
+
+function normalizeAlertsPayload(payload) {
+  if(!payload?.ok)return payload;
+  const now=Date.now();
+  const alerts=Array.isArray(payload.alerts)
+    ? payload.alerts.filter(entry=>{
+      const expiry=alertExpiry(entry);
+      return !expiry || expiry.getTime()>now;
+    })
+    : [];
+  const maxLevel=alerts.reduce((highest,entry)=>
+    (levelRanks[entry?.level] ?? 0)>(levelRanks[highest] ?? -1) ? (entry.level || 'unknown') : highest
+  ,'none');
+  return {
+    ...payload,
+    status:alerts.length?'active':'clear',
+    active:alerts.length,
+    maxLevel,
+    alerts
+  };
+}
+
+function notifyAlertState(payload) {
+  document.dispatchEvent(new CustomEvent('observatori:alerts-updated',{ detail:payload }));
+}
+
+function scheduleExpiryRefresh(payload) {
+  if(expiryTimer)clearTimeout(expiryTimer);
+  expiryTimer=null;
+  if(!payload?.ok)return;
+  const now=Date.now();
+  const next=(payload.alerts || [])
+    .map(alertExpiry)
+    .filter(date=>date && date.getTime()>now)
+    .sort((a,b)=>a-b)[0];
+  if(!next)return;
+  expiryTimer=setTimeout(()=>renderAlerts(payload),Math.max(250,next.getTime()-now+250));
 }
 
 function expiryLabel(alerts=[]) {
@@ -94,9 +135,10 @@ function alertItem(entry) {
 }
 
 export function renderAlerts(payload) {
+  payload=normalizeAlertsPayload(payload);
   const card=document.getElementById('alerts-local-card');
   const list=document.getElementById('official-alert-list');
-  if(!card||!list)return;
+  if(!card||!list)return payload;
   const level=payload?.ok ? (payload.maxLevel || 'none') : 'unknown';
   renderAlertShortcuts(payload);
   card.className=`alerts-local is-${level}`;
@@ -122,6 +164,9 @@ export function renderAlerts(payload) {
     list.append(empty);
   }
   setText('alerts-updated',checkedLabel(payload));
+  scheduleExpiryRefresh(payload);
+  notifyAlertState(payload);
+  return payload;
 }
 
 export function renderAlertsUnavailable() {

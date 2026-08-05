@@ -1,7 +1,17 @@
 import { CONFIG } from './config.js';
 
+async function request(url, options={}, timeoutMs=12000) {
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try {
+    return await fetch(url,{...options,signal:controller.signal});
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function fetchCurrentWeather() {
-  const response = await fetch(CONFIG.apiUrl, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+  const response = await request(CONFIG.apiUrl, { headers: { Accept: 'application/json' }, cache: 'no-store' });
   if (!response.ok) throw new Error(`API ${response.status}`);
   return response.json();
 }
@@ -15,7 +25,7 @@ export async function fetchForecast() {
     timezone: 'Europe/Madrid',
     forecast_days: '7'
   });
-  const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, { cache: 'no-store' });
+  const response = await request(`https://api.open-meteo.com/v1/forecast?${params}`, { cache: 'no-store' },15000);
   if (!response.ok) throw new Error(`Forecast API ${response.status}`);
   return response.json();
 }
@@ -28,7 +38,7 @@ async function fetchModel(endpoint) {
     timezone: 'Europe/Madrid',
     forecast_days: '7'
   });
-  const response = await fetch(`https://api.open-meteo.com${endpoint}?${params}`, { cache: 'no-store' });
+  const response = await request(`https://api.open-meteo.com${endpoint}?${params}`, { cache: 'no-store' },15000);
   if (!response.ok) throw new Error(`Model API ${response.status}`);
   return response.json();
 }
@@ -39,19 +49,20 @@ export async function fetchModelComparison() {
 }
 
 export async function fetchStationHistory(days = 31, resolution = 'auto') {
-  const response = await fetch(`${CONFIG.apiUrl}/history?days=${days}&resolution=${resolution}`, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+  const response = await request(`${CONFIG.apiUrl}/history?days=${days}&resolution=${resolution}`, { headers: { Accept: 'application/json' }, cache: 'no-store' },18000);
   if (!response.ok) throw new Error(`History API ${response.status}`);
   return response.json();
 }
 
 export async function fetchDataQuality() {
-  const response = await fetch(`${CONFIG.apiUrl}/quality`, { headers: { Accept:'application/json' }, cache:'no-store' });
+  const response = await request(`${CONFIG.apiUrl}/quality`, { headers: { Accept:'application/json' }, cache:'no-store' });
   if (!response.ok) throw new Error(`Quality API ${response.status}`);
   return response.json();
 }
 
 export async function fetchAlerts() {
-  const response = await fetch(`${CONFIG.apiUrl}/alerts`, { headers:{ Accept:'application/json' }, cache:'no-store' });
+  const freshness=Math.floor(Date.now()/60000);
+  const response = await request(`${CONFIG.apiUrl}/alerts?fresh=${freshness}`, { headers:{ Accept:'application/json' }, cache:'no-store' });
   if (!response.ok) throw new Error(`Alerts API ${response.status}`);
   return response.json();
 }

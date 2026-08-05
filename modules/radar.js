@@ -9,6 +9,7 @@ let playback;
 let attempts = 0;
 let interactiveStarted = false;
 let leafletPromise;
+let refreshTimer;
 
 function ensureLeaflet() {
   if(window.L)return Promise.resolve();
@@ -77,7 +78,14 @@ function buildMap() {
 }
 
 async function loadFrames() {
-  const response = await fetch('https://api.rainviewer.com/public/weather-maps.json', { cache:'no-store' });
+  const controller=new AbortController();
+  const timeout=window.setTimeout(()=>controller.abort(),12000);
+  let response;
+  try {
+    response=await fetch('https://api.rainviewer.com/public/weather-maps.json', { cache:'no-store',signal:controller.signal });
+  } finally {
+    window.clearTimeout(timeout);
+  }
   if (!response.ok) throw new Error(`Radar ${response.status}`);
   const payload = await response.json();
   frames = (payload?.radar?.past || []).map(frame => ({ ...frame, host:payload.host }));
@@ -128,4 +136,8 @@ export function initRadar() {
     });
   });
   ensureLeaflet().then(startInteractiveRadar).catch(()=>{setText('radar-status','Mapa no disponible');setText('radar-loader','No s’ha pogut iniciar el mapa interactiu.');});
+  if(!refreshTimer)refreshTimer=window.setInterval(()=>{
+    if(document.hidden||!interactiveStarted)return;
+    loadFrames().catch(error=>console.warn('No s’ha pogut actualitzar el radar.',error));
+  },5*60*1000);
 }
