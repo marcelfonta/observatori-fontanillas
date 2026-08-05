@@ -37,22 +37,7 @@
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
     </script>
-  
-<style>
-.share-trigger{cursor:pointer;text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px;}
-.share-dialog{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:99999;}
-.share-dialog[open]{display:flex;}
-.share-sheet{background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:22px 24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);}
-.share-sheet h3{margin:0 0 14px;font-size:1.05rem;}
-.share-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.share-grid button{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;}
-.share-grid button:hover{background:var(--panel-hover);border-color:var(--accent);}
-.share-close{margin-top:14px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;}
-.section-back{text-align:right;margin:18px 0 0;opacity:.7;font-size:.85rem;color:var(--text);}
-.section-back a{text-decoration:none;color:var(--accent);}
-.section-back a:hover{text-decoration:underline;}
-</style>
-</head>
+  </head>
   <body>
     <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
     <a class="skip-link" href="#ara">Saltar al contingut principal</a>
@@ -197,7 +182,8 @@
           </section>
           <p class="alerts-note"><span>i</span> El mapa és el servei oficial de Meteocat. La lectura local reprodueix el canal CAP/RSS oficial d’AEMET per al Prelitoral de Barcelona i sempre enllaça amb el detall original. <b id="alerts-updated">Actualitzant…</b></p>
         </div>
-</section>
+      </section>
+      <a href="#top" style="display:block;text-align:right;font-size:11px;opacity:.7;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="prediccio" class="forecast-section section-block" aria-labelledby="forecast-title">
         <div class="section-heading forecast-heading">
@@ -287,7 +273,8 @@
           <p class="model-license-note">La taula superior compara ECMWF, GFS i ICON. El visor cartogràfic utilitza la inserció pública de Windy per animar ECMWF, GFS i ICON-EU sense reproduir imatges de tercers.</p>
         </article>
         <p class="forecast-disclaimer">La predicció descriu un escenari de model per a Sant Celoni, no una certesa. L’observació real de l’estació és la referència del temps que està fent.</p>
-</section>
+      </section>
+      <a href="#top" style="display:block;text-align:right;font-size:11px;opacity:.7;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="tendencies" class="section-block" data-mobile-advanced>
         <div class="section-heading evolution-heading"><div><p class="eyebrow">Evolució</p><h2>Històric meteorològic</h2><p id="evolution-period-copy">Lectures de les últimes 24 hores</p></div><div class="segmented" role="group" aria-label="Període de gràfica"><button class="is-active" data-period="24h">24 h</button><button data-period="7d">7 dies</button><button data-period="30d">30 dies</button><button data-period="1y">1 any</button></div></div>
@@ -300,7 +287,8 @@
           <article class="chart-card panel"><header><div><span>Índex UV</span><strong><b id="chart-uv-now">--</b> UV</strong></div><span class="tag">Exposició</span></header><div class="chart-wrap"><canvas id="uv-chart"></canvas></div></article>
         </div>
         <p class="data-note"><span>i</span> Les corbes combinen l’arxiu propi persistent de l’estació amb Weather Underground com a suport de l’històric recent. La resolució s’adapta automàticament al període seleccionat.</p>
-</section>
+      </section>
+      <a href="#top" style="display:block;text-align:right;font-size:11px;opacity:.7;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="cel-nocturn" class="astronomy-section section-block" aria-labelledby="astronomy-title" data-mobile-advanced>
         <div class="section-heading astronomy-heading"><div><p class="eyebrow">Astronomia local</p><h2 id="astronomy-title">El cel, de dia i de nit</h2></div><div class="astronomy-source"><span>Càlcul per a 41,6906° N · 2,4890° E</span><a href="https://aa.usno.navy.mil/data/" target="_blank" rel="noreferrer">Efemèrides: USNO ↗</a></div></div>
@@ -316,7 +304,8 @@
           <article class="events-card panel"><header><div><span>Esdeveniments destacats</span><small>Observables des de Catalunya</small></div><a href="https://astronomia.ign.es/" target="_blank" rel="noreferrer">Font IGN / IMO ↗</a></header><div id="astronomy-events" class="astronomy-events"></div></article>
         </div>
         <p class="astronomy-note"><span>!</span> Per observar el Sol o un eclipsi solar cal utilitzar sempre filtres homologats. Les ulleres de sol normals no protegeixen la vista.</p>
-</section>
+      </section>
+      <a href="#top" style="display:block;text-align:right;font-size:11px;opacity:.7;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="territori" class="territory-grid section-block">
         <article class="webcam-card panel">
@@ -330,7 +319,8 @@
           <div class="radar-panel is-active" id="radar-panel-interactive" role="tabpanel" aria-labelledby="radar-tab-interactive" tabindex="0" data-radar-panel="interactive"><div class="radar-frame"><div id="radar-map" aria-label="Mapa interactiu del radar de precipitació"></div><div class="radar-loader" id="radar-loader">Carregant les imatges del radar…</div></div><div class="radar-timeline"><button type="button" id="radar-play" aria-label="Reproduir animació del radar">▶</button><input id="radar-slider" type="range" min="0" max="0" value="0" aria-label="Seleccionar hora del radar" /><time id="radar-time">—</time></div><div class="radar-actions"><p>Arrossega i amplia el mapa. La línia temporal recorre les imatges reals disponibles de les últimes dues hores.</p><a href="https://www.rainviewer.com/" target="_blank" rel="noreferrer">Capa temporal: RainViewer ↗</a></div></div>
           <div class="radar-panel" id="radar-panel-meteocat" role="tabpanel" aria-labelledby="radar-tab-meteocat" tabindex="0" hidden data-radar-panel="meteocat"><div class="radar-meteocat"><iframe title="Última imatge oficial del radar de Meteocat" data-src="https://static-m.meteo.cat/ginys/mapaRadar?language=ca&amp;color=0f2a22&amp;target=_blank" loading="lazy"></iframe></div><div class="radar-actions"><p>Imatge oficial de la Xarxa de Radars Meteorològics de Catalunya. Permet ampliar el mapa i obrir l’animació de la darrera hora a Meteocat.</p><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Obrir l’animació i la previsió +1 h →</a></div></div>
         </article>
-</section>
+      </section>
+      <a href="#top" style="display:block;text-align:right;font-size:11px;opacity:.7;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="qualitat" class="quality-section section-block" aria-labelledby="quality-title" data-mobile-advanced>
         <div class="section-heading quality-heading">
@@ -370,7 +360,8 @@
           </div>
         </article>
         <p class="quality-note"><span>i</span> L’arxiu propi ja desa una lectura cada cinc minuts. La cobertura i els històrics llargs aniran guanyant valor automàticament amb el temps.</p>
-</section>
+      </section>
+      <a href="#top" style="display:block;text-align:right;font-size:11px;opacity:.7;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="contacte" class="contact-section section-block" aria-labelledby="contact-title">
         <article class="contact-intro panel">
@@ -391,12 +382,6 @@
           <label class="consent"><input type="checkbox" name="consent" required /><span>Accepto que les dades facilitades s’utilitzin exclusivament per respondre aquesta consulta.</span></label>
           <div class="contact-actions"><button type="submit" id="contact-submit">Enviar missatge <span>→</span></button><p id="contact-status" role="status" aria-live="polite">Resposta habitual tan aviat com sigui possible.</p></div>
         </form>
-      <a href="#top" style="display:block;text-align:right;font-size:.82rem;opacity:.7;margin:16px 10px 8px 0;text-decoration:none;color:var(--accent);">Torna amunt ↑</a>
-      <a href="#top" style="display:block;text-align:right;font-size:.82rem;opacity:.7;margin:16px 10px 8px 0;text-decoration:none;color:var(--accent);">Torna amunt ↑</a>
-      <a href="#top" style="display:block;text-align:right;font-size:.82rem;opacity:.7;margin:16px 10px 8px 0;text-decoration:none;color:var(--accent);">Torna amunt ↑</a>
-      <a href="#top" style="display:block;text-align:right;font-size:.82rem;opacity:.7;margin:16px 10px 8px 0;text-decoration:none;color:var(--accent);">Torna amunt ↑</a>
-      <a href="#top" style="display:block;text-align:right;font-size:.82rem;opacity:.7;margin:16px 10px 8px 0;text-decoration:none;color:var(--accent);">Torna amunt ↑</a>
-      <a href="#top" style="display:block;text-align:right;font-size:.82rem;opacity:.7;margin:16px 10px 8px 0;text-decoration:none;color:var(--accent);">Torna amunt ↑</a>
       </section>
     </main>
     <nav class="mobile-nav" aria-label="Navegació ràpida mòbil">
@@ -429,15 +414,12 @@
         </nav>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a href="#" onclick="return openShare();" style="opacity:.7;text-decoration:none;">Compartir</a></div></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a href="#" onclick="event.preventDefault();openShare();" style="color:var(--green);text-decoration:none;font-size:11px;">Compartir</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
-<button class="modal-close" onclick="closeModal()">Tancar</button>
-  </div>
-</div>
-
+  
 <div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
   <div style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true">
-    <h3 style="margin:0 0 16px;font-size:1.1rem;">Compartir l'Observatori</h3>
+    <h3 style="margin:0 0 16px;font-size:1.1rem;color:var(--text);">Compartir l'Observatori</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <button onclick="doShare('copy')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📋 Copiar</button>
       <button onclick="doShare('whatsapp')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📱 WhatsApp</button>
@@ -446,7 +428,7 @@
       <button onclick="doShare('email')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">✉️ Correu</button>
       <button onclick="doShare('native')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🔗 Nativa</button>
     </div>
-    <button onclick="closeShare()" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;">Tancar</button>
+    <button onclick="closeShare()" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer;">Tancar</button>
   </div>
 </div>
 
@@ -454,7 +436,6 @@
 function openShare(){
   var m=document.getElementById('shareModal');
   if(m){m.style.display='flex';}
-  return false;
 }
 function closeShare(){
   var m=document.getElementById('shareModal');
