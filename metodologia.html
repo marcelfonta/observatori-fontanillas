@@ -1,90 +1,136 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ca">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metodologia i Equipament - Observatori Fontanillas</title>
-    <!-- Carrega de tots els estils de la web principal -->
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <style>
-        /* Ajustos específics per aquesta pàgina */
-        .metodologia-content { padding-top: 2rem; padding-bottom: 4rem; }
-        .panel { padding: 2.5rem; margin-bottom: 2rem; background: var(--panel-bg); border-radius: 12px; border: 1px solid var(--border); }
-        .panel h3 { color: var(--accent); margin-top: 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-        .panel h4 { margin-top: 1.5rem; margin-bottom: 0.8rem; font-size: 1.1rem; }
-        .panel ul { padding-left: 1.5rem; }
-        .panel li { margin-bottom: 0.8rem; line-height: 1.6; }
-        .back-nav { margin-bottom: 2rem; }
-        .btn-back { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--panel-bg); border: 1px solid var(--accent); color: var(--accent); border-radius: 50px; text-decoration: none; font-weight: bold; transition: all 0.2s; }
-        .btn-back:hover { background: var(--accent); color: var(--bg); }
-    </style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07110f" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="description" content="Dades meteorològiques en directe des de Sant Celoni, als peus del Montseny." />
+    <title>Observatori Fontanillas · Sant Celoni</title>
+    <link rel="canonical" href="https://meteo.fontanillas.cat/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ca_ES" />
+    <meta property="og:site_name" content="Observatori Meteorològic Fontanillas" />
+    <meta property="og:title" content="Observatori Meteorològic Fontanillas · Sant Celoni" />
+    <meta property="og:description" content="Dades locals, previsió, avisos, radar i astronomia en directe des de Sant Celoni." />
+    <meta property="og:url" content="https://meteo.fontanillas.cat/" />
+    <meta property="og:image" content="https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-social.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Observatori Meteorològic Fontanillas, dades locals en directe des de Sant Celoni" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Observatori Meteorològic Fontanillas" />
+    <meta name="twitter:description" content="Dades locals, previsió i radar en directe des de Sant Celoni." />
+    <meta name="twitter:image" content="https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-social.png" />
+    <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/variables.css?v=5.6" />
+    <link rel="stylesheet" href="css/layout.css?v=5.6" />
+    <link rel="stylesheet" href="css/style.css?v=5.6" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+    <script type="module" src="js/app.js?v=5.6"></script>
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
+    </script>
+  <style>
+  #metodologia { padding-top: 2rem; padding-bottom: 4rem; }
+  #metodologia .panel { padding: 2rem; margin-bottom: 1.5rem; }
+  #metodologia .panel h3 { margin-top: 0; color: var(--accent); }
+  #metodologia .panel h4 { margin-bottom: 0.5rem; margin-top: 1.5rem; }
+  #metodologia .panel ul { padding-left: 1.2rem; }
+  #metodologia .panel li { margin-bottom: 0.4rem; line-height: 1.6; }
+  #metodologia .section-heading { margin-bottom: 1.5rem; }
+  .btn-back { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--panel-bg); border: 1px solid var(--accent); color: var(--accent); border-radius: 50px; text-decoration: none; font-weight: bold; transition: all 0.2s; }
+  .btn-back:hover { background: var(--accent); color: var(--bg); }
+</style>
 </head>
-<body>
-    <!-- Capçalera (Header) tal com la tens a la principal -->
-    <header class="header">
-        <div class="shell header__inner">
-            <div class="header__brand">
-                <a href="/" class="logo">
-                    <span class="logo__icon">◑</span>
-                    <div class="logo__text">
-                        <strong>Meteo<b>Fonta</b></strong>
-                        <span>Sant Celoni · 147m</span>
-                    </div>
-                </a>
-            </div>
-            <!-- Podem posar un botó simple de tancar/tornar aquí -->
-            <nav class="header__nav">
-                <a href="/" class="btn-back">← Tornar a l'inici</a>
-            </nav>
-        </div>
+  <body>
+    <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
+    <a class="skip-link" href="#ara">Saltar al contingut principal</a>
+    <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
+    <header class="site-header shell">
+      <a class="brand" href="#top" aria-label="Observatori Fontanillas, inici">
+        <span class="brand__mark" aria-hidden="true"><i class="brand__sun"></i><i class="brand__ridge brand__ridge--back"></i><i class="brand__ridge brand__ridge--front"></i><i class="brand__data"></i></span>
+        <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span>
+      </a>
+      <nav class="nav" aria-label="Navegació principal">
+        <a class="is-active" href="#ara" data-section-link="ara">Ara</a><a href="#avisos" data-section-link="avisos">Avisos</a><a href="#prediccio" data-section-link="prediccio">Predicció</a><a href="#tendencies" data-section-link="tendencies">Tendències</a><a href="#cel-nocturn" data-section-link="cel-nocturn">Cel nocturn</a><a href="#territori" data-section-link="territori">Radar</a><a href="#contacte" data-section-link="contacte">Contacte</a>
+      </nav>
+      <div class="live-pill"><span></span><b id="connection-label">Connectant</b><time id="header-time">--:--</time></div>
     </header>
 
-    <main id="metodologia" class="shell metodologia-content">
-        <section class="section-block">
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">Projecte</p>
-                    <h1>Metodologia i Equipament</h1>
-                </div>
-            </div>
-
-            <div class="panel">
-                <h3>L'Estació Meteorològica</h3>
-                <p>L'Observatori Fontanillas utilitza tecnologia de monitoratge meteorològic professional situada estratègicament a Sant Celoni per oferir les dades més precises de la zona nord del municipi i el peu del Montseny.</p>
-                
-                <h4>Instrumentació de Precisió</h4>
-                <ul>
-                    <li><strong>Anemòmetre:</strong> Registra la velocitat i direcció del vent amb alta resolució, capturant ràfegues en temps real.</li>
-                    <li><strong>Pluviòmetre:</strong> Sistema de cullera basculant amb resolució de 0,2 mm per a un seguiment detallat de la precipitació acumulada i la intensitat.</li>
-                    <li><strong>Termo-higròmetre:</strong> Sensor d'alta sensibilitat ubicat dins d'un escut de radiació solar ventilat per garantir lectures de temperatura i humitat reals, sense interferència del sol directe.</li>
-                    <li><strong>Baròmetre:</strong> Sensor de pressió d'estat sòlid amb compensació altimètrica per a lectures de pressió a nivell del mar.</li>
-                    <li><strong>Radiació i UV:</strong> Sensors globals que mesuren l'energia solar incident i l'índex ultraviolat per a la prevenció i anàlisi climàtic.</li>
-                </ul>
-            </div>
-
-            <div class="panel">
-                <h3>Arquitectura Digital i Dades</h3>
-                <p>Aquest projecte combina l'afició meteorològica amb les darreres tecnologies de computació en el "edge" per garantir una disponibilitat del 99.9%.</p>
-                <ul>
-                    <li><strong>Cloudflare Pages:</strong> El frontend que estàs veient està optimitzat per a una càrrega ultra-ràpida des de qualsevol lloc del món.</li>
-                    <li><strong>Cloudflare Workers:</strong> El "motor" de la web. Procesa les dades de l'estació, consulta APIs oficials (AEMET/Meteocat) i gestiona les alertes.</li>
-                    <li><strong>Cloudflare D1:</strong> Base de dades SQL nativa de Cloudflare on s'emmagatzema cada observació cada 5 minuts des de l'inici del projecte.</li>
-                    <li><strong>Weather Underground:</strong> Actua com a node receptor primari de l'estació física, enviant les dades cap al nostre Worker.</li>
-                </ul>
-            </div>
-        </section>
-    </main>
-
-    <!-- Peu de pàgina (Footer) complet i corregit -->
-    <footer class="shell">
-        <span>Observatori Meteorològic Fontanillas</span>
-        <small>Dades locals · Sant Celoni, Montseny · V5.6.2</small>
+    <main id="metodologia" class="shell">
+    <section class="section-block">
+      <div class="section-heading">
         <div>
-            <a href="/">Tornar a l'inici</a>
-            <a href="#top">Tornar amunt ↑</a>
+          <p class="eyebrow">Projecte</p>
+          <h1>Metodologia i Equipament</h1>
         </div>
-    </footer>
-</body>
+        <a href="/" class="btn-back">← Tornar a l’inici</a>
+      </div>
+
+      <div class="panel">
+        <h3>L’Estació Meteorològica</h3>
+        <p>L’Observatori Fontanillas està situat a la zona nord de Sant Celoni (Montseny). Les dades s’actualitzen cada 2–5 minuts i s’emmagatzemen a una base de dades històrica per a anàlisi climàtic.</p>
+
+        <h4>Instrumentació</h4>
+        <ul>
+          <li><strong>Anemòmetre:</strong> Velocitat i direcció del vent en temps real.</li>
+          <li><strong>Pluviòmetre:</strong> Precipitació amb resolució de 0,2 mm.</li>
+          <li><strong>Termo-higròmetre:</strong> Protegit dins d’un escut de radiació solar ventilat per garantir lectures fiables.</li>
+          <li><strong>Baròmetre:</strong> Pressió atmosfèrica compensada a nivell de mar.</li>
+          <li><strong>Sensor UV i Solar:</strong> Índex UV i radiació solar global.</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h3>Arquitectura Digital</h3>
+        <p>La web està construïda amb tecnologia moderna de Cloudflare:</p>
+        <ul>
+          <li><strong>Cloudflare Pages:</strong> Allotjament i desplegament del frontend.</li>
+          <li><strong>Cloudflare Workers:</strong> Backend serverless que processa les peticions.</li>
+          <li><strong>Cloudflare D1:</strong> Base de dades SQL per emmagatzemar observacions històriques.</li>
+          <li><strong>Weather Underground:</strong> Font de les dades meteorològiques en temps real.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+    <nav class="mobile-nav" aria-label="Navegació ràpida mòbil">
+      <a class="is-active" href="#ara" data-section-link="ara"><span aria-hidden="true">●</span>Ara</a>
+      <a href="#prediccio" data-section-link="prediccio"><span aria-hidden="true">↗</span>Previsió</a>
+      <a href="#tendencies" data-section-link="tendencies"><span aria-hidden="true">⌁</span>Gràfiques</a>
+      <a href="#territori" data-section-link="territori"><span aria-hidden="true">◎</span>Radar</a>
+      <button type="button" id="mobile-more-button" aria-expanded="false" aria-controls="mobile-more-menu"><span aria-hidden="true">•••</span>Més</button>
+    </nav>
+    <div class="mobile-more" id="mobile-more-menu" hidden>
+      <button class="mobile-more__backdrop" type="button" aria-label="Tancar el menú"></button>
+      <div class="mobile-more__sheet" role="dialog" aria-modal="true" aria-label="Més seccions">
+        <div class="mobile-more__head"><span><small>Índex de continguts</small><strong>Explora l’observatori</strong></span><button type="button" id="mobile-more-close" aria-label="Tancar">×</button></div>
+        <a class="mobile-alert-shortcut is-pending" id="mobile-alert-shortcut" href="#avisos" data-section-link="avisos"><span>!</span><div><b id="mobile-alert-title">Comprovant avisos</b><small id="mobile-alert-copy">Vigilància oficial</small></div><em>→</em></a>
+        <div class="mobile-view-mode" aria-label="Densitat de contingut mòbil"><span><b>Vista mòbil</b><small>Tria quanta informació vols veure</small></span><div role="group"><button class="is-active" type="button" data-mobile-view="full" aria-pressed="true">Completa</button><button type="button" data-mobile-view="essential" aria-pressed="false">Essencial</button></div></div>
+        <nav class="mobile-more__links" aria-label="Índex complet de l’observatori">
+          <a href="#ara" data-section-link="ara"><span>●</span><div><b>Ara mateix</b><small>Temperatura i lectura ràpida</small></div></a>
+          <a href="#metric-card-temperature"><span>⌁</span><div><b>Valors actuals</b><small>Sensors i minigràfics</small></div></a>
+          <a href="#calculats" data-requires-full><span>Σ</span><div><b>Valors calculats</b><small>Diagnosi atmosfèrica</small></div></a>
+          <a href="#resum-dia" data-requires-full><span>↗</span><div><b>Resum i extrems</b><small>Avui, 7 dies, 30 dies i any</small></div></a>
+          <a href="#avisos" data-section-link="avisos"><span>!</span><div><b>Avisos oficials</b><small>Meteocat i AEMET</small></div></a>
+          <a href="#prediccio" data-section-link="prediccio"><span>☁</span><div><b>Previsió</b><small>48 hores i 7 dies</small></div></a>
+          <a href="#fonts" data-requires-full><span>5</span><div><b>Fonts contrastades</b><small>Cinc serveis meteorològics</small></div></a>
+          <a href="#models" data-requires-full><span>≋</span><div><b>Models</b><small>ECMWF, GFS i ICON</small></div></a>
+          <a href="#tendencies" data-section-link="tendencies" data-requires-full><span>⌁</span><div><b>Evolució</b><small>Gràfiques i històrics</small></div></a>
+          <a href="#cel-nocturn" data-section-link="cel-nocturn" data-requires-full><span>◐</span><div><b>Cel i astronomia</b><small>Sol, Lluna i nit</small></div></a>
+          <a href="#territori" data-section-link="territori"><span>◎</span><div><b>Webcam i radar</b><small>Observació del territori</small></div></a>
+          <a href="#qualitat" data-requires-full><span>✓</span><div><b>Qualitat de les dades</b><small>Estació, API i arxiu D1</small></div></a>
+          <a href="#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
+        </nav>
+      </div>
+    </div>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
+    <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
+  </body>
 </html>
