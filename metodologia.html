@@ -130,7 +130,7 @@
         </nav>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a href="#" onclick="event.preventDefault();openShare();" style="color:var(--green);text-decoration:none;font-size:11px;">Compartir</a></div></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a href="javascript:void(0);" onclick="openShare(); return false;">Compartir</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   
 <div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
@@ -142,7 +142,9 @@
       <button onclick="doShare('x')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🗣 X</button>
       <button onclick="doShare('facebook')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📢 Facebook</button>
       <button onclick="doShare('email')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">✉️ Correu</button>
-      <button onclick="doShare('native')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🔗 Nativa</button>
+      <button onclick="doShare('instagram')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📸 Instagram</button>
+      <button onclick="doShare('tiktok')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🎵 TikTok</button>
+      <button onclick="doShare('native')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🔗 Altres apps</button>
     </div>
     <button onclick="closeShare()" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer;">Tancar</button>
   </div>
@@ -168,7 +170,15 @@ function doShare(type){
   else if(type==="x"){window.open("https://x.com/intent/tweet?text="+text+"&url="+url,"_blank");closeShare();}
   else if(type==="facebook"){window.open("https://www.facebook.com/sharer/sharer.php?u="+url,"_blank");closeShare();}
   else if(type==="email"){window.open("mailto:?subject=Observatori Fontanillas&body="+text+"%20"+url);closeShare();}
-  else if(type==="native"){if(navigator.share){navigator.share({title:"Meteo Fontanillas",text:decodeURIComponent(text),url:location.href}).catch(function(){});closeShare();}else{alert("El teu navegador no suporta comparticio nativa. Prova 'Copiar enllac'.");}}
+  else if(type==="instagram" || type==="tiktok" || type==="native"){
+    if(navigator.share){
+      navigator.share({title:"Meteo Fontanillas",text:decodeURIComponent(text),url:location.href}).catch(function(){});
+      closeShare();
+    }else{
+      if(navigator.clipboard){navigator.clipboard.writeText(location.href).then(function(){alert("Enllac copiat. Obre "+(type==="instagram" ? "Instagram" : type==="tiktok" ? "TikTok" : "l'app que vulguis")+" i enganxa'l a la teva publicacio.");closeShare();});}
+      else{alert("El teu navegador no permet compartir directament. Copia l'enllac i enganxa'l a l'app que vulguis.");}
+    }
+  }
 }
 </script>
 
