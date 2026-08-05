@@ -133,13 +133,13 @@
 .share-grid button{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;}
 .share-grid button:hover{background:var(--panel-hover);border-color:var(--accent);}
 .share-close{margin-top:14px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;}
-.section-back{text-align:center;margin:18px 0 0;opacity:.7;font-size:.85rem;}
+.section-back{text-align:right;margin:18px 0 0;opacity:.7;font-size:.85rem;color:var(--text);}
 .section-back a{text-decoration:none;color:var(--accent);}
 .section-back a:hover{text-decoration:underline;}
 </style>
 <style>
 /* --- Compartir i Tornar amunt --- */
-.meta-link{cursor:pointer;text-decoration:none;color:inherit;opacity:.7;}
+.meta-link{cursor:pointer;text-decoration:none;color:var(--text);opacity:.7;}
 .meta-link:hover{opacity:1;text-decoration:underline;}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:99999;}
 .modal-overlay.show{display:flex;}
@@ -285,7 +285,7 @@ function openModal(){document.getElementById('shareModal').classList.add('show')
 function closeModal(){document.getElementById('shareModal').classList.remove('show');}
 function shareAction(type){
   var url=encodeURIComponent(location.href);
-  var text=encodeURIComponent('Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny): ');
+  var text=encodeURIComponent("Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny): ");
   if(type==='copy'){
     if(navigator.clipboard){navigator.clipboard.writeText(location.href).then(function(){alert('Enllaç copiat!');closeModal();});}
     else{var d=document.createElement('input');document.body.appendChild(d);d.value=location.href;d.select();document.execCommand('copy');document.body.removeChild(d);alert('Enllaç copiat!');closeModal();}
