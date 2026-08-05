@@ -45,7 +45,7 @@
     <header class="site-header shell">
       <a class="brand" href="#top" aria-label="Observatori Fontanillas, inici">
         <span class="brand__mark" aria-hidden="true"><i class="brand__sun"></i><i class="brand__ridge brand__ridge--back"></i><i class="brand__ridge brand__ridge--front"></i><i class="brand__data"></i></span>
-        <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni?????</small></span>
+        <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span>
       </a>
       <nav class="nav" aria-label="Navegació principal">
         <a class="is-active" href="#ara" data-section-link="ara">Ara</a><a href="#avisos" data-section-link="avisos">Avisos</a><a href="#prediccio" data-section-link="prediccio">Predicció</a><a href="#tendencies" data-section-link="tendencies">Tendències</a><a href="#cel-nocturn" data-section-link="cel-nocturn">Cel nocturn</a><a href="#territori" data-section-link="territori">Radar</a><a href="#contacte" data-section-link="contacte">Contacte</a>
@@ -414,7 +414,7 @@
         </nav>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a href="javascript:void(0);" onclick="openShare(); return false;">Compartir</a></div></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a href="javascript:void(0);" id="btnShareFooter" style="cursor:pointer">Compartir</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   
 <div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
@@ -517,5 +517,17 @@ function doShare(type) {
 }
 </script>
 
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('btnShareFooter');
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof openShare === 'function') { openShare(); }
+        });
+    }
+});
+</script>
 </body>
 </html>
