@@ -54,7 +54,7 @@
 </style>
 <style>
 /* --- Compartir i Tornar amunt --- */
-.meta-link,.meta-link:hover{cursor:pointer;text-decoration:none;color:inherit;opacity:.7;}
+.meta-link{cursor:pointer;text-decoration:none;color:inherit;opacity:.7;}
 .meta-link:hover{opacity:1;text-decoration:underline;}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:99999;}
 .modal-overlay.show{display:flex;}
@@ -64,7 +64,7 @@
 .modal-grid button{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;}
 .modal-grid button:hover{background:var(--panel-hover);border-color:var(--accent);}
 .modal-close{margin-top:14px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;}
-.section-back{text-align:center;margin:16px 0 0;opacity:.6;font-size:.82rem;}
+.section-back{text-align:right;margin:10px 0 20px;opacity:.5;font-size:.78rem;width:100%;display:block;}
 .section-back a{color:var(--accent);text-decoration:none;}
 .section-back a:hover{text-decoration:underline;}
 </style>
@@ -109,7 +109,6 @@
             <em id="quick-alert-action">Consultar →</em>
           </a>
         </aside>
-      <p class="section-back"><a href="#top">Torna amunt ↑</a></p>
       </section>
 
       <section class="metrics-grid" aria-label="Mesures actuals de l’estació">
@@ -414,7 +413,6 @@
           <label class="consent"><input type="checkbox" name="consent" required /><span>Accepto que les dades facilitades s’utilitzin exclusivament per respondre aquesta consulta.</span></label>
           <div class="contact-actions"><button type="submit" id="contact-submit">Enviar missatge <span>→</span></button><p id="contact-status" role="status" aria-live="polite">Resposta habitual tan aviat com sigui possible.</p></div>
         </form>
-      <p class="section-back"><a href="#top">Torna amunt ↑</a></p>
       </section>
     </main>
     <nav class="mobile-nav" aria-label="Navegació ràpida mòbil">
@@ -447,7 +445,7 @@
         </nav>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a class="meta-link" onclick="openModal()">Compartir</a></div></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a class="meta-link" onclick="openModal()" style="text-decoration:none;">Compartir</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   
 
