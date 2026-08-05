@@ -63,30 +63,35 @@
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel" style="margin-bottom: 20px;">
         <h3>L'Estació Meteorològica</h3>
-        <p>L'Observatori Fontanillas utilitza una estació meteorològica de precisió situada a Sant Celoni (Sant Celoni Nord - Les Fontanilles). Les dades s'envien en temps real cada 2-5 segons cap als nostres servidors.</p>
+        <p>L'Observatori Fontanillas està situat a Sant Celoni (Montseny). Les dades s'actualitzen en temps real cada 2-5 minuts i es guarden a una base de dades per a anàlisi històric.</p>
 
         <h4>Instrumentació</h4>
         <ul>
-          <li><strong>Anemòmetre:</strong> Mesura de la velocitat i direcció del vent a una alçada ideal per evitar turbulències.</li>
-          <li><strong>Pluviòmetre:</strong> Resolució de 0.2mm per a una mesura precisa de la precipitació.</li>
-          <li><strong>Termo-higròmetre:</strong> Integrat en un escut de radiació solar per evitar escalfaments directes.</li>
+          <li><strong>Anemòmetre:</strong> Velocitat i direcció del vent.</li>
+          <li><strong>Pluviòmetre:</strong> Precipitació amb resolució de 0,2 mm.</li>
+          <li><strong>Termo-higròmetre:</strong> Protegit dins d'un escut de radiació solar.</li>
+          <li><strong>Baròmetre:</strong> Pressió atmosfèrica compensada.</li>
+          <li><strong>Sensor UV i Solar:</strong> Índex UV i radiació solar global.</li>
         </ul>
       </div>
 
-      <div class="panel" style="margin-top: 20px;">
+      <div class="panel" style="margin-bottom: 20px;">
         <h3>Arquitectura Digital</h3>
-        <p>Aquesta web no és només una visualització de dades, sinó una plataforma moderna construïda amb:</p>
+        <p>La web està construïda amb tecnologia moderna de Cloudflare:</p>
         <ul>
-          <li><strong>Backend:</strong> Cloudflare Workers executant lògica en el "edge".</li>
-          <li><strong>Base de dades:</strong> Cloudflare D1 per a l'emmagatzematge de dades històriques.</li>
-          <li><strong>Fonts externes:</strong> Previsions via AEMET i Meteocat, dades de radar i models numèrics globals.</li>
+          <li><strong>Cloudflare Pages:</strong> Allotjament i desplegament del frontend.</li>
+          <li><strong>Cloudflare Workers:</strong> Backend serverless que processa les peticions.</li>
+          <li><strong>Cloudflare D1:</strong> Base de dades SQL per emmagatzemar observacions històriques.</li>
+          <li><strong>Weather Underground:</strong> Font de les dades meteorològiques en temps real.</li>
         </ul>
       </div>
 
       <div style="margin-top: 40px; text-align: center;">
-        <a href="/" class="button">← Tornar a l'observatori</a>
+        <a href="/" class="button" style="display: inline-block; padding: 12px 24px; background: var(--accent); color: var(--bg); text-decoration: none; border-radius: 8px;">
+← Tornar a l'observatori
+        </a>
       </div>
     </section>
   </main>
@@ -121,7 +126,7 @@
         </nav>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6</small><div><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   </body>
 </html>
