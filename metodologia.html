@@ -137,22 +137,6 @@
 .section-back a{text-decoration:none;color:var(--accent);}
 .section-back a:hover{text-decoration:underline;}
 </style>
-<style>
-/* --- Compartir i Tornar amunt --- */
-.meta-link{cursor:pointer;text-decoration:none;color:var(--text);opacity:.7;}
-.meta-link:hover{opacity:1;text-decoration:underline;}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:99999;}
-.modal-overlay.show{display:flex;}
-.modal-sheet{background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:22px 24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);}
-.modal-sheet h3{margin:0 0 14px;font-size:1.05rem;}
-.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.modal-grid button{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;}
-.modal-grid button:hover{background:var(--panel-hover);border-color:var(--accent);}
-.modal-close{margin-top:14px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;}
-.section-back{text-align:right;margin:12px 0 24px;opacity:.6;font-size:.82rem;padding-right:10px;}
-.section-back a{color:var(--accent);text-decoration:none;}
-.section-back a:hover{text-decoration:underline;}
-</style>
 </head>
   <body>
     <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
@@ -237,64 +221,47 @@
     </div>
     <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="index.html#contacte">Contacte</a><a href="index.html#top">Tornar amunt ↑</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
-  
+<button class="modal-close" onclick="closeModal()">Tancar</button>
+  </div>
+</div>
 
-
-<script id="fase2-js">
-(function(){
-  var t = document.getElementById('btnTop');
-  window.addEventListener('scroll', function(){
-    if(t) t.style.display = (window.scrollY > 400) ? 'flex' : 'none';
-  });
-})();
-function sharePage(){
-  var url = window.location.href;
-  var text = 'Consulta l\'Observatori Fontanillas (Sant Celoni): ';
-  if(navigator.share){
-    navigator.share({title:'Meteo Fontanillas', text:text, url:url}).catch(function(){});
-  } else {
-    var dummy = document.createElement('input');
-    document.body.appendChild(dummy);
-    dummy.value = text + url;
-    dummy.select();
-    document.execCommand('copy');
-    document.body.removeChild(dummy);
-    alert('Enllaç copyat al porta-retalls!');
-  }
-}
-</script>
-
-
-<div class="modal-overlay" id="shareModal" onclick="if(event.target===this)closeModal()">
-  <div class="modal-sheet" role="dialog" aria-modal="true" aria-label="Compartir la pàgina">
-    <h3>Compartir l'Observatori</h3>
-    <div class="modal-grid">
-      <button onclick="shareAction('copy')">📋 Copiar enllaç</button>
-      <button onclick="shareAction('whatsapp')">📱 WhatsApp</button>
-      <button onclick="shareAction('x')">🗣 X / Twitter</button>
-      <button onclick="shareAction('facebook')">📢 Facebook</button>
-      <button onclick="shareAction('email')">✉️ Correu</button>
-      <button onclick="shareAction('native')">🔗 App nativa</button>
+<div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
+  <div style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true">
+    <h3 style="margin:0 0 16px;font-size:1.1rem;">Compartir l'Observatori</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <button onclick="doShare('copy')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📋 Copiar</button>
+      <button onclick="doShare('whatsapp')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📱 WhatsApp</button>
+      <button onclick="doShare('x')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🗣 X</button>
+      <button onclick="doShare('facebook')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📢 Facebook</button>
+      <button onclick="doShare('email')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">✉️ Correu</button>
+      <button onclick="doShare('native')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🔗 Nativa</button>
     </div>
-    <button class="modal-close" onclick="closeModal()">Tancar</button>
+    <button onclick="closeShare()" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;">Tancar</button>
   </div>
 </div>
 
 <script>
-function openModal(){document.getElementById('shareModal').classList.add('show');}
-function closeModal(){document.getElementById('shareModal').classList.remove('show');}
-function shareAction(type){
+function openShare(){
+  var m=document.getElementById('shareModal');
+  if(m){m.style.display='flex';}
+  return false;
+}
+function closeShare(){
+  var m=document.getElementById('shareModal');
+  if(m){m.style.display='none';}
+}
+function doShare(type){
   var url=encodeURIComponent(location.href);
-  var text=encodeURIComponent("Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny): ");
-  if(type==='copy'){
-    if(navigator.clipboard){navigator.clipboard.writeText(location.href).then(function(){alert('Enllaç copiat!');closeModal();});}
-    else{var d=document.createElement('input');document.body.appendChild(d);d.value=location.href;d.select();document.execCommand('copy');document.body.removeChild(d);alert('Enllaç copiat!');closeModal();}
+  var text=encodeURIComponent("Consulta les dades meteorologiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny): ");
+  if(type==="copy"){
+    if(navigator.clipboard){navigator.clipboard.writeText(location.href).then(function(){alert("Enllac copiat!");closeShare();});}
+    else{var d=document.createElement("input");document.body.appendChild(d);d.value=location.href;d.select();document.execCommand("copy");document.body.removeChild(d);alert("Enllac copiat!");closeShare();}
   }
-  else if(type==='whatsapp'){window.open('https://wa.me/?text='+text+'%20'+url,'_blank');closeModal();}
-  else if(type==='x'){window.open('https://x.com/intent/tweet?text='+text+'&url='+url,'_blank');closeModal();}
-  else if(type==='facebook'){window.open('https://www.facebook.com/sharer/sharer.php?u='+url,'_blank');closeModal();}
-  else if(type==='email'){window.open('mailto:?subject=Observatori Fontanillas&body='+text+'%20'+url);closeModal();}
-  else if(type==='native'){if(navigator.share){navigator.share({title:'Meteo Fontanillas',text:decodeURIComponent(text),url:location.href}).catch(function(){});closeModal();}else{alert('El teu navegador no suporta compartició nativa. Prova "Copiar enllaç".');}}
+  else if(type==="whatsapp"){window.open("https://wa.me/?text="+text+"%20"+url,"_blank");closeShare();}
+  else if(type==="x"){window.open("https://x.com/intent/tweet?text="+text+"&url="+url,"_blank");closeShare();}
+  else if(type==="facebook"){window.open("https://www.facebook.com/sharer/sharer.php?u="+url,"_blank");closeShare();}
+  else if(type==="email"){window.open("mailto:?subject=Observatori Fontanillas&body="+text+"%20"+url);closeShare();}
+  else if(type==="native"){if(navigator.share){navigator.share({title:"Meteo Fontanillas",text:decodeURIComponent(text),url:location.href}).catch(function(){});closeShare();}else{alert("El teu navegador no suporta comparticio nativa. Prova 'Copiar enllac'.");}}
 }
 </script>
 
