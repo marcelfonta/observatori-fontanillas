@@ -721,10 +721,7 @@ function parseAemetFeed(xml) {
       rank:level.rank,
       published:xmlTag(block, "pubDate") || null,
       expires:expires?.toISOString() || null,
-      link: (() => {
-  const raw = xmlTag(block, "link") || "";
-  return /\.xml|\.cap|\/CAP_/i.test(raw) ? AEMET_PRELITORAL_PAGE : raw || AEMET_PRELITORAL_PAGE;
-})(),
+      link: AEMET_PRELITORAL_PAGE,
       active:!noAlertPattern.test(combined) && !metadataPattern.test(combined) && level.key !== "none" && isCurrent,
     };
   });
