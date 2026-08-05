@@ -210,7 +210,7 @@
           </div>
           <div class="source-viewer">
             <div class="source-panel is-active" id="source-panel-meteocat" role="tabpanel" aria-labelledby="source-tab-meteocat" tabindex="0" data-source-panel="meteocat"><div class="source-official"><header><div><span id="source-meteocat-title">Meteocat · pròximes 72 hores</span><small id="source-meteocat-copy">Cel, temperatura, precipitació, humitat, xafogor i vent per hores</small></div><div class="source-official__actions"><div class="source-horizon" role="group" aria-label="Horitzó de Meteocat"><button class="is-active" type="button" data-source-horizon="hourly">Per hores</button><button type="button" data-source-horizon="daily">Per dies</button></div><a href="https://www.meteo.cat/prediccio/municipal/082021" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></div></header><div class="source-official__frame source-official__frame--meteocat is-hourly" id="source-meteocat-shell"><iframe id="source-meteocat-frame" title="Predicció oficial de Meteocat per a Sant Celoni" loading="lazy" src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=0f2a22&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe></div></div></div>
-            <div class="source-panel" id="source-panel-aemet" role="tabpanel" aria-labelledby="source-tab-aemet" tabindex="0" hidden data-source-panel="aemet"><div class="source-official"><header><div><span>AEMET · giny municipal complet</span><small>4 dies · cel, temperatures, sensació, pluja, humitat, vent i avisos</small></div><div class="source-official__links"><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202" target="_blank" rel="noreferrer">48 h per hores ↗</a><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/sant-celoni-id08202" target="_blank" rel="noreferrer">7 dies ↗</a></div></header><div class="source-official__frame source-official__frame--aemet"><iframe name="iframe_aemet_id33044" tabindex="0" id="source-aemet-frame" title="Predicció municipal completa d’AEMET per a Sant Celoni" data-src="https://www.aemet.es/ca/eltiempo/prediccion/municipios/mostrarwidget/sant-celoni-id08202?w=g4p111111110ohmffffffx4f86d9t95b6e9r1s4n2" loading="lazy" scrolling="auto"></iframe></div></div></div>
+            <div class="source-panel" id="source-panel-aemet" role="tabpanel" aria-labelledby="source-tab-aemet" tabindex="0" hidden data-source-panel="aemet"><div class="source-official"><header><div><span>AEMET · giny municipal complet</span><small>4 dies · cel, temperatures, sensació, pluja, humitat, vent i avisos</small></div><div class="source-official__links"><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202" target="_blank" rel="noreferrer">48 h per hores ↗</a><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/sant-celoni-id08202" target="_blank" rel="noreferrer">7 dies ↗</a></div></header><div class="source-official__frame source-official__frame--aemet"><iframe name="iframe_aemet_id33044" tabindex="0" id="source-aemet-frame" title="Predicció municipal completa d’AEMET per a Sant Celoni" data-src="https://www.aemet.es/ca/eltiempo/prediccion/municipios/mostrarwidget/sant-celoni-id08202?w=g4p11110ohmffffx4f86d9t95b6e9r1s4n2" loading="lazy" scrolling="auto"></iframe></div></div></div>
             <div class="source-panel" id="source-panel-eltiempo" role="tabpanel" aria-labelledby="source-tab-eltiempo" tabindex="0" hidden data-source-panel="eltiempo">
               <div class="source-eltiempo">
                 <div class="source-eltiempo__header"><div><span>Previsió oficial · Sant Celoni</span><small>Català · °C · vent en km/h · format complet</small></div><div class="source-official__links"><a href="https://www.eltiempo.es/sant-celoni.html?v=por_hora" target="_blank" rel="noreferrer">Per hores ↗</a><a href="https://www.eltiempo.es/sant-celoni.html" target="_blank" rel="noreferrer">14 dies ↗</a></div></div>
@@ -414,10 +414,10 @@
         </nav>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a href="javascript:void(0);" id="btnShareFooterFixed" style="cursor:pointer;text-decoration:none;">Compartir</a></div></footer>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a href="javascript:void(0);" onclick="var m=document.getElementById('shareModal');if(m){m.style.display='flex';m.style.alignItems='center';m.style.justifyContent='center';}return false;" style="cursor:pointer;text-decoration:none;">Compartir</a></div></footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
   
-<div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
+<div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
   <div style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true">
     <h3 style="margin:0 0 16px;font-size:1.1rem;color:var(--text);">Compartir l'Observatori</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -518,17 +518,250 @@ function doShare(type) {
 </script>
 
 
+
+</body>
+</html><!doctype html>
+<html lang="ca">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07110f" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="description" content="Dades meteorològiques en directe des de Sant Celoni, als peus del Montseny." />
+    <title>Observatori Fontanillas · Sant Celoni</title>
+    <link rel="canonical" href="https://meteo.fontanillas.cat/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ca_ES" />
+    <meta property="og:site_name" content="Observatori Meteorològic Fontanillas" />
+    <meta property="og:title" content="Observatori Meteorològic Fontanillas · Sant Celoni" />
+    <meta property="og:description" content="Dades locals, previsió, avisos, radar i astronomia en directe des de Sant Celoni." />
+    <meta property="og:url" content="https://meteo.fontanillas.cat/" />
+    <meta property="og:image" content="https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-social.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Observatori Meteorològic Fontanillas, dades locals en directe des de Sant Celoni" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Observatori Meteorològic Fontanillas" />
+    <meta name="twitter:description" content="Dades locals, previsió i radar en directe des de Sant Celoni." />
+    <meta name="twitter:image" content="https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-social.png" />
+    <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/variables.css?v=5.6" />
+    <link rel="stylesheet" href="css/layout.css?v=5.6" />
+    <link rel="stylesheet" href="css/style.css?v=5.6" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+    <script type="module" src="js/app.js?v=5.6"></script>
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
+    </script>
+  <style>
+  #metodologia { padding-top: 2rem; padding-bottom: 4rem; }
+  #metodologia .panel { padding: 2rem; margin-bottom: 1.5rem; }
+  #metodologia .panel h3 { margin-top: 0; color: var(--accent); }
+  #metodologia .panel h4 { margin-bottom: 0.5rem; margin-top: 1.5rem; }
+  #metodologia .panel ul { padding-left: 1.2rem; }
+  #metodologia .panel li { margin-bottom: 0.4rem; line-height: 1.6; }
+  #metodologia .section-heading { margin-bottom: 1.5rem; }
+  .btn-back { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--panel-bg); border: 1px solid var(--accent); color: var(--accent); border-radius: 50px; text-decoration: none; font-weight: bold; transition: all 0.2s; }
+  .btn-back:hover { background: var(--accent); color: var(--bg); }
+
+    .brand, .brand:hover, .brand:focus, .brand:active, .brand * { opacity: 1 !important; visibility: visible !important; color: inherit !important; }
+    .brand { pointer-events: auto !important; display: inline-flex !important; }
+    .nav a:hover { color: var(--accent) !important; }
+    #metodologia .panel { padding: 2.5rem; }
+    .btn-back { opacity: 1 !important; visibility: visible !important; color: var(--accent) !important; }
+    .btn-back:hover { opacity: 1 !important; background: var(--accent) !important; color: var(--bg) !important; }
+    </style>
+</head>
+  <body>
+    <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
+    <a class="skip-link" href="/#ara">Saltar al contingut principal</a>
+    <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
+    <header class="site-header shell">
+      <a class="brand" href="/" aria-label="Observatori Fontanillas, inici">
+        <span class="brand__mark" aria-hidden="true"><i class="brand__sun"></i><i class="brand__ridge brand__ridge--back"></i><i class="brand__ridge brand__ridge--front"></i><i class="brand__data"></i></span>
+        <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span>
+      </a>
+      <nav class="nav" aria-label="Navegació principal">
+        <a class="is-active" href="/#ara" data-section-link="ara">Ara</a><a href="/#avisos" data-section-link="avisos">Avisos</a><a href="/#prediccio" data-section-link="prediccio">Predicció</a><a href="/#tendencies" data-section-link="tendencies">Tendències</a><a href="/#cel-nocturn" data-section-link="cel-nocturn">Cel nocturn</a><a href="/#territori" data-section-link="territori">Radar</a><a href="/#contacte" data-section-link="contacte">Contacte</a>
+      </nav>
+      <div class="live-pill"><span></span><b id="connection-label">Connectant</b><time id="header-time">--:--</time></div>
+    </header>
+
+    <main id="metodologia" class="shell">
+    <section class="section-block">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Projecte</p>
+          <h1>Metodologia i Equipament</h1>
+        </div>
+        <a href="/" class="btn-back">← Tornar a l’inici</a>
+      </div>
+
+      <div class="panel">
+        <h3>L’Estació Meteorològica</h3>
+        <p>L’Observatori Fontanillas està situat a la zona nord de Sant Celoni (Montseny). Les dades s’actualitzen cada 2–5 minuts i s’emmagatzemen a una base de dades històrica per a anàlisi climàtic.</p>
+
+        <h4>Instrumentació</h4>
+        <ul>
+          <li><strong>Anemòmetre:</strong> Velocitat i direcció del vent en temps real.</li>
+          <li><strong>Pluviòmetre:</strong> Precipitació amb resolució de 0,2 mm.</li>
+          <li><strong>Termo-higròmetre:</strong> Protegit dins d’un escut de radiació solar ventilat per garantir lectures fiables.</li>
+          <li><strong>Baròmetre:</strong> Pressió atmosfèrica compensada a nivell de mar.</li>
+          <li><strong>Sensor UV i Solar:</strong> Índex UV i radiació solar global.</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h3>Arquitectura Digital</h3>
+        <p>La web està construïda amb tecnologia moderna de Cloudflare:</p>
+        <ul>
+          <li><strong>Cloudflare Pages:</strong> Allotjament i desplegament del frontend.</li>
+          <li><strong>Cloudflare Workers:</strong> Backend serverless que processa les peticions.</li>
+          <li><strong>Cloudflare D1:</strong> Base de dades SQL per emmagatzemar observacions històriques.</li>
+          <li><strong>Weather Underground:</strong> Font de les dades meteorològiques en temps real.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+    <nav class="mobile-nav" aria-label="Navegació ràpida mòbil">
+      <a class="is-active" href="/#ara" data-section-link="ara"><span aria-hidden="true">●</span>Ara</a>
+      <a href="/#prediccio" data-section-link="prediccio"><span aria-hidden="true">↗</span>Previsió</a>
+      <a href="/#tendencies" data-section-link="tendencies"><span aria-hidden="true">⌁</span>Gràfiques</a>
+      <a href="/#territori" data-section-link="territori"><span aria-hidden="true">◎</span>Radar</a>
+      <button type="button" id="mobile-more-button" aria-expanded="false" aria-controls="mobile-more-menu"><span aria-hidden="true">•••</span>Més</button>
+    </nav>
+    <div class="mobile-more" id="mobile-more-menu" hidden>
+      <button class="mobile-more__backdrop" type="button" aria-label="Tancar el menú"></button>
+      <div class="mobile-more__sheet" role="dialog" aria-modal="true" aria-label="Més seccions">
+        <div class="mobile-more__head"><span><small>Índex de continguts</small><strong>Explora l’observatori</strong></span><button type="button" id="mobile-more-close" aria-label="Tancar">×</button></div>
+        <a class="mobile-alert-shortcut is-pending" id="mobile-alert-shortcut" href="/#avisos" data-section-link="avisos"><span>!</span><div><b id="mobile-alert-title">Comprovant avisos</b><small id="mobile-alert-copy">Vigilància oficial</small></div><em>→</em></a>
+        <div class="mobile-view-mode" aria-label="Densitat de contingut mòbil"><span><b>Vista mòbil</b><small>Tria quanta informació vols veure</small></span><div role="group"><button class="is-active" type="button" data-mobile-view="full" aria-pressed="true">Completa</button><button type="button" data-mobile-view="essential" aria-pressed="false">Essencial</button></div></div>
+        <nav class="mobile-more__links" aria-label="Índex complet de l’observatori">
+          <a href="/#ara" data-section-link="ara"><span>●</span><div><b>Ara mateix</b><small>Temperatura i lectura ràpida</small></div></a>
+          <a href="#metric-card-temperature"><span>⌁</span><div><b>Valors actuals</b><small>Sensors i minigràfics</small></div></a>
+          <a href="#calculats" data-requires-full><span>Σ</span><div><b>Valors calculats</b><small>Diagnosi atmosfèrica</small></div></a>
+          <a href="#resum-dia" data-requires-full><span>↗</span><div><b>Resum i extrems</b><small>Avui, 7 dies, 30 dies i any</small></div></a>
+          <a href="/#avisos" data-section-link="avisos"><span>!</span><div><b>Avisos oficials</b><small>Meteocat i AEMET</small></div></a>
+          <a href="/#prediccio" data-section-link="prediccio"><span>☁</span><div><b>Previsió</b><small>48 hores i 7 dies</small></div></a>
+          <a href="#fonts" data-requires-full><span>5</span><div><b>Fonts contrastades</b><small>Cinc serveis meteorològics</small></div></a>
+          <a href="#models" data-requires-full><span>≋</span><div><b>Models</b><small>ECMWF, GFS i ICON</small></div></a>
+          <a href="/#tendencies" data-section-link="tendencies" data-requires-full><span>⌁</span><div><b>Evolució</b><small>Gràfiques i històrics</small></div></a>
+          <a href="/#cel-nocturn" data-section-link="cel-nocturn" data-requires-full><span>◐</span><div><b>Cel i astronomia</b><small>Sol, Lluna i nit</small></div></a>
+          <a href="/#territori" data-section-link="territori"><span>◎</span><div><b>Webcam i radar</b><small>Observació del territori</small></div></a>
+          <a href="#qualitat" data-requires-full><span>✓</span><div><b>Qualitat de les dades</b><small>Estació, API i arxiu D1</small></div></a>
+          <a href="/#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
+        </nav>
+      </div>
+    </div>
+    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="/#contacte">Contacte</a><a href="/">Tornar amunt ↑</a><a href="javascript:void(0);" onclick="var m=document.getElementById('shareModal');if(m){m.style.display='flex';m.style.alignItems='center';m.style.justifyContent='center';}return false;" style="cursor:pointer;text-decoration:none;">Compartir</a></div></footer>
+    <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
+  
+<div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
+  <div style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true">
+    <h3 style="margin:0 0 16px;font-size:1.1rem;color:var(--text);">Compartir l'Observatori</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <button onclick="doShare('copy')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📋 Copiar</button>
+      <button onclick="doShare('whatsapp')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📱 WhatsApp</button>
+      <button onclick="doShare('x')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🗣 X</button>
+      <button onclick="doShare('facebook')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📢 Facebook</button>
+      <button onclick="doShare('email')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">✉️ Correu</button>
+      <button onclick="doShare('instagram')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📸 Instagram</button>
+      <button onclick="doShare('tiktok')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🎵 TikTok</button>
+      <button onclick="doShare('native')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🔗 Altres apps</button>
+    </div>
+    <button onclick="closeShare()" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer;">Tancar</button>
+  </div>
+</div>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var btn = document.getElementById('btnShareFooter');
-    if (btn) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (typeof openShare === 'function') { openShare(); }
-        });
+/* Configuració global de compartició */
+var SHARE_URL = "https://meteo.fontanillas.cat/";
+var SHARE_TEXT = "Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny):";
+
+function openShare() {
+    var m = document.getElementById('shareModal');
+    if (m) { m.style.display = 'flex'; }
+}
+
+function closeShare() {
+    var m = document.getElementById('shareModal');
+    if (m) { m.style.display = 'none'; }
+}
+
+function handleNativeShare(altLabel) {
+    if (navigator.share) {
+        navigator.share({
+            title: "Meteo Fontanillas",
+            text: SHARE_TEXT,
+            url: SHARE_URL
+        }).catch(function() {});
+        closeShare();
+    } else {
+        copyText(SHARE_URL, "Enllaç copiat. Obre " + altLabel + " i enganxa'l.");
     }
-});
+}
+
+function copyText(txt, msg) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(txt).then(function() {
+            alert(msg || "Enllaç copiat!");
+            closeShare();
+        });
+    } else {
+        var d = document.createElement("input");
+        d.value = txt;
+        document.body.appendChild(d);
+        d.select();
+        try { document.execCommand("copy"); } catch (e) {}
+        document.body.removeChild(d);
+        alert(msg || "Enllaç copiat!");
+        closeShare();
+    }
+}
+
+function doShare(type) {
+    var urlEnc = encodeURIComponent(SHARE_URL);
+    var textEnc = encodeURIComponent(SHARE_TEXT);
+
+    switch (type) {
+        case 'copy':
+            copyText(SHARE_URL, "Enllaç de meteo.fontanillas.cat copiat!");
+            break;
+        case 'whatsapp':
+            window.open("https://wa.me/?text=" + textEnc + "%20" + urlEnc, "_blank");
+            closeShare();
+            break;
+        case 'x':
+            window.open("https://x.com/intent/tweet?text=" + textEnc + "&url=" + urlEnc, "_blank");
+            closeShare();
+            break;
+        case 'facebook':
+            window.open("https://www.facebook.com/sharer/sharer.php?u=" + urlEnc, "_blank");
+            closeShare();
+            break;
+        case 'email':
+            window.location.href = "mailto:?subject=Observatori Fontanillas&body=" + textEnc + "%20" + urlEnc;
+            closeShare();
+            break;
+        case 'instagram':
+            handleNativeShare("Instagram");
+            break;
+        case 'tiktok':
+            handleNativeShare("TikTok");
+            break;
+        case 'native':
+            handleNativeShare("l'app que vulguis");
+            break;
+    }
+}
 </script>
+
 
 <script>
 /* Fix Compartir per a entorns online (Cloudflare) */
