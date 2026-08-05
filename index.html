@@ -29,16 +29,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/variables.css?v=5.5.1" />
-    <link rel="stylesheet" href="css/layout.css?v=5.5.1" />
-    <link rel="stylesheet" href="css/style.css?v=5.5.1" />
+    <link rel="stylesheet" href="css/variables.css?v=5.6" />
+    <link rel="stylesheet" href="css/layout.css?v=5.6" />
+    <link rel="stylesheet" href="css/style.css?v=5.6" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-    <script type="module" src="js/app.js?v=5.5.1"></script>
+    <script type="module" src="js/app.js?v=5.6"></script>
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
     </script>
   </head>
   <body>
+    <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
     <a class="skip-link" href="#ara">Saltar al contingut principal</a>
     <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
     <header class="site-header shell">
@@ -60,7 +61,7 @@
           <p class="hero__intro">Lectura en directe des de l’estació Fontanillas. Una mirada precisa al temps que fa i al que està canviant.</p>
           <div class="freshness"><span class="freshness__dot"></span><span>Actualitzat <b id="updated-relative">ara mateix</b></span><span class="separator">·</span><time id="updated-time">--:--</time></div>
         </div>
-        <div class="current-temp">
+        <div class="current-temp" aria-live="polite">
           <div class="current-temp__value"><span id="temperature">--</span><sup>°C</sup></div>
           <p id="condition-label">Carregant observació…</p>
           <div class="temperature-range"><span><i class="range-dot range-dot--max"></i>Màx. <b id="temp-max">--°</b></span><span><i class="range-dot range-dot--min"></i>Mín. <b id="temp-min">--°</b></span></div>

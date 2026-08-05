@@ -1,5 +1,32 @@
 import { CONFIG } from './config.js';
 
+const LAST_OBS_KEY = 'fontanilles-last-obs';
+
+// Desa la darrera observació vàlida a localStorage per poder mostrar dades
+// encara que el Worker no respongui (mode sense connexió).
+function storeLastObs(data) {
+  try {
+    localStorage.setItem(LAST_OBS_KEY, JSON.stringify({ data, ts: Date.now() }));
+  } catch (error) {
+    console.warn('No s’ha pogut desar la darrera lectura a localStorage.', error);
+  }
+}
+
+// Recupera la darrera observació desada. Retorna { data, ts, ageMinutes } o null.
+export function getLastCachedObs() {
+  try {
+    const raw = localStorage.getItem(LAST_OBS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.data || !parsed.ts) return null;
+    const ageMinutes = Math.max(0, Math.round((Date.now() - parsed.ts) / 60000));
+    return { data: parsed.data, ts: parsed.ts, ageMinutes };
+  } catch (error) {
+    console.warn('No s’ha pogut llegir la darrera lectura de localStorage.', error);
+    return null;
+  }
+}
+
 async function request(url, options={}, timeoutMs=12000) {
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
@@ -13,7 +40,9 @@ async function request(url, options={}, timeoutMs=12000) {
 export async function fetchCurrentWeather() {
   const response = await request(CONFIG.apiUrl, { headers: { Accept: 'application/json' }, cache: 'no-store' });
   if (!response.ok) throw new Error(`API ${response.status}`);
-  return response.json();
+  const data = await response.json();
+  storeLastObs(data);
+  return data;
 }
 
 export async function fetchForecast() {

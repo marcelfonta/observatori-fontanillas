@@ -359,3 +359,24 @@ body{font-size:var(--type-body)}
 @media (max-width:380px){
   .mobile-view-mode{align-items:stretch!important;flex-direction:column!important}.mobile-view-mode>div{display:grid;grid-template-columns:1fr 1fr;width:100%}.mobile-more__sheet>.mobile-view-mode [data-mobile-view]{width:100%!important}
 }
+
+/* ==== Banner de mode sense connexió (v5.6.0) ==== */
+.offline-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1200;
+  margin: 0;
+  padding: 10px 20px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--type-small);
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--bg);
+  background: var(--amber);
+  border-bottom: 1px solid var(--line-bright);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
+}
+.offline-banner[hidden] {
+  display: none;
+}

@@ -1,4 +1,7 @@
-const CACHE = 'observatori-fontanillas-v5.5.1';
+const CACHE = 'observatori-fontanillas-v5.6.0';
+const API_CACHE = 'fontanilles-api-v1';
+const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
+const API_TTL_MS = 30 * 60 * 1000; // 30 minuts
 const APP_SHELL = [
   '/', '/index.html', '/site.webmanifest',
   '/css/variables.css', '/css/layout.css', '/css/style.css',
@@ -46,8 +49,48 @@ async function networkFirst(request) {
   }
 }
 
+// Estratègia "stale-while-revalidate" per a les crides a l'API del Worker:
+// retorna immediatament la còpia en cache (si és fresca) i actualitza en background.
+async function staleWhileRevalidate(event) {
+  const request = event.request;
+  const cache = await caches.open(API_CACHE);
+  const cached = await cache.match(request);
+  const cachedAt = cached ? Number(cached.headers.get('sw-cached-at')) || 0 : 0;
+  const isFresh = cached && (Date.now() - cachedAt) < API_TTL_MS;
+
+  const revalidate = fetch(request).then(async response => {
+    if (response && response.ok) {
+      const cloned = response.clone();
+      const body = await cloned.blob();
+      const headers = new Headers(cloned.headers);
+      headers.set('sw-cached-at', String(Date.now()));
+      await cache.put(request, new Response(body, { status: cloned.status, statusText: cloned.statusText, headers }));
+    }
+    return response;
+  }).catch(() => null);
+
+  // Si hi ha una còpia fresca (< 30 min), la retornem de seguida i deixem que la
+  // revalidació acabi en segon pla.
+  if (cached && isFresh) {
+    event.waitUntil(revalidate);
+    return cached;
+  }
+  const network = await revalidate;
+  if (network) return network;
+  if (cached) return cached;
+  return new Response(JSON.stringify({ error: 'Sense connexió i sense dades en cache.' }), {
+    status: 503,
+    headers: { 'Content-Type': 'application/json; charset=utf-8' }
+  });
+}
+
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
+  if (event.request.method !== 'GET') return;
+  if (url.hostname === API_HOST) {
+    event.respondWith(staleWhileRevalidate(event));
+    return;
+  }
+  if (url.origin !== self.location.origin) return;
   event.respondWith(networkFirst(event.request));
 });

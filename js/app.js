@@ -1,5 +1,6 @@
+// Observatori Meteorològic Fontanillas — app.js · v5.6.0
 import { CONFIG } from './config.js';
-import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchModelComparison, fetchStationHistory } from './api.js';
+import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchModelComparison, fetchStationHistory, getLastCachedObs } from './api.js';
 import { setText } from './utils.js';
 import { renderStation } from '../modules/estacio.js';
 import { renderCharts, renderMetricSparklines } from '../modules/grafiques.js';
@@ -26,6 +27,9 @@ let forecastFetchedAt = 0;
 let qualityFetchedAt = 0;
 let alertsFetchedAt = 0;
 
+const OFFLINE_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hores
+function showOfflineBanner(ageMinutes){ const banner=document.getElementById('offline-banner'); if(!banner)return; banner.textContent=`Mostrant dades de fa ${ageMinutes} min (mode sense connexió)`; banner.hidden=false; }
+function hideOfflineBanner(){ const banner=document.getElementById('offline-banner'); if(banner)banner.hidden=true; }
 function updateClock(){ setText('header-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Europe/Madrid'}).format(new Date())); }
 function setUpdated(value){ const date=value?new Date(String(value).replace(' ','T')):new Date(); const safe=Number.isNaN(date.getTime())?new Date():date; setText('updated-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(safe)); setText('webcam-time',`Captura ${new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(new Date())}`); const mins=Math.max(0,Math.round((Date.now()-safe.getTime())/60000)); setText('updated-relative',mins<2?'ara mateix':`fa ${mins} min`); }
 async function loadForecastSuite(){
@@ -84,10 +88,20 @@ async function load(){
       renderSummaryFallback();
     }
     renderStation(latest,context); renderCharts(latest,latestHistory); renderMetricSparklines(latest,latestHistory); renderExtremeArchive(latestHistory); setUpdated(latest.updated); updateSituation({current:latest});
+    hideOfflineBanner();
     if(label){label.textContent='En directe';label.parentElement.classList.remove('is-offline');}
   } catch(error) {
-    console.warn('No s’han pogut carregar les dades en directe.',error); latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); setUpdated(latest.updated); updateSituation({current:latest});
-    if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
+    console.warn('No s’han pogut carregar les dades en directe.',error);
+    const cached=getLastCachedObs();
+    if(cached && (Date.now()-cached.ts)<OFFLINE_MAX_AGE_MS){
+      latest=cached.data; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); setUpdated(latest.updated); updateSituation({current:latest});
+      showOfflineBanner(cached.ageMinutes);
+      if(label){label.textContent='Sense connexió';label.parentElement.classList.add('is-offline');}
+    } else {
+      latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); setUpdated(latest.updated); updateSituation({current:latest});
+      hideOfflineBanner();
+      if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
+    }
   }
   currentFetchedAt=Date.now();
 }
