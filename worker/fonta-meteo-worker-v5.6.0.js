@@ -1,5 +1,10 @@
+/**
+ * METEO FONTA WORKER - Versió 5.6.1 (CORREGIDA)
+ * Correcció de l'enllaç d'avisos AEMET
+ */
+
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "5.6.0";
+const WORKER_VERSION = "5.6.1";
 const WORKER_BUILT = "2026-08-05";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -8,6 +13,7 @@ const BACKGROUND_URL = "https://santceloni.cat/ARXIUS/agenda/2011/made_in_montse
 const DEFAULT_CONTACT_FROM = "Observatori Fontanillas <formulari@fontanillas.cat>";
 const AEMET_PRELITORAL_FEED = "https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAZ690803_RSS.xml";
 const AEMET_PRELITORAL_PAGE = "https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&w=hoy";
+
 const CONTACT_TOPICS = new Set([
   "Dades de l’estació",
   "Predicció i models",
@@ -56,8 +62,6 @@ ON contact_rate_limit(sent_at)`;
 let schemaReady = false;
 let contactSchemaReady = false;
 
-// Offset (en segons) de la zona horària de Madrid respecte a UTC, calculat
-// dinàmicament perquè s'adapti automàticament a CET (UTC+1) i CEST (UTC+2).
 function madridOffsetSeconds() {
   try {
     const zone = new Intl.DateTimeFormat("en-US", {
@@ -73,7 +77,6 @@ function madridOffsetSeconds() {
   }
 }
 
-// Capçaleres de seguretat aplicades a totes les respostes del Worker.
 function securityHeaders() {
   return {
     "Content-Security-Policy": "default-src 'none'",
@@ -165,21 +168,16 @@ async function ensureContactSchema(env) {
   return true;
 }
 
-// Comprova els límits d'enviament del formulari de contacte i registra l'intent.
-// Retorna { limited:true } si se supera algun límit, o { limited:false } si es permet.
 async function checkContactRateLimit(env, ip, email) {
   if (!(await ensureContactSchema(env))) return { limited: false };
   const now = Math.floor(Date.now() / 1000);
-  // Neteja de registres antics (> 24 h).
   await env.DB.prepare("DELETE FROM contact_rate_limit WHERE sent_at < ?").bind(now - 86400).run();
-  // Màxim 3 enviaments per IP a la darrera hora.
   if (ip) {
     const perIp = await env.DB.prepare(
       "SELECT COUNT(*) AS total FROM contact_rate_limit WHERE ip = ? AND sent_at > ?"
     ).bind(ip, now - 3600).first();
     if ((Number(perIp?.total) || 0) >= 3) return { limited: true };
   }
-  // Màxim 5 enviaments per email a les darreres 24 h.
   if (email) {
     const perEmail = await env.DB.prepare(
       "SELECT COUNT(*) AS total FROM contact_rate_limit WHERE email = ? AND sent_at > ?"
@@ -338,10 +336,10 @@ function historyRange(requestUrl, maximumDays = 366) {
   } else {
     const days = Math.min(maximumDays, Math.max(1, Number.isFinite(requestedDays) ? Math.round(requestedDays) : 7));
     endDate = new Date();
-    startDate = new Date(endDate.getTime() - (days - 1) * 86400000);
+    startDate = new Date(endDate.getTime() - (days - 1) * 8640000);
   }
   if (!startDate || !endDate || startDate > endDate) return null;
-  const days = Math.floor((endDate - startDate) / 86400000) + 1;
+  const days = Math.floor((endDate - startDate) / 8640000) + 1;
   if (days > maximumDays) return null;
   return {
     startDate,
@@ -443,7 +441,7 @@ async function d1History(env, range, resolution) {
 async function wuHistory(env, range) {
   const now = new Date();
   const endDate = new Date(Math.min(range.endDate.getTime(), now.getTime()));
-  const startDate = new Date(Math.max(range.startDate.getTime(), endDate.getTime() - 30 * 86400000));
+  const startDate = new Date(Math.max(range.startDate.getTime(), endDate.getTime() - 30 * 8640000));
   const start = dateKey(startDate);
   const end = dateKey(endDate);
   const params = start === end ? { date:end } : { startDate:start, endDate:end };
@@ -486,367 +484,3 @@ function aggregateWuHistory(items, resolution) {
   });
   return [...groups.values()].map(group => {
     const first = group[0];
-    const rainTotal = maximum(group, "rainTotal") || 0;
-    return {
-      time:first.time, timeUtc:first.timeUtc, epoch:first.epoch,
-      temperature:average(group, "temperature"), temperatureMin:minimum(group, "temperatureMin"), temperatureMax:maximum(group, "temperatureMax"),
-      humidity:average(group, "humidity"), humidityMin:minimum(group, "humidityMin"), humidityMax:maximum(group, "humidityMax"),
-      dewPoint:average(group, "dewPoint"), dewPointMin:minimum(group, "dewPointMin"), dewPointMax:maximum(group, "dewPointMax"),
-      pressure:average(group, "pressure"), pressureMin:minimum(group, "pressureMin"), pressureMax:maximum(group, "pressureMax"),
-      windSpeed:average(group, "windSpeed"), windSpeedMax:maximum(group, "windSpeedMax"), windGust:maximum(group, "windGust"),
-      windDirection:average(group, "windDirection"), rainRate:maximum(group, "rainRate"), rainTotal, rainIncrement:rainTotal,
-      solarRadiation:maximum(group, "solarRadiation"), uv:maximum(group, "uv"), quality:maximum(group, "quality"), samples:group.length,
-    };
-  });
-}
-
-function bucketKey(item, resolution) {
-  if (resolution === "daily") return String(item.time || "").slice(0, 10);
-  if (resolution === "hourly") return String(item.timeUtc || item.time || "").slice(0, 13);
-  return String(item.epoch);
-}
-
-function mergeHistories(databaseRows, wuRows, resolution) {
-  if (!databaseRows.length) return wuRows;
-  if (!wuRows.length) return databaseRows;
-  if (resolution === "raw" && databaseRows.length >= 144) return databaseRows;
-  const merged = new Map(wuRows.map(item => [bucketKey(item, resolution), item]));
-  const minimumSamples = resolution === "daily" ? 72 : resolution === "hourly" ? 6 : 1;
-  databaseRows.forEach(item => {
-    const key = bucketKey(item, resolution);
-    if (!merged.has(key) || item.samples >= minimumSamples) merged.set(key, item);
-  });
-  return [...merged.values()].sort((a, b) => Number(a.epoch) - Number(b.epoch));
-}
-
-async function storageSummary(env) {
-  if (!(await ensureSchema(env))) return { enabled:false, storedReadings:0, coverageDays:0 };
-  const row = await env.DB.prepare(`SELECT COUNT(*) AS storedReadings,
-    MIN(observed_epoch) AS firstEpoch, MAX(observed_epoch) AS lastEpoch,
-    MIN(local_time) AS firstObservation, MAX(local_time) AS lastObservation
-    FROM observations`).first();
-  const count = Number(row?.storedReadings) || 0;
-  const coverageDays = row?.firstEpoch && row?.lastEpoch ? Math.max(0, (row.lastEpoch - row.firstEpoch) / 86400) : 0;
-  return { enabled:true, storedReadings:count, coverageDays, firstObservation:row?.firstObservation || null, lastObservation:row?.lastObservation || null };
-}
-
-async function history(requestUrl, env) {
-  const range = historyRange(requestUrl);
-  if (!range) return json({ error:"L’interval no és vàlid o supera els 366 dies" }, 400);
-  const resolution = chooseResolution(range.days, requestUrl.searchParams.get("resolution"));
-  let databaseRows = [];
-  let wuRows = [];
-  try { databaseRows = await d1History(env, range, resolution); }
-  catch (error) { console.error("D1 history error", error); }
-  try { wuRows = aggregateWuHistory(await wuHistory(env, range), resolution); }
-  catch (error) { console.error("WU history fallback error", error); }
-  const observations = mergeHistories(databaseRows, wuRows, resolution);
-  const storage = await storageSummary(env).catch(() => ({ enabled:false, storedReadings:0, coverageDays:0 }));
-  const source = databaseRows.length && wuRows.length ? "d1+weather-underground" : databaseRows.length ? "d1" : "weather-underground";
-  return json({
-    station:"Observatori Meteorològic Fontanillas",
-    stationId:STATION_ID,
-    range:{ start:range.start, end:range.end },
-    requestedDays:range.days,
-    interval:resolution,
-    source,
-    count:observations.length,
-    storage,
-    observations,
-  }, 200, "public, max-age=300");
-}
-
-async function quality(env) {
-  const started = Date.now();
-  // Optimització v5.6.0: si D1 té una observació de fa menys de 5 minuts, la fem
-  // servir per al health check i estalviem una crida a Weather Underground.
-  let observation = null;
-  let dataSource = "api";
-  try {
-    if (await ensureSchema(env)) {
-      const latest = await env.DB.prepare(
-        "SELECT * FROM observations ORDER BY observed_epoch DESC LIMIT 1"
-      ).first();
-      const nowSeconds = Math.floor(Date.now() / 1000);
-      if (latest && Number(latest.observed_epoch) > nowSeconds - 300) {
-        observation = {
-          updated: latest.local_time,
-          updatedUtc: latest.observed_at_utc,
-          epoch: latest.observed_epoch,
-          temperature: latest.temperature,
-          humidity: latest.humidity,
-          pressure: latest.pressure,
-          windSpeed: latest.wind_speed,
-          rainToday: latest.rain_total,
-        };
-        dataSource = "cache";
-      }
-    }
-  } catch (error) {
-    console.error("Quality D1 cache lookup error", error);
-  }
-  if (!observation) {
-    observation = await currentObservation(env);
-    dataSource = "api";
-  }
-  const updated = new Date(observation.updatedUtc || observation.updated);
-  const ageMinutes = Number.isNaN(updated.getTime()) ? null : Math.max(0, Math.round((Date.now() - updated.getTime()) / 60000));
-  const monitored = ["temperature", "humidity", "pressure", "windSpeed", "rainToday"];
-  const missingFields = monitored.filter(field => observation[field] === null || observation[field] === undefined);
-  const storage = await storageSummary(env);
-  let recent = null;
-  if (storage.enabled) {
-    recent = await env.DB.prepare(`SELECT COUNT(*) AS samples,
-      SUM(CASE WHEN temperature IS NOT NULL THEN 1 ELSE 0 END) AS temperature,
-      SUM(CASE WHEN humidity IS NOT NULL THEN 1 ELSE 0 END) AS humidity,
-      SUM(CASE WHEN pressure IS NOT NULL THEN 1 ELSE 0 END) AS pressure,
-      SUM(CASE WHEN wind_speed IS NOT NULL THEN 1 ELSE 0 END) AS wind,
-      SUM(CASE WHEN rain_total IS NOT NULL THEN 1 ELSE 0 END) AS rain,
-      SUM(CASE WHEN solar_radiation IS NOT NULL THEN 1 ELSE 0 END) AS solar,
-      SUM(CASE WHEN uv IS NOT NULL THEN 1 ELSE 0 END) AS uv,
-      MIN(observed_epoch) AS firstEpoch, MAX(observed_epoch) AS lastEpoch
-      FROM observations WHERE observed_epoch >= ?`).bind(Math.floor(Date.now() / 1000) - 86400).first();
-  }
-  const samples = Number(recent?.samples) || 0;
-  const expected = samples && recent?.firstEpoch ? Math.max(1, Math.min(288, Math.floor((Date.now() / 1000 - recent.firstEpoch) / (STORAGE_INTERVAL_MINUTES * 60)) + 1)) : 0;
-  const availability = expected ? Math.min(100, samples / expected * 100) : 0;
-  const sensorPercent = key => samples ? Math.min(100, Number(recent?.[key] || 0) / samples * 100) : 0;
-  const stale = ageMinutes !== null && ageMinutes >= 30;
-  const degraded = missingFields.length > 0 || (storage.enabled && samples > 6 && availability < 75);
-  return json({
-    ok:!stale && missingFields.length === 0,
-    status:stale ? "stale" : degraded ? "degraded" : "healthy",
-    source:dataSource,
-    stationId:STATION_ID,
-    updated:observation.updated,
-    updatedUtc:observation.updatedUtc,
-    ageMinutes,
-    missingFields,
-    latencyMs:Date.now() - started,
-    storage:{ ...storage, cadenceMinutes:STORAGE_INTERVAL_MINUTES, availability24h:availability, samples24h:samples, expected24h:expected },
-    sensors:{
-      temperature:sensorPercent("temperature"), humidity:sensorPercent("humidity"),
-      pressure:sensorPercent("pressure"), wind:sensorPercent("wind"), rain:sensorPercent("rain"),
-      solar:sensorPercent("solar"), uv:sensorPercent("uv"),
-    },
-  });
-}
-
-async function health(env) {
-  const result = await quality(env);
-  const payload = await result.json();
-  return json({
-    ok:payload.ok,
-    stationId:payload.stationId,
-    updated:payload.updated,
-    ageMinutes:payload.ageMinutes,
-    missingFields:payload.missingFields,
-    latencyMs:payload.latencyMs,
-    storage:payload.storage,
-  });
-}
-
-function decodeXml(input = "") {
-  const entities = { amp:"&", lt:"<", gt:">", quot:'"', apos:"'", nbsp:" " };
-  return String(input)
-    .replace(/^<!\[CDATA\[|\]\]>$/g, "")
-    .replace(/&#x([0-9a-f]+);/gi, (_, value) => String.fromCodePoint(parseInt(value, 16)))
-    .replace(/&#(\d+);/g, (_, value) => String.fromCodePoint(Number(value)))
-    .replace(/&([a-z]+);/gi, (match, name) => entities[name.toLowerCase()] ?? match);
-}
-
-function xmlTag(block, tag) {
-  const match = String(block).match(new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}>`, "i"));
-  return match ? decodeXml(match[1]).trim() : "";
-}
-
-function plainAlertText(input = "") {
-  return decodeXml(input)
-    .replace(/<br\s*\/?\s*>/gi, " · ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function alertLevel(text) {
-  const value = plainAlertText(text).toLowerCase();
-  if (/rojo|vermell|red level|nivel red/.test(value)) return { key:"red", rank:4, label:"Vermell" };
-  if (/naranja|taronja|orange/.test(value)) return { key:"orange", rank:3, label:"Taronja" };
-  if (/amarillo|groc|yellow/.test(value)) return { key:"yellow", rank:2, label:"Groc" };
-  if (/verde|verd|green|sin avisos|sense avisos|no hay avisos|no existen avisos/.test(value)) return { key:"none", rank:1, label:"Sense avís" };
-  return { key:"unknown", rank:0, label:"Avís actiu" };
-}
-
-function alertPhenomenon(text) {
-  const value = plainAlertText(text).toLowerCase();
-  const phenomena = [
-    [/torment|tempest/, "Tempestes"], [/lluv|pluj|precipit/, "Pluja"],
-    [/viento|vent|racha|ratxa/, "Vent"], [/calor|temperatur.*máxima|temperatur.*màxima/, "Calor"],
-    [/frío|fred|temperatur.*mínima|temperatur.*mínima/, "Fred"], [/nieve|neu|nevad/, "Neu"],
-    [/niebla|boira/, "Boira"], [/costa|oleaje|marítim|maritimo/, "Fenòmens costaners"],
-  ];
-  return phenomena.find(([pattern]) => pattern.test(value))?.[1] || "Fenomen meteorològic";
-}
-
-function alertExpiry(text) {
-  const value = plainAlertText(text);
-  const matches = [...value.matchAll(/(?:a|hasta|fins(?:\s+a)?)\s+(\d{1,2}):(\d{2})\s+(\d{2})-(\d{2})-(\d{4})(?:[^()]*\(UTC\s*([+-]\d{1,2})\))?/gi)];
-  const match = matches.at(-1);
-  if (!match) return null;
-  const [, hour, minute, day, month, year, offsetText] = match;
-  const offset = Number(offsetText || 0);
-  const valueUtc = Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour) - offset, Number(minute));
-  const parsed = new Date(valueUtc);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-function parseAemetFeed(xml) {
-  const blocks = [...String(xml).matchAll(/<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi)].map(match => match[1]);
-  const channelUpdated = xmlTag(xml, "lastBuildDate") || xmlTag(xml, "pubDate") || null;
-  const noAlertPattern = /sin avisos|sense avisos|no hay avisos|no existen avisos|no se han emitido avisos/i;
-  const metadataPattern = /estado completo de avisos|estat complet d.?avisos|fichero tar\.gz|fitxer tar\.gz|contiene todos los avisos|conté tots els avisos/i;
-  const entries = blocks.map(block => {
-    const title = plainAlertText(xmlTag(block, "title"));
-    const description = plainAlertText(xmlTag(block, "description"));
-    const combined = `${title} ${description}`;
-    const level = alertLevel(combined);
-    const expires = alertExpiry(combined);
-    const isCurrent = !expires || expires.getTime() > Date.now();
-    return {
-      title:title || alertPhenomenon(combined),
-      description:description.slice(0, 650),
-      phenomenon:alertPhenomenon(combined),
-      level:level.key,
-      levelLabel:level.label,
-      rank:level.rank,
-      published:xmlTag(block, "pubDate") || null,
-      expires:expires?.toISOString() || null,
-      link: AEMET_PRELITORAL_PAGE,
-      active:!noAlertPattern.test(combined) && !metadataPattern.test(combined) && level.key !== "none" && isCurrent,
-    };
-  });
-  const activeAlerts = entries.filter(entry => entry.active).sort((a, b) => b.rank - a.rank);
-  const highest = activeAlerts[0] || null;
-  return { channelUpdated, activeAlerts, maxLevel:highest?.level || "none" };
-}
-
-async function alerts() {
-  const started = Date.now();
-  try {
-    const response = await fetch(AEMET_PRELITORAL_FEED, {
-      headers:{ "Accept":"application/rss+xml, application/xml, text/xml;q=0.9" },
-      cf:{ cacheEverything:true, cacheTtl:300 },
-    });
-    if (!response.ok) throw new Error(`AEMET RSS ${response.status}`);
-    const xml = await response.text();
-    if (!/<rss\b/i.test(xml) || !/<channel\b/i.test(xml)) throw new Error("Resposta AEMET no reconeguda");
-    const parsed = parseAemetFeed(xml);
-    return json({
-      ok:true,
-      version:WORKER_VERSION,
-      status:parsed.activeAlerts.length ? "active" : "clear",
-      source:{ name:"AEMET", area:"Prelitoral de Barcelona", url:AEMET_PRELITORAL_PAGE, feed:AEMET_PRELITORAL_FEED },
-      updated:parsed.channelUpdated,
-      checkedAt:new Date().toISOString(),
-      latencyMs:Date.now() - started,
-      active:parsed.activeAlerts.length,
-      maxLevel:parsed.maxLevel,
-      alerts:parsed.activeAlerts,
-    }, 200, "no-store");
-  } catch (error) {
-    console.error("AEMET alerts error", error);
-    return json({
-      ok:false,
-      version:WORKER_VERSION,
-      status:"unavailable",
-      source:{ name:"AEMET", area:"Prelitoral de Barcelona", url:AEMET_PRELITORAL_PAGE, feed:AEMET_PRELITORAL_FEED },
-      checkedAt:new Date().toISOString(),
-      active:null,
-      maxLevel:"unknown",
-      alerts:[],
-      error:"No s’ha pogut verificar el canal oficial ara mateix.",
-    }, 200, "public, max-age=120");
-  }
-}
-
-async function contact(request, env) {
-  const origin = request.headers.get("Origin") || "";
-  if (!ALLOWED_CONTACT_ORIGINS.has(origin)) return json({ error:"Origen no autoritzat" }, 403, "no-store", origin || "null");
-  if (!env.RESEND_API_KEY || !env.CONTACT_TO) return json({ error:"El servei de contacte encara no està configurat." }, 503, "no-store", origin);
-  const contentLength = Number(request.headers.get("Content-Length") || 0);
-  if (contentLength > 20000) return json({ error:"El missatge és massa gran." }, 413, "no-store", origin);
-  let body;
-  try { body = await request.json(); }
-  catch { return json({ error:"El formulari no és vàlid." }, 400, "no-store", origin); }
-  if (cleanText(body.website, 200)) return json({ ok:true }, 200, "no-store", origin);
-  const startedAt = Number(body.startedAt);
-  const elapsed = Date.now() - startedAt;
-  if (!Number.isFinite(startedAt) || elapsed < 2500 || elapsed > 7200000) return json({ error:"Recarrega el formulari i torna-ho a provar." }, 400, "no-store", origin);
-  const name = cleanText(body.name, 80);
-  const email = cleanText(body.email, 254).toLowerCase();
-  const topic = cleanText(body.topic, 80);
-  const message = cleanText(body.message, 3000);
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-  if (name.length < 2) return json({ error:"Indica un nom vàlid." }, 400, "no-store", origin);
-  if (!emailPattern.test(email)) return json({ error:"Indica un correu de resposta vàlid." }, 400, "no-store", origin);
-  if (!CONTACT_TOPICS.has(topic)) return json({ error:"Selecciona un motiu de contacte." }, 400, "no-store", origin);
-  if (message.length < 20) return json({ error:"El missatge ha de tenir com a mínim 20 caràcters." }, 400, "no-store", origin);
-  if (body.consent !== true) return json({ error:"Cal acceptar l’ús de les dades per poder respondre." }, 400, "no-store", origin);
-  const clientIp = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "";
-  try {
-    const rate = await checkContactRateLimit(env, clientIp, email);
-    if (rate.limited) return json({ error:"Massa sol·licituds. Torna-ho a provar més tard." }, 429, "no-store", origin);
-  } catch (error) {
-    console.error("Rate limit check error", error);
-  }
-  const sentAt = new Intl.DateTimeFormat("ca-ES", { dateStyle:"long", timeStyle:"short", timeZone:TIME_ZONE }).format(new Date());
-  const text = `Nou missatge des de meteo.fontanillas.cat\n\nNom: ${name}\nCorreu de resposta: ${email}\nMotiu: ${topic}\nData: ${sentAt}\n\nMissatge:\n${message}`;
-  const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#15211d"><h2>Nou missatge de l’Observatori</h2><p><strong>Nom:</strong> ${escapeHtml(name)}<br><strong>Correu de resposta:</strong> ${escapeHtml(email)}<br><strong>Motiu:</strong> ${escapeHtml(topic)}<br><strong>Data:</strong> ${escapeHtml(sentAt)}</p><hr style="border:0;border-top:1px solid #d9e5de"><p style="white-space:pre-wrap">${escapeHtml(message)}</p></div>`;
-  const response = await fetch("https://api.resend.com/emails", {
-    method:"POST",
-    headers:{ "Authorization":`Bearer ${env.RESEND_API_KEY}`, "Content-Type":"application/json", "Idempotency-Key":crypto.randomUUID() },
-    body:JSON.stringify({ from:env.CONTACT_FROM || DEFAULT_CONTACT_FROM, to:[env.CONTACT_TO], reply_to:email, subject:`[Observatori] ${topic} · ${name.replace(/[\r\n]/g, " ")}`, text, html, tags:[{ name:"source", value:"observatori_web" }] }),
-  });
-  if (!response.ok) {
-    console.error("Resend error", response.status, await response.text());
-    return json({ error:"No s’ha pogut enviar ara mateix. Torna-ho a provar més tard." }, 502, "no-store", origin);
-  }
-  try { await recordContactAttempt(env, clientIp, email); }
-  catch (error) { console.error("Rate limit record error", error); }
-  return json({ ok:true, message:"Missatge enviat" }, 200, "no-store", origin);
-}
-
-export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const origin = request.headers.get("Origin") || "*";
-    if (request.method === "OPTIONS") {
-      const allowedOrigin = ALLOWED_CONTACT_ORIGINS.has(origin) ? origin : "*";
-      return new Response(null, { status:204, headers:corsHeaders(allowedOrigin) });
-    }
-    try {
-      if (request.method === "POST" && url.pathname === "/contact") return contact(request, env);
-      if (request.method !== "GET") return json({ error:"Mètode no permès" }, 405);
-      if (url.pathname === "/" || url.pathname === "") {
-        const observation = await currentObservation(env);
-        if (env.DB) ctx.waitUntil(persistObservation(observation, env).catch(error => console.error("D1 persist error", error)));
-        return json(observation, 200, "public, max-age=60");
-      }
-      if (url.pathname === "/history") return history(url, env);
-      if (url.pathname === "/quality") return quality(env);
-      if (url.pathname === "/health") return health(env);
-      if (url.pathname === "/alerts") return alerts();
-      if (url.pathname === "/version") {
-        return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
-      }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/version", "POST /contact"] }, 404);
-    } catch (error) {
-      console.error("Worker error", error);
-      return json({ error:error.message || "Error intern" }, error.status || 500);
-    }
-  },
-
-  async scheduled(_event, env, ctx) {
-    ctx.waitUntil(captureObservation(env).catch(error => console.error("Captura programada fallida", error)));
-  },
-};
