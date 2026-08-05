@@ -210,7 +210,7 @@
           </div>
           <div class="source-viewer">
             <div class="source-panel is-active" id="source-panel-meteocat" role="tabpanel" aria-labelledby="source-tab-meteocat" tabindex="0" data-source-panel="meteocat"><div class="source-official"><header><div><span id="source-meteocat-title">Meteocat · pròximes 72 hores</span><small id="source-meteocat-copy">Cel, temperatura, precipitació, humitat, xafogor i vent per hores</small></div><div class="source-official__actions"><div class="source-horizon" role="group" aria-label="Horitzó de Meteocat"><button class="is-active" type="button" data-source-horizon="hourly">Per hores</button><button type="button" data-source-horizon="daily">Per dies</button></div><a href="https://www.meteo.cat/prediccio/municipal/082021" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></div></header><div class="source-official__frame source-official__frame--meteocat is-hourly" id="source-meteocat-shell"><iframe id="source-meteocat-frame" title="Predicció oficial de Meteocat per a Sant Celoni" loading="lazy" src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=0f2a22&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe></div></div></div>
-            <div class="source-panel" id="source-panel-aemet" role="tabpanel" aria-labelledby="source-tab-aemet" tabindex="0" hidden data-source-panel="aemet"><div class="source-official"><header><div><span>AEMET · giny municipal complet</span><small>4 dies · cel, temperatures, sensació, pluja, humitat, vent i avisos</small></div><div class="source-official__links"><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202" target="_blank" rel="noreferrer">48 h per hores ↗</a><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/sant-celoni-id08202" target="_blank" rel="noreferrer">7 dies ↗</a></div></header><div class="source-official__frame source-official__frame--aemet"><iframe name="iframe_aemet_id33044" tabindex="0" id="source-aemet-frame" title="Predicció municipal completa d’AEMET per a Sant Celoni" data-src="https://www.aemet.es/ca/eltiempo/prediccion/municipios/mostrarwidget/sant-celoni-id08202?w=g4p111111110ohmffffffx4f86d9t95b6e9r1s4n2" loading="lazy" scrolling="auto"></iframe></div></div></div>
+            <div class="source-panel" id="source-panel-aemet" role="tabpanel" aria-labelledby="source-tab-aemet" tabindex="0" hidden data-source-panel="aemet"><div class="source-official"><header><div><span>AEMET · giny municipal complet</span><small>4 dies · cel, temperatures, sensació, pluja, humitat, vent i avisos</small></div><div class="source-official__links"><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202" target="_blank" rel="noreferrer">48 h per hores ↗</a><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/sant-celoni-id08202" target="_blank" rel="noreferrer">7 dies ↗</a></div></header><div class="source-official__frame source-official__frame--aemet"><iframe name="iframe_aemet_id33044" tabindex="0" id="source-aemet-frame" title="Predicció municipal completa d’AEMET per a Sant Celoni" data-src="https://www.aemet.es/ca/eltiempo/prediccion/municipios/mostrarwidget/sant-celoni-id08202?w=g4p11110ohmffffx4f86d9t95b6e9r1s4n2" loading="lazy" scrolling="auto"></iframe></div></div></div>
             <div class="source-panel" id="source-panel-eltiempo" role="tabpanel" aria-labelledby="source-tab-eltiempo" tabindex="0" hidden data-source-panel="eltiempo">
               <div class="source-eltiempo">
                 <div class="source-eltiempo__header"><div><span>Previsió oficial · Sant Celoni</span><small>Català · °C · vent en km/h · format complet</small></div><div class="source-official__links"><a href="https://www.eltiempo.es/sant-celoni.html?v=por_hora" target="_blank" rel="noreferrer">Per hores ↗</a><a href="https://www.eltiempo.es/sant-celoni.html" target="_blank" rel="noreferrer">14 dies ↗</a></div></div>
@@ -384,6 +384,7 @@
         </form>
       </section>
     </main>
+
     <nav class="mobile-nav" aria-label="Navegació ràpida mòbil">
       <a class="is-active" href="#ara" data-section-link="ara"><span aria-hidden="true">●</span>Ara</a>
       <a href="#prediccio" data-section-link="prediccio"><span aria-hidden="true">↗</span>Previsió</a>
@@ -391,6 +392,7 @@
       <a href="#territori" data-section-link="territori"><span aria-hidden="true">◎</span>Radar</a>
       <button type="button" id="mobile-more-button" aria-expanded="false" aria-controls="mobile-more-menu"><span aria-hidden="true">•••</span>Més</button>
     </nav>
+
     <div class="mobile-more" id="mobile-more-menu" hidden>
       <button class="mobile-more__backdrop" type="button" aria-label="Tancar el menú"></button>
       <div class="mobile-more__sheet" role="dialog" aria-modal="true" aria-label="Més seccions">
@@ -414,57 +416,153 @@
         </nav>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a href="javascript:void(0);" onclick="openShare(); return false;">Compartir</a></div></footer>
+
+    <footer class="shell">
+      <span>Observatori Meteorològic Fontanillas</span>
+      <small>Dades locals · Sant Celoni, Montseny · V5.6.2</small>
+      <div>
+        <a href="metodologia.html">Metodologia</a>
+        <a href="#contacte">Contacte</a>
+        <a href="#top">Tornar amunt ↑</a>
+        <button type="button" id="share-btn" style="background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;">
+          Compartir
+        </button>
+      </div>
+    </footer>
+
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
-  
-<div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
-  <div style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true">
-    <h3 style="margin:0 0 16px;font-size:1.1rem;color:var(--text);">Compartir l'Observatori</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <button onclick="doShare('copy')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📋 Copiar</button>
-      <button onclick="doShare('whatsapp')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📱 WhatsApp</button>
-      <button onclick="doShare('x')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🗣 X</button>
-      <button onclick="doShare('facebook')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📢 Facebook</button>
-      <button onclick="doShare('email')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">✉️ Correu</button>
-      <button onclick="doShare('instagram')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📸 Instagram</button>
-      <button onclick="doShare('tiktok')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🎵 TikTok</button>
-      <button onclick="doShare('native')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🔗 Altres apps</button>
+
+    <div
+      id="shareModal"
+      hidden
+      style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;"
+    >
+      <div
+        style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-title"
+      >
+        <h3 id="share-title" style="margin:0 0 16px;font-size:1.1rem;color:var(--text);">Compartir l'Observatori</h3>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button type="button" data-share="copy" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📋 Copiar</button>
+          <button type="button" data-share="whatsapp" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📱 WhatsApp</button>
+          <button type="button" data-share="x" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🗣 X</button>
+          <button type="button" data-share="facebook" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📢 Facebook</button>
+          <button type="button" data-share="email" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">✉️ Correu</button>
+          <button type="button" data-share="native" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🔗 Altres apps</button>
+        </div>
+
+        <button type="button" id="share-close" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer;">
+          Tancar
+        </button>
+      </div>
     </div>
-    <button onclick="closeShare()" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer;">Tancar</button>
-  </div>
-</div>
 
-<script>
-function openShare(){
-  var m=document.getElementById('shareModal');
-  if(m){m.style.display='flex';}
-}
-function closeShare(){
-  var m=document.getElementById('shareModal');
-  if(m){m.style.display='none';}
-}
-function doShare(type){
-  var url=encodeURIComponent(location.href);
-  var text=encodeURIComponent("Consulta les dades meteorologiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny): ");
-  if(type==="copy"){
-    if(navigator.clipboard){navigator.clipboard.writeText(location.href).then(function(){alert("Enllac copiat!");closeShare();});}
-    else{var d=document.createElement("input");document.body.appendChild(d);d.value=location.href;d.select();document.execCommand("copy");document.body.removeChild(d);alert("Enllac copiat!");closeShare();}
-  }
-  else if(type==="whatsapp"){window.open("https://wa.me/?text="+text+"%20"+url,"_blank");closeShare();}
-  else if(type==="x"){window.open("https://x.com/intent/tweet?text="+text+"&url="+url,"_blank");closeShare();}
-  else if(type==="facebook"){window.open("https://www.facebook.com/sharer/sharer.php?u="+url,"_blank");closeShare();}
-  else if(type==="email"){window.open("mailto:?subject=Observatori Fontanillas&body="+text+"%20"+url);closeShare();}
-  else if(type==="instagram" || type==="tiktok" || type==="native"){
-    if(navigator.share){
-      navigator.share({title:"Meteo Fontanillas",text:decodeURIComponent(text),url:location.href}).catch(function(){});
-      closeShare();
-    }else{
-      if(navigator.clipboard){navigator.clipboard.writeText(location.href).then(function(){alert("Enllac copiat. Obre "+(type==="instagram" ? "Instagram" : type==="tiktok" ? "TikTok" : "l'app que vulguis")+" i enganxa'l a la teva publicacio.");closeShare();});}
-      else{alert("El teu navegador no permet compartir directament. Copia l'enllac i enganxa'l a l'app que vulguis.");}
-    }
-  }
-}
-</script>
+    <script>
+      (() => {
+        const SHARE_URL = "https://meteo.fontanillas.cat/";
+        const SHARE_TEXT = "Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny):";
+        const SHARE_TITLE = "Observatori Fontanillas";
 
-</body>
+        const modal = document.getElementById("shareModal");
+        const shareBtn = document.getElementById("share-btn");
+        const closeBtn = document.getElementById("share-close");
+
+        function openShare() {
+          if (!modal) return;
+          modal.hidden = false;
+          modal.style.display = "flex";
+        }
+
+        function closeShare() {
+          if (!modal) return;
+          modal.style.display = "none";
+          modal.hidden = true;
+        }
+
+        async function copyLink() {
+          try {
+            await navigator.clipboard.writeText(SHARE_URL);
+            alert("Enllaç copiat!");
+            closeShare();
+          } catch (e) {
+            const input = document.createElement("input");
+            input.value = SHARE_URL;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand("copy");
+            document.body.removeChild(input);
+            alert("Enllaç copiat!");
+            closeShare();
+          }
+        }
+
+        function shareVia(url) {
+          window.open(url, "_blank", "noopener,noreferrer");
+        }
+
+        async function nativeShare() {
+          if (navigator.share) {
+            try {
+              await navigator.share({
+                title: SHARE_TITLE,
+                text: SHARE_TEXT,
+                url: SHARE_URL
+              });
+            } catch (e) {}
+            closeShare();
+            return;
+          }
+
+          try {
+            await navigator.clipboard.writeText(SHARE_URL);
+            alert("El navegador no permet compartir directament. L'enllaç s'ha copiat perquè el puguis enganxar a l'app que vulguis.");
+          } catch (e) {
+            alert("El navegador no permet compartir directament. Copia l'enllaç manualment: " + SHARE_URL);
+          }
+          closeShare();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+          if (shareBtn) shareBtn.addEventListener("click", openShare);
+          if (closeBtn) closeBtn.addEventListener("click", closeShare);
+
+          if (modal) {
+            modal.addEventListener("click", (event) => {
+              if (event.target === modal) closeShare();
+            });
+          }
+
+          document.querySelectorAll("[data-share]").forEach((button) => {
+            button.addEventListener("click", async () => {
+              const type = button.getAttribute("data-share");
+
+              if (type === "copy") {
+                await copyLink();
+              } else if (type === "whatsapp") {
+                shareVia(`https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + " " + SHARE_URL)}`);
+                closeShare();
+              } else if (type === "x") {
+                shareVia(`https://x.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(SHARE_URL)}`);
+                closeShare();
+              } else if (type === "facebook") {
+                shareVia(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`);
+                closeShare();
+              } else if (type === "email") {
+                shareVia(`mailto:?subject=${encodeURIComponent(SHARE_TITLE)}&body=${encodeURIComponent(SHARE_TEXT + " " + SHARE_URL)}`);
+                closeShare();
+              } else if (type === "native") {
+                await nativeShare();
+              }
+            });
+          });
+        });
+
+        window.openShare = openShare;
+        window.closeShare = closeShare;
+      })();
+    </script>
+  </body>
 </html>
