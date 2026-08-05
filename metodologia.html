@@ -2,47 +2,46 @@
 <html lang="ca">
 <head>
     <meta charset="UTF-8">
-    <title>Metodologia - Observatori Fontanillas</title>
-    <!-- Mantenim els teus estils base -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metodologia i Equipament - Observatori Fontanillas</title>
+    <!-- Carrega de tots els estils de la web principal -->
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/layout.css">
     <style>
-        /* Millora de l'espaiat intern per a la metodologia */
-        #metodologia .panel {
-            padding: 2rem; /* Augmentem l'espai interior */
-            margin-bottom: 1.5rem;
-        }
-        #metodologia h3 {
-            margin-top: 0;
-            margin-bottom: 1rem;
-            color: var(--accent);
-        }
-        #metodologia ul {
-            margin-left: 1.2rem;
-            margin-top: 0.5rem;
-        }
-        #metodologia li {
-            margin-bottom: 0.5rem;
-        }
-        .btn-home {
-            display: inline-block;
-            margin-top: 2rem;
-            padding: 12px 24px;
-            background: var(--accent);
-            color: var(--bg);
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: opacity 0.2s;
-        }
-        .btn-home:hover {
-            opacity: 0.9;
-        }
+        /* Ajustos específics per aquesta pàgina */
+        .metodologia-content { padding-top: 2rem; padding-bottom: 4rem; }
+        .panel { padding: 2.5rem; margin-bottom: 2rem; background: var(--panel-bg); border-radius: 12px; border: 1px solid var(--border); }
+        .panel h3 { color: var(--accent); margin-top: 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        .panel h4 { margin-top: 1.5rem; margin-bottom: 0.8rem; font-size: 1.1rem; }
+        .panel ul { padding-left: 1.5rem; }
+        .panel li { margin-bottom: 0.8rem; line-height: 1.6; }
+        .back-nav { margin-bottom: 2rem; }
+        .btn-back { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--panel-bg); border: 1px solid var(--accent); color: var(--accent); border-radius: 50px; text-decoration: none; font-weight: bold; transition: all 0.2s; }
+        .btn-back:hover { background: var(--accent); color: var(--bg); }
     </style>
 </head>
 <body>
-    <main id="metodologia" class="shell">
+    <!-- Capçalera (Header) tal com la tens a la principal -->
+    <header class="header">
+        <div class="shell header__inner">
+            <div class="header__brand">
+                <a href="/" class="logo">
+                    <span class="logo__icon">◑</span>
+                    <div class="logo__text">
+                        <strong>Meteo<b>Fonta</b></strong>
+                        <span>Sant Celoni · 147m</span>
+                    </div>
+                </a>
+            </div>
+            <!-- Podem posar un botó simple de tancar/tornar aquí -->
+            <nav class="header__nav">
+                <a href="/" class="btn-back">← Tornar a l'inici</a>
+            </nav>
+        </div>
+    </header>
+
+    <main id="metodologia" class="shell metodologia-content">
         <section class="section-block">
             <div class="section-heading">
                 <div>
@@ -53,33 +52,39 @@
 
             <div class="panel">
                 <h3>L'Estació Meteorològica</h3>
-                <p>L'Observatori Fontanillas està situat a Sant Celoni (Montseny). Les dades s'actualitzen en temps real cada 2-5 minuts i es guarden a una base de dades per a anàlisi històric.</p>
+                <p>L'Observatori Fontanillas utilitza tecnologia de monitoratge meteorològic professional situada estratègicament a Sant Celoni per oferir les dades més precises de la zona nord del municipi i el peu del Montseny.</p>
                 
-                <h4>Instrumentació</h4>
+                <h4>Instrumentació de Precisió</h4>
                 <ul>
-                    <li><strong>Anemòmetre:</strong> Velocitat i direcció del vent.</li>
-                    <li><strong>Pluviòmetre:</strong> Precipitació amb resolució de 0,2 mm.</li>
-                    <li><strong>Termo-higròmetre:</strong> Protegit dins d'un escut de radiació solar.</li>
-                    <li><strong>Baròmetre:</strong> Pressió atmosfèrica compensada.</li>
-                    <li><strong>Sensor UV i Solar:</strong> Índex UV i radiació solar global.</li>
+                    <li><strong>Anemòmetre:</strong> Registra la velocitat i direcció del vent amb alta resolució, capturant ràfegues en temps real.</li>
+                    <li><strong>Pluviòmetre:</strong> Sistema de cullera basculant amb resolució de 0,2 mm per a un seguiment detallat de la precipitació acumulada i la intensitat.</li>
+                    <li><strong>Termo-higròmetre:</strong> Sensor d'alta sensibilitat ubicat dins d'un escut de radiació solar ventilat per garantir lectures de temperatura i humitat reals, sense interferència del sol directe.</li>
+                    <li><strong>Baròmetre:</strong> Sensor de pressió d'estat sòlid amb compensació altimètrica per a lectures de pressió a nivell del mar.</li>
+                    <li><strong>Radiació i UV:</strong> Sensors globals que mesuren l'energia solar incident i l'índex ultraviolat per a la prevenció i anàlisi climàtic.</li>
                 </ul>
             </div>
 
             <div class="panel">
-                <h3>Arquitectura Digital</h3>
-                <p>La web està construïda amb tecnologia moderna de Cloudflare:</p>
+                <h3>Arquitectura Digital i Dades</h3>
+                <p>Aquest projecte combina l'afició meteorològica amb les darreres tecnologies de computació en el "edge" per garantir una disponibilitat del 99.9%.</p>
                 <ul>
-                    <li><strong>Cloudflare Pages:</strong> Allotjament i desplegament del frontend.</li>
-                    <li><strong>Cloudflare Workers:</strong> Backend serverless que processa les peticions.</li>
-                    <li><strong>Cloudflare D1:</strong> Base de dades SQL per emmagatzemar observacions històriques.</li>
-                    <li><strong>Weather Underground:</strong> Font de les dades meteorològiques en temps real.</li>
+                    <li><strong>Cloudflare Pages:</strong> El frontend que estàs veient està optimitzat per a una càrrega ultra-ràpida des de qualsevol lloc del món.</li>
+                    <li><strong>Cloudflare Workers:</strong> El "motor" de la web. Procesa les dades de l'estació, consulta APIs oficials (AEMET/Meteocat) i gestiona les alertes.</li>
+                    <li><strong>Cloudflare D1:</strong> Base de dades SQL nativa de Cloudflare on s'emmagatzema cada observació cada 5 minuts des de l'inici del projecte.</li>
+                    <li><strong>Weather Underground:</strong> Actua com a node receptor primari de l'estació física, enviant les dades cap al nostre Worker.</li>
                 </ul>
-            </div>
-
-            <div style="text-align: center;">
-                <a href="/" class="btn-home">← Tornar a l'observatori</a>
             </div>
         </section>
     </main>
+
+    <!-- Peu de pàgina (Footer) complet i corregit -->
+    <footer class="shell">
+        <span>Observatori Meteorològic Fontanillas</span>
+        <small>Dades locals · Sant Celoni, Montseny · V5.6.2</small>
+        <div>
+            <a href="/">Tornar a l'inici</a>
+            <a href="#top">Tornar amunt ↑</a>
+        </div>
+    </footer>
 </body>
 </html>
