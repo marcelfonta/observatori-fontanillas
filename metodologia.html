@@ -49,7 +49,14 @@
 
   /* Botó tornar (capçalera de metodologia): garantir visibilitat en hover */
   .btn-back { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--panel-bg); border: 1px solid var(--accent); color: var(--accent); border-radius: 50px; text-decoration: none; font-weight: bold; transition: all 0.2s; position: relative; z-index: 20; }
-  .btn-back:hover, .btn-back:focus { background: var(--accent); color: var(--bg); outline: none; }
+/* reemplaçar l'anterior .btn-back:hover */
+.btn-back:hover,
+.btn-back:focus {
+  background: var(--accent);
+  color: var(--text); /* manté el text en blanc a l'hover */
+  outline: none;
+}
+
 
   /* Forçar que els enllaços del peu es mantinguin visibles i tinguin el mateix color */
   footer.shell div a { color: var(--accent); text-decoration: none; transition: color .12s, opacity .12s; position: relative; z-index: 20; }
