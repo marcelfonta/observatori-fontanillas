@@ -419,14 +419,12 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V5.6.2</small>
+      <small>Dades locals · Sant Celoni, Montseny · V5.6.3</small>
       <div>
         <a href="metodologia.html">Metodologia</a>
         <a href="#contacte">Contacte</a>
         <a href="#top">Tornar amunt ↑</a>
-        <button type="button" id="share-btn" style="background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;">
-          Compartir
-        </button>
+        <a href="#" id="share-btn" role="button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</a>
       </div>
     </footer>
 
@@ -460,109 +458,6 @@
       </div>
     </div>
 
-    <script>
-      (() => {
-        const SHARE_URL = "https://meteo.fontanillas.cat/";
-        const SHARE_TEXT = "Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny):";
-        const SHARE_TITLE = "Observatori Fontanillas";
-
-        const modal = document.getElementById("shareModal");
-        const shareBtn = document.getElementById("share-btn");
-        const closeBtn = document.getElementById("share-close");
-
-        function openShare() {
-          if (!modal) return;
-          modal.hidden = false;
-          modal.style.display = "flex";
-        }
-
-        function closeShare() {
-          if (!modal) return;
-          modal.style.display = "none";
-          modal.hidden = true;
-        }
-
-        async function copyLink() {
-          try {
-            await navigator.clipboard.writeText(SHARE_URL);
-            alert("Enllaç copiat!");
-            closeShare();
-          } catch (e) {
-            const input = document.createElement("input");
-            input.value = SHARE_URL;
-            document.body.appendChild(input);
-            input.select();
-            document.execCommand("copy");
-            document.body.removeChild(input);
-            alert("Enllaç copiat!");
-            closeShare();
-          }
-        }
-
-        function shareVia(url) {
-          window.open(url, "_blank", "noopener,noreferrer");
-        }
-
-        async function nativeShare() {
-          if (navigator.share) {
-            try {
-              await navigator.share({
-                title: SHARE_TITLE,
-                text: SHARE_TEXT,
-                url: SHARE_URL
-              });
-            } catch (e) {}
-            closeShare();
-            return;
-          }
-
-          try {
-            await navigator.clipboard.writeText(SHARE_URL);
-            alert("El navegador no permet compartir directament. L'enllaç s'ha copiat perquè el puguis enganxar a l'app que vulguis.");
-          } catch (e) {
-            alert("El navegador no permet compartir directament. Copia l'enllaç manualment: " + SHARE_URL);
-          }
-          closeShare();
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-          if (shareBtn) shareBtn.addEventListener("click", openShare);
-          if (closeBtn) closeBtn.addEventListener("click", closeShare);
-
-          if (modal) {
-            modal.addEventListener("click", (event) => {
-              if (event.target === modal) closeShare();
-            });
-          }
-
-          document.querySelectorAll("[data-share]").forEach((button) => {
-            button.addEventListener("click", async () => {
-              const type = button.getAttribute("data-share");
-
-              if (type === "copy") {
-                await copyLink();
-              } else if (type === "whatsapp") {
-                shareVia(`https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + " " + SHARE_URL)}`);
-                closeShare();
-              } else if (type === "x") {
-                shareVia(`https://x.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(SHARE_URL)}`);
-                closeShare();
-              } else if (type === "facebook") {
-                shareVia(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`);
-                closeShare();
-              } else if (type === "email") {
-                shareVia(`mailto:?subject=${encodeURIComponent(SHARE_TITLE)}&body=${encodeURIComponent(SHARE_TEXT + " " + SHARE_URL)}`);
-                closeShare();
-              } else if (type === "native") {
-                await nativeShare();
-              }
-            });
-          });
-        });
-
-        window.openShare = openShare;
-        window.closeShare = closeShare;
-      })();
-    </script>
+    <script src="js/share.js?v=5.6.3" defer></script>
   </body>
 </html>
