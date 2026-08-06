@@ -25,3 +25,24 @@ CREATE INDEX IF NOT EXISTS idx_observations_local_date_epoch
 ON observations(local_date, observed_epoch DESC);
 
 PRAGMA optimize;
+
+
+CREATE TABLE IF NOT EXISTS alert_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  fingerprint TEXT NOT NULL UNIQUE,
+  source TEXT NOT NULL,
+  level TEXT NOT NULL,
+  phenomenon TEXT,
+  title TEXT,
+  description TEXT,
+  started_at TEXT NOT NULL,
+  expires_at TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_alert_events_started ON alert_events(started_at DESC);
+
+CREATE TABLE IF NOT EXISTS alert_state (
+  state_key TEXT PRIMARY KEY,
+  state_value TEXT,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

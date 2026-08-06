@@ -1,6 +1,6 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "5.6.1";
-const WORKER_BUILT = "2026-08-05";
+const WORKER_VERSION = "7.0.0-phase2";
+const WORKER_BUILT = "2026-08-06";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const WEBCAM_URL = "https://www.alvar.cat/WebCam/Imatge-Camera.jpg";
@@ -53,8 +53,27 @@ const CREATE_CONTACT_RATE_LIMIT = `CREATE TABLE IF NOT EXISTS contact_rate_limit
 )`;
 const CREATE_CONTACT_RATE_LIMIT_INDEX = `CREATE INDEX IF NOT EXISTS idx_contact_rate_limit_sent_at
 ON contact_rate_limit(sent_at)`;
+const CREATE_ALERT_EVENTS = `CREATE TABLE IF NOT EXISTS alert_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  fingerprint TEXT NOT NULL UNIQUE,
+  source TEXT NOT NULL,
+  level TEXT NOT NULL,
+  phenomenon TEXT,
+  title TEXT,
+  description TEXT,
+  started_at TEXT NOT NULL,
+  expires_at TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`;
+const CREATE_ALERT_EVENTS_INDEX = `CREATE INDEX IF NOT EXISTS idx_alert_events_started ON alert_events(started_at DESC)`;
+const CREATE_ALERT_STATE = `CREATE TABLE IF NOT EXISTS alert_state (
+  state_key TEXT PRIMARY KEY,
+  state_value TEXT,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`;
 let schemaReady = false;
 let contactSchemaReady = false;
+let alertSchemaReady = false;
 
 // Offset (en segons) de la zona horària de Madrid respecte a UTC, calculat
 // dinàmicament perquè s'adapti automàticament a CET (UTC+1) i CEST (UTC+2).
@@ -194,6 +213,93 @@ async function recordContactAttempt(env, ip, email) {
   await env.DB.prepare(
     "INSERT INTO contact_rate_limit (ip, email, sent_at) VALUES (?, ?, ?)"
   ).bind(ip || null, email || null, Math.floor(Date.now() / 1000)).run();
+}
+
+async function ensureAlertSchema(env) {
+  if (!env.DB) return false;
+  if (alertSchemaReady) return true;
+  await env.DB.batch([
+    env.DB.prepare(CREATE_ALERT_EVENTS),
+    env.DB.prepare(CREATE_ALERT_EVENTS_INDEX),
+    env.DB.prepare(CREATE_ALERT_STATE),
+  ]);
+  alertSchemaReady = true;
+  return true;
+}
+
+async function sha256Text(value) {
+  const bytes = new TextEncoder().encode(String(value));
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function alertFingerprint(entry) {
+  return sha256Text([entry.level,entry.phenomenon,entry.title,entry.expires,entry.description].join('|'));
+}
+
+async function recordAlertEvents(payload, env) {
+  if (!(await ensureAlertSchema(env)) || !payload?.ok) return [];
+  const inserted=[];
+  for (const entry of payload.alerts || []) {
+    const fingerprint=await alertFingerprint(entry);
+    try {
+      const result=await env.DB.prepare(`INSERT OR IGNORE INTO alert_events
+        (fingerprint,source,level,phenomenon,title,description,started_at,expires_at)
+        VALUES (?,?,?,?,?,?,?,?)`)
+        .bind(fingerprint,'AEMET',entry.level||'unknown',entry.phenomenon||null,entry.title||null,entry.description||null,entry.published||new Date().toISOString(),entry.expires||null).run();
+      if(result?.meta?.changes) inserted.push({...entry,fingerprint});
+    } catch(error){ console.error('Alert history insert error',error); }
+  }
+  return inserted;
+}
+
+async function alertHistory(url, env) {
+  if (!(await ensureAlertSchema(env))) return json({ok:true,items:[],storage:'disabled'});
+  const limit=Math.min(100,Math.max(1,Number(url.searchParams.get('limit')||20)));
+  const result=await env.DB.prepare(`SELECT id,source,level,phenomenon,title,description,started_at,expires_at,created_at
+    FROM alert_events ORDER BY started_at DESC LIMIT ?`).bind(limit).all();
+  return json({ok:true,items:result?.results||[]},200,'no-store');
+}
+
+function notificationCategory(entry){
+  const p=String(entry?.phenomenon||'').toLowerCase();
+  if(/pluj|lluv|precipit/.test(p))return 'rain';
+  if(/vent|viento|ratxa|racha/.test(p))return 'wind';
+  if(/tempest|torment|llamp|rayo/.test(p))return 'storm';
+  if(/neu|nieve/.test(p))return 'snow';
+  if(/calor|fred|frío|temperatur/.test(p))return 'temperature';
+  return 'all';
+}
+
+async function sendOneSignalAlert(entry, env){
+  if(!env.ONESIGNAL_APP_ID || !env.ONESIGNAL_REST_API_KEY)return {sent:false,reason:'not_configured'};
+  const category=notificationCategory(entry);
+  const level=entry.levelLabel || entry.level || 'Avís';
+  const heading=`${level}: ${entry.phenomenon || 'avís meteorològic'}`;
+  const body=String(entry.description || entry.title || 'Consulta el detall oficial.').slice(0,180);
+  const filters=[
+    {field:'tag',key:'alert_all',relation:'=',value:'1'},
+    {operator:'OR'},
+    {field:'tag',key:`alert_${category}`,relation:'=',value:'1'},
+  ];
+  const response=await fetch('https://api.onesignal.com/notifications',{
+    method:'POST',
+    headers:{'Authorization':`Key ${env.ONESIGNAL_REST_API_KEY}`,'Content-Type':'application/json'},
+    body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',filters,headings:{ca:heading,en:heading},contents:{ca:body,en:body},url:'https://meteo.fontanillas.cat/#avisos'})
+  });
+  if(!response.ok){ console.error('OneSignal API error',response.status,await response.text()); return {sent:false,status:response.status}; }
+  return {sent:true};
+}
+
+async function checkAlertsAndNotify(env){
+  const response=await fetch(AEMET_PRELITORAL_FEED,{headers:{Accept:'application/rss+xml, application/xml, text/xml;q=0.9'},cf:{cacheEverything:false}});
+  if(!response.ok)throw new Error(`AEMET RSS ${response.status}`);
+  const xml=await response.text();
+  const parsed=parseAemetFeed(xml);
+  const payload={ok:true,alerts:parsed.activeAlerts,maxLevel:parsed.maxLevel};
+  const fresh=await recordAlertEvents(payload,env);
+  for(const entry of fresh){ await sendOneSignalAlert(entry,env); }
+  return fresh.length;
 }
 
 async function weatherRequest(path, params, env, cacheTtl) {
@@ -732,7 +838,7 @@ function parseAemetFeed(xml) {
   return { channelUpdated, activeAlerts, maxLevel:highest?.level || "none" };
 }
 
-async function alerts() {
+async function alerts(env) {
   const started = Date.now();
   try {
     const response = await fetch(AEMET_PRELITORAL_FEED, {
@@ -743,7 +849,7 @@ async function alerts() {
     const xml = await response.text();
     if (!/<rss\b/i.test(xml) || !/<channel\b/i.test(xml)) throw new Error("Resposta AEMET no reconeguda");
     const parsed = parseAemetFeed(xml);
-    return json({
+    const payload = {
       ok:true,
       version:WORKER_VERSION,
       status:parsed.activeAlerts.length ? "active" : "clear",
@@ -754,7 +860,9 @@ async function alerts() {
       active:parsed.activeAlerts.length,
       maxLevel:parsed.maxLevel,
       alerts:parsed.activeAlerts,
-    }, 200, "no-store");
+    };
+    await recordAlertEvents(payload, env).catch(error=>console.error("Alert history error",error));
+    return json(payload, 200, "no-store");
   } catch (error) {
     console.error("AEMET alerts error", error);
     return json({
@@ -837,11 +945,12 @@ export default {
       if (url.pathname === "/history") return history(url, env);
       if (url.pathname === "/quality") return quality(env);
       if (url.pathname === "/health") return health(env);
-      if (url.pathname === "/alerts") return alerts();
+      if (url.pathname === "/alerts") return alerts(env);
+      if (url.pathname === "/alert-history") return alertHistory(url, env);
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/version", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/version", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);
@@ -849,14 +958,9 @@ export default {
   },
 
   async scheduled(_event, env, ctx) {
-    ctx.waitUntil(captureObservation(env).catch(error => console.error("Captura programada fallida", error)));
+    ctx.waitUntil(Promise.all([
+      captureObservation(env).catch(error => console.error("Captura programada fallida", error)),
+      checkAlertsAndNotify(env).catch(error => console.error("Comprovació d’avisos fallida", error)),
+    ]));
   },
 };
-```Aquí tens el fitxer complet generat: **`fonta-meteo-worker-v5.6.1.js`** ✅
-
-Pots descarregar-lo des del panell de fitxers de la conversa. L'única diferència respecte al `v5.6.0` és:
-
-- **Versió** → `5.6.1`
-- **Línia del link d'avisos** → ara sempre usa `AEMET_PRELITORAL_PAGE` en lloc de llegir el tag `<link>` del XML
-
-Un cop el tinguis, substitueix el fitxer del Worker al teu projecte i fes el `git push` habitual.

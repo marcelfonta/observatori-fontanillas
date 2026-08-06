@@ -9,5 +9,6 @@ export const CONFIG = {
   fallbackWebcam: 'https://www.alvar.cat/WebCam/Imatge-Camera.jpg',
   analyticsMeasurementId: '', // Ex.: G-XXXXXXXXXX
   oneSignalAppId: '', // Ex.: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  pushPreferencesKey: 'fontanillas-alert-preferences-v1',
   foregroundRefreshMinMs: 30 * 1000
 };

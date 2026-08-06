@@ -34,10 +34,10 @@
     <link rel="stylesheet" href="css/style.css?v=6.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script type="module" src="src/features/analytics.js?v=7.0-f1"></script>
-    <script type="module" src="src/features/push.js?v=7.0-f1"></script>
-    <script type="module" src="src/features/pwa.js?v=7.0-f1"></script>
-    <script type="module" src="src/app.js?v=7.0-f1"></script>
+    <script type="module" src="src/features/analytics.js?v=7.0-f2"></script>
+    <script type="module" src="src/features/push.js?v=7.0-f2"></script>
+    <script type="module" src="src/features/pwa.js?v=7.0-f2"></script>
+    <script type="module" src="src/app.js?v=7.0-f2"></script>
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
     </script>
@@ -192,6 +192,10 @@
               <article data-situation="thermal"><span>Confort i radiació</span><strong id="situation-thermal-title">Analitzant</strong><small id="situation-thermal-copy">Creuant temperatura, humitat i UV</small></article>
               <article data-situation="wind"><span>Vent i canvi proper</span><strong id="situation-wind-title">Calculant</strong><small id="situation-wind-copy">Esperant les pròximes hores</small></article>
             </div>
+          </section>
+          <section class="alert-history-panel" aria-labelledby="alert-history-title">
+            <header><div><p class="eyebrow">Memòria d’episodis</p><h3 id="alert-history-title">Historial d’avisos</h3><p>Canvis oficials registrats pel Worker per poder consultar els episodis recents.</p></div><span class="tag" id="alert-history-status">Carregant…</span></header>
+            <div id="alert-history-list" class="alert-history-list"><div class="alert-history-empty">Carregant historial…</div></div>
           </section>
           <p class="alerts-note"><span>i</span> El mapa és el servei oficial de Meteocat. La lectura local reprodueix el canal CAP/RSS oficial d’AEMET per al Prelitoral de Barcelona i sempre enllaça amb el detall original. <b id="alerts-updated">Actualitzant…</b></p>
         </div>
@@ -448,16 +452,30 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V7 · Fase 1.1</small>
+      <small>Dades locals · Sant Celoni, Montseny · V7 · Fase 2</small>
       <div>
         <a href="metodologia.html">Metodologia</a>
-        <a href="#contacte">Contacte</a>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>
       </div>
     </footer>
 
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
+
+    <div id="pushPreferencesModal" hidden class="push-preferences-modal">
+      <section class="push-preferences-card" role="dialog" aria-modal="true" aria-labelledby="push-preferences-title">
+        <header><div><p class="eyebrow">Notificacions personalitzades</p><h3 id="push-preferences-title">Quins avisos vols rebre?</h3><p>Només enviarem notificacions quan hi hagi una situació meteorològica rellevant.</p></div><button type="button" id="push-preferences-close" aria-label="Tancar">×</button></header>
+        <div class="push-preferences-grid">
+          <label><input type="checkbox" value="rain" data-alert-preference checked><span>🌧️<b>Pluja intensa</b><small>Precipitació important o avisos oficials</small></span></label>
+          <label><input type="checkbox" value="wind" data-alert-preference checked><span>💨<b>Vent fort</b><small>Ratxes importants o avisos oficials</small></span></label>
+          <label><input type="checkbox" value="storm" data-alert-preference checked><span>⚡<b>Tempesta i llamps</b><small>Tempestes i activitat elèctrica rellevant</small></span></label>
+          <label><input type="checkbox" value="snow" data-alert-preference checked><span>❄️<b>Neu</b><small>Neu o risc associat</small></span></label>
+          <label><input type="checkbox" value="temperature" data-alert-preference checked><span>🌡️<b>Temperatura extrema</b><small>Calor, fred o gelada destacables</small></span></label>
+          <label class="push-pref-all"><input type="checkbox" value="all" data-alert-preference><span>🔔<b>Tots els avisos</b><small>Activa totes les categories</small></span></label>
+        </div>
+        <footer><button type="button" class="secondary" id="push-preferences-disable">Desactivar avisos</button><button type="button" class="primary" id="push-preferences-save">Desar i activar</button></footer>
+      </section>
+    </div>
 
     <div
       id="shareModal"

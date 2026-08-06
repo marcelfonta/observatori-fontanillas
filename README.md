@@ -1,4 +1,4 @@
-# Observatori Meteorològic Fontanillas — V7 · Fase 1
+# Observatori Meteorològic Fontanillas — V7 · Fase 2
 
 Refactorització d’arquitectura del projecte sense alterar intencionadament l’experiència visual ni les funcions meteorològiques actives.
 
@@ -77,7 +77,7 @@ git push
 
 ## Worker
 
-El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets i crons existents. La Fase 1 no modifica l’esquema ni els endpoints actius.
+El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets i crons existents. La Fase 2 amplia el Worker amb historial d’avisos i notificacions automàtiques. Cal desplegar `worker/index.js` i aplicar `worker/schema.sql`.
 
 ## Configuració
 
@@ -90,3 +90,16 @@ La configuració de frontend és a `src/core/config.js`. Inclou URL de l’API, 
 3. **Fase 4 — Centre de Dades:** pàgina nova amb consulta, gràfics, rècords i descàrrega CSV/Excel/JSON/PDF.
 
 Consulta `docs/ARQUITECTURA-V7.md` i `docs/ROADMAP-V7.md` per al detall.
+
+
+## V7 · Fase 2: avisos
+
+El frontend ja inclou preferències de notificacions i historial. El Worker desa episodis oficials a D1 i pot enviar notificacions automàtiques via OneSignal quan apareix un episodi nou.
+
+Per activar l’enviament real:
+1. Configura `oneSignalAppId` a `src/core/config.js`.
+2. Al Worker, afegeix `ONESIGNAL_APP_ID` i el secret `ONESIGNAL_REST_API_KEY`.
+3. Configura un Cron Trigger (recomanat: cada 10 minuts).
+4. Executa/actualitza `worker/schema.sql` al D1 perquè existeixin `alert_events` i `alert_state`.
+
+Sense aquestes credencials, la web funciona normalment però oculta el control Push per evitar missatges tècnics als visitants.
