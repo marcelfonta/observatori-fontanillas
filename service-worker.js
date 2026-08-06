@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v7-phase2-2';
+const CACHE = 'observatori-fontanillas-v7-stable-1';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
@@ -6,6 +6,7 @@ const APP_SHELL = [
   '/css/variables.css', '/css/layout.css', '/css/style.css',
   '/src/app.js', '/src/core/config.js', '/src/core/dom.js', '/src/services/weather-api.js',
   '/src/features/analytics.js', '/src/features/push.js', '/src/features/pwa.js', '/src/features/share.js',
+  '/src/features/share-page.js', '/src/features/alert-history-init.js',
   '/src/modules/alert-history.js', '/src/modules/astronomia.js', '/src/modules/avisos.js', '/src/modules/confort.js',
   '/src/modules/contacte.js', '/src/modules/estacio.js', '/src/modules/extrems.js',
   '/src/modules/grafiques.js', '/src/modules/historics.js', '/src/modules/models.js',
@@ -17,7 +18,11 @@ const APP_SHELL = [
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)));
+  event.waitUntil(
+    caches.open(CACHE)
+      .then(cache => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('message', event => {

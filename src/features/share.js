@@ -156,10 +156,3 @@ export function initShare() {
   window.closeShare = closeShare;
   return true;
 }
-
-
-function autoInitShare(){
-  try { initShare(); } catch (error) { console.warn('No s'ha pogut inicialitzar Compartir.', error); }
-}
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoInitShare, { once:true });
-else autoInitShare();
