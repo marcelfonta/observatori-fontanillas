@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "7.0.0-phase2";
+const WORKER_VERSION = "7.0.0-phase3";
 const WORKER_BUILT = "2026-08-06";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -8,6 +8,13 @@ const BACKGROUND_URL = "https://santceloni.cat/ARXIUS/agenda/2011/made_in_montse
 const DEFAULT_CONTACT_FROM = "Observatori Fontanillas <formulari@fontanillas.cat>";
 const AEMET_PRELITORAL_FEED = "https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAZ690803_RSS.xml";
 const AEMET_PRELITORAL_PAGE = "https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&w=hoy";
+const COMPARISON_STATIONS = [
+  { id: "fontanillas", name: "Fontanillas", municipality: "Sant Celoni", source: "Weather Underground", stationId: "ISANTC198", latitude: 41.6906, longitude: 2.4890 },
+  { id: "alvar", name: "Alvar · Montseny", municipality: "Sant Celoni", source: "Weather Underground", stationId: "ICATALUN213", latitude: 41.69, longitude: 2.49 },
+  { id: "santceloni-centre", name: "Sant Celoni · Centre", municipality: "Sant Celoni", source: "Weather Underground", stationId: "ICATALON13", latitude: 41.69, longitude: 2.49 },
+  { id: "palautordera", name: "Santa Maria de Palautordera", municipality: "Santa Maria de Palautordera", source: "Weather Underground", stationId: "ISANTA1397", latitude: 41.69, longitude: 2.45 },
+];
+
 const CONTACT_TOPICS = new Set([
   "Dades de l'estació",
   "Predicció i models",
@@ -321,6 +328,107 @@ async function weatherRequest(path, params, env, cacheTtl) {
     throw error;
   }
   return response.json();
+}
+
+async function weatherRequestForStation(path, stationId, params, env, cacheTtl) {
+  if (!env.WU_API_KEY) throw new Error("Falta la variable secreta WU_API_KEY");
+  const query = new URLSearchParams({
+    stationId,
+    format: "json",
+    units: "m",
+    numericPrecision: "decimal",
+    ...params,
+    apiKey: env.WU_API_KEY,
+  });
+  const response = await fetch(`https://api.weather.com${path}?${query}`, {
+    cf: { cacheEverything: true, cacheTtl },
+  });
+  if (!response.ok) throw new Error(`Weather Underground ${stationId} ha respost ${response.status}`);
+  return response.json();
+}
+
+function mapComparisonCurrent(station, obs) {
+  if (!obs?.metric) return null;
+  return {
+    id: station.id,
+    name: station.name,
+    municipality: station.municipality,
+    source: station.source,
+    stationId: station.stationId,
+    latitude: station.latitude,
+    longitude: station.longitude,
+    updated: obs.obsTimeLocal,
+    temperature: finite(obs.metric.temp),
+    humidity: finite(obs.humidity),
+    pressure: finite(obs.metric.pressure),
+    windSpeed: finite(obs.metric.windSpeed),
+    windGust: finite(obs.metric.windGust),
+    windDirection: finite(obs.winddir),
+    rainToday: finite(obs.metric.precipTotal),
+    quality: obs.qcStatus ?? null,
+  };
+}
+
+async function comparisonCurrentStation(station, env) {
+  const data = await weatherRequestForStation("/v2/pws/observations/current", station.stationId, {}, env, 180);
+  return mapComparisonCurrent(station, data.observations?.[0]);
+}
+
+function comparisonPeriodDates(period) {
+  const now = new Date();
+  if (period === "today") {
+    const local = new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit" }).format(now).replaceAll("-", "");
+    return { start: local, end: local };
+  }
+  const startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  return { start: dateKey(startDate), end: dateKey(now) };
+}
+
+async function comparisonHistoryStation(station, period, env) {
+  const dates = comparisonPeriodDates(period);
+  const params = dates.start === dates.end ? { date: dates.end } : { startDate: dates.start, endDate: dates.end };
+  const data = await weatherRequestForStation("/v2/pws/history/hourly", station.stationId, params, env, 300);
+  let items = (data.observations || []).map(obs => ({
+    time: obs.obsTimeLocal,
+    epoch: obs.epoch,
+    temperature: finite(obs.metric?.temp),
+    humidity: finite(obs.humidity),
+    pressure: finite(obs.metric?.pressure),
+    windSpeed: finite(obs.metric?.windSpeed),
+    windGust: finite(obs.metric?.windGust),
+    rainTotal: finite(obs.metric?.precipTotal),
+  }));
+  if (period === "24h") {
+    const cutoff = Date.now() / 1000 - 24 * 3600;
+    items = items.filter(item => Number(item.epoch) >= cutoff);
+  }
+  return items;
+}
+
+async function comparisonStations(url, env) {
+  const period = ["now","today","24h"].includes(url.searchParams.get("period")) ? url.searchParams.get("period") : "now";
+  const results = await Promise.all(COMPARISON_STATIONS.map(async station => {
+    try {
+      const current = await comparisonCurrentStation(station, env);
+      if (!current) throw new Error("Sense observació actual");
+      let history = [];
+      if (period !== "now") history = await comparisonHistoryStation(station, period, env);
+      return { ...current, status:"online", history };
+    } catch (error) {
+      console.warn(`Comparativa ${station.stationId}:`, error.message);
+      return { ...station, status:"offline", error:"Dades temporalment no disponibles", history:[] };
+    }
+  }));
+  return json({
+    ok:true,
+    period,
+    generatedAt:new Date().toISOString(),
+    stations:results,
+    sourcePolicy:{
+      mode:"smart-fallback",
+      note:"La capa està preparada per prioritzar fonts oficials quan hi hagi credencials i estacions equivalents; actualment usa la xarxa PWS disponible per mantenir dades homogènies i comparables."
+    }
+  }, 200, "public, max-age=120");
 }
 
 async function currentObservation(env) {
@@ -947,10 +1055,11 @@ export default {
       if (url.pathname === "/health") return health(env);
       if (url.pathname === "/alerts") return alerts(env);
       if (url.pathname === "/alert-history") return alertHistory(url, env);
+      if (url.pathname === "/stations") return comparisonStations(url, env);
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/version", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/version", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

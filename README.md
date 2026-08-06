@@ -107,3 +107,8 @@ Sense aquestes credencials, la web funciona normalment però oculta el control P
 
 ## Estat actual
 V7 · Fase 2.1: arquitectura estable, compartir unificat i centre d’avisos preparat. Per a notificacions push reals cal configurar OneSignal (App ID al frontend i REST API Key al Worker).
+
+
+## V7 · Fase 3 — Comparativa d’estacions
+
+La nova pàgina `comparativa.html` compara les principals variables de diverses estacions properes. El Worker exposa `/stations?period=now|today|24h` i normalitza les dades abans d’enviar-les al navegador. Consulta `docs/FASE3-COMPARATIVA.md`.
