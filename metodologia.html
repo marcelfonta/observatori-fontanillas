@@ -38,6 +38,7 @@
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
     </script>
   <style>
+  /* Estils específics per metodologia: espaciat i panells */
   #metodologia { padding-top: 2rem; padding-bottom: 4rem; }
   #metodologia .panel { padding: 2rem; margin-bottom: 1.5rem; }
   #metodologia .panel h3 { margin-top: 0; color: var(--accent); }
@@ -45,9 +46,18 @@
   #metodologia .panel ul { padding-left: 1.2rem; }
   #metodologia .panel li { margin-bottom: 0.4rem; line-height: 1.6; }
   #metodologia .section-heading { margin-bottom: 1.5rem; }
-  .btn-back { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--panel-bg); border: 1px solid var(--accent); color: var(--accent); border-radius: 50px; text-decoration: none; font-weight: bold; transition: all 0.2s; }
-  .btn-back:hover { background: var(--accent); color: var(--bg); }
-</style>
+
+  /* Botó tornar (capçalera de metodologia): garantir visibilitat en hover */
+  .btn-back { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--panel-bg); border: 1px solid var(--accent); color: var(--accent); border-radius: 50px; text-decoration: none; font-weight: bold; transition: all 0.2s; position: relative; z-index: 20; }
+  .btn-back:hover, .btn-back:focus { background: var(--accent); color: var(--bg); outline: none; }
+
+  /* Forçar que els enllaços del peu es mantinguin visibles i tinguin el mateix color */
+  footer.shell div a { color: var(--accent); text-decoration: none; transition: color .12s, opacity .12s; position: relative; z-index: 20; }
+  footer.shell div a:hover, footer.shell div a:focus { color: var(--accent); opacity: 0.95; text-decoration: none; }
+
+  /* Assegurem z-index del modal i botons perquè no quedin amagats per CSS extern */
+  #shareModal { z-index: 9999; }
+  </style>
 </head>
   <body>
     <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
@@ -59,7 +69,14 @@
         <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span>
       </a>
       <nav class="nav" aria-label="Navegació principal">
-        <a class="is-active" href="#ara" data-section-link="ara">Ara</a><a href="#avisos" data-section-link="avisos">Avisos</a><a href="#prediccio" data-section-link="prediccio">Predicció</a><a href="#tendencies" data-section-link="tendencies">Tendències</a><a href="#cel-nocturn" data-section-link="cel-nocturn">Cel nocturn</a><a href="#territori" data-section-link="territori">Radar</a><a href="#contacte" data-section-link="contacte">Contacte</a>
+        <!-- Canvi: els enllaços apunten a la pàgina principal amb fragment per fer-los funcionals des d'aquesta pàgina -->
+        <a class="is-active" href="/#ara" data-section-link="ara">Ara</a>
+        <a href="/#avisos" data-section-link="avisos">Avisos</a>
+        <a href="/#prediccio" data-section-link="prediccio">Predicció</a>
+        <a href="/#tendencies" data-section-link="tendencies">Tendències</a>
+        <a href="/#cel-nocturn" data-section-link="cel-nocturn">Cel nocturn</a>
+        <a href="/#territori" data-section-link="territori">Radar</a>
+        <a href="/#contacte" data-section-link="contacte">Contacte</a>
       </nav>
       <div class="live-pill"><span></span><b id="connection-label">Connectant</b><time id="header-time">--:--</time></div>
     </header>
@@ -101,39 +118,52 @@
     </section>
   </main>
     <nav class="mobile-nav" aria-label="Navegació ràpida mòbil">
-      <a class="is-active" href="#ara" data-section-link="ara"><span aria-hidden="true">●</span>Ara</a>
-      <a href="#prediccio" data-section-link="prediccio"><span aria-hidden="true">↗</span>Previsió</a>
-      <a href="#tendencies" data-section-link="tendencies"><span aria-hidden="true">⌁</span>Gràfiques</a>
-      <a href="#territori" data-section-link="territori"><span aria-hidden="true">◎</span>Radar</a>
+      <!-- Canvi: els enllaços mòbils apunten a la pàgina principal amb fragment -->
+      <a class="is-active" href="/#ara" data-section-link="ara"><span aria-hidden="true">●</span>Ara</a>
+      <a href="/#prediccio" data-section-link="prediccio"><span aria-hidden="true">↗</span>Previsió</a>
+      <a href="/#tendencies" data-section-link="tendencies"><span aria-hidden="true">⌁</span>Gràfiques</a>
+      <a href="/#territori" data-section-link="territori"><span aria-hidden="true">◎</span>Radar</a>
       <button type="button" id="mobile-more-button" aria-expanded="false" aria-controls="mobile-more-menu"><span aria-hidden="true">•••</span>Més</button>
     </nav>
     <div class="mobile-more" id="mobile-more-menu" hidden>
       <button class="mobile-more__backdrop" type="button" aria-label="Tancar el menú"></button>
       <div class="mobile-more__sheet" role="dialog" aria-modal="true" aria-label="Més seccions">
         <div class="mobile-more__head"><span><small>Índex de continguts</small><strong>Explora l’observatori</strong></span><button type="button" id="mobile-more-close" aria-label="Tancar">×</button></div>
-        <a class="mobile-alert-shortcut is-pending" id="mobile-alert-shortcut" href="#avisos" data-section-link="avisos"><span>!</span><div><b id="mobile-alert-title">Comprovant avisos</b><small id="mobile-alert-copy">Vigilància oficial</small></div><em>→</em></a>
+        <a class="mobile-alert-shortcut is-pending" id="mobile-alert-shortcut" href="/#avisos" data-section-link="avisos"><span>!</span><div><b id="mobile-alert-title">Comprovant avisos</b><small id="mobile-alert-copy">Vigilància oficial</small></div><em>→</em></a>
         <div class="mobile-view-mode" aria-label="Densitat de contingut mòbil"><span><b>Vista mòbil</b><small>Tria quanta informació vols veure</small></span><div role="group"><button class="is-active" type="button" data-mobile-view="full" aria-pressed="true">Completa</button><button type="button" data-mobile-view="essential" aria-pressed="false">Essencial</button></div></div>
         <nav class="mobile-more__links" aria-label="Índex complet de l’observatori">
-          <a href="#ara" data-section-link="ara"><span>●</span><div><b>Ara mateix</b><small>Temperatura i lectura ràpida</small></div></a>
-          <a href="#metric-card-temperature"><span>⌁</span><div><b>Valors actuals</b><small>Sensors i minigràfics</small></div></a>
-          <a href="#calculats" data-requires-full><span>Σ</span><div><b>Valors calculats</b><small>Diagnosi atmosfèrica</small></div></a>
-          <a href="#resum-dia" data-requires-full><span>↗</span><div><b>Resum i extrems</b><small>Avui, 7 dies, 30 dies i any</small></div></a>
-          <a href="#avisos" data-section-link="avisos"><span>!</span><div><b>Avisos oficials</b><small>Meteocat i AEMET</small></div></a>
-          <a href="#prediccio" data-section-link="prediccio"><span>☁</span><div><b>Previsió</b><small>48 hores i 7 dies</small></div></a>
-          <a href="#fonts" data-requires-full><span>5</span><div><b>Fonts contrastades</b><small>Cinc serveis meteorològics</small></div></a>
-          <a href="#models" data-requires-full><span>≋</span><div><b>Models</b><small>ECMWF, GFS i ICON</small></div></a>
-          <a href="#tendencies" data-section-link="tendencies" data-requires-full><span>⌁</span><div><b>Evolució</b><small>Gràfiques i històrics</small></div></a>
-          <a href="#cel-nocturn" data-section-link="cel-nocturn" data-requires-full><span>◐</span><div><b>Cel i astronomia</b><small>Sol, Lluna i nit</small></div></a>
-          <a href="#territori" data-section-link="territori"><span>◎</span><div><b>Webcam i radar</b><small>Observació del territori</small></div></a>
-          <a href="#qualitat" data-requires-full><span>✓</span><div><b>Qualitat de les dades</b><small>Estació, API i arxiu D1</small></div></a>
-          <a href="#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
+          <a href="/#ara" data-section-link="ara"><span>●</span><div><b>Ara mateix</b><small>Temperatura i lectura ràpida</small></div></a>
+          <a href="/#metric-card-temperature"><span>⌁</span><div><b>Valors actuals</b><small>Sensors i minigràfics</small></div></a>
+          <a href="/#calculats" data-requires-full><span>Σ</span><div><b>Valors calculats</b><small>Diagnosi atmosfèrica</small></div></a>
+          <a href="/#resum-dia" data-requires-full><span>↗</span><div><b>Resum i extrems</b><small>Avui, 7 dies, 30 dies i any</small></div></a>
+          <a href="/#avisos" data-section-link="avisos"><span>!</span><div><b>Avisos oficials</b><small>Meteocat i AEMET</small></div></a>
+          <a href="/#prediccio" data-section-link="prediccio"><span>☁</span><div><b>Previsió</b><small>48 hores i 7 dies</small></div></a>
+          <a href="/#fonts" data-requires-full><span>5</span><div><b>Fonts contrastades</b><small>Cinc serveis meteorològics</small></div></a>
+          <a href="/#models" data-requires-full><span>≋</span><div><b>Models</b><small>ECMWF, GFS i ICON</small></div></a>
+          <a href="/#tendencies" data-section-link="tendencies" data-requires-full><span>⌁</span><div><b>Evolució</b><small>Gràfiques i històrics</small></div></a>
+          <a href="/#cel-nocturn" data-section-link="cel-nocturn" data-requires-full><span>◐</span><div><b>Cel i astronomia</b><small>Sol, Lluna i nit</small></div></a>
+          <a href="/#territori" data-section-link="territori"><span>◎</span><div><b>Webcam i radar</b><small>Observació del territori</small></div></a>
+          <a href="/#qualitat" data-requires-full><span>✓</span><div><b>Qualitat de les dades</b><small>Estació, API i arxiu D1</small></div></a>
+          <a href="/#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
         </nav>
       </div>
     </div>
-    <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V5.6.2</small><div><a href="metodologia.html">Metodologia</a><a href="#contacte">Contacte</a><a href="#top">Tornar amunt ↑</a><a href="javascript:void(0);" onclick="openShare(); return false;">Compartir</a></div></footer>
+    <footer class="shell">
+      <span>Observatori Meteorològic Fontanillas</span>
+      <small>Dades locals · Sant Celoni, Montseny · V5.6.2</small>
+      <div>
+        <a href="metodologia.html">Metodologia</a>
+        <a href="/#contacte">Contacte</a>
+        <!-- El "Tornar amunt" ara apunta a l'arrel i té estils forçats per no desaparèixer -->
+        <a href="/" id="footer-top-link">Tornar amunt ↑</a>
+
+        <!-- Canvi: ara és un enllaç per heretar estils i identifcat per obrir el modal -->
+        <a id="share-btn" href="https://meteo.fontanillas.cat/" role="button" aria-haspopup="dialog" aria-controls="shareModal" title="Compartir l'Observatori">Compartir</a>
+      </div>
+    </footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
-  
-<div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
+
+<div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
   <div style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true">
     <h3 style="margin:0 0 16px;font-size:1.1rem;color:var(--text);">Compartir l'Observatori</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -157,12 +187,12 @@ var SHARE_TEXT = "Consulta les dades meteorològiques en temps real de l'Observa
 
 function openShare() {
     var m = document.getElementById('shareModal');
-    if (m) { m.style.display = 'flex'; }
+    if (m) { m.style.display = 'flex'; m.hidden = false; }
 }
 
 function closeShare() {
     var m = document.getElementById('shareModal');
-    if (m) { m.style.display = 'none'; }
+    if (m) { m.style.display = 'none'; m.hidden = true; }
 }
 
 function handleNativeShare(altLabel) {
@@ -231,6 +261,31 @@ function doShare(type) {
             break;
     }
 }
+
+/* Interceptem el clic de l'enllaç Compartir perquè obri el modal (i deixem Ctrl/Cmd / middle-click per defecte) */
+document.addEventListener('DOMContentLoaded', function () {
+  var shareAnchor = document.getElementById('share-btn');
+  if (shareAnchor) {
+    shareAnchor.addEventListener('click', function (e) {
+      if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return; // permetre obrir en nova pestanya amb modificadors
+      e.preventDefault();
+      openShare();
+    });
+  }
+
+  /* Assegurar visibilitat i comportament del "Tornar a l'inici" del peu si cal (fallback) */
+  var footerTop = document.getElementById('footer-top-link');
+  if (footerTop) {
+    footerTop.addEventListener('mouseover', function () {
+      this.style.visibility = 'visible';
+      this.style.opacity = '1';
+    });
+    footerTop.addEventListener('focus', function () {
+      this.style.visibility = 'visible';
+      this.style.opacity = '1';
+    });
+  }
+});
 </script>
 
 </body>
