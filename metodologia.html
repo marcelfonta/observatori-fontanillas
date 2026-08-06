@@ -47,23 +47,42 @@
   #metodologia .panel li { margin-bottom: 0.4rem; line-height: 1.6; }
   #metodologia .section-heading { margin-bottom: 1.5rem; }
 
-  /* Botó tornar (capçalera de metodologia): garantir visibilitat en hover */
+  /* Botó tornar (capçalera de metodologia): garantir visibilitat en hover; color blanc */
   .btn-back { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--panel-bg); border: 1px solid var(--accent); color: var(--accent); border-radius: 50px; text-decoration: none; font-weight: bold; transition: all 0.2s; position: relative; z-index: 20; }
-/* reemplaçar l'anterior .btn-back:hover */
-.btn-back:hover,
-.btn-back:focus {
-  background: var(--accent);
-  color: var(--text); /* manté el text en blanc a l'hover */
-  outline: none;
-}
-
+  .btn-back:hover,
+  .btn-back:focus {
+    background: var(--accent);
+    color: var(--text); /* manté el text en blanc a l'hover */
+    outline: none;
+  }
 
   /* Forçar que els enllaços del peu es mantinguin visibles i tinguin el mateix color */
   footer.shell div a { color: var(--accent); text-decoration: none; transition: color .12s, opacity .12s; position: relative; z-index: 20; }
   footer.shell div a:hover, footer.shell div a:focus { color: var(--accent); opacity: 0.95; text-decoration: none; }
 
-  /* Assegurem z-index del modal i botons perquè no quedin amagats per CSS extern */
+  /* Estils del modal: assegurar que tots els botons siguin visibles i responsius */
   #shareModal { z-index: 9999; }
+  #shareModal .modal-inner { max-height: 72vh; overflow:auto; }
+  #shareModal .share-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
+  #shareModal .share-grid button {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    cursor:pointer;
+    font-size:.95rem;
+    justify-content:flex-start;
+    width:100%;
+    text-align:left;
+  }
+  #shareModal .share-grid button span.icon { font-size:1.25rem; width:28px; display:inline-block; text-align:center; }
+
+  /* Botó tancar del modal */
+  #shareModal .close-btn { margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer; }
   </style>
 </head>
   <body>
@@ -76,7 +95,6 @@
         <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span>
       </a>
       <nav class="nav" aria-label="Navegació principal">
-        <!-- Canvi: els enllaços apunten a la pàgina principal amb fragment per fer-los funcionals des d'aquesta pàgina -->
         <a class="is-active" href="/#ara" data-section-link="ara">Ara</a>
         <a href="/#avisos" data-section-link="avisos">Avisos</a>
         <a href="/#prediccio" data-section-link="prediccio">Predicció</a>
@@ -125,7 +143,6 @@
     </section>
   </main>
     <nav class="mobile-nav" aria-label="Navegació ràpida mòbil">
-      <!-- Canvi: els enllaços mòbils apunten a la pàgina principal amb fragment -->
       <a class="is-active" href="/#ara" data-section-link="ara"><span aria-hidden="true">●</span>Ara</a>
       <a href="/#prediccio" data-section-link="prediccio"><span aria-hidden="true">↗</span>Previsió</a>
       <a href="/#tendencies" data-section-link="tendencies"><span aria-hidden="true">⌁</span>Gràfiques</a>
@@ -161,29 +178,28 @@
       <div>
         <a href="metodologia.html">Metodologia</a>
         <a href="/#contacte">Contacte</a>
-        <!-- El "Tornar amunt" ara apunta a l'arrel i té estils forçats per no desaparèixer -->
         <a href="/" id="footer-top-link">Tornar amunt ↑</a>
-
-        <!-- Canvi: ara és un enllaç per heretar estils i identifcat per obrir el modal -->
         <a id="share-btn" href="https://meteo.fontanillas.cat/" role="button" aria-haspopup="dialog" aria-controls="shareModal" title="Compartir l'Observatori">Compartir</a>
       </div>
     </footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
 
+<!-- Modal: compartició -->
 <div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
-  <div style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true">
+  <div class="modal-inner" style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(420px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true">
     <h3 style="margin:0 0 16px;font-size:1.1rem;color:var(--text);">Compartir l'Observatori</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <button onclick="doShare('copy')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📋 Copiar</button>
-      <button onclick="doShare('whatsapp')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📱 WhatsApp</button>
-      <button onclick="doShare('x')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🗣 X</button>
-      <button onclick="doShare('facebook')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📢 Facebook</button>
-      <button onclick="doShare('email')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">✉️ Correu</button>
-      <button onclick="doShare('instagram')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📸 Instagram</button>
-      <button onclick="doShare('tiktok')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🎵 TikTok</button>
-      <button onclick="doShare('native')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🔗 Altres apps</button>
+    <div class="share-grid" role="group" aria-label="Opcions per compartir">
+      <button onclick="doShare('copy')"><span class="icon">📋</span> Copiar</button>
+      <button onclick="doShare('whatsapp')"><span class="icon">📱</span> WhatsApp</button>
+      <button onclick="doShare('x')"><span class="icon">🗣</span> X</button>
+      <button onclick="doShare('facebook')"><span class="icon">📢</span> Facebook</button>
+      <button onclick="doShare('email')"><span class="icon">✉️</span> Correu</button>
+      <button onclick="doShare('native')"><span class="icon">🔗</span> Altres apps</button>
+      <!-- Aquests dos són els que volies explícitament visibles -->
+      <button onclick="doShare('instagram')"><span class="icon">📸</span> Instagram</button>
+      <button onclick="doShare('tiktok')"><span class="icon">🎵</span> TikTok</button>
     </div>
-    <button onclick="closeShare()" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer;">Tancar</button>
+    <button class="close-btn" onclick="closeShare()">Tancar</button>
   </div>
 </div>
 
@@ -210,9 +226,9 @@ function handleNativeShare(altLabel) {
             url: SHARE_URL
         }).catch(function() {});
         closeShare();
-    } else {
-        copyText(SHARE_URL, "Enllaç copiat. Obre " + altLabel + " i enganxa'l.");
+        return true;
     }
+    return false;
 }
 
 function copyText(txt, msg) {
@@ -258,10 +274,16 @@ function doShare(type) {
             closeShare();
             break;
         case 'instagram':
-            handleNativeShare("Instagram");
+            // Instagram no té un share-url públic similar; intentem el share natiu i, si no, copiem l'enllaç
+            if (!handleNativeShare("Instagram")) {
+                copyText(SHARE_URL, "Instagram no permet compartir directament des del navegador. Enllaç copiat per enganxar a Instagram.");
+            }
             break;
         case 'tiktok':
-            handleNativeShare("TikTok");
+            // Igual: intentem el share natiu; fallback a còpia
+            if (!handleNativeShare("TikTok")) {
+                copyText(SHARE_URL, "TikTok no permet compartir directament des del navegador. Enllaç copiat per enganxar a TikTok.");
+            }
             break;
         case 'native':
             handleNativeShare("l'app que vulguis");
@@ -269,18 +291,17 @@ function doShare(type) {
     }
 }
 
-/* Interceptem el clic de l'enllaç Compartir perquè obri el modal (i deixem Ctrl/Cmd / middle-click per defecte) */
+/* Interceptem el clic de l'enllaç Compartir perquè obri el modal */
 document.addEventListener('DOMContentLoaded', function () {
   var shareAnchor = document.getElementById('share-btn');
   if (shareAnchor) {
     shareAnchor.addEventListener('click', function (e) {
-      if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return; // permetre obrir en nova pestanya amb modificadors
+      if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
       openShare();
     });
   }
 
-  /* Assegurar visibilitat i comportament del "Tornar a l'inici" del peu si cal (fallback) */
   var footerTop = document.getElementById('footer-top-link');
   if (footerTop) {
     footerTop.addEventListener('mouseover', function () {
