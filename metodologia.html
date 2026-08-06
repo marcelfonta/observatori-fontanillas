@@ -7,8 +7,8 @@
     <meta name="color-scheme" content="dark" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="description" content="Dades meteorològiques en directe des de Sant Celoni, als peus del Montseny." />
-    <title>Observatori Fontanillas · Sant Celoni</title>
-    <link rel="canonical" href="https://meteo.fontanillas.cat/" />
+    <title>Metodologia · Observatori Fontanillas</title>
+    <link rel="canonical" href="https://meteo.fontanillas.cat/metodologia.html" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ca_ES" />
     <meta property="og:site_name" content="Observatori Meteorològic Fontanillas" />
@@ -29,9 +29,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/variables.css?v=5.6" />
-    <link rel="stylesheet" href="css/layout.css?v=5.6" />
-    <link rel="stylesheet" href="css/style.css?v=5.6" />
+    <link rel="stylesheet" href="css/variables.css?v=6.0" />
+    <link rel="stylesheet" href="css/layout.css?v=6.0" />
+    <link rel="stylesheet" href="css/style.css?v=6.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="module" src="js/app.js?v=5.6"></script>
     <script type="application/ld+json">
@@ -67,6 +67,11 @@
   </style>
 </head>
   <body>
+  <div id="app-update-banner" class="app-update-banner" hidden role="status" aria-live="polite">
+    <span><b>Nova versió disponible</b><small>Actualitza l’Observatori per carregar els darrers canvis.</small></span>
+    <button type="button" id="app-update-button">Actualitzar ara</button>
+    <button type="button" id="app-update-dismiss" aria-label="Tancar avís d’actualització">×</button>
+  </div>
     <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
     <a class="skip-link" href="#ara">Saltar al contingut principal</a>
     <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
@@ -157,7 +162,7 @@
     </div>
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V5.6.4</small>
+      <small>Dades locals · Sant Celoni, Montseny · V6.0</small>
       <div>
         <a href="metodologia.html">Metodologia</a>
         <a href="/#contacte">Contacte</a>
@@ -186,7 +191,9 @@
     <button type="button" id="share-close" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer;">Tancar</button>
   </div>
 </div>
-<script src="js/share.js?v=5.6.4" defer></script>
+<script type="module" src="js/analytics.js?v=6.0"></script>
+<script type="module" src="js/pwa.js?v=6.0"></script>
+<script src="js/share.js?v=6.0" defer></script>
 
 </body>
 </html>

@@ -125,11 +125,20 @@ setInterval(load,CONFIG.refreshMs);
 setInterval(loadQuality,CONFIG.refreshMs);
 setInterval(loadAlerts,CONFIG.alertsRefreshMs);
 setInterval(loadForecastSuite,CONFIG.forecastRefreshMs);
+async function refreshAfterResume(force=false){
+  const now=Date.now();
+  const minAge=CONFIG.foregroundRefreshMinMs || 30000;
+  if(force || now-currentFetchedAt>minAge) await load();
+  if(force || now-qualityFetchedAt>CONFIG.refreshMs) loadQuality();
+  if(force || now-alertsFetchedAt>CONFIG.alertsRefreshMs) loadAlerts();
+  if(force || now-forecastFetchedAt>CONFIG.forecastRefreshMs) loadForecastSuite();
+}
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden)return;
-  if(Date.now()-currentFetchedAt>CONFIG.refreshMs)load();
-  if(Date.now()-qualityFetchedAt>CONFIG.refreshMs)loadQuality();
-  if(Date.now()-alertsFetchedAt>CONFIG.alertsRefreshMs)loadAlerts();
-  if(Date.now()-forecastFetchedAt>CONFIG.forecastRefreshMs)loadForecastSuite();
+  if(!document.hidden) refreshAfterResume(false);
 });
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(error=>console.warn('Mode instal·lable no disponible.',error)));}
+window.addEventListener('pageshow',event=>{
+  // Especialment important en PWA/iPhone, que pot restaurar una vista congelada des de memòria.
+  refreshAfterResume(Boolean(event.persisted));
+});
+window.addEventListener('focus',()=>refreshAfterResume(false));
+

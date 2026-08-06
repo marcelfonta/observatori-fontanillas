@@ -1,7 +1,7 @@
 (() => {
   "use strict";
-  const SHARE_URL = "https://meteo.fontanillas.cat/";
-  const SHARE_TITLE = "Observatori Meteorològic Fontanillas";
+  const SHARE_URL = window.location.href.split("#")[0];
+  const SHARE_TITLE = document.title || "Observatori Meteorològic Fontanillas";
   const SHARE_TEXT = "Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny):";
   const $ = (selector) => document.querySelector(selector);
 

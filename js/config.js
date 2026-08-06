@@ -6,5 +6,8 @@ export const CONFIG = {
   historyCacheMs: 30 * 60 * 1000,
   locale: 'ca-ES',
   station: { latitude: 41.6906, longitude: 2.489, elevation: null },
-  fallbackWebcam: 'https://www.alvar.cat/WebCam/Imatge-Camera.jpg'
+  fallbackWebcam: 'https://www.alvar.cat/WebCam/Imatge-Camera.jpg',
+  analyticsMeasurementId: '', // Ex.: G-XXXXXXXXXX
+  oneSignalAppId: '', // Ex.: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  foregroundRefreshMinMs: 30 * 1000
 };
