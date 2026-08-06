@@ -17,6 +17,7 @@ import { initNavigation, initWhenVisible } from './modules/navigation.js';
 import { renderDataQuality, renderDataQualityUnavailable } from './modules/qualitat.js';
 import { renderAlerts, renderAlertsUnavailable } from './modules/avisos.js';
 import { updateSituation } from './modules/situacio.js';
+import { initShare } from './features/share.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -112,6 +113,7 @@ initWebcam();
 initContact();
 initForecastControls();
 initExtremeControls();
+initShare();
 document.addEventListener('observatori:alerts-updated',event=>updateSituation({alerts:event.detail}));
 initWhenVisible('.model-viewer',initModelViewer);
 initWhenVisible('#territori',initRadar,'700px 0px');

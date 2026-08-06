@@ -10,6 +10,9 @@
 /js/*
   Cache-Control: no-cache, must-revalidate
 
+/src/*
+  Cache-Control: no-cache, must-revalidate
+
 /modules/*
   Cache-Control: no-cache, must-revalidate
 
