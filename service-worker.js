@@ -1,11 +1,11 @@
-const CACHE = 'observatori-fontanillas-v5.6.0';
+const CACHE = 'observatori-fontanillas-v5.6.4';
 const API_CACHE = 'fontanilles-api-v1';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const API_TTL_MS = 30 * 60 * 1000; // 30 minuts
 const APP_SHELL = [
   '/', '/index.html', '/site.webmanifest',
   '/css/variables.css', '/css/layout.css', '/css/style.css',
-  '/js/api.js', '/js/app.js', '/js/config.js', '/js/utils.js',
+  '/js/api.js', '/js/app.js', '/js/config.js', '/js/utils.js', '/js/share.js',
   '/modules/astronomia.js', '/modules/avisos.js', '/modules/confort.js',
   '/modules/contacte.js', '/modules/estacio.js', '/modules/extrems.js',
   '/modules/grafiques.js', '/modules/historics.js', '/modules/models.js',

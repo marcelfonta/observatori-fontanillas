@@ -144,7 +144,7 @@
         <div class="alerts-hub panel">
           <div class="alerts-layout">
           <article class="alerts-map" aria-labelledby="alerts-map-title">
-            <header><div><span id="alerts-map-title">Mapa de perill a Catalunya</span><small>Situacions Meteorològiques de Perill vigents</small></div><a href="https://www.meteo.cat/prediccio/perill" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></header>
+            <header><div><span id="alerts-map-title">Mapa de perill a Catalunya</span><small>Situacions Meteorològiques de Perill vigents</small></div><a href="https://www.meteo.cat/prediccio/general/" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></header>
             <div class="alerts-map__frame">
               <iframe src="https://static-m.meteo.cat/ginys/mapaAvisos?language=ca&amp;color=2c3e50&amp;target=_blank" title="Mapa oficial d’avisos meteorològics de Meteocat" frameborder="0" scrolling="no" width="297" height="525" loading="lazy"></iframe>
             </div>
@@ -154,7 +154,7 @@
             <div><p class="eyebrow">Lectura automàtica de proximitat</p><h3 id="alerts-local-title">Comprovant avisos oficials</h3><p class="alerts-local__intro" id="alerts-local-copy">Consultant el canal oficial d’AEMET per al Prelitoral de Barcelona.</p><span class="alert-official-badge" id="alerts-local-status">Connectant</span></div>
             <div class="official-alert-list" id="official-alert-list"><div class="official-alert-empty">Esperant la resposta del servei oficial…</div></div>
             <div class="alert-areas">
-              <a href="https://www.meteo.cat/prediccio/perill" target="_blank" rel="noreferrer"><span>Meteocat · comarca</span><strong>Vallès Oriental</strong><small>Perill per intervals de 6 hores ↗</small></a>
+              <a href="https://www.meteo.cat/prediccio/general/" target="_blank" rel="noreferrer"><span>Meteocat · comarca</span><strong>Vallès Oriental</strong><small>Perill per intervals de 6 hores ↗</small></a>
               <a href="https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&amp;w=hoy" target="_blank" rel="noreferrer"><span>AEMET · zona</span><strong>Prelitoral de Barcelona</strong><small>Avisos oficials d’avui ↗</small></a>
             </div>
             <div class="alert-scale" aria-label="Escala de perill de Meteocat">
@@ -315,9 +315,9 @@
         </article>
         <article class="radar-card panel">
           <header><div><p class="eyebrow">Radar meteorològic</p><h2>Animació + Meteocat</h2><div class="radar-sources"><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Radar oficial Meteocat ↗</a><a href="https://www.aemet.es/es/eltiempo/observacion/radar?p=GLD" target="_blank" rel="noreferrer">AEMET Barcelona–Gelida ↗</a></div></div><span class="tag" id="radar-status">Carregant animació</span></header>
-          <div class="radar-mode-tabs" role="tablist" aria-label="Tipus de radar"><button class="is-active" id="radar-tab-interactive" type="button" role="tab" aria-selected="true" aria-controls="radar-panel-interactive" tabindex="0" data-radar-mode="interactive">Animació interactiva</button><button id="radar-tab-meteocat" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-meteocat" tabindex="-1" data-radar-mode="meteocat">Meteocat oficial</button></div>
+          <div class="radar-mode-tabs" role="tablist" aria-label="Tipus de radar"><button class="is-active" id="radar-tab-interactive" type="button" role="tab" aria-selected="true" aria-controls="radar-panel-interactive" tabindex="0" data-radar-mode="interactive">Animació interactiva</button><button id="radar-tab-meteocat" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-meteocat" tabindex="-1" data-radar-mode="meteocat">Meteocat oficial</button><button id="radar-tab-lightning" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-lightning" tabindex="-1" data-radar-mode="lightning">Mapa de llamps</button></div>
           <div class="radar-panel is-active" id="radar-panel-interactive" role="tabpanel" aria-labelledby="radar-tab-interactive" tabindex="0" data-radar-panel="interactive"><div class="radar-frame"><div id="radar-map" aria-label="Mapa interactiu del radar de precipitació"></div><div class="radar-loader" id="radar-loader">Carregant les imatges del radar…</div></div><div class="radar-timeline"><button type="button" id="radar-play" aria-label="Reproduir animació del radar">▶</button><input id="radar-slider" type="range" min="0" max="0" value="0" aria-label="Seleccionar hora del radar" /><time id="radar-time">—</time></div><div class="radar-actions"><p>Arrossega i amplia el mapa. La línia temporal recorre les imatges reals disponibles de les últimes dues hores.</p><a href="https://www.rainviewer.com/" target="_blank" rel="noreferrer">Capa temporal: RainViewer ↗</a></div></div>
-          <div class="radar-panel" id="radar-panel-meteocat" role="tabpanel" aria-labelledby="radar-tab-meteocat" tabindex="0" hidden data-radar-panel="meteocat"><div class="radar-meteocat"><iframe title="Última imatge oficial del radar de Meteocat" data-src="https://static-m.meteo.cat/ginys/mapaRadar?language=ca&amp;color=0f2a22&amp;target=_blank" loading="lazy"></iframe></div><div class="radar-actions"><p>Imatge oficial de la Xarxa de Radars Meteorològics de Catalunya. Permet ampliar el mapa i obrir l’animació de la darrera hora a Meteocat.</p><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Obrir l’animació i la previsió +1 h →</a></div></div>
+          <div class="radar-panel" id="radar-panel-meteocat" role="tabpanel" aria-labelledby="radar-tab-meteocat" tabindex="0" hidden data-radar-panel="meteocat"><div class="radar-meteocat"><iframe title="Última imatge oficial del radar de Meteocat" data-src="https://static-m.meteo.cat/ginys/mapaRadar?language=ca&amp;color=0f2a22&amp;target=_blank" loading="lazy"></iframe></div><div class="radar-actions"><p>Imatge oficial de la Xarxa de Radars Meteorològics de Catalunya. Permet ampliar el mapa i obrir l’animació de la darrera hora a Meteocat.</p><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Obrir l’animació i la previsió +1 h →</a></div></div><div class="radar-panel" id="radar-panel-lightning" role="tabpanel" aria-labelledby="radar-tab-lightning" tabindex="0" hidden data-radar-panel="lightning"><div class="radar-meteocat"><iframe title="Mapa de llamps en temps gairebé real sobre Catalunya" data-src="https://www.lightningmaps.org/?lang=ca#m=oss;t=3;s=0;o=0;b=;ts=0;y=41.6906;x=2.489;z=7;" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div><div class="radar-actions"><p>Seguiment de descàrregues elèctriques sobre Catalunya. Si el visor no es pot incrustar al teu navegador, obre directament el mapa o consulta el producte oficial de Meteocat.</p><div class="radar-sources"><a href="https://www.lightningmaps.org/?lang=ca#m=oss;t=3;s=0;o=0;b=;ts=0;y=41.6906;x=2.489;z=7;" target="_blank" rel="noreferrer">Obrir LightningMaps ↗</a><a href="https://www.meteo.cat/observacions/radarLlamps" target="_blank" rel="noreferrer">Radar + llamps Meteocat ↗</a><a href="https://www.meteo.cat/observacions/llamps" target="_blank" rel="noreferrer">Llamps Meteocat ↗</a></div></div></div>
         </article>
       </section>
       <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
@@ -419,12 +419,12 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V5.6.3</small>
+      <small>Dades locals · Sant Celoni, Montseny · V5.6.4</small>
       <div>
         <a href="metodologia.html">Metodologia</a>
         <a href="#contacte">Contacte</a>
         <a href="#top">Tornar amunt ↑</a>
-        <a href="#" id="share-btn" role="button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</a>
+        <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>
       </div>
     </footer>
 
@@ -449,6 +449,8 @@
           <button type="button" data-share="x" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🗣 X</button>
           <button type="button" data-share="facebook" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📢 Facebook</button>
           <button type="button" data-share="email" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">✉️ Correu</button>
+          <button type="button" data-share="instagram" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📸 Instagram</button>
+          <button type="button" data-share="tiktok" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🎵 TikTok</button>
           <button type="button" data-share="native" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🔗 Altres apps</button>
         </div>
 
@@ -458,6 +460,6 @@
       </div>
     </div>
 
-    <script src="js/share.js?v=5.6.3" defer></script>
+    <script src="js/share.js?v=5.6.4" defer></script>
   </body>
 </html>

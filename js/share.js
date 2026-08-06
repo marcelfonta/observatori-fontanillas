@@ -55,6 +55,40 @@
       else window.location.href = url;
     }
 
+    async function shareToSocialApp(appName, webUrl) {
+      // Instagram i TikTok no ofereixen un URL web universal per compartir una pàgina.
+      // En mòbil, fem servir el menú nadiu perquè l'usuari pugui triar l'app.
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url: SHARE_URL });
+          closeShare();
+          return;
+        } catch (error) {
+          if (error && error.name === "AbortError") return;
+        }
+      }
+
+      // En escriptori copiem l'enllaç i obrim la xarxa perquè es pugui enganxar.
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(SHARE_URL);
+        } else {
+          const textarea = document.createElement("textarea");
+          textarea.value = SHARE_URL;
+          textarea.setAttribute("readonly", "");
+          textarea.style.position = "fixed";
+          textarea.style.left = "-9999px";
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand("copy");
+          textarea.remove();
+        }
+      } catch (_) {}
+      alert(`Enllaç copiat. Obre ${appName} i enganxa'l on el vulguis compartir.`);
+      openExternal(webUrl);
+      closeShare();
+    }
+
     async function nativeShare() {
       if (navigator.share) {
         try {
@@ -99,6 +133,12 @@
           case "email":
             window.location.href = `mailto:?subject=${encodeURIComponent(SHARE_TITLE)}&body=${encodeURIComponent(`${SHARE_TEXT} ${SHARE_URL}`)}`;
             closeShare();
+            break;
+          case "instagram":
+            await shareToSocialApp("Instagram", "https://www.instagram.com/");
+            break;
+          case "tiktok":
+            await shareToSocialApp("TikTok", "https://www.tiktok.com/");
             break;
           case "native":
             await nativeShare();

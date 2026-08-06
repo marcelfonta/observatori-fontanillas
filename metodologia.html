@@ -59,8 +59,8 @@
 
 
   /* Forçar que els enllaços del peu es mantinguin visibles i tinguin el mateix color */
-  footer.shell div a { color: var(--accent); text-decoration: none; transition: color .12s, opacity .12s; position: relative; z-index: 20; }
-  footer.shell div a:hover, footer.shell div a:focus { color: var(--accent); opacity: 0.95; text-decoration: none; }
+  footer.shell div a, footer.shell div .footer-link-button { color: var(--green); text-decoration: none; transition: color .12s, opacity .12s; position: relative; z-index: 20; }
+  footer.shell div a:hover, footer.shell div a:focus, footer.shell div .footer-link-button:hover, footer.shell div .footer-link-button:focus { color: var(--green); opacity: 0.95; text-decoration: none; }
 
   /* Assegurem z-index del modal i botons perquè no quedin amagats per CSS extern */
   #shareModal { z-index: 9999; }
@@ -157,143 +157,36 @@
     </div>
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V5.6.2</small>
+      <small>Dades locals · Sant Celoni, Montseny · V5.6.4</small>
       <div>
         <a href="metodologia.html">Metodologia</a>
         <a href="/#contacte">Contacte</a>
         <!-- El "Tornar amunt" ara apunta a l'arrel i té estils forçats per no desaparèixer -->
-        <a href="/" id="footer-top-link">Tornar amunt ↑</a>
+        <a href="#top" id="footer-top-link">Tornar amunt ↑</a>
 
         <!-- Canvi: ara és un enllaç per heretar estils i identifcat per obrir el modal -->
-        <a id="share-btn" href="https://meteo.fontanillas.cat/" role="button" aria-haspopup="dialog" aria-controls="shareModal" title="Compartir l'Observatori">Compartir</a>
+        <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal" title="Compartir l'Observatori">Compartir</button>
       </div>
     </footer>
     <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
 
-<div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;" onclick="if(event.target===this)closeShare()">
-  <div style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true">
-    <h3 style="margin:0 0 16px;font-size:1.1rem;color:var(--text);">Compartir l'Observatori</h3>
+<div id="shareModal" hidden style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true" aria-labelledby="share-title">
+    <h3 id="share-title" style="margin:0 0 16px;font-size:1.1rem;color:var(--text);">Compartir l'Observatori</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <button onclick="doShare('copy')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📋 Copiar</button>
-      <button onclick="doShare('whatsapp')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📱 WhatsApp</button>
-      <button onclick="doShare('x')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🗣 X</button>
-      <button onclick="doShare('facebook')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📢 Facebook</button>
-      <button onclick="doShare('email')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">✉️ Correu</button>
-      <button onclick="doShare('instagram')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📸 Instagram</button>
-      <button onclick="doShare('tiktok')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🎵 TikTok</button>
-      <button onclick="doShare('native')" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🔗 Altres apps</button>
+      <button type="button" data-share="copy" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📋 Copiar</button>
+      <button type="button" data-share="whatsapp" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📱 WhatsApp</button>
+      <button type="button" data-share="x" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🗣 X</button>
+      <button type="button" data-share="facebook" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📢 Facebook</button>
+      <button type="button" data-share="email" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">✉️ Correu</button>
+      <button type="button" data-share="instagram" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📸 Instagram</button>
+      <button type="button" data-share="tiktok" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🎵 TikTok</button>
+      <button type="button" data-share="native" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🔗 Altres apps</button>
     </div>
-    <button onclick="closeShare()" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer;">Tancar</button>
+    <button type="button" id="share-close" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer;">Tancar</button>
   </div>
 </div>
-
-<script>
-/* Configuració global de compartició */
-var SHARE_URL = "https://meteo.fontanillas.cat/";
-var SHARE_TEXT = "Consulta les dades meteorològiques en temps real de l'Observatori Fontanillas (Sant Celoni, Montseny):";
-
-function openShare() {
-    var m = document.getElementById('shareModal');
-    if (m) { m.style.display = 'flex'; m.hidden = false; }
-}
-
-function closeShare() {
-    var m = document.getElementById('shareModal');
-    if (m) { m.style.display = 'none'; m.hidden = true; }
-}
-
-function handleNativeShare(altLabel) {
-    if (navigator.share) {
-        navigator.share({
-            title: "Meteo Fontanillas",
-            text: SHARE_TEXT,
-            url: SHARE_URL
-        }).catch(function() {});
-        closeShare();
-    } else {
-        copyText(SHARE_URL, "Enllaç copiat. Obre " + altLabel + " i enganxa'l.");
-    }
-}
-
-function copyText(txt, msg) {
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(txt).then(function() {
-            alert(msg || "Enllaç copiat!");
-            closeShare();
-        });
-    } else {
-        var d = document.createElement("input");
-        d.value = txt;
-        document.body.appendChild(d);
-        d.select();
-        try { document.execCommand("copy"); } catch (e) {}
-        document.body.removeChild(d);
-        alert(msg || "Enllaç copiat!");
-        closeShare();
-    }
-}
-
-function doShare(type) {
-    var urlEnc = encodeURIComponent(SHARE_URL);
-    var textEnc = encodeURIComponent(SHARE_TEXT);
-
-    switch (type) {
-        case 'copy':
-            copyText(SHARE_URL, "Enllaç de meteo.fontanillas.cat copiat!");
-            break;
-        case 'whatsapp':
-            window.open("https://wa.me/?text=" + textEnc + "%20" + urlEnc, "_blank");
-            closeShare();
-            break;
-        case 'x':
-            window.open("https://x.com/intent/tweet?text=" + textEnc + "&url=" + urlEnc, "_blank");
-            closeShare();
-            break;
-        case 'facebook':
-            window.open("https://www.facebook.com/sharer/sharer.php?u=" + urlEnc, "_blank");
-            closeShare();
-            break;
-        case 'email':
-            window.location.href = "mailto:?subject=Observatori Fontanillas&body=" + textEnc + "%20" + urlEnc;
-            closeShare();
-            break;
-        case 'instagram':
-            handleNativeShare("Instagram");
-            break;
-        case 'tiktok':
-            handleNativeShare("TikTok");
-            break;
-        case 'native':
-            handleNativeShare("l'app que vulguis");
-            break;
-    }
-}
-
-/* Interceptem el clic de l'enllaç Compartir perquè obri el modal (i deixem Ctrl/Cmd / middle-click per defecte) */
-document.addEventListener('DOMContentLoaded', function () {
-  var shareAnchor = document.getElementById('share-btn');
-  if (shareAnchor) {
-    shareAnchor.addEventListener('click', function (e) {
-      if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return; // permetre obrir en nova pestanya amb modificadors
-      e.preventDefault();
-      openShare();
-    });
-  }
-
-  /* Assegurar visibilitat i comportament del "Tornar a l'inici" del peu si cal (fallback) */
-  var footerTop = document.getElementById('footer-top-link');
-  if (footerTop) {
-    footerTop.addEventListener('mouseover', function () {
-      this.style.visibility = 'visible';
-      this.style.opacity = '1';
-    });
-    footerTop.addEventListener('focus', function () {
-      this.style.visibility = 'visible';
-      this.style.opacity = '1';
-    });
-  }
-});
-</script>
+<script src="js/share.js?v=5.6.4" defer></script>
 
 </body>
 </html>
