@@ -1,4 +1,4 @@
-import { format, cardinal, setText, clamp, isNumber } from '../js/utils.js';
+import { format, cardinal, setText, clamp, isNumber } from '../core/dom.js';
 import { calculateThermalIndices } from './confort.js';
 
 function interpret(data) {

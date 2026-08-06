@@ -1,4 +1,4 @@
-import { setText } from '../js/utils.js';
+import { setText } from '../core/dom.js';
 
 const levelLabels = {
   red:'Avís vermell', orange:'Avís taronja', yellow:'Avís groc',

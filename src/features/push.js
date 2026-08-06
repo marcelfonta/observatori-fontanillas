@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js';
+import { CONFIG } from '../core/config.js';
 
 const appId = String(CONFIG.oneSignalAppId || '').trim();
 const button = document.getElementById('push-alert-button');
@@ -21,8 +21,8 @@ function setState(label, text, active = false) {
 
 if (button && status) {
   if (!appId) {
-    setState('Activar avisos', 'Cal afegir l’App ID de OneSignal a js/config.js');
-    button.addEventListener('click', () => alert('La web ja està preparada per a notificacions push. Falta afegir l’App ID de OneSignal a js/config.js.'));
+    setState('Activar avisos', 'Cal afegir l’App ID de OneSignal a src/core/config.js');
+    button.addEventListener('click', () => alert('La web ja està preparada per a notificacions push. Falta afegir l’App ID de OneSignal a src/core/config.js.'));
   } else {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.OneSignalDeferred.push(async function(OneSignal) {

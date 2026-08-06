@@ -1,4 +1,4 @@
-import { isNumber } from '../js/utils.js';
+import { isNumber } from '../core/dom.js';
 
 function numeric(value) { return isNumber(value) ? Number(value) : NaN; }
 

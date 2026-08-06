@@ -1,4 +1,4 @@
-import { format, setText } from '../js/utils.js';
+import { format, setText } from '../core/dom.js';
 
 const state={ current:undefined, forecast:undefined, alerts:undefined };
 

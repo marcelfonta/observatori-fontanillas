@@ -1,22 +1,22 @@
-// Observatori Meteorològic Fontanillas — app.js · v5.6.0
-import { CONFIG } from './config.js';
-import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchModelComparison, fetchStationHistory, getLastCachedObs } from './api.js';
-import { setText } from './utils.js';
-import { renderStation } from '../modules/estacio.js';
-import { renderCharts, renderMetricSparklines } from '../modules/grafiques.js';
-import { initWebcam } from '../modules/webcams.js';
-import { recordReading, normalizeRemoteHistory, summarizeRemoteHistory } from '../modules/historics.js';
-import { renderForecast, renderForecastError, renderModelComparison, renderModelError, initForecastControls } from '../modules/prediccio.js';
-import { renderSummary, renderSummaryFallback } from '../modules/resum.js';
-import { initContact } from '../modules/contacte.js';
-import { initRadar } from '../modules/radar.js';
-import { renderAstronomy } from '../modules/astronomia.js';
-import { renderExtremeArchive, initExtremeControls } from '../modules/extrems.js';
-import { initModelViewer } from '../modules/models.js';
-import { initNavigation, initWhenVisible } from '../modules/navigation.js';
-import { renderDataQuality, renderDataQualityUnavailable } from '../modules/qualitat.js';
-import { renderAlerts, renderAlertsUnavailable } from '../modules/avisos.js';
-import { updateSituation } from '../modules/situacio.js';
+// Observatori Meteorològic Fontanillas — app.js · V7 Fase 1
+import { CONFIG } from './core/config.js';
+import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchModelComparison, fetchStationHistory, getLastCachedObs } from './services/weather-api.js';
+import { setText } from './core/dom.js';
+import { renderStation } from './modules/estacio.js';
+import { renderCharts, renderMetricSparklines } from './modules/grafiques.js';
+import { initWebcam } from './modules/webcams.js';
+import { recordReading, normalizeRemoteHistory, summarizeRemoteHistory } from './modules/historics.js';
+import { renderForecast, renderForecastError, renderModelComparison, renderModelError, initForecastControls } from './modules/prediccio.js';
+import { renderSummary, renderSummaryFallback } from './modules/resum.js';
+import { initContact } from './modules/contacte.js';
+import { initRadar } from './modules/radar.js';
+import { renderAstronomy } from './modules/astronomia.js';
+import { renderExtremeArchive, initExtremeControls } from './modules/extrems.js';
+import { initModelViewer } from './modules/models.js';
+import { initNavigation, initWhenVisible } from './modules/navigation.js';
+import { renderDataQuality, renderDataQualityUnavailable } from './modules/qualitat.js';
+import { renderAlerts, renderAlertsUnavailable } from './modules/avisos.js';
+import { updateSituation } from './modules/situacio.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;

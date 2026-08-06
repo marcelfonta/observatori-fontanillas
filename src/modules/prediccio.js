@@ -1,4 +1,4 @@
-import { format, setText } from '../js/utils.js';
+import { format, setText } from '../core/dom.js';
 
 const codes = {
   0:['☀','Cel serè'],1:['🌤','Poc ennuvolat'],2:['⛅','Intervals'],3:['☁','Cobert'],

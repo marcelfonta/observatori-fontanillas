@@ -1,4 +1,4 @@
-import { CONFIG } from '../js/config.js';
+import { CONFIG } from '../core/config.js';
 
 function setStatus(message,state='') {
   const status=document.getElementById('contact-status'); if(!status) return;

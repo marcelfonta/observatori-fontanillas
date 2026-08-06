@@ -1,4 +1,4 @@
-import { clamp, format, setText } from '../js/utils.js';
+import { clamp, format, setText } from '../core/dom.js';
 
 const sensorNames = {
   temperature:'Temperatura', humidity:'Humitat', pressure:'Pressió', wind:'Vent',

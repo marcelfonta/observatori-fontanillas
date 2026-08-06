@@ -1,5 +1,5 @@
-import { CONFIG } from '../js/config.js';
-import { cardinal, clamp, format, setText } from '../js/utils.js';
+import { CONFIG } from '../core/config.js';
+import { cardinal, clamp, format, setText } from '../core/dom.js';
 
 const SYNODIC_MONTH = 29.530588853;
 const KNOWN_NEW_MOON = Date.UTC(2000, 0, 6, 18, 14);

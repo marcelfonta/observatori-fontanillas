@@ -1,4 +1,4 @@
-import { cardinal, format, setText } from '../js/utils.js';
+import { cardinal, format, setText } from '../core/dom.js';
 
 function time(item) { return item?.time ? new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit'}).format(new Date(String(item.time).replace(' ','T'))) : '—'; }
 function delta(id, value, suffix) {

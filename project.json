@@ -1,0 +1,9 @@
+{
+  "name": "observatori-fontanillas",
+  "version": "7.0.0-phase1",
+  "type": "static-pwa",
+  "entry": "index.html",
+  "frontend": "src/app.js",
+  "worker": "worker/index.js",
+  "architecture": "docs/ARQUITECTURA-V7.md"
+}

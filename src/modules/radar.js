@@ -1,5 +1,5 @@
-import { CONFIG } from '../js/config.js';
-import { setText } from '../js/utils.js';
+import { CONFIG } from '../core/config.js';
+import { setText } from '../core/dom.js';
 
 let map;
 let radarLayer;

@@ -1,4 +1,4 @@
-import { format, isNumber, setText } from '../js/utils.js';
+import { format, isNumber, setText } from '../core/dom.js';
 
 let completeHistory = [];
 let activeDays = 1;
