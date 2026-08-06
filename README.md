@@ -103,3 +103,7 @@ Per activar l’enviament real:
 4. Executa/actualitza `worker/schema.sql` al D1 perquè existeixin `alert_events` i `alert_state`.
 
 Sense aquestes credencials, la web funciona normalment però oculta el control Push per evitar missatges tècnics als visitants.
+
+
+## Estat actual
+V7 · Fase 2.1: arquitectura estable, compartir unificat i centre d’avisos preparat. Per a notificacions push reals cal configurar OneSignal (App ID al frontend i REST API Key al Worker).

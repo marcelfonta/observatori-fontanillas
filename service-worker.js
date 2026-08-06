@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v7-phase2-1';
+const CACHE = 'observatori-fontanillas-v7-phase2-2';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
@@ -6,7 +6,7 @@ const APP_SHELL = [
   '/css/variables.css', '/css/layout.css', '/css/style.css',
   '/src/app.js', '/src/core/config.js', '/src/core/dom.js', '/src/services/weather-api.js',
   '/src/features/analytics.js', '/src/features/push.js', '/src/features/pwa.js', '/src/features/share.js',
-  '/src/modules/astronomia.js', '/src/modules/avisos.js', '/src/modules/confort.js',
+  '/src/modules/alert-history.js', '/src/modules/astronomia.js', '/src/modules/avisos.js', '/src/modules/confort.js',
   '/src/modules/contacte.js', '/src/modules/estacio.js', '/src/modules/extrems.js',
   '/src/modules/grafiques.js', '/src/modules/historics.js', '/src/modules/models.js',
   '/src/modules/navigation.js', '/src/modules/prediccio.js', '/src/modules/qualitat.js',
