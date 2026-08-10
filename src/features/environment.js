@@ -4,6 +4,7 @@ const AIR_API='https://air-quality-api.open-meteo.com/v1/air-quality';
 let loaded=false;
 let stationUv=null;
 let modelUv=null;
+let modelCurrent={};
 
 function put(id,value){const node=document.getElementById(id);if(node)node.textContent=value;}
 function number(value,digits=1){const n=Number(value);return Number.isFinite(n)?new Intl.NumberFormat(CONFIG.locale,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(n):'—';}
@@ -40,9 +41,17 @@ function renderUv(){
   put('environment-uv',number(useStation?stationUv:modelUv));
   put('environment-uv-source',useStation?'Sensor Fontanillas':'Estimació CAMS');
 }
+function notifyEnvironment(current=modelCurrent){
+  document.dispatchEvent(new CustomEvent('observatori:environment-updated',{detail:{
+    european_aqi:finiteValue(current.european_aqi),pm10:finiteValue(current.pm10),pm25:finiteValue(current.pm2_5),
+    no2:finiteValue(current.nitrogen_dioxide),o3:finiteValue(current.ozone),uv:stationUv??modelUv,
+    uvSource:stationUv!==null?'Sensor Fontanillas':'Estimació CAMS',pollenMain:pollenName(current),time:current.time||new Date().toISOString()
+  }}));
+}
 export function updateEnvironmentStation(current){
   stationUv=finiteValue(current?.uv);
   renderUv();
+  if(loaded)notifyEnvironment(modelCurrent);
 }
 function pollenName(current){
   const entries=[['Gramínies',current.grass_pollen],['Olivera',current.olive_pollen],['Bedoll',current.birch_pollen],['Artemisa',current.mugwort_pollen],['Ambrosia',current.ragweed_pollen]].filter(([,v])=>Number.isFinite(Number(v)));
@@ -52,6 +61,7 @@ function pollenName(current){
 }
 function render(payload){
   const current=payload?.current||{};
+  modelCurrent=current;
   const reading=aqiReading(current.european_aqi);
   put('environment-aqi',number(current.european_aqi,0));put('environment-aqi-label',reading.label);put('environment-aqi-copy',reading.copy);
   put('environment-health-title',reading.health);put('environment-health-copy',reading.advice);
@@ -62,6 +72,7 @@ function render(payload){
   const time=current.time?new Date(current.time):new Date();
   put('environment-status-copy','Indicadors ambientals disponibles');
   put('environment-updated',`Actualitzat ${new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(time)}`);
+  notifyEnvironment(current);
 }
 
 function initEnvironmentViewers(){

@@ -43,6 +43,12 @@
   "id": "/",
   "shortcuts": [
     {
+      "name": "Pregunta a Meteo IA",
+      "short_name": "Meteo IA",
+      "url": "/?page=meteo-ia&source=pwa-shortcut",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
       "name": "Estació en directe",
       "short_name": "Estació",
       "url": "/?page=estacio&source=pwa-shortcut",

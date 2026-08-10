@@ -49,11 +49,13 @@ Segona evolució implementada a V12.1.0: guia breu d’identitat a `assets/logos
 
 Milestone completat a V12.2.0: símbol vectorial i versió horitzontal reproduïbles, favicons de 16 i 32 px, Apple Touch Icon, icones PWA normals i maskable separades, colors d’instal·lació més lluminosos, accessos ràpids a Estació/Avisos/Radar i nova targeta social de 1200 × 630 px sense dades meteorològiques inventades.
 
-## Milestone 6 — Meteo IA
+## Milestone 6 — Meteo IA — Completat
 
 - Assistent meteorològic basat en dades, no en suposicions.
 - Consultes locals i d’altres poblacions, històrics, avisos, predicció, comparador i medi ambient.
 - Recomanacions per famílies, running i excursions amb advertiments oficials quan correspongui.
+
+Implementat a V13.0.0 com un assistent conversacional determinista i traçable al navegador. Interpreta les dades de Fontanillas, la predicció Open‑Meteo, els avisos AEMET/Meteocat, l’històric, el comparador i els indicadors ambientals; també geocodifica altres poblacions quan l’usuari ho demana. Cada resposta identifica font i hora, diferencia falta de dades d’absència d’avisos i no envia ni desa la conversa. Les recomanacions per córrer, excursions i activitats familiars donen prioritat als avisos oficials.
 
 ## Milestone 7 — SEO i presència a Internet
 

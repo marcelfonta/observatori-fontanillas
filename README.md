@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V12.2.0
+# Observatori Meteorològic Fontanillas — V13.0.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V12.2 completa el Milestone 5 amb una identitat visual instal·lable, clara i més lluminosa: símbol vectorial, icones PWA normals i maskable, favicon, Apple Touch Icon i targeta social pròpia.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V13 completa el Milestone 6 amb Meteo IA: un assistent conversacional que interpreta dades reals, cita les fonts i no inventa lectures.
 
 ## Estat actual
 
@@ -12,7 +12,8 @@ Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V12.2 co
 - Centre de Dades amb resums, extrems, efemèrides i exportacions CSV, Excel, JSON i PDF.
 - Comparador amb mapa del Baix Montseny i cinc variables actuals o històriques.
 - Avisos AEMET/Meteocat, comparativa, Worker, PWA, compartir i push preservats.
-- Marca coherent en web, instal·lació i compartició, amb accessos ràpids de la PWA a Estació, Avisos i Radar.
+- Marca coherent en web, instal·lació i compartició, amb accessos ràpids de la PWA a Meteo IA, Estació, Avisos i Radar.
+- Meteo IA per consultar situació actual, predicció, avisos, històrics, comparador, medi ambient, activitats i altres poblacions.
 
 ## Estructura activa
 
@@ -21,7 +22,7 @@ Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V12.2 co
 - `css/`: sistema visual i shell del portal.
 - `src/core/` i `src/services/`: configuració, utilitats i únic accés a l’API.
 - `src/modules/`: mòduls meteorològics reutilitzables.
-- `src/features/`: portal, Centre de Dades, compartir, PWA, push i analítica.
+- `src/features/`: portal, Centre de Dades, Meteo IA, compartir, PWA, push i analítica.
 - `worker/`: Worker canònic i esquema D1, sense canvis a V9.
 
 ## Desenvolupament local
@@ -50,6 +51,6 @@ La configuració de frontend és a `src/core/config.js`. Inclou URL de l’API, 
 node tests/smoke.mjs
 ```
 
-La prova comprova navegació, selectors crítics, PWA, icones i metadades de marca, Centre de Dades, peus i absència de duplicacions de «Tornar amunt».
+La prova comprova navegació, selectors crítics, PWA, Meteo IA, icones i metadades de marca, Centre de Dades, peus i absència de duplicacions de «Tornar amunt». `node tests/meteo-ai.mjs` valida els principals tipus de resposta amb dades controlades.
 
 Consulta `PROJECT.md`, `ROADMAP.md` i `CHANGELOG.md` per a les normes, l’ordre de les fases i el detall de la versió.

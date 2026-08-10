@@ -256,6 +256,34 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .comparison-variable-chart .chart-wrap { height: 360px; margin-top: 0; }
 .comparison-variable-chart > p { margin: 14px 0 0; color: var(--muted); font-size: 10px; }
 
+.meteo-ai-section { padding-top: 18px; }
+.meteo-ai-layout { display: grid; grid-template-columns: minmax(260px,.55fr) minmax(0,1.45fr); gap: 18px; align-items: stretch; }
+.meteo-ai-guide { position: relative; overflow: hidden; padding: 30px; background: linear-gradient(155deg,rgba(40,109,85,.38),rgba(9,24,19,.96) 58%); }
+.meteo-ai-guide::after { position: absolute; width: 260px; height: 260px; right: -120px; bottom: -120px; border: 1px solid rgba(163,226,238,.15); border-radius: 50%; content: ''; box-shadow: 0 0 0 42px rgba(163,229,181,.035),0 0 0 84px rgba(163,229,181,.025); }
+.meteo-ai-orb { position: relative; display: grid; width: 72px; height: 72px; margin-bottom: 25px; place-items: center; border: 1px solid rgba(193,243,206,.75); border-radius: 23px; background: linear-gradient(145deg,#347f64,#205846); color: #f3fff7; box-shadow: 0 18px 45px rgba(10,54,40,.35); }
+.meteo-ai-orb span { font: 800 20px var(--font-display); letter-spacing: -.04em; }
+.meteo-ai-orb i { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #e6c56c; box-shadow: 0 0 10px rgba(230,197,108,.7); }
+.meteo-ai-orb i:nth-child(2) { top: 11px; right: 13px; }.meteo-ai-orb i:nth-child(3) { right: 9px; bottom: 17px; width: 3px; height: 3px; background: #a3e2ee; }.meteo-ai-orb i:nth-child(4) { left: 12px; bottom: 12px; width: 4px; height: 4px; background: #c1f3ce; }
+.meteo-ai-guide h2 { margin: 7px 0 10px; font: 750 31px/1.08 var(--font-display); }.meteo-ai-guide > p:not(.eyebrow) { margin: 0; color: var(--muted); line-height: 1.6; }
+.meteo-ai-suggestions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 24px; }
+.meteo-ai-suggestions button,.meteo-ai-followups button { min-height: 41px; padding: 9px 11px; border: 1px solid rgba(163,229,181,.2); border-radius: 11px; background: rgba(163,229,181,.06); color: #cfe7d8; font: 700 10px/1.25 var(--font-body); text-align: left; cursor: pointer; transition: border-color .18s ease,background .18s ease,color .18s ease; }
+.meteo-ai-suggestions button:hover,.meteo-ai-suggestions button:focus-visible,.meteo-ai-followups button:hover,.meteo-ai-followups button:focus-visible { border-color: rgba(193,243,206,.62); background: rgba(163,229,181,.14); color: #f3fff7; outline: none; }
+.meteo-ai-privacy { position: relative; z-index: 1; display: flex; gap: 10px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }.meteo-ai-privacy > span { display: grid; width: 24px; height: 24px; flex: none; place-items: center; border-radius: 50%; background: rgba(163,229,181,.13); color: #c1f3ce; font-size: 11px; }.meteo-ai-privacy p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.5; }.meteo-ai-privacy b { color: var(--text); }
+.meteo-ai-chat { display: grid; min-height: 650px; grid-template-rows: auto minmax(360px,1fr) auto auto; overflow: hidden; background: linear-gradient(180deg,#0c201a,#081510); }
+.meteo-ai-chat__header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 20px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.015); }.meteo-ai-chat__header > div { display: grid; gap: 4px; }.meteo-ai-chat__header small { color: var(--muted); font-size: 9px; }.meteo-ai-chat__header > button { padding: 8px 11px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--muted); font: 700 9px var(--font-body); cursor: pointer; }
+.meteo-ai-live { display: inline-flex; align-items: center; gap: 7px; color: #c1f3ce; font: 800 12px var(--font-display); }.meteo-ai-live i { width: 7px; height: 7px; border-radius: 50%; background: #89d6a3; box-shadow: 0 0 0 5px rgba(137,214,163,.09); }
+.meteo-ai-messages { display: flex; min-height: 0; max-height: 560px; flex-direction: column; gap: 12px; padding: 22px; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: rgba(163,229,181,.28) transparent; }
+.meteo-ai-message { max-width: min(88%,720px); padding: 16px 17px; border: 1px solid var(--line); border-radius: 16px; }
+.meteo-ai-message.is-user { align-self: flex-end; border-color: rgba(163,229,181,.28); border-bottom-right-radius: 5px; background: #205846; color: #f3fff7; }.meteo-ai-message.is-user p { margin: 0; line-height: 1.5; }
+.meteo-ai-message.is-assistant { align-self: flex-start; border-bottom-left-radius: 5px; background: #10251e; }.meteo-ai-message.is-assistant.is-safe { border-color: rgba(137,214,163,.38); }.meteo-ai-message.is-assistant.is-caution { border-color: rgba(230,197,108,.45); }.meteo-ai-message.is-assistant.is-warning { border-color: rgba(238,142,115,.5); }
+.meteo-ai-message > header { display: flex; align-items: center; gap: 9px; margin-bottom: 9px; }.meteo-ai-message > header > span { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 9px; background: #286d55; color: #eaffef; font: 800 9px var(--font-display); }.meteo-ai-message > header strong { color: var(--text); font: 750 14px/1.3 var(--font-display); }.meteo-ai-message > p { margin: 0; color: #c6d3ce; font-size: 12px; line-height: 1.62; }
+.meteo-ai-facts { display: flex; flex-wrap: wrap; gap: 7px; margin: 13px 0 0; padding: 0; list-style: none; }.meteo-ai-facts li { padding: 7px 9px; border: 1px solid rgba(255,255,255,.07); border-radius: 8px; background: rgba(255,255,255,.025); color: #e3eee8; font-size: 9px; font-weight: 700; }
+.meteo-ai-sources { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 13px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.07); }.meteo-ai-sources > span { color: var(--muted); font-size: 8px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }.meteo-ai-sources small { padding: 5px 7px; border-radius: 7px; background: rgba(163,226,238,.07); color: #a3e2ee; font-size: 8px; }
+.meteo-ai-followups { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }.meteo-ai-followups button { min-height: 34px; padding: 7px 9px; }
+.meteo-ai-typing { align-self: flex-start; padding: 10px 13px; border-radius: 12px; background: rgba(163,229,181,.06); color: var(--muted); font-size: 10px; }
+.meteo-ai-form { padding: 15px 18px 17px; border-top: 1px solid var(--line); }.meteo-ai-form > label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 9px; font-weight: 700; }.meteo-ai-form > div { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }.meteo-ai-form input { min-width: 0; min-height: 48px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #07130f; color: var(--text); font: 600 12px var(--font-body); }.meteo-ai-form input:focus { border-color: rgba(193,243,206,.55); outline: 2px solid rgba(163,229,181,.08); }.meteo-ai-form button { min-width: 105px; border: 1px solid #a3e5b5; border-radius: 12px; background: #286d55; color: #f3fff7; font: 800 11px var(--font-body); cursor: pointer; }.meteo-ai-form button:disabled { opacity: .55; cursor: wait; }
+.meteo-ai-disclaimer { display: flex; gap: 8px; margin: 0; padding: 0 18px 17px; color: var(--muted); font-size: 9px; line-height: 1.45; }.meteo-ai-disclaimer span { display: grid; width: 18px; height: 18px; flex: none; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: #a3e2ee; }
+
 body[data-page="inici"] #avisos .alerts-hub,
 body[data-page="inici"] #avisos .alerts-heading-actions,
 body[data-page="inici"] #prediccio > *:not(.forecast-overview):not(.section-heading),
@@ -280,6 +308,8 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .portal-backdrop[hidden] { display: none; }
   .header-context { display: none; }
   .station-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .meteo-ai-layout { grid-template-columns: minmax(230px,.65fr) minmax(0,1.35fr); }
+  .meteo-ai-suggestions { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 780px) {
@@ -309,6 +339,10 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .comparison-map-layout { grid-template-columns: 1fr; }
   #comparison-map { min-height: 380px; }
   #comparison-map-list { grid-template-columns: 1fr 1fr; }
+  .meteo-ai-layout { grid-template-columns: 1fr; }
+  .meteo-ai-guide { padding: 24px; }
+  .meteo-ai-suggestions { grid-template-columns: 1fr 1fr; }
+  .meteo-ai-chat { min-height: 620px; }
 }
 
 @media (max-width: 510px) {
@@ -340,6 +374,11 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .alert-invite-card { grid-template-columns: 42px 1fr; gap: 15px; padding: 22px; }
   .alert-invite-card__icon { width: 42px; height: 42px; border-radius: 13px; font-size: 18px; }
   .alert-invite-card footer { grid-column: 1/-1; }
+  .meteo-ai-suggestions { grid-template-columns: 1fr; }
+  .meteo-ai-messages { padding: 15px; }
+  .meteo-ai-message { max-width: 96%; }
+  .meteo-ai-form > div { grid-template-columns: 1fr; }
+  .meteo-ai-form button { min-height: 45px; }
 }
 
 @media (max-width: 360px) {

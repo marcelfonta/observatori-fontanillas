@@ -38,14 +38,14 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=12.2.0" />
-    <link rel="stylesheet" href="css/portal.css?v=12.2.0" />
+    <link rel="stylesheet" href="css/style.css?v=13.0.0" />
+    <link rel="stylesheet" href="css/portal.css?v=13.0.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=12.2.0"></script>
+    <script type="module" src="src/features/push.js?v=13.0.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=12.2.0"></script>
+    <script type="module" src="src/app.js?v=13.0.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
@@ -102,6 +102,7 @@
       </section>
 
       <section class="portal-view-header panel" aria-labelledby="station-page-title" data-portal-page="estacio"><div><p class="eyebrow">Estació Fontanillas</p><h1 id="station-page-title">L’estació, sensor a sensor.</h1><p>Lectures actuals, valors calculats i resum del dia des de Sant Celoni.</p></div><span class="tag">Cada 5 minuts</span></section>
+      <section class="portal-view-header panel" aria-labelledby="meteo-ai-page-title" data-portal-page="meteo-ia"><div><p class="eyebrow">Meteo IA · dades verificades</p><h1 id="meteo-ai-page-title">Pregunta al temps, amb les fonts a la vista.</h1><p>Respostes construïdes amb l’estació, la predicció i els avisos disponibles; sense inventar lectures.</p></div><span class="tag">Consulta guiada</span></section>
       <section class="portal-view-header panel" aria-labelledby="forecast-page-title" data-portal-page="prediccio"><div><p class="eyebrow">Predicció</p><h1 id="forecast-page-title">La previsió, ordenada per horitzons.</h1><p>Properes hores, dies i models de confiança per entendre què pot canviar.</p></div><span class="tag">Sant Celoni</span></section>
       <section class="portal-view-header panel" aria-labelledby="alerts-page-title" data-portal-page="avisos"><div><p class="eyebrow">Vigilància oficial</p><h1 id="alerts-page-title">Avisos que poden afectar Sant Celoni.</h1><p>Seguiment del Vallès Oriental i del Prelitoral de Barcelona amb fonts oficials.</p></div><span class="tag">Meteocat · AEMET</span></section>
       <section class="portal-view-header panel" aria-labelledby="sky-page-title" data-portal-page="cel"><div><p class="eyebrow">Astronomia</p><h1 id="sky-page-title">El cel, de dia i de nit.</h1><p>Sol, Lluna, fases, estacions i esdeveniments visibles des de Catalunya.</p></div><span class="tag">Hora local</span></section>
@@ -110,6 +111,43 @@
       <section class="portal-view-header panel" aria-labelledby="data-page-title" data-portal-page="centre-dades"><div><p class="eyebrow">Centre de Dades</p><h1 id="data-page-title">L’arxiu meteorològic, ordenat.</h1><p>Resums, cobertura, rècords i descàrregues a partir de l’històric real.</p></div><span class="tag">Dades pròpies</span></section>
       <section class="portal-view-header panel" aria-labelledby="environment-page-title" data-portal-page="medi-ambient"><div><p class="eyebrow">Medi Ambient</p><h1 id="environment-page-title">Entorn i salut ambiental.</h1><p>Aire, radiació, pol·len i accés directe als indicadors oficials del territori i la costa.</p></div><span class="tag">Sant Celoni</span></section>
       <section class="portal-view-header panel" aria-labelledby="contact-page-title" data-portal-page="contacte"><div><p class="eyebrow">Contacte</p><h1 id="contact-page-title">Parlem de meteorologia.</h1><p>Consultes, incidències de dades i propostes per continuar millorant l’Observatori.</p></div><span class="tag">Canal privat</span></section>
+
+      <section id="meteo-ia" class="meteo-ai-section section-block" aria-labelledby="meteo-ai-title" data-portal-page="meteo-ia">
+        <div class="meteo-ai-layout">
+          <aside class="meteo-ai-guide panel">
+            <div class="meteo-ai-orb" aria-hidden="true"><span>IA</span><i></i><i></i><i></i></div>
+            <p class="eyebrow">Assistent meteorològic</p>
+            <h2 id="meteo-ai-title">Què vols saber?</h2>
+            <p>Interpreta les dades que ja utilitza l’Observatori i identifica sempre d’on surt cada resposta.</p>
+            <div class="meteo-ai-suggestions" aria-label="Preguntes suggerides">
+              <button type="button" data-ai-question="Quina temperatura fa ara?">Situació actual</button>
+              <button type="button" data-ai-question="Plourà avui?">Plourà avui?</button>
+              <button type="button" data-ai-question="Hi ha avisos actius?">Avisos oficials</button>
+              <button type="button" data-ai-question="Puc sortir a córrer?">Sortir a córrer</button>
+              <button type="button" data-ai-question="Com ha canviat la temperatura?">Evolució recent</button>
+              <button type="button" data-ai-question="On fa més calor al Baix Montseny?">Comparar estacions</button>
+              <button type="button" data-ai-question="Com està la qualitat de l’aire i l’UV?">Aire i UV</button>
+              <button type="button" data-ai-question="Quin temps fa a Girona?">Una altra població</button>
+            </div>
+            <div class="meteo-ai-privacy"><span aria-hidden="true">✓</span><p><b>Conversa local.</b> Les preguntes no es desen. Només el nom d’una altra població es consulta a Open‑Meteo.</p></div>
+          </aside>
+          <article class="meteo-ai-chat panel" aria-label="Conversa amb Meteo IA">
+            <header class="meteo-ai-chat__header"><div><span class="meteo-ai-live"><i></i>Meteo IA</span><small id="meteo-ai-data-status">Preparant les fonts</small></div><button type="button" id="meteo-ai-clear">Nova conversa</button></header>
+            <div class="meteo-ai-messages" id="meteo-ai-messages" role="log" aria-live="polite" aria-relevant="additions">
+              <article class="meteo-ai-message is-assistant is-info">
+                <header><span>IA</span><strong>Dades preparades per respondre</strong></header>
+                <p>Pots preguntar-me pel temps actual, la predicció, els avisos, l’històric, el medi ambient, les estacions properes o una activitat. Si falta una font, t’ho diré clarament.</p>
+                <div class="meteo-ai-sources"><span>Principi</span><small>Dades abans que suposicions</small></div>
+              </article>
+            </div>
+            <form class="meteo-ai-form" id="meteo-ai-form">
+              <label for="meteo-ai-input">Escriu una pregunta meteorològica</label>
+              <div><input id="meteo-ai-input" name="question" type="text" maxlength="160" autocomplete="off" placeholder="Ex.: És bon moment per anar al Montseny?" required /><button type="submit" id="meteo-ai-submit">Preguntar</button></div>
+            </form>
+            <p class="meteo-ai-disclaimer"><span>i</span> No és un servei d’emergències. En situacions de risc prevalen Meteocat, AEMET, Protecció Civil i el 112.</p>
+          </article>
+        </div>
+      </section>
 
       <section class="metrics-grid" aria-label="Mesures actuals de l’estació" data-portal-page="inici estacio">
         <article class="metric panel metric--featured" id="metric-card-temperature">
@@ -523,7 +561,7 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V12.2.0</small>
+      <small>Dades locals · Sant Celoni, Montseny · V13.0.0</small>
       <div>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>

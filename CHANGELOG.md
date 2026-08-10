@@ -1,5 +1,28 @@
 # Changelog
 
+## V13.0.0 — 2026-08-10
+
+### Meteo IA · Milestone 6 completat
+
+- Nova pàgina «Meteo IA» al menú lateral i a l’hamburguesa mòbil.
+- Accés ràpid directe a Meteo IA quan la PWA està instal·lada.
+- Preguntes lliures i accessos suggerits per situació actual, avui/demà, avisos, evolució recent, comparació d’estacions i medi ambient.
+- Recomanacions combinades per córrer, excursions i activitats familiars, amb prioritat absoluta per als avisos oficials.
+- Consulta d’altres poblacions mitjançant geocodificació i predicció d’Open‑Meteo.
+- Cada resposta mostra les fonts i l’hora disponibles; la falta d’avisos verificables no es presenta mai com una situació segura.
+- Conversa processada al navegador, sense historial persistent ni enviament a un model generatiu extern.
+- Nova prova específica amb dades controlades per validar vuit intencions meteorològiques.
+
+### Arquitectura
+
+- `src/features/meteo-ai.js` concentra interpretació, conversa i recomanacions.
+- `src/services/weather-api.js` centralitza també les estacions properes i les consultes d’altres poblacions.
+- Medi Ambient publica un context normalitzat reutilitzable i el Service Worker incorpora el nou mòdul.
+
+### Preservat
+
+- Worker i contractes existents sense canvis; avisos, estació, predicció, PWA, radar, comparar, compartir i push continuen actius.
+
 ## V12.2.0 — 2026-08-10
 
 ### Branding · Milestone 5 completat

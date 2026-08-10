@@ -5,14 +5,14 @@ import { fileURLToPath } from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const html=await readFile(resolve(root,'index.html'),'utf8');
 const portalShell=await readFile(resolve(root,'src/features/portal-shell.js'),'utf8');
-const pages=['inici','estacio','prediccio','cel','avisos','radar','webcams','centre-dades','medi-ambient','contacte'];
+const pages=['inici','meteo-ia','estacio','prediccio','cel','avisos','radar','webcams','centre-dades','medi-ambient','contacte'];
 for(const page of pages){if(!portalShell.includes(`'${page}'`))throw new Error(`Falta l’enllaç de pàgina: ${page}`);}
-for(const id of ['quick-alert-link','official-alert-list','push-alert-button','alertInviteModal','alert-history-list','radar-map','radar-panel-lightning','contact-form','hero-webcam-image','station-page-title','cel-nocturn','nearby-webcams-title','centre-dades-overview','data-summary-samples','data-export-status','environment-aqi','environment-pm25','environment-pm25-level','environment-viewers-title','environment-uv-source','pollen-grass']){if(!html.includes(`id="${id}"`))throw new Error(`Falta el selector crític: ${id}`);}
-for(const file of ['comparativa.html','metodologia.html','historial-avisos.html','service-worker.js','site.webmanifest','worker/index.js','src/features/share.js','src/features/portal-router.js','src/features/portal-shell.js','src/features/portal-static.js','src/features/data-center.js','src/features/environment.js','src/features/alert-history-page.js','css/portal.css','assets/logos/BRAND-GUIDE.md','assets/logos/observatori-symbol.svg','assets/logos/observatori-lockup.svg','assets/icons/favicon-16.png','assets/icons/favicon-32.png','assets/icons/apple-touch-icon.png','assets/icons/icon-192.png','assets/icons/icon-512.png','assets/icons/icon-maskable-192.png','assets/icons/icon-maskable-512.png','assets/images/observatori-fontanillas-social-v12-2.png','scripts/build-brand-assets.py','PROJECT.md','ROADMAP.md','CHANGELOG.md'])await access(resolve(root,file));
+for(const id of ['quick-alert-link','official-alert-list','push-alert-button','alertInviteModal','alert-history-list','radar-map','radar-panel-lightning','contact-form','hero-webcam-image','station-page-title','cel-nocturn','nearby-webcams-title','centre-dades-overview','data-summary-samples','data-export-status','environment-aqi','environment-pm25','environment-pm25-level','environment-viewers-title','environment-uv-source','pollen-grass','meteo-ai-page-title','meteo-ia','meteo-ai-messages','meteo-ai-form','meteo-ai-input','meteo-ai-submit','meteo-ai-data-status']){if(!html.includes(`id="${id}"`))throw new Error(`Falta el selector crític: ${id}`);}
+for(const file of ['comparativa.html','metodologia.html','historial-avisos.html','service-worker.js','site.webmanifest','worker/index.js','src/features/share.js','src/features/portal-router.js','src/features/portal-shell.js','src/features/portal-static.js','src/features/data-center.js','src/features/environment.js','src/features/meteo-ai.js','src/features/alert-history-page.js','css/portal.css','assets/logos/BRAND-GUIDE.md','assets/logos/observatori-symbol.svg','assets/logos/observatori-lockup.svg','assets/icons/favicon-16.png','assets/icons/favicon-32.png','assets/icons/apple-touch-icon.png','assets/icons/icon-192.png','assets/icons/icon-512.png','assets/icons/icon-maskable-192.png','assets/icons/icon-maskable-512.png','assets/images/observatori-fontanillas-social-v12-2.png','scripts/build-brand-assets.py','tests/meteo-ai.mjs','PROJECT.md','ROADMAP.md','CHANGELOG.md'])await access(resolve(root,file));
 const app=await readFile(resolve(root,'src/app.js'),'utf8');
-if(!app.includes("initPortal();")||!app.includes("initShare();")||!app.includes("initDataCenter();")||!app.includes("renderDataCenter(latestHistory,latest)")||!app.includes("initEnvironment")||!app.includes("updateEnvironmentStation(latest)"))throw new Error('El portal, la compartició, el Centre de Dades o Medi Ambient no s’inicialitzen.');
+if(!app.includes("initPortal();")||!app.includes("initShare();")||!app.includes("initDataCenter();")||!app.includes("renderDataCenter(latestHistory,latest)")||!app.includes("initEnvironment")||!app.includes("updateEnvironmentStation(latest)")||!app.includes("initMeteoAI();")||!app.includes("updateMeteoAIContext"))throw new Error('El portal, la compartició, el Centre de Dades, Medi Ambient o Meteo IA no s’inicialitzen.');
 const worker=await readFile(resolve(root,'service-worker.js'),'utf8');
-if(!worker.includes("'/css/portal.css'")||!worker.includes("'/src/features/portal-router.js'")||!worker.includes("'/src/features/portal-shell.js'")||!worker.includes("'/src/features/data-center.js'")||!worker.includes("'/src/features/environment.js'")||!worker.includes("'/historial-avisos.html'")||!worker.includes("'/src/features/alert-history-page.js'"))throw new Error('La PWA no inclou els nous recursos.');
+if(!worker.includes("'/css/portal.css'")||!worker.includes("'/src/features/portal-router.js'")||!worker.includes("'/src/features/portal-shell.js'")||!worker.includes("'/src/features/data-center.js'")||!worker.includes("'/src/features/environment.js'")||!worker.includes("'/src/features/meteo-ai.js'")||!worker.includes("'/historial-avisos.html'")||!worker.includes("'/src/features/alert-history-page.js'"))throw new Error('La PWA no inclou els nous recursos.');
 for(const file of ['index.html','comparativa.html','metodologia.html','historial-avisos.html']){
   const page=await readFile(resolve(root,file),'utf8');
   const ids=[...page.matchAll(/\sid="([^"]+)"/g)].map(match=>match[1]);
@@ -36,7 +36,7 @@ for(const metric of ['temperature','humidity','pressure','wind','rain'])if(!comp
 const comparisonFeature=await readFile(resolve(root,'src/features/stations-comparison.js'),'utf8');
 for(const feature of ['ensureLeaflet','renderMap','historySeries','compare-variable-chart'])if(!comparisonFeature.includes(feature))throw new Error(`Comparativa: falta la funció ${feature}.`);
 if(!html.includes('data-portal-page="cel"')||html.match(/id="cel-nocturn"[^>]*data-mobile-advanced/))throw new Error('La pàgina del cel no és independent o pot quedar oculta en mòbil.');
-if((html.match(/class="portal-view-header panel"/g)||[]).length!==9)throw new Error('Les nou subpàgines principals no comparteixen capçalera.');
+if((html.match(/class="portal-view-header panel"/g)||[]).length!==10)throw new Error('Les deu subpàgines principals no comparteixen capçalera.');
 if(!html.includes('data-history-limit="5"')||!html.includes('historial-avisos.html'))throw new Error('La vista principal no limita l’historial o no enllaça amb l’arxiu complet.');
 for(const viewer of ['fire','drought','jellyfish'])if(!html.includes(`data-environment-viewer="${viewer}"`))throw new Error(`Medi Ambient: falta el visor ${viewer}.`);
 if(!html.includes('https://meduseo.com/es/')||!html.includes('https://www.medusapp.net/mapa/mapa-portada.php'))throw new Error('Medi Ambient: falten MedusApp o Meduseo.');
@@ -51,6 +51,7 @@ if(!portalCss.includes('#shareModal > [role="dialog"]')||!portalCss.includes('ba
 if(!portalCss.includes('min-height: 0; padding: 30px 34px')||!portalCss.includes('.environment-level'))throw new Error('Falta la capçalera compacta o els indicadors ambientals.');
 if(!portalCss.includes('.station-metrics { grid-template-columns: repeat(3')||!portalCss.includes('.station-card { min-height: 230px'))throw new Error('Les targetes del comparador no són compactes.');
 if(!portalShell.includes('<svg viewBox="0 0 24 24"')||/[⌂◉☁☾◎▣⌁⇄♧]/.test(portalShell))throw new Error('Els pictogrames laterals no s’han migrat completament a SVG.');
+if(!portalShell.includes("['meteo-ia','Meteo IA'")||!html.includes('data-portal-page="meteo-ia"'))throw new Error('Meteo IA no està connectada al menú i al router.');
 const methodology=await readFile(resolve(root,'metodologia.html'),'utf8');
 if(!methodology.includes('portal-view-header portal-view-header--static'))throw new Error('Metodologia no té la capçalera compartida.');
 const backend=await readFile(resolve(root,'worker/index.js'),'utf8');
@@ -62,7 +63,7 @@ if(manifest.theme_color!=='#286d55'||manifest.background_color!=='#205846')throw
 const anyIcons=manifest.icons.filter(icon=>icon.purpose==='any').map(icon=>icon.src);
 const maskableIcons=manifest.icons.filter(icon=>icon.purpose==='maskable').map(icon=>icon.src);
 if(anyIcons.length!==2||maskableIcons.length!==2||maskableIcons.some(icon=>anyIcons.includes(icon)))throw new Error('Les icones maskable no estan separades correctament de les normals.');
-if(!['Estació en directe','Avisos oficials','Radar i llamps'].every(name=>manifest.shortcuts?.some(shortcut=>shortcut.name===name)))throw new Error('Falten accessos ràpids de la PWA.');
+if(!['Pregunta a Meteo IA','Estació en directe','Avisos oficials','Radar i llamps'].every(name=>manifest.shortcuts?.some(shortcut=>shortcut.name===name)))throw new Error('Falten accessos ràpids de la PWA.');
 const pngDimensions=async file=>{const data=await readFile(resolve(root,file));if(data.toString('ascii',1,4)!=='PNG')throw new Error(`${file}: no és un PNG.`);return [data.readUInt32BE(16),data.readUInt32BE(20)];};
 for(const [file,size] of [['assets/icons/favicon-16.png',16],['assets/icons/favicon-32.png',32],['assets/icons/apple-touch-icon.png',180],['assets/icons/icon-192.png',192],['assets/icons/icon-512.png',512],['assets/icons/icon-maskable-192.png',192],['assets/icons/icon-maskable-512.png',512]]){const [width,height]=await pngDimensions(file);if(width!==size||height!==size)throw new Error(`${file}: mida ${width}×${height}, esperada ${size}×${size}.`);}
 const [socialWidth,socialHeight]=await pngDimensions('assets/images/observatori-fontanillas-social-v12-2.png');
@@ -71,4 +72,7 @@ for(const file of ['index.html','comparativa.html','metodologia.html','historial
 if(!worker.includes("'/assets/icons/icon-maskable-512.png'")||!worker.includes("'/assets/images/observatori-fontanillas-social-v12-2.png'"))throw new Error('La PWA no desa els nous recursos de marca.');
 const headers=await readFile(resolve(root,'_headers'),'utf8');
 if(!headers.includes('https://maps.blitzortung.org'))throw new Error('La política de seguretat bloquejaria Blitzortung.');
-console.log('Smoke test V12.2: correcte');
+if(!headers.includes('https://geocoding-api.open-meteo.com'))throw new Error('La política de seguretat bloquejaria la consulta d’altres poblacions.');
+const meteoAi=await readFile(resolve(root,'src/features/meteo-ai.js'),'utf8');
+for(const capability of ['answerMeteoQuestion','fetchLocalityWeather','fetchNearbyStations','observatori:environment-updated','observatori:alerts-updated'])if(!meteoAi.includes(capability))throw new Error(`Meteo IA: falta ${capability}.`);
+console.log('Smoke test V13: correcte');

@@ -23,7 +23,7 @@ Ser el portal meteorològic de referència del Baix Montseny: informació local 
 - `src/core/`: configuració i utilitats comunes.
 - `src/services/`: accés únic als serveis meteorològics.
 - `src/modules/`: estació, avisos, predicció, radar, gràfiques, astronomia i altres mòduls.
-- `src/features/`: PWA, push, compartir, historial d’avisos, analítica, router del portal i Centre de Dades.
+- `src/features/`: PWA, push, compartir, historial d’avisos, analítica, router del portal, Centre de Dades i Meteo IA.
 - `worker/`: Worker actiu i esquema de dades. No modificar-ne els contractes sense migració documentada.
 
 ## Fonts i serveis que cal preservar
@@ -32,7 +32,7 @@ Estació Fontanillas, Worker propi, Weather Underground, Open-Meteo, AEMET, Mete
 
 ## Navegació V12
 
-Inici, Estació, Predicció, Cel de dia i de nit, Avisos, Radar, Webcams, Centre de Dades, Comparar, Medi Ambient, Contacte i Metodologia. Escriptori: lateral fi. Mòbil: hamburguesa. La capçalera, l’estat en directe i la identitat visual es preserven.
+Inici, Meteo IA, Estació, Predicció, Cel de dia i de nit, Avisos, Radar, Webcams, Centre de Dades, Comparar, Medi Ambient, Contacte i Metodologia. Escriptori: lateral fi. Mòbil: hamburguesa. La capçalera, l’estat en directe i la identitat visual es preserven.
 
 La capçalera és fixa. La primera secció de cada vista compensa l’altura de la capçalera una sola vegada. Els peus només ofereixen «Tornar amunt» i «Compartir»; la navegació entre àrees pertany al menú lateral o a l’hamburguesa.
 
@@ -61,6 +61,12 @@ El menú lateral utilitza un únic sistema de pictogrames SVG de línia, amb el 
 V12.1 fixa «Observatori» com a nom curt instal·lat i incorpora `assets/logos/BRAND-GUIDE.md` com a font de criteri per al símbol, colors, tipografies i pictogrames.
 
 V12.2 tanca el sistema amb fonts vectorials del símbol i la composició horitzontal, i genera un paquet PNG complet i reproduïble des de `scripts/build-brand-assets.py`. Les icones normals i maskable tenen fitxers diferents i una zona segura real. El manifest utilitza una paleta més lluminosa i exposa accessos ràpids a Estació, Avisos i Radar. Totes les pàgines especialitzades comparteixen la mateixa targeta social, sense xifres en directe que puguin quedar desactualitzades.
+
+## Meteo IA V13
+
+`src/features/meteo-ai.js` és una capa d’interpretació local, no un generador de dades. Rep el context ja carregat per `src/app.js` i escolta els mateixos esdeveniments d’avisos i medi ambient que alimenten la interfície. Les consultes del comparador i d’altres poblacions passen per funcions centralitzades a `src/services/weather-api.js`.
+
+La conversa no es desa ni s’envia a cap model extern. Només s’envia a Open‑Meteo el nom d’una població quan l’usuari demana explícitament consultar-la. Les respostes mostren fonts i hora, i qualsevol fallada dels avisos es presenta com a «estat no verificat», mai com a «sense avisos». L’assistent no substitueix Meteocat, AEMET, Protecció Civil ni el 112.
 
 ## Normes de canvi
 
