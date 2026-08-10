@@ -89,7 +89,20 @@ assert.match(screenshotCase.body,/Vall d’Aran/i);
 assert.match(screenshotCase.body,/cap de setmana/i);
 assert.doesNotMatch(screenshotCase.sources.map(item=>item.label).join(' '),/Sensor Fontanillas/);
 
-const unknown=await answerMeteoQuestion('Explica’m alguna cosa',context,services);
-assert.match(unknown.body,/situació actual/i);
+const dana=await answerMeteoQuestion('Què és una DANA?',context,services);
+assert.match(dana.body,/depressió aïllada/i);
+assert.equal(dana.sources[0].label,'AEMET · MeteoGlosario');
 
-console.log('Test Meteo IA V14: correcte');
+const sourceGuide=await answerMeteoQuestion('On puc consultar dades meteorològiques oficials?',context,services);
+assert.ok(sourceGuide.sources.some(item=>item.label==='AEMET OpenData'));
+assert.ok(sourceGuide.sources.some(item=>item.label==='Meteocat · Dades obertes'));
+
+const previousDate=new Date(now);previousDate.setFullYear(previousDate.getFullYear()-1);
+const ephemeris=await answerMeteoQuestion('Efemèrides de l’estació',{...context,history:[...context.history,{t:previousDate.getTime(),temperatureMax:31.4,temperatureMin:18.2,rainIncrement:2.6}]},services);
+assert.match(ephemeris.title,/Un dia com avui/);
+assert.match(ephemeris.facts.join(' '),/31,4 °C/);
+
+const unknown=await answerMeteoQuestion('Explica’m alguna cosa',context,services);
+assert.match(unknown.body,/conceptes/i);
+
+console.log('Test Meteo IA V15: correcte');

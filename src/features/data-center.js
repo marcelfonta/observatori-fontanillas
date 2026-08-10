@@ -156,6 +156,9 @@ export function renderDataCenter(history = [], latest = null) {
   renderPeriod('data-yearly', archive.filter(item => dateKey(item.t).startsWith(year)));
   renderRainDashboard();
   renderEphemeris();
+  if (typeof document.dispatchEvent === 'function' && typeof CustomEvent !== 'undefined') {
+    document.dispatchEvent(new CustomEvent('observatori:data-period-change', { detail: { days: activeDays } }));
+  }
 }
 
 function exportRows() {

@@ -17,7 +17,7 @@ import { initNavigation, initWhenVisible } from './modules/navigation.js';
 import { renderDataQuality, renderDataQualityUnavailable } from './modules/qualitat.js';
 import { renderAlerts, renderAlertsUnavailable } from './modules/avisos.js';
 import { updateSituation } from './modules/situacio.js';
-import { initShare } from './features/share.js';
+import { initShare, updateShareContext } from './features/share.js';
 import { initPortal } from './features/portal-router.js';
 import { initDataCenter, renderDataCenter } from './features/data-center.js';
 import { initEnvironment, updateEnvironmentStation } from './features/environment.js';
@@ -40,7 +40,7 @@ function updateClock(){ setText('header-time',new Intl.DateTimeFormat(CONFIG.loc
 function setUpdated(value){ const date=value?new Date(String(value).replace(' ','T')):new Date(); const safe=Number.isNaN(date.getTime())?new Date():date; setText('updated-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(safe)); setText('webcam-time',`Captura ${new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(new Date())}`); const mins=Math.max(0,Math.round((Date.now()-safe.getTime())/60000)); setText('updated-relative',mins<2?'ara mateix':`fa ${mins} min`); }
 async function loadForecastSuite(){
   const [forecastResult,modelsResult]=await Promise.allSettled([fetchForecast(),fetchModelComparison()]);
-  if(forecastResult.status==='fulfilled'){renderForecast(forecastResult.value);initWhenVisible('#cel-nocturn', () => renderAstronomy(forecastResult.value));updateSituation({forecast:forecastResult.value});updateMeteoAIContext({forecast:forecastResult.value});}else{renderForecastError();initWhenVisible('#cel-nocturn', () => renderAstronomy(null));updateSituation({forecast:null});updateMeteoAIContext({forecast:null});}
+  if(forecastResult.status==='fulfilled'){renderForecast(forecastResult.value);initWhenVisible('#cel-nocturn', () => renderAstronomy(forecastResult.value));updateSituation({forecast:forecastResult.value});updateMeteoAIContext({forecast:forecastResult.value});updateShareContext({forecast:forecastResult.value});}else{renderForecastError();initWhenVisible('#cel-nocturn', () => renderAstronomy(null));updateSituation({forecast:null});updateMeteoAIContext({forecast:null});updateShareContext({forecast:null});}
   if(modelsResult.status==='fulfilled')renderModelComparison(modelsResult.value);else renderModelError();
   forecastFetchedAt=Date.now();
 }
@@ -78,10 +78,10 @@ async function loadQuality(){
 async function loadAlerts(){
   try {
     const payload=await fetchAlerts();
-    renderAlerts(payload);
+    renderAlerts(payload);updateShareContext({alerts:payload});
   } catch(error) {
     console.warn('Avisos oficials no disponibles.',error);
-    renderAlertsUnavailable();
+    renderAlertsUnavailable();updateShareContext({alerts:null});
   }
   alertsFetchedAt=Date.now();
 }
@@ -101,18 +101,18 @@ async function load(){
       latestHistory=context.history;
       renderSummaryFallback();
     }
-    renderStation(latest,context); renderCharts(latest,latestHistory); renderMetricSparklines(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenter(latestHistory,latest); setUpdated(latest.updated); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:latestHistory});
+    renderStation(latest,context); renderCharts(latest,latestHistory); renderMetricSparklines(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenter(latestHistory,latest); setUpdated(latest.updated); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:latestHistory});updateShareContext({current:latest});
     hideOfflineBanner();
     if(label){label.textContent='En directe';label.parentElement.classList.remove('is-offline');}
   } catch(error) {
     console.warn('No s’han pogut carregar les dades en directe.',error);
     const cached=getLastCachedObs();
     if(cached && (Date.now()-cached.ts)<OFFLINE_MAX_AGE_MS){
-      latest=cached.data; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:[]});
+      latest=cached.data; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:[]});updateShareContext({current:latest});
       showOfflineBanner(cached.ageMinutes);
       if(label){label.textContent='Sense connexió';label.parentElement.classList.add('is-offline');}
     } else {
-      latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSituation({current:latest}); updateMeteoAIContext({current:null,history:[]});
+      latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSituation({current:latest}); updateMeteoAIContext({current:null,history:[]});updateShareContext({current:null});
       hideOfflineBanner();
       if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
     }
@@ -122,6 +122,12 @@ async function load(){
 }
 const periodLabels={ '24h':'Lectures de les últimes 24 hores','7d':'Evolució dels últims 7 dies','30d':'Evolució dels últims 30 dies','1y':'Evolució de l’últim any disponible' };
 document.querySelectorAll('[data-period]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-period]').forEach(b=>b.classList.remove('is-active'));button.classList.add('is-active');setText('evolution-period-copy',periodLabels[button.dataset.period]||'Històric disponible');renderCharts(latest,latestHistory,button.dataset.period);}));
+document.addEventListener('observatori:data-period-change',event=>{
+  const days=Number(event.detail?.days)||30;const chartPeriod=days===365?'1y':`${days}d`;const label=days===365?'1 any':`${days} dies`;
+  const chartButton=document.querySelector(`[data-period="${chartPeriod}"]`);if(chartButton)chartButton.click();
+  const extremeButton=document.querySelector(`[data-extreme-period="${days}"]`);if(extremeButton)extremeButton.click();
+  setText('data-evolution-period-label',`Període del Centre de Dades · ${label}`);setText('data-extremes-period-label',`Període del Centre de Dades · ${label}`);
+});
 initPortal();
 initNavigation();
 initWebcam();

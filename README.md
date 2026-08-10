@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V14.0.0
+# Observatori Meteorològic Fontanillas — V15.0.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V14 incorpora conversa contextual a Meteo IA, estadístiques avançades de pluja, tendència ECMWF fins a sis setmanes i la fase tècnica de SEO local.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V15 ordena el Centre de Dades, amplia Meteo IA amb coneixement meteorològic i efemèrides, i completa la Compartició Premium amb targetes PNG dinàmiques.
 
 ## Estat actual
 
@@ -52,6 +52,6 @@ La configuració de frontend és a `src/core/config.js`. Inclou URL de l’API, 
 node tests/smoke.mjs
 ```
 
-La prova comprova navegació, selectors crítics, PWA, Meteo IA, icones i metadades de marca, Centre de Dades, peus i absència de duplicacions de «Tornar amunt». `node tests/meteo-ai.mjs` valida també divendres a Sant Celoni, una setmana internacional completa i els enllaços de fonts.
+La prova comprova navegació, selectors crítics, PWA, Meteo IA, icones i metadades de marca, Centre de Dades, peus i absència de duplicacions de «Tornar amunt». `node tests/meteo-ai.mjs` valida també conversa geogràfica, coneixement, fonts i efemèrides; `node tests/share-card.mjs` valida que les targetes no inventin dades.
 
 Consulta `PROJECT.md`, `ROADMAP.md` i `CHANGELOG.md` per a les normes, l’ordre de les fases i el detall de la versió.

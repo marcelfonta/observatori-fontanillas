@@ -2,7 +2,7 @@ import { fetchAlerts, fetchCurrentWeather, fetchForecast, fetchLocalityWeather, 
 
 const state={current:null,history:[],forecast:null,alerts:null,environment:null};
 let initialized=false;
-const CONVERSATION_KEY='fontanillas-meteo-ai-context-v14';
+const CONVERSATION_KEY='fontanillas-meteo-ai-context-v15';
 
 const weatherCodes={
   0:'cel serè',1:'poc ennuvolat',2:'intervals de núvols',3:'cel cobert',45:'boira',48:'boira gebradora',
@@ -26,7 +26,12 @@ const sourceLinks={
   'Sensor Fontanillas':'./?page=estacio','Estació Fontanillas':'./?page=estacio','Arxiu Fontanillas':'./?page=centre-dades',
   'Open‑Meteo':'https://open-meteo.com/','CAMS via Open‑Meteo':'./?page=medi-ambient','CAMS · Sensor Fontanillas':'./?page=medi-ambient',
   'AEMET · Meteocat':'./?page=avisos','Avisos oficials':'./?page=avisos','Comparador de l’Observatori':'./comparativa.html',
-  'Estació i predicció':'./?page=prediccio','Meteo IA':'./?page=meteo-ia'
+  'Estació i predicció':'./?page=prediccio','Meteo IA':'./?page=meteo-ia',
+  'AEMET · MeteoGlosario':'https://www.aemet.es/es/conocermas/meteo_glosario_visual',
+  'AEMET · Dades climatològiques':'https://www.aemet.es/ca/serviciosclimaticos/datosclimatologicos',
+  'AEMET OpenData':'https://www.aemet.es/es/datos_abiertos/AEMET_OpenData',
+  'Meteocat · Dades obertes':'https://www.meteo.cat/wpweb/serveis/dades-obertes/',
+  'Atles de Núvols · OMM':'https://cloudatlas.wmo.int/en/home.html'
 };
 const source=(label,detail,href=sourceLinks[label]||'')=>({label,detail,href});
 const response=(title,body,{facts=[],sources=[],level='info',followups=[]}={})=>({title,body,facts,sources,level,followups});
@@ -146,6 +151,37 @@ function historyAnswer(context){
   const first=values[0],last=values.at(-1),delta=last-first;
   const direction=Math.abs(delta)<.3?'s’ha mantingut força estable':delta>0?'ha pujat':'ha baixat';
   return response('Evolució de la temperatura',`Durant el període cobert, la temperatura ${direction} ${fmt(Math.abs(delta))} °C: de ${fmt(first)} °C a ${fmt(last)} °C.`,{facts:[`Màxima · ${fmt(Math.max(...values))} °C`,`Mínima · ${fmt(Math.min(...values))} °C`,`Mostres · ${samples.length}`],sources:[source('Arxiu Fontanillas',recent.length>=2?'Últimes 24 hores':'Darreres mostres disponibles')],followups:['Quina temperatura fa ara?','Plourà demà?']});
+}
+
+function stationEphemerisAnswer(context){
+  const now=new Date();const month=now.getMonth();const day=now.getDate();
+  const matches=(context.history||[]).filter(item=>{const date=new Date(Number(item.t));return Number.isFinite(date.getTime())&&date.getFullYear()<now.getFullYear()&&date.getMonth()===month&&date.getDate()===day;});
+  if(!matches.length)return response('Encara no hi ha prou arxiu per a un dia com avui','L’estació no disposa encara d’una observació d’aquesta mateixa data en anys anteriors. No inventaré una efemèride: la comparació s’activarà automàticament quan l’arxiu tingui més d’un any.',{sources:[source('Arxiu Fontanillas','Cobertura disponible'),source('AEMET · Dades climatològiques','Efemèrides i sèries oficials')],followups:['Com ha canviat la temperatura?','On puc consultar dades meteorològiques oficials?']});
+  const byYear=new Map();matches.forEach(item=>{const year=new Date(Number(item.t)).getFullYear();if(!byYear.has(year))byYear.set(year,[]);byYear.get(year).push(item);});
+  const facts=[...byYear.entries()].sort((a,b)=>b[0]-a[0]).slice(0,6).map(([year,items])=>{const temperatures=items.flatMap(item=>[n(item.temperatureMax),n(item.temperature),n(item.temperatureMin)]).filter(value=>value!==null);const rain=items.reduce((sum,item)=>sum+(n(item.rainIncrement)??0),0);return `${year} · ${temperatures.length?`${fmt(Math.min(...temperatures))}–${fmt(Math.max(...temperatures))} °C`:'temperatura no disponible'} · ${fmt(rain)} mm`;});
+  const allTemperatures=matches.flatMap(item=>[n(item.temperatureMax),n(item.temperature),n(item.temperatureMin)]).filter(value=>value!==null);
+  return response('Un dia com avui a Fontanillas',`He trobat ${byYear.size} ${byYear.size===1?'any comparable':'anys comparables'} dins de l’arxiu propi.${allTemperatures.length?` El rang observat és de ${fmt(Math.min(...allTemperatures))} a ${fmt(Math.max(...allTemperatures))} °C.`:''} Són dades de l’estació, no una normal climatològica oficial.`,{facts,sources:[source('Arxiu Fontanillas',`${matches.length} observacions comparables`),source('AEMET · Dades climatològiques','Efemèrides oficials d’Espanya')],followups:['Quin és el rècord de temperatura?','Com ha canviat la temperatura?']});
+}
+
+const knowledgeTopics=[
+  {test:/\bdana\b/,title:'Què és una DANA?',body:'Una DANA és una depressió aïllada en nivells alts: una bossa d’aire fred separada de la circulació principal. No implica sempre aiguats, però pot afavorir inestabilitat intensa si coincideix amb aire càlid i humit a capes baixes.',facts:['No és sinònim de tempesta ni de gota freda','L’impacte depèn de la posició, la humitat i el relleu','Els avisos oficials són la referència per valorar el risc']},
+  {test:/front fred|front calent|\bfronts?\b/,title:'Com funciona un front?',body:'Un front és la zona de transició entre dues masses d’aire amb propietats diferents. En un front fred l’aire fred avança i força l’aire càlid a pujar; en un front càlid, l’aire càlid llisca progressivament sobre el fred.',facts:['Front fred · canvi sovint més brusc','Front càlid · nuvolositat més extensa i progressiva','La intensitat real depèn de la humitat i l’estabilitat']},
+  {test:/isobara|pressio atmosferica|anticiclo|borrasca/,title:'Pressió, isòbares i vent',body:'Les isòbares uneixen punts amb la mateixa pressió atmosfèrica. Quan estan molt juntes indiquen un gradient de pressió més fort i, habitualment, més vent. Un anticicló no garanteix sempre sol, ni una borrasca implica pluja a tot arreu.',facts:['Pressió alta o baixa és relativa a l’entorn','Isòbares juntes · gradient més intens','El relleu pot modificar molt el vent local']},
+  {test:/punt de rosada|humitat relativa/,title:'Humitat i punt de rosada',body:'La humitat relativa indica com de prop és l’aire de la saturació a la temperatura actual. El punt de rosada és la temperatura a la qual l’aire se saturaria; és més útil per saber quanta humitat real hi ha i si pot formar-se condensació.',facts:['Humitat relativa alta no sempre significa més vapor','Punt de rosada pròxim a la temperatura · aire gairebé saturat','La boira o la rosada necessiten també condicions locals favorables']},
+  {test:/probabilitat de pluja|percentatge de pluja|\bpop\b/,title:'Què vol dir la probabilitat de pluja?',body:'És la probabilitat que hi hagi precipitació mesurable en un punt de la zona i durant el període indicat. Un 60% no vol dir que plourà el 60% del temps ni sobre el 60% del territori.',facts:['Probabilitat i quantitat prevista són variables diferents','Cal mirar també intensitat, acumulació i horari','En ruixats locals la distribució pot ser molt irregular']},
+  {test:/radar.*satel|satel.*radar|radar meteorologic/,title:'Radar i satèl·lit no mostren el mateix',body:'El radar estima precipitació i moviment dels ecos a prop de la superfície; el satèl·lit observa núvols i propietats de l’atmosfera des de l’espai. Per saber si plou ara, el radar és més directe; per entendre l’estructura nuvolosa, el satèl·lit aporta més context.',facts:['Radar · precipitació estimada','Satèl·lit · núvols i masses d’aire','Cap dels dos substitueix una observació a terra']},
+  {test:/model|ensemble|conjunt|incertesa/,title:'Models i incertesa meteorològica',body:'Un model meteorològic calcula l’evolució de l’atmosfera a partir d’un estat inicial. Els conjunts o ensembles repeteixen el càlcul amb petites variacions: si les solucions divergeixen, la incertesa és més alta.',facts:['Una sortida única no és una certesa','El conjunt ajuda a veure escenaris i probabilitats','La fiabilitat disminueix amb l’horitzó temporal']},
+  {test:/tipus de nuvol|nuvols|cirrus|cumulonimbus/,title:'Com s’identifiquen els núvols?',body:'Els núvols es classifiquen per forma, altura i evolució. Cirrus són núvols alts de cristalls de gel; cúmuls tenen desenvolupament vertical; un cumulonimbus és un núvol de tempesta amb gran extensió vertical.',facts:['La classificació internacional és de l’OMM','Forma i evolució importen tant com l’altura','Un núvol per si sol no basta per fer una previsió']}
+];
+
+function meteorologyKnowledgeAnswer(question){
+  const q=normalize(question);const topic=knowledgeTopics.find(item=>item.test.test(q));if(!topic)return null;
+  const cloud=/nuvol|cirrus|cumulonimbus/.test(q);
+  return response(topic.title,topic.body,{facts:topic.facts,sources:[source('AEMET · MeteoGlosario','Definicions meteorològiques visuals'),...(cloud?[source('Atles de Núvols · OMM','Classificació internacional oficial')]:[])],followups:['On puc consultar dades meteorològiques oficials?','Quina temperatura fa ara?']});
+}
+
+function sourceGuideAnswer(){
+  return response('Fonts meteorològiques fiables, segons què busquis','Per consultar el temps amb criteri, separa observació, predicció, avisos i climatologia. Aquest portal enllaça cada resposta amb la seva font i evita presentar un model com si fos una observació.',{facts:['Ara a Sant Celoni · Sensor Fontanillas i xarxes oficials','Avisos · AEMET, Meteocat i Protecció Civil','Dades reutilitzables · AEMET OpenData i Dades Obertes de Meteocat','Climatologia i efemèrides · serveis climàtics d’AEMET','Núvols i fenòmens · Atles Internacional de l’OMM'],sources:[source('AEMET OpenData','Catàleg i API reutilitzable'),source('Meteocat · Dades obertes','XEMA, prediccions i atles climàtic'),source('AEMET · Dades climatològiques','Normals, extrems i efemèrides'),source('Atles de Núvols · OMM','Classificació oficial')],followups:['Què és una DANA?','Efemèrides de l’estació']});
 }
 
 function environmentAnswer(context){
@@ -268,6 +304,9 @@ function shouldUseConversation(q){return /\bhi\b|alla|aquella zona|quin temps|te
 
 export async function answerMeteoQuestion(question,context=state,services={fetchLocalityWeather,fetchNearbyStations},memory=null){
   const q=normalize(question);
+  if(/on (puc|es pot)|on consultar|quina font|fonts fiables|d on treure|dades obertes|informacio meteorologica/.test(q))return sourceGuideAnswer();
+  if(/efemer|un dia com avui|record historic|record meteorologic/.test(q))return stationEphemerisAnswer(context);
+  const knowledge=meteorologyKnowledgeAnswer(question);if(knowledge)return knowledge;
   const explicitLocality=localityFromQuestion(question);
   const explicitPeriod=periodFromQuestion(question);const explicitActivity=activityFromQuestion(question);
   if(memory&&explicitPeriod)memory.period=explicitPeriod;if(memory&&explicitActivity)memory.activity=explicitActivity;
@@ -287,7 +326,7 @@ export async function answerMeteoQuestion(question,context=state,services={fetch
   if(/historic|evoluc|canviat|ultimes 24/.test(q))return historyAnswer(context);
   if(/plour|previsi|dema|avui|temps fara|setmana|cap de setmana|dilluns|dimarts|dimecres|dijous|divendres|dissabte|diumenge/.test(q))return forecastAnswer(context,resolvedQuestion,services);
   if(/temperatura|temps fa|ara|humitat|vent|pressio|pluja actual/.test(q))return currentAnswer(context);
-  return response('Et puc ajudar amb dades concretes','Pregunta’m per la situació actual, la predicció, els avisos, l’evolució històrica, les estacions properes, el medi ambient o si convé fer una activitat. Per exemple: «Plourà avui?» o «Puc sortir a córrer?».',{sources:[source('Meteo IA','Interpretació local al navegador')],followups:['Quina temperatura fa ara?','Plourà demà?','Hi ha avisos actius?']});
+  return response('Et puc ajudar amb el temps i entendre la meteorologia','Pregunta’m per la situació actual, la predicció, els avisos, l’històric, les efemèrides, les fonts fiables o conceptes com una DANA, els fronts, les isòbares i els models.',{sources:[source('Meteo IA','Interpretació local al navegador'),source('AEMET · MeteoGlosario','Consulta didàctica oficial')],followups:['Què és una DANA?','On puc consultar dades meteorològiques oficials?','Efemèrides de l’estació']});
 }
 
 function createMessage(role,resultOrText){
@@ -332,7 +371,7 @@ export function initMeteoAI(){
   const form=document.getElementById('meteo-ai-form');const input=document.getElementById('meteo-ai-input');const log=document.getElementById('meteo-ai-messages');
   form?.addEventListener('submit',event=>{event.preventDefault();ask(input?.value);});
   document.addEventListener('click',event=>{const button=event.target.closest('[data-ai-question]');if(button)ask(button.dataset.aiQuestion);});
-  document.getElementById('meteo-ai-clear')?.addEventListener('click',()=>{if(!log)return;resetConversation();log.replaceChildren(createMessage('assistant',response('Conversa nova','Torno a estar a punt. Pregunta’m pel temps, els avisos o una activitat.',{sources:[source('Meteo IA','Context de sessió esborrat')]})));input?.focus();});
+  document.getElementById('meteo-ai-clear')?.addEventListener('click',()=>{if(!log)return;resetConversation();log.replaceChildren(createMessage('assistant',response('Conversa nova','Torno a estar a punt. Pregunta’m pel temps, els avisos, una activitat, una efemèride o un concepte meteorològic.',{sources:[source('Meteo IA','Context de sessió esborrat')]})));input?.focus();});
   document.querySelector('[data-ai-clear-context]')?.addEventListener('click',()=>{resetConversation();input?.focus();});
   document.addEventListener('observatori:alerts-updated',event=>updateMeteoAIContext({alerts:event.detail}));
   document.addEventListener('observatori:environment-updated',event=>updateMeteoAIContext({environment:event.detail}));

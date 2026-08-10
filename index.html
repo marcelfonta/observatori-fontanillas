@@ -40,14 +40,14 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=14.0.0" />
-    <link rel="stylesheet" href="css/portal.css?v=14.0.0" />
+    <link rel="stylesheet" href="css/style.css?v=15.0.0" />
+    <link rel="stylesheet" href="css/portal.css?v=15.0.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=14.0.0"></script>
+    <script type="module" src="src/features/push.js?v=15.0.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=14.0.0"></script>
+    <script type="module" src="src/app.js?v=15.0.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","url":"https://meteo.fontanillas.cat/?page=centre-dades","spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -132,6 +132,9 @@
               <button type="button" data-ai-question="Com està la qualitat de l’aire i l’UV?">Aire i UV</button>
               <button type="button" data-ai-question="Quin temps fa a Girona?">Una altra població</button>
               <button type="button" data-ai-question="Quin temps farà la setmana que ve a Londres?">Setmana que ve a Londres</button>
+              <button type="button" data-ai-question="Què és una DANA?">Entendre una DANA</button>
+              <button type="button" data-ai-question="On puc consultar dades meteorològiques oficials?">Fonts oficials</button>
+              <button type="button" data-ai-question="Efemèrides de l’estació">Efemèrides de l’estació</button>
             </div>
             <div class="meteo-ai-privacy"><span aria-hidden="true">✓</span><p><b>Context temporal.</b> El lloc, el període i l’activitat es mantenen només durant la pestanya perquè puguis encadenar preguntes. No es desa el text de la conversa.</p></div>
           </aside>
@@ -141,7 +144,7 @@
             <div class="meteo-ai-messages" id="meteo-ai-messages" role="log" aria-live="polite" aria-relevant="additions">
               <article class="meteo-ai-message is-assistant is-info">
                 <header><span>IA</span><strong>Dades preparades per respondre</strong></header>
-                <p>Pots preguntar-me pel temps actual, la predicció, els avisos, l’històric, el medi ambient, les estacions properes o una activitat. Si falta una font, t’ho diré clarament.</p>
+                <p>Pots preguntar-me pel temps actual, la predicció, els avisos, l’històric, les efemèrides, les fonts fiables, un concepte meteorològic o una activitat. Si falta una font, t’ho diré clarament.</p>
                 <div class="meteo-ai-sources"><span>Principi</span><small>Dades abans que suposicions</small></div>
               </article>
             </div>
@@ -189,9 +192,9 @@
       <section id="centre-dades-overview" class="data-center-overview section-block" aria-labelledby="data-center-title" data-portal-page="centre-dades">
         <div class="data-center-hero panel">
           <div class="data-center-hero__intro">
-            <p class="eyebrow">Període de consulta</p>
-            <h2 id="data-center-title">Explora la cobertura disponible.</h2>
-            <p>Resumeix períodes i descarrega les observacions de l’estació sense alterar-ne la font.</p>
+            <p class="eyebrow">01 · Període d’anàlisi</p>
+            <h2 id="data-center-title">Una selecció per a tot l’anàlisi.</h2>
+            <p>El període triat s’aplica al resum, les gràfiques, els extrems i les descàrregues. Les dades de calendari —avui, mes i any— es mostren després en un bloc independent.</p>
           </div>
           <div class="data-center-controls">
             <div class="segmented" role="group" aria-label="Període del resum del Centre de Dades">
@@ -203,6 +206,10 @@
           </div>
         </div>
 
+        <div class="data-center-scope" aria-label="Contingut controlat pel període seleccionat">
+          <span>El selector controla</span><b>Resum</b><b>Gràfiques</b><b>Extrems</b><b>Descàrregues</b>
+        </div>
+
         <div class="data-summary-grid" aria-live="polite">
           <article class="panel"><span>Mostres</span><strong id="data-summary-samples">—</strong><small id="data-summary-coverage">Cobertura pendent</small></article>
           <article class="panel"><span>Temperatura mitjana</span><strong><b id="data-summary-temp-mean">—</b><small> °C</small></strong><small id="data-summary-temp-deviation">Desviació pendent</small></article>
@@ -210,8 +217,18 @@
           <article class="panel"><span>Ratxa màxima</span><strong><b id="data-summary-gust">—</b><small> km/h</small></strong><small>Valor més alt observat</small></article>
         </div>
 
+        <article class="data-export data-export--period panel">
+          <div><p class="eyebrow">Descàrrega del període</p><h2>Emporta’t exactament la selecció</h2><p>Inclou data, temperatura, humitat, pressió, vent, pluja, radiació i UV quan són disponibles.</p></div>
+          <div><div class="data-export__actions" role="group" aria-label="Formats de descàrrega"><button type="button" data-export-format="csv">CSV</button><button type="button" data-export-format="excel">Excel</button><button type="button" data-export-format="json">JSON</button><button type="button" data-export-format="pdf">PDF</button></div><small id="data-export-status" role="status">Selecciona un format per descarregar el període.</small></div>
+        </article>
+
+        <header class="data-calendar-heading">
+          <div><p class="eyebrow">02 · Calendari actual</p><h2>Avui, aquest mes i aquest any.</h2><p>Aquest bloc no canvia quan tries 7, 30 o 365 dies: sempre respon al calendari en curs.</p></div>
+          <span class="tag">Independent del selector</span>
+        </header>
+
         <section class="rain-dashboard panel" aria-labelledby="rain-dashboard-title">
-          <header><div><p class="eyebrow">Pluviometria</p><h2 id="rain-dashboard-title">La pluja, amb més context.</h2><p>Acumulacions, intensitat i dies sense episodis destacables calculats amb l’arxiu real de Fontanillas.</p></div><span class="tag">Actualització automàtica</span></header>
+          <header><div><p class="eyebrow">Pluviometria de calendari</p><h2 id="rain-dashboard-title">La pluja, amb més context.</h2><p>Acumulacions, intensitat i dies sense episodis destacables calculats amb l’arxiu real de Fontanillas.</p></div><span class="tag">Actualització automàtica</span></header>
           <div class="rain-dashboard__grid" aria-live="polite">
             <article><span>Intensitat ara</span><strong id="data-rain-now">—</strong><small>Lectura instantània</small></article>
             <article><span>Pluja avui</span><strong id="data-rain-today">—</strong><small>Des de les 00:00</small></article>
@@ -230,7 +247,7 @@
           <p class="rain-dashboard__note" id="data-rain-coverage">Preparant la cobertura pluviomètrica…</p>
         </section>
 
-        <div class="data-center-grid">
+        <div class="data-center-grid data-center-grid--calendar">
           <article class="data-periods panel">
             <header><div><p class="eyebrow">Resums</p><h2>Dia, mes i any en una mirada</h2></div></header>
             <div class="data-periods__grid">
@@ -243,18 +260,6 @@
             <p class="eyebrow">Efemèrides</p>
             <h2>Un dia com avui</h2>
             <p id="data-ephemeris-copy">Comprovant si hi ha altres anys disponibles per a aquesta data…</p>
-          </article>
-          <article class="data-export panel">
-            <p class="eyebrow">Exportació</p>
-            <h2>Emporta’t les dades</h2>
-            <p>La descàrrega respecta el període seleccionat i inclou data, temperatura, humitat, pressió, vent, pluja, radiació i UV quan són disponibles.</p>
-            <div class="data-export__actions" role="group" aria-label="Formats de descàrrega">
-              <button type="button" data-export-format="csv">CSV</button>
-              <button type="button" data-export-format="excel">Excel</button>
-              <button type="button" data-export-format="json">JSON</button>
-              <button type="button" data-export-format="pdf">PDF</button>
-            </div>
-            <small id="data-export-status" role="status">Selecciona un format per descarregar el període.</small>
           </article>
         </div>
       </section>
@@ -271,7 +276,7 @@
           <article class="insight-card panel"><div class="insight-card__head"><span>Balanç de pluja</span><i>Observat</i></div><div class="big-stat big-stat--rain"><strong><b id="rain-24h">—</b><small> mm</small></strong><span>Últimes 24 hores</span></div><p>Avui <b id="rain-observed-today">— mm</b> · <span id="wet-hours">— hores amb pluja</span></p></article>
         </div>
         <section class="extremes-archive panel" aria-labelledby="extremes-archive-title">
-          <header><div><p class="eyebrow">Arxiu d’extrems</p><h3 id="extremes-archive-title">El període, resumit amb dades reals</h3><p id="extremes-coverage">Calculant la cobertura disponible…</p></div><div class="segmented segmented--archive" role="group" aria-label="Període dels extrems"><button class="is-active" data-extreme-period="1">24 h</button><button data-extreme-period="7">7 dies</button><button data-extreme-period="30">30 dies</button><button data-extreme-period="365">1 any</button></div></header>
+          <header><div><p class="eyebrow">Arxiu d’extrems</p><h3 id="extremes-archive-title">El període, resumit amb dades reals</h3><p id="extremes-coverage">Calculant la cobertura disponible…</p><span class="data-linked-period" id="data-extremes-period-label">Període del Centre de Dades · 30 dies</span></div><div class="segmented segmented--archive" role="group" aria-label="Període dels extrems"><button class="is-active" data-extreme-period="1">24 h</button><button data-extreme-period="7">7 dies</button><button data-extreme-period="30">30 dies</button><button data-extreme-period="365">1 any</button></div></header>
           <div class="archive-grid">
             <article><span>Temperatura</span><div><strong><b id="extreme-temp-max">—</b>°</strong><small>Màxima</small></div><div><strong><b id="extreme-temp-min">—</b>°</strong><small>Mínima</small></div></article>
             <article><span>Pluja</span><div><strong><b id="extreme-rain-total">—</b> mm</strong><small>Acumulada</small></div><div><strong><b id="extreme-rain-rate">—</b> mm/h</strong><small>Intensitat màxima</small></div></article>
@@ -441,7 +446,7 @@
       </section>
 
       <section id="tendencies" class="section-block" data-mobile-advanced data-portal-page="centre-dades">
-        <div class="section-heading evolution-heading"><div><p class="eyebrow">Evolució</p><h2>Històric meteorològic</h2><p id="evolution-period-copy">Lectures de les últimes 24 hores</p></div><div class="segmented" role="group" aria-label="Període de gràfica"><button class="is-active" data-period="24h">24 h</button><button data-period="7d">7 dies</button><button data-period="30d">30 dies</button><button data-period="1y">1 any</button></div></div>
+        <div class="section-heading evolution-heading"><div><p class="eyebrow">Evolució</p><h2>Històric meteorològic</h2><p id="evolution-period-copy">Evolució dels últims 30 dies</p><span class="data-linked-period" id="data-evolution-period-label">Període del Centre de Dades · 30 dies</span></div><div class="segmented" role="group" aria-label="Període de gràfica"><button class="is-active" data-period="24h">24 h</button><button data-period="7d">7 dies</button><button data-period="30d">30 dies</button><button data-period="1y">1 any</button></div></div>
         <div class="charts-grid">
           <article class="chart-card panel"><header><div><span>Temperatura i punt de rosada</span><strong><b id="chart-temp-now">--</b> °C</strong></div><span class="tag" id="history-status">Iniciant històric</span></header><div class="chart-wrap"><canvas id="temperature-chart"></canvas></div></article>
           <article class="chart-card panel"><header><div><span>Pressió atmosfèrica</span><strong><b id="chart-pressure-now">----</b> hPa</strong></div><span class="trend" id="chart-pressure-trend">Recollint dades</span></header><div class="chart-wrap"><canvas id="pressure-chart"></canvas></div></article>
@@ -596,7 +601,7 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V14.0.0</small>
+      <small>Dades locals · Sant Celoni, Montseny · V15.0.0</small>
       <div>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>

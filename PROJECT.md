@@ -80,6 +80,14 @@ El Centre de Dades calcula la pluviometria avançada a partir del mateix arxiu `
 
 `src/features/seo.js` centralitza les metadades de les vistes del portal. La fase tècnica de SEO inclou canòniques, descripcions locals, Open Graph, X, Schema.org, sitemap i instruccions de publicació. Search Console i les mètriques de camp només es poden activar després del desplegament.
 
+## Evolució V15
+
+Centre de Dades té un únic selector de 7, 30 o 365 dies que governa resum, gràfiques, extrems i exportacions mitjançant l’esdeveniment intern `observatori:data-period-change`. Les dades fixes d’avui, mes i any i el quadre pluviomètric queden agrupats com a calendari actual, explícitament independent del selector. No s’ha duplicat l’arxiu ni s’ha modificat `/history`.
+
+Meteo IA continua sent determinista i traçable. Afegeix una base didàctica acotada, enllaços a AEMET, Meteocat i l’Atles Internacional de Núvols de l’OMM, guia per escollir fonts i efemèrides calculades amb l’arxiu propi. Quan falta una sèrie comparable, ho declara i deriva cap a serveis climatològics oficials.
+
+La Compartició Premium viu a `src/features/share.js`. Genera targetes PNG de 1200 × 630 px al navegador i rep el mateix context actual, de predicció i d’avisos que la resta del portal. La targeta mai introdueix una observació absent; en pàgines sense context meteorològic mostra una composició editorial. El menú natiu amb fitxer s’utilitza quan el dispositiu l’admet i sempre hi ha descàrrega i còpia com a alternatives.
+
 ## Normes de canvi
 
 1. Treballar una sola fita cada vegada.

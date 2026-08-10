@@ -1,5 +1,33 @@
 # Changelog
 
+## V15.0.0 — 2026-08-10
+
+### Centre de Dades reordenat
+
+- Un únic selector de 7, 30 o 365 dies controla resum, gràfiques, extrems i descàrregues.
+- Gràfiques i extrems se sincronitzen automàticament i deixen de mostrar controls paral·lels contradictoris.
+- Les dades de calendari —avui, aquest mes, aquest any, pluviometria i «un dia com avui»— queden en un segon bloc clarament independent.
+- La descàrrega se situa al costat del resum del període i explica exactament quin conjunt exporta.
+
+### Meteo IA didàctica i amb efemèrides
+
+- Explica conceptes com DANA, fronts, isòbares, humitat, probabilitat de pluja, radar, models i núvols.
+- Recomana la font adequada segons si es busquen observacions, avisos, dades obertes, climatologia o classificació de núvols.
+- Enllaça AEMET MeteoGlosario, AEMET OpenData, dades obertes de Meteocat, serveis climatològics d’AEMET i l’Atles de Núvols de l’OMM.
+- Calcula «un dia com avui» només amb anys comparables de l’arxiu Fontanillas; si no n’hi ha, ho indica sense inventar registres.
+
+### Compartició Premium · Milestone 8 completat
+
+- Targeta automàtica de 1200 × 630 px amb marca, URL i observació, predicció o avisos reals segons la pàgina.
+- Compartició de la imatge amb el menú natiu quan és compatible, descàrrega PNG i còpia conjunta de text i enllaç.
+- Alternativa editorial sense xifres inventades quan una pàgina no disposa de context meteorològic.
+- Compartició disponible també a l’Historial d’avisos.
+
+### Validació i compatibilitat
+
+- Proves específiques per a conceptes, fonts i efemèrides de Meteo IA i per al contingut de les targetes.
+- Worker i contractes d’API sense canvis; PWA, push, avisos AEMET/Meteocat, comparativa i radar es mantenen compatibles.
+
 ## V14.0.0 — 2026-08-10
 
 ### Meteo IA amb context

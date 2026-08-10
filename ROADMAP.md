@@ -69,10 +69,14 @@ Evolucionat a V14.0.0: context de conversa temporal per recordar lloc, període 
 
 Base tècnica implementada a V14.0.0: metadades i canòniques per vista, Open Graph i X dinàmics, dades estructurades `WebSite`, `WebPage`, `Dataset` i `BreadcrumbList`, sitemap ampliat i SEO local per Sant Celoni i el Baix Montseny. La verificació de Search Console, l’enviament del sitemap i les dades de camp de Core Web Vitals requereixen que la versió estigui publicada; queden documentats a `docs/SEO-PUBLICACIO.md`. No s’activa Google Business Profile ni analítica sense comprovar elegibilitat, identificador i privacitat.
 
-## Milestone 8 — Compartició Premium
+## Milestone 8 — Compartició Premium — Completat
 
 - Targetes automàtiques amb dades, predicció, marca i URL.
 - Compartició robusta en mòbil i escriptori.
+
+Implementat a V15.0.0: el diàleg genera al navegador una targeta de 1200 × 630 px amb la identitat de l’Observatori, URL i dades reals disponibles. Adapta el contingut a observació actual, predicció o avisos; si no hi ha dades, utilitza una targeta editorial sense inventar valors. Permet compartir el fitxer amb el menú natiu del dispositiu, descarregar-lo en PNG o copiar text i enllaç. Funciona també a Comparar, Metodologia i Historial d’avisos.
+
+La mateixa versió reorganitza Centre de Dades amb un únic període per a resum, gràfiques, extrems i descàrrega, separat dels indicadors de calendari. Meteo IA incorpora explicacions meteorològiques, guia de fonts oficials i efemèrides basades en l’arxiu propi.
 
 ## Milestone 9 — Xarxes socials automàtiques
 
