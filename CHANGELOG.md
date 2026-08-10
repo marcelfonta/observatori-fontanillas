@@ -1,5 +1,10 @@
 # Changelog
 
+## V19.0.2 — 2026-08-10
+
+- Corregida la política de seguretat perquè la consulta pública de configuració de OneSignal es pugui executar, no només connectar.
+- Afegit un missatge de recuperació si el servei push no respon en quinze segons, evitant un estat «Preparant notificacions…» indefinit.
+
 ## V19.0.1 — 2026-08-10
 
 - Connectat el frontend amb l’App ID públic de OneSignal creat per a l’Observatori.

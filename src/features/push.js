@@ -18,6 +18,7 @@ const inviteYes = document.getElementById('alert-invite-yes');
 const inviteNo = document.getElementById('alert-invite-no');
 let OneSignalRef = null;
 let sdkReady = false;
+let sdkReadyTimer = null;
 
 function loadOneSignalSdk(){
   if(!appId || document.querySelector('script[data-onesignal-sdk]'))return;
@@ -150,16 +151,21 @@ function bindUi(){
 bindUi();
 
 if(appId){
+  sdkReadyTimer=window.setTimeout(()=>{
+    if(!sdkReady)setState('Configurar avisos','El servei de notificacions no ha respost. Recarrega la pàgina o revisa la protecció del navegador.',false,false);
+  },15000);
   window.OneSignalDeferred=window.OneSignalDeferred||[];
   window.OneSignalDeferred.push(async function(OneSignal){
     OneSignalRef=OneSignal;
     try {
       await OneSignal.init({ appId, serviceWorkerPath:'push/onesignal/OneSignalSDKWorker.js', serviceWorkerParam:{scope:'/push/onesignal/'}, autoResubscribe:true, notificationClickHandlerMatch:'origin', notificationClickHandlerAction:'focus' });
       sdkReady=true;
+      window.clearTimeout(sdkReadyTimer);
       OneSignal.User?.PushSubscription?.addEventListener?.('change',refresh);
       if(await optedIn())await syncTags(loadPrefs());
       await refresh();
     } catch(error){
+      window.clearTimeout(sdkReadyTimer);
       console.warn('OneSignal no s’ha pogut inicialitzar.',error);
       sdkReady=false;
       setState('Configurar avisos','Tria els tipus d’avís; el servei push no està disponible ara mateix',false,false);
