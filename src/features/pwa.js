@@ -1,8 +1,11 @@
+import { CONFIG } from '../core/config.js';
+
 const banner = document.getElementById('app-update-banner');
 const updateButton = document.getElementById('app-update-button');
 const dismissButton = document.getElementById('app-update-dismiss');
 let registration;
 let reloading = false;
+const RELOAD_GUARD_KEY = 'fontanillas-sw-controller-reload';
 
 function showUpdate() {
   if (banner) banner.hidden = false;
@@ -19,9 +22,11 @@ async function checkForUpdate() {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
-      // OneSignal i la PWA comparteixen el mateix registre d'arrel per evitar
-      // que dos Service Workers es reemplacin mútuament al navegador.
-      registration = await navigator.serviceWorker.register('/OneSignalSDKWorker.js', { updateViaCache: 'none' });
+      // Quan OneSignal està configurat, és l'únic responsable de registrar el
+      // Worker compartit. Registrar-lo també aquí amb una URL sense els seus
+      // paràmetres provocaria un bucle d'actualització i recàrrega.
+      if (CONFIG.oneSignalAppId) registration = await navigator.serviceWorker.ready;
+      else registration = await navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' });
       if (registration.waiting) showUpdate();
       registration.addEventListener('updatefound', () => {
         const worker = registration.installing;
@@ -38,7 +43,10 @@ if ('serviceWorker' in navigator) {
 
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (reloading) return;
+    const lastReload=Number(sessionStorage.getItem(RELOAD_GUARD_KEY)||0);
+    if(Date.now()-lastReload<10000)return;
     reloading = true;
+    sessionStorage.setItem(RELOAD_GUARD_KEY,String(Date.now()));
     window.location.reload();
   });
 

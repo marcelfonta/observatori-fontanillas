@@ -1,5 +1,12 @@
 # Changelog
 
+## V19.0.6 — 2026-08-10
+
+- Corregit immediatament el bucle de recàrrega introduït a la V19.0.5.
+- OneSignal és ara l'únic responsable de registrar el Worker compartit; la PWA reutilitza el registre actiu sense competir-hi.
+- Afegida una protecció temporal que impedeix diverses recàrregues consecutives davant canvis de controlador.
+- Es manté el Worker combinat necessari perquè Firefox pugui activar les notificacions sense perdre la PWA.
+
 ## V19.0.5 — 2026-08-10
 
 - Corregit l'error real de Firefox durant la instal·lació de `/OneSignalSDKWorker.js`.
