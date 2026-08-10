@@ -1,5 +1,11 @@
 # Changelog
 
+## V19.0.1 — 2026-08-10
+
+- Connectat el frontend amb l’App ID públic de OneSignal creat per a l’Observatori.
+- El SDK continua carregant-se sota demanda i manté el Service Worker de OneSignal separat de la PWA.
+- Les claus privades continuen fora del projecte públic i s’han de configurar exclusivament al Worker de Cloudflare.
+
 ## V19.0.0 — 2026-08-10
 
 ### Centre de Dades

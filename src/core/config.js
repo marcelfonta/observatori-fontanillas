@@ -8,7 +8,7 @@ export const CONFIG = {
   station: { latitude: 41.6906, longitude: 2.489, elevation: null },
   fallbackWebcam: 'https://www.alvar.cat/WebCam/Imatge-Camera.jpg',
   analyticsMeasurementId: '', // Ex.: G-XXXXXXXXXX
-  oneSignalAppId: '', // Ex.: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  oneSignalAppId: '108a857e-d115-4fc9-85b4-0a84fb0936f4',
   googleSiteVerification: '', // Valor del meta-tag, només si es verifica per prefix d’URL
   pushPreferencesKey: 'fontanillas-alert-preferences-v1',
   foregroundRefreshMinMs: 30 * 1000
