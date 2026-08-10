@@ -1,5 +1,32 @@
 # Changelog
 
+## V18.0.0 — 2026-08-10
+
+### Efemèrides amb curiositats verificades
+
+- «Un dia com avui» manté la comparació pròpia de Fontanillas quan hi ha anys disponibles.
+- Quan l’arxiu local encara és curt, mostra episodis de Catalunya documentats per Meteocat i rècords mundials verificats per l’OMM.
+- Cada curiositat indica data, any, àmbit, resum i enllaç directe a la font; mai es presenta com una dada de l’estació.
+- Meteo IA reutilitza el mateix catàleg quan se li demanen efemèrides o curiositats meteorològiques.
+
+### Cronologia meteorològica
+
+- Nou bloc al Centre de Dades que combina avisos oficials desats, dies amb pluja, màxima, mínima i ratxa destacada.
+- Filtres per avisos, pluja o extrems i sincronització amb el període general de 7, 30 o 365 dies.
+- Les fites deriven del mateix arxiu de Fontanillas i de `/alert-history`, sense crear una base paral·lela.
+
+### Avisos intel·ligents
+
+- Preferències per pluja, vent, tempesta, neu, temperatura o tots els fenòmens.
+- Nou nivell mínim configurable: groc, taronja o vermell.
+- El Worker combina categoria i severitat abans d’enviar a OneSignal i continua evitant duplicats mitjançant l’empremta única de D1.
+- Guia d’activació segura a `docs/PUSH-ACTIVACIO.md`; no s’inclou cap credencial al projecte.
+
+### Compatibilitat
+
+- No cal cap migració D1 i es conserven API, avisos visibles, historial, PWA, comparativa, compartir i administració.
+- Web, Worker, panell i memòria cau unificats a V18.0.0.
+
 ## V17.0.0 — 2026-08-10
 
 ### Historial d’avisos complet

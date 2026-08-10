@@ -1,4 +1,5 @@
 import { CONFIG } from '../core/config.js';
+import { DEFAULT_NOTIFICATION_PREFERENCES, notificationPreferenceSummary, notificationTags } from '../core/notification-preferences.js';
 
 const appId = String(CONFIG.oneSignalAppId || '').trim();
 const button = document.getElementById('push-alert-button');
@@ -8,6 +9,8 @@ const closeButton = document.getElementById('push-preferences-close');
 const saveButton = document.getElementById('push-preferences-save');
 const disableButton = document.getElementById('push-preferences-disable');
 const fields = [...document.querySelectorAll('[data-alert-preference]')];
+const levelFields = [...document.querySelectorAll('[data-alert-level]')];
+const summary = document.getElementById('push-preference-summary');
 const STORAGE_KEY = CONFIG.pushPreferencesKey || 'fontanillas-alert-preferences-v1';
 const INVITE_KEY = 'fontanillas-alert-invite-v1';
 const invite = document.getElementById('alertInviteModal');
@@ -16,7 +19,7 @@ const inviteNo = document.getElementById('alert-invite-no');
 let OneSignalRef = null;
 let sdkReady = false;
 
-const DEFAULT_PREFS = { rain:true, wind:true, storm:true, snow:true, temperature:true, all:false };
+const DEFAULT_PREFS = DEFAULT_NOTIFICATION_PREFERENCES;
 
 function isIos() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
 function isStandalone() { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
@@ -38,6 +41,8 @@ function openModal(){
   if(!modal)return;
   const prefs=loadPrefs();
   fields.forEach(f=>{f.checked=Boolean(prefs[f.value]);});
+  levelFields.forEach(field=>{field.checked=field.value===prefs.minLevel;});
+  if(summary)summary.textContent=notificationPreferenceSummary(prefs);
   modal.hidden=false; modal.style.display='flex'; document.body.style.overflow='hidden';
 }
 function closeModal(){ if(!modal)return; modal.hidden=true; modal.style.display='none'; document.body.style.overflow=''; }
@@ -56,13 +61,14 @@ function closeInvite(value){
 function collectPrefs(){
   const prefs={...DEFAULT_PREFS};
   fields.forEach(f=>prefs[f.value]=Boolean(f.checked));
+  prefs.minLevel=levelFields.find(field=>field.checked)?.value||'orange';
   if(prefs.all) Object.keys(prefs).forEach(k=>prefs[k]=true);
+  prefs.minLevel=levelFields.find(field=>field.checked)?.value||'orange';
   return prefs;
 }
 async function syncTags(prefs){
   if(!OneSignalRef)return;
-  const tags={};
-  for(const [key,value] of Object.entries(prefs)) tags[`alert_${key}`]=value?'1':'0';
+  const tags=notificationTags(prefs);
   try {
     if(OneSignalRef.User?.addTags) await OneSignalRef.User.addTags(tags);
     else if(OneSignalRef.sendTags) await OneSignalRef.sendTags(tags);
@@ -75,14 +81,14 @@ async function refresh(){
   const prefs=loadPrefs();
   if(!appId){
     const hasPrefs=Boolean(localStorage.getItem(STORAGE_KEY));
-    setState(hasPrefs?'Preferències desades':'Configurar avisos', hasPrefs?'Tipus d’avís guardats · activació push pendent':'Tria quins avisos meteorològics vols rebre', false, false);
+    setState(hasPrefs?'Preferències desades':'Configurar avisos', hasPrefs?`${notificationPreferenceSummary(prefs)} · activació push pendent`:'Tria fenomen i nivell mínim', false, false);
     return;
   }
   if(!sdkReady || !OneSignalRef){ setState('Activar avisos','Preparant notificacions…',false,true); return; }
   const supported=OneSignalRef.Notifications?.isPushSupported?.();
   if(!supported){ setState('Avisos no compatibles','Aquest navegador no admet notificacions web push',false,true); return; }
   const active=await optedIn();
-  if(active) setState('Gestionar avisos','Notificacions meteorològiques activades',true,false);
+  if(active) setState('Gestionar avisos',notificationPreferenceSummary(prefs),true,false);
   else if(isIos()&&!isStandalone()) setState('Activar avisos','A iPhone, afegeix primer la web a la pantalla d’inici',false,false);
   else setState('Activar avisos','Rep només avisos meteorològics importants',false,false);
 }
@@ -92,7 +98,7 @@ async function enablePush(){
   savePrefsLocal(prefs);
   if(!appId || !OneSignalRef){
     closeModal();
-    setState('Preferències desades','Tipus d’avís guardats · activació push pendent',false,false);
+    setState('Preferències desades',`${notificationPreferenceSummary(prefs)} · activació push pendent`,false,false);
     window.observatoriTrack?.('push_preferences_saved');
     return;
   }
@@ -108,7 +114,8 @@ async function enablePush(){
   } catch(error){ console.warn('No s’ha pogut activar Web Push.',error); setState('Activar avisos','No s’ha pogut completar la subscripció'); }
 }
 async function disablePush(){
-  savePrefsLocal({...DEFAULT_PREFS});
+  const disabled={...DEFAULT_PREFS,rain:false,wind:false,storm:false,snow:false,temperature:false,all:false};savePrefsLocal(disabled);
+  await syncTags(disabled);
   try { await OneSignalRef?.User?.PushSubscription?.optOut?.(); } catch(error){ console.warn('No s’han pogut desactivar els avisos.',error); }
   closeModal(); await refresh(); window.observatoriTrack?.('push_unsubscribed');
 }
@@ -122,6 +129,8 @@ function bindUi(){
   modal?.addEventListener('click',e=>{if(e.target===modal)closeModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal?.hidden)closeModal();});
   fields.find(f=>f.value==='all')?.addEventListener('change',e=>{if(e.target.checked)fields.filter(f=>f!==e.target).forEach(f=>f.checked=true);});
+  fields.filter(field=>field.value!=='all').forEach(field=>field.addEventListener('change',()=>{if(!field.checked){const all=fields.find(item=>item.value==='all');if(all)all.checked=false;}}));
+  [...fields,...levelFields].forEach(field=>field.addEventListener('change',()=>{if(summary)summary.textContent=notificationPreferenceSummary(collectPrefs());}));
   inviteNo?.addEventListener('click',()=>{closeInvite('declined');window.observatoriTrack?.('push_invite_declined');});
   inviteYes?.addEventListener('click',()=>{closeInvite('accepted');openModal();window.observatoriTrack?.('push_invite_accepted');});
   refresh();
@@ -138,6 +147,7 @@ if(appId){
       await OneSignal.init({ appId, serviceWorkerPath:'push/onesignal/OneSignalSDKWorker.js', serviceWorkerParam:{scope:'/push/onesignal/'}, autoResubscribe:true, notificationClickHandlerMatch:'origin', notificationClickHandlerAction:'focus' });
       sdkReady=true;
       OneSignal.User?.PushSubscription?.addEventListener?.('change',refresh);
+      if(await optedIn())await syncTags(loadPrefs());
       await refresh();
     } catch(error){
       console.warn('OneSignal no s’ha pogut inicialitzar.',error);

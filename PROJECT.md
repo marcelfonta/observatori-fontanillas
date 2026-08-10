@@ -104,6 +104,14 @@ El panell registra únicament incidències de JavaScript de la pestanya actual i
 
 Meteo IA utilitza `fetchAlertHistory()` només per preguntes inequívocament històriques, com «quants avisos hi ha hagut aquest any?» o «quan va ser l’últim avís?». Les preguntes sobre la situació actual continuen passant per `/alerts`, evitant confondre arxiu i vigilància activa.
 
+## Evolució V18
+
+`src/data/meteorological-ephemerides.js` és un catàleg editorial acotat, no una nova font d’observació. Cada entrada conté una data, un resum prudent i l’URL oficial de Meteocat o de l’Arxiu de Rècords de l’OMM. Centre de Dades i Meteo IA consumeixen exactament el mateix catàleg. Les efemèrides locals tenen prioritat i les curiositats externes s’etiqueten explícitament com a no locals.
+
+La cronologia es calcula al navegador amb `buildWeatherTimeline()`: combina el període seleccionat de `/history` amb els avisos del mateix `/alert-history` de V17. No desa cap còpia, no modifica D1 i no converteix màxims del període en rècords històrics.
+
+Les preferències push viuen a `src/core/notification-preferences.js`. El navegador transforma fenomen i nivell mínim en etiquetes de OneSignal; el Worker exigeix alhora l’etiqueta de categoria i la del nivell de l’episodi. `INSERT OR IGNORE` continua sent la protecció contra notificacions duplicades. L’activació externa requereix les credencials descrites a `docs/PUSH-ACTIVACIO.md`.
+
 ## Normes de canvi
 
 1. Treballar una sola fita cada vegada.

@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "17.0.0";
+const WORKER_VERSION = "18.0.0";
 const WORKER_BUILT = "2026-08-10";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -357,18 +357,23 @@ function notificationCategory(entry){
 async function sendOneSignalAlert(entry, env){
   if(!env.ONESIGNAL_APP_ID || !env.ONESIGNAL_REST_API_KEY)return {sent:false,reason:'not_configured'};
   const category=notificationCategory(entry);
+  const normalizedLevel=['yellow','orange','red'].includes(String(entry.level||'').toLowerCase())?String(entry.level).toLowerCase():'unknown';
   const level=entry.levelLabel || entry.level || 'Avís';
   const heading=`${level}: ${entry.phenomenon || 'avís meteorològic'}`;
   const body=String(entry.description || entry.title || 'Consulta el detall oficial.').slice(0,180);
   const filters=[
     {field:'tag',key:'alert_all',relation:'=',value:'1'},
+    {operator:'AND'},
+    {field:'tag',key:`alert_level_${normalizedLevel}`,relation:'=',value:'1'},
     {operator:'OR'},
     {field:'tag',key:`alert_${category}`,relation:'=',value:'1'},
+    {operator:'AND'},
+    {field:'tag',key:`alert_level_${normalizedLevel}`,relation:'=',value:'1'},
   ];
   const response=await fetch('https://api.onesignal.com/notifications',{
     method:'POST',
     headers:{'Authorization':`Key ${env.ONESIGNAL_REST_API_KEY}`,'Content-Type':'application/json'},
-    body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',filters,headings:{ca:heading,en:heading},contents:{ca:body,en:body},url:'https://meteo.fontanillas.cat/#avisos'})
+    body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',filters,headings:{ca:heading,en:heading},contents:{ca:body,en:body},url:'https://meteo.fontanillas.cat/?page=avisos'})
   });
   if(!response.ok){ console.error('OneSignal API error',response.status,await response.text()); return {sent:false,status:response.status}; }
   return {sent:true};

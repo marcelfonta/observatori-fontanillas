@@ -32,4 +32,4 @@ assert.equal(payload.pagination.totalPages,3);
 assert.equal(payload.stats.topPhenomenon,'Vent');
 assert.ok(statements.some(statement=>statement.bindings.at(-2)===2&&statement.bindings.at(-1)===4));
 
-console.log('Test de l’historial d’avisos V17: correcte');
+console.log('Test de l’historial d’avisos V18: correcte');

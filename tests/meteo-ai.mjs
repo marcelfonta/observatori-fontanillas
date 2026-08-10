@@ -108,6 +108,11 @@ const sourceGuide=await answerMeteoQuestion('On puc consultar dades meteorològi
 assert.ok(sourceGuide.sources.some(item=>item.label==='AEMET OpenData'));
 assert.ok(sourceGuide.sources.some(item=>item.label==='Meteocat · Dades obertes'));
 
+const curatedEphemeris=await answerMeteoQuestion('Explica’m una curiositat meteorològica',context,services);
+assert.match(curatedEphemeris.body,/Meteocat|OMM/);
+assert.ok(curatedEphemeris.facts.length>=3);
+assert.ok(curatedEphemeris.sources.every(item=>item.href));
+
 const previousDate=new Date(now);previousDate.setFullYear(previousDate.getFullYear()-1);
 const ephemeris=await answerMeteoQuestion('Efemèrides de l’estació',{...context,history:[...context.history,{t:previousDate.getTime(),temperatureMax:31.4,temperatureMin:18.2,rainIncrement:2.6}]},services);
 assert.match(ephemeris.title,/Un dia com avui/);
@@ -116,4 +121,4 @@ assert.match(ephemeris.facts.join(' '),/31,4 °C/);
 const unknown=await answerMeteoQuestion('Explica’m alguna cosa',context,services);
 assert.match(unknown.body,/conceptes/i);
 
-console.log('Test Meteo IA V17: correcte');
+console.log('Test Meteo IA V18: correcte');

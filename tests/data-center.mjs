@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 const nodes=new Map();
 global.document={getElementById(id){if(!nodes.has(id))nodes.set(id,{textContent:''});return nodes.get(id);}};
-const {renderDataCenter}=await import('../src/features/data-center.js');
+const {buildWeatherTimeline,renderDataCenter}=await import('../src/features/data-center.js');
 const atNoon=daysAgo=>{const date=new Date();date.setHours(12,0,0,0);date.setDate(date.getDate()-daysAgo);return date.getTime();};
 const history=[
   {t:atNoon(4),temperature:21,rainIncrement:0,windGust:9,samples:24},
@@ -18,4 +18,10 @@ assert.equal(nodes.get('data-rain-yesterday').textContent,'2,0 mm');
 assert.equal(nodes.get('data-rain-dry-days').textContent,'0');
 assert.equal(nodes.get('data-rain-since-10').textContent,'3');
 assert.match(nodes.get('data-rain-wettest').textContent,/12,0 mm/);
-console.log('Test de pluviometria V17: correcte');
+assert.match(nodes.get('data-ephemeris-copy').textContent,/efemèrides històriques verificades/);
+assert.match(nodes.get('data-ephemeris-list').innerHTML,/Meteocat|OMM/);
+const timeline=buildWeatherTimeline(history,[{started_at:new Date(atNoon(2)).toISOString(),level:'orange',phenomenon:'Vent',source:'AEMET'}]);
+assert.ok(timeline.some(item=>item.type==='alert'));
+assert.ok(timeline.some(item=>item.type==='rain'));
+assert.ok(timeline.some(item=>item.type==='extreme'));
+console.log('Test de pluviometria V18: correcte');

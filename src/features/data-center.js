@@ -1,9 +1,14 @@
+import { ephemerisDateLabel, meteorologicalEphemeridesForDate } from '../data/meteorological-ephemerides.js';
+import { fetchAlertHistory } from '../services/weather-api.js';
+
 const DAY = 86400000;
 const locale = 'ca-ES';
 
 let archive = [];
 let current = null;
 let activeDays = 30;
+let alertArchive = [];
+let timelineFilter = 'all';
 
 const number = value => {
   const parsed = Number(value);
@@ -14,6 +19,7 @@ const mean = list => list.length ? list.reduce((total, value) => total + value, 
 const deviation = list => { const average = mean(list); return average === null ? null : Math.sqrt(list.reduce((total, value) => total + (value - average) ** 2, 0) / list.length); };
 const fmt = (value, digits = 1) => value === null || !Number.isFinite(value) ? '—' : new Intl.NumberFormat(locale, { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(value);
 const set = (id, value) => { const node = document.getElementById(id); if (node) node.textContent = value; };
+const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, character => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' })[character]);
 const dateKey = value => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid' }).format(new Date(value));
 const selected = () => archive.filter(item => item.t >= Date.now() - activeDays * DAY);
 
@@ -120,13 +126,37 @@ function renderEphemeris() {
     return date.getFullYear() < now.getFullYear() && `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` === todayKey;
   });
   if (!matches.length) {
-    set('data-ephemeris-copy', 'Encara no hi ha prou anys d’arxiu per comparar aquesta data. L’espai s’omplirà automàticament a mesura que creixi l’històric.');
-    return;
+    set('data-ephemeris-copy', 'Fontanillas encara no té altres anys comparables. Mentrestant, aquí tens efemèrides històriques verificades properes a aquesta data.');
+  } else {
+    const highs = values(matches, 'temperatureMax', 'temperature');
+    const lows = values(matches, 'temperatureMin', 'temperature');
+    const years = [...new Set(matches.map(item => new Date(item.t).getFullYear()))];
+    set('data-ephemeris-copy', `${years.length} ${years.length === 1 ? 'any comparable' : 'anys comparables'} a Fontanillas · màxima ${fmt(highs.length ? Math.max(...highs) : null)} °C · mínima ${fmt(lows.length ? Math.min(...lows) : null)} °C.`);
   }
-  const highs = values(matches, 'temperatureMax', 'temperature');
-  const lows = values(matches, 'temperatureMin', 'temperature');
-  const years = [...new Set(matches.map(item => new Date(item.t).getFullYear()))];
-  set('data-ephemeris-copy', `${years.length} ${years.length === 1 ? 'any comparable' : 'anys comparables'} · màxima ${fmt(highs.length ? Math.max(...highs) : null)} °C · mínima ${fmt(lows.length ? Math.min(...lows) : null)} °C.`);
+  const host=document.getElementById('data-ephemeris-list');if(!host)return;
+  host.innerHTML=meteorologicalEphemeridesForDate(now,3).map(item=>`<article><span>${escapeHtml(item.scope)} · ${escapeHtml(item.kind)}</span><strong>${item.year} · ${escapeHtml(item.title)}</strong><p>${escapeHtml(item.summary)}</p><a href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">${item.exact?'Tal dia com avui':ephemerisDateLabel(item)} · ${escapeHtml(item.source)} ↗</a></article>`).join('');
+}
+
+export function buildWeatherTimeline(history=[],alerts=[]){
+  const items=[...history].filter(item=>Number.isFinite(Number(item.t))).sort((a,b)=>a.t-b.t);const groups=new Map();
+  items.forEach(item=>{const key=dateKey(item.t);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(item);});
+  const firstTimestamp=items[0]?.t||0;const events=(alerts||[]).map(item=>({timestamp:new Date(item.started_at||item.created_at||0).getTime(),type:'alert',label:'Avís oficial',title:item.phenomenon||item.title||'Avís meteorològic',detail:`Nivell ${String(item.level||'oficial').toLowerCase()} · ${item.source||'AEMET'}`,source:item.source||'AEMET',href:'./historial-avisos.html'})).filter(item=>Number.isFinite(item.timestamp)&&(!firstTimestamp||item.timestamp>=firstTimestamp));
+  const days=[...groups].map(([key,group])=>{const temperatures=values(group,'temperature');const highs=values(group,'temperatureMax','temperature');const lows=values(group,'temperatureMin','temperature');const gusts=values(group,'windGust');return {key,timestamp:new Date(`${key}T12:00:00`).getTime(),rain:rainTotal(group),high:highs.length?Math.max(...highs):temperatures.length?Math.max(...temperatures):null,low:lows.length?Math.min(...lows):temperatures.length?Math.min(...temperatures):null,gust:gusts.length?Math.max(...gusts):null};});
+  days.filter(day=>day.rain>=.1).sort((a,b)=>b.rain-a.rain).slice(0,4).forEach(day=>events.push({timestamp:day.timestamp,type:'rain',label:'Pluja observada',title:`${fmt(day.rain)} mm en un dia`,detail:'Acumulació calculada amb l’arxiu de Fontanillas',source:'Estació Fontanillas',href:'./?page=centre-dades'}));
+  const highs=days.filter(day=>day.high!==null).sort((a,b)=>b.high-a.high);if(highs[0])events.push({timestamp:highs[0].timestamp,type:'extreme',label:'Temperatura',title:`Màxima del període · ${fmt(highs[0].high)} °C`,detail:'Valor més alt dins de la selecció',source:'Estació Fontanillas',href:'./?page=centre-dades'});
+  const lows=days.filter(day=>day.low!==null).sort((a,b)=>a.low-b.low);if(lows[0])events.push({timestamp:lows[0].timestamp,type:'extreme',label:'Temperatura',title:`Mínima del període · ${fmt(lows[0].low)} °C`,detail:'Valor més baix dins de la selecció',source:'Estació Fontanillas',href:'./?page=centre-dades'});
+  const gusts=days.filter(day=>day.gust!==null).sort((a,b)=>b.gust-a.gust);if(gusts[0])events.push({timestamp:gusts[0].timestamp,type:'extreme',label:'Vent',title:`Ratxa màxima · ${fmt(gusts[0].gust)} km/h`,detail:'Ratxa més alta dins de la selecció',source:'Estació Fontanillas',href:'./?page=centre-dades'});
+  return events.sort((a,b)=>b.timestamp-a.timestamp);
+}
+
+function renderWeatherTimeline(){
+  const host=document.getElementById('data-weather-timeline');if(!host)return;const periodItems=selected();const all=buildWeatherTimeline(periodItems,alertArchive);const filtered=(timelineFilter==='all'?all:all.filter(item=>item.type===timelineFilter)).slice(0,10);
+  host.innerHTML=filtered.length?filtered.map(item=>`<article class="is-${escapeHtml(item.type)}"><time datetime="${new Date(item.timestamp).toISOString()}">${new Intl.DateTimeFormat(locale,{day:'numeric',month:'short',year:'numeric'}).format(item.timestamp)}</time><i></i><div><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p><a href="${escapeHtml(item.href)}">${escapeHtml(item.source)} →</a></div></article>`).join(''):'<div class="weather-timeline__empty">No hi ha episodis d’aquest tipus dins del període disponible.</div>';
+  const coverage=periodItems.length?Math.max(1,Math.round((periodItems.at(-1).t-periodItems[0].t)/DAY)+1):0;set('data-weather-timeline-status',`${all.length} fites trobades · ${coverage?`${coverage} dies de cobertura disponible`:'sense cobertura local'}`);
+}
+
+async function loadAlertTimeline(){
+  try{const payload=await fetchAlertHistory({page:1,pageSize:50});alertArchive=Array.isArray(payload.items)?payload.items:[];}catch(error){console.warn('L’historial d’avisos no està disponible per a la cronologia.',error);alertArchive=[];}renderWeatherTimeline();
 }
 
 export function renderDataCenter(history = [], latest = null) {
@@ -156,6 +186,7 @@ export function renderDataCenter(history = [], latest = null) {
   renderPeriod('data-yearly', archive.filter(item => dateKey(item.t).startsWith(year)));
   renderRainDashboard();
   renderEphemeris();
+  renderWeatherTimeline();
   if (typeof document.dispatchEvent === 'function' && typeof CustomEvent !== 'undefined') {
     document.dispatchEvent(new CustomEvent('observatori:data-period-change', { detail: { days: activeDays } }));
   }
@@ -252,4 +283,6 @@ export function initDataCenter() {
     renderDataCenter(archive, current);
   }));
   document.querySelectorAll('[data-export-format]').forEach(button => button.addEventListener('click', () => runExport(button.dataset.exportFormat)));
+  document.querySelectorAll('[data-timeline-filter]').forEach(button=>button.addEventListener('click',()=>{timelineFilter=button.dataset.timelineFilter||'all';document.querySelectorAll('[data-timeline-filter]').forEach(item=>item.classList.toggle('is-active',item===button));renderWeatherTimeline();}));
+  loadAlertTimeline();
 }

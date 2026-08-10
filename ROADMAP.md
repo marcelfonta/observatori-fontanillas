@@ -101,16 +101,25 @@ Es farà com a última gran fase, després d’acordar conjuntament noms, identi
 
 V12 limita la vista principal als cinc episodis més recents i incorpora una pàgina d’arxiu separada. V17 completa la fita: paginació real al Worker, cerca i filtres combinables, comptadors, distribució mensual i per fenomen, CSV, PDF i consultes des de Meteo IA. L’endpoint antic amb `limit` continua funcionant perquè la portada i les versions anteriors no es trenquin.
 
-## Fases pendents després de V17
+## V18 — Memòria meteorològica i avisos intel·ligents — Completat
 
-1. Activació pública del SEO tècnic: Search Console, sitemap i mesura de Core Web Vitals sobre la versió publicada.
-2. Configuració opcional de notificacions push i analítica, amb credencials i criteris de privacitat acordats amb l’usuari.
-3. Milestone 9 de xarxes socials, mantingut expressament per al final i creat conjuntament amb l’usuari.
-4. Seleccionar una única evolució del backlog segons valor real abans d’obrir una nova fase gran.
+- Efemèrides externes verificades com a alternativa quan encara no existeixen anys comparables a Fontanillas.
+- Cronologia meteorològica amb avisos, pluja i extrems del període.
+- Preferències de notificació per fenomen i nivell mínim, preparades per activar amb OneSignal.
+
+V18 reutilitza l’arxiu existent i no inventa registres locals. L’activació efectiva del push continua necessitant les credencials de OneSignal; el codi i la guia ja estan preparats.
+
+## Fases pendents després de V18
+
+1. Publicar i activar Search Console, sitemap i mesura de Core Web Vitals.
+2. Introduir les credencials de OneSignal i fer una prova controlada de notificacions.
+3. Decidir si s’activa analítica respectuosa amb la privacitat.
+4. Crear les xarxes socials conjuntament amb l’usuari com a última gran fase.
+5. Escollir entre recursos escolars, centre de notícies o detecció assistida de la webcam com a futura evolució.
 
 ## Backlog
 
-Centre de notícies meteorològiques, calendari i cronologia meteorològica, API pública, widgets, recursos escolars, episodis destacats, fotografia automàtica, webcam amb detecció assistida, alertes intel·ligents i prediccions personalitzades.
+Centre de notícies meteorològiques, calendari, API pública, widgets, recursos escolars, episodis destacats, fotografia automàtica, webcam amb detecció assistida i prediccions personalitzades.
 
 ## Definició de projecte madur
 

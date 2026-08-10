@@ -40,14 +40,14 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=17.0.0" />
-    <link rel="stylesheet" href="css/portal.css?v=17.0.0" />
+    <link rel="stylesheet" href="css/style.css?v=18.0.0" />
+    <link rel="stylesheet" href="css/portal.css?v=18.0.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=17.0.0"></script>
+    <script type="module" src="src/features/push.js?v=18.0.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=17.0.0"></script>
+    <script type="module" src="src/app.js?v=18.0.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","url":"https://meteo.fontanillas.cat/?page=centre-dades","spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -261,8 +261,16 @@
             <p class="eyebrow">Efemèrides</p>
             <h2>Un dia com avui</h2>
             <p id="data-ephemeris-copy">Comprovant si hi ha altres anys disponibles per a aquesta data…</p>
+            <div class="data-ephemeris-list" id="data-ephemeris-list" aria-live="polite"></div>
+            <small class="data-ephemeris-note">Curiositats verificades per Meteocat o l’Organització Meteorològica Mundial. No són dades de l’estació Fontanillas.</small>
           </article>
         </div>
+
+        <section class="weather-timeline panel" aria-labelledby="weather-timeline-title">
+          <header><div><p class="eyebrow">Cronologia meteorològica</p><h2 id="weather-timeline-title">Els episodis, ordenats en el temps.</h2><p>Combina avisos oficials desats, dies de pluja i extrems del període seleccionat, sempre indicant d’on surt cada dada.</p></div><div class="weather-timeline__filters" role="group" aria-label="Filtrar la cronologia"><button type="button" class="is-active" data-timeline-filter="all">Tot</button><button type="button" data-timeline-filter="alert">Avisos</button><button type="button" data-timeline-filter="rain">Pluja</button><button type="button" data-timeline-filter="extreme">Extrems</button></div></header>
+          <div class="weather-timeline__list" id="data-weather-timeline" aria-live="polite"><div class="weather-timeline__empty">Preparant la cronologia…</div></div>
+          <footer><span id="data-weather-timeline-status">Dades de Fontanillas i historial oficial</span><a href="./historial-avisos.html">Obrir l’historial d’avisos →</a></footer>
+        </section>
       </section>
 
       <section id="resum-dia" class="insights-section section-block" aria-labelledby="insights-title" data-mobile-advanced data-portal-page="estacio centre-dades">
@@ -602,7 +610,7 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V17.0.0</small>
+      <small>Dades locals · Sant Celoni, Montseny · V18.0.0</small>
       <div>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>
@@ -622,6 +630,8 @@
           <label><input type="checkbox" value="temperature" data-alert-preference checked><span>🌡️<b>Temperatura extrema</b><small>Calor, fred o gelada destacables</small></span></label>
           <label class="push-pref-all"><input type="checkbox" value="all" data-alert-preference><span>🔔<b>Tots els avisos</b><small>Activa totes les categories</small></span></label>
         </div>
+        <fieldset class="push-level-preferences"><legend>A partir de quin nivell?</legend><label><input type="radio" name="push-min-level" value="yellow" data-alert-level><span><b>Groc</b><small>Tots els avisos oficials</small></span></label><label><input type="radio" name="push-min-level" value="orange" data-alert-level checked><span><b>Taronja</b><small>Només situacions importants</small></span></label><label><input type="radio" name="push-min-level" value="red" data-alert-level><span><b>Vermell</b><small>Només situacions extremes</small></span></label></fieldset>
+        <p class="push-preference-summary" id="push-preference-summary">Pluja, vent, tempestes, neu i temperatura · taronja o vermell</p>
         <footer><button type="button" class="secondary" id="push-preferences-disable">Desactivar avisos</button><button type="button" class="primary" id="push-preferences-save">Desar i activar</button></footer>
       </section>
     </div>

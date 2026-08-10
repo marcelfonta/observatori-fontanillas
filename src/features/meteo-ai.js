@@ -1,4 +1,5 @@
 import { fetchAlertHistory, fetchAlerts, fetchCurrentWeather, fetchForecast, fetchLocalityWeather, fetchNearbyStations } from '../services/weather-api.js';
+import { ephemerisDateLabel, meteorologicalEphemeridesForDate } from '../data/meteorological-ephemerides.js';
 
 const state={current:null,history:[],forecast:null,alerts:null,environment:null};
 let initialized=false;
@@ -181,7 +182,7 @@ function historyAnswer(context){
 function stationEphemerisAnswer(context){
   const now=new Date();const month=now.getMonth();const day=now.getDate();
   const matches=(context.history||[]).filter(item=>{const date=new Date(Number(item.t));return Number.isFinite(date.getTime())&&date.getFullYear()<now.getFullYear()&&date.getMonth()===month&&date.getDate()===day;});
-  if(!matches.length)return response('Encara no hi ha prou arxiu per a un dia com avui','L’estació no disposa encara d’una observació d’aquesta mateixa data en anys anteriors. No inventaré una efemèride: la comparació s’activarà automàticament quan l’arxiu tingui més d’un any.',{sources:[source('Arxiu Fontanillas','Cobertura disponible'),source('AEMET · Dades climatològiques','Efemèrides i sèries oficials')],followups:['Com ha canviat la temperatura?','On puc consultar dades meteorològiques oficials?']});
+  if(!matches.length){const events=meteorologicalEphemeridesForDate(now,3);const exact=events.find(item=>item.exact);return response(exact?'Tal dia com avui, a la història del temps':'Curiositats meteorològiques properes a avui',`Fontanillas encara no té una observació d’aquesta data en anys anteriors. Per no deixar l’espai buit, et mostro episodis documentats per Meteocat o rècords verificats per l’OMM; no són dades de l’estació local.`,{facts:events.map(item=>`${ephemerisDateLabel(item)} de ${item.year} · ${item.title} · ${item.scope}`),sources:events.map(item=>source(`${item.source} · Efemèrides`,item.title,item.url)),followups:['Com ha canviat la temperatura?','On puc consultar dades meteorològiques oficials?']});}
   const byYear=new Map();matches.forEach(item=>{const year=new Date(Number(item.t)).getFullYear();if(!byYear.has(year))byYear.set(year,[]);byYear.get(year).push(item);});
   const facts=[...byYear.entries()].sort((a,b)=>b[0]-a[0]).slice(0,6).map(([year,items])=>{const temperatures=items.flatMap(item=>[n(item.temperatureMax),n(item.temperature),n(item.temperatureMin)]).filter(value=>value!==null);const rain=items.reduce((sum,item)=>sum+(n(item.rainIncrement)??0),0);return `${year} · ${temperatures.length?`${fmt(Math.min(...temperatures))}–${fmt(Math.max(...temperatures))} °C`:'temperatura no disponible'} · ${fmt(rain)} mm`;});
   const allTemperatures=matches.flatMap(item=>[n(item.temperatureMax),n(item.temperature),n(item.temperatureMin)]).filter(value=>value!==null);
@@ -330,7 +331,7 @@ function shouldUseConversation(q){return /\bhi\b|alla|aquella zona|quin temps|te
 export async function answerMeteoQuestion(question,context=state,services={fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},memory=null){
   const q=normalize(question);
   if(/on (puc|es pot)|on consultar|quina font|fonts fiables|d on treure|dades obertes|informacio meteorologica/.test(q))return sourceGuideAnswer();
-  if(/efemer|un dia com avui|record historic|record meteorologic/.test(q))return stationEphemerisAnswer(context);
+  if(/efemer|un dia com avui|record historic|record meteorologic|curiositat meteorologica/.test(q))return stationEphemerisAnswer(context);
   const knowledge=meteorologyKnowledgeAnswer(question);if(knowledge)return knowledge;
   const explicitLocality=localityFromQuestion(question);
   const explicitPeriod=periodFromQuestion(question);const explicitActivity=activityFromQuestion(question);

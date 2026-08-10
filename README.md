@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V17.0.0
+# Observatori Meteorològic Fontanillas — V18.0.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V17 completa l’historial d’avisos amb paginació, filtres, estadístiques, gràfics, CSV/PDF i consultes des de Meteo IA, i conserva el panell d’administració protegit de V16.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V18 incorpora efemèrides meteorològiques verificades, una cronologia d’episodis i preferències d’avisos per fenomen i nivell mínim.
 
 ## Estat actual
 
@@ -15,6 +15,9 @@ Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V17 comp
 - Marca coherent en web, instal·lació i compartició, amb accessos ràpids de la PWA a Meteo IA, Estació, Avisos i Radar.
 - Meteo IA per consultar situació actual, predicció, avisos, històrics, comparador, medi ambient, activitats i altres poblacions.
 - Botó flotant per fer una primera pregunta ràpida i continuar després a la pàgina completa de Meteo IA.
+- Curiositats històriques de Meteocat i l’OMM quan encara no hi ha anys locals comparables.
+- Cronologia conjunta d’avisos, pluja i extrems al Centre de Dades.
+- Notificacions preparades per triar fenomen i nivell mínim, amb activació documentada a `docs/PUSH-ACTIVACIO.md`.
 
 ## Estructura activa
 
@@ -40,7 +43,7 @@ Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas 
 
 ## Worker
 
-El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. V17 requereix publicar el Worker nou, però no necessita cap migració de base de dades.
+El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. V18 requereix publicar el Worker nou per aplicar el nivell mínim de notificació, però no necessita cap migració de base de dades.
 
 ## Configuració
 
@@ -54,6 +57,7 @@ El panell `/administracio.html` necessita el secret `ADMIN_TOKEN` al Worker. La 
 node tests/smoke.mjs
 node tests/admin.mjs
 node tests/alert-history.mjs
+node tests/v18.mjs
 ```
 
 Les proves comproven navegació, selectors crítics, PWA, Meteo IA, icones, Centre de Dades, peus, protecció administrativa i absència de duplicacions de «Tornar amunt». `node tests/meteo-ai.mjs` valida conversa geogràfica, coneixement, fonts i efemèrides; `node tests/share-card.mjs` valida que les targetes no inventin dades.
