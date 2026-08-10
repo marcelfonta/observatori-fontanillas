@@ -19,6 +19,16 @@ const inviteNo = document.getElementById('alert-invite-no');
 let OneSignalRef = null;
 let sdkReady = false;
 
+function loadOneSignalSdk(){
+  if(!appId || document.querySelector('script[data-onesignal-sdk]'))return;
+  const script=document.createElement('script');
+  script.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+  script.defer=true;
+  script.dataset.onesignalSdk='';
+  script.onerror=()=>setState('Configurar avisos','No s’ha pogut carregar el servei push; les preferències continuen desades',false,false);
+  document.head.append(script);
+}
+
 const DEFAULT_PREFS = DEFAULT_NOTIFICATION_PREFERENCES;
 
 function isIos() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
@@ -155,4 +165,5 @@ if(appId){
       setState('Configurar avisos','Tria els tipus d’avís; el servei push no està disponible ara mateix',false,false);
     }
   });
+  loadOneSignalSdk();
 }

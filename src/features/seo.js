@@ -1,3 +1,5 @@
+import { CONFIG } from '../core/config.js';
+
 const BASE='https://meteo.fontanillas.cat/';
 const PAGES={
   inici:{title:'Observatori Meteorològic Fontanillas · Temps a Sant Celoni',description:'Dades meteorològiques en directe, avisos, predicció i radar des de Sant Celoni, als peus del Montseny.'},
@@ -10,6 +12,7 @@ const PAGES={
   webcams:{title:'Webcams de Sant Celoni i el Montseny',description:'Vista actual de la webcam Fontanillas i selecció de webcams properes al Montseny.'},
   'centre-dades':{title:'Dades meteorològiques històriques de Sant Celoni',description:'Històric, pluja, extrems, cobertura i descàrregues de l’estació Fontanillas a Sant Celoni.'},
   'medi-ambient':{title:'Qualitat de l’aire i medi ambient a Sant Celoni',description:'Qualitat de l’aire, UV, pol·len, risc d’incendi, sequera i meduses amb fonts identificades.'},
+  aprendre:{title:'Aprendre meteorologia · Observatori Fontanillas',description:'Guia clara per entendre els sensors, els núvols, els avisos i la predicció meteorològica amb exemples pràctics.'},
   contacte:{title:'Contacte · Observatori Fontanillas',description:'Contacta amb l’Observatori Meteorològic Fontanillas per consultes, incidències de dades o propostes.'}
 };
 
@@ -18,6 +21,10 @@ function setMeta(selector,value){const node=document.querySelector(selector);if(
 export function updateSeoMetadata(page='inici'){
   const current=PAGES[page]||PAGES.inici;
   const url=page==='inici'?BASE:`${BASE}?page=${encodeURIComponent(page)}`;
+  const verification=String(CONFIG.googleSiteVerification||'').trim();
+  let verificationMeta=document.querySelector('meta[name="google-site-verification"]');
+  if(verification&&!verificationMeta){verificationMeta=document.createElement('meta');verificationMeta.name='google-site-verification';document.head.append(verificationMeta);}
+  if(verificationMeta){if(verification)verificationMeta.content=verification;else verificationMeta.remove();}
   document.title=current.title;
   document.querySelector('link[rel="canonical"]')?.setAttribute('href',url);
   setMeta('meta[name="description"]',current.description);

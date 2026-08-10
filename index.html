@@ -40,14 +40,13 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=18.0.0" />
-    <link rel="stylesheet" href="css/portal.css?v=18.0.0" />
+    <link rel="stylesheet" href="css/style.css?v=19.0.0" />
+    <link rel="stylesheet" href="css/portal.css?v=19.0.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=18.0.0"></script>
+    <script type="module" src="src/features/push.js?v=19.0.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=18.0.0"></script>
+    <script type="module" src="src/app.js?v=19.0.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","url":"https://meteo.fontanillas.cat/?page=centre-dades","spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -82,7 +81,7 @@
         </div>
         <div class="current-temp">
           <a class="hero-webcam-preview" href="?page=webcams" aria-label="Obrir la webcam de l’observatori">
-            <img id="hero-webcam-image" alt="Vista actual des de la webcam de l’observatori" loading="eager" />
+            <img id="hero-webcam-image" alt="Vista actual des de la webcam de l’observatori" loading="eager" decoding="async" fetchpriority="high" />
             <span><i aria-hidden="true"></i>Webcam · ara</span>
           </a>
           <div class="current-temp__value"><span id="temperature">--</span><sup>°C</sup></div>
@@ -112,6 +111,7 @@
       <section class="portal-view-header panel" aria-labelledby="webcams-page-title" data-portal-page="webcams"><div><p class="eyebrow">Webcams</p><h1 id="webcams-page-title">Una mirada directa al Montseny.</h1><p>Imatge de l’observatori i accessos seleccionats a altres vistes properes.</p></div><span class="tag">Imatge actual</span></section>
       <section class="portal-view-header panel" aria-labelledby="data-page-title" data-portal-page="centre-dades"><div><p class="eyebrow">Centre de Dades</p><h1 id="data-page-title">L’arxiu meteorològic, ordenat.</h1><p>Resums, cobertura, rècords i descàrregues a partir de l’històric real.</p></div><span class="tag">Dades pròpies</span></section>
       <section class="portal-view-header panel" aria-labelledby="environment-page-title" data-portal-page="medi-ambient"><div><p class="eyebrow">Medi Ambient</p><h1 id="environment-page-title">Entorn i salut ambiental.</h1><p>Aire, radiació, pol·len i accés directe als indicadors oficials del territori i la costa.</p></div><span class="tag">Sant Celoni</span></section>
+      <section class="portal-view-header panel" aria-labelledby="learning-page-title" data-portal-page="aprendre"><div><p class="eyebrow">Aprendre meteorologia</p><h1 id="learning-page-title">Entendre el temps, pas a pas.</h1><p>Conceptes curts, exemples locals i una prova ràpida per interpretar millor les dades i els avisos.</p></div><span class="tag">Guia pràctica</span></section>
       <section class="portal-view-header panel" aria-labelledby="contact-page-title" data-portal-page="contacte"><div><p class="eyebrow">Contacte</p><h1 id="contact-page-title">Parlem de meteorologia.</h1><p>Consultes, incidències de dades i propostes per continuar millorant l’Observatori.</p></div><span class="tag">Canal privat</span></section>
 
       <section id="meteo-ia" class="meteo-ai-section section-block" aria-labelledby="meteo-ai-title" data-portal-page="meteo-ia">
@@ -486,7 +486,7 @@
       <section id="territori" class="territory-grid section-block" data-portal-page="inici radar webcams">
         <article class="webcam-card panel">
           <header><div><p class="eyebrow">Mirada al territori</p><h2>Webcam en directe</h2><a class="source-link" href="https://www.alvar.cat/" target="_blank" rel="noreferrer">Font: alvar.cat ↗</a></div><span class="live-pill"><span></span>Imatge actual</span></header>
-          <div class="webcam-frame"><img id="webcam-image" alt="Webcam meteorològica de l’entorn del Montseny" /><div class="webcam-overlay"><span id="webcam-time">Ara</span><b>Sant Celoni · Montseny</b></div></div>
+          <div class="webcam-frame"><img id="webcam-image" alt="Webcam meteorològica de l’entorn del Montseny" loading="lazy" decoding="async" /><div class="webcam-overlay"><span id="webcam-time">Ara</span><b>Sant Celoni · Montseny</b></div></div>
           <div class="webcam-details"><span><small>Actualització</small><b>Cada 5 minuts</b></span><span><small>Lectura visual</small><b>Núvols · boira · visibilitat</b></span><span><small>Àmbit</small><b>Entorn del Montseny</b></span></div>
           <section class="nearby-webcams" aria-labelledby="nearby-webcams-title">
             <div><p class="eyebrow">Altres mirades</p><h3 id="nearby-webcams-title">Webcams properes al Montseny</h3><p>Accessos externs seleccionats per consultar altres orientacions quan hi hagi imatge disponible.</p></div>
@@ -586,6 +586,18 @@
         </section>
         <p class="environment-note"><span>i</span> L’UV prové prioritàriament del sensor de Fontanillas; l’aire i el pol·len són estimacions CAMS via Open‑Meteo. Pla Alfa i ACA són fonts oficials. MedusApp aporta albiraments universitaris i ciutadans; Meduseo queda com a alternativa internacional externa.</p>
       </section>
+      <section id="aprendre" class="learning-section section-block" aria-labelledby="learning-title" data-portal-page="aprendre">
+        <header class="section-heading"><div><p class="eyebrow">Aula oberta</p><h2 id="learning-title">Quatre idees per llegir el temps amb criteri.</h2><p>La meteorologia no és només una xifra: importa la tendència, el lloc, l’hora i la font.</p></div></header>
+        <div class="learning-grid">
+          <article class="learning-card panel"><span class="learning-card__number">01</span><h3>Sensors de l’estació</h3><p><b>Temperatura</b> explica l’estat de l’aire; <b>humitat</b> i punt de rosada ajuden a entendre la xafogor, la boira o la condensació.</p><button type="button" data-learning-topic="sensors" aria-expanded="false">Veure una regla pràctica</button><div hidden data-learning-detail="sensors">Mira primer la temperatura i després el punt de rosada: com més s’acosten, més fàcil és arribar a saturació.</div></article>
+          <article class="learning-card panel"><span class="learning-card__number">02</span><h3>Pressió i vent</h3><p>La pressió sola diu poc. La seva <b>evolució</b>, juntament amb el vent i els mapes, ajuda a identificar canvis de massa d’aire.</p><button type="button" data-learning-topic="pressure" aria-expanded="false">Veure una regla pràctica</button><div hidden data-learning-detail="pressure">Una baixada ràpida pot anunciar canvi, però mai substitueix la predicció oficial ni el radar.</div></article>
+          <article class="learning-card panel"><span class="learning-card__number">03</span><h3>Predicció i incertesa</h3><p>La previsió és més fiable a curt termini. Quan els models discrepen, convé parlar d’<b>escenaris</b>, no d’una certesa única.</p><button type="button" data-learning-topic="forecast" aria-expanded="false">Veure una regla pràctica</button><div hidden data-learning-detail="forecast">Per decidir una activitat, revisa de nou la previsió el dia abans i el radar just abans de sortir.</div></article>
+          <article class="learning-card panel"><span class="learning-card__number">04</span><h3>Avisos oficials</h3><p>Un avís descriu un risc potencial per zona i franja horària. No garanteix que el fenomen afecti exactament cada carrer.</p><button type="button" data-learning-topic="alerts" aria-expanded="false">Veure una regla pràctica</button><div hidden data-learning-detail="alerts">Groc demana atenció; taronja, preparació; vermell, mesures excepcionals i seguiment estricte de Protecció Civil.</div></article>
+        </div>
+        <article class="learning-quiz panel" aria-labelledby="learning-quiz-title"><div><p class="eyebrow">Comprovació ràpida</p><h3 id="learning-quiz-title">Què consultaries abans d’una excursió?</h3><p>Tria la resposta més completa.</p></div><div class="learning-quiz__answers" role="group" aria-describedby="learning-quiz-feedback"><button type="button" data-learning-answer="partial">Només la temperatura</button><button type="button" data-learning-answer="correct">Predicció, avisos i radar abans de sortir</button><button type="button" data-learning-answer="partial">Només una aplicació</button></div><p id="learning-quiz-feedback" aria-live="polite">Encara no has respost.</p></article>
+        <aside class="learning-sources panel"><div><p class="eyebrow">Continuar aprenent</p><h3>Fonts fiables i obertes.</h3></div><div><a href="https://cloudatlas.wmo.int/" target="_blank" rel="noopener noreferrer">Atles Internacional de Núvols · OMM ↗</a><a href="https://www.meteocat.cat/wpweb/divulgacio/" target="_blank" rel="noopener noreferrer">Divulgació · Meteocat ↗</a><a href="./metodologia.html">Com es construeix aquest portal →</a></div></aside>
+      </section>
+
       <section id="contacte" class="contact-section section-block" aria-labelledby="contact-title" data-portal-page="contacte">
         <article class="contact-intro panel">
           <p class="eyebrow">Escriu a l’Observatori</p>
@@ -610,8 +622,9 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V18.0.0</small>
+      <small>Dades locals · Sant Celoni, Montseny · V19.0.0</small>
       <div>
+        <a href="./privacitat.html">Privacitat</a>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>
       </div>

@@ -114,8 +114,8 @@ function periodSummary(items) {
 
 function renderPeriod(idPrefix, items) {
   const summary = periodSummary(items);
-  set(`${idPrefix}-temp`, summary.temperature === null ? 'Sense dades' : `${fmt(summary.temperature)} °C de mitjana`);
-  set(`${idPrefix}-rain`, summary.samples ? `${fmt(summary.rain)} mm · ${summary.samples} mostres` : 'Període encara no disponible');
+  set(`${idPrefix}-temp`, summary.temperature === null ? 'Sense dades' : `${fmt(summary.temperature)} °C`);
+  set(`${idPrefix}-rain`, summary.samples ? `Mitjana · ${fmt(summary.rain)} mm · ${summary.samples} mostres` : 'Període encara no disponible');
 }
 
 function renderEphemeris() {

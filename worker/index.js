@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "18.0.0";
+const WORKER_VERSION = "19.0.0";
 const WORKER_BUILT = "2026-08-10";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -203,20 +203,22 @@ async function ensureContactSchema(env) {
 async function checkContactRateLimit(env, ip, email) {
   if (!(await ensureContactSchema(env))) return { limited: false };
   const now = Math.floor(Date.now() / 1000);
+  const ipKey = ip ? await sha256Text(`contact-ip:${ip}`) : '';
+  const emailKey = email ? await sha256Text(`contact-email:${String(email).trim().toLowerCase()}`) : '';
   // Neteja de registres antics (> 24 h).
   await env.DB.prepare("DELETE FROM contact_rate_limit WHERE sent_at < ?").bind(now - 86400).run();
   // Màxim 3 enviaments per IP a la darrera hora.
-  if (ip) {
+  if (ipKey) {
     const perIp = await env.DB.prepare(
       "SELECT COUNT(*) AS total FROM contact_rate_limit WHERE ip = ? AND sent_at > ?"
-    ).bind(ip, now - 3600).first();
+    ).bind(ipKey, now - 3600).first();
     if ((Number(perIp?.total) || 0) >= 3) return { limited: true };
   }
   // Màxim 5 enviaments per email a les darreres 24 h.
-  if (email) {
+  if (emailKey) {
     const perEmail = await env.DB.prepare(
       "SELECT COUNT(*) AS total FROM contact_rate_limit WHERE email = ? AND sent_at > ?"
-    ).bind(email, now - 86400).first();
+    ).bind(emailKey, now - 86400).first();
     if ((Number(perEmail?.total) || 0) >= 5) return { limited: true };
   }
   return { limited: false };
@@ -224,9 +226,11 @@ async function checkContactRateLimit(env, ip, email) {
 
 async function recordContactAttempt(env, ip, email) {
   if (!(await ensureContactSchema(env))) return;
+  const ipKey = ip ? await sha256Text(`contact-ip:${ip}`) : null;
+  const emailKey = email ? await sha256Text(`contact-email:${String(email).trim().toLowerCase()}`) : null;
   await env.DB.prepare(
     "INSERT INTO contact_rate_limit (ip, email, sent_at) VALUES (?, ?, ?)"
-  ).bind(ip || null, email || null, Math.floor(Date.now() / 1000)).run();
+  ).bind(ipKey, emailKey, Math.floor(Date.now() / 1000)).run();
 }
 
 async function ensureAlertSchema(env) {

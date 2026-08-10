@@ -23,6 +23,7 @@ import { initDataCenter, renderDataCenter } from './features/data-center.js';
 import { initEnvironment, updateEnvironmentStation } from './features/environment.js';
 import { initMeteoAI, initMeteoAIWidget, updateMeteoAIContext } from './features/meteo-ai.js';
 import { renderLongRangeError, renderLongRangeForecast } from './features/long-range.js';
+import { initLearning } from './features/learning.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -138,6 +139,7 @@ initDataCenter();
 initMeteoAI();
 initMeteoAIWidget();
 initShare();
+initLearning();
 document.addEventListener('observatori:alerts-updated',event=>updateSituation({alerts:event.detail}));
 initWhenVisible('.model-viewer',initModelViewer);
 initWhenVisible('#long-range',loadLongRange,'900px 0px');

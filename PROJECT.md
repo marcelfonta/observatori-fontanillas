@@ -19,6 +19,7 @@ Ser el portal meteorològic de referència del Baix Montseny: informació local 
 - `comparativa.html`: comparador d’estacions existent.
 - `historial-avisos.html`: arxiu complet d’episodis amb cerca i filtres.
 - `metodologia.html`: metodologia ampliada existent.
+- `privacitat.html`: informació pública sobre dades, emmagatzematge i serveis opcionals.
 - `css/`: variables, disseny base i navegació del portal.
 - `src/core/`: configuració i utilitats comunes.
 - `src/services/`: accés únic als serveis meteorològics.
@@ -32,9 +33,9 @@ Estació Fontanillas, Worker propi, Weather Underground, Open-Meteo, AEMET, Mete
 
 ## Navegació V12
 
-Inici, Meteo IA, Estació, Predicció, Cel de dia i de nit, Avisos, Radar, Webcams, Centre de Dades, Comparar, Medi Ambient, Contacte i Metodologia. Escriptori: lateral fi. Mòbil: hamburguesa. La capçalera, l’estat en directe i la identitat visual es preserven.
+Inici, Meteo IA, Estació, Predicció, Cel de dia i de nit, Avisos, Radar, Webcams, Centre de Dades, Comparar, Medi Ambient, Aprendre, Contacte i Metodologia. Escriptori: lateral fi. Mòbil: hamburguesa. La capçalera, l’estat en directe i la identitat visual es preserven.
 
-La capçalera és fixa. La primera secció de cada vista compensa l’altura de la capçalera una sola vegada. Els peus només ofereixen «Tornar amunt» i «Compartir»; la navegació entre àrees pertany al menú lateral o a l’hamburguesa.
+La capçalera és fixa. La primera secció de cada vista compensa l’altura de la capçalera una sola vegada. Els peus ofereixen Privacitat, un únic «Tornar amunt» i Compartir quan correspon; la navegació entre àrees pertany al menú lateral o a l’hamburguesa.
 
 ## Centre de Dades V9
 
@@ -111,6 +112,14 @@ Meteo IA utilitza `fetchAlertHistory()` només per preguntes inequívocament his
 La cronologia es calcula al navegador amb `buildWeatherTimeline()`: combina el període seleccionat de `/history` amb els avisos del mateix `/alert-history` de V17. No desa cap còpia, no modifica D1 i no converteix màxims del període en rècords històrics.
 
 Les preferències push viuen a `src/core/notification-preferences.js`. El navegador transforma fenomen i nivell mínim en etiquetes de OneSignal; el Worker exigeix alhora l’etiqueta de categoria i la del nivell de l’episodi. `INSERT OR IGNORE` continua sent la protecció contra notificacions duplicades. L’activació externa requereix les credencials descrites a `docs/PUSH-ACTIVACIO.md`.
+
+## Evolució V19
+
+La quadrícula de calendari del Centre de Dades utilitza dues columnes equivalents i passa a una única columna abans que els resums de dia, mes i any perdin llegibilitat. Els valors principals i les etiquetes explicatives estan separats semànticament.
+
+`src/features/learning.js` afegeix interaccions educatives locals sense API ni seguiment. La vista Aprendre reutilitza el router, la capçalera, les fonts i la PWA existents. `privacitat.html` documenta el tractament real; el Worker aplica SHA-256 als identificadors temporals del control antiabús abans de guardar-los a D1.
+
+OneSignal es carrega dinàmicament només quan `oneSignalAppId` és present. El panell separa la configuració pública de la del Worker i comprova la base de publicació. `docs/SEARCH-CONSOLE-ACTIVACIO.md`, `docs/RENDIMENT-I-PUBLICACIO.md` i `social/` deixen definits els passos que depenen de comptes externs sense exposar secrets ni activar serveis abans d’hora.
 
 ## Normes de canvi
 

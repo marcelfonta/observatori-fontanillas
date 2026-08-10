@@ -1,5 +1,35 @@
 # Changelog
 
+## V19.0.0 — 2026-08-10
+
+### Centre de Dades
+
+- Corregida la quadrícula de resums i efemèrides que s’estrenyia en pantalles d’escriptori.
+- Columnes equilibrades, salt a una sola columna abans dels 1.200 px i valors de temperatura sense particions il·legibles.
+
+### Educació i transparència
+
+- Nova pàgina «Aprendre» amb sensors, pressió, predicció, avisos, regles pràctiques i una prova ràpida.
+- Nova `privacitat.html` amb explicació de PWA, Meteo IA, contacte, serveis externs, avisos i analítica.
+- El control antiabús del formulari desa hashes temporals de la IP i del correu en lloc dels valors en clar.
+
+### Publicació, rendiment i OneSignal
+
+- OneSignal deixa de descarregar-se quan no hi ha App ID configurat.
+- Panell administratiu ampliat amb estat separat de OneSignal web/Worker, sitemap, robots, privacitat, verificació de Google i temps de càrrega local.
+- Guies noves per Search Console i comprovació de Core Web Vitals/PageSpeed.
+- Sitemap, PWA, SEO dinàmic i menú ampliats amb la pàgina Aprendre i Privacitat.
+
+### Xarxes socials
+
+- Carpeta `social/` amb guia de governança, calendari CSV, plantilla JSON, UTM i aprovació humana per defecte.
+- Cap compte ni automatització externa s’ha activat.
+
+### Compatibilitat
+
+- Web, Worker, panell i memòria cau unificats a V19.0.0.
+- API, D1, comparador, compartir, avisos i contractes existents preservats.
+
 ## V18.0.0 — 2026-08-10
 
 ### Efemèrides amb curiositats verificades

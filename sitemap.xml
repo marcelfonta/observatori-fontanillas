@@ -8,7 +8,9 @@
   <url><loc>https://meteo.fontanillas.cat/?page=centre-dades</loc><lastmod>2026-08-10</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://meteo.fontanillas.cat/?page=medi-ambient</loc><lastmod>2026-08-10</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://meteo.fontanillas.cat/?page=meteo-ia</loc><lastmod>2026-08-10</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://meteo.fontanillas.cat/?page=aprendre</loc><lastmod>2026-08-10</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://meteo.fontanillas.cat/metodologia.html</loc><lastmod>2026-08-10</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://meteo.fontanillas.cat/comparativa.html</loc><lastmod>2026-08-10</lastmod><changefreq>hourly</changefreq><priority>0.8</priority></url>
   <url><loc>https://meteo.fontanillas.cat/historial-avisos.html</loc><lastmod>2026-08-10</lastmod><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://meteo.fontanillas.cat/privacitat.html</loc><lastmod>2026-08-10</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
 </urlset>

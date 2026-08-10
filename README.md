@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V18.0.0
+# Observatori Meteorològic Fontanillas — V19.0.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V18 incorpora efemèrides meteorològiques verificades, una cronologia d’episodis i preferències d’avisos per fenomen i nivell mínim.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V19 estabilitza el Centre de Dades, incorpora una àrea educativa, privacitat explícita i deixa preparades Search Console, OneSignal, rendiment i la futura fase de xarxes socials.
 
 ## Estat actual
 
@@ -18,6 +18,10 @@ Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V18 inco
 - Curiositats històriques de Meteocat i l’OMM quan encara no hi ha anys locals comparables.
 - Cronologia conjunta d’avisos, pluja i extrems al Centre de Dades.
 - Notificacions preparades per triar fenomen i nivell mínim, amb activació documentada a `docs/PUSH-ACTIVACIO.md`.
+- Àrea «Aprendre» amb explicacions breus, interaccions accessibles i fonts de divulgació.
+- Privacitat publicada i control antiabús del formulari amb identificadors irreversibles.
+- OneSignal carregat només quan està configurat, Search Console documentat i diagnòstic de publicació al panell administratiu.
+- Plantilles editorials i convencions UTM preparades a `social/`, sense connectar cap compte.
 
 ## Estructura activa
 
@@ -43,7 +47,7 @@ Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas 
 
 ## Worker
 
-El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. V18 requereix publicar el Worker nou per aplicar el nivell mínim de notificació, però no necessita cap migració de base de dades.
+El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. V19 requereix publicar el Worker nou perquè el control antiabús utilitzi identificadors irreversibles; no necessita cap migració de base de dades.
 
 ## Configuració
 

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "status": "draft",
+  "channel": "pending",
+  "contentType": "weather-update",
+  "title": "",
+  "body": "",
+  "sourceLabel": "",
+  "sourceUrl": "",
+  "observedAt": "",
+  "targetUrl": "https://meteo.fontanillas.cat/",
+  "imagePath": "",
+  "altText": "",
+  "utm": {
+    "source": "",
+    "medium": "social",
+    "campaign": "",
+    "content": ""
+  },
+  "requiresHumanApproval": true
+}

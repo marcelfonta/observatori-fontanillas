@@ -109,13 +109,25 @@ V12 limita la vista principal als cinc episodis més recents i incorpora una pà
 
 V18 reutilitza l’arxiu existent i no inventa registres locals. L’activació efectiva del push continua necessitant les credencials de OneSignal; el codi i la guia ja estan preparats.
 
-## Fases pendents després de V18
+## V19 — Portal útil, transparent i preparat per créixer — Completat
 
-1. Publicar i activar Search Console, sitemap i mesura de Core Web Vitals.
-2. Introduir les credencials de OneSignal i fer una prova controlada de notificacions.
-3. Decidir si s’activa analítica respectuosa amb la privacitat.
-4. Crear les xarxes socials conjuntament amb l’usuari com a última gran fase.
-5. Escollir entre recursos escolars, centre de notícies o detecció assistida de la webcam com a futura evolució.
+- Centre de Dades estable en escriptori, tauleta i mòbil.
+- Primera àrea educativa pròpia amb fonts identificades.
+- Privacitat pública i minimització de dades al formulari.
+- Base de Search Console i mesura de rendiment preparada per validar després del desplegament.
+- OneSignal preparat sense carregar tercers mentre estigui inactiu.
+- Flux editorial de xarxes documentat sense crear ni connectar comptes.
+
+V19 avança la branca de recursos escolars sense convertir el portal en un curs llarg. També tanca la preparació local de SEO, privacitat, push i xarxes; les activacions externes continuen requerint comptes, DNS o credencials del propietari.
+
+## Fases pendents després de V19
+
+1. Publicar V19, verificar la propietat DNS a Search Console i enviar el sitemap.
+2. Crear l’aplicació OneSignal, introduir les dues credencials i fer una prova controlada.
+3. Mesurar Core Web Vitals reals i corregir només els colls d’ampolla observats.
+4. Decidir si cal analítica i, si s’activa, escollir una opció respectuosa amb la privacitat.
+5. Crear les xarxes socials conjuntament amb l’usuari com a última gran fase.
+6. Evolucionar Aprendre cap a recursos per escoles o iniciar un centre de notícies meteorològiques verificades.
 
 ## Backlog
 
