@@ -106,17 +106,18 @@ export async function fetchNearbyStations(period = 'now') {
 export async function fetchLocalityWeather(query) {
   const name=String(query||'').trim().slice(0,80);
   if(name.length<2)throw new Error('LOCALITY_REQUIRED');
-  const geocoding=new URLSearchParams({name,count:'5',language:'ca',format:'json'});
+  const geocoding=new URLSearchParams({name,count:'10',language:'ca',format:'json'});
   const locationResponse=await request(`https://geocoding-api.open-meteo.com/v1/search?${geocoding}`,{headers:{Accept:'application/json'},cache:'no-store'},12000);
   if(!locationResponse.ok)throw new Error(`Geocoding API ${locationResponse.status}`);
   const candidates=(await locationResponse.json())?.results||[];
-  const location=candidates.find(item=>item.country_code==='ES')||candidates[0];
+  const requested=name.split(',')[0].trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const location=candidates.find(item=>String(item.name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===requested)||candidates[0];
   if(!location)throw new Error('LOCALITY_NOT_FOUND');
   const forecast=new URLSearchParams({
     latitude:String(location.latitude),longitude:String(location.longitude),
     current:'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,rain,weather_code,cloud_cover,wind_speed_10m,wind_gusts_10m',
     daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max,uv_index_max',
-    timezone:'auto',forecast_days:'3'
+    timezone:'auto',forecast_days:'14'
   });
   const weatherResponse=await request(`https://api.open-meteo.com/v1/forecast?${forecast}`,{headers:{Accept:'application/json'},cache:'no-store'},15000);
   if(!weatherResponse.ok)throw new Error(`Forecast API ${weatherResponse.status}`);

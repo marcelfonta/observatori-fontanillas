@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V13.0.0
+# Observatori Meteorològic Fontanillas — V13.1.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V13 completa el Milestone 6 amb Meteo IA: un assistent conversacional que interpreta dades reals, cita les fonts i no inventa lectures.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V13.1 amplia Meteo IA amb dates i setmanes concretes, prediccions internacionals de 14 dies, fonts clicables i un xat flotant a tot el portal.
 
 ## Estat actual
 
@@ -14,6 +14,7 @@ Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V13 comp
 - Avisos AEMET/Meteocat, comparativa, Worker, PWA, compartir i push preservats.
 - Marca coherent en web, instal·lació i compartició, amb accessos ràpids de la PWA a Meteo IA, Estació, Avisos i Radar.
 - Meteo IA per consultar situació actual, predicció, avisos, històrics, comparador, medi ambient, activitats i altres poblacions.
+- Botó flotant per fer una primera pregunta ràpida i continuar després a la pàgina completa de Meteo IA.
 
 ## Estructura activa
 
@@ -51,6 +52,6 @@ La configuració de frontend és a `src/core/config.js`. Inclou URL de l’API, 
 node tests/smoke.mjs
 ```
 
-La prova comprova navegació, selectors crítics, PWA, Meteo IA, icones i metadades de marca, Centre de Dades, peus i absència de duplicacions de «Tornar amunt». `node tests/meteo-ai.mjs` valida els principals tipus de resposta amb dades controlades.
+La prova comprova navegació, selectors crítics, PWA, Meteo IA, icones i metadades de marca, Centre de Dades, peus i absència de duplicacions de «Tornar amunt». `node tests/meteo-ai.mjs` valida també divendres a Sant Celoni, una setmana internacional completa i els enllaços de fonts.
 
 Consulta `PROJECT.md`, `ROADMAP.md` i `CHANGELOG.md` per a les normes, l’ordre de les fases i el detall de la versió.

@@ -1,5 +1,26 @@
 # Changelog
 
+## V13.1.0 — 2026-08-10
+
+### Meteo IA més flexible
+
+- Entén dies concrets com dilluns, divendres o diumenge, a més d’avui i demà.
+- Resumeix el cap de setmana i la setmana següent, amb una advertència explícita quan augmenta la incertesa.
+- Amplia les consultes d’altres poblacions fins a 14 dies i elimina la preferència incorrecta per coincidències espanyoles.
+- Interpreta ordres com «temps per divendres a Sant Celoni» i «la setmana que ve a Londres».
+- Les fonts són enllaços clicables cap a Estació, Predicció, Avisos, Centre de Dades, Comparar, Medi Ambient o Open‑Meteo.
+
+### Xat flotant
+
+- Nou botó «Pregunta al temps» fix a la part inferior dreta del portal.
+- Permet resoldre una primera pregunta ràpida des de qualsevol pàgina.
+- Després de la resposta ofereix continuar a l’apartat complet de Meteo IA, evitant convertir el giny petit en una conversa difícil de llegir.
+- També funciona a Comparar, Historial d’avisos i Metodologia.
+
+### Preservat
+
+- Worker i contractes existents sense canvis; la conversa continua sense desar-se ni enviar-se a cap model extern.
+
 ## V13.0.0 — 2026-08-10
 
 ### Meteo IA · Milestone 6 completat

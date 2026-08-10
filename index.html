@@ -38,14 +38,14 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=13.0.0" />
-    <link rel="stylesheet" href="css/portal.css?v=13.0.0" />
+    <link rel="stylesheet" href="css/style.css?v=13.1.0" />
+    <link rel="stylesheet" href="css/portal.css?v=13.1.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=13.0.0"></script>
+    <script type="module" src="src/features/push.js?v=13.1.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=13.0.0"></script>
+    <script type="module" src="src/app.js?v=13.1.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
@@ -122,12 +122,14 @@
             <div class="meteo-ai-suggestions" aria-label="Preguntes suggerides">
               <button type="button" data-ai-question="Quina temperatura fa ara?">Situació actual</button>
               <button type="button" data-ai-question="Plourà avui?">Plourà avui?</button>
+              <button type="button" data-ai-question="Quin temps farà divendres a Sant Celoni?">Divendres a Sant Celoni</button>
               <button type="button" data-ai-question="Hi ha avisos actius?">Avisos oficials</button>
               <button type="button" data-ai-question="Puc sortir a córrer?">Sortir a córrer</button>
               <button type="button" data-ai-question="Com ha canviat la temperatura?">Evolució recent</button>
               <button type="button" data-ai-question="On fa més calor al Baix Montseny?">Comparar estacions</button>
               <button type="button" data-ai-question="Com està la qualitat de l’aire i l’UV?">Aire i UV</button>
               <button type="button" data-ai-question="Quin temps fa a Girona?">Una altra població</button>
+              <button type="button" data-ai-question="Quin temps farà la setmana que ve a Londres?">Setmana que ve a Londres</button>
             </div>
             <div class="meteo-ai-privacy"><span aria-hidden="true">✓</span><p><b>Conversa local.</b> Les preguntes no es desen. Només el nom d’una altra població es consulta a Open‑Meteo.</p></div>
           </aside>
@@ -561,7 +563,7 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V13.0.0</small>
+      <small>Dades locals · Sant Celoni, Montseny · V13.1.0</small>
       <div>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>

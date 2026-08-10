@@ -21,7 +21,7 @@ import { initShare } from './features/share.js';
 import { initPortal } from './features/portal-router.js';
 import { initDataCenter, renderDataCenter } from './features/data-center.js';
 import { initEnvironment, updateEnvironmentStation } from './features/environment.js';
-import { initMeteoAI, updateMeteoAIContext } from './features/meteo-ai.js';
+import { initMeteoAI, initMeteoAIWidget, updateMeteoAIContext } from './features/meteo-ai.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -121,6 +121,7 @@ initForecastControls();
 initExtremeControls();
 initDataCenter();
 initMeteoAI();
+initMeteoAIWidget();
 initShare();
 document.addEventListener('observatori:alerts-updated',event=>updateSituation({alerts:event.detail}));
 initWhenVisible('.model-viewer',initModelViewer);

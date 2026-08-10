@@ -68,6 +68,8 @@ V12.2 tanca el sistema amb fonts vectorials del símbol i la composició horitzo
 
 La conversa no es desa ni s’envia a cap model extern. Només s’envia a Open‑Meteo el nom d’una població quan l’usuari demana explícitament consultar-la. Les respostes mostren fonts i hora, i qualsevol fallada dels avisos es presenta com a «estat no verificat», mai com a «sense avisos». L’assistent no substitueix Meteocat, AEMET, Protecció Civil ni el 112.
 
+V13.1 amplia l’intèrpret temporal a dies concrets, cap de setmana i setmana següent. Les consultes geogràfiques disposen de 14 dies i utilitzen el primer resultat rellevant d’Open‑Meteo, sense forçar coincidències espanyoles. Les fonts incorporen enllaços cap a la vista interna o el servei extern corresponent. `initMeteoAIWidget()` crea un xat flotant compartit també per `portal-static.js`: resol una primera consulta i després deriva cap a la pàgina completa per continuar.
+
 ## Normes de canvi
 
 1. Treballar una sola fita cada vegada.

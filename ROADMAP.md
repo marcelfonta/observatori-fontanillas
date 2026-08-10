@@ -57,6 +57,8 @@ Milestone completat a V12.2.0: símbol vectorial i versió horitzontal reproduï
 
 Implementat a V13.0.0 com un assistent conversacional determinista i traçable al navegador. Interpreta les dades de Fontanillas, la predicció Open‑Meteo, els avisos AEMET/Meteocat, l’històric, el comparador i els indicadors ambientals; també geocodifica altres poblacions quan l’usuari ho demana. Cada resposta identifica font i hora, diferencia falta de dades d’absència d’avisos i no envia ni desa la conversa. Les recomanacions per córrer, excursions i activitats familiars donen prioritat als avisos oficials.
 
+Evolucionat a V13.1.0: comprensió de dies de la setmana, cap de setmana i setmana següent; predicció de fins a 14 dies per a poblacions internacionals; selecció geogràfica sense prioritzar erròniament Espanya; fonts amb enllaços clicables i assistent flotant disponible a tot el portal per fer una primera pregunta ràpida.
+
 ## Milestone 7 — SEO i presència a Internet
 
 - Search Console, sitemap, robots, canòniques, metadades, Open Graph, Schema.org i Core Web Vitals.
