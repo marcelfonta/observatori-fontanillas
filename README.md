@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V19.1.1
+# Observatori Meteorològic Fontanillas — V20.0.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V19.1.1 estabilitza Meteo IA i l’administració, completa la detecció de Cloudflare Web Analytics i manté Search Console, OneSignal i Core Web Vitals operatius.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V20.0.0 converteix «Aprendre» en una biblioteca meteorològica completa per nivells i temes, i mostra correctament Cloudflare Web Analytics com a actiu al domini.
 
 ## Estat actual
 
@@ -18,7 +18,7 @@ Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V19.1.1 
 - Curiositats històriques de Meteocat i l’OMM quan encara no hi ha anys locals comparables.
 - Cronologia conjunta d’avisos, pluja i extrems al Centre de Dades.
 - Notificacions actives per fenomen i nivell mínim, amb web i Worker verificats i activació documentada a `docs/PUSH-ACTIVACIO.md`.
-- Àrea «Aprendre» amb explicacions breus, interaccions accessibles i fonts de divulgació.
+- Àrea «Aprendre» amb 27 recursos verificats, itineraris per nivells, cerca i filtres per tema.
 - Privacitat publicada i control antiabús del formulari amb identificadors irreversibles.
 - OneSignal operatiu, Search Console verificat per DNS, sitemap processat, Cloudflare Web Analytics actiu i LCP, CLS, INP i TTFB locals visibles al panell administratiu.
 - Plantilles editorials i convencions UTM preparades a `social/`, sense connectar cap compte.
@@ -30,7 +30,8 @@ Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V19.1.1 
 - `css/`: sistema visual i shell del portal.
 - `src/core/` i `src/services/`: configuració, utilitats i únic accés a l’API.
 - `src/modules/`: mòduls meteorològics reutilitzables.
-- `src/features/`: portal, Centre de Dades, Meteo IA, compartir, PWA, push i analítica.
+- `src/features/`: portal, Centre de Dades, Meteo IA, biblioteca educativa, compartir, PWA, push i analítica.
+- `src/data/learning-resources.js`: catàleg verificable de recursos educatius per nivell, tema, idioma i format.
 - `worker/`: Worker canònic, esquema D1 i API paginada de l’historial.
 
 ## Desenvolupament local
@@ -47,7 +48,7 @@ Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas 
 
 ## Worker
 
-El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V19.1.1 també s’ha de desplegar aquest Worker perquè web i servidor mostrin la mateixa versió; no necessita cap migració de base de dades ni tornar a crear els secrets.
+El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V20.0.0 també s’ha de desplegar aquest Worker perquè web i servidor mostrin la mateixa versió; no necessita cap migració de base de dades ni tornar a crear els secrets.
 
 ## Configuració
 
@@ -63,6 +64,7 @@ node tests/admin.mjs
 node tests/alert-history.mjs
 node tests/v18.mjs
 node tests/v19.mjs
+node tests/v20.mjs
 ```
 
 Les proves comproven navegació, selectors crítics, PWA, Meteo IA, icones, Centre de Dades, peus, protecció administrativa i absència de duplicacions de «Tornar amunt». `node tests/meteo-ai.mjs` valida conversa geogràfica, coneixement, fonts i efemèrides; `node tests/share-card.mjs` valida que les targetes no inventin dades.

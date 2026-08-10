@@ -12,7 +12,8 @@ assert.match(css,/data-center-grid--calendar \{ grid-template-columns: repeat\(2
 assert.match(css,/@media \(max-width: 1200px\)/);
 assert.ok(!dataCenter.includes('°C de mitjana'));
 assert.match(html,/data-portal-page="aprendre"/);
-assert.match(html,/data-learning-answer="correct"/);
+assert.match(html,/id="learning-resource-grid"/);
+assert.match(html,/data-learning-path="primaria"/);
 assert.match(privacy,/control antiabús/);
 assert.match(worker,/contact-ip:/);
 assert.match(worker,/contact-email:/);
@@ -43,6 +44,7 @@ assert.match(admin,/admin-lcp/);
 assert.match(adminJs,/PerformanceObserver/);
 assert.match(adminJs,/performanceRating/);
 assert.match(adminJs,/Cloudflare actiu/);
+assert.match(adminJs,/Actiu al domini/);
 assert.match(css,/grid-template-rows: auto auto minmax\(360px,1fr\) auto auto/);
 assert.match(css,/\.admin-body \{ min-height: 100vh; padding-top: 92px/);
 assert.match(css,/\.admin-site-header \{ position: fixed/);

@@ -1,5 +1,28 @@
 # Changelog
 
+## V20.0.0 — 2026-08-10
+
+### Biblioteca educativa
+
+- Reconstruïda completament la pàgina «Aprendre» com una biblioteca meteorològica rica en enllaços i no com una successió de quatre explicacions i un qüestionari.
+- Incorporats 27 recursos seleccionats de Meteocat, AEMET, OMM, NOAA, NASA, UCAR, ESA, EUMETSAT, Copernicus, IPCC, ECMWF i Protecció Civil.
+- Itineraris directes per a Primària, ESO, Batxillerat i docents, més un nivell avançat per a dades i modelització.
+- Cerca sense accents i filtres combinables per nivell i nou àmbits: bases, observació, núvols, predicció, satèl·lits, riscos, clima, dades i projectes.
+- Cada recurs identifica entitat, descripció, idioma i format abans d’obrir una pestanya externa.
+- Nou «Laboratori Fontanillas» amb accessos a Estació, Radar, Centre de Dades i Avisos per aprendre amb observacions reals i locals.
+- Disseny adaptat a ordinador i mòbil, amb icones més clares i lluminoses i sense carregar imatges de tercers.
+
+### Analítica i administració
+
+- El panell diferencia ara l’analítica activada al domini de la detecció puntual del beacon en la pàgina d’administració.
+- Cloudflare Web Analytics apareix en verd com «Actiu al domini» quan la configuració confirmada és vigent, encara que Cloudflare no injecti el beacon en aquella càrrega concreta.
+- El diagnòstic copiable conserva separats l’estat configurat, el proveïdor i la detecció local.
+
+### Compatibilitat i validació
+
+- Afegides proves de quantitat, HTTPS, organismes, filtres, selectors, PWA i estat d’analítica de la V20.
+- Mantinguts API, D1, avisos AEMET/Meteocat, OneSignal, Meteo IA, comparador, compartir i contractes existents.
+
 ## V19.1.1 — 2026-08-10
 
 - Corregida l’alçada desproporcionada del bloc «Context actiu» de Meteo IA: cada part del xat ocupa ara la seva fila correcta i «Esborrar context» es manté compacte també al mòbil.

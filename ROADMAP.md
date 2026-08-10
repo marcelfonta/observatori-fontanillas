@@ -67,7 +67,7 @@ Evolucionat a V14.0.0: context de conversa temporal per recordar lloc, període 
 - SEO local: Sant Celoni i Baix Montseny; pàgines específiques útils, no duplicades.
 - Analítica, directoris meteorològics i estudi de Google Business Profile segons requisits.
 
-Base tècnica implementada a V14.0.0: metadades i canòniques per vista, Open Graph i X dinàmics, dades estructurades `WebSite`, `WebPage`, `Dataset` i `BreadcrumbList`, sitemap ampliat i SEO local per Sant Celoni i el Baix Montseny. El 10 d’agost de 2026 es va verificar `fontanillas.cat` per DNS a Search Console, es va processar el sitemap i Google va descobrir 13 URL. V19.1 afegeix mesura local de LCP, CLS, INP i TTFB; V19.1.1 documenta i detecta Cloudflare Web Analytics per obtenir dades agregades de camp. Google Analytics continua desactivat.
+Base tècnica implementada a V14.0.0: metadades i canòniques per vista, Open Graph i X dinàmics, dades estructurades `WebSite`, `WebPage`, `Dataset` i `BreadcrumbList`, sitemap ampliat i SEO local per Sant Celoni i el Baix Montseny. El 10 d’agost de 2026 es va verificar `fontanillas.cat` per DNS a Search Console, es va processar el sitemap i Google va descobrir 13 URL. V19.1 afegeix mesura local de LCP, CLS, INP i TTFB; V19.1.1 documenta i detecta Cloudflare Web Analytics per obtenir dades agregades de camp. V20 diferencia correctament l’activació al domini de la detecció puntual del beacon. Google Analytics continua desactivat.
 
 ## Milestone 8 — Compartició Premium — Completat
 
@@ -128,13 +128,24 @@ V19 avança la branca de recursos escolars sense convertir el portal en un curs 
 - Core Web Vitals locals —LCP, CLS, INP i TTFB— mesurats sense activar analítica externa.
 - Documentació de notificacions, publicació i rendiment posada al dia.
 
-## Fases pendents després de V19.1
+## V20 — Biblioteca meteorològica educativa — Completat
+
+- Pàgina «Aprendre» reconstruïda al voltant de recursos externs verificats, no d’un curs tancat.
+- Itineraris per Primària, ESO, Batxillerat i docents, amb nivell avançat complementari.
+- Cerca i filtres per nivell i tema, amb idioma, format i organisme visibles a cada fitxa.
+- Selecció de 27 recursos de serveis meteorològics, agències científiques, organismes internacionals i centres acadèmics.
+- Connexió educativa amb les dades reals de Fontanillas mitjançant Estació, Radar, Centre de Dades i Avisos.
+- Estat de Cloudflare Web Analytics clarificat al panell: «Actiu al domini» és un estat correcte i verd.
+
+La biblioteca es manté en dades estructurades a `src/data/learning-resources.js`, de manera que es pot revisar, ampliar o retirar un enllaç sense duplicar el disseny. Els recursos externs sempre s’obren en una pestanya nova i mostren abans l’idioma i la institució responsable.
+
+## Fases pendents després de V20
 
 1. Recollir dades de camp de Core Web Vitals quan Search Console disposi de prou trànsit i corregir només els colls d’ampolla observats.
 2. Revisar les primeres dades de Cloudflare Web Analytics quan hi hagi prou visites i contrastar-les amb Search Console; Google Analytics continua descartat mentre no aporti una necessitat clara.
 3. Ampliar les proves automàtiques del Worker i el seguiment dels primers avisos push reals.
 4. Crear les xarxes socials conjuntament amb l’usuari com a última gran fase.
-5. Evolucionar Aprendre cap a recursos per escoles o iniciar un centre de notícies meteorològiques verificades.
+5. Revisar periòdicament els enllaços educatius i valorar un centre de notícies meteorològiques verificades com a evolució separada.
 
 ## Backlog
 

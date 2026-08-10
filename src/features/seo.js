@@ -12,7 +12,7 @@ const PAGES={
   webcams:{title:'Webcams de Sant Celoni i el Montseny',description:'Vista actual de la webcam Fontanillas i selecció de webcams properes al Montseny.'},
   'centre-dades':{title:'Dades meteorològiques històriques de Sant Celoni',description:'Històric, pluja, extrems, cobertura i descàrregues de l’estació Fontanillas a Sant Celoni.'},
   'medi-ambient':{title:'Qualitat de l’aire i medi ambient a Sant Celoni',description:'Qualitat de l’aire, UV, pol·len, risc d’incendi, sequera i meduses amb fonts identificades.'},
-  aprendre:{title:'Aprendre meteorologia · Observatori Fontanillas',description:'Guia clara per entendre els sensors, els núvols, els avisos i la predicció meteorològica amb exemples pràctics.'},
+  aprendre:{title:'Aprendre meteorologia · Observatori Fontanillas',description:'Biblioteca educativa de meteorologia amb recursos verificats per nivell, tema i idioma de Meteocat, AEMET, OMM, NOAA, NASA, ESA i centres científics.'},
   contacte:{title:'Contacte · Observatori Fontanillas',description:'Contacta amb l’Observatori Meteorològic Fontanillas per consultes, incidències de dades o propostes.'}
 };
 

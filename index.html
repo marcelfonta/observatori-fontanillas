@@ -40,13 +40,13 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=19.1.1" />
-    <link rel="stylesheet" href="css/portal.css?v=19.1.1" />
+    <link rel="stylesheet" href="css/style.css?v=20.0.0" />
+    <link rel="stylesheet" href="css/portal.css?v=20.0.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=19.1.1"></script>
+    <script type="module" src="src/features/push.js?v=20.0.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=19.1.1"></script>
+    <script type="module" src="src/app.js?v=20.0.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","url":"https://meteo.fontanillas.cat/?page=centre-dades","spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -111,7 +111,7 @@
       <section class="portal-view-header panel" aria-labelledby="webcams-page-title" data-portal-page="webcams"><div><p class="eyebrow">Webcams</p><h1 id="webcams-page-title">Una mirada directa al Montseny.</h1><p>Imatge de l’observatori i accessos seleccionats a altres vistes properes.</p></div><span class="tag">Imatge actual</span></section>
       <section class="portal-view-header panel" aria-labelledby="data-page-title" data-portal-page="centre-dades"><div><p class="eyebrow">Centre de Dades</p><h1 id="data-page-title">L’arxiu meteorològic, ordenat.</h1><p>Resums, cobertura, rècords i descàrregues a partir de l’històric real.</p></div><span class="tag">Dades pròpies</span></section>
       <section class="portal-view-header panel" aria-labelledby="environment-page-title" data-portal-page="medi-ambient"><div><p class="eyebrow">Medi Ambient</p><h1 id="environment-page-title">Entorn i salut ambiental.</h1><p>Aire, radiació, pol·len i accés directe als indicadors oficials del territori i la costa.</p></div><span class="tag">Sant Celoni</span></section>
-      <section class="portal-view-header panel" aria-labelledby="learning-page-title" data-portal-page="aprendre"><div><p class="eyebrow">Aprendre meteorologia</p><h1 id="learning-page-title">Entendre el temps, pas a pas.</h1><p>Conceptes curts, exemples locals i una prova ràpida per interpretar millor les dades i els avisos.</p></div><span class="tag">Guia pràctica</span></section>
+      <section class="portal-view-header panel" aria-labelledby="learning-page-title" data-portal-page="aprendre"><div><p class="eyebrow">Aprendre meteorologia</p><h1 id="learning-page-title">Una biblioteca per entendre el cel.</h1><p>Recursos educatius verificats, ordenats per nivell i tema, per observar, preguntar i aprendre amb fonts sòlides.</p></div><span class="tag">Aula oberta</span></section>
       <section class="portal-view-header panel" aria-labelledby="contact-page-title" data-portal-page="contacte"><div><p class="eyebrow">Contacte</p><h1 id="contact-page-title">Parlem de meteorologia.</h1><p>Consultes, incidències de dades i propostes per continuar millorant l’Observatori.</p></div><span class="tag">Canal privat</span></section>
 
       <section id="meteo-ia" class="meteo-ai-section section-block" aria-labelledby="meteo-ai-title" data-portal-page="meteo-ia">
@@ -587,15 +587,26 @@
         <p class="environment-note"><span>i</span> L’UV prové prioritàriament del sensor de Fontanillas; l’aire i el pol·len són estimacions CAMS via Open‑Meteo. Pla Alfa i ACA són fonts oficials. MedusApp aporta albiraments universitaris i ciutadans; Meduseo queda com a alternativa internacional externa.</p>
       </section>
       <section id="aprendre" class="learning-section section-block" aria-labelledby="learning-title" data-portal-page="aprendre">
-        <header class="section-heading"><div><p class="eyebrow">Aula oberta</p><h2 id="learning-title">Quatre idees per llegir el temps amb criteri.</h2><p>La meteorologia no és només una xifra: importa la tendència, el lloc, l’hora i la font.</p></div></header>
-        <div class="learning-grid">
-          <article class="learning-card panel"><span class="learning-card__number">01</span><h3>Sensors de l’estació</h3><p><b>Temperatura</b> explica l’estat de l’aire; <b>humitat</b> i punt de rosada ajuden a entendre la xafogor, la boira o la condensació.</p><button type="button" data-learning-topic="sensors" aria-expanded="false">Veure una regla pràctica</button><div hidden data-learning-detail="sensors">Mira primer la temperatura i després el punt de rosada: com més s’acosten, més fàcil és arribar a saturació.</div></article>
-          <article class="learning-card panel"><span class="learning-card__number">02</span><h3>Pressió i vent</h3><p>La pressió sola diu poc. La seva <b>evolució</b>, juntament amb el vent i els mapes, ajuda a identificar canvis de massa d’aire.</p><button type="button" data-learning-topic="pressure" aria-expanded="false">Veure una regla pràctica</button><div hidden data-learning-detail="pressure">Una baixada ràpida pot anunciar canvi, però mai substitueix la predicció oficial ni el radar.</div></article>
-          <article class="learning-card panel"><span class="learning-card__number">03</span><h3>Predicció i incertesa</h3><p>La previsió és més fiable a curt termini. Quan els models discrepen, convé parlar d’<b>escenaris</b>, no d’una certesa única.</p><button type="button" data-learning-topic="forecast" aria-expanded="false">Veure una regla pràctica</button><div hidden data-learning-detail="forecast">Per decidir una activitat, revisa de nou la previsió el dia abans i el radar just abans de sortir.</div></article>
-          <article class="learning-card panel"><span class="learning-card__number">04</span><h3>Avisos oficials</h3><p>Un avís descriu un risc potencial per zona i franja horària. No garanteix que el fenomen afecti exactament cada carrer.</p><button type="button" data-learning-topic="alerts" aria-expanded="false">Veure una regla pràctica</button><div hidden data-learning-detail="alerts">Groc demana atenció; taronja, preparació; vermell, mesures excepcionals i seguiment estricte de Protecció Civil.</div></article>
-        </div>
-        <article class="learning-quiz panel" aria-labelledby="learning-quiz-title"><div><p class="eyebrow">Comprovació ràpida</p><h3 id="learning-quiz-title">Què consultaries abans d’una excursió?</h3><p>Tria la resposta més completa.</p></div><div class="learning-quiz__answers" role="group" aria-describedby="learning-quiz-feedback"><button type="button" data-learning-answer="partial">Només la temperatura</button><button type="button" data-learning-answer="correct">Predicció, avisos i radar abans de sortir</button><button type="button" data-learning-answer="partial">Només una aplicació</button></div><p id="learning-quiz-feedback" aria-live="polite">Encara no has respost.</p></article>
-        <aside class="learning-sources panel"><div><p class="eyebrow">Continuar aprenent</p><h3>Fonts fiables i obertes.</h3></div><div><a href="https://cloudatlas.wmo.int/" target="_blank" rel="noopener noreferrer">Atles Internacional de Núvols · OMM ↗</a><a href="https://www.meteocat.cat/wpweb/divulgacio/" target="_blank" rel="noopener noreferrer">Divulgació · Meteocat ↗</a><a href="./metodologia.html">Com es construeix aquest portal →</a></div></aside>
+        <header class="section-heading learning-intro"><div><p class="eyebrow">Biblioteca meteorològica</p><h2 id="learning-title">Comença amb una pregunta.</h2><p>No cal saber-ne abans d’entrar. Tria el teu nivell, explora un tema i obre recursos d’organismes meteorològics, universitats i agències científiques.</p></div><span class="learning-trust"><b>Selecció verificada</b><small>Fonts oficials, científiques o educatives de referència</small></span></header>
+        <nav class="learning-paths" aria-label="Itineraris recomanats">
+          <button type="button" data-learning-path="primaria"><span aria-hidden="true">☀️</span><b>Primària</b><small>Observar i fer-se preguntes</small></button>
+          <button type="button" data-learning-path="eso"><span aria-hidden="true">🌦️</span><b>ESO</b><small>Entendre processos i riscos</small></button>
+          <button type="button" data-learning-path="batxillerat"><span aria-hidden="true">🛰️</span><b>Batxillerat</b><small>Models, dades i clima</small></button>
+          <button type="button" data-learning-path="docents"><span aria-hidden="true">🧭</span><b>Docents</b><small>Activitats per portar a l’aula</small></button>
+        </nav>
+        <section class="learning-local panel" aria-labelledby="learning-local-title"><div><p class="eyebrow">Laboratori Fontanillas</p><h3 id="learning-local-title">Aprèn amb el temps que tens davant.</h3><p>Observa una variable real, compara-la amb la predicció i explica què ha canviat. La meteorologia s’entén millor quan les dades tenen lloc i hora.</p></div><div><a href="./?page=estacio">Llegir els sensors →</a><a href="./?page=radar">Interpretar el radar →</a><a href="./?page=centre-dades">Analitzar l’històric →</a><a href="./?page=avisos">Entendre els avisos →</a></div></section>
+        <section class="learning-library panel" aria-labelledby="learning-library-title">
+          <header><div><p class="eyebrow">Recursos seleccionats</p><h3 id="learning-library-title">Explora per nivell i tema.</h3><p>Cada fitxa indica idioma, format i entitat responsable abans d’obrir l’enllaç.</p></div><strong id="learning-result-count" aria-live="polite">Preparant recursos…</strong></header>
+          <div class="learning-filters" aria-label="Filtres de recursos">
+            <label><span>Cerca</span><input id="learning-search" type="search" placeholder="Ex.: núvols, radar, clima…" autocomplete="off" /></label>
+            <label><span>Nivell</span><select id="learning-level"><option value="all">Tots els nivells</option><option value="primaria">Primària</option><option value="eso">ESO</option><option value="batxillerat">Batxillerat</option><option value="docents">Docents i famílies</option><option value="avancat">Nivell avançat</option></select></label>
+            <label><span>Tema</span><select id="learning-topic"><option value="all">Tots els temes</option><option value="bases">Bases del temps</option><option value="observacio">Observació i instruments</option><option value="nuvols">Núvols</option><option value="prediccio">Predicció i models</option><option value="satel·lits">Radar i satèl·lits</option><option value="riscos">Fenòmens i seguretat</option><option value="clima">Clima i canvi climàtic</option><option value="dades">Dades i recerca</option><option value="projectes">Activitats i projectes</option></select></label>
+            <button type="button" id="learning-reset">Netejar filtres</button>
+          </div>
+          <div class="learning-resource-grid" id="learning-resource-grid"></div>
+          <p class="learning-empty" id="learning-empty" hidden>No hi ha cap recurs amb aquesta combinació. Prova un altre nivell o tema.</p>
+        </section>
+        <aside class="learning-criteria panel"><div><p class="eyebrow">Com s’ha fet la selecció</p><h3>Curiositat, criteri i fonts visibles.</h3></div><ul><li><b>Autoritat</b><span>Prioritat per Meteocat, AEMET, OMM, NOAA, NASA, ESA, EUMETSAT i centres acadèmics.</span></li><li><b>Utilitat</b><span>El recurs ha d’explicar, permetre observar o proposar una activitat concreta.</span></li><li><b>Transparència</b><span>Els recursos en anglès s’indiquen abans d’obrir-los i cap enllaç substitueix els avisos oficials.</span></li></ul></aside>
       </section>
 
       <section id="contacte" class="contact-section section-block" aria-labelledby="contact-title" data-portal-page="contacte">
@@ -622,7 +633,7 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V19.1.1</small>
+      <small>Dades locals · Sant Celoni, Montseny · V20.0.0</small>
       <div>
         <a href="./privacitat.html">Privacitat</a>
         <a href="#top">Tornar amunt ↑</a>

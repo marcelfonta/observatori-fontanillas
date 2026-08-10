@@ -37,14 +37,14 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/variables.css?v=7.3" />
   <link rel="stylesheet" href="css/layout.css?v=7.3" />
-  <link rel="stylesheet" href="css/style.css?v=19.1.1" />
-  <link rel="stylesheet" href="css/portal.css?v=19.1.1" />
+  <link rel="stylesheet" href="css/style.css?v=20.0.0" />
+  <link rel="stylesheet" href="css/portal.css?v=20.0.0" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
   <script type="module" src="src/features/analytics.js?v=7.3"></script>
   <script type="module" src="src/features/pwa.js?v=7.3"></script>
   <script type="module" src="src/features/share-page.js?v=7.3"></script>
-  <script type="module" src="src/features/stations-comparison.js?v=19.1.1"></script>
-  <script type="module" src="src/features/portal-static.js?v=19.1.1"></script>
+  <script type="module" src="src/features/stations-comparison.js?v=20.0.0"></script>
+  <script type="module" src="src/features/portal-static.js?v=20.0.0"></script>
 </head>
 <body data-portal-static="comparar">
   <div id="app-update-banner" class="app-update-banner" hidden role="status" aria-live="polite"><span><b>Nova versió disponible</b><small>Actualitza l’Observatori per carregar els darrers canvis.</small></span><button type="button" id="app-update-button">Actualitzar ara</button><button type="button" id="app-update-dismiss" aria-label="Tancar avís d’actualització">×</button></div>
@@ -85,7 +85,7 @@
     <section class="comparison-method panel"><div><p class="eyebrow">Fonts i criteri</p><h2>Com es trien les dades?</h2><p id="comparison-source-note">El Worker prioritza dades homogènies i disponibles, i deixa preparada la capa de fallback per a fonts oficials.</p></div><div class="comparison-method-grid"><span><b>1</b><small>Font oficial quan és disponible i comparable</small></span><span><b>2</b><small>Estació PWS propera com a fallback</small></span><span><b>3</b><small>Qualsevol estació sense dades queda marcada com a no disponible</small></span></div></section>
   </main>
 
-  <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V19.1.1</small><div><a href="./privacitat.html">Privacitat</a><a href="#top">Tornar amunt ↑</a><button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button></div></footer>
+  <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V20.0.0</small><div><a href="./privacitat.html">Privacitat</a><a href="#top">Tornar amunt ↑</a><button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button></div></footer>
 
   <div id="shareModal" hidden style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;"><div style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true" aria-labelledby="share-title"><h3 id="share-title" style="margin:0 0 16px;font-size:1.1rem;color:var(--text);">Compartir l'Observatori</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><button type="button" data-share="copy">📋 Copiar</button><button type="button" data-share="whatsapp">📱 WhatsApp</button><button type="button" data-share="x">🗣 X</button><button type="button" data-share="facebook">📢 Facebook</button><button type="button" data-share="email">✉️ Correu</button><button type="button" data-share="instagram">📸 Instagram</button><button type="button" data-share="tiktok">🎵 TikTok</button><button type="button" data-share="native">🔗 Altres apps</button></div><button type="button" id="share-close" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer;">Tancar</button></div></div>
 </body>

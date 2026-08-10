@@ -123,6 +123,14 @@ OneSignal es carrega dinàmicament només quan `oneSignalAppId` és present. El 
 
 V19.1 amplia el diagnòstic local amb `PerformanceObserver`. El panell mostra LCP, CLS, INP i TTFB de la càrrega actual, interpreta els llindars recomanats i incorpora els valors al diagnòstic copiable. V19.1.1 hi afegeix la detecció del beacon de Cloudflare Web Analytics, activat des de Cloudflare per obtenir dades agregades de camp sense incorporar Google Analytics.
 
+## Evolució V20
+
+`src/data/learning-resources.js` és el catàleg editorial de la biblioteca educativa. Cada entrada conté títol, institució, URL HTTPS, descripció, nivells, temes, idiomes, format i una icona clara. `src/features/learning.js` només filtra i renderitza aquest catàleg amb nodes DOM segurs; no injecta HTML extern, no carrega contingut de tercers i no envia cerques.
+
+La vista Aprendre ofereix itineraris per Primària, ESO, Batxillerat i docents, cerca tolerant als accents, filtres combinables i accessos interns a dades locals. La selecció prioritza serveis meteorològics, organismes científics i centres educatius reconeguts. Els enllaços externs s’obren amb `noopener noreferrer` i indiquen idioma i responsable abans de sortir del portal.
+
+L’analítica diferencia tres conceptes: configuració al domini, proveïdor i beacon detectat en la càrrega actual. `cloudflareWebAnalyticsEnabled` reflecteix l’activació confirmada al tauler de Cloudflare; la detecció DOM continua existint només com a diagnòstic addicional. Això evita mostrar un fals «No configurat» a l’administració.
+
 ## Normes de canvi
 
 1. Treballar una sola fita cada vegada.

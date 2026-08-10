@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { dirname,resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { LEARNING_RESOURCES } from '../src/data/learning-resources.js';
+import { filterLearningResources } from '../src/features/learning.js';
+import { analyticsServiceState } from '../src/features/admin.js';
+
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const [html,css,serviceWorker,config]=await Promise.all(['index.html','css/portal.css','service-worker.js','src/core/config.js'].map(file=>readFile(resolve(root,file),'utf8')));
+assert.ok(LEARNING_RESOURCES.length>=25,'La biblioteca ha de continuar sent rica en recursos.');
+assert.ok(LEARNING_RESOURCES.every(resource=>resource.url.startsWith('https://')),'Tots els recursos externs han de ser HTTPS.');
+for(const org of ['Servei Meteorològic de Catalunya','AEMET','Organització Meteorològica Mundial','NASA Climate Kids','National Weather Service · NOAA','Agència Espacial Europea','EUMETSAT'])assert.ok(LEARNING_RESOURCES.some(resource=>resource.org.includes(org)),`Falta una font de referència: ${org}`);
+assert.ok(filterLearningResources(LEARNING_RESOURCES,{level:'primaria'}).length>=8);
+assert.ok(filterLearningResources(LEARNING_RESOURCES,{level:'avancat',topic:'dades'}).length>=5);
+assert.ok(filterLearningResources(LEARNING_RESOURCES,{query:'núvols'}).some(resource=>resource.title.includes('Núvols')));
+assert.equal(filterLearningResources(LEARNING_RESOURCES,{query:'recurs-inexistent'}).length,0);
+for(const id of ['learning-search','learning-level','learning-topic','learning-reset','learning-resource-grid','learning-result-count','learning-empty'])assert.match(html,new RegExp(`id="${id}"`));
+assert.match(html,/data-learning-path="docents"/);
+assert.match(css,/\.learning-resource-grid/);
+assert.match(css,/@media \(max-width: 510px\)[\s\S]*\.learning-paths,\.learning-resource-grid,\.learning-filters \{ grid-template-columns: 1fr/);
+assert.match(serviceWorker,/src\/data\/learning-resources\.js/);
+assert.match(config,/cloudflareWebAnalyticsEnabled: true/);
+assert.equal(analyticsServiceState({cloudflareEnabled:true}).provider,'cloudflare');
+assert.equal(analyticsServiceState({cloudflareEnabled:true}).detected,false);
+console.log('Test V20 de biblioteca educativa i analítica: correcte');
