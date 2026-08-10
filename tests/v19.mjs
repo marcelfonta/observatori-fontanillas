@@ -20,6 +20,8 @@ assert.ok(!html.includes('cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js'))
 assert.match(push,/loadOneSignalSdk/);
 assert.match(config,/oneSignalAppId: '108a857e-d115-4fc9-85b4-0a84fb0936f4'/);
 assert.match(headers,/script-src[^;]*https:\/\/api\.onesignal\.com/);
+assert.match(headers,/default-src[^;]*https:\/\/cdn\.onesignal\.com/);
+assert.match(headers,/style-src[^;]*https:\/\/onesignal\.com/);
 assert.match(push,/sdkReadyTimer/);
 assert.match(push,/Esperant el permís del navegador/);
 assert.match(push,/waitUntil/);

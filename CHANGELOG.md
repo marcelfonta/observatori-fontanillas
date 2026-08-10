@@ -1,5 +1,12 @@
 # Changelog
 
+## V19.0.7 — 2026-08-10
+
+- Corregits els bloquejos CSP confirmats per la consola de Firefox durant la càrrega de OneSignal.
+- Autoritzats exclusivament els dominis oficials de OneSignal per a l'estil, l'SDK i la sincronització push.
+- Mantingudes les restriccions específiques de scripts, connexions, imatges i marcs del portal.
+- Conservada la protecció contra recàrregues repetides i el Worker compartit de la V19.0.6.
+
 ## V19.0.6 — 2026-08-10
 
 - Corregit immediatament el bucle de recàrrega introduït a la V19.0.5.
