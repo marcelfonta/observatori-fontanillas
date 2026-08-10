@@ -18,6 +18,7 @@ import { renderDataQuality, renderDataQualityUnavailable } from './modules/quali
 import { renderAlerts, renderAlertsUnavailable } from './modules/avisos.js';
 import { updateSituation } from './modules/situacio.js';
 import { initShare } from './features/share.js';
+import { initPortal } from './features/portal-router.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -108,6 +109,7 @@ async function load(){
 }
 const periodLabels={ '24h':'Lectures de les últimes 24 hores','7d':'Evolució dels últims 7 dies','30d':'Evolució dels últims 30 dies','1y':'Evolució de l’últim any disponible' };
 document.querySelectorAll('[data-period]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-period]').forEach(b=>b.classList.remove('is-active'));button.classList.add('is-active');setText('evolution-period-copy',periodLabels[button.dataset.period]||'Històric disponible');renderCharts(latest,latestHistory,button.dataset.period);}));
+initPortal();
 initNavigation();
 initWebcam();
 initContact();
@@ -143,4 +145,3 @@ window.addEventListener('pageshow',event=>{
   refreshAfterResume(Boolean(event.persisted));
 });
 window.addEventListener('focus',()=>refreshAfterResume(false));
-

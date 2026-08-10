@@ -32,6 +32,7 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=6.0" />
+    <link rel="stylesheet" href="css/portal.css?v=8.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
@@ -53,18 +54,23 @@
     <a class="skip-link" href="#ara">Saltar al contingut principal</a>
     <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
     <header class="site-header shell">
-      <a class="brand" href="#top" aria-label="Observatori Fontanillas, inici">
+      <button class="portal-menu-button" id="portal-menu-button" type="button" aria-expanded="false" aria-controls="portal-sidebar" aria-label="Obrir el menú">☰</button>
+      <a class="brand" href="?page=inici" aria-label="Observatori Fontanillas, inici">
         <span class="brand__mark" aria-hidden="true"><i class="brand__sun"></i><i class="brand__ridge brand__ridge--back"></i><i class="brand__ridge brand__ridge--front"></i><i class="brand__data"></i></span>
         <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span>
       </a>
-      <nav class="nav" aria-label="Navegació principal">
-        <a class="is-active" href="#ara" data-section-link="ara">Ara</a><a href="#avisos" data-section-link="avisos">Avisos</a><a href="#prediccio" data-section-link="prediccio">Predicció</a><a href="#tendencies" data-section-link="tendencies">Tendències</a><a href="#cel-nocturn" data-section-link="cel-nocturn">Cel nocturn</a><a href="#territori" data-section-link="territori">Radar</a><a href="comparativa.html">Comparar</a><a href="#contacte" data-section-link="contacte">Contacte</a>
-      </nav>
+      <p class="header-context" id="portal-page-label">Consulta ràpida</p>
       <div class="live-pill"><span></span><b id="connection-label">Connectant</b><time id="header-time">--:--</time></div>
     </header>
 
-    <main id="top" class="shell">
-      <section id="ara" class="hero panel">
+    <aside class="portal-sidebar" id="portal-sidebar" aria-label="Seccions del portal">
+      <nav>
+        <a href="?page=inici" data-page-link="inici"><span>⌂</span>Inici</a><a href="?page=estacio" data-page-link="estacio"><span>◉</span>Estació</a><a href="?page=prediccio" data-page-link="prediccio"><span>☁</span>Predicció</a><a href="?page=avisos" data-page-link="avisos"><span>!</span>Avisos</a><a href="?page=radar" data-page-link="radar"><span>◎</span>Radar</a><a href="?page=webcams" data-page-link="webcams"><span>▣</span>Webcams</a><a href="?page=centre-dades" data-page-link="centre-dades"><span>⌁</span>Centre de Dades</a><a href="comparativa.html"><span>⇄</span>Comparar</a><a href="?page=medi-ambient" data-page-link="medi-ambient"><span>♧</span>Medi Ambient</a><a href="?page=contacte" data-page-link="contacte"><span>↗</span>Contacte</a><a href="metodologia.html"><span>i</span>Metodologia</a>
+      </nav>
+    </aside>
+    <button class="portal-backdrop" id="portal-backdrop" type="button" aria-label="Tancar el menú" hidden></button>
+    <main id="top" class="shell portal-main">
+      <section id="ara" class="hero panel" data-portal-page="inici">
         <div class="hero__copy">
           <p class="eyebrow">Sant Celoni · Vallès Oriental</p>
           <h1>El Montseny,<br /><em>mesurat al moment.</em></h1>
@@ -90,7 +96,7 @@
         </aside>
       </section>
 
-      <section class="metrics-grid" aria-label="Mesures actuals de l’estació">
+      <section class="metrics-grid" aria-label="Mesures actuals de l’estació" data-portal-page="inici estacio">
         <article class="metric panel metric--featured" id="metric-card-temperature">
           <div class="metric__head"><span>Temperatura</span><span class="trend trend--up" id="temp-trend">↗ <b>+0,0°</b></span></div>
           <div class="metric__value"><span id="metric-temperature">--</span><small>°C</small></div>
@@ -107,7 +113,7 @@
         <article class="metric panel" id="metric-card-humidex"><div class="metric__head"><span>Temperatura de xafogor</span><span class="metric__icon">Humidex</span></div><div class="metric__value"><span id="humidex">—</span><small>°C eq.</small></div><p id="humidex-reading">Efecte conjunt de calor i humitat</p><div class="metric-context"><span id="level-humidex">Interpretant</span><div><i id="marker-humidex"></i></div></div><div class="metric-spark"><canvas id="spark-humidex" aria-label="Evolució recent de la temperatura de xafogor"></canvas></div></article>
       </section>
 
-      <section id="calculats" class="derived-panel panel" aria-labelledby="derived-title" data-mobile-advanced>
+      <section id="calculats" class="derived-panel panel" aria-labelledby="derived-title" data-mobile-advanced data-portal-page="estacio">
         <header><div><p class="eyebrow">Diagnosi atmosfèrica</p><h2 id="derived-title">Més lectura, sense inventar sensors</h2></div><span class="tag">Valors calculats</span></header>
         <p class="derived-panel__intro">Indicadors estimats a partir de la temperatura, la humitat, el punt de rosada i el vent mesurats per l’estació.</p>
         <div class="derived-grid">
@@ -122,7 +128,7 @@
         </div>
       </section>
 
-      <section id="resum-dia" class="insights-section section-block" aria-labelledby="insights-title" data-mobile-advanced>
+      <section id="resum-dia" class="insights-section section-block" aria-labelledby="insights-title" data-mobile-advanced data-portal-page="estacio centre-dades">
         <div class="section-heading insights-heading">
           <div><p class="eyebrow">Anàlisi de l’estació</p><h2 id="insights-title">Què ha passat avui?</h2></div>
           <div class="history-source"><span id="remote-history-status">Connectant amb l’històric…</span><a href="https://www.wunderground.com/dashboard/pws/ISANTC198" target="_blank" rel="noreferrer">Weather Underground · suport recent ↗</a></div>
@@ -146,7 +152,7 @@
         </section>
       </section>
 
-      <section id="avisos" class="alerts-section section-block" aria-labelledby="alerts-title">
+      <section id="avisos" class="alerts-section section-block" aria-labelledby="alerts-title" data-portal-page="inici avisos">
         <div class="section-heading alerts-heading">
           <div><p class="eyebrow">Vigilància oficial</p><h2 id="alerts-title">Avisos que poden afectar Sant Celoni</h2><p>Seguiment del Vallès Oriental i del prelitoral de Barcelona amb fonts oficials.</p></div>
           <div class="alerts-heading-actions">
@@ -203,7 +209,7 @@
       </section>
       <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
-      <section id="prediccio" class="forecast-section section-block" aria-labelledby="forecast-title">
+      <section id="prediccio" class="forecast-section section-block" aria-labelledby="forecast-title" data-portal-page="inici prediccio">
         <div class="section-heading forecast-heading">
           <div><p class="eyebrow">Centre de predicció</p><h2 id="forecast-title">Com evolucionarà el temps?</h2></div>
           <div class="forecast-source"><span id="forecast-status">Actualitzant models…</span><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Dades de model: Open-Meteo ↗</a></div>
@@ -294,7 +300,7 @@
       </section>
       <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
-      <section id="tendencies" class="section-block" data-mobile-advanced>
+      <section id="tendencies" class="section-block" data-mobile-advanced data-portal-page="centre-dades">
         <div class="section-heading evolution-heading"><div><p class="eyebrow">Evolució</p><h2>Històric meteorològic</h2><p id="evolution-period-copy">Lectures de les últimes 24 hores</p></div><div class="segmented" role="group" aria-label="Període de gràfica"><button class="is-active" data-period="24h">24 h</button><button data-period="7d">7 dies</button><button data-period="30d">30 dies</button><button data-period="1y">1 any</button></div></div>
         <div class="charts-grid">
           <article class="chart-card panel"><header><div><span>Temperatura i punt de rosada</span><strong><b id="chart-temp-now">--</b> °C</strong></div><span class="tag" id="history-status">Iniciant històric</span></header><div class="chart-wrap"><canvas id="temperature-chart"></canvas></div></article>
@@ -308,7 +314,7 @@
       </section>
       <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
-      <section id="cel-nocturn" class="astronomy-section section-block" aria-labelledby="astronomy-title" data-mobile-advanced>
+      <section id="cel-nocturn" class="astronomy-section section-block" aria-labelledby="astronomy-title" data-mobile-advanced data-portal-page="prediccio">
         <div class="section-heading astronomy-heading"><div><p class="eyebrow">Astronomia local</p><h2 id="astronomy-title">El cel, de dia i de nit</h2></div><div class="astronomy-source"><span>Càlcul per a 41,6906° N · 2,4890° E</span><a href="https://aa.usno.navy.mil/data/" target="_blank" rel="noreferrer">Efemèrides: USNO ↗</a></div></div>
         <div class="astronomy-overview">
           <article class="moon-card panel"><div class="moon-visual" id="moon-visual" aria-hidden="true">◐</div><div><p class="eyebrow">Lluna actual</p><h3 id="moon-phase">Calculant la fase…</h3><strong><b id="moon-illumination">—</b>% il·luminada</strong><p id="moon-age">Edat lunar pendent</p><p id="moon-times">Sortida i posta pendents</p><div class="moon-facts"><span><small>Pròxima fase</small><b id="moon-next-phase">Calculant</b></span><span><small>Visibilitat</small><b id="moon-visibility">Pendent</b></span></div></div></article>
@@ -325,7 +331,7 @@
       </section>
       <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
-      <section id="territori" class="territory-grid section-block">
+      <section id="territori" class="territory-grid section-block" data-portal-page="inici radar webcams">
         <article class="webcam-card panel">
           <header><div><p class="eyebrow">Mirada al territori</p><h2>Webcam en directe</h2><a class="source-link" href="https://www.alvar.cat/" target="_blank" rel="noreferrer">Font: alvar.cat ↗</a></div><span class="live-pill"><span></span>Imatge actual</span></header>
           <div class="webcam-frame"><img id="webcam-image" alt="Webcam meteorològica de l’entorn del Montseny" /><div class="webcam-overlay"><span id="webcam-time">Ara</span><b>Sant Celoni · Montseny</b></div></div>
@@ -356,7 +362,7 @@
       </section>
       <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
-      <section id="qualitat" class="quality-section section-block" aria-labelledby="quality-title" data-mobile-advanced>
+      <section id="qualitat" class="quality-section section-block" aria-labelledby="quality-title" data-mobile-advanced data-portal-page="centre-dades">
         <div class="section-heading quality-heading">
           <div><p class="eyebrow">Control de l’observatori</p><h2 id="quality-title">Dades sota control</h2><p>Disponibilitat, cobertura i continuïtat de cada sensor, calculades sobre les lectures guardades.</p></div>
           <span class="quality-badge is-loading" id="quality-badge"><i></i><b id="quality-badge-label">Comprovant el sistema</b></span>
@@ -397,7 +403,8 @@
       </section>
       <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
-      <section id="contacte" class="contact-section section-block" aria-labelledby="contact-title">
+      <section id="medi-ambient" class="portal-placeholder section-block" data-portal-page="medi-ambient"><div class="panel"><p class="eyebrow">Medi Ambient</p><h1>Entorn i salut ambiental</h1><p>Aquesta nova àrea queda preparada per a qualitat de l’aire, radiació UV, pol·len, risc d’incendi, sequera, estat hidrològic i meduses a la costa catalana. Les fonts automàtiques s’incorporaran en la fita específica del roadmap.</p></div></section>
+      <section id="contacte" class="contact-section section-block" aria-labelledby="contact-title" data-portal-page="contacte">
         <article class="contact-intro panel">
           <p class="eyebrow">Contacte privat</p>
           <h2 id="contact-title">Parlem de meteorologia.</h2>
