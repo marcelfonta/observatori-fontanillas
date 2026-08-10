@@ -28,6 +28,79 @@ function rainTotal(items) {
   }, 0);
 }
 
+function dailyRain(items) {
+  const groups = new Map();
+  items.forEach(item => {
+    const key = dateKey(item.t);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  });
+  const totals = new Map([...groups].map(([key, group]) => [key, rainTotal(group)]));
+  const today = dateKey(Date.now());
+  const observedToday = number(current?.rainToday);
+  if (observedToday !== null) totals.set(today, Math.max(totals.get(today) || 0, observedToday));
+  return totals;
+}
+
+function recentEpisodeRain(items) {
+  const samples = items.filter(item => item.t >= Date.now() - 72 * 3600000).sort((a, b) => a.t - b.t);
+  const wet = samples.map((item, index) => ({ t: item.t, rain: Math.max(0, number(item.rainIncrement) ?? 0), rate: Math.max(0, number(item.rainRate) ?? 0), index })).filter(item => item.rain > 0 || item.rate > 0);
+  if (!wet.length || (Date.now() - wet.at(-1).t > 12 * 3600000 && (number(current?.rainRate) ?? 0) <= 0)) return 0;
+  let start = wet.at(-1).index;
+  let previousWet = wet.at(-1).t;
+  for (let index = wet.length - 2; index >= 0; index -= 1) {
+    if (previousWet - wet[index].t > 6 * 3600000) break;
+    start = wet[index].index;
+    previousWet = wet[index].t;
+  }
+  return rainTotal(samples.slice(start));
+}
+
+function daysSinceThreshold(totals, threshold) {
+  const today = new Date(`${dateKey(Date.now())}T12:00:00`);
+  const matches = [...totals].filter(([, rain]) => rain >= threshold).map(([key]) => key).sort();
+  if (matches.length) {
+    const last = new Date(`${matches.at(-1)}T12:00:00`);
+    return Math.max(0, Math.round((today - last) / DAY));
+  }
+  if (!archive.length) return null;
+  const first = new Date(`${dateKey(archive[0].t)}T12:00:00`);
+  return { minimum: Math.max(0, Math.round((today - first) / DAY)) };
+}
+
+function dryLabel(value) {
+  if (value === null) return '—';
+  if (typeof value === 'object') return `Més de ${value.minimum}`;
+  return String(value);
+}
+
+function renderRainDashboard() {
+  const totals = dailyRain(archive);
+  const today = dateKey(Date.now());
+  const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterday = dateKey(yesterdayDate);
+  const month = today.slice(0, 7); const year = today.slice(0, 4);
+  const totalFor = prefix => [...totals].filter(([key]) => key.startsWith(prefix)).reduce((sum, [, value]) => sum + value, 0);
+  const recent24h = archive.filter(item => item.t >= Date.now() - DAY);
+  const yearDays = [...totals].filter(([key]) => key.startsWith(year));
+  const wettest = yearDays.sort((a, b) => b[1] - a[1])[0];
+  set('data-rain-now', `${fmt(number(current?.rainRate))} mm/h`);
+  set('data-rain-today', `${fmt(totals.get(today) ?? number(current?.rainToday) ?? 0)} mm`);
+  set('data-rain-24h', `${fmt(rainTotal(recent24h))} mm`);
+  set('data-rain-episode', `${fmt(recentEpisodeRain(archive))} mm`);
+  set('data-rain-yesterday', `${fmt(totals.get(yesterday) ?? 0)} mm`);
+  set('data-rain-month', `${fmt(totalFor(month))} mm`);
+  set('data-rain-year', `${fmt(totalFor(year))} mm`);
+  set('data-rain-wet-days', String(yearDays.filter(([, value]) => value >= .1).length));
+  set('data-rain-dry-days', dryLabel(daysSinceThreshold(totals, .1)));
+  set('data-rain-since-1', dryLabel(daysSinceThreshold(totals, 1)));
+  set('data-rain-since-10', dryLabel(daysSinceThreshold(totals, 10)));
+  set('data-rain-since-20', dryLabel(daysSinceThreshold(totals, 20)));
+  set('data-rain-wettest', wettest && wettest[1] > 0 ? `${fmt(wettest[1])} mm · ${new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(`${wettest[0]}T12:00:00`))}` : 'Encara cap dia plujós');
+  const coverage = archive.length ? Math.max(1, Math.round((Date.now() - archive[0].t) / DAY)) : 0;
+  set('data-rain-coverage', coverage ? `Càlcul fet amb ${coverage} dies de cobertura disponible. «Més de» indica que no hi ha cap episodi anterior dins de l’arxiu.` : 'Les estadístiques s’activaran quan l’arxiu disposi de cobertura.');
+}
+
 function periodSummary(items) {
   const temperatures = values(items, 'temperature');
   return { temperature: mean(temperatures), rain: rainTotal(items), samples: items.length };
@@ -81,6 +154,7 @@ export function renderDataCenter(history = [], latest = null) {
   renderPeriod('data-daily', archive.filter(item => dateKey(item.t) === today));
   renderPeriod('data-monthly', archive.filter(item => dateKey(item.t).startsWith(month)));
   renderPeriod('data-yearly', archive.filter(item => dateKey(item.t).startsWith(year)));
+  renderRainDashboard();
   renderEphemeris();
 }
 

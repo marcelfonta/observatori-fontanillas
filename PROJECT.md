@@ -70,6 +70,16 @@ La conversa no es desa ni s’envia a cap model extern. Només s’envia a Open�
 
 V13.1 amplia l’intèrpret temporal a dies concrets, cap de setmana i setmana següent. Les consultes geogràfiques disposen de 14 dies i utilitzen el primer resultat rellevant d’Open‑Meteo, sense forçar coincidències espanyoles. Les fonts incorporen enllaços cap a la vista interna o el servei extern corresponent. `initMeteoAIWidget()` crea un xat flotant compartit també per `portal-static.js`: resol una primera consulta i després deriva cap a la pàgina completa per continuar.
 
+## Evolució V14
+
+Meteo IA manté a `sessionStorage` únicament el context funcional de la pestanya —destinació, període i activitat—, mai el text complet de la conversa. Això permet resoldre pronoms i preguntes encadenades com «quin temps hi farà?» després de parlar de la Vall d’Aran. La destinació sempre es resol abans de la intenció d’activitat, de manera que bici, running o excursió utilitzen la predicció del lloc demanat. «Vall d’Aran» es consulta amb Vielha e Mijaran com a referència meteorològica identificada.
+
+`src/features/long-range.js` interpreta les anomalies setmanals del conjunt ECMWF EC46, consultades de manera centralitzada a `src/services/weather-api.js`. La interfície limita l’horitzó a sis setmanes, treballa amb mitjanes i anomalies i evita presentar valors diaris a un termini on no serien fiables. AEMET i ECMWF queden enllaçats com a fonts metodològiques i oficials.
+
+El Centre de Dades calcula la pluviometria avançada a partir del mateix arxiu `/history`: intensitat, acumulacions d’avui/ahir/24 h/mes/any, episodi recent, dies plujosos, dies des de llindars d’1, 10 i 20 mm i màxim anual. Quan l’arxiu no arriba a l’últim episodi, mostra «Més de» en lloc d’inventar una data.
+
+`src/features/seo.js` centralitza les metadades de les vistes del portal. La fase tècnica de SEO inclou canòniques, descripcions locals, Open Graph, X, Schema.org, sitemap i instruccions de publicació. Search Console i les mètriques de camp només es poden activar després del desplegament.
+
 ## Normes de canvi
 
 1. Treballar una sola fita cada vegada.

@@ -1,6 +1,6 @@
 // Observatori Meteorològic Fontanillas — app.js · V7 Fase 1
 import { CONFIG } from './core/config.js';
-import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchModelComparison, fetchStationHistory, getLastCachedObs } from './services/weather-api.js';
+import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchLongRangeForecast, fetchModelComparison, fetchStationHistory, getLastCachedObs } from './services/weather-api.js';
 import { setText } from './core/dom.js';
 import { renderStation } from './modules/estacio.js';
 import { renderCharts, renderMetricSparklines } from './modules/grafiques.js';
@@ -22,6 +22,7 @@ import { initPortal } from './features/portal-router.js';
 import { initDataCenter, renderDataCenter } from './features/data-center.js';
 import { initEnvironment, updateEnvironmentStation } from './features/environment.js';
 import { initMeteoAI, initMeteoAIWidget, updateMeteoAIContext } from './features/meteo-ai.js';
+import { renderLongRangeError, renderLongRangeForecast } from './features/long-range.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -42,6 +43,14 @@ async function loadForecastSuite(){
   if(forecastResult.status==='fulfilled'){renderForecast(forecastResult.value);initWhenVisible('#cel-nocturn', () => renderAstronomy(forecastResult.value));updateSituation({forecast:forecastResult.value});updateMeteoAIContext({forecast:forecastResult.value});}else{renderForecastError();initWhenVisible('#cel-nocturn', () => renderAstronomy(null));updateSituation({forecast:null});updateMeteoAIContext({forecast:null});}
   if(modelsResult.status==='fulfilled')renderModelComparison(modelsResult.value);else renderModelError();
   forecastFetchedAt=Date.now();
+}
+
+let longRangeLoaded=false;
+async function loadLongRange(){
+  if(longRangeLoaded)return;
+  longRangeLoaded=true;
+  try{renderLongRangeForecast(await fetchLongRangeForecast());}
+  catch(error){console.warn('Tendència de llarg termini no disponible.',error);renderLongRangeError();}
 }
 
 async function loadHistory(){
@@ -125,6 +134,7 @@ initMeteoAIWidget();
 initShare();
 document.addEventListener('observatori:alerts-updated',event=>updateSituation({alerts:event.detail}));
 initWhenVisible('.model-viewer',initModelViewer);
+initWhenVisible('#long-range',loadLongRange,'900px 0px');
 initWhenVisible('#territori',initRadar,'700px 0px');
 initWhenVisible('#medi-ambient',initEnvironment,'600px 0px');
 if(document.body.dataset.page==='meteo-ia')initEnvironment();

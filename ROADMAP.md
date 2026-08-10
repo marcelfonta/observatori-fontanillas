@@ -59,11 +59,15 @@ Implementat a V13.0.0 com un assistent conversacional determinista i traçable a
 
 Evolucionat a V13.1.0: comprensió de dies de la setmana, cap de setmana i setmana següent; predicció de fins a 14 dies per a poblacions internacionals; selecció geogràfica sense prioritzar erròniament Espanya; fonts amb enllaços clicables i assistent flotant disponible a tot el portal per fer una primera pregunta ràpida.
 
-## Milestone 7 — SEO i presència a Internet
+Evolucionat a V14.0.0: context de conversa temporal per recordar lloc, període i activitat; separació robusta de frases com «Vall d’Aran aquest cap de setmana»; àlies territorial cap a Vielha; i recomanacions de bicicleta basades en temperatura, pluja i ratxes de la destinació, no en les dades locals de Sant Celoni.
+
+## Milestone 7 — SEO i presència a Internet — Base tècnica completada
 
 - Search Console, sitemap, robots, canòniques, metadades, Open Graph, Schema.org i Core Web Vitals.
 - SEO local: Sant Celoni i Baix Montseny; pàgines específiques útils, no duplicades.
 - Analítica, directoris meteorològics i estudi de Google Business Profile segons requisits.
+
+Base tècnica implementada a V14.0.0: metadades i canòniques per vista, Open Graph i X dinàmics, dades estructurades `WebSite`, `WebPage`, `Dataset` i `BreadcrumbList`, sitemap ampliat i SEO local per Sant Celoni i el Baix Montseny. La verificació de Search Console, l’enviament del sitemap i les dades de camp de Core Web Vitals requereixen que la versió estigui publicada; queden documentats a `docs/SEO-PUBLICACIO.md`. No s’activa Google Business Profile ni analítica sense comprovar elegibilitat, identificador i privacitat.
 
 ## Milestone 8 — Compartició Premium
 

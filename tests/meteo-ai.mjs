@@ -66,7 +66,30 @@ assert.match(externalAlerts.body,/no disposa/i);
 const montseny=await answerMeteoQuestion('És bon moment per anar al Montseny?',context,services);
 assert.ok(['safe','caution','warning'].includes(montseny.level));
 
+const conversation={location:null,period:null,activity:null};
+const aranBike=await answerMeteoQuestion('Quin temps farà per anar amb bici a la Vall d’Aran aquest cap de setmana?',context,services,conversation);
+assert.match(aranBike.body,/Vall d’Aran/i);
+assert.match(aranBike.body,/anar amb bicicleta/i);
+assert.match(aranBike.body,/ferm mullat/i);
+assert.equal(conversation.location.query,'Vall d’Aran');
+assert.equal(conversation.period.query,'aquest cap de setmana');
+assert.equal(conversation.activity.key,'bike');
+
+const aranFollowup=await answerMeteoQuestion('I quin temps hi farà?',context,services,conversation);
+assert.match(aranFollowup.body,/Vall d’Aran/i);
+assert.match(aranFollowup.title,/cap de setmana/i);
+assert.doesNotMatch(aranFollowup.body,/Fontanillas/);
+
+const explicitVielha=await answerMeteoQuestion('Quin temps farà aquest cap de setmana per Vielha per anar amb bici?',context,services,{location:null,period:null,activity:null});
+assert.match(explicitVielha.body,/Vielha/i);
+assert.match(explicitVielha.body,/bicicleta/i);
+
+const screenshotCase=await answerMeteoQuestion('quin temps fara per anar amb bici a la vall daran aquest cap de setmana?',context,services,{location:null,period:null,activity:null});
+assert.match(screenshotCase.body,/Vall d’Aran/i);
+assert.match(screenshotCase.body,/cap de setmana/i);
+assert.doesNotMatch(screenshotCase.sources.map(item=>item.label).join(' '),/Sensor Fontanillas/);
+
 const unknown=await answerMeteoQuestion('Explica’m alguna cosa',context,services);
 assert.match(unknown.body,/situació actual/i);
 
-console.log('Test Meteo IA V13.1: correcte');
+console.log('Test Meteo IA V14: correcte');

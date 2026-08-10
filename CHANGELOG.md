@@ -1,5 +1,34 @@
 # Changelog
 
+## V14.0.0 — 2026-08-10
+
+### Meteo IA amb context
+
+- Recorda temporalment destinació, període i activitat dins de la pestanya, sense desar el text de la conversa.
+- Entén preguntes encadenades: després de parlar de bicicleta a la Vall d’Aran, «quin temps hi farà?» conserva Vall d’Aran, cap de setmana i bicicleta.
+- Separa correctament «Vall d’Aran» de «aquest cap de setmana» i resol el territori amb Vielha e Mijaran com a referència meteorològica.
+- Prioritza la destinació abans de la paraula «bici», evitant respondre amb la calor i l’UV de Sant Celoni.
+- Afegeix consells específics per bicicleta segons calor, probabilitat de pluja i ratxes de la destinació.
+- Mostra el context actiu a la conversa i permet esborrar-lo; el botó flotant és una mica més petit sense perdre llegibilitat.
+
+### Centre de Dades i predicció
+
+- Nou quadre pluviomètric amb intensitat actual, avui, últimes 24 h, episodi recent, ahir, mes, any, dies plujosos, períodes secs, llindars d’1/10/20 mm i dia més plujós.
+- Les dades incompletes s’expressen com a cobertura mínima, sense deduir dates fora de l’arxiu.
+- Nova tendència de sis setmanes amb mitjana del conjunt ECMWF EC46 i anomalies setmanals de temperatura i precipitació.
+- Enllaços directes a la predicció mensual oficial d’AEMET, la metodologia ECMWF i la font Open‑Meteo.
+
+### SEO · Milestone 7
+
+- Metadades, canòniques, Open Graph i X específics per a cada vista del portal.
+- Dades estructurades `WebSite`, `WebPage`, `Dataset` i `BreadcrumbList`.
+- Sitemap ampliat i SEO local per Sant Celoni i el Baix Montseny.
+- Guia separada per activar Search Console i mesurar Core Web Vitals després de publicar.
+
+### Preservat
+
+- Worker i contractes d’API existents sense canvis; avisos AEMET/Meteocat, PWA, compartir, comparativa, radar, medi ambient i push continuen actius.
+
 ## V13.1.0 — 2026-08-10
 
 ### Meteo IA més flexible

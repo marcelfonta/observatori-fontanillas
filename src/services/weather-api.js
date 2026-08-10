@@ -59,6 +59,20 @@ export async function fetchForecast() {
   return response.json();
 }
 
+export async function fetchLongRangeForecast() {
+  const { latitude, longitude } = CONFIG.station;
+  const params = new URLSearchParams({
+    latitude, longitude,
+    weekly: 'temperature_2m_mean,temperature_2m_anomaly,precipitation_mean,precipitation_anomaly',
+    models: 'ecmwf_ec46_ensemble_mean',
+    timezone: 'Europe/Madrid',
+    forecast_days: '46'
+  });
+  const response = await request(`https://seasonal-api.open-meteo.com/v1/seasonal?${params}`, { headers: { Accept: 'application/json' }, cache: 'no-store' }, 18000);
+  if (!response.ok) throw new Error(`Seasonal API ${response.status}`);
+  return response.json();
+}
+
 async function fetchModel(endpoint) {
   const { latitude, longitude } = CONFIG.station;
   const params = new URLSearchParams({

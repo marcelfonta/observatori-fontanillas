@@ -11,6 +11,8 @@
     <meta name="color-scheme" content="dark" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="description" content="Dades meteorològiques en directe des de Sant Celoni, als peus del Montseny." />
+    <meta name="geo.region" content="ES-CT" />
+    <meta name="geo.placename" content="Sant Celoni" />
     <title>Observatori Fontanillas · Sant Celoni</title>
     <link rel="canonical" href="https://meteo.fontanillas.cat/" />
     <meta property="og:type" content="website" />
@@ -38,17 +40,17 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=13.1.0" />
-    <link rel="stylesheet" href="css/portal.css?v=13.1.0" />
+    <link rel="stylesheet" href="css/style.css?v=14.0.0" />
+    <link rel="stylesheet" href="css/portal.css?v=14.0.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=13.1.0"></script>
+    <script type="module" src="src/features/push.js?v=14.0.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=13.1.0"></script>
+    <script type="module" src="src/app.js?v=14.0.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
-    <script type="application/ld+json">
-      {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
+    <script type="application/ld+json" id="seo-structured-data">
+      {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","url":"https://meteo.fontanillas.cat/?page=centre-dades","spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
     </script>
   </head>
   <body>
@@ -131,10 +133,11 @@
               <button type="button" data-ai-question="Quin temps fa a Girona?">Una altra població</button>
               <button type="button" data-ai-question="Quin temps farà la setmana que ve a Londres?">Setmana que ve a Londres</button>
             </div>
-            <div class="meteo-ai-privacy"><span aria-hidden="true">✓</span><p><b>Conversa local.</b> Les preguntes no es desen. Només el nom d’una altra població es consulta a Open‑Meteo.</p></div>
+            <div class="meteo-ai-privacy"><span aria-hidden="true">✓</span><p><b>Context temporal.</b> El lloc, el període i l’activitat es mantenen només durant la pestanya perquè puguis encadenar preguntes. No es desa el text de la conversa.</p></div>
           </aside>
           <article class="meteo-ai-chat panel" aria-label="Conversa amb Meteo IA">
             <header class="meteo-ai-chat__header"><div><span class="meteo-ai-live"><i></i>Meteo IA</span><small id="meteo-ai-data-status">Preparant les fonts</small></div><button type="button" id="meteo-ai-clear">Nova conversa</button></header>
+            <div class="meteo-ai-context" id="meteo-ai-context" hidden><span></span><button type="button" data-ai-clear-context>Esborrar context</button></div>
             <div class="meteo-ai-messages" id="meteo-ai-messages" role="log" aria-live="polite" aria-relevant="additions">
               <article class="meteo-ai-message is-assistant is-info">
                 <header><span>IA</span><strong>Dades preparades per respondre</strong></header>
@@ -206,6 +209,26 @@
           <article class="panel"><span>Pluja acumulada</span><strong><b id="data-summary-rain">—</b><small> mm</small></strong><small>Acumulació del període seleccionat</small></article>
           <article class="panel"><span>Ratxa màxima</span><strong><b id="data-summary-gust">—</b><small> km/h</small></strong><small>Valor més alt observat</small></article>
         </div>
+
+        <section class="rain-dashboard panel" aria-labelledby="rain-dashboard-title">
+          <header><div><p class="eyebrow">Pluviometria</p><h2 id="rain-dashboard-title">La pluja, amb més context.</h2><p>Acumulacions, intensitat i dies sense episodis destacables calculats amb l’arxiu real de Fontanillas.</p></div><span class="tag">Actualització automàtica</span></header>
+          <div class="rain-dashboard__grid" aria-live="polite">
+            <article><span>Intensitat ara</span><strong id="data-rain-now">—</strong><small>Lectura instantània</small></article>
+            <article><span>Pluja avui</span><strong id="data-rain-today">—</strong><small>Des de les 00:00</small></article>
+            <article><span>Últimes 24 hores</span><strong id="data-rain-24h">—</strong><small>Finestra mòbil</small></article>
+            <article><span>Episodi recent</span><strong id="data-rain-episode">—</strong><small>Separat per 6 h sense pluja</small></article>
+            <article><span>Ahir</span><strong id="data-rain-yesterday">—</strong><small>Dia natural anterior</small></article>
+            <article><span>Aquest mes</span><strong id="data-rain-month">—</strong><small>Acumulació mensual</small></article>
+            <article><span>Aquest any</span><strong id="data-rain-year">—</strong><small>Acumulació anual</small></article>
+            <article><span>Dies plujosos</span><strong id="data-rain-wet-days">—</strong><small>Amb 0,1 mm o més aquest any</small></article>
+            <article><span>Dies sense pluja</span><strong id="data-rain-dry-days">—</strong><small>Des de l’últim dia ≥ 0,1 mm</small></article>
+            <article><span>Dies sense ≥ 1 mm</span><strong id="data-rain-since-1">—</strong><small>Episodi apreciable</small></article>
+            <article><span>Dies sense ≥ 10 mm</span><strong id="data-rain-since-10">—</strong><small>Episodi abundant</small></article>
+            <article><span>Dies sense ≥ 20 mm</span><strong id="data-rain-since-20">—</strong><small>Episodi molt abundant</small></article>
+            <article class="rain-dashboard__wide"><span>Dia més plujós de l’any</span><strong id="data-rain-wettest">—</strong><small>Segons la cobertura disponible</small></article>
+          </div>
+          <p class="rain-dashboard__note" id="data-rain-coverage">Preparant la cobertura pluviomètrica…</p>
+        </section>
 
         <div class="data-center-grid">
           <article class="data-periods panel">
@@ -404,6 +427,16 @@
           </section>
           <p class="model-license-note">La taula superior compara ECMWF, GFS i ICON. El visor cartogràfic utilitza la inserció pública de Windy per animar ECMWF, GFS i ICON-EU sense reproduir imatges de tercers.</p>
         </article>
+        <section id="long-range" class="long-range panel" aria-labelledby="long-range-title">
+          <header><div><p class="eyebrow">Tendència de llarg termini</p><h3 id="long-range-title">Com poden ser les pròximes sis setmanes?</h3><p>Mitjanes setmanals i diferència respecte de la climatologia del mateix model. No són pronòstics dia a dia.</p></div><span class="tag" id="long-range-status">Preparant ECMWF EC46…</span></header>
+          <div class="long-range-weeks" id="long-range-weeks" aria-live="polite"><div class="forecast-loading">Calculant la tendència setmanal…</div></div>
+          <div class="long-range-sources">
+            <a href="https://www.aemet.es/es/eltiempo/prediccion/destacados/p5_t?tipo=p54tesp1" target="_blank" rel="noreferrer"><span>AEMET</span><b>Predicció mensual oficial ↗</b><small>Mapes d’anomalies de temperatura i precipitació</small></a>
+            <a href="https://www.ecmwf.int/en/forecasts/about-our-forecasts/sub-seasonal-range-forecasts" target="_blank" rel="noreferrer"><span>ECMWF</span><b>Com funciona l’horitzó subestacional ↗</b><small>Metodologia i límits fins a 46 dies</small></a>
+            <a href="https://open-meteo.com/en/docs/seasonal-forecast-api" target="_blank" rel="noreferrer"><span>Dades</span><b>EC46 via Open‑Meteo ↗</b><small>Mitjana del conjunt i anomalies setmanals</small></a>
+          </div>
+          <p class="long-range-note"><span>i</span> A partir de la segona setmana la incertesa augmenta molt. Aquesta vista serveix per detectar una tendència més càlida, freda, seca o humida; cal tornar a la previsió de 7 dies abans de prendre decisions.</p>
+        </section>
         <p class="forecast-disclaimer">La predicció descriu un escenari de model per a Sant Celoni, no una certesa. L’observació real de l’estació és la referència del temps que està fent.</p>
       </section>
 
@@ -563,7 +596,7 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V13.1.0</small>
+      <small>Dades locals · Sant Celoni, Montseny · V14.0.0</small>
       <div>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>

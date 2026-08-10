@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V13.1.0
+# Observatori Meteorològic Fontanillas — V14.0.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V13.1 amplia Meteo IA amb dates i setmanes concretes, prediccions internacionals de 14 dies, fonts clicables i un xat flotant a tot el portal.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V14 incorpora conversa contextual a Meteo IA, estadístiques avançades de pluja, tendència ECMWF fins a sis setmanes i la fase tècnica de SEO local.
 
 ## Estat actual
 
