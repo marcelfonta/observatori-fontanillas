@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "12.0.0";
+const WORKER_VERSION = "16.0.0";
 const WORKER_BUILT = "2026-08-10";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -78,9 +78,16 @@ const CREATE_ALERT_STATE = `CREATE TABLE IF NOT EXISTS alert_state (
   state_value TEXT,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 )`;
+const CREATE_ADMIN_AUTH_ATTEMPTS = `CREATE TABLE IF NOT EXISTS admin_auth_attempts (
+  ip TEXT NOT NULL,
+  attempted_at INTEGER NOT NULL
+)`;
+const CREATE_ADMIN_AUTH_ATTEMPTS_INDEX = `CREATE INDEX IF NOT EXISTS idx_admin_auth_attempts_ip_time
+ON admin_auth_attempts(ip, attempted_at DESC)`;
 let schemaReady = false;
 let contactSchemaReady = false;
 let alertSchemaReady = false;
+let adminAuthSchemaReady = false;
 
 // Offset (en segons) de la zona horària de Madrid respecte a UTC, calculat
 // dinàmicament perquè s'adapti automàticament a CET (UTC+1) i CEST (UTC+2).
@@ -113,7 +120,7 @@ function corsHeaders(origin = "*") {
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Accept",
+    "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization",
     "Access-Control-Max-Age": "86400",
     "Vary": "Origin",
     ...securityHeaders(),
@@ -231,6 +238,17 @@ async function ensureAlertSchema(env) {
     env.DB.prepare(CREATE_ALERT_STATE),
   ]);
   alertSchemaReady = true;
+  return true;
+}
+
+async function ensureAdminAuthSchema(env) {
+  if (!env.DB) return false;
+  if (adminAuthSchemaReady) return true;
+  await env.DB.batch([
+    env.DB.prepare(CREATE_ADMIN_AUTH_ATTEMPTS),
+    env.DB.prepare(CREATE_ADMIN_AUTH_ATTEMPTS_INDEX),
+  ]);
+  adminAuthSchemaReady = true;
   return true;
 }
 
@@ -907,6 +925,104 @@ async function health(env) {
   });
 }
 
+async function secureTokenMatch(candidate, expected) {
+  if (!candidate || !expected || candidate.length > 512) return false;
+  const encoder = new TextEncoder();
+  const [candidateHash, expectedHash] = await Promise.all([
+    crypto.subtle.digest("SHA-256", encoder.encode(candidate)),
+    crypto.subtle.digest("SHA-256", encoder.encode(expected)),
+  ]);
+  const left = new Uint8Array(candidateHash);
+  const right = new Uint8Array(expectedHash);
+  let difference = left.length ^ right.length;
+  for (let index = 0; index < Math.min(left.length, right.length); index += 1) difference |= left[index] ^ right[index];
+  return difference === 0;
+}
+
+function adminRequestToken(request) {
+  const authorization = request.headers.get("Authorization") || "";
+  return authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() || "";
+}
+
+async function adminAuthLimited(request, env) {
+  if (!(await ensureAdminAuthSchema(env))) return false;
+  const ip = cleanText(request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For"), 80);
+  if (!ip) return false;
+  const now = Math.floor(Date.now() / 1000);
+  await env.DB.prepare("DELETE FROM admin_auth_attempts WHERE attempted_at < ?").bind(now - 3600).run();
+  const row = await env.DB.prepare("SELECT COUNT(*) AS total FROM admin_auth_attempts WHERE ip = ? AND attempted_at > ?").bind(ip, now - 900).first();
+  return (Number(row?.total) || 0) >= 10;
+}
+
+async function recordAdminAuthFailure(request, env) {
+  if (!(await ensureAdminAuthSchema(env))) return;
+  const ip = cleanText(request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For"), 80);
+  if (!ip) return;
+  await env.DB.prepare("INSERT INTO admin_auth_attempts (ip, attempted_at) VALUES (?, ?)").bind(ip, Math.floor(Date.now() / 1000)).run();
+}
+
+async function clearAdminAuthFailures(request, env) {
+  if (!(await ensureAdminAuthSchema(env))) return;
+  const ip = cleanText(request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For"), 80);
+  if (ip) await env.DB.prepare("DELETE FROM admin_auth_attempts WHERE ip = ?").bind(ip).run();
+}
+
+async function adminDatabaseSummary(env) {
+  if (!env.DB) return { enabled:false, observations:null, alertEvents:null, contactRequests24h:null };
+  const storage = await storageSummary(env).catch(() => ({ enabled:true, storedReadings:0, coverageDays:0 }));
+  let alertEvents = null;
+  let latestAlertEvent = null;
+  let contactRequests24h = null;
+  try {
+    await ensureAlertSchema(env);
+    const alertsRow = await env.DB.prepare("SELECT COUNT(*) AS total, MAX(created_at) AS latest FROM alert_events").first();
+    alertEvents = Number(alertsRow?.total) || 0;
+    latestAlertEvent = alertsRow?.latest || null;
+  } catch (error) { console.error("Admin alert summary error", error); }
+  try {
+    await ensureContactSchema(env);
+    const contactsRow = await env.DB.prepare("SELECT COUNT(*) AS total FROM contact_rate_limit WHERE sent_at > ?").bind(Math.floor(Date.now() / 1000) - 86400).first();
+    contactRequests24h = Number(contactsRow?.total) || 0;
+  } catch (error) { console.error("Admin contact summary error", error); }
+  return { enabled:true, observations:storage.storedReadings, coverageDays:storage.coverageDays, firstObservation:storage.firstObservation || null, lastObservation:storage.lastObservation || null, alertEvents, latestAlertEvent, contactRequests24h };
+}
+
+async function adminStatus(request, env) {
+  const origin = request.headers.get("Origin") || "*";
+  if (origin !== "*" && !ALLOWED_CONTACT_ORIGINS.has(origin)) return json({ error:"Origen no autoritzat" }, 403, "no-store", "null");
+  if (!env.ADMIN_TOKEN || String(env.ADMIN_TOKEN).length < 24) return json({ error:"El panell administratiu encara no està configurat.", code:"ADMIN_NOT_CONFIGURED" }, 503, "no-store", origin);
+  if (await adminAuthLimited(request, env)) return json({ error:"Massa intents. Torna-ho a provar més tard.", code:"ADMIN_RATE_LIMITED" }, 429, "no-store", origin);
+  if (!(await secureTokenMatch(adminRequestToken(request), String(env.ADMIN_TOKEN)))) {
+    await recordAdminAuthFailure(request, env).catch(error => console.error("Admin auth rate limit error", error));
+    return json({ error:"Clau d’administració incorrecta.", code:"ADMIN_UNAUTHORIZED" }, 401, "no-store", origin);
+  }
+  await clearAdminAuthFailures(request, env).catch(error => console.error("Admin auth cleanup error", error));
+
+  const started = Date.now();
+  const [qualityResult, alertsResult, database] = await Promise.all([
+    quality(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
+    alerts(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
+    adminDatabaseSummary(env),
+  ]);
+  return json({
+    ok:true,
+    generatedAt:new Date().toISOString(),
+    latencyMs:Date.now() - started,
+    worker:{ version:WORKER_VERSION, built:WORKER_BUILT, environment:env.ENVIRONMENT || "production" },
+    station:{ ok:Boolean(qualityResult.ok), status:qualityResult.status || (qualityResult.ok ? "healthy" : "unavailable"), updated:qualityResult.updated || null, ageMinutes:qualityResult.ageMinutes ?? null, latencyMs:qualityResult.latencyMs ?? null, missingFields:qualityResult.missingFields || [], storage:qualityResult.storage || null, sensors:qualityResult.sensors || null },
+    alerts:{ ok:Boolean(alertsResult.ok), status:alertsResult.status || "unavailable", active:alertsResult.active ?? null, maxLevel:alertsResult.maxLevel || "unknown", checkedAt:alertsResult.checkedAt || null, latencyMs:alertsResult.latencyMs ?? null },
+    database,
+    integrations:{
+      weatherUnderground:Boolean(env.WU_API_KEY),
+      database:Boolean(env.DB),
+      contact:Boolean(env.RESEND_API_KEY && env.CONTACT_TO),
+      push:Boolean(env.ONESIGNAL_APP_ID && env.ONESIGNAL_REST_API_KEY),
+      admin:true,
+    },
+    schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"comprovació programada" },
+  }, 200, "no-store, private", origin);
+}
+
 function decodeXml(input = "") {
   const entities = { amp:"&", lt:"<", gt:">", quot:'"', apos:"'", nbsp:" " };
   return String(input)
@@ -1103,6 +1219,7 @@ export default {
       if (url.pathname === "/alerts") return alerts(env);
       if (url.pathname === "/alert-history") return alertHistory(url, env);
       if (url.pathname === "/stations") return comparisonStations(url, env);
+      if (url.pathname === "/admin/status") return adminStatus(request, env);
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }

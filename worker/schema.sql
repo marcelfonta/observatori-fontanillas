@@ -46,3 +46,10 @@ CREATE TABLE IF NOT EXISTS alert_state (
   state_value TEXT,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS admin_auth_attempts (
+  ip TEXT NOT NULL,
+  attempted_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_admin_auth_attempts_ip_time
+ON admin_auth_attempts(ip, attempted_at DESC);

@@ -18,4 +18,4 @@ assert.equal(nodes.get('data-rain-yesterday').textContent,'2,0 mm');
 assert.equal(nodes.get('data-rain-dry-days').textContent,'0');
 assert.equal(nodes.get('data-rain-since-10').textContent,'3');
 assert.match(nodes.get('data-rain-wettest').textContent,/12,0 mm/);
-console.log('Test de pluviometria V15: correcte');
+console.log('Test de pluviometria V16: correcte');

@@ -105,4 +105,4 @@ assert.match(ephemeris.facts.join(' '),/31,4 °C/);
 const unknown=await answerMeteoQuestion('Explica’m alguna cosa',context,services);
 assert.match(unknown.body,/conceptes/i);
 
-console.log('Test Meteo IA V15: correcte');
+console.log('Test Meteo IA V16: correcte');

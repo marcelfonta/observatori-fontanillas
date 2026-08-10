@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#286d55" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="referrer" content="same-origin" />
+  <title>Administració · Observatori Fontanillas</title>
+  <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="css/variables.css?v=16.0.0" />
+  <link rel="stylesheet" href="css/layout.css?v=16.0.0" />
+  <link rel="stylesheet" href="css/style.css?v=16.0.0" />
+  <link rel="stylesheet" href="css/portal.css?v=16.0.0" />
+  <script type="module" src="src/features/admin.js?v=16.0.0"></script>
+</head>
+<body id="top" class="admin-body">
+  <a class="skip-link" href="#admin-main">Saltar al panell</a>
+  <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
+  <header class="site-header shell admin-site-header">
+    <a class="brand" href="./?page=inici" aria-label="Observatori Fontanillas, inici"><span class="brand__mark" aria-hidden="true"><i class="brand__sun"></i><i class="brand__ridge brand__ridge--back"></i><i class="brand__ridge brand__ridge--front"></i><i class="brand__data"></i></span><span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span></a>
+    <p class="admin-header-label">Àrea protegida</p>
+    <a class="admin-back" href="./?page=inici">Tornar al portal</a>
+  </header>
+
+  <main class="shell admin-page" id="admin-main">
+    <section class="admin-hero panel" aria-labelledby="admin-title"><div><p class="eyebrow">Operacions i transparència</p><h1 id="admin-title">Administració de l’Observatori</h1><p>Diagnòstic de l’estació, el Worker, la base de dades, els avisos, les integracions i la PWA. Aquest panell no permet eliminar dades ni executar accions destructives.</p></div><span class="admin-lock-badge">Accés protegit</span></section>
+
+    <section class="admin-login panel" id="admin-login" aria-labelledby="admin-login-title">
+      <div class="admin-login__mark" aria-hidden="true">•••</div>
+      <div><p class="eyebrow">Identificació</p><h2 id="admin-login-title">Introdueix la clau d’administració</h2><p>La clau es valida al Worker i només es conserva durant aquesta pestanya. No s’inclou en diagnòstics ni descàrregues.</p>
+        <form id="admin-login-form"><label for="admin-token">Clau privada</label><div><input id="admin-token" name="token" type="password" minlength="24" maxlength="512" autocomplete="current-password" required placeholder="Clau configurada al Worker" /><button type="submit">Entrar</button></div><small id="admin-login-status" role="status"></small></form>
+      </div>
+    </section>
+
+    <section class="admin-dashboard" id="admin-dashboard" hidden aria-live="polite">
+      <div class="admin-toolbar panel"><div><span class="admin-live-dot"></span><strong id="admin-overall-status">Comprovant serveis…</strong><small id="admin-last-update">Sense actualització</small></div><div><button type="button" id="admin-copy-diagnostic">Copiar diagnòstic</button><button type="button" id="admin-refresh">Actualitzar</button><button type="button" id="admin-logout">Tancar sessió</button></div></div>
+
+      <div class="admin-overview">
+        <article class="panel" data-admin-card="worker"><span>Worker</span><strong id="admin-worker-state">—</strong><small id="admin-worker-detail">Versió pendent</small></article>
+        <article class="panel" data-admin-card="station"><span>Estació</span><strong id="admin-station-state">—</strong><small id="admin-station-detail">Lectura pendent</small></article>
+        <article class="panel" data-admin-card="database"><span>Base de dades</span><strong id="admin-database-state">—</strong><small id="admin-database-detail">Cobertura pendent</small></article>
+        <article class="panel" data-admin-card="alerts"><span>Avisos oficials</span><strong id="admin-alerts-state">—</strong><small id="admin-alerts-detail">Comprovació pendent</small></article>
+      </div>
+
+      <div class="admin-grid">
+        <article class="admin-panel panel"><header><div><p class="eyebrow">Qualitat de dades</p><h2>Estació Fontanillas</h2></div><span class="admin-status-pill" id="admin-quality-pill">Pendent</span></header><dl class="admin-detail-list"><div><dt>Darrera observació</dt><dd id="admin-observation-time">—</dd></div><div><dt>Antiguitat</dt><dd id="admin-observation-age">—</dd></div><div><dt>Disponibilitat 24 h</dt><dd id="admin-availability">—</dd></div><div><dt>Mostres 24 h</dt><dd id="admin-samples">—</dd></div><div><dt>Camps absents</dt><dd id="admin-missing">—</dd></div><div><dt>Latència</dt><dd id="admin-station-latency">—</dd></div></dl></article>
+
+        <article class="admin-panel panel"><header><div><p class="eyebrow">Persistència</p><h2>Arxiu i activitat</h2></div><span class="admin-status-pill" id="admin-storage-pill">Pendent</span></header><dl class="admin-detail-list"><div><dt>Observacions desades</dt><dd id="admin-observations">—</dd></div><div><dt>Cobertura</dt><dd id="admin-coverage">—</dd></div><div><dt>Darrera dada desada</dt><dd id="admin-storage-last">—</dd></div><div><dt>Episodis d’avís</dt><dd id="admin-alert-events">—</dd></div><div><dt>Darrer episodi registrat</dt><dd id="admin-alert-last">—</dd></div><div><dt>Contactes en 24 h</dt><dd id="admin-contact-count">—</dd></div></dl></article>
+
+        <article class="admin-panel panel"><header><div><p class="eyebrow">Serveis</p><h2>Integracions</h2></div><span class="admin-status-pill" id="admin-integrations-pill">Pendent</span></header><div class="admin-service-list" id="admin-integrations"><div><span>Weather Underground</span><b>—</b></div><div><span>Cloudflare D1</span><b>—</b></div><div><span>Formulari de contacte</span><b>—</b></div><div><span>Notificacions push</span><b>—</b></div><div><span>Accés administratiu</span><b>—</b></div><div><span>Analítica</span><b>—</b></div><div><span>Xarxes socials</span><b>Fase final</b></div></div><p class="admin-note">“No configurat” no sempre és una incidència: algunes integracions són opcionals fins que s’introdueixin les credencials corresponents.</p></article>
+
+        <article class="admin-panel panel"><header><div><p class="eyebrow">Aplicació</p><h2>PWA i versions</h2></div><span class="admin-status-pill" id="admin-pwa-pill">Pendent</span></header><dl class="admin-detail-list"><div><dt>Versió web</dt><dd>V16.0.0</dd></div><div><dt>Versió Worker</dt><dd id="admin-worker-version">—</dd></div><div><dt>Entorn</dt><dd id="admin-environment">—</dd></div><div><dt>Service Worker</dt><dd id="admin-service-worker">—</dd></div><div><dt>Mode instal·lat</dt><dd id="admin-installed">—</dd></div><div><dt>Memòries cau locals</dt><dd id="admin-cache-count">—</dd></div></dl></article>
+      </div>
+
+      <article class="admin-incidents panel"><header><div><p class="eyebrow">Sessió actual</p><h2>Incidències del navegador</h2><p>Només recull errors produïts mentre aquest panell és obert; no desa informació personal.</p></div><span class="tag" id="admin-incident-count">0 incidències</span></header><ol id="admin-incident-list"><li>Cap incidència registrada en aquesta sessió.</li></ol></article>
+    </section>
+  </main>
+
+  <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Administració · V16.0.0</small><div><a href="#top">Tornar amunt ↑</a></div></footer>
+</body>
+</html>

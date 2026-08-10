@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v15-0-0';
+const CACHE = 'observatori-fontanillas-v16-0-0';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
@@ -66,11 +66,19 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET') return;
   if (url.hostname === API_HOST) {
+    if (url.pathname.startsWith('/admin/')) {
+      event.respondWith(fetch(event.request, { cache:'no-store' }));
+      return;
+    }
     // V6.0: sempre prova primer la xarxa. Això evita dades meteorològiques congelades
     // durant 30 minuts quan la PWA torna del segon pla a iPhone.
     event.respondWith(networkFirst(event.request, API_CACHE));
     return;
   }
   if (url.origin !== self.location.origin) return;
+  if (url.pathname === '/administracio.html' || url.pathname === '/src/features/admin.js') {
+    event.respondWith(fetch(event.request, { cache:'no-store' }));
+    return;
+  }
   event.respondWith(networkFirst(event.request, CACHE));
 });

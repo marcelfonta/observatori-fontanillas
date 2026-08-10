@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /administracio.html
 
 Sitemap: https://meteo.fontanillas.cat/sitemap.xml

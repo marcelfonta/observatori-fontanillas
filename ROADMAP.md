@@ -78,16 +78,20 @@ Implementat a V15.0.0: el diàleg genera al navegador una targeta de 1200 × 630
 
 La mateixa versió reorganitza Centre de Dades amb un únic període per a resum, gràfiques, extrems i descàrrega, separat dels indicadors de calendari. Meteo IA incorpora explicacions meteorològiques, guia de fonts oficials i efemèrides basades en l’arxiu propi.
 
-## Milestone 9 — Xarxes socials automàtiques
-
-- Instagram, Facebook, X, Telegram, Bluesky i altres xarxes amb API viable.
-- Resums, avisos, pluja, rècords, efemèrides i episodis.
-- Regles, calendari, aprovació opcional i historial editorial.
-
-## Milestone 10 — Panell administrador
+## Milestone 10 — Panell administrador — Completat
 
 - Estat d’API, Worker, memòria cau, analítica, errors, versions, push i xarxes.
 - Accés protegit i monitoratge operatiu.
+
+Implementat a V16.0.0 com un panell de diagnòstic protegit pel Worker: estat de l’estació i la qualitat de dades, base D1, arxiu d’avisos, formulari, push, versions, PWA, memòries cau locals i incidències de la sessió. La clau només viu durant la pestanya, les respostes administratives no es desen a la PWA i no s’exposa cap secret. Per seguretat, la primera versió és de només lectura i no inclou operacions destructives.
+
+## Milestone 9 — Xarxes socials automàtiques — Traslladat al final
+
+- Crear amb l’usuari els comptes d’Instagram, Facebook, X, Telegram, Bluesky o altres serveis viables.
+- Resums, avisos, pluja, rècords, efemèrides i episodis.
+- Regles, calendari, aprovació opcional i historial editorial.
+
+Es farà com a última gran fase, després d’acordar conjuntament noms, identitat, credencials i permisos de cada compte. La primera activació serà amb aprovació manual abans de publicar.
 
 ## Milestone transversal — Historial d’avisos — Primera fase completada
 

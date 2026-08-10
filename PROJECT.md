@@ -88,6 +88,14 @@ Meteo IA continua sent determinista i traçable. Afegeix una base didàctica aco
 
 La Compartició Premium viu a `src/features/share.js`. Genera targetes PNG de 1200 × 630 px al navegador i rep el mateix context actual, de predicció i d’avisos que la resta del portal. La targeta mai introdueix una observació absent; en pàgines sense context meteorològic mostra una composició editorial. El menú natiu amb fitxer s’utilitza quan el dispositiu l’admet i sempre hi ha descàrrega i còpia com a alternatives.
 
+## Evolució V16
+
+`administracio.html` i `src/features/admin.js` formen un panell operatiu separat del portal públic. La ruta no s’indexa, no forma part del sitemap i només obté dades després que `worker/index.js` validi `ADMIN_TOKEN`. La clau es conserva exclusivament a `sessionStorage` i no apareix en URL, diagnòstics o fitxers públics.
+
+El nou endpoint de només lectura `/admin/status` informa de versió i latència del Worker, frescor i disponibilitat de l’estació, D1, arxiu d’avisos i estat de configuració de Weather Underground, contacte i push. El navegador hi afegeix l’estat local de la PWA i de l’analítica, i identifica xarxes socials com a fase ajornada. Només es retornen booleans de configuració, mai credencials. Les respostes són privades, `no-store` i queden excloses explícitament de la memòria cau del Service Worker.
+
+El panell registra únicament incidències de JavaScript de la pestanya actual i permet copiar un diagnòstic segur. No incorpora supressió, reinici, escriptura sobre D1 ni cap altra operació destructiva. L’activació queda documentada a `admin/README.md`.
+
 ## Normes de canvi
 
 1. Treballar una sola fita cada vegada.

@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V15.0.0
+# Observatori Meteorològic Fontanillas — V16.0.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V15 ordena el Centre de Dades, amplia Meteo IA amb coneixement meteorològic i efemèrides, i completa la Compartició Premium amb targetes PNG dinàmiques.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V16 incorpora un panell d’administració protegit i de només lectura per supervisar dades, Worker, D1, avisos, integracions, PWA, versions i incidències.
 
 ## Estat actual
 
@@ -46,12 +46,15 @@ El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, c
 
 La configuració de frontend és a `src/core/config.js`. Inclou URL de l’API, intervals d’actualització, coordenades, webcam i placeholders de GA4/OneSignal.
 
+El panell `/administracio.html` necessita el secret `ADMIN_TOKEN` al Worker. La guia d’activació i les garanties de seguretat són a `admin/README.md`.
+
 ## Validació
 
 ```bash
 node tests/smoke.mjs
+node tests/admin.mjs
 ```
 
-La prova comprova navegació, selectors crítics, PWA, Meteo IA, icones i metadades de marca, Centre de Dades, peus i absència de duplicacions de «Tornar amunt». `node tests/meteo-ai.mjs` valida també conversa geogràfica, coneixement, fonts i efemèrides; `node tests/share-card.mjs` valida que les targetes no inventin dades.
+Les proves comproven navegació, selectors crítics, PWA, Meteo IA, icones, Centre de Dades, peus, protecció administrativa i absència de duplicacions de «Tornar amunt». `node tests/meteo-ai.mjs` valida conversa geogràfica, coneixement, fonts i efemèrides; `node tests/share-card.mjs` valida que les targetes no inventin dades.
 
 Consulta `PROJECT.md`, `ROADMAP.md` i `CHANGELOG.md` per a les normes, l’ordre de les fases i el detall de la versió.

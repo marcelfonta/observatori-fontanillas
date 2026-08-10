@@ -1,5 +1,28 @@
 # Changelog
 
+## V16.0.0 — 2026-08-10
+
+### Panell d’Administració · Milestone 10 completat
+
+- Nova pàgina protegida `administracio.html`, exclosa de cercadors i separada de la navegació pública.
+- Resum visual de Worker, estació, D1 i avisos, amb estat general i actualització manual o automàtica.
+- Detall de frescor, disponibilitat de les últimes 24 hores, mostres, camps absents, cobertura històrica, episodis d’avís i activitat del formulari.
+- Estat de configuració de Weather Underground, D1, correu, push, analítica, accés administratiu i fase futura de xarxes, sense exposar cap credencial.
+- Diagnòstic de PWA, Service Worker, mode instal·lat, memòries cau i versions web/Worker.
+- Registre d’incidències del navegador limitat a la sessió actual i còpia d’un diagnòstic que exclou la clau.
+
+### Protecció i Worker
+
+- Nou endpoint `/admin/status` de només lectura, protegit amb `ADMIN_TOKEN` i comparació de hashes.
+- Clau conservada únicament a `sessionStorage`; mai en URL, configuració pública ni diagnòstics.
+- Respostes privades amb `no-store` i exclusió explícita de la memòria cau de la PWA.
+- Panell sense operacions destructives i amb guia d’activació a `admin/README.md`.
+
+### Roadmap
+
+- Les xarxes socials es traslladen al final per crear els comptes i permisos conjuntament amb l’usuari.
+- Worker i contractes públics existents continuen compatibles; només s’afegeix una ruta administrativa protegida.
+
 ## V15.0.0 — 2026-08-10
 
 ### Centre de Dades reordenat
