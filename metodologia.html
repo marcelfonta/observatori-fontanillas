@@ -32,6 +32,8 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=6.0" />
+    <link rel="stylesheet" href="css/portal.css?v=8.0.1" />
+    <script type="module" src="src/features/portal-static.js?v=8.0.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
@@ -65,17 +67,17 @@
   #shareModal { z-index: 9999; }
   </style>
 </head>
-  <body>
+  <body data-portal-static="metodologia">
   <div id="app-update-banner" class="app-update-banner" hidden role="status" aria-live="polite">
     <span><b>Nova versió disponible</b><small>Actualitza l’Observatori per carregar els darrers canvis.</small></span>
     <button type="button" id="app-update-button">Actualitzar ara</button>
     <button type="button" id="app-update-dismiss" aria-label="Tancar avís d’actualització">×</button>
   </div>
     <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
-    <a class="skip-link" href="#ara">Saltar al contingut principal</a>
+    <a class="skip-link" href="#metodologia">Saltar al contingut principal</a>
     <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
     <header class="site-header shell">
-      <a class="brand" href="#top" aria-label="Observatori Fontanillas, inici">
+      <a class="brand" href="./?page=inici" aria-label="Observatori Fontanillas, inici">
         <span class="brand__mark" aria-hidden="true"><i class="brand__sun"></i><i class="brand__ridge brand__ridge--back"></i><i class="brand__ridge brand__ridge--front"></i><i class="brand__data"></i></span>
         <span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span>
       </a>
@@ -97,7 +99,6 @@
           <p class="eyebrow">Projecte</p>
           <h1>Metodologia i Equipament</h1>
         </div>
-        <a href="/" class="btn-back">← Tornar a l’inici</a>
       </div>
 
       <div class="panel">
@@ -126,44 +127,12 @@
       </div>
     </section>
   </main>
-    <nav class="mobile-nav" aria-label="Navegació ràpida mòbil">
-      <!-- Canvi: els enllaços mòbils apunten a la pàgina principal amb fragment -->
-      <a class="is-active" href="/#ara" data-section-link="ara"><span aria-hidden="true">●</span>Ara</a>
-      <a href="/#prediccio" data-section-link="prediccio"><span aria-hidden="true">↗</span>Previsió</a>
-      <a href="/#tendencies" data-section-link="tendencies"><span aria-hidden="true">⌁</span>Gràfiques</a>
-      <a href="/#territori" data-section-link="territori"><span aria-hidden="true">◎</span>Radar</a>
-      <button type="button" id="mobile-more-button" aria-expanded="false" aria-controls="mobile-more-menu"><span aria-hidden="true">•••</span>Més</button>
-    </nav>
-    <div class="mobile-more" id="mobile-more-menu" hidden>
-      <button class="mobile-more__backdrop" type="button" aria-label="Tancar el menú"></button>
-      <div class="mobile-more__sheet" role="dialog" aria-modal="true" aria-label="Més seccions">
-        <div class="mobile-more__head"><span><small>Índex de continguts</small><strong>Explora l’observatori</strong></span><button type="button" id="mobile-more-close" aria-label="Tancar">×</button></div>
-        <a class="mobile-alert-shortcut is-pending" id="mobile-alert-shortcut" href="/#avisos" data-section-link="avisos"><span>!</span><div><b id="mobile-alert-title">Comprovant avisos</b><small id="mobile-alert-copy">Vigilància oficial</small></div><em>→</em></a>
-        <div class="mobile-view-mode" aria-label="Densitat de contingut mòbil"><span><b>Vista mòbil</b><small>Tria quanta informació vols veure</small></span><div role="group"><button class="is-active" type="button" data-mobile-view="full" aria-pressed="true">Completa</button><button type="button" data-mobile-view="essential" aria-pressed="false">Essencial</button></div></div>
-        <nav class="mobile-more__links" aria-label="Índex complet de l’observatori">
-          <a href="/#ara" data-section-link="ara"><span>●</span><div><b>Ara mateix</b><small>Temperatura i lectura ràpida</small></div></a>
-          <a href="/#metric-card-temperature"><span>⌁</span><div><b>Valors actuals</b><small>Sensors i minigràfics</small></div></a>
-          <a href="/#calculats" data-requires-full><span>Σ</span><div><b>Valors calculats</b><small>Diagnosi atmosfèrica</small></div></a>
-          <a href="/#resum-dia" data-requires-full><span>↗</span><div><b>Resum i extrems</b><small>Avui, 7 dies, 30 dies i any</small></div></a>
-          <a href="/#avisos" data-section-link="avisos"><span>!</span><div><b>Avisos oficials</b><small>Meteocat i AEMET</small></div></a>
-          <a href="/#prediccio" data-section-link="prediccio"><span>☁</span><div><b>Previsió</b><small>48 hores i 7 dies</small></div></a>
-          <a href="/#fonts" data-requires-full><span>5</span><div><b>Fonts contrastades</b><small>Cinc serveis meteorològics</small></div></a>
-          <a href="/#models" data-requires-full><span>≋</span><div><b>Models</b><small>ECMWF, GFS i ICON</small></div></a>
-          <a href="/#tendencies" data-section-link="tendencies" data-requires-full><span>⌁</span><div><b>Evolució</b><small>Gràfiques i històrics</small></div></a>
-          <a href="/#cel-nocturn" data-section-link="cel-nocturn" data-requires-full><span>◐</span><div><b>Cel i astronomia</b><small>Sol, Lluna i nit</small></div></a>
-          <a href="/#territori" data-section-link="territori"><span>◎</span><div><b>Webcam i radar</b><small>Observació del territori</small></div></a>
-          <a href="/#qualitat" data-requires-full><span>✓</span><div><b>Qualitat de les dades</b><small>Estació, API i arxiu D1</small></div></a>
-          <a href="comparativa.html"><span>≍</span><div><b>Comparar estacions</b><small>Entorn proper en una sola vista</small></div></a><a href="/#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
-        </nav>
-      </div>
-    </div>
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V7 · Fase 3</small>
+      <small>Dades locals · Sant Celoni, Montseny · V8.0.1</small>
       <div>
         <a href="metodologia.html">Metodologia</a>
         <a href="comparativa.html">Comparar</a>
-        <!-- El "Tornar amunt" ara apunta a l'arrel i té estils forçats per no desaparèixer -->
         <a href="#top" id="footer-top-link">Tornar amunt ↑</a>
 
         <!-- Canvi: ara és un enllaç per heretar estils i identifcat per obrir el modal -->

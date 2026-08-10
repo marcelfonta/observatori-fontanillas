@@ -63,12 +63,6 @@
       <div class="live-pill"><span></span><b id="connection-label">Connectant</b><time id="header-time">--:--</time></div>
     </header>
 
-    <aside class="portal-sidebar" id="portal-sidebar" aria-label="Seccions del portal">
-      <nav>
-        <a href="?page=inici" data-page-link="inici"><span>⌂</span>Inici</a><a href="?page=estacio" data-page-link="estacio"><span>◉</span>Estació</a><a href="?page=prediccio" data-page-link="prediccio"><span>☁</span>Predicció</a><a href="?page=avisos" data-page-link="avisos"><span>!</span>Avisos</a><a href="?page=radar" data-page-link="radar"><span>◎</span>Radar</a><a href="?page=webcams" data-page-link="webcams"><span>▣</span>Webcams</a><a href="?page=centre-dades" data-page-link="centre-dades"><span>⌁</span>Centre de Dades</a><a href="comparativa.html"><span>⇄</span>Comparar</a><a href="?page=medi-ambient" data-page-link="medi-ambient"><span>♧</span>Medi Ambient</a><a href="?page=contacte" data-page-link="contacte"><span>↗</span>Contacte</a><a href="metodologia.html"><span>i</span>Metodologia</a>
-      </nav>
-    </aside>
-    <button class="portal-backdrop" id="portal-backdrop" type="button" aria-label="Tancar el menú" hidden></button>
     <main id="top" class="shell portal-main">
       <section id="ara" class="hero panel" data-portal-page="inici">
         <div class="hero__copy">
@@ -207,7 +201,6 @@
           <p class="alerts-note"><span>i</span> El mapa és el servei oficial de Meteocat. La lectura local reprodueix el canal CAP/RSS oficial d’AEMET per al Prelitoral de Barcelona i sempre enllaça amb el detall original. <b id="alerts-updated">Actualitzant…</b></p>
         </div>
       </section>
-      <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="prediccio" class="forecast-section section-block" aria-labelledby="forecast-title" data-portal-page="inici prediccio">
         <div class="section-heading forecast-heading">
@@ -298,7 +291,6 @@
         </article>
         <p class="forecast-disclaimer">La predicció descriu un escenari de model per a Sant Celoni, no una certesa. L’observació real de l’estació és la referència del temps que està fent.</p>
       </section>
-      <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="tendencies" class="section-block" data-mobile-advanced data-portal-page="centre-dades">
         <div class="section-heading evolution-heading"><div><p class="eyebrow">Evolució</p><h2>Històric meteorològic</h2><p id="evolution-period-copy">Lectures de les últimes 24 hores</p></div><div class="segmented" role="group" aria-label="Període de gràfica"><button class="is-active" data-period="24h">24 h</button><button data-period="7d">7 dies</button><button data-period="30d">30 dies</button><button data-period="1y">1 any</button></div></div>
@@ -312,7 +304,6 @@
         </div>
         <p class="data-note"><span>i</span> Les corbes combinen l’arxiu propi persistent de l’estació amb Weather Underground com a suport de l’històric recent. La resolució s’adapta automàticament al període seleccionat.</p>
       </section>
-      <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="cel-nocturn" class="astronomy-section section-block" aria-labelledby="astronomy-title" data-mobile-advanced data-portal-page="prediccio">
         <div class="section-heading astronomy-heading"><div><p class="eyebrow">Astronomia local</p><h2 id="astronomy-title">El cel, de dia i de nit</h2></div><div class="astronomy-source"><span>Càlcul per a 41,6906° N · 2,4890° E</span><a href="https://aa.usno.navy.mil/data/" target="_blank" rel="noreferrer">Efemèrides: USNO ↗</a></div></div>
@@ -329,7 +320,6 @@
         </div>
         <p class="astronomy-note"><span>!</span> Per observar el Sol o un eclipsi solar cal utilitzar sempre filtres homologats. Les ulleres de sol normals no protegeixen la vista.</p>
       </section>
-      <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="territori" class="territory-grid section-block" data-portal-page="inici radar webcams">
         <article class="webcam-card panel">
@@ -360,7 +350,6 @@
           </div>
         </article>
       </section>
-      <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="qualitat" class="quality-section section-block" aria-labelledby="quality-title" data-mobile-advanced data-portal-page="centre-dades">
         <div class="section-heading quality-heading">
@@ -401,7 +390,6 @@
         </article>
         <p class="quality-note"><span>i</span> L’arxiu propi ja desa una lectura cada cinc minuts. La cobertura i els històrics llargs aniran guanyant valor automàticament amb el temps.</p>
       </section>
-      <a href="#top" style="display:block;text-align:right;font-size:11px;margin:16px 0 8px;color:var(--green);text-decoration:none;">Torna amunt ↑</a>
 
       <section id="medi-ambient" class="portal-placeholder section-block" data-portal-page="medi-ambient"><div class="panel"><p class="eyebrow">Medi Ambient</p><h1>Entorn i salut ambiental</h1><p>Aquesta nova àrea queda preparada per a qualitat de l’aire, radiació UV, pol·len, risc d’incendi, sequera, estat hidrològic i meduses a la costa catalana. Les fonts automàtiques s’incorporaran en la fita específica del roadmap.</p></div></section>
       <section id="contacte" class="contact-section section-block" aria-labelledby="contact-title" data-portal-page="contacte">
@@ -426,41 +414,9 @@
       </section>
     </main>
 
-    <nav class="mobile-nav" aria-label="Navegació ràpida mòbil">
-      <a class="is-active" href="#ara" data-section-link="ara"><span aria-hidden="true">●</span>Ara</a>
-      <a href="#prediccio" data-section-link="prediccio"><span aria-hidden="true">↗</span>Previsió</a>
-      <a href="#tendencies" data-section-link="tendencies"><span aria-hidden="true">⌁</span>Gràfiques</a>
-      <a href="#territori" data-section-link="territori"><span aria-hidden="true">◎</span>Radar</a>
-      <button type="button" id="mobile-more-button" aria-expanded="false" aria-controls="mobile-more-menu"><span aria-hidden="true">•••</span>Més</button>
-    </nav>
-
-    <div class="mobile-more" id="mobile-more-menu" hidden>
-      <button class="mobile-more__backdrop" type="button" aria-label="Tancar el menú"></button>
-      <div class="mobile-more__sheet" role="dialog" aria-modal="true" aria-label="Més seccions">
-        <div class="mobile-more__head"><span><small>Índex de continguts</small><strong>Explora l’observatori</strong></span><button type="button" id="mobile-more-close" aria-label="Tancar">×</button></div>
-        <a class="mobile-alert-shortcut is-pending" id="mobile-alert-shortcut" href="#avisos" data-section-link="avisos"><span>!</span><div><b id="mobile-alert-title">Comprovant avisos</b><small id="mobile-alert-copy">Vigilància oficial</small></div><em>→</em></a>
-        <div class="mobile-view-mode" aria-label="Densitat de contingut mòbil"><span><b>Vista mòbil</b><small>Tria quanta informació vols veure</small></span><div role="group"><button class="is-active" type="button" data-mobile-view="full" aria-pressed="true">Completa</button><button type="button" data-mobile-view="essential" aria-pressed="false">Essencial</button></div></div>
-        <nav class="mobile-more__links" aria-label="Índex complet de l’observatori">
-          <a href="#ara" data-section-link="ara"><span>●</span><div><b>Ara mateix</b><small>Temperatura i lectura ràpida</small></div></a>
-          <a href="#metric-card-temperature"><span>⌁</span><div><b>Valors actuals</b><small>Sensors i minigràfics</small></div></a>
-          <a href="#calculats" data-requires-full><span>Σ</span><div><b>Valors calculats</b><small>Diagnosi atmosfèrica</small></div></a>
-          <a href="#resum-dia" data-requires-full><span>↗</span><div><b>Resum i extrems</b><small>Avui, 7 dies, 30 dies i any</small></div></a>
-          <a href="#avisos" data-section-link="avisos"><span>!</span><div><b>Avisos oficials</b><small>Meteocat i AEMET</small></div></a>
-          <a href="#prediccio" data-section-link="prediccio"><span>☁</span><div><b>Previsió</b><small>48 hores i 7 dies</small></div></a>
-          <a href="#fonts" data-requires-full><span>5</span><div><b>Fonts contrastades</b><small>Cinc serveis meteorològics</small></div></a>
-          <a href="#models" data-requires-full><span>≋</span><div><b>Models</b><small>ECMWF, GFS i ICON</small></div></a>
-          <a href="#tendencies" data-section-link="tendencies" data-requires-full><span>⌁</span><div><b>Evolució</b><small>Gràfiques i històrics</small></div></a>
-          <a href="#cel-nocturn" data-section-link="cel-nocturn" data-requires-full><span>◐</span><div><b>Cel i astronomia</b><small>Sol, Lluna i nit</small></div></a>
-          <a href="#territori" data-section-link="territori"><span>◎</span><div><b>Webcam i radar</b><small>Observació del territori</small></div></a>
-          <a href="#qualitat" data-requires-full><span>✓</span><div><b>Qualitat de les dades</b><small>Estació, API i arxiu D1</small></div></a>
-          <a href="comparativa.html"><span>≍</span><div><b>Comparar estacions</b><small>Entorn proper en una sola vista</small></div></a><a href="#contacte" data-section-link="contacte"><span>↗</span><div><b>Contacte</b><small>Missatge privat</small></div></a>
-        </nav>
-      </div>
-    </div>
-
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V7 · Fase 3</small>
+      <small>Dades locals · Sant Celoni, Montseny · V8.0.1</small>
       <div>
         <a href="metodologia.html">Metodologia</a>
         <a href="comparativa.html">Comparar</a>

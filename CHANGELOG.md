@@ -1,5 +1,17 @@
 # Changelog
 
+## V8.0.1 — 2026-08-10
+
+### Corregit
+
+- Capçalera fixa i visible durant el desplaçament en totes les pàgines.
+- Barra lateral compartida també a Comparar i Metodologia.
+- Eliminats sis enllaços «Torna amunt» que havien quedat fora de les seves seccions i apareixien agrupats.
+- Eliminada la navegació mòbil antiga duplicada; la hamburguesa és ara l’única navegació compacta.
+- Eliminat el botó redundant «Tornar a l’inici» del principi de Metodologia.
+- Enllaços de marca i retorn adaptats a les noves vistes del portal.
+- Nous recursos comuns incorporats a la memòria cau de la PWA.
+
 ## V8.0.0 — 2026-08-10
 
 ### Afegit
@@ -24,4 +36,3 @@
 ### Abast ajornat
 
 - No s’han implementat funcions dels milestones 2–10. Medi Ambient només disposa de la nova ubicació estructural.
-
