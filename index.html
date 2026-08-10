@@ -32,13 +32,13 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=6.0" />
-    <link rel="stylesheet" href="css/portal.css?v=8.0" />
+    <link rel="stylesheet" href="css/portal.css?v=9.0.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="src/features/push.js?v=7.0-stable"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=7.0-stable"></script>
+    <script type="module" src="src/app.js?v=9.0.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
@@ -72,6 +72,10 @@
           <div class="freshness"><span class="freshness__dot"></span><span>Actualitzat <b id="updated-relative">ara mateix</b></span><span class="separator">·</span><time id="updated-time">--:--</time></div>
         </div>
         <div class="current-temp">
+          <a class="hero-webcam-preview" href="?page=webcams" aria-label="Obrir la webcam de l’observatori">
+            <img id="hero-webcam-image" alt="Vista actual des de la webcam de l’observatori" loading="eager" />
+            <span><i aria-hidden="true"></i>Webcam · ara</span>
+          </a>
           <div class="current-temp__value"><span id="temperature">--</span><sup>°C</sup></div>
           <p id="condition-label">Carregant observació…</p>
           <div class="temperature-range"><span><i class="range-dot range-dot--max"></i>Màx. <b id="temp-max">--°</b></span><span><i class="range-dot range-dot--min"></i>Mín. <b id="temp-min">--°</b></span></div>
@@ -119,6 +123,59 @@
           <div><span>Pressió de vapor</span><strong><b id="vapor-pressure">—</b> hPa</strong><small>Part de la pressió causada pel vapor d’aigua</small><details><summary>Què vol dir?</summary><p>Mesura la contribució real del vapor d’aigua a la pressió de l’aire. Com més alta és, més vapor conté l’atmosfera.</p></details></div>
           <div><span>Raó de mescla</span><strong><b id="mixing-ratio">—</b> g/kg</strong><small>Vapor per cada quilo d’aire sec</small><details><summary>Què vol dir?</summary><p>Indica quants grams de vapor d’aigua hi ha per cada quilogram d’aire sec. És molt útil perquè canvia menys amb la temperatura que la humitat relativa.</p></details></div>
           <div><span>Densitat de l’aire</span><strong><b id="air-density">—</b> kg/m³</strong><small id="air-density-reading">Massa de l’aire calculada</small><details><summary>Què vol dir?</summary><p>L’aire fred i amb pressió alta és més dens; l’aire calent i humit és menys dens. Pot influir lleugerament en el rendiment esportiu, l’aviació i la propagació del so.</p></details></div>
+        </div>
+      </section>
+
+      <section id="centre-dades-overview" class="data-center-overview section-block" aria-labelledby="data-center-title" data-portal-page="centre-dades">
+        <div class="data-center-hero panel">
+          <div class="data-center-hero__intro">
+            <p class="eyebrow">Centre de Dades</p>
+            <h1 id="data-center-title">L’arxiu meteorològic, ordenat.</h1>
+            <p>Consulta la cobertura disponible, resumeix períodes i descarrega les observacions de l’estació sense alterar-ne la font.</p>
+          </div>
+          <div class="data-center-controls">
+            <div class="segmented" role="group" aria-label="Període del resum del Centre de Dades">
+              <button type="button" data-data-period="7">7 dies</button>
+              <button type="button" class="is-active" data-data-period="30">30 dies</button>
+              <button type="button" data-data-period="365">1 any</button>
+            </div>
+            <p id="data-center-period-status" role="status">Preparant l’històric disponible…</p>
+          </div>
+        </div>
+
+        <div class="data-summary-grid" aria-live="polite">
+          <article class="panel"><span>Mostres</span><strong id="data-summary-samples">—</strong><small id="data-summary-coverage">Cobertura pendent</small></article>
+          <article class="panel"><span>Temperatura mitjana</span><strong><b id="data-summary-temp-mean">—</b><small> °C</small></strong><small id="data-summary-temp-deviation">Desviació pendent</small></article>
+          <article class="panel"><span>Pluja acumulada</span><strong><b id="data-summary-rain">—</b><small> mm</small></strong><small>Acumulació del període seleccionat</small></article>
+          <article class="panel"><span>Ratxa màxima</span><strong><b id="data-summary-gust">—</b><small> km/h</small></strong><small>Valor més alt observat</small></article>
+        </div>
+
+        <div class="data-center-grid">
+          <article class="data-periods panel">
+            <header><div><p class="eyebrow">Resums</p><h2>Dia, mes i any en una mirada</h2></div></header>
+            <div class="data-periods__grid">
+              <div><span>Avui</span><strong id="data-daily-temp">—</strong><small id="data-daily-rain">—</small></div>
+              <div><span>Aquest mes</span><strong id="data-monthly-temp">—</strong><small id="data-monthly-rain">—</small></div>
+              <div><span>Aquest any</span><strong id="data-yearly-temp">—</strong><small id="data-yearly-rain">—</small></div>
+            </div>
+          </article>
+          <article class="data-ephemeris panel">
+            <p class="eyebrow">Efemèrides</p>
+            <h2>Un dia com avui</h2>
+            <p id="data-ephemeris-copy">Comprovant si hi ha altres anys disponibles per a aquesta data…</p>
+          </article>
+          <article class="data-export panel">
+            <p class="eyebrow">Exportació</p>
+            <h2>Emporta’t les dades</h2>
+            <p>La descàrrega respecta el període seleccionat i inclou data, temperatura, humitat, pressió, vent, pluja, radiació i UV quan són disponibles.</p>
+            <div class="data-export__actions" role="group" aria-label="Formats de descàrrega">
+              <button type="button" data-export-format="csv">CSV</button>
+              <button type="button" data-export-format="excel">Excel</button>
+              <button type="button" data-export-format="json">JSON</button>
+              <button type="button" data-export-format="pdf">PDF</button>
+            </div>
+            <small id="data-export-status" role="status">Selecciona un format per descarregar el període.</small>
+          </article>
         </div>
       </section>
 
@@ -416,10 +473,8 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V8.0.1</small>
+      <small>Dades locals · Sant Celoni, Montseny · V9.0.0</small>
       <div>
-        <a href="metodologia.html">Metodologia</a>
-        <a href="comparativa.html">Comparar</a>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>
       </div>

@@ -32,8 +32,8 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=6.0" />
-    <link rel="stylesheet" href="css/portal.css?v=8.0.1" />
-    <script type="module" src="src/features/portal-static.js?v=8.0.1"></script>
+    <link rel="stylesheet" href="css/portal.css?v=9.0.0" />
+    <script type="module" src="src/features/portal-static.js?v=9.0.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
@@ -67,7 +67,7 @@
   #shareModal { z-index: 9999; }
   </style>
 </head>
-  <body data-portal-static="metodologia">
+  <body id="top" data-portal-static="metodologia">
   <div id="app-update-banner" class="app-update-banner" hidden role="status" aria-live="polite">
     <span><b>Nova versió disponible</b><small>Actualitza l’Observatori per carregar els darrers canvis.</small></span>
     <button type="button" id="app-update-button">Actualitzar ara</button>
@@ -129,10 +129,8 @@
   </main>
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V8.0.1</small>
+      <small>Dades locals · Sant Celoni, Montseny · V9.0.0</small>
       <div>
-        <a href="metodologia.html">Metodologia</a>
-        <a href="comparativa.html">Comparar</a>
         <a href="#top" id="footer-top-link">Tornar amunt ↑</a>
 
         <!-- Canvi: ara és un enllaç per heretar estils i identifcat per obrir el modal -->

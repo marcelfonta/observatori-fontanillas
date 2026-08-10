@@ -114,5 +114,7 @@ export function renderStation(data, context = {}) {
   setText('humidex',format(thermal.humidex,1));
   setText('humidex-reading',!isNumber(thermal.humidex) ? 'Cal temperatura i punt de rosada' : thermal.humidex < 30 ? 'Poc o gens de malestar per xafogor' : thermal.humidex < 40 ? 'La humitat accentua clarament la calor' : 'Condicions exigents: redueix l’exposició');
   renderLevels(data,thermal);
-  const webcam = document.getElementById('webcam-image'); if (webcam) webcam.src = `${data.webcam}?t=${Date.now()}`;
+  document.querySelectorAll('#webcam-image, #hero-webcam-image').forEach(webcam => {
+    if (data.webcam) webcam.src = `${data.webcam}${String(data.webcam).includes('?') ? '&' : '?'}t=${Date.now()}`;
+  });
 }

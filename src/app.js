@@ -19,6 +19,7 @@ import { renderAlerts, renderAlertsUnavailable } from './modules/avisos.js';
 import { updateSituation } from './modules/situacio.js';
 import { initShare } from './features/share.js';
 import { initPortal } from './features/portal-router.js';
+import { initDataCenter, renderDataCenter } from './features/data-center.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -89,18 +90,18 @@ async function load(){
       latestHistory=context.history;
       renderSummaryFallback();
     }
-    renderStation(latest,context); renderCharts(latest,latestHistory); renderMetricSparklines(latest,latestHistory); renderExtremeArchive(latestHistory); setUpdated(latest.updated); updateSituation({current:latest});
+    renderStation(latest,context); renderCharts(latest,latestHistory); renderMetricSparklines(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenter(latestHistory,latest); setUpdated(latest.updated); updateSituation({current:latest});
     hideOfflineBanner();
     if(label){label.textContent='En directe';label.parentElement.classList.remove('is-offline');}
   } catch(error) {
     console.warn('No s’han pogut carregar les dades en directe.',error);
     const cached=getLastCachedObs();
     if(cached && (Date.now()-cached.ts)<OFFLINE_MAX_AGE_MS){
-      latest=cached.data; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); setUpdated(latest.updated); updateSituation({current:latest});
+      latest=cached.data; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSituation({current:latest});
       showOfflineBanner(cached.ageMinutes);
       if(label){label.textContent='Sense connexió';label.parentElement.classList.add('is-offline');}
     } else {
-      latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); setUpdated(latest.updated); updateSituation({current:latest});
+      latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSituation({current:latest});
       hideOfflineBanner();
       if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
     }
@@ -115,6 +116,7 @@ initWebcam();
 initContact();
 initForecastControls();
 initExtremeControls();
+initDataCenter();
 initShare();
 document.addEventListener('observatori:alerts-updated',event=>updateSituation({alerts:event.detail}));
 initWhenVisible('.model-viewer',initModelViewer);

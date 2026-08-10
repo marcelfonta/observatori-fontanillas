@@ -1,61 +1,24 @@
-# Observatori Meteorològic Fontanillas — V7 · Fase 2
+# Observatori Meteorològic Fontanillas — V9.0.0
 
-Refactorització d’arquitectura del projecte sense alterar intencionadament l’experiència visual ni les funcions meteorològiques actives.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V9 completa la reorganització V8 i el Centre de Dades mantenint els serveis meteorològics, els avisos oficials i la PWA existents.
 
-## Objectiu de la Fase 1
+## Estat actual
 
-Separar responsabilitats, eliminar fitxers de desenvolupament innecessaris del paquet publicable i preparar la base per a la V7 funcional: avisos push, llamps integrats, centre de dades i descàrrega d’històrics.
+- Menú lateral en escriptori i hamburguesa en mòbil.
+- Capçalera fixa i portada de consulta ràpida amb webcam discreta.
+- Vistes independents sense duplicar mòduls ni serveis.
+- Centre de Dades amb resums, extrems, efemèrides i exportacions CSV, Excel, JSON i PDF.
+- Avisos AEMET/Meteocat, comparativa, Worker, PWA, compartir i push preservats.
 
 ## Estructura activa
 
-```text
-index.html
-metodologia.html
-css/
-  variables.css
-  layout.css
-  style.css
-src/
-  app.js
-  core/
-    config.js
-    dom.js
-  services/
-    weather-api.js
-  features/
-    analytics.js
-    push.js
-    pwa.js
-    share.js
-  modules/
-    *.js
-assets/
-data/
-  catalogs/
-  exports/
-worker/
-  index.js
-  schema.sql
-docs/
-archive/
-  worker-legacy/
-admin/
-service-worker.js
-site.webmanifest
-robots.txt
-sitemap.xml
-_headers
-```
-
-## Principis de l’arquitectura
-
-- `src/core`: configuració i utilitats sense dependència de la interfície.
-- `src/services`: únic punt d’accés del navegador a dades i APIs.
-- `src/features`: funcionalitats transversals (Analytics, Push, PWA, Compartir).
-- `src/modules`: lògica de les seccions meteorològiques del dashboard.
-- `worker/index.js`: única versió activa/canònica del Worker. Les versions anteriors queden a `archive/worker-legacy/`.
-- `data/exports`: espai reservat per a futures exportacions del Centre de Dades.
-- `admin`: reservat per a eines privades futures; no hi ha cap panell públic actiu en aquesta fase.
+- `index.html`: portal i vistes principals.
+- `comparativa.html` i `metodologia.html`: pàgines especialitzades amb la mateixa navegació.
+- `css/`: sistema visual i shell del portal.
+- `src/core/` i `src/services/`: configuració, utilitats i únic accés a l’API.
+- `src/modules/`: mòduls meteorològics reutilitzables.
+- `src/features/`: portal, Centre de Dades, compartir, PWA, push i analítica.
+- `worker/`: Worker canònic i esquema D1, sense canvis a V9.
 
 ## Desenvolupament local
 
@@ -67,48 +30,22 @@ Obre `http://localhost:8080`. No obris l’HTML directament amb `file://`, perqu
 
 ## Desplegament
 
-Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas de compilació.
-
-```bash
-git add .
-git commit -m "V7 Fase 1 arquitectura"
-git push
-```
+Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas de compilació ni dependències de producció.
 
 ## Worker
 
-El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets i crons existents. La Fase 2 amplia el Worker amb historial d’avisos i notificacions automàtiques. Cal desplegar `worker/index.js` i aplicar `worker/schema.sql`.
+El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. V9 no requereix migració de Worker ni de base de dades.
 
 ## Configuració
 
 La configuració de frontend és a `src/core/config.js`. Inclou URL de l’API, intervals d’actualització, coordenades, webcam i placeholders de GA4/OneSignal.
 
-## Següents fases
+## Validació
 
-1. **Fase 2 — Avisos:** notificacions push reals i motor d’avisos sense missatges tècnics.
-2. **Fase 3 — Llamps:** visor integrat estable i font oficial/alternativa amb fallback.
-3. **Fase 4 — Centre de Dades:** pàgina nova amb consulta, gràfics, rècords i descàrrega CSV/Excel/JSON/PDF.
+```bash
+node tests/smoke.mjs
+```
 
-Consulta `docs/ARQUITECTURA-V7.md` i `docs/ROADMAP-V7.md` per al detall.
+La prova comprova navegació, selectors crítics, PWA, Centre de Dades, peus i absència de duplicacions de «Tornar amunt».
 
-
-## V7 · Fase 2: avisos
-
-El frontend ja inclou preferències de notificacions i historial. El Worker desa episodis oficials a D1 i pot enviar notificacions automàtiques via OneSignal quan apareix un episodi nou.
-
-Per activar l’enviament real:
-1. Configura `oneSignalAppId` a `src/core/config.js`.
-2. Al Worker, afegeix `ONESIGNAL_APP_ID` i el secret `ONESIGNAL_REST_API_KEY`.
-3. Configura un Cron Trigger (recomanat: cada 10 minuts).
-4. Executa/actualitza `worker/schema.sql` al D1 perquè existeixin `alert_events` i `alert_state`.
-
-Sense aquestes credencials, la web funciona normalment però oculta el control Push per evitar missatges tècnics als visitants.
-
-
-## Estat actual
-V7 · Fase 2.1: arquitectura estable, compartir unificat i centre d’avisos preparat. Per a notificacions push reals cal configurar OneSignal (App ID al frontend i REST API Key al Worker).
-
-
-## V7 · Fase 3 — Comparativa d’estacions
-
-La nova pàgina `comparativa.html` compara les principals variables de diverses estacions properes. El Worker exposa `/stations?period=now|today|24h` i normalitza les dades abans d’enviar-les al navegador. Consulta `docs/FASE3-COMPARATIVA.md`.
+Consulta `PROJECT.md`, `ROADMAP.md` i `CHANGELOG.md` per a les normes, l’ordre de les fases i el detall de la versió.

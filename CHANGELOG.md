@@ -1,5 +1,27 @@
 # Changelog
 
+## V9.0.0 — 2026-08-10
+
+### Afegit
+
+- Centre de Dades complet amb selecció de 7, 30 i 365 dies.
+- Cobertura, nombre real de mostres, temperatura mitjana i desviació estàndard, pluja acumulada i ratxa màxima.
+- Resums del dia, del mes i de l’any; arxiu d’extrems i efemèrides segons la cobertura disponible.
+- Descàrregues locals en CSV, Excel, JSON i PDF, sense enviar dades a tercers.
+- Miniatura discreta de la webcam a la portada, enllaçada amb la vista completa de Webcams.
+
+### Corregit
+
+- Eliminada la doble compensació vertical entre la capçalera fixa i la primera secció de cada pàgina.
+- Preservat el farciment interior original de la portada en aplicar la correcció d’espaiat.
+- Eliminats Comparar i Metodologia de tots els peus; continuen disponibles al menú principal.
+- Mantingut un únic «Tornar amunt» al peu de cada pàgina.
+
+### Preservat
+
+- API i Worker sense canvis de contracte.
+- Avisos AEMET/Meteocat, PWA, compartir, push, comparativa, radar i resta de mòduls existents.
+
 ## V8.0.1 — 2026-08-10
 
 ### Corregit

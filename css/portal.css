@@ -56,11 +56,45 @@ body.has-portal-shell.has-portal-menu { overflow: hidden; }
 .portal-backdrop { display: none; }
 [data-portal-page][hidden] { display: none !important; }
 .portal-main, .comparison-page, #metodologia { padding-top: 24px; }
+.portal-main > [data-portal-page].is-page-start.section-block { padding-top: 0; }
+.has-portal-shell #metodologia > .section-block:first-child { padding-top: 0; }
 .portal-placeholder .panel { min-height: 300px; padding: 48px; }
 .portal-placeholder h1 { margin: 8px 0 16px; font: 700 clamp(34px, 5vw, 64px)/1 var(--font-display); }
 .portal-placeholder p:last-child { max-width: 760px; color: var(--muted); font-size: 17px; line-height: 1.7; }
 .hero__insight .quick-alert { grid-template-columns: 30px minmax(0, 1fr); }
 .hero__insight .quick-alert em { grid-column: 2; margin-top: 2px; }
+
+.hero-webcam-preview { position: relative; display: block; width: min(210px, 100%); aspect-ratio: 16 / 7; margin: 0 0 22px auto; overflow: hidden; border: 1px solid rgba(137, 214, 163, .22); border-radius: 14px; background: rgba(0, 0, 0, .2); color: var(--text); text-decoration: none; opacity: .78; transition: opacity .2s ease, transform .2s ease, border-color .2s ease; }
+.hero-webcam-preview:hover { opacity: 1; transform: translateY(-2px); border-color: rgba(137, 214, 163, .48); }
+.hero-webcam-preview img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.hero-webcam-preview span { position: absolute; right: 8px; bottom: 7px; display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 999px; background: rgba(5, 15, 12, .78); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; backdrop-filter: blur(8px); }
+.hero-webcam-preview i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(137, 214, 163, .13); }
+
+.data-center-overview { display: grid; gap: 16px; }
+.data-center-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: 36px; align-items: end; padding: 42px; }
+.data-center-hero h1 { max-width: 720px; margin: 8px 0 16px; font: 700 clamp(42px, 6vw, 78px)/.96 var(--font-display); letter-spacing: -.055em; }
+.data-center-hero__intro > p:last-child { max-width: 680px; margin: 0; color: var(--muted); font-size: 16px; line-height: 1.65; }
+.data-center-controls { display: grid; justify-items: end; gap: 12px; }
+.data-center-controls p { margin: 0; color: var(--muted); font-size: 12px; text-align: right; }
+.data-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.data-summary-grid article { min-height: 150px; padding: 24px; }
+.data-summary-grid article > span { color: var(--muted); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.data-summary-grid strong { display: block; margin: 16px 0 10px; font: 700 36px/1 var(--font-display); letter-spacing: -.045em; }
+.data-summary-grid strong small { font-size: 14px; letter-spacing: 0; }
+.data-summary-grid article > small { color: var(--muted); line-height: 1.45; }
+.data-center-grid { display: grid; grid-template-columns: 1.35fr .8fr; gap: 14px; }
+.data-center-grid > article { padding: 30px; }
+.data-center-grid h2 { margin: 6px 0 16px; font-size: 24px; }
+.data-periods { grid-row: span 2; }
+.data-periods__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 28px; }
+.data-periods__grid div { padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, .018); }
+.data-periods__grid span, .data-periods__grid small { display: block; color: var(--muted); }
+.data-periods__grid strong { display: block; margin: 14px 0 8px; font-size: 21px; }
+.data-ephemeris p:last-child, .data-export > p:not(.eyebrow) { color: var(--muted); line-height: 1.6; }
+.data-export__actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 14px; }
+.data-export__actions button { min-width: 72px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: rgba(137, 214, 163, .08); color: var(--green); font-weight: 800; cursor: pointer; }
+.data-export__actions button:hover { border-color: rgba(137, 214, 163, .48); background: rgba(137, 214, 163, .15); }
+.data-export > small { color: var(--muted); }
 
 body[data-page="inici"] #avisos .alerts-hub,
 body[data-page="inici"] #avisos .alerts-heading-actions,
@@ -90,10 +124,18 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
 @media (max-width: 780px) {
   .portal-placeholder .panel { min-height: 240px; padding: 28px; }
   .has-portal-shell .site-header .brand { margin-right: auto; }
+  .hero-webcam-preview { width: min(240px, 100%); margin: 0 0 18px; }
+  .data-center-hero { grid-template-columns: 1fr; padding: 28px; }
+  .data-center-controls { justify-items: start; }
+  .data-center-controls p { text-align: left; }
+  .data-summary-grid { grid-template-columns: 1fr 1fr; }
+  .data-center-grid { grid-template-columns: 1fr; }
+  .data-periods { grid-row: auto; }
 }
 
 @media (max-width: 510px) {
   .has-portal-shell .site-header { padding-inline: 10px; }
+  .data-summary-grid, .data-periods__grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 360px) {

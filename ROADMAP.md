@@ -4,19 +4,21 @@
 
 Construir el portal meteorològic del Baix Montseny combinant dades pròpies, fonts oficials i eines intel·ligents amb una experiència clara, moderna i sostenible.
 
-## Milestone 1 — V8 Reorganització del portal — En curs
+## Milestone 1 — V8 Reorganització del portal — Completat
 
 - Portal amb menú lateral fi en escriptori i hamburguesa en mòbil.
 - Vistes: Inici, Estació, Predicció, Avisos, Radar, Webcams, Centre de Dades, Comparar, Medi Ambient, Contacte i Metodologia.
 - Portada curta: situació actual, resum, avisos, predicció i radar.
 - Preservar capçalera, estètica, Worker, API, PWA, compartir, push, historial d’avisos i comparativa.
 
-## Milestone 2 — Centre de Dades
+## Milestone 2 — V9 Centre de Dades — Completat
 
 - Històrics de temperatura, humitat, vent, pluja, pressió, UV i radiació.
 - Màxims, mínims, mitjanes, desviacions i nombre de mostres.
 - Descàrregues CSV, Excel, JSON i PDF.
 - Rècords, efemèrides i resums diaris, mensuals i anuals.
+
+Implementat a V9.0.0 reutilitzant l’històric existent del Worker: períodes de 7, 30 i 365 dies, cobertura, mostres, mitjana i desviació tèrmica, pluja, ratxa, arxiu d’extrems, efemèrides, resums i exportacions CSV, Excel, JSON i PDF. No s’ha modificat cap contracte d’API.
 
 ## Milestone 3 — Comparador avançat
 
@@ -77,4 +79,3 @@ Centre de notícies meteorològiques, calendari i cronologia meteorològica, API
 ## Definició de projecte madur
 
 El projecte arribarà a 1.0 quan arquitectura, dades, comparador, medi ambient, Meteo IA, marca/PWA, SEO, compartició, xarxes i administració estiguin completats i validats.
-
