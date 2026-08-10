@@ -1,12 +1,12 @@
 const NAV_ITEMS=[
   ['inici','⌂','Inici','./?page=inici'],['estacio','◉','Estació','./?page=estacio'],
   ['prediccio','☁','Predicció','./?page=prediccio'],['avisos','!','Avisos','./?page=avisos'],
-  ['radar','◎','Radar','./?page=radar'],['webcams','▣','Webcams','./?page=webcams'],
+  ['cel','☾','Cel de dia i de nit','./?page=cel'],['radar','◎','Radar','./?page=radar'],['webcams','▣','Webcams','./?page=webcams'],
   ['centre-dades','⌁','Centre de Dades','./?page=centre-dades'],['comparar','⇄','Comparar','./comparativa.html'],
   ['medi-ambient','♧','Medi Ambient','./?page=medi-ambient'],['contacte','↗','Contacte','./?page=contacte'],
   ['metodologia','i','Metodologia','./metodologia.html']
 ];
-const PAGE_LABELS={inici:'Consulta ràpida',estacio:'Dades de l’estació',prediccio:'Predicció i cel',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams','centre-dades':'Centre de Dades',comparar:'Comparativa','medi-ambient':'Medi Ambient',contacte:'Contacte',metodologia:'Metodologia'};
+const PAGE_LABELS={inici:'Consulta ràpida',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams','centre-dades':'Centre de Dades',comparar:'Comparativa','medi-ambient':'Medi Ambient',contacte:'Contacte',metodologia:'Metodologia'};
 
 export function mountPortalShell(activePage){
   document.body.classList.add('has-portal-shell');

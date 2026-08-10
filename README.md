@@ -1,13 +1,16 @@
-# Observatori Meteorològic Fontanillas — V9.0.0
+# Observatori Meteorològic Fontanillas — V10.0.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V9 completa la reorganització V8 i el Centre de Dades mantenint els serveis meteorològics, els avisos oficials i la PWA existents.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V10 completa el comparador avançat i amplia la navegació mantenint els serveis meteorològics, els avisos oficials i la PWA existents.
 
 ## Estat actual
 
 - Menú lateral en escriptori i hamburguesa en mòbil.
 - Capçalera fixa i portada de consulta ràpida amb webcam discreta.
+- Pàgina pròpia per a l’estació i per al cel de dia i de nit.
+- Radar + llamps oficial de Meteocat integrat i accessos a webcams properes.
 - Vistes independents sense duplicar mòduls ni serveis.
 - Centre de Dades amb resums, extrems, efemèrides i exportacions CSV, Excel, JSON i PDF.
+- Comparador amb mapa del Baix Montseny i cinc variables actuals o històriques.
 - Avisos AEMET/Meteocat, comparativa, Worker, PWA, compartir i push preservats.
 
 ## Estructura activa

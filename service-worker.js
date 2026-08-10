@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v9-0-0';
+const CACHE = 'observatori-fontanillas-v10-0-0';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [

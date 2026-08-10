@@ -29,15 +29,21 @@ Ser el portal meteorològic de referència del Baix Montseny: informació local 
 
 Estació Fontanillas, Worker propi, Weather Underground, Open-Meteo, AEMET, Meteocat, RainViewer i els ginys meteorològics ja integrats. Les claus i URLs es centralitzen en la configuració existent.
 
-## Navegació V9
+## Navegació V10
 
-Inici, Estació, Predicció, Avisos, Radar, Webcams, Centre de Dades, Comparar, Medi Ambient, Contacte i Metodologia. Escriptori: lateral fi. Mòbil: hamburguesa. La capçalera, l’estat en directe i la identitat visual es preserven.
+Inici, Estació, Predicció, Cel de dia i de nit, Avisos, Radar, Webcams, Centre de Dades, Comparar, Medi Ambient, Contacte i Metodologia. Escriptori: lateral fi. Mòbil: hamburguesa. La capçalera, l’estat en directe i la identitat visual es preserven.
 
 La capçalera és fixa. La primera secció de cada vista compensa l’altura de la capçalera una sola vegada. Els peus només ofereixen «Tornar amunt» i «Compartir»; la navegació entre àrees pertany al menú lateral o a l’hamburguesa.
 
 ## Centre de Dades V9
 
 La vista consumeix el mateix `/history` ja utilitzat per les gràfiques i els extrems. `src/features/data-center.js` calcula resums només al navegador i genera exportacions sense llibreries ni serveis nous. El Worker i els formats de resposta es mantenen intactes.
+
+## Comparador V10
+
+`comparativa.html` i `src/features/stations-comparison.js` consumeixen `/stations?period=now|today|24h`. El mapa, les targetes i la gràfica de cinc variables parteixen d’un únic payload normalitzat. Leaflet es carrega sota demanda i Chart.js continua sent l’únic motor de gràfiques.
+
+La vista «Cel de dia i de nit» reutilitza el mòdul d’astronomia existent. El radar ofereix com a capa integrada el producte oficial XRAD + XDDE de Meteocat, amb enllaç alternatiu només si el proveïdor impedeix la incrustació.
 
 ## Normes de canvi
 

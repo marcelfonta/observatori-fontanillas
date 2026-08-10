@@ -1,6 +1,17 @@
 import { CONFIG } from '../core/config.js';
 
-const state = { period: 'now', payload: null, charts: [] };
+const state = { period: 'now', metric: 'temperature', payload: null, charts: [] };
+const COLORS = ['#89d6a3','#e6c56c','#79c5d8','#ee8e73'];
+const METRICS = {
+  temperature:{ label:'Temperatura', key:'temperature', suffix:'°C', digits:1, value:s=>s.temperature },
+  humidity:{ label:'Humitat', key:'humidity', suffix:'%', digits:0, value:s=>s.humidity },
+  pressure:{ label:'Pressió', key:'pressure', suffix:'hPa', digits:1, value:s=>s.pressure },
+  wind:{ label:'Ratxa de vent', key:'windGust', suffix:'km/h', digits:1, value:s=>s.windGust ?? s.windSpeed },
+  rain:{ label:'Pluja acumulada', key:'rainTotal', suffix:'mm', digits:1, value:s=>s.rainToday }
+};
+let comparisonMap;
+let comparisonMapLayer;
+let leafletPromise;
 
 function fmt(value, digits = 1) {
   return Number.isFinite(Number(value)) ? Number(value).toLocaleString('ca-ES', { maximumFractionDigits: digits, minimumFractionDigits: digits }) : '—';
@@ -76,23 +87,92 @@ function renderCards(payload) {
   }).join('');
 }
 
-function destroyCharts() { state.charts.forEach(c => c?.destroy?.()); state.charts = []; }
-function chart(canvasId, label, stations, valueFn, suffix) {
-  const el = document.getElementById(canvasId);
-  if (!el || !window.Chart) return;
-  const usable = stations.filter(s => s.status === 'online');
-  state.charts.push(new Chart(el, {
-    type:'bar',
-    data:{ labels:usable.map(s=>s.name), datasets:[{ label, data:usable.map(valueFn), borderWidth:1, borderRadius:8 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{label:ctx=>`${fmt(ctx.raw)} ${suffix}`} } }, scales:{ x:{grid:{display:false}}, y:{beginAtZero:false} } }
-  }));
+function ensureLeaflet() {
+  if (window.L) return Promise.resolve();
+  if (leafletPromise) return leafletPromise;
+  leafletPromise = new Promise((resolve,reject) => {
+    if (!document.getElementById('comparison-leaflet-styles')) {
+      const styles=document.createElement('link');styles.id='comparison-leaflet-styles';styles.rel='stylesheet';styles.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';styles.crossOrigin='';document.head.append(styles);
+    }
+    const script=document.createElement('script');script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';script.crossOrigin='';script.async=true;script.addEventListener('load',resolve,{once:true});script.addEventListener('error',reject,{once:true});document.head.append(script);
+  });
+  return leafletPromise;
 }
+
+function renderMapList(stations) {
+  const list=document.getElementById('comparison-map-list');
+  if(!list)return;
+  list.innerHTML=stations.map((station,index)=>{
+    const summary=periodSummary(station);
+    const offline=station.status!=='online';
+    return `<div class="comparison-map-item ${offline?'is-offline':''}"><i style="background:${offline?'#6f7d78':COLORS[index%COLORS.length]}"></i><span><b>${station.name}</b><small>${station.municipality||'Baix Montseny'}</small></span><strong>${offline?'—':`${fmt(summary.temperature)}°`}</strong></div>`;
+  }).join('');
+}
+
+async function renderMap(payload) {
+  const target=document.getElementById('comparison-map');
+  const status=document.getElementById('comparison-map-status');
+  const stations=payload.stations||[];
+  renderMapList(stations);
+  if(!target)return;
+  try {
+    await ensureLeaflet();
+    if(!comparisonMap){
+      comparisonMap=window.L.map(target,{zoomControl:true,scrollWheelZoom:false}).setView([41.695,2.47],11);
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(comparisonMap);
+      comparisonMapLayer=window.L.layerGroup().addTo(comparisonMap);
+    }
+    comparisonMapLayer.clearLayers();
+    const online=stations.filter(station=>station.status==='online'&&Number.isFinite(Number(station.latitude))&&Number.isFinite(Number(station.longitude)));
+    const directions=['top','right','bottom','left'];
+    online.forEach((station,index)=>{
+      const summary=periodSummary(station);
+      const marker=window.L.circleMarker([station.latitude,station.longitude],{radius:station.id==='fontanillas'?11:8,color:'#f3f7f3',weight:2,fillColor:COLORS[index%COLORS.length],fillOpacity:.94}).addTo(comparisonMapLayer);
+      marker.bindTooltip(station.name,{permanent:true,direction:directions[index%directions.length],offset:[0,-8],className:'comparison-map-tooltip'});
+      marker.bindPopup(`<strong>${station.name}</strong><br>${fmt(summary.temperature)} °C · ${fmt(summary.humidity,0)}% HR<br>Ratxa ${fmt(summary.windGust)} km/h · Pluja ${fmt(summary.rainToday)} mm`);
+    });
+    window.setTimeout(()=>comparisonMap.invalidateSize(),80);
+    if(status)status.textContent=`${online.length} estacions situades`;
+  } catch(error) {
+    console.warn('Mapa comparatiu no disponible.',error);
+    if(status)status.textContent='Mapa temporalment no disponible';
+    target.innerHTML='<div class="comparison-loading is-error"><strong>No s’ha pogut iniciar el mapa.</strong><span>Les targetes i les gràfiques continuen disponibles.</span></div>';
+  }
+}
+
+function destroyCharts() { state.charts.forEach(c => c?.destroy?.()); state.charts = []; }
+
+function historySeries(station, metric) {
+  const values=(station.history||[]).map(item=>Number(item[metric.key]));
+  if(metric!==METRICS.rain)return values.map(value=>Number.isFinite(value)?value:null);
+  const valid=values.filter(Number.isFinite);
+  const start=valid[0]??0;
+  return values.map(value=>Number.isFinite(value)?Math.max(0,value-start):null);
+}
+
 function renderCharts(payload) {
   destroyCharts();
-  const stations = (payload.stations || []).map(periodSummary);
-  chart('compare-temp-chart','Temperatura',stations,s=>s.temperature,'°C');
-  chart('compare-rain-chart','Pluja',stations,s=>s.rainToday,'mm');
-  chart('compare-wind-chart','Vent',stations,s=>s.windGust ?? s.windSpeed,'km/h');
+  const canvas=document.getElementById('compare-variable-chart');
+  const metric=METRICS[state.metric]||METRICS.temperature;
+  const sourceStations=(payload.stations||[]).filter(station=>station.status==='online');
+  const summaries=sourceStations.map(periodSummary);
+  const historical=state.period!=='now'&&sourceStations.some(station=>station.history?.length);
+  const copy=document.getElementById('comparison-chart-copy');
+  const note=document.getElementById('comparison-variable-note');
+  if(copy)copy.textContent=historical?`Evolució de ${metric.label.toLowerCase()} durant ${state.period==='today'?'el dia d’avui':'les últimes 24 hores'}.`:`Valors actuals de ${metric.label.toLowerCase()} entre les estacions actives.`;
+  if(note)note.textContent=historical?'Cada línia correspon a una estació i manté les mateixes unitats.':'Selecciona Avui o 24 h per veure l’evolució històrica de totes les estacions.';
+  if(!canvas||!window.Chart)return;
+  let labels;
+  let datasets;
+  if(historical){
+    const longest=[...sourceStations].sort((a,b)=>(b.history?.length||0)-(a.history?.length||0))[0]?.history||[];
+    labels=longest.map(item=>updatedLabel(item.time));
+    datasets=sourceStations.map((station,index)=>({label:station.name,data:historySeries(station,metric),borderColor:COLORS[index%COLORS.length],backgroundColor:`${COLORS[index%COLORS.length]}22`,borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:.25,spanGaps:true}));
+  }else{
+    labels=summaries.map(station=>station.name);
+    datasets=[{label:metric.label,data:summaries.map(metric.value),backgroundColor:summaries.map((_,index)=>`${COLORS[index%COLORS.length]}bb`),borderColor:summaries.map((_,index)=>COLORS[index%COLORS.length]),borderWidth:1,borderRadius:9}];
+  }
+  state.charts.push(new Chart(canvas,{type:historical?'line':'bar',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:historical,labels:{boxWidth:10,boxHeight:10}},tooltip:{callbacks:{label:context=>`${context.dataset.label}: ${fmt(context.raw,metric.digits)} ${metric.suffix}`}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:historical?9:8}},y:{beginAtZero:state.metric==='rain'}}}}));
 }
 function renderReading(payload) {
   const el = document.getElementById('comparison-reading');
@@ -123,7 +203,7 @@ async function load(period='now') {
     const r=await fetch(`${CONFIG.apiUrl}/stations?period=${encodeURIComponent(period)}`,{cache:'no-store',headers:{Accept:'application/json'}});
     if(!r.ok) throw new Error(`API ${r.status}`);
     state.payload=await r.json();
-    renderCards(state.payload); renderCharts(state.payload); renderReading(state.payload); renderMeta(state.payload);
+    renderCards(state.payload); renderCharts(state.payload); renderReading(state.payload); renderMeta(state.payload); renderMap(state.payload);
   } catch(error) {
     console.error('Comparativa no disponible',error);
     if(loading) loading.innerHTML='<div class="comparison-loading panel is-error"><strong>No s’han pogut carregar les estacions properes.</strong><span>Torna-ho a provar d’aquí uns instants.</span></div>';
@@ -135,6 +215,7 @@ function updateClock(){ const el=document.getElementById('header-time'); if(el) 
 function init() {
   updateClock(); setInterval(updateClock,1000);
   document.querySelectorAll('[data-compare-period]').forEach(btn=>btn.addEventListener('click',()=>load(btn.dataset.comparePeriod)));
+  document.querySelectorAll('[data-compare-metric]').forEach(btn=>btn.addEventListener('click',()=>{state.metric=btn.dataset.compareMetric;document.querySelectorAll('[data-compare-metric]').forEach(item=>item.classList.toggle('is-active',item===btn));if(state.payload)renderCharts(state.payload);}));
   load('now');
   setInterval(()=>load(state.period),5*60*1000);
 }

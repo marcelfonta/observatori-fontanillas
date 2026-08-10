@@ -1,7 +1,7 @@
 import { mountPortalShell } from './portal-shell.js';
 
-const PAGES=new Set(['inici','estacio','prediccio','avisos','radar','webcams','centre-dades','medi-ambient','contacte']);
-const LABELS={inici:'Consulta ràpida',estacio:'Dades de l’estació',prediccio:'Predicció i cel',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams', 'centre-dades':'Centre de Dades','medi-ambient':'Medi Ambient',contacte:'Contacte'};
+const PAGES=new Set(['inici','estacio','prediccio','cel','avisos','radar','webcams','centre-dades','medi-ambient','contacte']);
+const LABELS={inici:'Consulta ràpida',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams', 'centre-dades':'Centre de Dades','medi-ambient':'Medi Ambient',contacte:'Contacte'};
 
 export function initPortal(){
   const requested=new URLSearchParams(location.search).get('page')||'inici';

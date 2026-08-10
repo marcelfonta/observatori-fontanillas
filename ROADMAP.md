@@ -7,7 +7,7 @@ Construir el portal meteorològic del Baix Montseny combinant dades pròpies, fo
 ## Milestone 1 — V8 Reorganització del portal — Completat
 
 - Portal amb menú lateral fi en escriptori i hamburguesa en mòbil.
-- Vistes: Inici, Estació, Predicció, Avisos, Radar, Webcams, Centre de Dades, Comparar, Medi Ambient, Contacte i Metodologia.
+- Vistes: Inici, Estació, Predicció, Cel de dia i de nit, Avisos, Radar, Webcams, Centre de Dades, Comparar, Medi Ambient, Contacte i Metodologia.
 - Portada curta: situació actual, resum, avisos, predicció i radar.
 - Preservar capçalera, estètica, Worker, API, PWA, compartir, push, historial d’avisos i comparativa.
 
@@ -20,11 +20,13 @@ Construir el portal meteorològic del Baix Montseny combinant dades pròpies, fo
 
 Implementat a V9.0.0 reutilitzant l’històric existent del Worker: períodes de 7, 30 i 365 dies, cobertura, mostres, mitjana i desviació tèrmica, pluja, ratxa, arxiu d’extrems, efemèrides, resums i exportacions CSV, Excel, JSON i PDF. No s’ha modificat cap contracte d’API.
 
-## Milestone 3 — Comparador avançat
+## Milestone 3 — V10 Comparador avançat — Completat
 
 - Evolució del comparador actual sense regressions.
 - Mapa interactiu del Baix Montseny i marcadors amb dades en directe.
 - Comparacions actuals i històriques per temperatura, vent, pluja, humitat i pressió.
+
+Implementat a V10.0.0 amb el contracte `/stations` existent: mapa Leaflet del Baix Montseny, marcadors i llegenda d’estacions, períodes Ara/Avui/24 h, targetes normalitzades i una gràfica commutable per les cinc variables. No s’ha afegit cap dependència de compilació ni s’ha trencat la comparativa anterior.
 
 ## Milestone 4 — Medi Ambient
 

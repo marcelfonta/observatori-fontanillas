@@ -32,13 +32,13 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=6.0" />
-    <link rel="stylesheet" href="css/portal.css?v=9.0.0" />
+    <link rel="stylesheet" href="css/portal.css?v=10.0.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="src/features/push.js?v=7.0-stable"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=9.0.0"></script>
+    <script type="module" src="src/app.js?v=10.0.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
@@ -92,6 +92,11 @@
             <em id="quick-alert-action">Consultar →</em>
           </a>
         </aside>
+      </section>
+
+      <section id="estacio-intro" class="portal-page-intro panel section-block" aria-labelledby="station-page-title" data-portal-page="estacio">
+        <div><p class="eyebrow">Estació Fontanillas</p><h1 id="station-page-title">L’estació, sensor a sensor.</h1><p>Lectures actuals, valors calculats i resum del dia des de Sant Celoni. Cada indicador diferencia clarament les mesures directes de les estimacions meteorològiques.</p></div>
+        <span class="tag">Actualització cada 5 minuts</span>
       </section>
 
       <section class="metrics-grid" aria-label="Mesures actuals de l’estació" data-portal-page="inici estacio">
@@ -362,7 +367,7 @@
         <p class="data-note"><span>i</span> Les corbes combinen l’arxiu propi persistent de l’estació amb Weather Underground com a suport de l’històric recent. La resolució s’adapta automàticament al període seleccionat.</p>
       </section>
 
-      <section id="cel-nocturn" class="astronomy-section section-block" aria-labelledby="astronomy-title" data-mobile-advanced data-portal-page="prediccio">
+      <section id="cel-nocturn" class="astronomy-section section-block" aria-labelledby="astronomy-title" data-portal-page="cel">
         <div class="section-heading astronomy-heading"><div><p class="eyebrow">Astronomia local</p><h2 id="astronomy-title">El cel, de dia i de nit</h2></div><div class="astronomy-source"><span>Càlcul per a 41,6906° N · 2,4890° E</span><a href="https://aa.usno.navy.mil/data/" target="_blank" rel="noreferrer">Efemèrides: USNO ↗</a></div></div>
         <div class="astronomy-overview">
           <article class="moon-card panel"><div class="moon-visual" id="moon-visual" aria-hidden="true">◐</div><div><p class="eyebrow">Lluna actual</p><h3 id="moon-phase">Calculant la fase…</h3><strong><b id="moon-illumination">—</b>% il·luminada</strong><p id="moon-age">Edat lunar pendent</p><p id="moon-times">Sortida i posta pendents</p><div class="moon-facts"><span><small>Pròxima fase</small><b id="moon-next-phase">Calculant</b></span><span><small>Visibilitat</small><b id="moon-visibility">Pendent</b></span></div></div></article>
@@ -383,27 +388,27 @@
           <header><div><p class="eyebrow">Mirada al territori</p><h2>Webcam en directe</h2><a class="source-link" href="https://www.alvar.cat/" target="_blank" rel="noreferrer">Font: alvar.cat ↗</a></div><span class="live-pill"><span></span>Imatge actual</span></header>
           <div class="webcam-frame"><img id="webcam-image" alt="Webcam meteorològica de l’entorn del Montseny" /><div class="webcam-overlay"><span id="webcam-time">Ara</span><b>Sant Celoni · Montseny</b></div></div>
           <div class="webcam-details"><span><small>Actualització</small><b>Cada 5 minuts</b></span><span><small>Lectura visual</small><b>Núvols · boira · visibilitat</b></span><span><small>Àmbit</small><b>Entorn del Montseny</b></span></div>
+          <section class="nearby-webcams" aria-labelledby="nearby-webcams-title">
+            <div><p class="eyebrow">Altres mirades</p><h3 id="nearby-webcams-title">Webcams properes al Montseny</h3><p>Accessos externs seleccionats per consultar altres orientacions quan hi hagi imatge disponible.</p></div>
+            <div class="nearby-webcams__links">
+              <a href="https://www.alvar.cat/Meteo/Meteo2.html" target="_blank" rel="noreferrer"><span>Sant Celoni</span><b>Estacions i càmeres Alvar</b><small>Àrea del Montseny ↗</small></a>
+              <a href="https://www.meteoblue.com/en/weather/webcams/tur%C3%B3-de-l%27home_spain_11494627" target="_blank" rel="noreferrer"><span>Turó de l’Home</span><b>Webcams del massís</b><small>Recull Meteoblue ↗</small></a>
+              <a href="https://es.windfinder.com/webcams/montseny" target="_blank" rel="noreferrer"><span>Montseny</span><b>Càmeres per proximitat</b><small>Mapa Windfinder ↗</small></a>
+              <a href="https://www.miradorbellmunt.cat/es/" target="_blank" rel="noreferrer"><span>Bellmunt</span><b>Vista cap al Montseny</b><small>Mirador panoràmic ↗</small></a>
+            </div>
+          </section>
         </article>
         <article class="radar-card panel">
           <header><div><p class="eyebrow">Radar meteorològic</p><h2>Animació + Meteocat</h2><div class="radar-sources"><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Radar oficial Meteocat ↗</a><a href="https://www.aemet.es/es/eltiempo/observacion/radar?p=GLD" target="_blank" rel="noreferrer">AEMET Barcelona–Gelida ↗</a></div></div><span class="tag" id="radar-status">Carregant animació</span></header>
-          <div class="radar-mode-tabs" role="tablist" aria-label="Tipus de radar"><button class="is-active" id="radar-tab-interactive" type="button" role="tab" aria-selected="true" aria-controls="radar-panel-interactive" tabindex="0" data-radar-mode="interactive">Animació interactiva</button><button id="radar-tab-meteocat" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-meteocat" tabindex="-1" data-radar-mode="meteocat">Meteocat oficial</button><button id="radar-tab-lightning" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-lightning" tabindex="-1" data-radar-mode="lightning">Llamps AEMET</button></div>
+          <div class="radar-mode-tabs" role="tablist" aria-label="Tipus de radar"><button class="is-active" id="radar-tab-interactive" type="button" role="tab" aria-selected="true" aria-controls="radar-panel-interactive" tabindex="0" data-radar-mode="interactive">Animació interactiva</button><button id="radar-tab-meteocat" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-meteocat" tabindex="-1" data-radar-mode="meteocat">Meteocat oficial</button><button id="radar-tab-lightning" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-lightning" tabindex="-1" data-radar-mode="lightning">Radar + llamps</button></div>
           <div class="radar-panel is-active" id="radar-panel-interactive" role="tabpanel" aria-labelledby="radar-tab-interactive" tabindex="0" data-radar-panel="interactive"><div class="radar-frame"><div id="radar-map" aria-label="Mapa interactiu del radar de precipitació"></div><div class="radar-loader" id="radar-loader">Carregant les imatges del radar…</div></div><div class="radar-timeline"><button type="button" id="radar-play" aria-label="Reproduir animació del radar">▶</button><input id="radar-slider" type="range" min="0" max="0" value="0" aria-label="Seleccionar hora del radar" /><time id="radar-time">—</time></div><div class="radar-actions"><p>Arrossega i amplia el mapa. La línia temporal recorre les imatges reals disponibles de les últimes dues hores.</p><a href="https://www.rainviewer.com/" target="_blank" rel="noreferrer">Capa temporal: RainViewer ↗</a></div></div>
           <div class="radar-panel" id="radar-panel-meteocat" role="tabpanel" aria-labelledby="radar-tab-meteocat" tabindex="0" hidden data-radar-panel="meteocat"><div class="radar-meteocat"><iframe title="Última imatge oficial del radar de Meteocat" data-src="https://static-m.meteo.cat/ginys/mapaRadar?language=ca&amp;color=0f2a22&amp;target=_blank" loading="lazy"></iframe></div><div class="radar-actions"><p>Imatge oficial de la Xarxa de Radars Meteorològics de Catalunya. Permet ampliar el mapa i obrir l’animació de la darrera hora a Meteocat.</p><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Obrir l’animació i la previsió +1 h →</a></div></div><div class="radar-panel" id="radar-panel-lightning" role="tabpanel" aria-labelledby="radar-tab-lightning" tabindex="0" hidden data-radar-panel="lightning">
-            <div class="lightning-aemet-card">
-              <div class="lightning-aemet-card__mark" aria-hidden="true">⚡</div>
-              <div class="lightning-aemet-card__copy">
-                <p class="eyebrow">Xarxa de detecció de llamps</p>
-                <h3>Llamps detectats per AEMET</h3>
-                <p>El visor oficial mostra les descàrregues elèctriques detectades cada hora a la Península i les Illes Balears, amb les últimes 24 hores disponibles. AEMET diferencia les descàrregues negatives i positives.</p>
-                <div class="lightning-aemet-card__facts">
-                  <span><b>24 h</b><small>Històric disponible</small></span>
-                  <span><b>1 h</b><small>Resolució temporal</small></span>
-                  <span><b>AEMET</b><small>Font oficial</small></span>
-                </div>
-                <a class="lightning-aemet-card__button" href="https://www.aemet.es/es/eltiempo/observacion/rayos.html?w=0" target="_blank" rel="noreferrer">Obrir el mapa oficial de llamps ↗</a>
-              </div>
+            <div class="lightning-integrated">
+              <header><div><p class="eyebrow">XRAD + XDDE</p><h3>Precipitació i llamps en una sola imatge</h3><p>Meteocat combina el radar amb els llamps núvol-terra registrats durant els sis minuts anteriors. El visor queda dins de l’Observatori.</p></div><span class="tag">Actualització · 6 min</span></header>
+              <div class="lightning-integrated__frame"><iframe title="Radar amb llamps oficial de Meteocat" data-src="https://www.meteo.cat/observacions/radarLlamps" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="lightning-integrated__fallback"><span>⚡</span><strong>Si el proveïdor bloqueja la vista incrustada</strong><a href="https://www.meteo.cat/observacions/radarLlamps" target="_blank" rel="noreferrer">Obrir el producte oficial ↗</a></div></div>
+              <div class="lightning-integrated__facts"><span><b>6 min</b><small>Radar i llamps recents</small></span><span><b>&gt;90%</b><small>Eficiència XDDE indicada per Meteocat</small></span><span><b>Catalunya</b><small>Cobertura oficial</small></span></div>
             </div>
-            <div class="radar-actions"><p>El mapa s’obre directament a AEMET per evitar els bloquejos d’incrustació que alguns visors externs apliquen dins d’altres webs.</p></div>
+            <div class="radar-actions"><p>La capa prioritària és el producte combinat oficial de Meteocat. L’enllaç inferior queda només com a alternativa si el navegador impedeix mostrar el visor.</p></div>
           </div>
         </article>
       </section>
@@ -473,7 +478,7 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V9.0.0</small>
+      <small>Dades locals · Sant Celoni, Montseny · V10.0.0</small>
       <div>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>

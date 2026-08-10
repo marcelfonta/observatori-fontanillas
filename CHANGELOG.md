@@ -1,5 +1,28 @@
 # Changelog
 
+## V10.0.0 — 2026-08-10
+
+### Afegit
+
+- Títol i introducció propis per a la pàgina Estació.
+- Nova pàgina «Cel de dia i de nit» al menú lateral, reutilitzant tots els càlculs d’astronomia existents.
+- Producte oficial combinat radar + llamps de Meteocat integrat dins de la pàgina Radar.
+- Selecció de webcams properes al Montseny amb quatre accessos verificats.
+- Comparador avançat amb mapa interactiu del Baix Montseny, marcadors, llegenda i cinc variables commutables.
+- Comparació actual i històrica per temperatura, humitat, pressió, vent i pluja en els períodes Ara, Avui i 24 h.
+
+### Millorat
+
+- Webcam de portada més ampla, centrada i proporcionada segons la referència visual de l’usuari.
+- Finestra de compartir amb fons sòlid, més contrast i botons clarament llegibles.
+- Distribució de la portada ajustada per donar més amplada a temperatura i webcam sense afectar la lectura ràpida.
+
+### Preservat
+
+- Worker i contractes de l’API sense canvis.
+- Centre de Dades, avisos AEMET/Meteocat, PWA, compartir, push i resta de funcions de V9.
+- Milestone 4 i posteriors sense iniciar.
+
 ## V9.0.0 — 2026-08-10
 
 ### Afegit
