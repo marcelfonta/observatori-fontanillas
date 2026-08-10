@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V10.0.0
+# Observatori Meteorològic Fontanillas — V11.0.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V10 completa el comparador avançat i amplia la navegació mantenint els serveis meteorològics, els avisos oficials i la PWA existents.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V11 inicia Medi Ambient, integra el mapa de llamps d’AEMET i unifica les capçaleres mantenint els serveis meteorològics, els avisos oficials i la PWA existents.
 
 ## Estat actual
 

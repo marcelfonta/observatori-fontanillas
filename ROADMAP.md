@@ -28,16 +28,19 @@ Implementat a V9.0.0 reutilitzant l’històric existent del Worker: períodes d
 
 Implementat a V10.0.0 amb el contracte `/stations` existent: mapa Leaflet del Baix Montseny, marcadors i llegenda d’estacions, períodes Ara/Avui/24 h, targetes normalitzades i una gràfica commutable per les cinc variables. No s’ha afegit cap dependència de compilació ni s’ha trencat la comparativa anterior.
 
-## Milestone 4 — Medi Ambient
+## Milestone 4 — V11 Medi Ambient — En curs
 
 - Qualitat de l’aire a Sant Celoni: AQI, PM10, PM2.5, NO₂, O₃, CO i SO₂ segons disponibilitat oficial.
 - Radiació UV, pol·len, risc d’incendi, sequera i estat hidrològic.
 - Costa catalana i meduses: mapa, presència, espècie, risc, actualització i informació pràctica amb font fiable automàtica.
 
+Primera fase implementada a V11.0.0: índex europeu de qualitat de l’aire, PM10, PM2,5, NO₂, O₃, CO, SO₂, UV i cinc tipus de pol·len amb CAMS/Open‑Meteo; accés destacat als visors oficials de Pla Alfa, sequera de l’ACA i PlatgesCat. Pendent de completar: integrar dades locals oficials de risc, sequera i meduses només quan hi hagi una font automàtica estable que permeti mostrar municipi o platja sense induir a error.
+
 ## Milestone 5 — Branding i identitat visual
 
 - Logotip aprovat, opció A: Montseny, sol i línia meteorològica minimalista.
 - Favicon, Apple Touch Icon, icones Android/PWA/maskable, splash i Open Graph coherents.
+- Redisseny coherent dels pictogrames del menú lateral i de les icones funcionals del portal.
 - Revisió del nom curt instal·lat i guia d’identitat.
 
 ## Milestone 6 — Meteo IA

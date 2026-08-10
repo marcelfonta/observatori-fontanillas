@@ -20,6 +20,7 @@ import { updateSituation } from './modules/situacio.js';
 import { initShare } from './features/share.js';
 import { initPortal } from './features/portal-router.js';
 import { initDataCenter, renderDataCenter } from './features/data-center.js';
+import { initEnvironment } from './features/environment.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -121,6 +122,7 @@ initShare();
 document.addEventListener('observatori:alerts-updated',event=>updateSituation({alerts:event.detail}));
 initWhenVisible('.model-viewer',initModelViewer);
 initWhenVisible('#territori',initRadar,'700px 0px');
+initWhenVisible('#medi-ambient',initEnvironment,'600px 0px');
 updateClock();
 setInterval(updateClock,1000);
 load();

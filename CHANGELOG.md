@@ -1,5 +1,30 @@
 # Changelog
 
+## V11.0.0 — 2026-08-10
+
+### Afegit
+
+- Primera fase de Medi Ambient amb AQI europeu, PM10, PM2,5, NO₂, O₃, CO, SO₂, radiació UV i cinc tipus de pol·len a partir del model CAMS via Open‑Meteo.
+- Accessos prioritaris als mapes oficials de Pla Alfa, sequera de l’ACA i PlatgesCat amb informació de meduses.
+- Invitació inicial per configurar avisos, amb resposta recordada al navegador perquè només aparegui una vegada.
+- Visor oficial de llamps d’AEMET carregat sota demanda dins de la pàgina Radar.
+- Capçalera visual compartida per a totes les subpàgines del portal.
+
+### Corregit
+
+- Etiqueta de la webcam de portada més petita i menys invasiva.
+- Substituït el visor de llamps de Meteocat, que quedava tallat, per la imatge oficial adaptable d’AEMET.
+- Corregit el farciment superior de la capçalera d’Estació i unificat amb la resta de vistes.
+- Eliminada la confusió entre espai exterior de pàgina i farciment interior de les capçaleres.
+
+### Planificat
+
+- Redisseny dels pictogrames del menú lateral incorporat al Milestone 5 de branding.
+
+### Preservat
+
+- Worker i contractes de dades sense canvis; també es preserven avisos AEMET/Meteocat, historial, Centre de Dades, comparativa, PWA, compartir i contacte.
+
 ## V10.0.0 — 2026-08-10
 
 ### Afegit

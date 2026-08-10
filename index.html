@@ -32,13 +32,13 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=6.0" />
-    <link rel="stylesheet" href="css/portal.css?v=10.0.0" />
+    <link rel="stylesheet" href="css/portal.css?v=11.0.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=7.0-stable"></script>
+    <script type="module" src="src/features/push.js?v=11.0.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=10.0.0"></script>
+    <script type="module" src="src/app.js?v=11.0.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
@@ -94,10 +94,15 @@
         </aside>
       </section>
 
-      <section id="estacio-intro" class="portal-page-intro panel section-block" aria-labelledby="station-page-title" data-portal-page="estacio">
-        <div><p class="eyebrow">Estació Fontanillas</p><h1 id="station-page-title">L’estació, sensor a sensor.</h1><p>Lectures actuals, valors calculats i resum del dia des de Sant Celoni. Cada indicador diferencia clarament les mesures directes de les estimacions meteorològiques.</p></div>
-        <span class="tag">Actualització cada 5 minuts</span>
-      </section>
+      <section class="portal-view-header panel" aria-labelledby="station-page-title" data-portal-page="estacio"><div><p class="eyebrow">Estació Fontanillas</p><h1 id="station-page-title">L’estació, sensor a sensor.</h1><p>Lectures actuals, valors calculats i resum del dia des de Sant Celoni.</p></div><span class="tag">Cada 5 minuts</span></section>
+      <section class="portal-view-header panel" aria-labelledby="forecast-page-title" data-portal-page="prediccio"><div><p class="eyebrow">Predicció</p><h1 id="forecast-page-title">La previsió, ordenada per horitzons.</h1><p>Properes hores, dies i models de confiança per entendre què pot canviar.</p></div><span class="tag">Sant Celoni</span></section>
+      <section class="portal-view-header panel" aria-labelledby="alerts-page-title" data-portal-page="avisos"><div><p class="eyebrow">Vigilància oficial</p><h1 id="alerts-page-title">Avisos que poden afectar Sant Celoni.</h1><p>Seguiment del Vallès Oriental i del Prelitoral de Barcelona amb fonts oficials.</p></div><span class="tag">Meteocat · AEMET</span></section>
+      <section class="portal-view-header panel" aria-labelledby="sky-page-title" data-portal-page="cel"><div><p class="eyebrow">Astronomia</p><h1 id="sky-page-title">El cel, de dia i de nit.</h1><p>Sol, Lluna, fases, estacions i esdeveniments visibles des de Catalunya.</p></div><span class="tag">Hora local</span></section>
+      <section class="portal-view-header panel" aria-labelledby="radar-page-title" data-portal-page="radar"><div><p class="eyebrow">Observació territorial</p><h1 id="radar-page-title">Radar, precipitació i activitat elèctrica.</h1><p>Animació interactiva i productes oficials dins del mateix portal.</p></div><span class="tag">En directe</span></section>
+      <section class="portal-view-header panel" aria-labelledby="webcams-page-title" data-portal-page="webcams"><div><p class="eyebrow">Webcams</p><h1 id="webcams-page-title">Una mirada directa al Montseny.</h1><p>Imatge de l’observatori i accessos seleccionats a altres vistes properes.</p></div><span class="tag">Imatge actual</span></section>
+      <section class="portal-view-header panel" aria-labelledby="data-page-title" data-portal-page="centre-dades"><div><p class="eyebrow">Centre de Dades</p><h1 id="data-page-title">L’arxiu meteorològic, ordenat.</h1><p>Resums, cobertura, rècords i descàrregues a partir de l’històric real.</p></div><span class="tag">Dades pròpies</span></section>
+      <section class="portal-view-header panel" aria-labelledby="environment-page-title" data-portal-page="medi-ambient"><div><p class="eyebrow">Medi Ambient</p><h1 id="environment-page-title">Entorn i salut ambiental.</h1><p>Aire, radiació, pol·len i accés directe als indicadors oficials del territori i la costa.</p></div><span class="tag">Sant Celoni</span></section>
+      <section class="portal-view-header panel" aria-labelledby="contact-page-title" data-portal-page="contacte"><div><p class="eyebrow">Contacte</p><h1 id="contact-page-title">Parlem de meteorologia.</h1><p>Consultes, incidències de dades i propostes per continuar millorant l’Observatori.</p></div><span class="tag">Canal privat</span></section>
 
       <section class="metrics-grid" aria-label="Mesures actuals de l’estació" data-portal-page="inici estacio">
         <article class="metric panel metric--featured" id="metric-card-temperature">
@@ -134,9 +139,9 @@
       <section id="centre-dades-overview" class="data-center-overview section-block" aria-labelledby="data-center-title" data-portal-page="centre-dades">
         <div class="data-center-hero panel">
           <div class="data-center-hero__intro">
-            <p class="eyebrow">Centre de Dades</p>
-            <h1 id="data-center-title">L’arxiu meteorològic, ordenat.</h1>
-            <p>Consulta la cobertura disponible, resumeix períodes i descarrega les observacions de l’estació sense alterar-ne la font.</p>
+            <p class="eyebrow">Període de consulta</p>
+            <h2 id="data-center-title">Explora la cobertura disponible.</h2>
+            <p>Resumeix períodes i descarrega les observacions de l’estació sense alterar-ne la font.</p>
           </div>
           <div class="data-center-controls">
             <div class="segmented" role="group" aria-label="Període del resum del Centre de Dades">
@@ -404,11 +409,11 @@
           <div class="radar-panel is-active" id="radar-panel-interactive" role="tabpanel" aria-labelledby="radar-tab-interactive" tabindex="0" data-radar-panel="interactive"><div class="radar-frame"><div id="radar-map" aria-label="Mapa interactiu del radar de precipitació"></div><div class="radar-loader" id="radar-loader">Carregant les imatges del radar…</div></div><div class="radar-timeline"><button type="button" id="radar-play" aria-label="Reproduir animació del radar">▶</button><input id="radar-slider" type="range" min="0" max="0" value="0" aria-label="Seleccionar hora del radar" /><time id="radar-time">—</time></div><div class="radar-actions"><p>Arrossega i amplia el mapa. La línia temporal recorre les imatges reals disponibles de les últimes dues hores.</p><a href="https://www.rainviewer.com/" target="_blank" rel="noreferrer">Capa temporal: RainViewer ↗</a></div></div>
           <div class="radar-panel" id="radar-panel-meteocat" role="tabpanel" aria-labelledby="radar-tab-meteocat" tabindex="0" hidden data-radar-panel="meteocat"><div class="radar-meteocat"><iframe title="Última imatge oficial del radar de Meteocat" data-src="https://static-m.meteo.cat/ginys/mapaRadar?language=ca&amp;color=0f2a22&amp;target=_blank" loading="lazy"></iframe></div><div class="radar-actions"><p>Imatge oficial de la Xarxa de Radars Meteorològics de Catalunya. Permet ampliar el mapa i obrir l’animació de la darrera hora a Meteocat.</p><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Obrir l’animació i la previsió +1 h →</a></div></div><div class="radar-panel" id="radar-panel-lightning" role="tabpanel" aria-labelledby="radar-tab-lightning" tabindex="0" hidden data-radar-panel="lightning">
             <div class="lightning-integrated">
-              <header><div><p class="eyebrow">XRAD + XDDE</p><h3>Precipitació i llamps en una sola imatge</h3><p>Meteocat combina el radar amb els llamps núvol-terra registrats durant els sis minuts anteriors. El visor queda dins de l’Observatori.</p></div><span class="tag">Actualització · 6 min</span></header>
-              <div class="lightning-integrated__frame"><iframe title="Radar amb llamps oficial de Meteocat" data-src="https://www.meteo.cat/observacions/radarLlamps" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="lightning-integrated__fallback"><span>⚡</span><strong>Si el proveïdor bloqueja la vista incrustada</strong><a href="https://www.meteo.cat/observacions/radarLlamps" target="_blank" rel="noreferrer">Obrir el producte oficial ↗</a></div></div>
-              <div class="lightning-integrated__facts"><span><b>6 min</b><small>Radar i llamps recents</small></span><span><b>&gt;90%</b><small>Eficiència XDDE indicada per Meteocat</small></span><span><b>Catalunya</b><small>Cobertura oficial</small></span></div>
+              <header><div><p class="eyebrow">AEMET · xarxa de detecció</p><h3>Llamps registrats durant les últimes 24 hores</h3><p>Visor oficial d’AEMET, amb els impactes positius i negatius detectats a la Península i les Balears.</p></div><span class="tag">AEMET · 24 h</span></header>
+              <div class="lightning-integrated__frame"><iframe title="Mapa oficial d’AEMET amb els llamps registrats durant les últimes 24 hores" data-src="https://www.aemet.es/es/eltiempo/observacion/rayos.html?w=0" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+              <div class="lightning-integrated__facts"><span><b>24 h</b><small>Activitat elèctrica recent</small></span><span><b>Blau / vermell</b><small>Polaritat negativa / positiva</small></span><span><b>AEMET</b><small>Font oficial</small></span></div>
             </div>
-            <div class="radar-actions"><p>La capa prioritària és el producte combinat oficial de Meteocat. L’enllaç inferior queda només com a alternativa si el navegador impedeix mostrar el visor.</p></div>
+            <div class="radar-actions"><p>El visor oficial queda dins de l’Observatori. També es pot obrir a pantalla completa si AEMET limita la visualització incrustada.</p><a href="https://www.aemet.es/es/eltiempo/observacion/rayos.html?w=0" target="_blank" rel="noreferrer">Obrir el mapa complet a AEMET ↗</a></div>
           </div>
         </article>
       </section>
@@ -453,11 +458,41 @@
         <p class="quality-note"><span>i</span> L’arxiu propi ja desa una lectura cada cinc minuts. La cobertura i els històrics llargs aniran guanyant valor automàticament amb el temps.</p>
       </section>
 
-      <section id="medi-ambient" class="portal-placeholder section-block" data-portal-page="medi-ambient"><div class="panel"><p class="eyebrow">Medi Ambient</p><h1>Entorn i salut ambiental</h1><p>Aquesta nova àrea queda preparada per a qualitat de l’aire, radiació UV, pol·len, risc d’incendi, sequera, estat hidrològic i meduses a la costa catalana. Les fonts automàtiques s’incorporaran en la fita específica del roadmap.</p></div></section>
+      <section id="medi-ambient" class="environment-section section-block" aria-labelledby="environment-summary-title" data-portal-page="medi-ambient">
+        <div class="environment-status"><p><span></span><b id="environment-status-copy">Carregant indicadors ambientals…</b></p><time id="environment-updated">—</time></div>
+        <div class="environment-overview">
+          <article class="environment-aqi panel" id="environment-aqi-card">
+            <header><div><p class="eyebrow">Qualitat de l’aire · estimació CAMS</p><h2 id="environment-summary-title">Índex europeu de qualitat de l’aire</h2></div><span class="tag">Model · 11 km</span></header>
+            <div class="environment-aqi__reading"><strong id="environment-aqi">—</strong><div><b id="environment-aqi-label">Calculant</b><p id="environment-aqi-copy">Comprovant partícules i gasos atmosfèrics.</p></div></div>
+            <div class="environment-aqi__scale" aria-label="Escala europea de qualitat de l’aire"><i></i><i></i><i></i><i></i><i></i><i></i><span id="environment-aqi-marker"></span></div>
+            <small>0–20 bona · 20–40 raonablement bona · 40–60 moderada · 60–80 dolenta · 80–100 molt dolenta · més de 100 extremadament dolenta</small>
+          </article>
+          <article class="environment-health panel"><p class="eyebrow">Lectura pràctica</p><h2 id="environment-health-title">Esperant dades</h2><p id="environment-health-copy">La recomanació s’adaptarà a l’índex europeu actual.</p><div class="environment-health__meta"><span><small>Radiació UV</small><b id="environment-uv">—</b></span><span><small>Pol·len dominant</small><b id="environment-pollen-main">—</b></span></div></article>
+        </div>
+        <div class="environment-metrics" aria-label="Contaminants atmosfèrics actuals">
+          <article class="panel"><span>PM10</span><strong><b id="environment-pm10">—</b><small> µg/m³</small></strong><p>Partícules de menys de 10 µm</p></article>
+          <article class="panel"><span>PM2,5</span><strong><b id="environment-pm25">—</b><small> µg/m³</small></strong><p>Partícules fines</p></article>
+          <article class="panel"><span>NO₂</span><strong><b id="environment-no2">—</b><small> µg/m³</small></strong><p>Diòxid de nitrogen</p></article>
+          <article class="panel"><span>O₃</span><strong><b id="environment-o3">—</b><small> µg/m³</small></strong><p>Ozó troposfèric</p></article>
+          <article class="panel"><span>CO</span><strong><b id="environment-co">—</b><small> µg/m³</small></strong><p>Monòxid de carboni</p></article>
+          <article class="panel"><span>SO₂</span><strong><b id="environment-so2">—</b><small> µg/m³</small></strong><p>Diòxid de sofre</p></article>
+        </div>
+        <article class="pollen-panel panel">
+          <header><div><p class="eyebrow">Pol·len · estimació CAMS</p><h2>Concentració per tipus</h2></div><span class="tag">grans/m³</span></header>
+          <div class="pollen-grid"><div><span>Gramínies</span><strong id="pollen-grass">—</strong></div><div><span>Olivera</span><strong id="pollen-olive">—</strong></div><div><span>Bedoll</span><strong id="pollen-birch">—</strong></div><div><span>Artemisa</span><strong id="pollen-mugwort">—</strong></div><div><span>Ambrosia</span><strong id="pollen-ragweed">—</strong></div></div>
+          <p>És una estimació regional del model europeu, no un sensor local. Les persones al·lèrgiques han de prioritzar la seva pauta mèdica.</p>
+        </article>
+        <div class="environment-official">
+          <a class="panel" href="https://interior.gencat.cat/ca/incendis-forestals/inici/" target="_blank" rel="noreferrer"><span>01 · Territori</span><h2>Risc d’incendi i Pla Alfa</h2><p>Mapa diari oficial i possibles restriccions d’accés al medi natural.</p><b>Consultar Agents Rurals →</b></a>
+          <a class="panel" href="https://aplicacions.aca.gencat.cat/visseq/estat-actual" target="_blank" rel="noreferrer"><span>02 · Aigua</span><h2>Sequera i estat hidrològic</h2><p>Escenari vigent per municipi i mesures aplicables a les conques internes.</p><b>Obrir el visor de l’ACA →</b></a>
+          <a class="panel" href="https://aplicacions.aca.gencat.cat/platgescat2/" target="_blank" rel="noreferrer"><span>03 · Costa catalana</span><h2>Platges i presència de meduses</h2><p>Mapa de platges, avisos de bany, vigilància i informació estacional de meduses.</p><b>Consultar PlatgesCat →</b></a>
+        </div>
+        <p class="environment-note"><span>i</span> L’aire, l’UV i el pol·len provenen del model CAMS via Open‑Meteo. Incendi, sequera i costa s’obren a la font oficial perquè les decisions i restriccions sempre es consultin en el visor vigent.</p>
+      </section>
       <section id="contacte" class="contact-section section-block" aria-labelledby="contact-title" data-portal-page="contacte">
         <article class="contact-intro panel">
-          <p class="eyebrow">Contacte privat</p>
-          <h2 id="contact-title">Parlem de meteorologia.</h2>
+          <p class="eyebrow">Escriu a l’Observatori</p>
+          <h2 id="contact-title">Envia la teva consulta.</h2>
           <p>Has detectat una dada estranya, vols proposar una font o tens una consulta sobre l’observatori? Envia un missatge directament des d’aquí.</p>
           <ul><li><span>01</span><div><b>Adreça protegida</b><small>El correu personal no apareix al web ni a GitHub.</small></div></li><li><span>02</span><div><b>Resposta directa</b><small>Rebràs la resposta a l’adreça que indiquis.</small></div></li><li><span>03</span><div><b>Ús responsable</b><small>Les dades només s’utilitzen per respondre el missatge.</small></div></li></ul>
         </article>
@@ -478,7 +513,7 @@
 
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V10.0.0</small>
+      <small>Dades locals · Sant Celoni, Montseny · V11.0.0</small>
       <div>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>
@@ -499,6 +534,14 @@
           <label class="push-pref-all"><input type="checkbox" value="all" data-alert-preference><span>🔔<b>Tots els avisos</b><small>Activa totes les categories</small></span></label>
         </div>
         <footer><button type="button" class="secondary" id="push-preferences-disable">Desactivar avisos</button><button type="button" class="primary" id="push-preferences-save">Desar i activar</button></footer>
+      </section>
+    </div>
+
+    <div id="alertInviteModal" hidden class="alert-invite-modal">
+      <section class="alert-invite-card" role="dialog" aria-modal="true" aria-labelledby="alert-invite-title" aria-describedby="alert-invite-copy">
+        <span class="alert-invite-card__icon" aria-hidden="true">!</span>
+        <div><p class="eyebrow">Avisos meteorològics</p><h3 id="alert-invite-title">Vols subscriure’t als avisos?</h3><p id="alert-invite-copy">Tria una vegada quins fenòmens t’interessen. Les notificacions del navegador s’activaran quan el servei push estigui configurat.</p></div>
+        <footer><button type="button" class="secondary" id="alert-invite-no">Ara no</button><button type="button" class="primary" id="alert-invite-yes">Sí, configurar</button></footer>
       </section>
     </div>
 

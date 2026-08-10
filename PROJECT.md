@@ -29,7 +29,7 @@ Ser el portal meteorològic de referència del Baix Montseny: informació local 
 
 Estació Fontanillas, Worker propi, Weather Underground, Open-Meteo, AEMET, Meteocat, RainViewer i els ginys meteorològics ja integrats. Les claus i URLs es centralitzen en la configuració existent.
 
-## Navegació V10
+## Navegació V11
 
 Inici, Estació, Predicció, Cel de dia i de nit, Avisos, Radar, Webcams, Centre de Dades, Comparar, Medi Ambient, Contacte i Metodologia. Escriptori: lateral fi. Mòbil: hamburguesa. La capçalera, l’estat en directe i la identitat visual es preserven.
 
@@ -43,7 +43,13 @@ La vista consumeix el mateix `/history` ja utilitzat per les gràfiques i els ex
 
 `comparativa.html` i `src/features/stations-comparison.js` consumeixen `/stations?period=now|today|24h`. El mapa, les targetes i la gràfica de cinc variables parteixen d’un únic payload normalitzat. Leaflet es carrega sota demanda i Chart.js continua sent l’únic motor de gràfiques.
 
-La vista «Cel de dia i de nit» reutilitza el mòdul d’astronomia existent. El radar ofereix com a capa integrada el producte oficial XRAD + XDDE de Meteocat, amb enllaç alternatiu només si el proveïdor impedeix la incrustació.
+La vista «Cel de dia i de nit» reutilitza el mòdul d’astronomia existent. El radar conserva la capa oficial de Meteocat i mostra l’activitat elèctrica amb la imatge oficial adaptable d’AEMET.
+
+## Medi Ambient V11
+
+`src/features/environment.js` consulta directament l’API de qualitat de l’aire d’Open‑Meteo per mostrar l’estimació CAMS europea a les coordenades de Sant Celoni. La interfície separa clarament aquestes estimacions dels visors operatius oficials de la Generalitat i l’ACA. El visor de llamps d’AEMET es carrega sota demanda dins de Radar i el Worker conserva intactes els seus contractes.
+
+Totes les subpàgines del portal comparteixen el component visual `portal-view-header`. La invitació inicial d’avisos desa una única decisió local al navegador i no torna a interrompre la navegació després de respondre.
 
 ## Normes de canvi
 

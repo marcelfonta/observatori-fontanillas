@@ -9,6 +9,10 @@ const saveButton = document.getElementById('push-preferences-save');
 const disableButton = document.getElementById('push-preferences-disable');
 const fields = [...document.querySelectorAll('[data-alert-preference]')];
 const STORAGE_KEY = CONFIG.pushPreferencesKey || 'fontanillas-alert-preferences-v1';
+const INVITE_KEY = 'fontanillas-alert-invite-v1';
+const invite = document.getElementById('alertInviteModal');
+const inviteYes = document.getElementById('alert-invite-yes');
+const inviteNo = document.getElementById('alert-invite-no');
 let OneSignalRef = null;
 let sdkReady = false;
 
@@ -18,6 +22,8 @@ function isIos() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navig
 function isStandalone() { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
 function loadPrefs(){ try { return {...DEFAULT_PREFS,...JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}; } catch { return {...DEFAULT_PREFS}; } }
 function savePrefsLocal(prefs){ try { localStorage.setItem(STORAGE_KEY,JSON.stringify(prefs)); } catch {} }
+function inviteDecision(){ try { return localStorage.getItem(INVITE_KEY); } catch { return null; } }
+function saveInviteDecision(value){ try { localStorage.setItem(INVITE_KEY,value); } catch {} }
 function setState(label, text, active = false, disabled = false) {
   if (button) {
     const strong = button.querySelector('b');
@@ -35,6 +41,18 @@ function openModal(){
   modal.hidden=false; modal.style.display='flex'; document.body.style.overflow='hidden';
 }
 function closeModal(){ if(!modal)return; modal.hidden=true; modal.style.display='none'; document.body.style.overflow=''; }
+function openInvite(){
+  if(!invite||inviteDecision())return;
+  invite.hidden=false;
+  document.body.style.overflow='hidden';
+  inviteYes?.focus();
+}
+function closeInvite(value){
+  if(value)saveInviteDecision(value);
+  if(!invite)return;
+  invite.hidden=true;
+  document.body.style.overflow='';
+}
 function collectPrefs(){
   const prefs={...DEFAULT_PREFS};
   fields.forEach(f=>prefs[f.value]=Boolean(f.checked));
@@ -97,14 +115,17 @@ async function disablePush(){
 
 function bindUi(){
   if(!button||!status)return;
-  button.addEventListener('click',openModal);
+  button.addEventListener('click',()=>{saveInviteDecision('accepted');openModal();});
   saveButton?.addEventListener('click',enablePush);
   disableButton?.addEventListener('click',disablePush);
   closeButton?.addEventListener('click',closeModal);
   modal?.addEventListener('click',e=>{if(e.target===modal)closeModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal?.hidden)closeModal();});
   fields.find(f=>f.value==='all')?.addEventListener('change',e=>{if(e.target.checked)fields.filter(f=>f!==e.target).forEach(f=>f.checked=true);});
+  inviteNo?.addEventListener('click',()=>{closeInvite('declined');window.observatoriTrack?.('push_invite_declined');});
+  inviteYes?.addEventListener('click',()=>{closeInvite('accepted');openModal();window.observatoriTrack?.('push_invite_accepted');});
   refresh();
+  window.setTimeout(openInvite,1200);
 }
 
 bindUi();

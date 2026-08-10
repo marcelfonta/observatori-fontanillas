@@ -10,8 +10,10 @@ export function initPortal(){
   document.title=`${LABELS[page]} · Observatori Fontanillas`;
   mountPortalShell(page);
   document.querySelectorAll('[data-portal-page]').forEach(section=>{section.hidden=!section.dataset.portalPage.split(/\s+/).includes(page);});
-  document.querySelectorAll('[data-portal-page]').forEach(section=>section.classList.remove('is-page-start'));
-  document.querySelector('[data-portal-page]:not([hidden])')?.classList.add('is-page-start');
+  const visible=[...document.querySelectorAll('[data-portal-page]:not([hidden])')];
+  document.querySelectorAll('[data-portal-page]').forEach(section=>section.classList.remove('is-page-start','is-page-content-start'));
+  visible[0]?.classList.add('is-page-start');
+  visible.find((section,index)=>index>0&&section.classList.contains('section-block'))?.classList.add('is-page-content-start');
   document.querySelectorAll('[data-page-link]').forEach(link=>{const active=link.dataset.pageLink===page;link.classList.toggle('is-active',active);if(active)link.setAttribute('aria-current','page');});
   const label=document.getElementById('portal-page-label');if(label)label.textContent=LABELS[page]||'';
 }
