@@ -16,7 +16,11 @@ El panell administratiu mesura directament al navegador:
 - INP, resposta després d’interactuar amb el panell.
 - TTFB, temps fins a la primera resposta del servidor.
 
-Els valors només corresponen a la càrrega actual. No creen galetes, no activen Google Analytics i no s’envien al Worker ni a cap tercer. Els llindars serveixen per detectar problemes evidents; la priorització final s’ha de fer amb dades de camp.
+Els valors d’aquest bloc només corresponen a la càrrega actual. No creen galetes i no s’envien al Worker. Els llindars serveixen per detectar problemes evidents; la priorització final s’ha de fer amb dades de camp.
+
+## Analítica agregada incorporada a V19.1.1
+
+Cloudflare Web Analytics està habilitat des del panell de Cloudflare i aporta visites i mètriques de rendiment agregades. El portal no incorpora cap identificador de Google Analytics, i la pàgina de privacitat explica aquesta activació. La política CSP permet només el script oficial de Cloudflare Insights i el seu punt d’enviament. El panell administratiu detecta automàticament el beacon i mostra «Cloudflare actiu».
 
 ## Validació després de desplegar
 

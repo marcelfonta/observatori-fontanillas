@@ -18,7 +18,7 @@ La propietat de domini `fontanillas.cat` està verificada per DNS i el sitemap d
 1. Obrir Google Search Console i verificar `https://meteo.fontanillas.cat/` amb un registre DNS.
 2. Enviar `https://meteo.fontanillas.cat/sitemap.xml` i inspeccionar la portada, Predicció, Estació i Centre de Dades.
 3. Revisar que Google renderitza les canòniques dinàmiques de les rutes `?page=`. Si el servidor permet reescriptures, una versió futura podrà migrar-les a URL netes sense perdre contingut.
-4. Consultar Core Web Vitals amb dades de camp quan Search Console disposi de prou trànsit. No s’ha d’afegir analítica fins disposar d’un identificador i una política de privacitat adequats.
+4. Consultar Core Web Vitals amb dades de camp quan Search Console disposi de prou trànsit i revisar les mètriques agregades de Cloudflare Web Analytics. Google Analytics no s’ha d’afegir sense una necessitat clara i una revisió específica de privacitat.
 5. Google Business Profile només és apropiat si l’Observatori compleix els requisits d’ubicació o servei presencial de Google. Un portal meteorològic sense atenció presencial no s’hi ha de donar d’alta artificialment.
 
 ## Seguiment recomanat

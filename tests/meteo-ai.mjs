@@ -63,6 +63,27 @@ assert.match(foreignWeek.body,/incertesa és més alta/i);
 assert.equal(foreignWeek.facts.length,7);
 assert.equal(foreignWeek.sources[0].href,'https://open-meteo.com/');
 
+const parisConversation={location:null,period:null,activity:null};
+await answerMeteoQuestion('Quin temps farà la setmana que ve a París?',context,services,parisConversation);
+const rainiestFollowup=await answerMeteoQuestion('Quin dia plourà més?',context,services,parisConversation);
+assert.match(rainiestFollowup.title,/dia amb més pluja prevista/i);
+assert.match(rainiestFollowup.body,/París/i);
+assert.match(rainiestFollowup.body,/8,0 mm/);
+assert.equal(rainiestFollowup.facts.length,7);
+
+const windyFollowup=await answerMeteoQuestion('I quin dia farà més vent?',context,services,parisConversation);
+assert.match(windyFollowup.title,/dia més ventós/i);
+assert.match(windyFollowup.body,/París/i);
+
+const fridayFollowup=await answerMeteoQuestion('I divendres concretament?',context,services,parisConversation);
+assert.match(fridayFollowup.title,/divendres/i);
+assert.match(fridayFollowup.body,/París/i);
+assert.doesNotMatch(fridayFollowup.body,/Sant Celoni/);
+
+const bestDay=await answerMeteoQuestion('Quin dia farà millor la setmana que ve?',context,services);
+assert.match(bestDay.title,/dia més favorable/i);
+assert.match(bestDay.body,/Sant Celoni/i);
+
 const lowerForeign=await answerMeteoQuestion('temps per divendres a londres',context,services);
 assert.match(lowerForeign.body,/londres/i);
 assert.match(lowerForeign.title,/divendres/i);
@@ -94,6 +115,10 @@ assert.doesNotMatch(aranFollowup.body,/Fontanillas/);
 const explicitVielha=await answerMeteoQuestion('Quin temps farà aquest cap de setmana per Vielha per anar amb bici?',context,services,{location:null,period:null,activity:null});
 assert.match(explicitVielha.body,/Vielha/i);
 assert.match(explicitVielha.body,/bicicleta/i);
+
+const futureRun=await answerMeteoQuestion('Puc sortir a córrer dimarts?',context,services,{location:null,period:null,activity:null});
+assert.match(futureRun.title,/dimarts|precaucions/i);
+assert.match(futureRun.facts.join(' '),/pluja 75%/i);
 
 const screenshotCase=await answerMeteoQuestion('quin temps fara per anar amb bici a la vall daran aquest cap de setmana?',context,services,{location:null,period:null,activity:null});
 assert.match(screenshotCase.body,/Vall d’Aran/i);

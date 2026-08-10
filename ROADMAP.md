@@ -67,7 +67,7 @@ Evolucionat a V14.0.0: context de conversa temporal per recordar lloc, període 
 - SEO local: Sant Celoni i Baix Montseny; pàgines específiques útils, no duplicades.
 - Analítica, directoris meteorològics i estudi de Google Business Profile segons requisits.
 
-Base tècnica implementada a V14.0.0: metadades i canòniques per vista, Open Graph i X dinàmics, dades estructurades `WebSite`, `WebPage`, `Dataset` i `BreadcrumbList`, sitemap ampliat i SEO local per Sant Celoni i el Baix Montseny. El 10 d’agost de 2026 es va verificar `fontanillas.cat` per DNS a Search Console, es va processar el sitemap i Google va descobrir 13 URL. V19.1 afegeix mesura local de LCP, CLS, INP i TTFB; les dades de camp arribaran quan Search Console disposi de prou trànsit. No s’activa Google Business Profile ni analítica sense comprovar elegibilitat, identificador i privacitat.
+Base tècnica implementada a V14.0.0: metadades i canòniques per vista, Open Graph i X dinàmics, dades estructurades `WebSite`, `WebPage`, `Dataset` i `BreadcrumbList`, sitemap ampliat i SEO local per Sant Celoni i el Baix Montseny. El 10 d’agost de 2026 es va verificar `fontanillas.cat` per DNS a Search Console, es va processar el sitemap i Google va descobrir 13 URL. V19.1 afegeix mesura local de LCP, CLS, INP i TTFB; V19.1.1 documenta i detecta Cloudflare Web Analytics per obtenir dades agregades de camp. Google Analytics continua desactivat.
 
 ## Milestone 8 — Compartició Premium — Completat
 
@@ -131,7 +131,7 @@ V19 avança la branca de recursos escolars sense convertir el portal en un curs 
 ## Fases pendents després de V19.1
 
 1. Recollir dades de camp de Core Web Vitals quan Search Console disposi de prou trànsit i corregir només els colls d’ampolla observats.
-2. Decidir si cal analítica i, si s’activa, escollir una opció respectuosa amb la privacitat.
+2. Revisar les primeres dades de Cloudflare Web Analytics quan hi hagi prou visites i contrastar-les amb Search Console; Google Analytics continua descartat mentre no aporti una necessitat clara.
 3. Ampliar les proves automàtiques del Worker i el seguiment dels primers avisos push reals.
 4. Crear les xarxes socials conjuntament amb l’usuari com a última gran fase.
 5. Evolucionar Aprendre cap a recursos per escoles o iniciar un centre de notícies meteorològiques verificades.

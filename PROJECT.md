@@ -121,7 +121,7 @@ La quadrícula de calendari del Centre de Dades utilitza dues columnes equivalen
 
 OneSignal es carrega dinàmicament només quan `oneSignalAppId` és present. El panell separa la configuració pública de la del Worker i comprova la base de publicació. `docs/SEARCH-CONSOLE-ACTIVACIO.md`, `docs/RENDIMENT-I-PUBLICACIO.md` i `social/` deixen definits els passos que depenen de comptes externs sense exposar secrets ni activar serveis abans d’hora.
 
-V19.1 amplia el diagnòstic local amb `PerformanceObserver`. El panell mostra LCP, CLS, INP i TTFB de la càrrega actual, interpreta els llindars recomanats i incorpora els valors al diagnòstic copiable. Aquesta mesura no instal·la analítica, no crea galetes i no envia les mètriques fora del navegador.
+V19.1 amplia el diagnòstic local amb `PerformanceObserver`. El panell mostra LCP, CLS, INP i TTFB de la càrrega actual, interpreta els llindars recomanats i incorpora els valors al diagnòstic copiable. V19.1.1 hi afegeix la detecció del beacon de Cloudflare Web Analytics, activat des de Cloudflare per obtenir dades agregades de camp sense incorporar Google Analytics.
 
 ## Normes de canvi
 

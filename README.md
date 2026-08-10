@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V19.1.0
+# Observatori Meteorològic Fontanillas — V19.1.1
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V19.1 completa Search Console i OneSignal, actualitza el diagnòstic operatiu i incorpora Core Web Vitals locals sense activar analítica externa.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V19.1.1 estabilitza Meteo IA i l’administració, completa la detecció de Cloudflare Web Analytics i manté Search Console, OneSignal i Core Web Vitals operatius.
 
 ## Estat actual
 
@@ -20,7 +20,7 @@ Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V19.1 co
 - Notificacions actives per fenomen i nivell mínim, amb web i Worker verificats i activació documentada a `docs/PUSH-ACTIVACIO.md`.
 - Àrea «Aprendre» amb explicacions breus, interaccions accessibles i fonts de divulgació.
 - Privacitat publicada i control antiabús del formulari amb identificadors irreversibles.
-- OneSignal operatiu, Search Console verificat per DNS, sitemap processat i LCP, CLS, INP i TTFB locals visibles al panell administratiu.
+- OneSignal operatiu, Search Console verificat per DNS, sitemap processat, Cloudflare Web Analytics actiu i LCP, CLS, INP i TTFB locals visibles al panell administratiu.
 - Plantilles editorials i convencions UTM preparades a `social/`, sense connectar cap compte.
 
 ## Estructura activa
@@ -47,11 +47,11 @@ Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas 
 
 ## Worker
 
-El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V19.1 també s’ha de desplegar aquest Worker perquè web i servidor mostrin la mateixa versió; no necessita cap migració de base de dades ni tornar a crear els secrets.
+El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V19.1.1 també s’ha de desplegar aquest Worker perquè web i servidor mostrin la mateixa versió; no necessita cap migració de base de dades ni tornar a crear els secrets.
 
 ## Configuració
 
-La configuració de frontend és a `src/core/config.js`. Inclou URL de l’API, intervals d’actualització, coordenades, webcam i placeholders de GA4/OneSignal.
+La configuració de frontend és a `src/core/config.js`. Inclou URL de l’API, intervals d’actualització, coordenades, webcam, OneSignal i el camp opcional de GA4, que continua buit. Cloudflare Web Analytics s’activa des de Cloudflare i no necessita cap clau dins del projecte.
 
 El panell `/administracio.html` necessita el secret `ADMIN_TOKEN` al Worker. La guia d’activació i les garanties de seguretat són a `admin/README.md`.
 

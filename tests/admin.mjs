@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import worker from '../worker/index.js';
-import { overallState, performanceRating, serviceState } from '../src/features/admin.js';
+import { analyticsServiceState, overallState, performanceRating, serviceState } from '../src/features/admin.js';
 
 assert.equal(serviceState(true).label,'Configurat');
 assert.equal(serviceState(false).className,'is-muted');
@@ -10,6 +10,9 @@ assert.equal(performanceRating('lcp',2500),'good');
 assert.equal(performanceRating('lcp',2501),'needs-improvement');
 assert.equal(performanceRating('cls',0.26),'poor');
 assert.equal(performanceRating('inp',null),'pending');
+assert.equal(analyticsServiceState({cloudflareBeacon:true}).label,'Cloudflare actiu');
+assert.equal(analyticsServiceState({googleMeasurementId:'G-TEST'}).provider,'google');
+assert.equal(analyticsServiceState().provider,'none');
 
 const context={waitUntil(){}};
 const unconfigured=await worker.fetch(new Request('https://fonta-meteo.example/admin/status',{headers:{Origin:'https://meteo.fontanillas.cat',Authorization:'Bearer '+('a'.repeat(32))}}),{},context);
@@ -47,7 +50,7 @@ global.fetch=originalFetch;
 assert.equal(authorized.status,200);
 assert.match(authorized.headers.get('Cache-Control'),/no-store/);
 const adminPayload=await authorized.json();
-assert.equal(adminPayload.worker.version,'19.1.0');
+assert.equal(adminPayload.worker.version,'19.1.1');
 assert.equal(adminPayload.station.ok,true);
 assert.equal(adminPayload.database.observations,1200);
 assert.equal(adminPayload.integrations.database,true);

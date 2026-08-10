@@ -1,5 +1,15 @@
 # Changelog
 
+## V19.1.1 — 2026-08-10
+
+- Corregida l’alçada desproporcionada del bloc «Context actiu» de Meteo IA: cada part del xat ocupa ara la seva fila correcta i «Esborrar context» es manté compacte també al mòbil.
+- Meteo IA compara dies d’un període i respon directament quin serà més plujós, ventós, càlid, fred o favorable.
+- Les recomanacions per córrer, anar amb bicicleta, fer excursions o activitats familiars utilitzen ara la data o el període demanat, en lloc de valorar sempre el dia actual.
+- Millorades les preguntes encadenades: el lloc, el període i l’activitat continuen aplicant-se a comparacions i consultes concretes posteriors.
+- Fixada de manera robusta la capçalera d’administració, amb compensació d’espai i fons opac a ordinador i mòbil.
+- Integrada la detecció de Cloudflare Web Analytics al panell, actualitzada la política CSP i documentada l’analítica agregada a Privacitat.
+- Mantinguts els contractes d’API, D1, Worker, OneSignal, PWA, compartir i comparador.
+
 ## V19.1.0 — 2026-08-10
 
 - Confirmada l’activació completa de OneSignal: subscripcions web verificades i credencials del Worker reconegudes pel panell administratiu.

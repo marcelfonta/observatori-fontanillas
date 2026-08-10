@@ -109,7 +109,48 @@ function rangeAnswer(daily,indices,place='Sant Celoni',label='la setmana que ve'
   return response(`Resum de ${label}`,body,{level:rainChance>=70||gust>=50?'caution':'info',facts,sources:[source('Open‑Meteo',`${place} · horitzó de 14 dies`)],followups:['Quin dia plourà més?','I divendres concretament?']});
 }
 
+function rankedDayAnswer(daily,question,place='Sant Celoni',extra=''){
+  const q=normalize(question);
+  const rainIntent=/(?:quin|que) dia.*(?:plour|mes pluja)|(?:mes pluja|ploura mes).*(?:quin|que) dia/.test(q);
+  const windIntent=/(?:quin|que) dia.*(?:mes vent|mes ventos|ratx)/.test(q);
+  const warmIntent=/(?:quin|que) dia.*(?:mes calor|mes calid|mes temperatura)/.test(q);
+  const coldIntent=/(?:quin|que) dia.*(?:mes fred|mes baixa temperatura)/.test(q);
+  const bestIntent=/(?:quin|que) dia.*(?:millor|mes bo|ideal|recomanable)/.test(q);
+  if(!rainIntent&&!windIntent&&!warmIntent&&!coldIntent&&!bestIntent)return null;
+  const period=requestedPeriod(question,daily);
+  const fallback=(daily?.time||[]).map((_,index)=>index).slice(0,7);
+  const indices=period.type==='range'?period.indices:period.type==='day'?[period.index]:fallback;
+  const days=indices.map(index=>forecastDayFromDaily(daily,index)).filter(Boolean);
+  if(!days.length)return response('No hi ha prou horitzó','No tinc dies disponibles dins del període demanat per poder-los comparar.',{sources:[source('Open‑Meteo','Horitzó insuficient')]});
+  const by=(selector,direction='max')=>[...days].sort((a,b)=>direction==='min'?selector(a)-selector(b):selector(b)-selector(a))[0];
+  let selected,reason,title;
+  if(rainIntent){
+    selected=by(day=>(day.rain??0)*100+(day.rainChance??0));
+    title=`El dia amb més pluja prevista és ${dayTitle(selected.date)}`;
+    reason=`És el dia amb més acumulació prevista (${fmt(selected.rain)} mm) i una probabilitat màxima del ${fmt(selected.rainChance,0)}%.`;
+  }else if(windIntent){
+    selected=by(day=>day.gust??0);title=`El dia més ventós és ${dayTitle(selected.date)}`;reason=`La ratxa màxima prevista arriba als ${fmt(selected.gust,0)} km/h.`;
+  }else if(warmIntent||coldIntent){
+    selected=by(day=>day.max??(coldIntent?Infinity:-Infinity),coldIntent?'min':'max');title=`El dia ${coldIntent?'més fred':'més càlid'} és ${dayTitle(selected.date)}`;reason=`La temperatura prevista va de ${fmt(selected.min)} a ${fmt(selected.max)} °C.`;
+  }else{
+    const activity=activityFromQuestion(question);
+    const score=day=>{
+      const comfort=Math.abs(((day.max??22)+(day.min??16))/2-20);
+      const rainPenalty=(day.rainChance??0)*.65+(day.rain??0)*9;
+      const windPenalty=(day.gust??0)*(activity?.key==='bike'?1.15:.7);
+      const heatPenalty=Math.max(0,(day.max??20)-29)*7;
+      return rainPenalty+windPenalty+comfort+heatPenalty;
+    };
+    selected=by(score,'min');title=`El dia més favorable és ${dayTitle(selected.date)}`;reason=`És el millor equilibri del període entre pluja (${fmt(selected.rainChance,0)}%), ratxes (${fmt(selected.gust,0)} km/h) i temperatura (${fmt(selected.min)}–${fmt(selected.max)} °C).`;
+  }
+  const condition=weatherCodes[selected.code]||'temps variable';
+  const facts=days.map(day=>`${shortDay(day.date)} · ${weatherCodes[day.code]||'variable'} · ${fmt(day.rain)} mm · ratxa ${fmt(day.gust,0)} km/h`);
+  const selectedWeekday=new Intl.DateTimeFormat('ca-ES',{weekday:'long'}).format(dateAt(selected.date));
+  return response(title,`A ${place}, s’espera ${condition}. ${reason}${extra}`,{level:(selected.rainChance??0)>=70||(selected.gust??0)>=50?'caution':'info',facts,sources:[source('Open‑Meteo',`${place} · comparació del període`)],followups:[`I ${selectedWeekday} concretament?`,'Quin dia farà més vent?']});
+}
+
 function forecastFromDaily(daily,question,place='Sant Celoni',extra=''){
+  const ranked=rankedDayAnswer(daily,question,place,extra);if(ranked)return ranked;
   const period=requestedPeriod(question,daily);
   if(period.type==='day')return dailyAnswer(daily,period.index,place,extra);
   if(period.type==='range')return rangeAnswer(daily,period.indices,place,period.label,extra);
@@ -222,17 +263,22 @@ function environmentAnswer(context){
 function recommendationAnswer(context,question){
   const q=normalize(question);
   const activity=q.includes('bicicleta')||q.includes('bici')?'anar amb bicicleta':q.includes('correr')||q.includes('running')?'córrer':q.includes('excurs')||q.includes('muntanya')?'fer una excursió':q.includes('nens')||q.includes('famil')?'fer una activitat familiar':'fer activitat a l’exterior';
-  const alerts=activeAlerts(context);const day=forecastDay(context,0);const current=context.current||{};const env=context.environment||{};
+  const alerts=activeAlerts(context);const daily=context.forecast?.daily;const period=requestedPeriod(question,daily);const indices=period.type==='range'?period.indices:period.type==='day'?[period.index]:[0];
+  const days=indices.map(index=>forecastDayFromDaily(daily,index)).filter(Boolean);const day=days[0]||forecastDay(context,0);const current=context.current||{};const env=context.environment||{};
+  const future=indices.some(index=>index>0)||period.type==='range';const label=period.type==='range'?period.label:period.type==='day'?period.label:'ara';
+  const maxRain=Math.max(...(days.length?days:[day]).filter(Boolean).map(item=>item.rainChance??0));const maxGust=Math.max(...(days.length?days:[day]).filter(Boolean).map(item=>item.gust??0));const maxTemp=Math.max(...(days.length?days:[day]).filter(Boolean).map(item=>item.max??-Infinity));const maxUv=Math.max(...(days.length?days:[day]).filter(Boolean).map(item=>item.uv??0));
   const blockers=[];const cautions=[];
   if(alerts?.count)blockers.push(`${alerts.count} ${alerts.count===1?'avís oficial actiu':'avisos oficials actius'}`);
-  if((day?.rainChance??0)>=70)cautions.push(`${fmt(day.rainChance,0)}% de probabilitat de pluja`);
-  if((day?.gust??n(current.windGust)??0)>=45)cautions.push(`ratxes de fins a ${fmt(day?.gust??current.windGust,0)} km/h`);
-  if((n(current.temperature)??day?.max??0)>=32)cautions.push('calor marcada');
-  if((n(env.uv)??day?.uv??0)>=7)cautions.push(`UV ${fmt(n(env.uv)??day?.uv,0)}`);
+  if(maxRain>=70)cautions.push(`${fmt(maxRain,0)}% de probabilitat de pluja`);
+  if((future?maxGust:(day?.gust??n(current.windGust)??0))>=45)cautions.push(`ratxes de fins a ${fmt(future?maxGust:(day?.gust??current.windGust),0)} km/h`);
+  if((future?maxTemp:(n(current.temperature)??day?.max??0))>=32)cautions.push('calor marcada');
+  if((future?maxUv:(n(env.uv)??day?.uv??0))>=7)cautions.push(`UV ${fmt(future?maxUv:(n(env.uv)??day?.uv),0)}`);
   if((n(env.european_aqi)??0)>60)cautions.push('qualitat de l’aire desfavorable');
-  if(blockers.length)return response(`No recomano ${activity} sense revisar els avisos`,`Hi ha ${blockers.join(' i ')}. Prioritza les instruccions d’AEMET, Meteocat i Protecció Civil; si l’activitat és de muntanya, ajorna-la quan l’avís afecti el fenomen o la zona.`,{level:'warning',facts:cautions,sources:[source('AEMET · Meteocat','Avisos oficials'),source('Estació i predicció','Context meteorològic actual')]});
-  if(cautions.length)return response(`Possible, però amb precaucions`,`Per ${activity}, tingues en compte ${cautions.join(', ')}. Adapta l’horari, porta aigua i protecció, i revisa el radar just abans de sortir.`,{level:'caution',sources:[source('Sensor Fontanillas',`Lectura de les ${timeLabel(current.updated)}`),source('Open‑Meteo','Predicció d’avui'),source('AEMET · Meteocat','Sense avisos actius en la darrera comprovació')]});
-  return response(`Condicions favorables per ${activity}`,`Les dades disponibles no mostren ara cap factor meteorològic destacat. Tot i així, comprova el radar abans de sortir i adapta l’activitat a les condicions reals del lloc.`,{level:'safe',sources:[source('Sensor Fontanillas',`Lectura de les ${timeLabel(current.updated)}`),source('Open‑Meteo','Predicció d’avui'),source('AEMET · Meteocat','Darrera comprovació')]});
+  const facts=days.map(item=>`${shortDay(item.date)} · ${fmt(item.max,0)}°/${fmt(item.min,0)}° · pluja ${fmt(item.rainChance,0)}% · ratxa ${fmt(item.gust,0)} km/h`);
+  const forecastSource=source('Open‑Meteo',future?`Predicció per ${label}`:'Predicció d’avui');
+  if(blockers.length)return response(`No recomano ${activity} sense revisar els avisos`,`Hi ha ${blockers.join(' i ')}. Prioritza les instruccions d’AEMET, Meteocat i Protecció Civil; si l’activitat és de muntanya, ajorna-la quan l’avís afecti el fenomen o la zona.`,{level:'warning',facts:[...cautions,...facts],sources:[source('AEMET · Meteocat','Avisos oficials'),forecastSource]});
+  if(cautions.length)return response(`Possible ${label}, però amb precaucions`,`Per ${activity}, tingues en compte ${cautions.join(', ')}. Adapta l’horari, porta aigua i protecció, i revisa el radar just abans de sortir.`,{level:'caution',facts,sources:[forecastSource,source('AEMET · Meteocat','Sense avisos actius en la darrera comprovació')],followups:['Quin dia farà millor?','Quin dia plourà més?']});
+  return response(`Condicions favorables per ${activity} ${label}`,`Les dades disponibles no mostren cap factor meteorològic destacat per al període demanat. Tot i així, comprova el radar abans de sortir i adapta l’activitat a les condicions reals del lloc.`,{level:'safe',facts,sources:[forecastSource,source('AEMET · Meteocat','Darrera comprovació')],followups:['Quin dia farà millor?','Hi ha avisos actius?']});
 }
 
 async function comparisonAnswer(services){
@@ -326,7 +372,7 @@ async function localityAnswer(name,services,question,{memory=null,activity=null}
   }
 }
 
-function shouldUseConversation(q){return /\bhi\b|alla|aquella zona|quin temps|temps fa|temps fara|previsi|plour|temperatura|vent|calor|fred|humitat/.test(q);}
+function shouldUseConversation(q){return /\bhi\b|alla|aquella zona|quin temps|quin dia|temps fa|temps fara|previsi|plour|temperatura|vent|calor|fred|humitat|avui|dema|setmana|cap de setmana|dilluns|dimarts|dimecres|dijous|divendres|dissabte|diumenge|concretament/.test(q);}
 
 export async function answerMeteoQuestion(question,context=state,services={fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},memory=null){
   const q=normalize(question);
@@ -351,7 +397,7 @@ export async function answerMeteoQuestion(question,context=state,services={fetch
   if(/compar|estacio|mes calor|mes fred|on fa/.test(q))return comparisonAnswer(services);
   if(/aire|contamin|pm2|pm10|pol len|pollen|uv|radiacio/.test(q))return environmentAnswer(context);
   if(/historic|evoluc|canviat|ultimes 24/.test(q))return historyAnswer(context);
-  if(/plour|previsi|dema|avui|temps fara|setmana|cap de setmana|dilluns|dimarts|dimecres|dijous|divendres|dissabte|diumenge/.test(q))return forecastAnswer(context,resolvedQuestion,services);
+  if(/plour|previsi|dema|avui|temps fara|setmana|cap de setmana|dilluns|dimarts|dimecres|dijous|divendres|dissabte|diumenge|quin dia.*(?:millor|vent|calor|fred)/.test(q))return forecastAnswer(context,resolvedQuestion,services);
   if(/temperatura|temps fa|ara|humitat|vent|pressio|pluja actual/.test(q))return currentAnswer(context);
   return response('Et puc ajudar amb el temps i entendre la meteorologia','Pregunta’m per la situació actual, la predicció, els avisos, l’històric, les efemèrides, les fonts fiables o conceptes com una DANA, els fronts, les isòbares i els models.',{sources:[source('Meteo IA','Interpretació local al navegador'),source('AEMET · MeteoGlosario','Consulta didàctica oficial')],followups:['Què és una DANA?','On puc consultar dades meteorològiques oficials?','Efemèrides de l’estació']});
 }
