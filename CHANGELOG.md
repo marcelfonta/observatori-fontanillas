@@ -1,5 +1,11 @@
 # Changelog
 
+## V19.0.4 — 2026-08-10
+
+- El permís de notificacions es demana directament al navegador des del clic de l’usuari, abans de completar la subscripció amb OneSignal.
+- Afegida diferenciació entre permís pendent, denegat i encara no sincronitzat amb OneSignal.
+- Millorat el missatge de recuperació quan Firefox té les notificacions bloquejades per al lloc.
+
 ## V19.0.3 — 2026-08-10
 
 - L'activació d'avisos mostra ara cada pas dins la finestra: permís del navegador, creació de la subscripció i desament de preferències.

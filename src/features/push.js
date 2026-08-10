@@ -147,12 +147,15 @@ async function enablePush(){
     const notifications=OneSignalRef.Notifications;
     const subscription=OneSignalRef.User?.PushSubscription;
     if(!notifications?.isPushSupported?.())throw new Error('push-not-supported');
-    if(!notifications.permission){
+    if(typeof Notification==='undefined')throw new Error('push-not-supported');
+    let browserPermission=Notification.permission;
+    if(browserPermission==='default'){
       showPushProgress('Esperant el permís del navegador…');
-      void Promise.resolve(notifications.requestPermission()).catch(()=>{});
-      const permissionGranted=await waitUntil(()=>Boolean(notifications.permission));
-      if(!permissionGranted)throw new Error('permission-not-granted');
+      browserPermission=await Notification.requestPermission();
     }
+    if(browserPermission!=='granted')throw new Error(browserPermission==='denied'?'permission-denied':'permission-not-granted');
+    const oneSignalPermissionReady=await waitUntil(()=>Boolean(notifications.permission),5000);
+    if(!oneSignalPermissionReady)throw new Error('permission-not-synced');
     if(!await optedIn()){
       showPushProgress('Creant la subscripció d’avisos…');
       await subscription?.optIn?.();
@@ -166,9 +169,9 @@ async function enablePush(){
     window.observatoriTrack?.('push_subscribed');
   } catch(error){
     console.warn('No s’ha pogut activar Web Push.',error);
-    const denied=error?.message==='permission-not-granted';
+    const denied=['permission-not-granted','permission-denied'].includes(error?.message);
     showPushProgress(denied
-      ? 'Firefox no ha concedit el permís. Prem el cadenat de la barra d’adreces, permet les notificacions i torna-ho a provar.'
+      ? 'Firefox té les notificacions bloquejades per a aquesta web. Restableix el permís a Configuració → Privadesa i seguretat → Notificacions i torna-ho a provar.'
       : 'No s’ha pogut completar l’activació. Revisa els permisos de notificacions del navegador i torna-ho a provar.',true);
     setState('Activar avisos','L’activació està pendent; revisa el permís del navegador',false,false);
   } finally { setPushActionState(false); }

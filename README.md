@@ -1,4 +1,4 @@
-# Observatori Meteorològic Fontanillas — V19.0.3
+# Observatori Meteorològic Fontanillas — V19.0.4
 
 Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V19 estabilitza el Centre de Dades, incorpora una àrea educativa, privacitat explícita i deixa preparades Search Console, OneSignal, rendiment i la futura fase de xarxes socials.
 
