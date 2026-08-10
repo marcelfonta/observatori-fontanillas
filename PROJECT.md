@@ -54,11 +54,13 @@ Totes les subpàgines del portal comparteixen el component visual `portal-view-h
 
 La pàgina principal d’avisos demana com a màxim cinc episodis. `historial-avisos.html` consulta sota demanda fins a cent registres del mateix endpoint i permet filtrar-los sense duplicar dades ni crear un segon arxiu.
 
-## Identitat visual V12
+## Identitat visual V12.2
 
 El menú lateral utilitza un únic sistema de pictogrames SVG de línia, amb el mateix gruix, mida i color. Són codi local, no depenen de fonts d’icones ni de serveis externs i mantenen etiquetes textuals visibles.
 
 V12.1 fixa «Observatori» com a nom curt instal·lat i incorpora `assets/logos/BRAND-GUIDE.md` com a font de criteri per al símbol, colors, tipografies i pictogrames.
+
+V12.2 tanca el sistema amb fonts vectorials del símbol i la composició horitzontal, i genera un paquet PNG complet i reproduïble des de `scripts/build-brand-assets.py`. Les icones normals i maskable tenen fitxers diferents i una zona segura real. El manifest utilitza una paleta més lluminosa i exposa accessos ràpids a Estació, Avisos i Radar. Totes les pàgines especialitzades comparteixen la mateixa targeta social, sense xifres en directe que puguin quedar desactualitzades.
 
 ## Normes de canvi
 

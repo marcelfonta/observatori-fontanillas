@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V12.1.0
+# Observatori Meteorològic Fontanillas — V12.2.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V12.1 estabilitza els mapes de llamps i risc d’incendi, connecta l’UV amb el sensor propi, compacta el comparador i continua el Milestone 5 amb la guia d’identitat i el nom curt de la PWA.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V12.2 completa el Milestone 5 amb una identitat visual instal·lable, clara i més lluminosa: símbol vectorial, icones PWA normals i maskable, favicon, Apple Touch Icon i targeta social pròpia.
 
 ## Estat actual
 
@@ -12,6 +12,7 @@ Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V12.1 es
 - Centre de Dades amb resums, extrems, efemèrides i exportacions CSV, Excel, JSON i PDF.
 - Comparador amb mapa del Baix Montseny i cinc variables actuals o històriques.
 - Avisos AEMET/Meteocat, comparativa, Worker, PWA, compartir i push preservats.
+- Marca coherent en web, instal·lació i compartició, amb accessos ràpids de la PWA a Estació, Avisos i Radar.
 
 ## Estructura activa
 
@@ -49,6 +50,6 @@ La configuració de frontend és a `src/core/config.js`. Inclou URL de l’API, 
 node tests/smoke.mjs
 ```
 
-La prova comprova navegació, selectors crítics, PWA, Centre de Dades, peus i absència de duplicacions de «Tornar amunt».
+La prova comprova navegació, selectors crítics, PWA, icones i metadades de marca, Centre de Dades, peus i absència de duplicacions de «Tornar amunt».
 
 Consulta `PROJECT.md`, `ROADMAP.md` i `CHANGELOG.md` per a les normes, l’ordre de les fases i el detall de la versió.

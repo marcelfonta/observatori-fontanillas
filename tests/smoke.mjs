@@ -8,7 +8,7 @@ const portalShell=await readFile(resolve(root,'src/features/portal-shell.js'),'u
 const pages=['inici','estacio','prediccio','cel','avisos','radar','webcams','centre-dades','medi-ambient','contacte'];
 for(const page of pages){if(!portalShell.includes(`'${page}'`))throw new Error(`Falta l’enllaç de pàgina: ${page}`);}
 for(const id of ['quick-alert-link','official-alert-list','push-alert-button','alertInviteModal','alert-history-list','radar-map','radar-panel-lightning','contact-form','hero-webcam-image','station-page-title','cel-nocturn','nearby-webcams-title','centre-dades-overview','data-summary-samples','data-export-status','environment-aqi','environment-pm25','environment-pm25-level','environment-viewers-title','environment-uv-source','pollen-grass']){if(!html.includes(`id="${id}"`))throw new Error(`Falta el selector crític: ${id}`);}
-for(const file of ['comparativa.html','metodologia.html','historial-avisos.html','service-worker.js','site.webmanifest','worker/index.js','src/features/share.js','src/features/portal-router.js','src/features/portal-shell.js','src/features/portal-static.js','src/features/data-center.js','src/features/environment.js','src/features/alert-history-page.js','css/portal.css','assets/logos/BRAND-GUIDE.md','PROJECT.md','ROADMAP.md','CHANGELOG.md'])await access(resolve(root,file));
+for(const file of ['comparativa.html','metodologia.html','historial-avisos.html','service-worker.js','site.webmanifest','worker/index.js','src/features/share.js','src/features/portal-router.js','src/features/portal-shell.js','src/features/portal-static.js','src/features/data-center.js','src/features/environment.js','src/features/alert-history-page.js','css/portal.css','assets/logos/BRAND-GUIDE.md','assets/logos/observatori-symbol.svg','assets/logos/observatori-lockup.svg','assets/icons/favicon-16.png','assets/icons/favicon-32.png','assets/icons/apple-touch-icon.png','assets/icons/icon-192.png','assets/icons/icon-512.png','assets/icons/icon-maskable-192.png','assets/icons/icon-maskable-512.png','assets/images/observatori-fontanillas-social-v12-2.png','scripts/build-brand-assets.py','PROJECT.md','ROADMAP.md','CHANGELOG.md'])await access(resolve(root,file));
 const app=await readFile(resolve(root,'src/app.js'),'utf8');
 if(!app.includes("initPortal();")||!app.includes("initShare();")||!app.includes("initDataCenter();")||!app.includes("renderDataCenter(latestHistory,latest)")||!app.includes("initEnvironment")||!app.includes("updateEnvironmentStation(latest)"))throw new Error('El portal, la compartició, el Centre de Dades o Medi Ambient no s’inicialitzen.');
 const worker=await readFile(resolve(root,'service-worker.js'),'utf8');
@@ -58,6 +58,17 @@ if(!backend.includes('/v3/location/near')||!backend.includes('discoverComparison
 if(!comparison.includes('Com canvia el temps al Baix Montseny?'))throw new Error('El títol del comparador no s’ha aclarit.');
 const manifest=JSON.parse(await readFile(resolve(root,'site.webmanifest'),'utf8'));
 if(manifest.short_name!=='Observatori')throw new Error('El nom curt de la PWA no segueix la guia de marca.');
+if(manifest.theme_color!=='#286d55'||manifest.background_color!=='#205846')throw new Error('La PWA no utilitza la paleta lluminosa de marca.');
+const anyIcons=manifest.icons.filter(icon=>icon.purpose==='any').map(icon=>icon.src);
+const maskableIcons=manifest.icons.filter(icon=>icon.purpose==='maskable').map(icon=>icon.src);
+if(anyIcons.length!==2||maskableIcons.length!==2||maskableIcons.some(icon=>anyIcons.includes(icon)))throw new Error('Les icones maskable no estan separades correctament de les normals.');
+if(!['Estació en directe','Avisos oficials','Radar i llamps'].every(name=>manifest.shortcuts?.some(shortcut=>shortcut.name===name)))throw new Error('Falten accessos ràpids de la PWA.');
+const pngDimensions=async file=>{const data=await readFile(resolve(root,file));if(data.toString('ascii',1,4)!=='PNG')throw new Error(`${file}: no és un PNG.`);return [data.readUInt32BE(16),data.readUInt32BE(20)];};
+for(const [file,size] of [['assets/icons/favicon-16.png',16],['assets/icons/favicon-32.png',32],['assets/icons/apple-touch-icon.png',180],['assets/icons/icon-192.png',192],['assets/icons/icon-512.png',512],['assets/icons/icon-maskable-192.png',192],['assets/icons/icon-maskable-512.png',512]]){const [width,height]=await pngDimensions(file);if(width!==size||height!==size)throw new Error(`${file}: mida ${width}×${height}, esperada ${size}×${size}.`);}
+const [socialWidth,socialHeight]=await pngDimensions('assets/images/observatori-fontanillas-social-v12-2.png');
+if(socialWidth!==1200||socialHeight!==630)throw new Error('La targeta social no fa 1200 × 630 px.');
+for(const file of ['index.html','comparativa.html','metodologia.html','historial-avisos.html']){const page=await readFile(resolve(root,file),'utf8');if(!page.includes('observatori-fontanillas-social-v12-2.png')||!page.includes('assets/icons/favicon-16.png')||!page.includes('apple-mobile-web-app-title'))throw new Error(`${file}: metadades de marca incompletes.`);}
+if(!worker.includes("'/assets/icons/icon-maskable-512.png'")||!worker.includes("'/assets/images/observatori-fontanillas-social-v12-2.png'"))throw new Error('La PWA no desa els nous recursos de marca.');
 const headers=await readFile(resolve(root,'_headers'),'utf8');
 if(!headers.includes('https://maps.blitzortung.org'))throw new Error('La política de seguretat bloquejaria Blitzortung.');
-console.log('Smoke test V12.1: correcte');
+console.log('Smoke test V12.2: correcte');

@@ -1,5 +1,21 @@
 # Changelog
 
+## V12.2.0 — 2026-08-10
+
+### Branding · Milestone 5 completat
+
+- Creats el símbol vectorial i la composició horitzontal oficials de l’Observatori.
+- Regenerats favicon, Apple Touch Icon i icones PWA de 192 i 512 px amb una paleta més lluminosa i llegible.
+- Separades les icones maskable de les normals, amb zona segura pròpia perquè Android no retalli el Montseny, el sol ni la línia de dades.
+- Nova targeta social de 1200 × 630 px, més clara i sense lectures meteorològiques fictícies o desactualitzables.
+- Metadades Open Graph i X coherents a Inici, Comparar, Historial d’avisos i Metodologia.
+- Afegits accessos ràpids de la PWA a Estació, Avisos i Radar.
+- Guia de marca ampliada amb recursos mestres, paleta d’icones i criteri explícit d’evitar imatges excessivament fosques.
+
+### Preservat
+
+- Dades, API i Worker sense canvis; avisos AEMET/Meteocat, radar, Medi Ambient, Centre de Dades, comparativa, push i compartir continuen intactes.
+
 ## V12.1.0 — 2026-08-10
 
 ### Corregit

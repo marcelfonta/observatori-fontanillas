@@ -36,7 +36,7 @@ Implementat a V10.0.0 amb el contracte `/stations` existent: mapa Leaflet del Ba
 
 Completat i estabilitzat a V12.1.0: índex europeu general i per contaminant amb interpretació baixa/moderada/alta, PM10, PM2,5, NO₂, O₃, CO, SO₂ i cinc tipus de pol·len amb CAMS/Open‑Meteo; l’UV prové prioritàriament del sensor de Fontanillas. La pàgina mostra el mapa oficial diari i lleuger del Pla Alfa, el visor de sequera de l’ACA i el mapa d’albiraments de MedusApp (UPV i Universitat d’Alacant). PlatgesCat i Meduseo es mantenen com a fonts complementàries externes.
 
-## Milestone 5 — Branding i identitat visual — En curs (iniciat a V12)
+## Milestone 5 — Branding i identitat visual — Completat
 
 - Logotip aprovat, opció A: Montseny, sol i línia meteorològica minimalista.
 - Favicon, Apple Touch Icon, icones Android/PWA/maskable, splash i Open Graph coherents.
@@ -45,7 +45,9 @@ Completat i estabilitzat a V12.1.0: índex europeu general i per contaminant amb
 
 Primera evolució implementada a V12.0.0: substitució dels símbols tipogràfics poc clars del menú per un sistema de pictogrames SVG coherent, accessible i escalable.
 
-Segona evolució implementada a V12.1.0: guia breu d’identitat a `assets/logos/BRAND-GUIDE.md` i nom curt de la PWA unificat com a «Observatori». Continua pendent la producció final del paquet d’icones maskable i la revisió de les imatges socials.
+Segona evolució implementada a V12.1.0: guia breu d’identitat a `assets/logos/BRAND-GUIDE.md` i nom curt de la PWA unificat com a «Observatori».
+
+Milestone completat a V12.2.0: símbol vectorial i versió horitzontal reproduïbles, favicons de 16 i 32 px, Apple Touch Icon, icones PWA normals i maskable separades, colors d’instal·lació més lluminosos, accessos ràpids a Estació/Avisos/Radar i nova targeta social de 1200 × 630 px sense dades meteorològiques inventades.
 
 ## Milestone 6 — Meteo IA
 
