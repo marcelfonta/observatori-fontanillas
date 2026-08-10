@@ -1,5 +1,12 @@
 # Changelog
 
+## V19.0.5 — 2026-08-10
+
+- Corregit l'error real de Firefox durant la instal·lació de `/OneSignalSDKWorker.js`.
+- OneSignal i la PWA utilitzen ara un únic Service Worker d'arrel que conserva tant les notificacions com el funcionament fora de línia.
+- Evitat que els dos registres de Service Worker es reemplacin mútuament.
+- Afegida política sense memòria cau per al Worker combinat, facilitant-ne les actualitzacions.
+
 ## V19.0.4 — 2026-08-10
 
 - El permís de notificacions es demana directament al navegador des del clic de l’usuari, abans de completar la subscripció amb OneSignal.

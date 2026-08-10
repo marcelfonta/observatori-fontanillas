@@ -210,7 +210,7 @@ if(appId){
   window.OneSignalDeferred.push(async function(OneSignal){
     OneSignalRef=OneSignal;
     try {
-      await OneSignal.init({ appId, serviceWorkerPath:'push/onesignal/OneSignalSDKWorker.js', serviceWorkerParam:{scope:'/push/onesignal/'}, autoResubscribe:true, notificationClickHandlerMatch:'origin', notificationClickHandlerAction:'focus' });
+      await OneSignal.init({ appId, serviceWorkerPath:'/OneSignalSDKWorker.js', serviceWorkerParam:{scope:'/'}, autoResubscribe:true, notificationClickHandlerMatch:'origin', notificationClickHandlerAction:'focus' });
       sdkReady=true;
       window.clearTimeout(sdkReadyTimer);
       OneSignal.User?.PushSubscription?.addEventListener?.('change',refresh);

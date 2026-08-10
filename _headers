@@ -25,6 +25,9 @@
 /service-worker.js
   Cache-Control: no-cache, must-revalidate
 
+/OneSignalSDKWorker.js
+  Cache-Control: no-cache, must-revalidate
+
 /administracio.html
   Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow, noarchive

@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=file=>readFile(resolve(root,file),'utf8');
-const [html,css,dataCenter,push,worker,privacy,admin,sitemap,config,headers]=await Promise.all([
-  read('index.html'),read('css/portal.css'),read('src/features/data-center.js'),read('src/features/push.js'),read('worker/index.js'),read('privacitat.html'),read('administracio.html'),read('sitemap.xml'),read('src/core/config.js'),read('_headers')
+const [html,css,dataCenter,push,pwa,pushWorker,worker,privacy,admin,sitemap,config,headers]=await Promise.all([
+  read('index.html'),read('css/portal.css'),read('src/features/data-center.js'),read('src/features/push.js'),read('src/features/pwa.js'),read('OneSignalSDKWorker.js'),read('worker/index.js'),read('privacitat.html'),read('administracio.html'),read('sitemap.xml'),read('src/core/config.js'),read('_headers')
 ]);
 assert.match(css,/data-center-grid--calendar \{ grid-template-columns: repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(css,/@media \(max-width: 1200px\)/);
@@ -28,6 +28,10 @@ assert.match(push,/setPushActionState/);
 assert.match(push,/Notification\.requestPermission/);
 assert.match(push,/Notification\.permission/);
 assert.match(push,/permission-denied/);
+assert.match(push,/serviceWorkerPath:'\/OneSignalSDKWorker\.js'/);
+assert.match(pwa,/register\('\/OneSignalSDKWorker\.js'/);
+assert.match(pushWorker,/OneSignalSDK\.sw\.js/);
+assert.match(pushWorker,/service-worker\.js/);
 assert.match(admin,/admin-publication-pill/);
 assert.match(sitemap,/page=aprendre/);
 assert.match(sitemap,/privacitat\.html/);

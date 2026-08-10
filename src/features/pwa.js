@@ -19,7 +19,9 @@ async function checkForUpdate() {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
-      registration = await navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' });
+      // OneSignal i la PWA comparteixen el mateix registre d'arrel per evitar
+      // que dos Service Workers es reemplacin mútuament al navegador.
+      registration = await navigator.serviceWorker.register('/OneSignalSDKWorker.js', { updateViaCache: 'none' });
       if (registration.waiting) showUpdate();
       registration.addEventListener('updatefound', () => {
         const worker = registration.installing;
