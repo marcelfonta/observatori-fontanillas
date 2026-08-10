@@ -93,13 +93,20 @@ Implementat a V16.0.0 com un panell de diagnòstic protegit pel Worker: estat de
 
 Es farà com a última gran fase, després d’acordar conjuntament noms, identitat, credencials i permisos de cada compte. La primera activació serà amb aprovació manual abans de publicar.
 
-## Milestone transversal — Historial d’avisos — Primera fase completada
+## Milestone transversal — Historial d’avisos — Completat
 
 - Avisos actius i només els finalitzats recents a la vista principal.
 - Historial separat amb paginació, filtres, cerca i consulta sota demanda.
-- Estadístiques per any, tipus, nivell i organisme; exportació futura i accés des de Meteo IA.
+- Estadístiques per any, mes, tipus, nivell i organisme; exportació i accés des de Meteo IA.
 
-V12 limita la vista principal als cinc episodis més recents i incorpora una pàgina d’arxiu separada amb cerca i filtres per any i nivell. Paginació, estadístiques i exportacions continuen al backlog.
+V12 limita la vista principal als cinc episodis més recents i incorpora una pàgina d’arxiu separada. V17 completa la fita: paginació real al Worker, cerca i filtres combinables, comptadors, distribució mensual i per fenomen, CSV, PDF i consultes des de Meteo IA. L’endpoint antic amb `limit` continua funcionant perquè la portada i les versions anteriors no es trenquin.
+
+## Fases pendents després de V17
+
+1. Activació pública del SEO tècnic: Search Console, sitemap i mesura de Core Web Vitals sobre la versió publicada.
+2. Configuració opcional de notificacions push i analítica, amb credencials i criteris de privacitat acordats amb l’usuari.
+3. Milestone 9 de xarxes socials, mantingut expressament per al final i creat conjuntament amb l’usuari.
+4. Seleccionar una única evolució del backlog segons valor real abans d’obrir una nova fase gran.
 
 ## Backlog
 

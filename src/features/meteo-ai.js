@@ -1,4 +1,4 @@
-import { fetchAlerts, fetchCurrentWeather, fetchForecast, fetchLocalityWeather, fetchNearbyStations } from '../services/weather-api.js';
+import { fetchAlertHistory, fetchAlerts, fetchCurrentWeather, fetchForecast, fetchLocalityWeather, fetchNearbyStations } from '../services/weather-api.js';
 
 const state={current:null,history:[],forecast:null,alerts:null,environment:null};
 let initialized=false;
@@ -14,6 +14,7 @@ const weatherCodes={
 const n=value=>value!==null&&value!==''&&Number.isFinite(Number(value))?Number(value):null;
 const fmt=(value,digits=1)=>n(value)===null?'—':n(value).toLocaleString('ca-ES',{minimumFractionDigits:digits,maximumFractionDigits:digits});
 const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[¿?!.;,·]/g,' ').replace(/\s+/g,' ').trim();
+const alertLevelLabel=level=>({red:'Vermell',orange:'Taronja',yellow:'Groc',unknown:'Oficial',none:'Sense avisos'})[level]||'Oficial';
 const emptyMemory=()=>({location:null,period:null,activity:null});
 const readMemory=()=>{try{return {...emptyMemory(),...JSON.parse(sessionStorage.getItem(CONVERSATION_KEY)||'{}')};}catch{return emptyMemory();}};
 let conversationMemory=typeof sessionStorage==='undefined'?emptyMemory():readMemory();
@@ -26,6 +27,7 @@ const sourceLinks={
   'Sensor Fontanillas':'./?page=estacio','Estació Fontanillas':'./?page=estacio','Arxiu Fontanillas':'./?page=centre-dades',
   'Open‑Meteo':'https://open-meteo.com/','CAMS via Open‑Meteo':'./?page=medi-ambient','CAMS · Sensor Fontanillas':'./?page=medi-ambient',
   'AEMET · Meteocat':'./?page=avisos','Avisos oficials':'./?page=avisos','Comparador de l’Observatori':'./comparativa.html',
+  'Historial d’avisos':'./historial-avisos.html',
   'Estació i predicció':'./?page=prediccio','Meteo IA':'./?page=meteo-ia',
   'AEMET · MeteoGlosario':'https://www.aemet.es/es/conocermas/meteo_glosario_visual',
   'AEMET · Dades climatològiques':'https://www.aemet.es/ca/serviciosclimaticos/datosclimatologicos',
@@ -140,6 +142,29 @@ function alertsAnswer(context){
   const phenomena=[...new Set(alerts.alerts.map(item=>item.phenomenon||item.title).filter(Boolean))];
   return response(`${alerts.count} ${alerts.count===1?'avís oficial actiu':'avisos oficials actius'}`,`El nivell màxim és ${alerts.level}. ${phenomena.length?`Fenòmens indicats: ${phenomena.join(', ')}.`:'Consulta el detall oficial abans de planificar activitats.'}`,{level:'warning',facts:alerts.alerts.slice(0,3).map(item=>item.description||item.title).filter(Boolean),sources:[source('AEMET · Meteocat',`Comprovat a les ${timeLabel(alerts.checked)}`)],followups:['És segur sortir a córrer?','Què recomanes per a una excursió?']});
 }
+
+function alertHistoryIntent(question){
+  const q=normalize(question);
+  return /(?:quants?|nombre|total|historic|historial|ha hagut|hi va haver|passats?|darrer|ultim|mes frequent).*(?:avis|alert)|(?:avis|alert).*(?:quants?|historic|historial|ha hagut|hi va haver|passats?|darrer|ultim|mes frequent)/.test(q);
+}
+
+async function alertHistoryAnswer(question,services){
+  const q=normalize(question);const currentYear=String(new Date().getFullYear());const explicitYear=q.match(/\b(?:19|20|21)\d{2}\b/)?.[0];
+  const filters={page:1,pageSize:20,year:explicitYear||(/aquest any|enguany/.test(q)?currentYear:'')};
+  if(/vermell/.test(q))filters.level='red';else if(/taronj/.test(q))filters.level='orange';else if(/groc|groga/.test(q))filters.level='yellow';
+  try{
+    const payload=await services.fetchAlertHistory(filters);const stats=payload.stats||{};const total=Number(stats.total)||0;const period=filters.year?` durant ${filters.year}`:' dins de l’arxiu';
+    if(!total)return response('Cap episodi amb aquests criteris',`No hi ha avisos registrats${period}${filters.level?` amb nivell ${alertLevelLabel(filters.level).toLowerCase()}`:''}. Això descriu l’arxiu propi, no la situació activa actual.`,{sources:[source('Historial d’avisos','Consulta filtrada de l’arxiu')],followups:['Hi ha avisos actius?','Quants avisos hi ha hagut aquest any?']});
+    const latest=payload.items?.[0];
+    if(/darrer|ultim/.test(q)&&latest)return response('Darrer episodi registrat',`El darrer avís de l’arxiu és «${latest.phenomenon||latest.title||'avís meteorològic'}», de nivell ${alertLevelLabel(latest.level).toLowerCase()}, iniciat el ${dateLabelForAnswer(latest.started_at)}.`,{facts:[`Organisme · ${latest.source||'AEMET'}`,latest.expires_at?`Final previst · ${dateLabelForAnswer(latest.expires_at)}`:null].filter(Boolean),sources:[source('Historial d’avisos','Darrer registre del Worker')],followups:['Quants avisos hi ha hagut aquest any?','Hi ha avisos actius?']});
+    const levelText=filters.level?` de nivell ${alertLevelLabel(filters.level).toLowerCase()}`:'';const top=stats.topPhenomenon?` El fenomen més freqüent és «${stats.topPhenomenon}».`:'';
+    return response(`${total} ${total===1?'episodi registrat':'episodis registrats'}`,`L’arxiu conté ${total} ${total===1?'avís':'avisos'}${levelText}${period}.${top} Són episodis desats pel Worker i no s’han de confondre amb els avisos actius.`,{facts:[`Dies diferents amb avís · ${Number(stats.alertDays)||0}`,`Taronja o vermell · ${Number(stats.severe)||0}`,`Vermells · ${Number(stats.red)||0}`],sources:[source('Historial d’avisos',filters.year?`Estadístiques de ${filters.year}`:'Estadístiques completes')],followups:['Quan va ser l’últim avís?','Hi ha avisos actius?']});
+  }catch{
+    return response('Historial temporalment no disponible','No he pogut consultar l’arxiu d’avisos. La situació activa continua disponible a la pàgina d’Avisos.',{level:'warning',sources:[source('Historial d’avisos','Consulta no disponible')]});
+  }
+}
+
+function dateLabelForAnswer(value){const date=new Date(value);return Number.isNaN(date.getTime())?'una data no disponible':new Intl.DateTimeFormat('ca-ES',{dateStyle:'long',timeStyle:'short',timeZone:'Europe/Madrid'}).format(date);}
 
 function historyAnswer(context){
   const history=(context.history||[]).filter(item=>n(item.temperature)!==null&&Number.isFinite(Number(item.t))).sort((a,b)=>a.t-b.t);
@@ -302,7 +327,7 @@ async function localityAnswer(name,services,question,{memory=null,activity=null}
 
 function shouldUseConversation(q){return /\bhi\b|alla|aquella zona|quin temps|temps fa|temps fara|previsi|plour|temperatura|vent|calor|fred|humitat/.test(q);}
 
-export async function answerMeteoQuestion(question,context=state,services={fetchLocalityWeather,fetchNearbyStations},memory=null){
+export async function answerMeteoQuestion(question,context=state,services={fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},memory=null){
   const q=normalize(question);
   if(/on (puc|es pot)|on consultar|quina font|fonts fiables|d on treure|dades obertes|informacio meteorologica/.test(q))return sourceGuideAnswer();
   if(/efemer|un dia com avui|record historic|record meteorologic/.test(q))return stationEphemerisAnswer(context);
@@ -319,6 +344,7 @@ export async function answerMeteoQuestion(question,context=state,services={fetch
     return localityAnswer(locality,services,resolvedQuestion,{memory,activity:effectiveActivity});
   }
   if(memory&&explicitLocality){memory.location={query:'Sant Celoni',label:'Sant Celoni · Fontanillas',country:'Catalunya',local:true};saveMemory(memory);}
+  if(alertHistoryIntent(question))return alertHistoryAnswer(question,services);
   if(/avis|alert|perill/.test(q))return alertsAnswer(context);
   if(/correr|running|excurs|muntanya|famil|nens|sortir|passeig|bicicleta|bici|bon moment/.test(q))return recommendationAnswer(context,resolvedQuestion);
   if(/compar|estacio|mes calor|mes fred|on fa/.test(q))return comparisonAnswer(services);
@@ -361,7 +387,7 @@ async function ask(question){
   const log=document.getElementById('meteo-ai-messages');const input=document.getElementById('meteo-ai-input');const submit=document.getElementById('meteo-ai-submit');
   log?.append(createMessage('user',text));if(input)input.value='';if(submit){submit.disabled=true;submit.textContent='Consultant…';}
   const pending=document.createElement('div');pending.className='meteo-ai-typing';pending.textContent='Creuant les dades disponibles…';log?.append(pending);log?.scrollTo({top:log.scrollHeight,behavior:'smooth'});
-  try{const result=await answerMeteoQuestion(text,state,{fetchLocalityWeather,fetchNearbyStations},conversationMemory);pending.replaceWith(createMessage('assistant',result));updateConversationUi();}
+  try{const result=await answerMeteoQuestion(text,state,{fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},conversationMemory);pending.replaceWith(createMessage('assistant',result));updateConversationUi();}
   catch{pending.replaceWith(createMessage('assistant',response('No he pogut completar la consulta','Les dades principals continuen disponibles al portal. Torna-ho a provar d’aquí uns instants.',{level:'warning'})));}
   if(submit){submit.disabled=false;submit.textContent='Preguntar';}log?.scrollTo({top:log.scrollHeight,behavior:'smooth'});input?.focus();
 }
@@ -401,7 +427,7 @@ export function initMeteoAIWidget(){
     event.preventDefault();const form=event.currentTarget;const input=form.querySelector('input');const button=form.querySelector('button');const messages=panel.querySelector('.meteo-ai-widget__messages');const question=String(input?.value||'').trim();if(!question)return;
     button.disabled=true;button.textContent='Consultant…';messages.replaceChildren();const user=createMessage('user',question);const typing=document.createElement('div');typing.className='meteo-ai-typing';typing.textContent='Comprovant dades…';messages.append(user,typing);
     await hydrateWidgetContext();
-    const result=await answerMeteoQuestion(question,state,{fetchLocalityWeather,fetchNearbyStations},conversationMemory);const answer=createMessage('assistant',result);answer.querySelector('.meteo-ai-followups')?.remove();typing.replaceWith(answer);form.hidden=true;panel.querySelector('.meteo-ai-widget__continue').hidden=false;
+    const result=await answerMeteoQuestion(question,state,{fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},conversationMemory);const answer=createMessage('assistant',result);answer.querySelector('.meteo-ai-followups')?.remove();typing.replaceWith(answer);form.hidden=true;panel.querySelector('.meteo-ai-widget__continue').hidden=false;
   });
   panel.querySelector('.meteo-ai-widget__continue')?.addEventListener('click',event=>{if(document.body.dataset.page==='meteo-ia'){event.preventDefault();close();document.getElementById('meteo-ai-input')?.scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('meteo-ai-input')?.focus();}});
 }

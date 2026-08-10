@@ -14,4 +14,4 @@ const fallback=buildShareCardModel({},'https://meteo.fontanillas.cat/metodologia
 assert.equal(fallback.primary,'Dades locals i fonts contrastades');
 assert.doesNotMatch(fallback.primary,/\d+[,.]\d+ °C/);
 
-console.log('Test de targetes de compartició V16: correcte');
+console.log('Test de targetes de compartició V17: correcte');

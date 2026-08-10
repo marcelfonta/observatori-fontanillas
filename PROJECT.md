@@ -52,7 +52,7 @@ La vista «Cel de dia i de nit» reutilitza el mòdul d’astronomia existent. E
 
 Totes les subpàgines del portal comparteixen el component visual `portal-view-header`. La invitació inicial d’avisos desa una única decisió local al navegador i no torna a interrompre la navegació després de respondre.
 
-La pàgina principal d’avisos demana com a màxim cinc episodis. `historial-avisos.html` consulta sota demanda fins a cent registres del mateix endpoint i permet filtrar-los sense duplicar dades ni crear un segon arxiu.
+La pàgina principal d’avisos demana com a màxim cinc episodis. `historial-avisos.html` consulta el mateix endpoint amb paginació de 10, 20 o 50 registres, filtres executats a D1 i estadístiques agregades. No duplica dades ni crea un segon arxiu.
 
 ## Identitat visual V12.2
 
@@ -95,6 +95,14 @@ La Compartició Premium viu a `src/features/share.js`. Genera targetes PNG de 12
 El nou endpoint de només lectura `/admin/status` informa de versió i latència del Worker, frescor i disponibilitat de l’estació, D1, arxiu d’avisos i estat de configuració de Weather Underground, contacte i push. El navegador hi afegeix l’estat local de la PWA i de l’analítica, i identifica xarxes socials com a fase ajornada. Només es retornen booleans de configuració, mai credencials. Les respostes són privades, `no-store` i queden excloses explícitament de la memòria cau del Service Worker.
 
 El panell registra únicament incidències de JavaScript de la pestanya actual i permet copiar un diagnòstic segur. No incorpora supressió, reinici, escriptura sobre D1 ni cap altra operació destructiva. L’activació queda documentada a `admin/README.md`.
+
+## Evolució V17
+
+`/alert-history` manté el paràmetre compatible `limit` i afegeix `page`, `pageSize`, `q`, `year`, `month`, `level`, `source` i `phenomenon`. El Worker construeix només condicions predefinides, envia els valors a D1 com a paràmetres i retorna `pagination`, `stats` i `facets`; cap text de l’usuari s’insereix directament a SQL.
+
+`historial-avisos.html` consumeix aquest contracte sota demanda. Els gràfics són HTML i CSS accessibles, sense afegir una llibreria ni carregar tots els episodis al navegador. CSV i PDF recorren les pàgines filtrades únicament quan l’usuari demana una descàrrega. El PDF es genera localment i pot ocupar diverses pàgines.
+
+Meteo IA utilitza `fetchAlertHistory()` només per preguntes inequívocament històriques, com «quants avisos hi ha hagut aquest any?» o «quan va ser l’últim avís?». Les preguntes sobre la situació actual continuen passant per `/alerts`, evitant confondre arxiu i vigilància activa.
 
 ## Normes de canvi
 

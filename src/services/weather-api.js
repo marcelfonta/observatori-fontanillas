@@ -110,6 +110,14 @@ export async function fetchAlerts() {
   return response.json();
 }
 
+export async function fetchAlertHistory(filters={}) {
+  const params=new URLSearchParams({page:String(filters.page||1),pageSize:String(filters.pageSize||20)});
+  for(const key of ['q','year','month','level','source','phenomenon'])if(String(filters[key]||'').trim())params.set(key,String(filters[key]).trim());
+  const response=await request(`${CONFIG.apiUrl}/alert-history?${params}`,{headers:{Accept:'application/json'},cache:'no-store'},12000);
+  if(!response.ok)throw new Error(`Alert history API ${response.status}`);
+  return response.json();
+}
+
 export async function fetchNearbyStations(period = 'now') {
   const safePeriod=['now','today','24h'].includes(period)?period:'now';
   const response=await request(`${CONFIG.apiUrl}/stations?period=${encodeURIComponent(safePeriod)}`,{headers:{Accept:'application/json'},cache:'no-store'},15000);

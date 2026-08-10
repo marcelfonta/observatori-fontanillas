@@ -35,14 +35,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/variables.css?v=16.0.0" />
-  <link rel="stylesheet" href="css/layout.css?v=16.0.0" />
-  <link rel="stylesheet" href="css/style.css?v=16.0.0" />
-  <link rel="stylesheet" href="css/portal.css?v=16.0.0" />
-  <script type="module" src="src/features/portal-static.js?v=16.0.0"></script>
-  <script type="module" src="src/features/alert-history-page.js?v=16.0.0"></script>
-  <script type="module" src="src/features/pwa.js?v=16.0.0"></script>
-  <script type="module" src="src/features/share-page.js?v=16.0.0"></script>
+  <link rel="stylesheet" href="css/variables.css?v=17.0.0" />
+  <link rel="stylesheet" href="css/layout.css?v=17.0.0" />
+  <link rel="stylesheet" href="css/style.css?v=17.0.0" />
+  <link rel="stylesheet" href="css/portal.css?v=17.0.0" />
+  <script type="module" src="src/features/portal-static.js?v=17.0.0"></script>
+  <script type="module" src="src/features/alert-history-page.js?v=17.0.0"></script>
+  <script type="module" src="src/features/pwa.js?v=17.0.0"></script>
+  <script type="module" src="src/features/share-page.js?v=17.0.0"></script>
 </head>
 <body data-portal-static="avisos">
   <div id="app-update-banner" class="app-update-banner" hidden role="status" aria-live="polite"><span><b>Nova versió disponible</b><small>Actualitza l’Observatori per carregar els darrers canvis.</small></span><button type="button" id="app-update-button">Actualitzar ara</button><button type="button" id="app-update-dismiss" aria-label="Tancar avís d’actualització">×</button></div>
@@ -54,14 +54,36 @@
   </header>
   <main class="shell comparison-page history-page" id="history-content">
     <section class="portal-view-header portal-view-header--static panel" aria-labelledby="history-title"><div><p class="eyebrow">Vigilància oficial · arxiu</p><h1 id="history-title">Historial d’avisos meteorològics</h1><p>Els avisos antics viuen aquí perquè la pàgina principal continuï curta. Cerca i filtra els episodis registrats pel Worker.</p></div><a class="tag" href="./?page=avisos">Tornar als avisos</a></section>
-    <section class="history-controls panel" aria-label="Filtres de l’historial">
-      <label>Cercar<input id="history-search" type="search" placeholder="Vent, pluja, calor…" /></label>
-      <label>Any<select id="history-year"><option value="">Tots els anys</option></select></label>
-      <label>Nivell<select id="history-level"><option value="">Tots els nivells</option><option value="yellow">Groc</option><option value="orange">Taronja</option><option value="red">Vermell</option><option value="unknown">Oficial</option></select></label>
+    <section class="history-stats" aria-label="Resum de l’arxiu">
+      <article class="panel"><span>Episodis</span><strong id="history-stat-total">—</strong><small id="history-stat-range">Arxiu complet</small></article>
+      <article class="panel"><span>Dies amb avís</span><strong id="history-stat-days">—</strong><small>Dies diferents registrats</small></article>
+      <article class="panel"><span>Taronja o vermell</span><strong id="history-stat-severe">—</strong><small id="history-stat-red">— vermells</small></article>
+      <article class="panel"><span>Més freqüent</span><strong id="history-stat-top">—</strong><small>Fenomen dins del filtre</small></article>
     </section>
-    <section class="history-results panel" aria-labelledby="history-results-title"><header><h2 id="history-results-title">Episodis registrats</h2><span class="tag" id="history-page-count">Carregant…</span></header><div class="alert-history-list" id="history-page-list"><div class="alert-history-empty">Carregant l’arxiu…</div></div></section>
+    <section class="history-controls panel" aria-label="Filtres de l’historial">
+      <div class="history-controls__heading"><div><p class="eyebrow">Consulta precisa</p><h2>Filtra l’arxiu</h2></div><button type="button" id="history-clear">Netejar filtres</button></div>
+      <div class="history-controls__grid">
+        <label>Cercar<input id="history-search" type="search" placeholder="Vent, pluja, calor…" autocomplete="off" /></label>
+        <label>Any<select id="history-year"><option value="">Tots els anys</option></select></label>
+        <label>Mes<select id="history-month"><option value="">Tots els mesos</option><option value="01">Gener</option><option value="02">Febrer</option><option value="03">Març</option><option value="04">Abril</option><option value="05">Maig</option><option value="06">Juny</option><option value="07">Juliol</option><option value="08">Agost</option><option value="09">Setembre</option><option value="10">Octubre</option><option value="11">Novembre</option><option value="12">Desembre</option></select></label>
+        <label>Nivell<select id="history-level"><option value="">Tots els nivells</option><option value="yellow">Groc</option><option value="orange">Taronja</option><option value="red">Vermell</option><option value="unknown">Oficial</option></select></label>
+        <label>Organisme<select id="history-source"><option value="">Tots els organismes</option></select></label>
+        <label>Fenomen<select id="history-phenomenon"><option value="">Tots els fenòmens</option></select></label>
+      </div>
+      <p class="history-filter-summary" id="history-filter-summary">Sense filtres: es mostra tot l’arxiu.</p>
+    </section>
+    <section class="history-analytics" aria-label="Estadístiques de l’historial">
+      <article class="panel history-chart"><header><div><p class="eyebrow">Evolució</p><h2>Episodis per mes</h2></div><small>Últims 24 mesos amb registres</small></header><div class="history-month-chart" id="history-month-chart"><span>Carregant…</span></div></article>
+      <article class="panel history-chart"><header><div><p class="eyebrow">Distribució</p><h2>Fenòmens</h2></div><small>Segons el filtre actiu</small></header><div class="history-bar-chart" id="history-phenomenon-chart"><span>Carregant…</span></div></article>
+    </section>
+    <section class="history-results panel" aria-labelledby="history-results-title">
+      <header><div><p class="eyebrow">Arxiu oficial</p><h2 id="history-results-title">Episodis registrats</h2></div><div class="history-results__tools"><span class="tag" id="history-page-count">Carregant…</span><button type="button" id="history-export-csv">CSV</button><button type="button" id="history-export-pdf">PDF</button></div></header>
+      <div class="alert-history-list" id="history-page-list" aria-live="polite"><div class="alert-history-empty">Carregant l’arxiu…</div></div>
+      <nav class="history-pagination" aria-label="Paginació de l’historial"><button type="button" id="history-previous">← Anterior</button><span id="history-pagination-label">Pàgina —</span><label>Per pàgina<select id="history-page-size"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select></label><button type="button" id="history-next">Següent →</button></nav>
+      <p class="history-export-status" id="history-export-status" role="status" aria-live="polite"></p>
+    </section>
   </main>
-  <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V16.0.0</small><div><a href="#history-content">Tornar amunt ↑</a><button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button></div></footer>
+  <footer class="shell"><span>Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V17.0.0</small><div><a href="#history-content">Tornar amunt ↑</a><button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button></div></footer>
   <div id="shareModal" hidden style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;"><div role="dialog" aria-modal="true" aria-labelledby="share-title"><h3 id="share-title">Compartir l’Observatori</h3><div><button type="button" data-share="copy">Copiar text i enllaç</button><button type="button" data-share="whatsapp">WhatsApp</button><button type="button" data-share="x">X</button><button type="button" data-share="facebook">Facebook</button><button type="button" data-share="email">Correu</button><button type="button" data-share="native">Altres apps</button></div><button type="button" id="share-close">Tancar</button></div></div>
 </body>
 </html>

@@ -14,4 +14,4 @@ assert.match(nodes.get('long-range-weeks').children[0].innerHTML,/Més seca/);
 assert.match(nodes.get('long-range-weeks').children[1].innerHTML,/Més freda/);
 assert.match(nodes.get('long-range-weeks').children[1].innerHTML,/Més humida/);
 assert.match(nodes.get('long-range-status').textContent,/ECMWF EC46/);
-console.log('Test de tendència V16: correcte');
+console.log('Test de tendència V17: correcte');

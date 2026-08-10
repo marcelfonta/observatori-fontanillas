@@ -13,6 +13,7 @@ const context={
 };
 const services={
   fetchNearbyStations:async()=>({stations:[{id:'fontanillas',name:'Fontanillas',status:'online',temperature:24.2,rainToday:0},{id:'nearby',name:'Vallgorguina',status:'online',temperature:26.1,rainToday:1.4}],sourcePolicy:{note:'Mostra de prova'}}),
+  fetchAlertHistory:async filters=>({items:[{level:filters.level||'orange',phenomenon:'Vent',source:'AEMET',started_at:'2026-08-07T18:50:00Z',expires_at:'2026-08-08T00:00:00Z'}],pagination:{total:6},stats:{total:filters.level==='red'?1:6,alertDays:4,severe:3,red:1,topPhenomenon:'Vent'}}),
   fetchLocalityWeather:async name=>({location:{name,admin1:name==='Girona'?'Catalunya':'Regió de prova',country:name==='Sant Celoni'?'Espanya':'País de prova'},weather:{current:{time:new Date(now).toISOString(),weather_code:1,temperature_2m:27.2,apparent_temperature:27.8,relative_humidity_2m:50,wind_speed_10m:8,wind_gusts_10m:17},daily}})
 };
 
@@ -27,6 +28,16 @@ assert.equal(forecast.level,'caution');
 
 const alerts=await answerMeteoQuestion('Hi ha avisos actius?',context,services);
 assert.equal(alerts.level,'safe');
+
+const alertHistory=await answerMeteoQuestion('Quants avisos hi ha hagut aquest any?',context,services);
+assert.match(alertHistory.title,/6 episodis/);
+assert.ok(alertHistory.sources.some(item=>item.href==='./historial-avisos.html'));
+
+const redHistory=await answerMeteoQuestion('Quants avisos vermells hi ha hagut aquest any?',context,services);
+assert.match(redHistory.body,/nivell vermell/);
+
+const latestAlert=await answerMeteoQuestion('Quan va ser l’últim avís?',context,services);
+assert.match(latestAlert.title,/Darrer episodi/);
 
 const activity=await answerMeteoQuestion('Puc sortir a córrer?',context,services);
 assert.ok(['safe','caution'].includes(activity.level));
@@ -105,4 +116,4 @@ assert.match(ephemeris.facts.join(' '),/31,4 °C/);
 const unknown=await answerMeteoQuestion('Explica’m alguna cosa',context,services);
 assert.match(unknown.body,/conceptes/i);
 
-console.log('Test Meteo IA V16: correcte');
+console.log('Test Meteo IA V17: correcte');

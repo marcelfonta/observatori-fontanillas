@@ -1,5 +1,31 @@
 # Changelog
 
+## V17.0.0 — 2026-08-10
+
+### Historial d’avisos complet
+
+- Paginació real a D1 amb 10, 20 o 50 episodis per pàgina; la web ja no necessita carregar l’arxiu complet per començar.
+- Filtres combinables per text, any, mes, nivell, organisme i fenomen, amb recompte total i resum dels filtres actius.
+- Indicadors d’episodis, dies amb avís, nivells taronja o vermell i fenomen més freqüent.
+- Gràfics lleugers d’evolució mensual i distribució per fenomen, adaptats a escriptori i mòbil sense dependències noves.
+- Exportació de tots els resultats filtrats a CSV i PDF multipàgina generats al navegador.
+
+### Worker i compatibilitat
+
+- `/alert-history` amplia el contracte amb `pagination`, `stats` i `facets`, i executa filtres parametritzats a D1.
+- El paràmetre antic `limit` es conserva; la portada continua mostrant només cinc episodis i no canvia el sistema visible d’avisos AEMET/Meteocat.
+- No cal cap migració de D1: s’utilitza la taula `alert_events` existent.
+
+### Meteo IA
+
+- Respon consultes com «quants avisos hi ha hagut aquest any?», «quants han estat vermells?» i «quan va ser l’últim avís?». 
+- Enllaça directament l’Historial d’avisos dins de Fonts i diferencia explícitament episodis antics d’avisos actius.
+
+### Validació
+
+- Proves específiques de paràmetres, paginació del Worker, CSV i intencions històriques de Meteo IA.
+- Versions web, Worker, panell d’administració i memòria cau PWA unificades a V17.0.0.
+
 ## V16.0.0 — 2026-08-10
 
 ### Panell d’Administració · Milestone 10 completat

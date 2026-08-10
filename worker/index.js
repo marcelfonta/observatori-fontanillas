@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "16.0.0";
+const WORKER_VERSION = "17.0.0";
 const WORKER_BUILT = "2026-08-10";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -278,12 +278,70 @@ async function recordAlertEvents(payload, env) {
   return inserted;
 }
 
+function alertHistoryParams(url) {
+  const integer=(name,fallback,min,max)=>{
+    const value=Number.parseInt(url.searchParams.get(name)||'',10);
+    return Number.isFinite(value)?Math.min(max,Math.max(min,value)):fallback;
+  };
+  const legacyLimit=url.searchParams.get('limit');
+  const pageSize=integer('pageSize',legacyLimit?integer('limit',20,1,100):20,1,100);
+  const year=/^(?:19|20|21)\d{2}$/.test(url.searchParams.get('year')||'')?url.searchParams.get('year'):'';
+  const month=/^(?:0[1-9]|1[0-2])$/.test(url.searchParams.get('month')||'')?url.searchParams.get('month'):'';
+  const requestedLevel=cleanText(url.searchParams.get('level'),16).toLowerCase();
+  const level=['yellow','orange','red','unknown','none'].includes(requestedLevel)?requestedLevel:'';
+  return {
+    page:integer('page',1,1,100000),pageSize,year,month,level,
+    source:cleanText(url.searchParams.get('source'),50),
+    phenomenon:cleanText(url.searchParams.get('phenomenon'),100),
+    q:cleanText(url.searchParams.get('q'),100),
+  };
+}
+
+function alertHistoryWhere(filters) {
+  const clauses=[];const bindings=[];
+  if(filters.year){clauses.push("SUBSTR(started_at,1,4) = ?");bindings.push(filters.year);}
+  if(filters.month){clauses.push("SUBSTR(started_at,6,2) = ?");bindings.push(filters.month);}
+  if(filters.level){clauses.push("level = ?");bindings.push(filters.level);}
+  if(filters.source){clauses.push("source = ?");bindings.push(filters.source);}
+  if(filters.phenomenon){clauses.push("phenomenon = ?");bindings.push(filters.phenomenon);}
+  if(filters.q){
+    clauses.push("LOWER(COALESCE(phenomenon,'') || ' ' || COALESCE(title,'') || ' ' || COALESCE(description,'') || ' ' || COALESCE(source,'')) LIKE ?");
+    bindings.push(`%${filters.q.toLowerCase()}%`);
+  }
+  return {sql:clauses.length?`WHERE ${clauses.join(' AND ')}`:'',bindings};
+}
+
 async function alertHistory(url, env) {
-  if (!(await ensureAlertSchema(env))) return json({ok:true,items:[],storage:'disabled'});
-  const limit=Math.min(100,Math.max(1,Number(url.searchParams.get('limit')||20)));
-  const result=await env.DB.prepare(`SELECT id,source,level,phenomenon,title,description,started_at,expires_at,created_at
-    FROM alert_events ORDER BY started_at DESC LIMIT ?`).bind(limit).all();
-  return json({ok:true,items:result?.results||[]},200,'no-store');
+  const empty={ok:true,items:[],pagination:{page:1,pageSize:20,total:0,totalPages:0},stats:{total:0,severe:0,red:0,alertDays:0,latest:null,first:null,topPhenomenon:null,byMonth:[],byLevel:[],bySource:[],byPhenomenon:[],byYear:[]},facets:{years:[],sources:[],phenomena:[]}};
+  if (!(await ensureAlertSchema(env))) return json({...empty,storage:'disabled'},200,'no-store');
+  const filters=alertHistoryParams(url);const where=alertHistoryWhere(filters);
+  const totalRow=await env.DB.prepare(`SELECT COUNT(*) AS total FROM alert_events ${where.sql}`).bind(...where.bindings).first();
+  const total=Number(totalRow?.total)||0;const totalPages=total?Math.ceil(total/filters.pageSize):0;
+  const page=totalPages?Math.min(filters.page,totalPages):1;const offset=(page-1)*filters.pageSize;
+  const itemResult=await env.DB.prepare(`SELECT id,source,level,phenomenon,title,description,started_at,expires_at,created_at
+    FROM alert_events ${where.sql} ORDER BY started_at DESC LIMIT ? OFFSET ?`).bind(...where.bindings,filters.pageSize,offset).all();
+  const [summary,byMonth,byLevel,bySource,byPhenomenon,byYear,facetYears,facetSources,facetPhenomena]=await Promise.all([
+    env.DB.prepare(`SELECT COUNT(*) AS total,
+      SUM(CASE WHEN level IN ('orange','red') THEN 1 ELSE 0 END) AS severe,
+      SUM(CASE WHEN level = 'red' THEN 1 ELSE 0 END) AS red,
+      COUNT(DISTINCT SUBSTR(started_at,1,10)) AS alert_days,
+      MAX(started_at) AS latest, MIN(started_at) AS first FROM alert_events ${where.sql}`).bind(...where.bindings).first(),
+    env.DB.prepare(`SELECT SUBSTR(started_at,1,7) AS key,COUNT(*) AS count FROM alert_events ${where.sql} GROUP BY key ORDER BY key DESC LIMIT 24`).bind(...where.bindings).all(),
+    env.DB.prepare(`SELECT level AS key,COUNT(*) AS count FROM alert_events ${where.sql} GROUP BY level ORDER BY count DESC`).bind(...where.bindings).all(),
+    env.DB.prepare(`SELECT source AS key,COUNT(*) AS count FROM alert_events ${where.sql} GROUP BY source ORDER BY count DESC`).bind(...where.bindings).all(),
+    env.DB.prepare(`SELECT COALESCE(NULLIF(phenomenon,''),'Altres') AS key,COUNT(*) AS count FROM alert_events ${where.sql} GROUP BY key ORDER BY count DESC LIMIT 12`).bind(...where.bindings).all(),
+    env.DB.prepare(`SELECT SUBSTR(started_at,1,4) AS key,COUNT(*) AS count FROM alert_events ${where.sql} GROUP BY key ORDER BY key DESC`).bind(...where.bindings).all(),
+    env.DB.prepare("SELECT DISTINCT SUBSTR(started_at,1,4) AS value FROM alert_events WHERE started_at IS NOT NULL ORDER BY value DESC").all(),
+    env.DB.prepare("SELECT DISTINCT source AS value FROM alert_events WHERE source IS NOT NULL AND source <> '' ORDER BY value").all(),
+    env.DB.prepare("SELECT DISTINCT phenomenon AS value FROM alert_events WHERE phenomenon IS NOT NULL AND phenomenon <> '' ORDER BY value").all(),
+  ]);
+  const rows=result=>result?.results||[];const phenomena=rows(byPhenomenon);
+  return json({
+    ok:true,items:rows(itemResult),filters,
+    pagination:{page,pageSize:filters.pageSize,total,totalPages},
+    stats:{total:Number(summary?.total)||0,severe:Number(summary?.severe)||0,red:Number(summary?.red)||0,alertDays:Number(summary?.alert_days)||0,latest:summary?.latest||null,first:summary?.first||null,topPhenomenon:phenomena[0]?.key||null,byMonth:rows(byMonth),byLevel:rows(byLevel),bySource:rows(bySource),byPhenomenon:phenomena,byYear:rows(byYear)},
+    facets:{years:rows(facetYears).map(row=>row.value).filter(Boolean),sources:rows(facetSources).map(row=>row.value).filter(Boolean),phenomena:rows(facetPhenomena).map(row=>row.value).filter(Boolean)},
+  },200,'no-store');
 }
 
 function notificationCategory(entry){
