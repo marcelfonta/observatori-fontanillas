@@ -1,5 +1,29 @@
 # Changelog
 
+## V12.0.0 — 2026-08-10
+
+### Afegit
+
+- Visors ambientals integrats i carregats sota demanda: Pla Alfa oficial, estat de sequera de l’ACA i albiraments de MedusApp (UPV i Universitat d’Alacant).
+- Enllaços complementaris a PlatgesCat i Meduseo, diferenciant la font oficial, la ciència ciutadana i el servei internacional extern.
+- Interpretació visual baixa, raonable, moderada, alta o extrema per als índexs europeus de PM10, PM2,5, NO₂, O₃ i SO₂.
+- Pàgina separada `historial-avisos.html` amb cerca i filtres per any i nivell.
+- Descobriment automàtic d’estacions meteorològiques properes per ampliar la comparativa fins a sis ubicacions, amb fallback estable.
+- Nou sistema coherent de pictogrames SVG al menú lateral, primera actuació del Milestone 5.
+
+### Millorat
+
+- Capçaleres de totes les subpàgines més compactes, amb la mateixa alçada visual, tipografia i separació.
+- Títol de Comparar reescrit per explicar clarament que mostra les diferències meteorològiques del Baix Montseny.
+- Distància a Fontanillas visible per a les estacions descobertes automàticament.
+- L’historial de la pàgina principal queda limitat als cinc episodis més recents i disposa d’un únic desplaçament intern.
+- Metodologia incorpora la mateixa capçalera visual que la resta del portal.
+
+### Preservat
+
+- Contractes existents de `/stations` i `/alert-history`: només s’amplien camps i criteris sense retirar-ne cap.
+- Avisos AEMET/Meteocat, radar, Centre de Dades, PWA, compartir, push, contacte i dades de l’estació.
+
 ## V11.0.0 — 2026-08-10
 
 ### Afegit

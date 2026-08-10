@@ -28,20 +28,22 @@ Implementat a V9.0.0 reutilitzant l’històric existent del Worker: períodes d
 
 Implementat a V10.0.0 amb el contracte `/stations` existent: mapa Leaflet del Baix Montseny, marcadors i llegenda d’estacions, períodes Ara/Avui/24 h, targetes normalitzades i una gràfica commutable per les cinc variables. No s’ha afegit cap dependència de compilació ni s’ha trencat la comparativa anterior.
 
-## Milestone 4 — V11 Medi Ambient — En curs
+## Milestone 4 — V11–V12 Medi Ambient — Completat
 
 - Qualitat de l’aire a Sant Celoni: AQI, PM10, PM2.5, NO₂, O₃, CO i SO₂ segons disponibilitat oficial.
 - Radiació UV, pol·len, risc d’incendi, sequera i estat hidrològic.
 - Costa catalana i meduses: mapa, presència, espècie, risc, actualització i informació pràctica amb font fiable automàtica.
 
-Primera fase implementada a V11.0.0: índex europeu de qualitat de l’aire, PM10, PM2,5, NO₂, O₃, CO, SO₂, UV i cinc tipus de pol·len amb CAMS/Open‑Meteo; accés destacat als visors oficials de Pla Alfa, sequera de l’ACA i PlatgesCat. Pendent de completar: integrar dades locals oficials de risc, sequera i meduses només quan hi hagi una font automàtica estable que permeti mostrar municipi o platja sense induir a error.
+Completat a V12.0.0: índex europeu general i per contaminant amb interpretació baixa/moderada/alta, PM10, PM2,5, NO₂, O₃, CO, SO₂, UV i cinc tipus de pol·len amb CAMS/Open‑Meteo. La pàgina integra sota demanda el Pla Alfa oficial, el visor de sequera de l’ACA i el mapa d’albiraments de MedusApp (UPV i Universitat d’Alacant). PlatgesCat i Meduseo es mantenen com a fonts complementàries externes, amb la naturalesa de cada dada clarament indicada.
 
-## Milestone 5 — Branding i identitat visual
+## Milestone 5 — Branding i identitat visual — En curs (iniciat a V12)
 
 - Logotip aprovat, opció A: Montseny, sol i línia meteorològica minimalista.
 - Favicon, Apple Touch Icon, icones Android/PWA/maskable, splash i Open Graph coherents.
 - Redisseny coherent dels pictogrames del menú lateral i de les icones funcionals del portal.
 - Revisió del nom curt instal·lat i guia d’identitat.
+
+Primera evolució implementada a V12.0.0: substitució dels símbols tipogràfics poc clars del menú per un sistema de pictogrames SVG coherent, accessible i escalable. La revisió global de marca, icones PWA i guia d’identitat continua pendent.
 
 ## Milestone 6 — Meteo IA
 
@@ -71,11 +73,13 @@ Primera fase implementada a V11.0.0: índex europeu de qualitat de l’aire, PM1
 - Estat d’API, Worker, memòria cau, analítica, errors, versions, push i xarxes.
 - Accés protegit i monitoratge operatiu.
 
-## Milestone transversal — Historial d’avisos
+## Milestone transversal — Historial d’avisos — Primera fase completada
 
 - Avisos actius i només els finalitzats recents a la vista principal.
 - Historial separat amb paginació, filtres, cerca i consulta sota demanda.
 - Estadístiques per any, tipus, nivell i organisme; exportació futura i accés des de Meteo IA.
+
+V12 limita la vista principal als cinc episodis més recents i incorpora una pàgina d’arxiu separada amb cerca i filtres per any i nivell. Paginació, estadístiques i exportacions continuen al backlog.
 
 ## Backlog
 

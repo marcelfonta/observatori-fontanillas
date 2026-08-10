@@ -17,6 +17,7 @@ Ser el portal meteorològic de referència del Baix Montseny: informació local 
 
 - `index.html`: portal i vistes principals.
 - `comparativa.html`: comparador d’estacions existent.
+- `historial-avisos.html`: arxiu complet d’episodis amb cerca i filtres.
 - `metodologia.html`: metodologia ampliada existent.
 - `css/`: variables, disseny base i navegació del portal.
 - `src/core/`: configuració i utilitats comunes.
@@ -29,7 +30,7 @@ Ser el portal meteorològic de referència del Baix Montseny: informació local 
 
 Estació Fontanillas, Worker propi, Weather Underground, Open-Meteo, AEMET, Meteocat, RainViewer i els ginys meteorològics ja integrats. Les claus i URLs es centralitzen en la configuració existent.
 
-## Navegació V11
+## Navegació V12
 
 Inici, Estació, Predicció, Cel de dia i de nit, Avisos, Radar, Webcams, Centre de Dades, Comparar, Medi Ambient, Contacte i Metodologia. Escriptori: lateral fi. Mòbil: hamburguesa. La capçalera, l’estat en directe i la identitat visual es preserven.
 
@@ -39,17 +40,23 @@ La capçalera és fixa. La primera secció de cada vista compensa l’altura de 
 
 La vista consumeix el mateix `/history` ja utilitzat per les gràfiques i els extrems. `src/features/data-center.js` calcula resums només al navegador i genera exportacions sense llibreries ni serveis nous. El Worker i els formats de resposta es mantenen intactes.
 
-## Comparador V10
+## Comparador V12
 
-`comparativa.html` i `src/features/stations-comparison.js` consumeixen `/stations?period=now|today|24h`. El mapa, les targetes i la gràfica de cinc variables parteixen d’un únic payload normalitzat. Leaflet es carrega sota demanda i Chart.js continua sent l’únic motor de gràfiques.
+`comparativa.html` i `src/features/stations-comparison.js` consumeixen `/stations?period=now|today|24h`. El Worker manté Fontanillas com a referència i utilitza el servei de proximitat de The Weather Company per completar automàticament fins a sis estacions en un radi màxim de 20 km, amb fallback a la selecció estable anterior. El mapa, les targetes i la gràfica de cinc variables parteixen d’un únic payload normalitzat. Leaflet es carrega sota demanda i Chart.js continua sent l’únic motor de gràfiques.
 
 La vista «Cel de dia i de nit» reutilitza el mòdul d’astronomia existent. El radar conserva la capa oficial de Meteocat i mostra l’activitat elèctrica amb la imatge oficial adaptable d’AEMET.
 
-## Medi Ambient V11
+## Medi Ambient V12
 
-`src/features/environment.js` consulta directament l’API de qualitat de l’aire d’Open‑Meteo per mostrar l’estimació CAMS europea a les coordenades de Sant Celoni. La interfície separa clarament aquestes estimacions dels visors operatius oficials de la Generalitat i l’ACA. El visor de llamps d’AEMET es carrega sota demanda dins de Radar i el Worker conserva intactes els seus contractes.
+`src/features/environment.js` consulta directament l’API de qualitat de l’aire d’Open‑Meteo per mostrar l’estimació CAMS europea a les coordenades de Sant Celoni, també desglossada per contaminant. La interfície separa clarament aquestes estimacions dels visors operatius del Pla Alfa i l’ACA, i del mapa d’albiraments de MedusApp. Tots tres visors es carreguen sota demanda. Meduseo s’ofereix només com a enllaç extern per evitar integrar el seu consentiment publicitari dins del portal.
 
 Totes les subpàgines del portal comparteixen el component visual `portal-view-header`. La invitació inicial d’avisos desa una única decisió local al navegador i no torna a interrompre la navegació després de respondre.
+
+La pàgina principal d’avisos demana com a màxim cinc episodis. `historial-avisos.html` consulta sota demanda fins a cent registres del mateix endpoint i permet filtrar-los sense duplicar dades ni crear un segon arxiu.
+
+## Identitat visual V12
+
+El menú lateral utilitza un únic sistema de pictogrames SVG de línia, amb el mateix gruix, mida i color. Són codi local, no depenen de fonts d’icones ni de serveis externs i mantenen etiquetes textuals visibles.
 
 ## Normes de canvi
 

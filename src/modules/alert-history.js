@@ -10,10 +10,11 @@ function formatDate(value){ const d=new Date(value); if(Number.isNaN(d.getTime()
 function loadLocal(){ try{return JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]')}catch{return []} }
 function saveLocal(items){ try{localStorage.setItem(LOCAL_KEY,JSON.stringify(items.slice(0,30)))}catch{} }
 function keyOf(item){ return [item.level,item.phenomenon||item.title,item.started_at||item.created_at].join('|'); }
+function historyLimit(){const host=document.getElementById('alert-history-list');return Math.min(100,Math.max(1,Number(host?.dataset.historyLimit||20)));}
 function combinedItems(){
   const map=new Map();
   [...serverItems,...localItems].forEach(item=>map.set(keyOf(item),item));
-  return [...map.values()].sort((a,b)=>new Date(b.started_at||b.created_at||0)-new Date(a.started_at||a.created_at||0)).slice(0,20);
+  return [...map.values()].sort((a,b)=>new Date(b.started_at||b.created_at||0)-new Date(a.started_at||a.created_at||0)).slice(0,historyLimit());
 }
 function render(){
   const host=document.getElementById('alert-history-list');
@@ -43,7 +44,7 @@ export async function loadAlertHistory(){
   if(!host)return;
   document.addEventListener('observatori:alerts-updated',event=>capturePayload(event.detail));
   try{
-    const r=await fetch(`${CONFIG.apiUrl}/alert-history?limit=20`,{cache:'no-store',headers:{Accept:'application/json'}});
+    const r=await fetch(`${CONFIG.apiUrl}/alert-history?limit=${historyLimit()}`,{cache:'no-store',headers:{Accept:'application/json'}});
     if(!r.ok)throw new Error(`API ${r.status}`);
     const data=await r.json(); serverItems=Array.isArray(data.items)?data.items:[];
     render();

@@ -3,4 +3,5 @@
   <url><loc>https://meteo.fontanillas.cat/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>
   <url><loc>https://meteo.fontanillas.cat/metodologia.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://meteo.fontanillas.cat/comparativa.html</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://meteo.fontanillas.cat/historial-avisos.html</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
 </urlset>

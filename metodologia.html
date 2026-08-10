@@ -32,15 +32,15 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=6.0" />
-    <link rel="stylesheet" href="css/portal.css?v=11.0.0" />
-    <script type="module" src="src/features/portal-static.js?v=11.0.0"></script>
+    <link rel="stylesheet" href="css/portal.css?v=12.0.0" />
+    <script type="module" src="src/features/portal-static.js?v=12.0.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"WebSite","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","description":"Dades meteorològiques locals, previsió, avisos, radar i astronomia des de Sant Celoni.","about":{"@type":"Place","name":"Sant Celoni","geo":{"@type":"GeoCoordinates","latitude":41.6906,"longitude":2.489}}}
     </script>
   <style>
   /* Estils específics per metodologia: espaciat i panells */
-  #metodologia { padding-top: 2rem; padding-bottom: 4rem; }
+  #metodologia { padding-bottom: 4rem; }
   #metodologia .panel { padding: 2rem; margin-bottom: 1.5rem; }
   #metodologia .panel h3 { margin-top: 0; color: var(--accent); }
   #metodologia .panel h4 { margin-bottom: 0.5rem; margin-top: 1.5rem; }
@@ -93,14 +93,10 @@
     </header>
 
     <main id="metodologia" class="shell">
+    <section class="portal-view-header portal-view-header--static panel" aria-labelledby="methodology-page-title">
+      <div><p class="eyebrow">Projecte i transparència</p><h1 id="methodology-page-title">Metodologia i equipament</h1><p>Com mesurem, processem i publiquem les dades de l’Observatori Fontanillas.</p></div><span class="tag">Dades verificables</span>
+    </section>
     <section class="section-block">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Projecte</p>
-          <h1>Metodologia i Equipament</h1>
-        </div>
-      </div>
-
       <div class="panel">
         <h3>L’Estació Meteorològica</h3>
         <p>L’Observatori Fontanillas està situat a la zona nord de Sant Celoni (Montseny). Les dades s’actualitzen cada 2–5 minuts i s’emmagatzemen a una base de dades històrica per a anàlisi climàtic.</p>
@@ -129,7 +125,7 @@
   </main>
     <footer class="shell">
       <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V11.0.0</small>
+      <small>Dades locals · Sant Celoni, Montseny · V12.0.0</small>
       <div>
         <a href="#top" id="footer-top-link">Tornar amunt ↑</a>
 

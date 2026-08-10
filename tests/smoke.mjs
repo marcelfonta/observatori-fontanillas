@@ -7,13 +7,13 @@ const html=await readFile(resolve(root,'index.html'),'utf8');
 const portalShell=await readFile(resolve(root,'src/features/portal-shell.js'),'utf8');
 const pages=['inici','estacio','prediccio','cel','avisos','radar','webcams','centre-dades','medi-ambient','contacte'];
 for(const page of pages){if(!portalShell.includes(`'${page}'`))throw new Error(`Falta l’enllaç de pàgina: ${page}`);}
-for(const id of ['quick-alert-link','official-alert-list','push-alert-button','alertInviteModal','alert-history-list','radar-map','radar-panel-lightning','contact-form','hero-webcam-image','station-page-title','cel-nocturn','nearby-webcams-title','centre-dades-overview','data-summary-samples','data-export-status','environment-aqi','environment-pm25','pollen-grass']){if(!html.includes(`id="${id}"`))throw new Error(`Falta el selector crític: ${id}`);}
-for(const file of ['comparativa.html','metodologia.html','service-worker.js','site.webmanifest','worker/index.js','src/features/share.js','src/features/portal-router.js','src/features/portal-shell.js','src/features/portal-static.js','src/features/data-center.js','src/features/environment.js','css/portal.css','PROJECT.md','ROADMAP.md','CHANGELOG.md'])await access(resolve(root,file));
+for(const id of ['quick-alert-link','official-alert-list','push-alert-button','alertInviteModal','alert-history-list','radar-map','radar-panel-lightning','contact-form','hero-webcam-image','station-page-title','cel-nocturn','nearby-webcams-title','centre-dades-overview','data-summary-samples','data-export-status','environment-aqi','environment-pm25','environment-pm25-level','environment-viewers-title','pollen-grass']){if(!html.includes(`id="${id}"`))throw new Error(`Falta el selector crític: ${id}`);}
+for(const file of ['comparativa.html','metodologia.html','historial-avisos.html','service-worker.js','site.webmanifest','worker/index.js','src/features/share.js','src/features/portal-router.js','src/features/portal-shell.js','src/features/portal-static.js','src/features/data-center.js','src/features/environment.js','src/features/alert-history-page.js','css/portal.css','PROJECT.md','ROADMAP.md','CHANGELOG.md'])await access(resolve(root,file));
 const app=await readFile(resolve(root,'src/app.js'),'utf8');
 if(!app.includes("initPortal();")||!app.includes("initShare();")||!app.includes("initDataCenter();")||!app.includes("renderDataCenter(latestHistory,latest)")||!app.includes("initEnvironment"))throw new Error('El portal, la compartició, el Centre de Dades o Medi Ambient no s’inicialitzen.');
 const worker=await readFile(resolve(root,'service-worker.js'),'utf8');
-if(!worker.includes("'/css/portal.css'")||!worker.includes("'/src/features/portal-router.js'")||!worker.includes("'/src/features/portal-shell.js'")||!worker.includes("'/src/features/data-center.js'")||!worker.includes("'/src/features/environment.js'"))throw new Error('La PWA no inclou els nous recursos.');
-for(const file of ['index.html','comparativa.html','metodologia.html']){
+if(!worker.includes("'/css/portal.css'")||!worker.includes("'/src/features/portal-router.js'")||!worker.includes("'/src/features/portal-shell.js'")||!worker.includes("'/src/features/data-center.js'")||!worker.includes("'/src/features/environment.js'")||!worker.includes("'/historial-avisos.html'")||!worker.includes("'/src/features/alert-history-page.js'"))throw new Error('La PWA no inclou els nous recursos.');
+for(const file of ['index.html','comparativa.html','metodologia.html','historial-avisos.html']){
   const page=await readFile(resolve(root,file),'utf8');
   const ids=[...page.matchAll(/\sid="([^"]+)"/g)].map(match=>match[1]);
   const duplicates=[...new Set(ids.filter((id,index)=>ids.indexOf(id)!==index))];
@@ -37,10 +37,20 @@ const comparisonFeature=await readFile(resolve(root,'src/features/stations-compa
 for(const feature of ['ensureLeaflet','renderMap','historySeries','compare-variable-chart'])if(!comparisonFeature.includes(feature))throw new Error(`Comparativa: falta la funció ${feature}.`);
 if(!html.includes('data-portal-page="cel"')||html.match(/id="cel-nocturn"[^>]*data-mobile-advanced/))throw new Error('La pàgina del cel no és independent o pot quedar oculta en mòbil.');
 if((html.match(/class="portal-view-header panel"/g)||[]).length!==9)throw new Error('Les nou subpàgines principals no comparteixen capçalera.');
+if(!html.includes('data-history-limit="5"')||!html.includes('historial-avisos.html'))throw new Error('La vista principal no limita l’historial o no enllaça amb l’arxiu complet.');
+for(const viewer of ['fire','drought','jellyfish'])if(!html.includes(`data-environment-viewer="${viewer}"`))throw new Error(`Medi Ambient: falta el visor ${viewer}.`);
+if(!html.includes('https://meduseo.com/es/')||!html.includes('https://www.medusapp.net/mapa/mapa-portada.php'))throw new Error('Medi Ambient: falten MedusApp o Meduseo.');
 if(html.includes('https://www.meteo.cat/observacions/radarLlamps'))throw new Error('Encara queda el visor de llamps de Meteocat que es retallava.');
 if(!html.includes('https://www.aemet.es/es/eltiempo/observacion/rayos.html?w=0'))throw new Error('Falta el visor oficial de llamps d’AEMET.');
 const push=await readFile(resolve(root,'src/features/push.js'),'utf8');
 if(!push.includes('fontanillas-alert-invite-v1')||!push.includes("closeInvite('declined')")||!push.includes("closeInvite('accepted')"))throw new Error('La invitació única d’avisos no recorda les dues respostes.');
 const portalCss=await readFile(resolve(root,'css/portal.css'),'utf8');
 if(!portalCss.includes('#shareModal > [role="dialog"]')||!portalCss.includes('background: #091813 !important'))throw new Error('La finestra de compartir no té un fons sòlid.');
-console.log('Smoke test V11: correcte');
+if(!portalCss.includes('min-height: 0; padding: 30px 34px')||!portalCss.includes('.environment-level'))throw new Error('Falta la capçalera compacta o els indicadors ambientals.');
+if(!portalShell.includes('<svg viewBox="0 0 24 24"')||/[⌂◉☁☾◎▣⌁⇄♧]/.test(portalShell))throw new Error('Els pictogrames laterals no s’han migrat completament a SVG.');
+const methodology=await readFile(resolve(root,'metodologia.html'),'utf8');
+if(!methodology.includes('portal-view-header portal-view-header--static'))throw new Error('Metodologia no té la capçalera compartida.');
+const backend=await readFile(resolve(root,'worker/index.js'),'utf8');
+if(!backend.includes('/v3/location/near')||!backend.includes('discoverComparisonStations')||!backend.includes('WORKER_VERSION = "12.0.0"'))throw new Error('El Worker no amplia les estacions properes de forma compatible.');
+if(!comparison.includes('Com canvia el temps al Baix Montseny?'))throw new Error('El títol del comparador no s’ha aclarit.');
+console.log('Smoke test V12: correcte');

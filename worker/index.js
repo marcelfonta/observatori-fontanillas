@@ -1,6 +1,6 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "7.0.0-phase3";
-const WORKER_BUILT = "2026-08-06";
+const WORKER_VERSION = "12.0.0";
+const WORKER_BUILT = "2026-08-10";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const WEBCAM_URL = "https://www.alvar.cat/WebCam/Imatge-Camera.jpg";
@@ -347,6 +347,51 @@ async function weatherRequestForStation(path, stationId, params, env, cacheTtl) 
   return response.json();
 }
 
+function distanceKm(lat1, lon1, lat2, lon2) {
+  const values=[lat1,lon1,lat2,lon2].map(Number);
+  if(!values.every(Number.isFinite))return null;
+  const [a,b,c,d]=values.map(value=>value*Math.PI/180);
+  const h=Math.sin((c-a)/2)**2+Math.cos(a)*Math.cos(c)*Math.sin((d-b)/2)**2;
+  return 6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
+}
+
+async function discoverComparisonStations(env) {
+  if(!env.WU_API_KEY)return COMPARISON_STATIONS;
+  try {
+    const query=new URLSearchParams({geocode:"41.6906,2.489",product:"pws",format:"json",apiKey:env.WU_API_KEY});
+    const response=await fetch(`https://api.weather.com/v3/location/near?${query}`,{cf:{cacheEverything:true,cacheTtl:3600}});
+    if(!response.ok)throw new Error(`Weather location near ha respost ${response.status}`);
+    const payload=await response.json();
+    const location=payload.location||payload;
+    const ids=Array.isArray(location.stationId)?location.stationId:[];
+    const names=Array.isArray(location.stationName)?location.stationName:[];
+    const latitudes=Array.isArray(location.latitude)?location.latitude:[];
+    const longitudes=Array.isArray(location.longitude)?location.longitude:[];
+    const distances=Array.isArray(location.distanceKm)?location.distanceKm:[];
+    const selected=new Map(COMPARISON_STATIONS.map(station=>[station.stationId,station]));
+    ids.forEach((stationId,index)=>{
+      if(!stationId||selected.has(stationId)||selected.size>=6)return;
+      const latitude=finite(latitudes[index]);const longitude=finite(longitudes[index]);
+      const distance=finite(distances[index])??distanceKm(41.6906,2.489,latitude,longitude);
+      if(!Number.isFinite(distance)||distance>20)return;
+      selected.set(stationId,{
+        id:`nearby-${String(stationId).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`,
+        name:cleanText(names[index]||stationId,80),
+        municipality:"Entorn del Baix Montseny",
+        source:"Weather Underground · estació propera",
+        stationId,
+        latitude,
+        longitude,
+        distanceKm:Number(distance.toFixed(1)),
+      });
+    });
+    return [...selected.values()].slice(0,6);
+  } catch(error) {
+    console.warn("Descobriment d’estacions properes:",error.message);
+    return COMPARISON_STATIONS;
+  }
+}
+
 function mapComparisonCurrent(station, obs) {
   if (!obs?.metric) return null;
   return {
@@ -357,6 +402,7 @@ function mapComparisonCurrent(station, obs) {
     stationId: station.stationId,
     latitude: station.latitude,
     longitude: station.longitude,
+    distanceKm: finite(station.distanceKm)??distanceKm(41.6906,2.489,station.latitude,station.longitude),
     updated: obs.obsTimeLocal,
     temperature: finite(obs.metric.temp),
     humidity: finite(obs.humidity),
@@ -407,7 +453,8 @@ async function comparisonHistoryStation(station, period, env) {
 
 async function comparisonStations(url, env) {
   const period = ["now","today","24h"].includes(url.searchParams.get("period")) ? url.searchParams.get("period") : "now";
-  const results = await Promise.all(COMPARISON_STATIONS.map(async station => {
+  const nearbyStations=await discoverComparisonStations(env);
+  const results = await Promise.all(nearbyStations.map(async station => {
     try {
       const current = await comparisonCurrentStation(station, env);
       if (!current) throw new Error("Sense observació actual");
@@ -426,7 +473,7 @@ async function comparisonStations(url, env) {
     stations:results,
     sourcePolicy:{
       mode:"smart-fallback",
-      note:"La capa està preparada per prioritzar fonts oficials quan hi hagi credencials i estacions equivalents; actualment usa la xarxa PWS disponible per mantenir dades homogènies i comparables."
+      note:"Fontanillas es manté com a referència i el Worker descobreix automàticament fins a cinc estacions PWS properes en un radi màxim de 20 km. Totes les lectures es normalitzen amb les mateixes unitats."
     }
   }, 200, "public, max-age=120");
 }

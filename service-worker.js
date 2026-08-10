@@ -1,12 +1,12 @@
-const CACHE = 'observatori-fontanillas-v11-0-0';
+const CACHE = 'observatori-fontanillas-v12-0-0';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
-  '/', '/index.html', '/metodologia.html', '/comparativa.html', '/site.webmanifest',
+  '/', '/index.html', '/metodologia.html', '/comparativa.html', '/historial-avisos.html', '/site.webmanifest',
   '/css/variables.css', '/css/layout.css', '/css/style.css', '/css/portal.css',
   '/src/app.js', '/src/core/config.js', '/src/core/dom.js', '/src/services/weather-api.js',
   '/src/features/analytics.js', '/src/features/push.js', '/src/features/pwa.js', '/src/features/share.js',
-  '/src/features/share-page.js', '/src/features/stations-comparison.js', '/src/features/alert-history-init.js',
+  '/src/features/share-page.js', '/src/features/stations-comparison.js', '/src/features/alert-history-init.js', '/src/features/alert-history-page.js',
   '/src/features/portal-router.js', '/src/features/portal-shell.js', '/src/features/portal-static.js', '/src/features/data-center.js', '/src/features/environment.js',
   '/src/modules/alert-history.js', '/src/modules/astronomia.js', '/src/modules/avisos.js', '/src/modules/confort.js',
   '/src/modules/contacte.js', '/src/modules/estacio.js', '/src/modules/extrems.js',

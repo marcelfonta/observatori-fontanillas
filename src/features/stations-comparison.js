@@ -1,7 +1,7 @@
 import { CONFIG } from '../core/config.js';
 
 const state = { period: 'now', metric: 'temperature', payload: null, charts: [] };
-const COLORS = ['#89d6a3','#e6c56c','#79c5d8','#ee8e73'];
+const COLORS = ['#89d6a3','#e6c56c','#79c5d8','#ee8e73','#b59be8','#5fc4a6','#e48fb8','#a6c875'];
 const METRICS = {
   temperature:{ label:'Temperatura', key:'temperature', suffix:'°C', digits:1, value:s=>s.temperature },
   humidity:{ label:'Humitat', key:'humidity', suffix:'%', digits:0, value:s=>s.humidity },
@@ -70,7 +70,7 @@ function renderCards(payload) {
     const offline = st.status !== 'online';
     return `<article class="station-card panel ${offline ? 'is-offline' : ''}">
       <header>
-        <div><span class="station-source">${st.source || 'Font externa'}</span><h3>${st.name}</h3><small>${st.municipality || ''}</small></div>
+        <div><span class="station-source">${st.source || 'Font externa'}</span><h3>${st.name}</h3><small>${st.municipality || ''}${Number.isFinite(Number(st.distanceKm))&&Number(st.distanceKm)>.1?` · ${fmt(st.distanceKm)} km de Fontanillas`:''}</small></div>
         <span class="station-status ${offline ? 'is-offline' : ''}"><i></i>${offline ? 'Sense dades' : updatedLabel(st.updated)}</span>
       </header>
       ${offline ? `<div class="station-unavailable"><strong>Dades no disponibles</strong><span>La resta de la comparativa continua activa.</span></div>` : `
@@ -105,7 +105,8 @@ function renderMapList(stations) {
   list.innerHTML=stations.map((station,index)=>{
     const summary=periodSummary(station);
     const offline=station.status!=='online';
-    return `<div class="comparison-map-item ${offline?'is-offline':''}"><i style="background:${offline?'#6f7d78':COLORS[index%COLORS.length]}"></i><span><b>${station.name}</b><small>${station.municipality||'Baix Montseny'}</small></span><strong>${offline?'—':`${fmt(summary.temperature)}°`}</strong></div>`;
+    const distance=Number.isFinite(Number(station.distanceKm))&&Number(station.distanceKm)>.1?` · ${fmt(station.distanceKm)} km`:'';
+    return `<div class="comparison-map-item ${offline?'is-offline':''}"><i style="background:${offline?'#6f7d78':COLORS[index%COLORS.length]}"></i><span><b>${station.name}</b><small>${station.municipality||'Baix Montseny'}${distance}</small></span><strong>${offline?'—':`${fmt(summary.temperature)}°`}</strong></div>`;
   }).join('');
 }
 
