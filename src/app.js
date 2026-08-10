@@ -20,7 +20,7 @@ import { updateSituation } from './modules/situacio.js';
 import { initShare } from './features/share.js';
 import { initPortal } from './features/portal-router.js';
 import { initDataCenter, renderDataCenter } from './features/data-center.js';
-import { initEnvironment } from './features/environment.js';
+import { initEnvironment, updateEnvironmentStation } from './features/environment.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -107,6 +107,7 @@ async function load(){
       if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
     }
   }
+  updateEnvironmentStation(latest);
   currentFetchedAt=Date.now();
 }
 const periodLabels={ '24h':'Lectures de les últimes 24 hores','7d':'Evolució dels últims 7 dies','30d':'Evolució dels últims 30 dies','1y':'Evolució de l’últim any disponible' };

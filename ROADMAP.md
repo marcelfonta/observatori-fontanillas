@@ -34,7 +34,7 @@ Implementat a V10.0.0 amb el contracte `/stations` existent: mapa Leaflet del Ba
 - Radiació UV, pol·len, risc d’incendi, sequera i estat hidrològic.
 - Costa catalana i meduses: mapa, presència, espècie, risc, actualització i informació pràctica amb font fiable automàtica.
 
-Completat a V12.0.0: índex europeu general i per contaminant amb interpretació baixa/moderada/alta, PM10, PM2,5, NO₂, O₃, CO, SO₂, UV i cinc tipus de pol·len amb CAMS/Open‑Meteo. La pàgina integra sota demanda el Pla Alfa oficial, el visor de sequera de l’ACA i el mapa d’albiraments de MedusApp (UPV i Universitat d’Alacant). PlatgesCat i Meduseo es mantenen com a fonts complementàries externes, amb la naturalesa de cada dada clarament indicada.
+Completat i estabilitzat a V12.1.0: índex europeu general i per contaminant amb interpretació baixa/moderada/alta, PM10, PM2,5, NO₂, O₃, CO, SO₂ i cinc tipus de pol·len amb CAMS/Open‑Meteo; l’UV prové prioritàriament del sensor de Fontanillas. La pàgina mostra el mapa oficial diari i lleuger del Pla Alfa, el visor de sequera de l’ACA i el mapa d’albiraments de MedusApp (UPV i Universitat d’Alacant). PlatgesCat i Meduseo es mantenen com a fonts complementàries externes.
 
 ## Milestone 5 — Branding i identitat visual — En curs (iniciat a V12)
 
@@ -43,7 +43,9 @@ Completat a V12.0.0: índex europeu general i per contaminant amb interpretació
 - Redisseny coherent dels pictogrames del menú lateral i de les icones funcionals del portal.
 - Revisió del nom curt instal·lat i guia d’identitat.
 
-Primera evolució implementada a V12.0.0: substitució dels símbols tipogràfics poc clars del menú per un sistema de pictogrames SVG coherent, accessible i escalable. La revisió global de marca, icones PWA i guia d’identitat continua pendent.
+Primera evolució implementada a V12.0.0: substitució dels símbols tipogràfics poc clars del menú per un sistema de pictogrames SVG coherent, accessible i escalable.
+
+Segona evolució implementada a V12.1.0: guia breu d’identitat a `assets/logos/BRAND-GUIDE.md` i nom curt de la PWA unificat com a «Observatori». Continua pendent la producció final del paquet d’icones maskable i la revisió de les imatges socials.
 
 ## Milestone 6 — Meteo IA
 

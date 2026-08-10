@@ -1,6 +1,6 @@
 {
   "name": "observatori-fontanillas",
-  "version": "12.0.0",
+  "version": "12.1.0",
   "type": "static-pwa",
   "entry": "index.html",
   "frontend": "src/app.js",

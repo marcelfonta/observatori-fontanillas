@@ -122,7 +122,7 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .lightning-integrated h3 { margin: 5px 0 8px; font: 700 clamp(23px,3vw,36px)/1.08 var(--font-display); }
 .lightning-integrated header p:last-child { max-width: 760px; margin: 0; color: var(--muted); line-height: 1.55; }
 .lightning-integrated__frame { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: #f4f7f5; }
-.lightning-integrated__frame iframe { display: block; width: 100%; height: 760px; border: 0; background: #fff; }
+.lightning-integrated__frame iframe { display: block; width: 100%; height: 560px; border: 0; background: #e9f0ec; }
 .lightning-integrated__fallback { display: flex; align-items: center; gap: 10px; padding: 12px 15px; border-top: 1px solid var(--line); background: #091813; color: var(--muted); font-size: 11px; }
 .lightning-integrated__fallback span { color: var(--green); font-size: 18px; }
 .lightning-integrated__fallback strong { color: var(--text); }
@@ -153,7 +153,7 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .environment-health > p:not(.eyebrow) { color: var(--muted); line-height: 1.65; }
 .environment-health__meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; padding-top: 24px; }
 .environment-health__meta span { padding: 16px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.018); }
-.environment-health__meta small,.environment-health__meta b { display: block; }.environment-health__meta small { color: var(--muted); font-size: 9px; text-transform: uppercase; }.environment-health__meta b { margin-top: 8px; font-size: 16px; }
+.environment-health__meta small,.environment-health__meta b { display: block; }.environment-health__meta small { color: var(--muted); font-size: 9px; text-transform: uppercase; }.environment-health__meta small em { color: var(--green); font-style: normal; }.environment-health__meta b { margin-top: 8px; font-size: 16px; }
 .environment-metrics { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; }
 .environment-metrics article { min-width: 0; padding: 20px; }
 .environment-metrics article > span { color: var(--green); font-size: 10px; letter-spacing: .08em; }
@@ -184,6 +184,8 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .environment-viewer-panel[hidden] { display: none; }
 .environment-viewer-frame { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: #eef2ef; }
 .environment-viewer-frame iframe { display: block; width: 100%; height: 620px; border: 0; background: #fff; }
+.environment-viewer-frame--image { background: #07110f; }
+.environment-viewer-frame--image > img { display: block; width: auto; max-width: 100%; max-height: 640px; margin: 0 auto; background: #fff; object-fit: contain; }
 .environment-viewer-meta { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--line); background: #091813; color: var(--muted); font-size: 10px; line-height: 1.45; }
 .environment-viewer-meta strong { color: var(--text); }
 .environment-viewer-meta .environment-viewer-links { display: flex; gap: 12px; margin-left: auto; white-space: nowrap; }
@@ -214,6 +216,20 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 
 .comparison-map-panel { margin-bottom: 18px; padding: 28px; }
 .station-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.station-card { min-height: 230px; padding: 16px; }
+.station-card header { gap: 8px; }
+.station-card h3 { margin-top: 3px; font-size: .95rem; line-height: 1.2; }
+.station-card header small,.station-source { font-size: .62rem; line-height: 1.35; }
+.station-status { gap: 4px; font-size: .61rem; }
+.station-temp { padding: 14px 0 12px; }
+.station-temp strong { font-size: 2.05rem; }
+.station-temp strong small { font-size: .72rem; }
+.station-temp > span { font-size: .64rem; }
+.station-metrics { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+.station-metrics span { min-width: 0; padding: 7px; }
+.station-metrics small { font-size: .57rem; }
+.station-metrics b { margin-top: 2px; overflow: hidden; font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
+.station-unavailable { min-height: 130px; }
 .comparison-map-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 18px; }
 .comparison-map-panel h2 { margin: 5px 0 7px; }
 .comparison-map-panel header p:last-child { margin: 0; color: var(--muted); }
@@ -283,7 +299,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .nearby-webcams__links { grid-template-columns: 1fr 1fr; }
   .lightning-integrated > header { flex-direction: column; }
   .environment-overview { grid-template-columns: 1fr; }
-  .lightning-integrated__frame iframe { height: 650px; }
+  .lightning-integrated__frame iframe { height: 500px; }
   .environment-metrics { grid-template-columns: repeat(3,1fr); }
   .pollen-grid { grid-template-columns: repeat(3,1fr); }
   .environment-official { grid-template-columns: 1fr; }
@@ -314,7 +330,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .environment-viewer-meta .environment-viewer-links { margin-left: 0; flex-wrap: wrap; white-space: normal; }
   .environment-status { align-items: flex-start; flex-direction: column; gap: 5px; }
   .environment-aqi,.environment-health,.pollen-panel { padding: 23px; }
-  .lightning-integrated__frame iframe { height: 560px; }
+  .lightning-integrated__frame iframe { height: 460px; }
   .environment-aqi header { flex-direction: column; }
   .environment-aqi__reading { grid-template-columns: 1fr; gap: 14px; margin-top: 28px; }
   .environment-aqi__reading > strong { font-size: 86px; }

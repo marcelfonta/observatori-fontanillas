@@ -1,6 +1,6 @@
 {
   "name": "Observatori Meteorològic Fontanillas",
-  "short_name": "Meteo Fontanillas",
+  "short_name": "Observatori",
   "description": "Dades meteorològiques locals, previsió, avisos i radar en directe des de Sant Celoni.",
   "lang": "ca",
   "start_url": "/?source=pwa",

@@ -44,11 +44,11 @@ La vista consumeix el mateix `/history` ja utilitzat per les gràfiques i els ex
 
 `comparativa.html` i `src/features/stations-comparison.js` consumeixen `/stations?period=now|today|24h`. El Worker manté Fontanillas com a referència i utilitza el servei de proximitat de The Weather Company per completar automàticament fins a sis estacions en un radi màxim de 20 km, amb fallback a la selecció estable anterior. El mapa, les targetes i la gràfica de cinc variables parteixen d’un únic payload normalitzat. Leaflet es carrega sota demanda i Chart.js continua sent l’únic motor de gràfiques.
 
-La vista «Cel de dia i de nit» reutilitza el mòdul d’astronomia existent. El radar conserva la capa oficial de Meteocat i mostra l’activitat elèctrica amb la imatge oficial adaptable d’AEMET.
+La vista «Cel de dia i de nit» reutilitza el mòdul d’astronomia existent. El radar conserva la capa oficial de Meteocat i mostra l’activitat elèctrica amb el mapa vectorial incrustable de Blitzortung, una xarxa col·laborativa no oficial. La interfície indica que els avisos de Meteocat, AEMET i Protecció Civil sempre prevalen.
 
 ## Medi Ambient V12
 
-`src/features/environment.js` consulta directament l’API de qualitat de l’aire d’Open‑Meteo per mostrar l’estimació CAMS europea a les coordenades de Sant Celoni, també desglossada per contaminant. La interfície separa clarament aquestes estimacions dels visors operatius del Pla Alfa i l’ACA, i del mapa d’albiraments de MedusApp. Tots tres visors es carreguen sota demanda. Meduseo s’ofereix només com a enllaç extern per evitar integrar el seu consentiment publicitari dins del portal.
+`src/features/environment.js` consulta directament l’API de qualitat de l’aire d’Open‑Meteo per mostrar l’estimació CAMS europea a les coordenades de Sant Celoni, també desglossada per contaminant. L’UV es rep des del mateix payload de l’estació Fontanillas que alimenta la portada; només usa CAMS si el sensor no retorna cap valor. La interfície mostra el mapa oficial diari del Pla Alfa com una imatge lleugera, i carrega sota demanda els visors de l’ACA i MedusApp. Meduseo s’ofereix només com a enllaç extern.
 
 Totes les subpàgines del portal comparteixen el component visual `portal-view-header`. La invitació inicial d’avisos desa una única decisió local al navegador i no torna a interrompre la navegació després de respondre.
 
@@ -57,6 +57,8 @@ La pàgina principal d’avisos demana com a màxim cinc episodis. `historial-av
 ## Identitat visual V12
 
 El menú lateral utilitza un únic sistema de pictogrames SVG de línia, amb el mateix gruix, mida i color. Són codi local, no depenen de fonts d’icones ni de serveis externs i mantenen etiquetes textuals visibles.
+
+V12.1 fixa «Observatori» com a nom curt instal·lat i incorpora `assets/logos/BRAND-GUIDE.md` com a font de criteri per al símbol, colors, tipografies i pictogrames.
 
 ## Normes de canvi
 

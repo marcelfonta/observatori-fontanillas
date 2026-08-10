@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V12.0.0
+# Observatori Meteorològic Fontanillas — V12.1.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V12 completa Medi Ambient amb visors vius, amplia el comparador, separa l’arxiu d’avisos, compacta les capçaleres i inicia el redisseny coherent dels pictogrames.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V12.1 estabilitza els mapes de llamps i risc d’incendi, connecta l’UV amb el sensor propi, compacta el comparador i continua el Milestone 5 amb la guia d’identitat i el nom curt de la PWA.
 
 ## Estat actual
 

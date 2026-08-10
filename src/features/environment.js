@@ -2,6 +2,8 @@ import { CONFIG } from '../core/config.js';
 
 const AIR_API='https://air-quality-api.open-meteo.com/v1/air-quality';
 let loaded=false;
+let stationUv=null;
+let modelUv=null;
 
 function put(id,value){const node=document.getElementById(id);if(node)node.textContent=value;}
 function number(value,digits=1){const n=Number(value);return Number.isFinite(n)?new Intl.NumberFormat(CONFIG.locale,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(n):'—';}
@@ -32,6 +34,16 @@ function renderComponent(prefix,value){
   if(label){label.textContent=reading.label;label.className=`environment-level ${reading.className}`.trim();}
   if(meter)meter.style.width=`${Math.max(0,Math.min(100,reading.position))}%`;
 }
+function finiteValue(value){return value!==null&&value!==''&&Number.isFinite(Number(value))?Number(value):null;}
+function renderUv(){
+  const useStation=stationUv!==null;
+  put('environment-uv',number(useStation?stationUv:modelUv));
+  put('environment-uv-source',useStation?'Sensor Fontanillas':'Estimació CAMS');
+}
+export function updateEnvironmentStation(current){
+  stationUv=finiteValue(current?.uv);
+  renderUv();
+}
 function pollenName(current){
   const entries=[['Gramínies',current.grass_pollen],['Olivera',current.olive_pollen],['Bedoll',current.birch_pollen],['Artemisa',current.mugwort_pollen],['Ambrosia',current.ragweed_pollen]].filter(([,v])=>Number.isFinite(Number(v)));
   if(!entries.length)return 'No disponible';
@@ -43,7 +55,7 @@ function render(payload){
   const reading=aqiReading(current.european_aqi);
   put('environment-aqi',number(current.european_aqi,0));put('environment-aqi-label',reading.label);put('environment-aqi-copy',reading.copy);
   put('environment-health-title',reading.health);put('environment-health-copy',reading.advice);
-  put('environment-uv',number(current.uv_index));put('environment-pollen-main',pollenName(current));
+  modelUv=finiteValue(current.uv_index);renderUv();put('environment-pollen-main',pollenName(current));
   [['environment-pm10','pm10'],['environment-pm25','pm2_5'],['environment-no2','nitrogen_dioxide'],['environment-o3','ozone'],['environment-co','carbon_monoxide'],['environment-so2','sulphur_dioxide'],['pollen-grass','grass_pollen'],['pollen-olive','olive_pollen'],['pollen-birch','birch_pollen'],['pollen-mugwort','mugwort_pollen'],['pollen-ragweed','ragweed_pollen']].forEach(([id,key])=>put(id,number(current[key])));
   [['pm10','european_aqi_pm10'],['pm25','european_aqi_pm2_5'],['no2','european_aqi_nitrogen_dioxide'],['o3','european_aqi_ozone'],['so2','european_aqi_sulphur_dioxide']].forEach(([prefix,key])=>renderComponent(prefix,current[key]));
   const marker=document.getElementById('environment-aqi-marker');if(marker)marker.style.left=`${Math.max(0,Math.min(100,reading.position))}%`;
@@ -58,7 +70,7 @@ function initEnvironmentViewers(){
   if(!buttons.length)return;
   const activate=name=>{
     buttons.forEach(button=>{const active=button.dataset.environmentViewer===name;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));});
-    panels.forEach(panel=>{const active=panel.dataset.environmentPanel===name;panel.hidden=!active;if(active){const frame=panel.querySelector('iframe[data-src]');if(frame&&!frame.getAttribute('src'))frame.src=frame.dataset.src;}});
+    panels.forEach(panel=>{const active=panel.dataset.environmentPanel===name;panel.hidden=!active;if(active){const asset=panel.querySelector('[data-src]');if(asset&&!asset.getAttribute('src')){const suffix=asset.tagName==='IMG'?`?v=${new Date().toISOString().slice(0,13)}`:'';asset.src=`${asset.dataset.src}${suffix}`;}}});
   };
   buttons.forEach(button=>button.addEventListener('click',()=>activate(button.dataset.environmentViewer)));
   activate(buttons[0].dataset.environmentViewer);

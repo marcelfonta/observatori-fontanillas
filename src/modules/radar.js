@@ -128,7 +128,7 @@ export function initRadar() {
     if(mode==='interactive')ensureLeaflet().then(startInteractiveRadar).catch(()=>{setText('radar-status','Mapa no disponible');setText('radar-loader','No s’ha pogut iniciar el mapa interactiu.');});
     else {
       stopPlayback();
-      setText('radar-status', mode==='lightning' ? 'Llamps · AEMET' : 'Meteocat oficial');
+      setText('radar-status', mode==='lightning' ? 'Llamps · Blitzortung' : 'Meteocat oficial');
     }
   };
   buttons.forEach((button,index)=>{

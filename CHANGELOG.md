@@ -1,5 +1,27 @@
 # Changelog
 
+## V12.1.0 — 2026-08-10
+
+### Corregit
+
+- Substituït el visor de llamps d’AEMET per l’embed vectorial en temps real de Blitzortung, centrat a Catalunya i comprovat en una amplada mòbil de 390 px.
+- Substituït el visor ArcGIS del Pla Alfa, lent i inestable en alguns telèfons, pel mapa oficial diari dels Agents Rurals amb data i llegenda visibles.
+- L’índex UV de Medi Ambient utilitza prioritàriament el valor real del sensor de Fontanillas; CAMS només actua com a fallback identificat.
+
+### Millorat
+
+- Targetes de Comparar més petites: menys alçada i farciment, temperatura més compacta i sis variables distribuïdes en tres columnes.
+- Alçada del visor de llamps reduïda i adaptada a escriptori i mòbil.
+
+### Branding · Milestone 5
+
+- Nom curt de la PWA unificat com a «Observatori» per evitar truncaments.
+- Nova guia d’identitat amb nom, símbol, colors, tipografia, pictogrames i criteris d’ús.
+
+### Preservat
+
+- API i Worker sense canvis de contracte; avisos oficials, PWA, compartir, comparativa històrica i fonts de Medi Ambient continuen actius.
+
 ## V12.0.0 — 2026-08-10
 
 ### Afegit
