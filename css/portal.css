@@ -187,6 +187,7 @@ body[data-page="centre-dades"] .extremes-archive .segmented--archive,body[data-p
 .push-level-preferences span,.push-level-preferences b,.push-level-preferences small { display: block; }
 .push-level-preferences b { color: var(--text); font-size: 10px; }.push-level-preferences small { margin-top: 3px; color: var(--muted); font-size: 8px; line-height: 1.35; }
 .push-preference-summary { margin: 0 0 17px; padding: 10px 12px; border-radius: 10px; background: rgba(137,214,163,.07); color: var(--green); font-size: 9px; line-height: 1.45; }
+.push-preference-summary.is-error { border: 1px solid rgba(255,156,145,.3); background: rgba(255,156,145,.08); color: #ffb0a7; }
 
 .portal-view-header { display: flex; align-items: center; justify-content: space-between; gap: 28px; min-height: 0; padding: 30px 34px; }
 .portal-view-header h1 { max-width: 940px; margin: 6px 0 10px; font: 700 clamp(32px, 3.8vw, 52px)/1.02 var(--font-display); letter-spacing: -.045em; }

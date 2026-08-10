@@ -19,6 +19,7 @@ const inviteNo = document.getElementById('alert-invite-no');
 let OneSignalRef = null;
 let sdkReady = false;
 let sdkReadyTimer = null;
+let pushActionBusy = false;
 
 function loadOneSignalSdk(){
   if(!appId || document.querySelector('script[data-onesignal-sdk]'))return;
@@ -38,6 +39,28 @@ function loadPrefs(){ try { return {...DEFAULT_PREFS,...JSON.parse(localStorage.
 function savePrefsLocal(prefs){ try { localStorage.setItem(STORAGE_KEY,JSON.stringify(prefs)); } catch {} }
 function inviteDecision(){ try { return localStorage.getItem(INVITE_KEY); } catch { return null; } }
 function saveInviteDecision(value){ try { localStorage.setItem(INVITE_KEY,value); } catch {} }
+function wait(ms){ return new Promise(resolve=>window.setTimeout(resolve,ms)); }
+async function waitUntil(check,timeout=20000){
+  const started=Date.now();
+  while(Date.now()-started<timeout){
+    try { if(await check())return true; } catch {}
+    await wait(250);
+  }
+  return false;
+}
+function setPushActionState(busy,label='Desar i activar'){
+  pushActionBusy=busy;
+  if(saveButton){ saveButton.disabled=busy; saveButton.textContent=label; saveButton.setAttribute('aria-busy',String(busy)); }
+  if(disableButton)disableButton.disabled=busy;
+  if(closeButton)closeButton.disabled=busy;
+}
+function showPushProgress(message,isError=false){
+  if(!summary)return;
+  summary.textContent=message;
+  summary.classList.toggle('is-error',isError);
+  summary.setAttribute('role',isError?'alert':'status');
+  summary.setAttribute('aria-live','polite');
+}
 function setState(label, text, active = false, disabled = false) {
   if (button) {
     const strong = button.querySelector('b');
@@ -53,7 +76,8 @@ function openModal(){
   const prefs=loadPrefs();
   fields.forEach(f=>{f.checked=Boolean(prefs[f.value]);});
   levelFields.forEach(field=>{field.checked=field.value===prefs.minLevel;});
-  if(summary)summary.textContent=notificationPreferenceSummary(prefs);
+  if(summary){ summary.textContent=notificationPreferenceSummary(prefs); summary.classList.remove('is-error'); }
+  setPushActionState(false);
   modal.hidden=false; modal.style.display='flex'; document.body.style.overflow='hidden';
 }
 function closeModal(){ if(!modal)return; modal.hidden=true; modal.style.display='none'; document.body.style.overflow=''; }
@@ -105,6 +129,7 @@ async function refresh(){
 }
 
 async function enablePush(){
+  if(pushActionBusy)return;
   const prefs=collectPrefs();
   savePrefsLocal(prefs);
   if(!appId || !OneSignalRef){
@@ -117,12 +142,36 @@ async function enablePush(){
     alert('A l’iPhone, les notificacions web funcionen quan l’Observatori està afegit a la pantalla d’inici. Fes Compartir → Afegir a la pantalla d’inici i obre’l des de la icona.');
     return;
   }
+  setPushActionState(true,'Activant…');
   try {
-    await OneSignalRef.Notifications.requestPermission();
-    await OneSignalRef.User.PushSubscription.optIn();
-    await syncTags(prefs); closeModal(); await refresh();
+    const notifications=OneSignalRef.Notifications;
+    const subscription=OneSignalRef.User?.PushSubscription;
+    if(!notifications?.isPushSupported?.())throw new Error('push-not-supported');
+    if(!notifications.permission){
+      showPushProgress('Esperant el permís del navegador…');
+      void Promise.resolve(notifications.requestPermission()).catch(()=>{});
+      const permissionGranted=await waitUntil(()=>Boolean(notifications.permission));
+      if(!permissionGranted)throw new Error('permission-not-granted');
+    }
+    if(!await optedIn()){
+      showPushProgress('Creant la subscripció d’avisos…');
+      await subscription?.optIn?.();
+      const subscriptionReady=await waitUntil(optedIn);
+      if(!subscriptionReady)throw new Error('subscription-not-ready');
+    }
+    showPushProgress('Desant les teves preferències…');
+    await syncTags(prefs);
+    closeModal();
+    await refresh();
     window.observatoriTrack?.('push_subscribed');
-  } catch(error){ console.warn('No s’ha pogut activar Web Push.',error); setState('Activar avisos','No s’ha pogut completar la subscripció'); }
+  } catch(error){
+    console.warn('No s’ha pogut activar Web Push.',error);
+    const denied=error?.message==='permission-not-granted';
+    showPushProgress(denied
+      ? 'Firefox no ha concedit el permís. Prem el cadenat de la barra d’adreces, permet les notificacions i torna-ho a provar.'
+      : 'No s’ha pogut completar l’activació. Revisa els permisos de notificacions del navegador i torna-ho a provar.',true);
+    setState('Activar avisos','L’activació està pendent; revisa el permís del navegador',false,false);
+  } finally { setPushActionState(false); }
 }
 async function disablePush(){
   const disabled={...DEFAULT_PREFS,rain:false,wind:false,storm:false,snow:false,temperature:false,all:false};savePrefsLocal(disabled);

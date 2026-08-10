@@ -1,5 +1,12 @@
 # Changelog
 
+## V19.0.3 — 2026-08-10
+
+- L'activació d'avisos mostra ara cada pas dins la finestra: permís del navegador, creació de la subscripció i desament de preferències.
+- El botó queda temporalment bloquejat durant el procés per evitar activacions duplicades i es recupera automàticament si hi ha un error.
+- Afegida detecció d'espera o denegació del permís amb instruccions específiques per revisar les notificacions a Firefox.
+- La finestra només es tanca quan OneSignal confirma que la subscripció està realment activa.
+
 ## V19.0.2 — 2026-08-10
 
 - Corregida la política de seguretat perquè la consulta pública de configuració de OneSignal es pugui executar, no només connectar.
