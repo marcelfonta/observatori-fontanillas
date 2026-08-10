@@ -1,5 +1,14 @@
 # Changelog
 
+## V19.1.0 — 2026-08-10
+
+- Confirmada l’activació completa de OneSignal: subscripcions web verificades i credencials del Worker reconegudes pel panell administratiu.
+- Confirmada la propietat de domini `fontanillas.cat` a Google Search Console i el processament correcte del sitemap amb 13 URL descobertes.
+- Corregides la nota antiga del panell i la ruta desfasada del Service Worker a la documentació de push.
+- Afegida mesura local de LCP, CLS, INP i TTFB al panell, sense analítica externa, galetes ni enviament de dades.
+- Incorporats llindars interpretables per detectar si les mètriques locals són bones, necessiten observació o requereixen millora.
+- Mantinguts intactes els contractes d’API, D1, avisos, comparador, compartir, PWA i Meteo IA.
+
 ## V19.0.7 — 2026-08-10
 
 - Corregits els bloquejos CSP confirmats per la consola de Firefox durant la càrrega de OneSignal.

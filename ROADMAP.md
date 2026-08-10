@@ -61,13 +61,13 @@ Evolucionat a V13.1.0: comprensió de dies de la setmana, cap de setmana i setma
 
 Evolucionat a V14.0.0: context de conversa temporal per recordar lloc, període i activitat; separació robusta de frases com «Vall d’Aran aquest cap de setmana»; àlies territorial cap a Vielha; i recomanacions de bicicleta basades en temperatura, pluja i ratxes de la destinació, no en les dades locals de Sant Celoni.
 
-## Milestone 7 — SEO i presència a Internet — Base tècnica completada
+## Milestone 7 — SEO i presència a Internet — Activació principal completada
 
 - Search Console, sitemap, robots, canòniques, metadades, Open Graph, Schema.org i Core Web Vitals.
 - SEO local: Sant Celoni i Baix Montseny; pàgines específiques útils, no duplicades.
 - Analítica, directoris meteorològics i estudi de Google Business Profile segons requisits.
 
-Base tècnica implementada a V14.0.0: metadades i canòniques per vista, Open Graph i X dinàmics, dades estructurades `WebSite`, `WebPage`, `Dataset` i `BreadcrumbList`, sitemap ampliat i SEO local per Sant Celoni i el Baix Montseny. La verificació de Search Console, l’enviament del sitemap i les dades de camp de Core Web Vitals requereixen que la versió estigui publicada; queden documentats a `docs/SEO-PUBLICACIO.md`. No s’activa Google Business Profile ni analítica sense comprovar elegibilitat, identificador i privacitat.
+Base tècnica implementada a V14.0.0: metadades i canòniques per vista, Open Graph i X dinàmics, dades estructurades `WebSite`, `WebPage`, `Dataset` i `BreadcrumbList`, sitemap ampliat i SEO local per Sant Celoni i el Baix Montseny. El 10 d’agost de 2026 es va verificar `fontanillas.cat` per DNS a Search Console, es va processar el sitemap i Google va descobrir 13 URL. V19.1 afegeix mesura local de LCP, CLS, INP i TTFB; les dades de camp arribaran quan Search Console disposi de prou trànsit. No s’activa Google Business Profile ni analítica sense comprovar elegibilitat, identificador i privacitat.
 
 ## Milestone 8 — Compartició Premium — Completat
 
@@ -107,7 +107,7 @@ V12 limita la vista principal als cinc episodis més recents i incorpora una pà
 - Cronologia meteorològica amb avisos, pluja i extrems del període.
 - Preferències de notificació per fenomen i nivell mínim, preparades per activar amb OneSignal.
 
-V18 reutilitza l’arxiu existent i no inventa registres locals. L’activació efectiva del push continua necessitant les credencials de OneSignal; el codi i la guia ja estan preparats.
+V18 reutilitza l’arxiu existent i no inventa registres locals. L’activació efectiva del push es va completar i validar a V19.1: el web registra subscripcions i el Worker reconeix les credencials privades de OneSignal sense exposar-les al projecte públic.
 
 ## V19 — Portal útil, transparent i preparat per créixer — Completat
 
@@ -120,14 +120,21 @@ V18 reutilitza l’arxiu existent i no inventa registres locals. L’activació 
 
 V19 avança la branca de recursos escolars sense convertir el portal en un curs llarg. També tanca la preparació local de SEO, privacitat, push i xarxes; les activacions externes continuen requerint comptes, DNS o credencials del propietari.
 
-## Fases pendents després de V19
+## V19.1 — Activacions externes i observabilitat local — Completat
 
-1. Publicar V19, verificar la propietat DNS a Search Console i enviar el sitemap.
-2. Crear l’aplicació OneSignal, introduir les dues credencials i fer una prova controlada.
-3. Mesurar Core Web Vitals reals i corregir només els colls d’ampolla observats.
-4. Decidir si cal analítica i, si s’activa, escollir una opció respectuosa amb la privacitat.
-5. Crear les xarxes socials conjuntament amb l’usuari com a última gran fase.
-6. Evolucionar Aprendre cap a recursos per escoles o iniciar un centre de notícies meteorològiques verificades.
+- Search Console verificat per DNS i sitemap processat amb 13 URL descobertes.
+- OneSignal web i Worker configurats; subscripcions reals i prova controlada verificades.
+- Panell administratiu actualitzat amb l’estat real de les activacions.
+- Core Web Vitals locals —LCP, CLS, INP i TTFB— mesurats sense activar analítica externa.
+- Documentació de notificacions, publicació i rendiment posada al dia.
+
+## Fases pendents després de V19.1
+
+1. Recollir dades de camp de Core Web Vitals quan Search Console disposi de prou trànsit i corregir només els colls d’ampolla observats.
+2. Decidir si cal analítica i, si s’activa, escollir una opció respectuosa amb la privacitat.
+3. Ampliar les proves automàtiques del Worker i el seguiment dels primers avisos push reals.
+4. Crear les xarxes socials conjuntament amb l’usuari com a última gran fase.
+5. Evolucionar Aprendre cap a recursos per escoles o iniciar un centre de notícies meteorològiques verificades.
 
 ## Backlog
 

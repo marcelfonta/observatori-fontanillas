@@ -2,6 +2,8 @@ import { CONFIG } from '../core/config.js';
 
 const TOKEN_KEY='fontanillas-admin-session-v1';
 const incidents=[];
+const performanceMetrics={lcp:null,cls:null,inp:null,ttfb:null};
+const performanceObservers=[];
 let token='';
 let latestDiagnostic=null;
 let refreshTimer=null;
@@ -14,23 +16,62 @@ const formatDate=value=>{const date=new Date(value);return Number.isNaN(date.get
 
 export function serviceState(value){return value?{label:'Configurat',className:'is-ok'}:{label:'No configurat',className:'is-muted'};}
 export function overallState(payload){if(!payload?.ok)return {label:'No disponible',className:'is-error'};if(!payload.station?.ok||!payload.alerts?.ok)return {label:'Cal revisar serveis',className:'is-warning'};return {label:'Sistema operatiu',className:'is-ok'};}
+export function performanceRating(metric,value){
+  if(!Number.isFinite(value))return 'pending';
+  const thresholds={lcp:[2500,4000],inp:[200,500],cls:[0.1,0.25],ttfb:[800,1800]};
+  const [good,poor]=thresholds[metric]||[Infinity,Infinity];
+  return value<=good?'good':value<=poor?'needs-improvement':'poor';
+}
 
 function setCard(name,state,label,detail){const card=document.querySelector(`[data-admin-card="${name}"]`);card?.classList.remove('is-ok','is-warning','is-error','is-muted');card?.classList.add(state);text(`admin-${name}-state`,label);text(`admin-${name}-detail`,detail);}
 function setPill(id,label,state){const node=element(id);if(!node)return;node.textContent=label;node.className=`admin-status-pill ${state}`;}
+
+function performanceSnapshot(){return {...performanceMetrics};}
+function renderPerformanceSnapshot(){
+  const metrics=performanceSnapshot();
+  text('admin-lcp',Number.isFinite(metrics.lcp)?`${Math.round(metrics.lcp)} ms`:'Esperant pintura');
+  text('admin-cls',Number.isFinite(metrics.cls)?metrics.cls.toFixed(3):'No mesurable');
+  text('admin-inp',Number.isFinite(metrics.inp)?`${Math.round(metrics.inp)} ms`:'Interactua amb el panell');
+  text('admin-ttfb',Number.isFinite(metrics.ttfb)?`${Math.round(metrics.ttfb)} ms`:'No mesurable');
+  const ratings=['lcp','cls','ttfb'].map(metric=>performanceRating(metric,metrics[metric]));
+  if(Number.isFinite(metrics.inp))ratings.push(performanceRating('inp',metrics.inp));
+  const poor=ratings.includes('poor');
+  const warning=ratings.includes('needs-improvement');
+  const pending=ratings.includes('pending');
+  const label=poor?'Cal millorar':warning?'A observar':pending?'Recollint dades':'Bona localment';
+  setPill('admin-performance-pill',label,poor?'is-error':warning||pending?'is-warning':'is-ok');
+  text('admin-performance-context',Number.isFinite(metrics.inp)?'Mesura local d’aquesta càrrega; no s’envia a cap servei extern.':'Fes alguna interacció amb el panell per completar l’INP. Les dades no surten del navegador.');
+  return metrics;
+}
+function observePerformance(){
+  const navigation=performance.getEntriesByType?.('navigation')?.[0];
+  if(navigation)performanceMetrics.ttfb=Math.max(0,navigation.responseStart-navigation.startTime);
+  if(typeof PerformanceObserver==='undefined'){renderPerformanceSnapshot();return;}
+  const supported=PerformanceObserver.supportedEntryTypes||[];
+  const observe=(type,callback,options={})=>{
+    if(!supported.includes(type))return;
+    try{const observer=new PerformanceObserver(list=>{callback(list.getEntries());renderPerformanceSnapshot();});observer.observe({type,buffered:true,...options});performanceObservers.push(observer);}catch{}
+  };
+  observe('largest-contentful-paint',entries=>{const last=entries.at(-1);if(last)performanceMetrics.lcp=last.startTime;});
+  if(supported.includes('layout-shift'))performanceMetrics.cls=0;
+  observe('layout-shift',entries=>{entries.forEach(entry=>{if(!entry.hadRecentInput)performanceMetrics.cls+=entry.value;});});
+  observe('event',entries=>{entries.forEach(entry=>{if(entry.interactionId&&(!Number.isFinite(performanceMetrics.inp)||entry.duration>performanceMetrics.inp))performanceMetrics.inp=entry.duration;});},{durationThreshold:40});
+  renderPerformanceSnapshot();
+}
 async function localPwaStatus(){const serviceWorker='serviceWorker'in navigator?(navigator.serviceWorker.controller?'Actiu i controlant la pàgina':'Disponible, encara no actiu'):'No compatible';const installed=window.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone===true?'Sí':'No';let cacheCount=null;try{cacheCount='caches'in window?(await caches.keys()).length:null;}catch{cacheCount=null;}text('admin-service-worker',serviceWorker);text('admin-installed',installed);text('admin-cache-count',cacheCount===null?'No consultable':String(cacheCount));setPill('admin-pwa-pill',serviceWorker.startsWith('Actiu')?'Operativa':'Disponible',serviceWorker.startsWith('Actiu')?'is-ok':'is-warning');return {serviceWorker,installed,cacheCount};}
 function renderIntegrations(integrations={}){const states={weatherUnderground:serviceState(Boolean(integrations.weatherUnderground)),database:serviceState(Boolean(integrations.database)),contact:serviceState(Boolean(integrations.contact)),pushClient:serviceState(Boolean(CONFIG.oneSignalAppId)),pushWorker:serviceState(Boolean(integrations.push)),admin:serviceState(Boolean(integrations.admin)),analytics:serviceState(Boolean(CONFIG.analyticsMeasurementId)),social:{label:'Preparat',className:'is-muted'}};document.querySelectorAll('#admin-integrations > [data-integration]').forEach(row=>{const state=states[row.dataset.integration]||serviceState(false);const badge=row.querySelector('b');badge.textContent=state.label;badge.className=state.className;});const required=Boolean(integrations.weatherUnderground&&integrations.database&&integrations.admin);setPill('admin-integrations-pill',required?'Principals actives':'Configuració incompleta',required?'is-ok':'is-warning');}
 
 async function renderPublicationReadiness(){
   const checks=await Promise.all(['sitemap.xml','robots.txt','privacitat.html'].map(async path=>{try{const response=await fetch(path,{cache:'no-store'});return response.ok;}catch{return false;}}));
-  text('admin-sitemap',checks[0]?'Publicat':'No disponible');text('admin-robots',checks[1]?'Publicat':'No disponible');text('admin-privacy',checks[2]?'Publicada':'No disponible');
-  text('admin-search-console',CONFIG.googleSiteVerification?'Meta configurat':'DNS pendent de confirmar');
+  text('admin-sitemap',checks[0]?(CONFIG.searchConsoleSitemapSubmitted?'Publicat · processat':'Publicat'):'No disponible');text('admin-robots',checks[1]?'Publicat':'No disponible');text('admin-privacy',checks[2]?'Publicada':'No disponible');
+  text('admin-search-console',CONFIG.searchConsoleVerified?'Verificada per DNS':CONFIG.googleSiteVerification?'Meta configurat':'Pendent de confirmar');
   const navigation=performance.getEntriesByType('navigation')[0];const loadMs=navigation?Math.round(navigation.loadEventEnd||performance.now()):null;text('admin-navigation-time',loadMs?`${loadMs} ms · navegador actual`:'No mesurable');
   const ready=checks.every(Boolean);setPill('admin-publication-pill',ready?'Base preparada':'Cal revisar',ready?'is-ok':'is-warning');
-  return {sitemap:checks[0],robots:checks[1],privacy:checks[2],searchConsoleMeta:Boolean(CONFIG.googleSiteVerification),navigationMs:loadMs};
+  return {sitemap:checks[0],sitemapSubmitted:Boolean(CONFIG.searchConsoleSitemapSubmitted),robots:checks[1],privacy:checks[2],searchConsoleVerified:Boolean(CONFIG.searchConsoleVerified),searchConsoleMeta:Boolean(CONFIG.googleSiteVerification),navigationMs:loadMs};
 }
 
 async function renderDashboard(payload,requestLatency){
-  latestDiagnostic={...payload,client:{webVersion:'19.0.7',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),analyticsConfigured:Boolean(CONFIG.analyticsMeasurementId),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:'prepared-not-connected'},incidents:[...incidents]};
+  latestDiagnostic={...payload,client:{webVersion:'19.1.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:Boolean(CONFIG.analyticsMeasurementId),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:'prepared-not-connected'},incidents:[...incidents]};
   const overall=overallState(payload);text('admin-overall-status',overall.label);text('admin-last-update',`Actualitzat ${formatDate(payload.generatedAt)} · ${requestLatency} ms`);
   setCard('worker',payload.ok?'is-ok':'is-error',payload.ok?'Operatiu':'Error',`V${payload.worker?.version||'—'} · ${payload.latencyMs??'—'} ms`);
   const stationOk=Boolean(payload.station?.ok);setCard('station',stationOk?'is-ok':'is-warning',stationOk?'Al dia':'Cal revisar',payload.station?.ageMinutes===null?'Antiguitat desconeguda':`${payload.station.ageMinutes} min d’antiguitat`);
@@ -46,5 +87,5 @@ function showLogin(message='',isError=false){element('admin-dashboard').hidden=t
 async function fetchStatus(){if(!token){showLogin();return;}const refresh=element('admin-refresh');if(refresh){refresh.disabled=true;refresh.textContent='Comprovant…';}const started=performance.now();try{const response=await fetch(`${CONFIG.apiUrl}/admin/status`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'},cache:'no-store'});const payload=await response.json().catch(()=>({error:'Resposta no vàlida'}));if(response.status===401){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('La clau no és correcta.',true);return;}if(response.status===429){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('Massa intents fallits. Espera quinze minuts abans de tornar-ho a provar.',true);return;}if(response.status===503&&payload.code==='ADMIN_NOT_CONFIGURED'){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('Cal configurar primer la clau privada al Worker.',true);return;}if(!response.ok)throw new Error(payload.error||`Error ${response.status}`);await renderDashboard(payload,Math.round(performance.now()-started));}catch(error){recordIncident('Connexió',error.message);text('admin-overall-status','No s’ha pogut actualitzar');text('admin-last-update',error.message);if(element('admin-dashboard').hidden)showLogin('No s’ha pogut connectar amb el Worker.',true);}finally{if(refresh){refresh.disabled=false;refresh.textContent='Actualitzar';}}}
 function recordIncident(type,message){incidents.unshift({time:new Date().toISOString(),type,message:String(message||'Error desconegut').slice(0,240)});if(incidents.length>20)incidents.pop();const list=element('admin-incident-list');if(list){list.replaceChildren(...incidents.map(item=>{const entry=document.createElement('li');entry.innerHTML=`<time>${formatDate(item.time)}</time><b></b><span></span>`;entry.querySelector('b').textContent=item.type;entry.querySelector('span').textContent=item.message;return entry;}));}text('admin-incident-count',`${incidents.length} ${incidents.length===1?'incidència':'incidències'}`);}
 async function copyDiagnostic(){if(!latestDiagnostic)return;const safe=JSON.stringify(latestDiagnostic,null,2);try{await navigator.clipboard.writeText(safe);text('admin-last-update','Diagnòstic copiat sense incloure la clau');}catch{recordIncident('Portapapers','No s’ha pogut copiar el diagnòstic.');}}
-function init(){window.addEventListener('error',event=>recordIncident('JavaScript',event.message));window.addEventListener('unhandledrejection',event=>recordIncident('Promesa',event.reason?.message||event.reason));element('admin-login-form')?.addEventListener('submit',event=>{event.preventDefault();token=String(new FormData(event.currentTarget).get('token')||'').trim();if(token.length<24){showLogin('La clau és massa curta.',true);return;}sessionStorage.setItem(TOKEN_KEY,token);fetchStatus();});element('admin-refresh')?.addEventListener('click',fetchStatus);element('admin-copy-diagnostic')?.addEventListener('click',copyDiagnostic);element('admin-logout')?.addEventListener('click',()=>{sessionStorage.removeItem(TOKEN_KEY);token='';latestDiagnostic=null;showLogin('Sessió tancada.');});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token)fetchStatus();});token=sessionStorage.getItem(TOKEN_KEY)||'';if(token)fetchStatus();else showLogin();refreshTimer=setInterval(()=>{if(token&&!document.hidden)fetchStatus();},120000);window.addEventListener('pagehide',()=>clearInterval(refreshTimer),{once:true});}
+function init(){observePerformance();window.addEventListener('error',event=>recordIncident('JavaScript',event.message));window.addEventListener('unhandledrejection',event=>recordIncident('Promesa',event.reason?.message||event.reason));element('admin-login-form')?.addEventListener('submit',event=>{event.preventDefault();token=String(new FormData(event.currentTarget).get('token')||'').trim();if(token.length<24){showLogin('La clau és massa curta.',true);return;}sessionStorage.setItem(TOKEN_KEY,token);fetchStatus();});element('admin-refresh')?.addEventListener('click',fetchStatus);element('admin-copy-diagnostic')?.addEventListener('click',copyDiagnostic);element('admin-logout')?.addEventListener('click',()=>{sessionStorage.removeItem(TOKEN_KEY);token='';latestDiagnostic=null;showLogin('Sessió tancada.');});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token)fetchStatus();});token=sessionStorage.getItem(TOKEN_KEY)||'';if(token)fetchStatus();else showLogin();refreshTimer=setInterval(()=>{if(token&&!document.hidden)fetchStatus();},120000);window.addEventListener('pagehide',()=>{clearInterval(refreshTimer);performanceObservers.forEach(observer=>observer.disconnect());},{once:true});}
 if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();}

@@ -79,7 +79,7 @@ Meteo IA manté a `sessionStorage` únicament el context funcional de la pestany
 
 El Centre de Dades calcula la pluviometria avançada a partir del mateix arxiu `/history`: intensitat, acumulacions d’avui/ahir/24 h/mes/any, episodi recent, dies plujosos, dies des de llindars d’1, 10 i 20 mm i màxim anual. Quan l’arxiu no arriba a l’últim episodi, mostra «Més de» en lloc d’inventar una data.
 
-`src/features/seo.js` centralitza les metadades de les vistes del portal. La fase tècnica de SEO inclou canòniques, descripcions locals, Open Graph, X, Schema.org, sitemap i instruccions de publicació. Search Console i les mètriques de camp només es poden activar després del desplegament.
+`src/features/seo.js` centralitza les metadades de les vistes del portal. La fase tècnica de SEO inclou canòniques, descripcions locals, Open Graph, X, Schema.org, sitemap i instruccions de publicació. La propietat de domini es va verificar per DNS i el sitemap es va processar correctament el 10 d’agost de 2026. Les mètriques de camp de Search Console dependran del trànsit acumulat.
 
 ## Evolució V15
 
@@ -111,7 +111,7 @@ Meteo IA utilitza `fetchAlertHistory()` només per preguntes inequívocament his
 
 La cronologia es calcula al navegador amb `buildWeatherTimeline()`: combina el període seleccionat de `/history` amb els avisos del mateix `/alert-history` de V17. No desa cap còpia, no modifica D1 i no converteix màxims del període en rècords històrics.
 
-Les preferències push viuen a `src/core/notification-preferences.js`. El navegador transforma fenomen i nivell mínim en etiquetes de OneSignal; el Worker exigeix alhora l’etiqueta de categoria i la del nivell de l’episodi. `INSERT OR IGNORE` continua sent la protecció contra notificacions duplicades. L’activació externa requereix les credencials descrites a `docs/PUSH-ACTIVACIO.md`.
+Les preferències push viuen a `src/core/notification-preferences.js`. El navegador transforma fenomen i nivell mínim en etiquetes de OneSignal; el Worker exigeix alhora l’etiqueta de categoria i la del nivell de l’episodi. `INSERT OR IGNORE` continua sent la protecció contra notificacions duplicades. OneSignal web i Worker van quedar activats i verificats el 10 d’agost de 2026; la clau REST continua existint exclusivament com a secret del Worker.
 
 ## Evolució V19
 
@@ -120,6 +120,8 @@ La quadrícula de calendari del Centre de Dades utilitza dues columnes equivalen
 `src/features/learning.js` afegeix interaccions educatives locals sense API ni seguiment. La vista Aprendre reutilitza el router, la capçalera, les fonts i la PWA existents. `privacitat.html` documenta el tractament real; el Worker aplica SHA-256 als identificadors temporals del control antiabús abans de guardar-los a D1.
 
 OneSignal es carrega dinàmicament només quan `oneSignalAppId` és present. El panell separa la configuració pública de la del Worker i comprova la base de publicació. `docs/SEARCH-CONSOLE-ACTIVACIO.md`, `docs/RENDIMENT-I-PUBLICACIO.md` i `social/` deixen definits els passos que depenen de comptes externs sense exposar secrets ni activar serveis abans d’hora.
+
+V19.1 amplia el diagnòstic local amb `PerformanceObserver`. El panell mostra LCP, CLS, INP i TTFB de la càrrega actual, interpreta els llindars recomanats i incorpora els valors al diagnòstic copiable. Aquesta mesura no instal·la analítica, no crea galetes i no envia les mètriques fora del navegador.
 
 ## Normes de canvi
 

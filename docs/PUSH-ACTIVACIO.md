@@ -1,14 +1,14 @@
-# Activació de les notificacions V19
+# Notificacions push — activades a V19.1
 
-La V19 manté la selecció per fenomen i nivell mínim, però les notificacions només s’envien quan OneSignal està configurat tant a la web com al Worker.
+La selecció per fenomen i nivell mínim està activa. OneSignal està configurat tant a la web com al Worker i ja s’han validat subscripcions reals en Firefox i Chrome.
 
 ## Dades necessàries
 
 1. Crear una aplicació Web Push a OneSignal per al domini `https://meteo.fontanillas.cat`.
-2. Configurar el lloc exacte `https://meteo.fontanillas.cat` i el Worker a `/push/onesignal/OneSignalSDKWorker.js`, amb scope `/push/onesignal/`.
+2. Configurar el lloc exacte `https://meteo.fontanillas.cat` i el Worker compartit a `/OneSignalSDKWorker.js`, amb scope `/`.
 3. Copiar l’App ID públic a `oneSignalAppId` dins de `src/core/config.js`.
 4. Afegir al Worker els secrets `ONESIGNAL_APP_ID` i `ONESIGNAL_REST_API_KEY`. La clau REST no s’ha de posar mai al web ni al ZIP públic.
-5. Publicar la web i el Worker V19.
+5. Publicar la web i el Worker de la mateixa versió.
 
 No s’ha d’escriure la REST API Key en cap HTML, JavaScript públic, captura o URL.
 
@@ -22,4 +22,4 @@ No s’ha d’escriure la REST API Key en cap HTML, JavaScript públic, captura 
 
 ## Comprovació
 
-Després de publicar, el panell d’administració ha de mostrar per separat «OneSignal · web» i «OneSignal · Worker» com a configurats. Fes la primera prova amb un navegador secundari i una subscripció de prova abans d’anunciar el servei públicament. A iPhone/iPad cal iOS 16.4 o posterior i afegir la web a la pantalla d’inici.
+El panell d’administració mostra per separat «OneSignal · web» i «OneSignal · Worker» com a configurats. La prova controlada ja s’ha completat i OneSignal registra les subscripcions. El primer avís automàtic real s’ha de revisar quan aparegui un episodi nou; no s’ha de generar cap alerta meteorològica fictícia. A iPhone/iPad cal iOS 16.4 o posterior i afegir la web a la pantalla d’inici.

@@ -1,12 +1,14 @@
 # Activar completament la Fase 2 d’avisos
 
-La web ja queda preparada i no mostra errors tècnics als visitants. Perquè les notificacions Push siguin reals cal completar la configuració del servei extern.
+## Estat: completada
+
+La web, OneSignal i el Worker ja estan configurats. Aquest document queda com a referència operativa; no cal repetir l’activació ni tornar a executar l’esquema D1 si les taules ja existeixen.
 
 ## 1. OneSignal al frontend
 A `src/core/config.js`, posa l’App ID:
 
 ```js
-oneSignalAppId: 'EL-TEU-APP-ID'
+oneSignalAppId: '108a857e-d115-4fc9-85b4-0a84fb0936f4'
 ```
 
 ## 2. Worker de Cloudflare
@@ -16,7 +18,7 @@ Actualitza el Worker amb `worker/index.js`. Mantén les variables i bindings act
 - Secret `ONESIGNAL_REST_API_KEY`: REST API Key de l’app OneSignal.
 
 ## 3. D1
-Executa les sentències noves de `worker/schema.sql`. S’afegeixen les taules `alert_events` i `alert_state`; no s’esborra cap dada meteorològica existent.
+En una instal·lació nova, executa les sentències de `worker/schema.sql`. S’afegeixen les taules `alert_events` i `alert_state`; no s’esborra cap dada meteorològica existent. A Fontanillas aquesta migració ja està aplicada.
 
 ## 4. Cron Trigger
 Mantén o crea un Cron Trigger del Worker. Recomanat: cada 10 minuts. El `scheduled()` continua guardant l’observació i, a més, comprova avisos oficials nous.
