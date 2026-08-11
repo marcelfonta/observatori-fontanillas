@@ -85,13 +85,13 @@ La mateixa versió reorganitza Centre de Dades amb un únic període per a resum
 
 Implementat a V16.0.0 com un panell de diagnòstic protegit pel Worker: estat de l’estació i la qualitat de dades, base D1, arxiu d’avisos, formulari, push, versions, PWA, memòries cau locals i incidències de la sessió. La clau només viu durant la pestanya, les respostes administratives no es desen a la PWA i no s’exposa cap secret. Per seguretat, la primera versió és de només lectura i no inclou operacions destructives.
 
-## Milestone 9 — Xarxes socials automàtiques — Traslladat al final
+## Milestone 9 — Xarxes socials — En curs amb V21
 
-- Crear amb l’usuari els comptes d’Instagram, Facebook, X, Telegram, Bluesky o altres serveis viables.
+- Connectar amb l’usuari Instagram i Facebook; X queda descartat per decisió del projecte.
 - Resums, avisos, pluja, rècords, efemèrides i episodis.
 - Regles, calendari, aprovació opcional i historial editorial.
 
-Es farà com a última gran fase, després d’acordar conjuntament noms, identitat, credencials i permisos de cada compte. La primera activació serà amb aprovació manual abans de publicar.
+V21 incorpora els perfils de Facebook i Instagram al portal i prepara una cua D1 d’esborranys diaris. La credencial de Meta només viu al Worker. La publicació automàtica continua bloquejada: la següent fase haurà d’afegir revisió, aprovació i proves controlades abans d’enviar cap contingut.
 
 ## Milestone transversal — Historial d’avisos — Completat
 
@@ -139,13 +139,22 @@ V19 avança la branca de recursos escolars sense convertir el portal en un curs 
 
 La biblioteca es manté en dades estructurades a `src/data/learning-resources.js`, de manera que es pot revisar, ampliar o retirar un enllaç sense duplicar el disseny. Els recursos externs sempre s’obren en una pestanya nova i mostren abans l’idioma i la institució responsable.
 
-## Fases pendents després de V20
+## V21 — Pol·len interpretable, marca i fase social segura — Completat
+
+- Nivells de pol·len orientatius per espècie amb colors, etiquetes, barres i consell pràctic.
+- Instagram i Facebook visibles i accessibles al peu de totes les pàgines.
+- Símbol de l’Observatori redibuixat amb més llum, contrast i lectura a mida petita.
+- Copyright coherent a totes les pàgines públiques i administratives.
+- Cua `social_drafts` al Worker, deduplicada per dia i visible des del panell d’administració.
+- Credencial Meta detectada només com a booleà; cap token s’exposa i cap crida de publicació està implementada.
+
+## Fases pendents després de V21
 
 1. Recollir dades de camp de Core Web Vitals quan Search Console disposi de prou trànsit i corregir només els colls d’ampolla observats.
 2. Revisar les primeres dades de Cloudflare Web Analytics quan hi hagi prou visites i contrastar-les amb Search Console; Google Analytics continua descartat mentre no aporti una necessitat clara.
 3. Ampliar les proves automàtiques del Worker i el seguiment dels primers avisos push reals.
-4. Crear les xarxes socials conjuntament amb l’usuari com a última gran fase.
-5. Revisar periòdicament els enllaços educatius i valorar un centre de notícies meteorològiques verificades com a evolució separada.
+4. Afegir una pantalla de revisió i aprovació dels esborranys socials; provar primer una publicació manual controlada abans de valorar cap automatització.
+5. Revisar periòdicament els llindars i les fonts del pol·len, els enllaços educatius i valorar un centre de notícies meteorològiques verificades com a evolució separada.
 
 ## Backlog
 

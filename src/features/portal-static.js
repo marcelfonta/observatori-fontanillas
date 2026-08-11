@@ -1,7 +1,9 @@
 import { mountPortalShell } from './portal-shell.js';
 import { initMeteoAIWidget } from './meteo-ai.js';
+import { initFooterSocial } from './footer-social.js';
 mountPortalShell(document.body.dataset.portalStatic||'');
 initMeteoAIWidget();
+initFooterSocial();
 const clock=document.querySelector('.site-header time');
 const updateClock=()=>{if(clock)clock.textContent=new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Europe/Madrid'}).format(new Date());};
 if(document.getElementById('connection-label'))document.getElementById('connection-label').textContent='Informació';

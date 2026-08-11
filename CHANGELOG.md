@@ -1,5 +1,31 @@
 # Changelog
 
+## V21.0.0 — 2026-08-11
+
+### Medi ambient i lectura del pol·len
+
+- Afegits nivells orientatius específics per gramínies, bedoll, olivera, artemisa i ambrosia.
+- Cada espècie mostra concentració, etiqueta, color i barra, amb un resum de l’espècie dominant i recomanacions prudents.
+- Mantingudes les dades originals i les fonts; la interfície deixa clar que no és un diagnòstic mèdic.
+
+### Marca, xarxes i accessibilitat
+
+- Redibuixat el símbol de l’Observatori amb una paleta més lluminosa, una silueta més neta del Montseny i un pols meteorològic visible a mida petita.
+- Regenerat el paquet complet de favicons i icones PWA des de la mateixa font vectorial.
+- Afegits accessos accessibles a Instagram i Facebook al peu de totes les pàgines.
+- Incorporat `© 2026` de manera coherent i retirats els accessos de compartició a X, que no forma part del projecte.
+
+### Fase social segura
+
+- Afegida la taula D1 `social_drafts` i una cua deduplicada que prepara un resum meteorològic diari.
+- El panell d’administració mostra la credencial Meta com a booleà, l’estat de la cua i els últims esborranys sense exposar secrets.
+- La publicació automàtica continua desactivada i no existeix cap petició a l’API de Meta per publicar.
+
+### Compatibilitat
+
+- Mantinguts avisos AEMET/Meteocat, OneSignal, Meteo IA, comparador, Centre de Dades, compartir, PWA i contractes previs.
+- Actualitzades versions, documentació i proves bàsiques de V21.
+
 ## V20.0.0 — 2026-08-10
 
 ### Biblioteca educativa

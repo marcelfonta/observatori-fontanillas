@@ -40,13 +40,13 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=20.0.0" />
-    <link rel="stylesheet" href="css/portal.css?v=20.0.0" />
+    <link rel="stylesheet" href="css/style.css?v=21.0.0" />
+    <link rel="stylesheet" href="css/portal.css?v=21.0.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=20.0.0"></script>
+    <script type="module" src="src/features/push.js?v=21.0.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=20.0.0"></script>
+    <script type="module" src="src/app.js?v=21.0.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","url":"https://meteo.fontanillas.cat/?page=centre-dades","spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -573,9 +573,16 @@
           <article class="panel"><span>SO₂</span><strong><b id="environment-so2">—</b><small> µg/m³</small></strong><p>Diòxid de sofre</p><span class="environment-level" id="environment-so2-level">Calculant</span><div class="environment-mini-meter"><i id="environment-so2-meter"></i></div></article>
         </div>
         <article class="pollen-panel panel">
-          <header><div><p class="eyebrow">Pol·len · estimació CAMS</p><h2>Concentració per tipus</h2></div><span class="tag">grans/m³</span></header>
-          <div class="pollen-grid"><div><span>Gramínies</span><strong id="pollen-grass">—</strong></div><div><span>Olivera</span><strong id="pollen-olive">—</strong></div><div><span>Bedoll</span><strong id="pollen-birch">—</strong></div><div><span>Artemisa</span><strong id="pollen-mugwort">—</strong></div><div><span>Ambrosia</span><strong id="pollen-ragweed">—</strong></div></div>
-          <p>És una estimació regional del model europeu, no un sensor local. Les persones al·lèrgiques han de prioritzar la seva pauta mèdica.</p>
+          <header><div><p class="eyebrow">Pol·len · estimació CAMS</p><h2>Concentració i nivell orientatiu</h2></div><span class="tag">grans/m³</span></header>
+          <div class="pollen-summary"><span aria-hidden="true">✦</span><div><strong id="pollen-summary-title">Calculant exposició</strong><p id="pollen-summary-copy">Interpretant cada espècie amb la seva escala orientativa.</p></div></div>
+          <div class="pollen-grid">
+            <div><span>Gramínies</span><strong><b id="pollen-grass">—</b><small> grans/m³</small></strong><em class="environment-level" id="pollen-grass-level">Calculant</em><div class="environment-mini-meter"><i id="pollen-grass-meter"></i></div></div>
+            <div><span>Olivera</span><strong><b id="pollen-olive">—</b><small> grans/m³</small></strong><em class="environment-level" id="pollen-olive-level">Calculant</em><div class="environment-mini-meter"><i id="pollen-olive-meter"></i></div></div>
+            <div><span>Bedoll</span><strong><b id="pollen-birch">—</b><small> grans/m³</small></strong><em class="environment-level" id="pollen-birch-level">Calculant</em><div class="environment-mini-meter"><i id="pollen-birch-meter"></i></div></div>
+            <div><span>Artemisa</span><strong><b id="pollen-mugwort">—</b><small> grans/m³</small></strong><em class="environment-level" id="pollen-mugwort-level">Calculant</em><div class="environment-mini-meter"><i id="pollen-mugwort-meter"></i></div></div>
+            <div><span>Ambrosia</span><strong><b id="pollen-ragweed">—</b><small> grans/m³</small></strong><em class="environment-level" id="pollen-ragweed-level">Calculant</em><div class="environment-mini-meter"><i id="pollen-ragweed-meter"></i></div></div>
+          </div>
+          <p>Escala orientativa d’exposició adaptada a cada espècie; no és un diagnòstic. És una estimació regional CAMS, no un sensor local. La sensibilitat individual varia i les persones al·lèrgiques han de prioritzar la seva pauta mèdica. <a href="https://aerobiologia.cat/pia/ca/nivells" target="_blank" rel="noopener noreferrer">Contrastar amb la Xarxa Aerobiològica de Catalunya ↗</a></p>
         </article>
         <section class="environment-viewers panel" aria-labelledby="environment-viewers-title">
           <header><div><p class="eyebrow">Visors vius del territori</p><h2 id="environment-viewers-title">Incendi, sequera i meduses</h2><p>Consulta els mapes actualitzats sense sortir del portal. Només es carrega el visor que selecciones.</p></div><span class="tag">Actualització externa</span></header>
@@ -632,8 +639,8 @@
     </main>
 
     <footer class="shell">
-      <span>Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V20.0.0</small>
+      <span>© 2026 Observatori Meteorològic Fontanillas</span>
+      <small>Dades locals · Sant Celoni, Montseny · V21.0.0</small>
       <div>
         <a href="./privacitat.html">Privacitat</a>
         <a href="#top">Tornar amunt ↑</a>
@@ -684,7 +691,6 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <button type="button" data-share="copy" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📋 Copiar</button>
           <button type="button" data-share="whatsapp" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📱 WhatsApp</button>
-          <button type="button" data-share="x" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">🗣 X</button>
           <button type="button" data-share="facebook" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📢 Facebook</button>
           <button type="button" data-share="email" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">✉️ Correu</button>
           <button type="button" data-share="instagram" style="padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.9rem;">📸 Instagram</button>

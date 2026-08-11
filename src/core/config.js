@@ -10,6 +10,10 @@ export const CONFIG = {
   analyticsMeasurementId: '', // Ex.: G-XXXXXXXXXX
   cloudflareWebAnalyticsEnabled: true, // Activat al domini des del tauler de Cloudflare
   oneSignalAppId: '108a857e-d115-4fc9-85b4-0a84fb0936f4',
+  social: {
+    instagram: 'https://www.instagram.com/meteo_fontanillas/',
+    facebook: 'https://www.facebook.com/meteo_fontanillas'
+  },
   googleSiteVerification: '', // Valor del meta-tag, només si es verifica per prefix d’URL
   searchConsoleVerified: true, // Propietat de domini verificada per DNS el 2026-08-10
   searchConsoleSitemapSubmitted: true, // Sitemap processat correctament: 13 URL descobertes

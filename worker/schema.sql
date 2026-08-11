@@ -53,3 +53,19 @@ CREATE TABLE IF NOT EXISTS admin_auth_attempts (
 );
 CREATE INDEX IF NOT EXISTS idx_admin_auth_attempts_ip_time
 ON admin_auth_attempts(ip, attempted_at DESC);
+
+CREATE TABLE IF NOT EXISTS social_drafts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  dedupe_key TEXT NOT NULL UNIQUE,
+  kind TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft',
+  channels TEXT NOT NULL DEFAULT '["facebook","instagram"]',
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  source_url TEXT NOT NULL DEFAULT 'https://meteo.fontanillas.cat/',
+  payload TEXT,
+  scheduled_for TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_social_drafts_status_created
+ON social_drafts(status, created_at DESC);

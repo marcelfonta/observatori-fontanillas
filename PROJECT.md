@@ -131,6 +131,14 @@ La vista Aprendre ofereix itineraris per Primària, ESO, Batxillerat i docents, 
 
 L’analítica diferencia tres conceptes: configuració al domini, proveïdor i beacon detectat en la càrrega actual. `cloudflareWebAnalyticsEnabled` reflecteix l’activació confirmada al tauler de Cloudflare; la detecció DOM continua existint només com a diagnòstic addicional. Això evita mostrar un fals «No configurat» a l’administració.
 
+## Evolució V21
+
+`src/features/environment.js` converteix les concentracions de pol·len en una lectura orientativa per espècie. Les bandes no són un diagnòstic mèdic: serveixen per distingir una presència residual, baixa, moderada, alta o molt alta i sempre mostren la concentració original en grans per metre cúbic. L’estil reutilitza el llenguatge visual dels contaminants sense confondre les dues escales.
+
+`src/features/footer-social.js` és l’únic component que afegeix els accessos oficials a Instagram i Facebook. Les adreces viuen a `src/core/config.js`, els enllaços tenen etiqueta accessible, obren una pestanya nova i no introdueixen SDK, píxels ni seguiment de Meta al frontend. El símbol de l’Observatori continua sent vectorial i reproduïble des de `scripts/build-brand-assets.py`, però V21 n’augmenta la lluminositat i la llegibilitat.
+
+El Worker crea com a màxim un esborrany diari a `social_drafts`, amb fets derivats de l’última observació i una clau de deduplicació. `/admin/status` només retorna si `META_SYSTEM_USER_TOKEN` existeix i un resum de la cua; mai la credencial. No hi ha cap endpoint ni cap petició a Meta per publicar. L’estat `draft` és una barrera funcional deliberada fins que existeixi una interfície de revisió i una prova manual autoritzada.
+
 ## Normes de canvi
 
 1. Treballar una sola fita cada vegada.

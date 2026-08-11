@@ -33,11 +33,15 @@ const nowSeconds=Math.floor(Date.now()/1000);
 const fakeDb={
   batch:async()=>[],
   prepare(sql){
-    const statement={sql,bindings:[],bind(...values){this.bindings=values;return this;},async run(){return {meta:{changes:0}};},async all(){return {results:[]};},async first(){
+    const statement={sql,bindings:[],bind(...values){this.bindings=values;return this;},async run(){return {meta:{changes:0}};},async all(){
+      if(sql.includes('FROM social_drafts'))return {results:[{id:1,kind:'daily_observation',status:'draft',channels:'["facebook","instagram"]',title:'Dades de Sant Celoni',created_at:new Date().toISOString(),scheduled_for:null}]};
+      return {results:[]};
+    },async first(){
       if(sql.includes('SELECT * FROM observations'))return {observed_epoch:nowSeconds-60,local_time:new Date((nowSeconds-60)*1000).toISOString(),observed_at_utc:new Date((nowSeconds-60)*1000).toISOString(),temperature:24,humidity:55,pressure:1016,wind_speed:4,rain_total:0};
       if(sql.includes('FROM observations')&&sql.includes('storedReadings'))return {storedReadings:1200,firstEpoch:nowSeconds-864000,lastEpoch:nowSeconds-60,firstObservation:new Date((nowSeconds-864000)*1000).toISOString(),lastObservation:new Date((nowSeconds-60)*1000).toISOString()};
       if(sql.includes('FROM observations WHERE'))return {samples:280,temperature:280,humidity:280,pressure:280,wind:280,rain:280,solar:240,uv:180,firstEpoch:nowSeconds-84000,lastEpoch:nowSeconds-60};
       if(sql.includes('FROM alert_events'))return {total:4,latest:new Date().toISOString()};
+      if(sql.includes('FROM social_drafts'))return {pending:2,approved:0,published:0,latest:new Date().toISOString()};
       if(sql.includes('FROM contact_rate_limit'))return {total:1};
       if(sql.includes('FROM admin_auth_attempts'))return {total:0};
       return {};
@@ -47,14 +51,18 @@ const fakeDb={
 };
 const originalFetch=global.fetch;
 global.fetch=async()=>new Response('<rss><channel><lastBuildDate>Sun, 10 Aug 2026 12:00:00 GMT</lastBuildDate><item><title>Sin avisos</title><description>No hay avisos</description></item></channel></rss>',{status:200,headers:{'Content-Type':'application/rss+xml'}});
-const authorized=await worker.fetch(new Request('https://fonta-meteo.example/admin/status',{headers:{Origin:'https://meteo.fontanillas.cat',Authorization:'Bearer '+('a'.repeat(32))}}),{ADMIN_TOKEN:'a'.repeat(32),WU_API_KEY:'configured',DB:fakeDb,ENVIRONMENT:'test'},context);
+const authorized=await worker.fetch(new Request('https://fonta-meteo.example/admin/status',{headers:{Origin:'https://meteo.fontanillas.cat',Authorization:'Bearer '+('a'.repeat(32))}}),{ADMIN_TOKEN:'a'.repeat(32),WU_API_KEY:'configured',META_SYSTEM_USER_TOKEN:'test-token-not-a-secret',DB:fakeDb,ENVIRONMENT:'test'},context);
 global.fetch=originalFetch;
 assert.equal(authorized.status,200);
 assert.match(authorized.headers.get('Cache-Control'),/no-store/);
 const adminPayload=await authorized.json();
-assert.equal(adminPayload.worker.version,'20.0.0');
+assert.equal(adminPayload.worker.version,'21.0.0');
 assert.equal(adminPayload.station.ok,true);
 assert.equal(adminPayload.database.observations,1200);
 assert.equal(adminPayload.integrations.database,true);
+assert.equal(adminPayload.integrations.socialToken,true);
+assert.equal(adminPayload.social.mode,'draft');
+assert.equal(adminPayload.social.pendingDrafts,2);
+assert.equal(adminPayload.social.recent.length,1);
 
-console.log('Test d’Administració V19.1: correcte');
+console.log('Test d’Administració V21: correcte');

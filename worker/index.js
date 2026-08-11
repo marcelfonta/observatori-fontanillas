@@ -1,6 +1,6 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "20.0.0";
-const WORKER_BUILT = "2026-08-10";
+const WORKER_VERSION = "21.0.0";
+const WORKER_BUILT = "2026-08-11";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const WEBCAM_URL = "https://www.alvar.cat/WebCam/Imatge-Camera.jpg";
@@ -84,10 +84,26 @@ const CREATE_ADMIN_AUTH_ATTEMPTS = `CREATE TABLE IF NOT EXISTS admin_auth_attemp
 )`;
 const CREATE_ADMIN_AUTH_ATTEMPTS_INDEX = `CREATE INDEX IF NOT EXISTS idx_admin_auth_attempts_ip_time
 ON admin_auth_attempts(ip, attempted_at DESC)`;
+const CREATE_SOCIAL_DRAFTS = `CREATE TABLE IF NOT EXISTS social_drafts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  dedupe_key TEXT NOT NULL UNIQUE,
+  kind TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft',
+  channels TEXT NOT NULL DEFAULT '["facebook","instagram"]',
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  source_url TEXT NOT NULL DEFAULT 'https://meteo.fontanillas.cat/',
+  payload TEXT,
+  scheduled_for TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`;
+const CREATE_SOCIAL_DRAFTS_INDEX = `CREATE INDEX IF NOT EXISTS idx_social_drafts_status_created
+ON social_drafts(status, created_at DESC)`;
 let schemaReady = false;
 let contactSchemaReady = false;
 let alertSchemaReady = false;
 let adminAuthSchemaReady = false;
+let socialDraftSchemaReady = false;
 
 // Offset (en segons) de la zona horària de Madrid respecte a UTC, calculat
 // dinàmicament perquè s'adapti automàticament a CET (UTC+1) i CEST (UTC+2).
@@ -253,6 +269,17 @@ async function ensureAdminAuthSchema(env) {
     env.DB.prepare(CREATE_ADMIN_AUTH_ATTEMPTS_INDEX),
   ]);
   adminAuthSchemaReady = true;
+  return true;
+}
+
+async function ensureSocialDraftSchema(env) {
+  if (!env.DB) return false;
+  if (socialDraftSchemaReady) return true;
+  await env.DB.batch([
+    env.DB.prepare(CREATE_SOCIAL_DRAFTS),
+    env.DB.prepare(CREATE_SOCIAL_DRAFTS_INDEX),
+  ]);
+  socialDraftSchemaReady = true;
   return true;
 }
 
@@ -633,6 +660,34 @@ async function captureObservation(env) {
   const observation = await currentObservation(env);
   const storage = await persistObservation(observation, env);
   return { observation, storage };
+}
+
+function socialNumber(value, digits = 1) {
+  const number = finite(value);
+  return number === null ? null : number.toFixed(digits).replace('.', ',');
+}
+
+async function createDailySocialDraft(observation, env) {
+  if (!(await ensureSocialDraftSchema(env)) || !observation) return { created:false, reason:'storage_disabled' };
+  const localDate = String(observation.updated || '').slice(0, 10) || new Intl.DateTimeFormat('en-CA', { timeZone:TIME_ZONE }).format(new Date());
+  const temperature = socialNumber(observation.temperature);
+  const humidity = socialNumber(observation.humidity, 0);
+  const wind = socialNumber(observation.windSpeed);
+  const rain = socialNumber(observation.rainToday);
+  const facts = [
+    temperature === null ? null : `${temperature} °C`,
+    humidity === null ? null : `humitat ${humidity}%`,
+    wind === null ? null : `vent ${wind} km/h`,
+    rain === null ? null : `pluja avui ${rain} mm`,
+  ].filter(Boolean);
+  const title = `Dades de Sant Celoni · ${localDate}`;
+  const body = `Bon dia des de l’Observatori Fontanillas. Lectura de l’estació: ${facts.join(' · ')}. Consulta les dades en directe i les fonts a meteo.fontanillas.cat.`;
+  const payload = JSON.stringify({ localDate, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), humidity:finite(observation.humidity), windSpeed:finite(observation.windSpeed), rainToday:finite(observation.rainToday) });
+  const result = await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
+    (dedupe_key, kind, status, channels, title, body, source_url, payload)
+    VALUES (?, 'daily_observation', 'draft', ?, ?, ?, ?, ?)`)
+    .bind(`daily:${localDate}`, JSON.stringify(['facebook','instagram']), title, body, 'https://meteo.fontanillas.cat/', payload).run();
+  return { created:Boolean(result?.meta?.changes), localDate };
 }
 
 function mapHistoryObservation(obs) {
@@ -1054,6 +1109,31 @@ async function adminDatabaseSummary(env) {
   return { enabled:true, observations:storage.storedReadings, coverageDays:storage.coverageDays, firstObservation:storage.firstObservation || null, lastObservation:storage.lastObservation || null, alertEvents, latestAlertEvent, contactRequests24h };
 }
 
+async function adminSocialSummary(env) {
+  const mode = 'draft';
+  const tokenConfigured = Boolean(env.META_SYSTEM_USER_TOKEN);
+  if (!(await ensureSocialDraftSchema(env))) return { enabled:false, mode, tokenConfigured, pendingDrafts:0, approved:0, published:0, latestCreated:null, recent:[] };
+  const [counts, recentResult] = await Promise.all([
+    env.DB.prepare(`SELECT
+      SUM(CASE WHEN status IN ('draft','review') THEN 1 ELSE 0 END) AS pending,
+      SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) AS approved,
+      SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) AS published,
+      MAX(created_at) AS latest FROM social_drafts`).first(),
+    env.DB.prepare(`SELECT id,kind,status,channels,title,created_at,scheduled_for
+      FROM social_drafts ORDER BY created_at DESC LIMIT 5`).all(),
+  ]);
+  return {
+    enabled:true,
+    mode,
+    tokenConfigured,
+    pendingDrafts:Number(counts?.pending) || 0,
+    approved:Number(counts?.approved) || 0,
+    published:Number(counts?.published) || 0,
+    latestCreated:counts?.latest || null,
+    recent:(recentResult?.results || []).map(row => ({ ...row, channels:(() => { try { return JSON.parse(row.channels); } catch { return []; } })() })),
+  };
+}
+
 async function adminStatus(request, env) {
   const origin = request.headers.get("Origin") || "*";
   if (origin !== "*" && !ALLOWED_CONTACT_ORIGINS.has(origin)) return json({ error:"Origen no autoritzat" }, 403, "no-store", "null");
@@ -1066,10 +1146,11 @@ async function adminStatus(request, env) {
   await clearAdminAuthFailures(request, env).catch(error => console.error("Admin auth cleanup error", error));
 
   const started = Date.now();
-  const [qualityResult, alertsResult, database] = await Promise.all([
+  const [qualityResult, alertsResult, database, social] = await Promise.all([
     quality(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     alerts(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     adminDatabaseSummary(env),
+    adminSocialSummary(env).catch(error => ({ enabled:false, mode:'draft', tokenConfigured:Boolean(env.META_SYSTEM_USER_TOKEN), error:error.message, pendingDrafts:0, recent:[] })),
   ]);
   return json({
     ok:true,
@@ -1079,12 +1160,14 @@ async function adminStatus(request, env) {
     station:{ ok:Boolean(qualityResult.ok), status:qualityResult.status || (qualityResult.ok ? "healthy" : "unavailable"), updated:qualityResult.updated || null, ageMinutes:qualityResult.ageMinutes ?? null, latencyMs:qualityResult.latencyMs ?? null, missingFields:qualityResult.missingFields || [], storage:qualityResult.storage || null, sensors:qualityResult.sensors || null },
     alerts:{ ok:Boolean(alertsResult.ok), status:alertsResult.status || "unavailable", active:alertsResult.active ?? null, maxLevel:alertsResult.maxLevel || "unknown", checkedAt:alertsResult.checkedAt || null, latencyMs:alertsResult.latencyMs ?? null },
     database,
+    social,
     integrations:{
       weatherUnderground:Boolean(env.WU_API_KEY),
       database:Boolean(env.DB),
       contact:Boolean(env.RESEND_API_KEY && env.CONTACT_TO),
       push:Boolean(env.ONESIGNAL_APP_ID && env.ONESIGNAL_REST_API_KEY),
       admin:true,
+      socialToken:Boolean(env.META_SYSTEM_USER_TOKEN),
     },
     schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"comprovació programada" },
   }, 200, "no-store, private", origin);
@@ -1298,8 +1381,10 @@ export default {
   },
 
   async scheduled(_event, env, ctx) {
+    const capture = captureObservation(env);
     ctx.waitUntil(Promise.all([
-      captureObservation(env).catch(error => console.error("Captura programada fallida", error)),
+      capture.catch(error => console.error("Captura programada fallida", error)),
+      capture.then(result => createDailySocialDraft(result.observation, env)).catch(error => console.error("Esborrany social fallit", error)),
       checkAlertsAndNotify(env).catch(error => console.error("Comprovació d’avisos fallida", error)),
     ]));
   },

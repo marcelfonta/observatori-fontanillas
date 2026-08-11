@@ -276,15 +276,17 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .environment-metrics strong small { font: 500 9px var(--font-body); color: var(--muted); }.environment-metrics p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.4; }
 .environment-level { display: inline-flex; align-items: center; width: max-content; min-height: 22px; margin-top: 14px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted) !important; font-size: 8px !important; font-weight: 800; letter-spacing: .06em !important; text-transform: uppercase; }
 .environment-level.is-good { border-color: rgba(111,208,140,.42); background: rgba(111,208,140,.1); color: #8ce0a5 !important; }
+.environment-level.is-none { border-color: rgba(140,185,195,.38); background: rgba(140,185,195,.08); color: #a8d3dc !important; }
 .environment-level.is-fair { border-color: rgba(185,217,107,.42); background: rgba(185,217,107,.1); color: #c6e778 !important; }
 .environment-level.is-moderate { border-color: rgba(240,195,95,.46); background: rgba(240,195,95,.1); color: #f0c35f !important; }
 .environment-level.is-poor,.environment-level.is-very-poor,.environment-level.is-extreme { border-color: rgba(237,138,95,.5); background: rgba(237,138,95,.11); color: #f09a74 !important; }
 .environment-mini-meter { height: 4px; margin-top: 9px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.06); }
 .environment-mini-meter i { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#6fd08c,#f0c35f,#d66568); transition: width .35s ease; }
 .pollen-panel { padding: 30px; }.pollen-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.pollen-summary { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: rgba(137,214,163,.055); }.pollen-summary > span { display: grid; flex: none; width: 32px; height: 32px; place-items: center; border-radius: 50%; background: rgba(137,214,163,.12); color: var(--green); }.pollen-summary strong,.pollen-summary p { display: block; margin: 0; }.pollen-summary strong { color: var(--text); font-size: 12px; }.pollen-summary p { margin-top: 3px; color: var(--muted); font-size: 10px; line-height: 1.45; }
 .pollen-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin: 24px 0 16px; }
-.pollen-grid div { padding: 16px; border: 1px solid var(--line); border-radius: 13px; }.pollen-grid span,.pollen-grid strong { display: block; }.pollen-grid span { color: var(--muted); font-size: 10px; }.pollen-grid strong { margin-top: 10px; font-size: 22px; }
-.pollen-panel > p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.pollen-grid > div { min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.018); }.pollen-grid span,.pollen-grid strong { display: block; }.pollen-grid span { color: var(--muted); font-size: 10px; }.pollen-grid strong { margin-top: 10px; font-size: 22px; }.pollen-grid strong small { color: var(--muted); font-size: 8px; font-weight: 600; }.pollen-grid em { font-style: normal; }
+.pollen-panel > p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }.pollen-panel > p a { color: var(--green); font-weight: 700; text-decoration: none; }
 .environment-official { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
 .environment-official a { display: flex; min-height: 245px; flex-direction: column; padding: 28px; color: var(--text); text-decoration: none; transition: transform .2s ease,border-color .2s ease; }
 .environment-official a:hover { transform: translateY(-3px); border-color: rgba(137,214,163,.46); }.environment-official a > span { color: var(--green); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }.environment-official p { color: var(--muted); line-height: 1.6; }.environment-official b { margin-top: auto; color: var(--green); font-size: 11px; }
@@ -610,3 +612,6 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
 @media (max-width: 360px) {
   .has-portal-shell .site-header { gap: 8px; }
 }
+/* V21 · capçalera administrativa estable a tota l'amplada */
+.admin-body{padding-top:96px}.admin-site-header{width:100%;max-width:none;margin:0;padding-inline:clamp(18px,3vw,48px)}.admin-site-header .admin-back{flex:none}
+.admin-social-list{display:grid;gap:8px;margin:16px 0 0;padding:0;list-style:none}.admin-social-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(137,214,163,.04);color:var(--muted);font-size:10px}.admin-social-list li strong{overflow:hidden;color:var(--text);text-overflow:ellipsis;white-space:nowrap}.admin-social-list li span{color:var(--green);font-weight:800;text-transform:uppercase}

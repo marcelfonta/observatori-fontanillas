@@ -1,12 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 320" role="img" aria-labelledby="title desc">
   <title id="title">Observatori Meteorològic Fontanillas</title>
-  <desc id="desc">Versió horitzontal de la marca amb el símbol del Montseny.</desc>
+  <desc id="desc">Versió horitzontal lluminosa de la marca amb el símbol del Montseny.</desc>
+  <defs><linearGradient id="brand-bg" x1="74" y1="54" x2="442" y2="470" gradientUnits="userSpaceOnUse"><stop stop-color="#429C78"/><stop offset="1" stop-color="#23624F"/></linearGradient></defs>
   <g transform="translate(20 20) scale(.547)">
-    <rect x="28" y="28" width="456" height="456" rx="120" fill="#286D55" stroke="#A3E5B5" stroke-width="12"/>
-    <circle cx="374" cy="142" r="38" fill="#E6C56C"/>
-    <path d="M74 385L196 177l72 104 67-78 105 182Z" fill="#70AD87"/>
-    <path d="M74 385L196 203l135 182Z" fill="#C1F3CE"/>
-    <path d="M82 388c70 20 132 19 185 4 55-16 108-18 163-3" fill="none" stroke="#A3E2EE" stroke-width="16" stroke-linecap="round"/>
+    <rect x="28" y="28" width="456" height="456" rx="120" fill="url(#brand-bg)" stroke="#B8F0C8" stroke-width="12"/>
+    <circle cx="374" cy="142" r="54" fill="none" stroke="#FFE8B2" stroke-width="10" opacity=".3"/>
+    <circle cx="374" cy="142" r="38" fill="#FFD37A"/>
+    <path d="M70 376 191 185l69 93 76-73 108 171Z" fill="#80C49A"/>
+    <path d="M70 376 191 225l78 101 44-48 78 98Z" fill="#D9F7DE"/>
+    <path d="M84 391h73l18-25 22 43 27-31h61l18-19 21 36h103" fill="none" stroke="#A9ECF4" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
   <text x="335" y="126" fill="#F3F7F3" font-family="Manrope, Arial, sans-serif" font-size="62" font-weight="750">Observatori</text>
   <text x="338" y="192" fill="#C1F3CE" font-family="Manrope, Arial, sans-serif" font-size="42" font-weight="650">Meteorològic Fontanillas</text>

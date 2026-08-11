@@ -14,7 +14,7 @@ def scaled(points, factor):
 
 def draw_symbol(size, maskable=False):
     canvas = size * SCALE
-    image = Image.new("RGB", (canvas, canvas), "#205846")
+    image = Image.new("RGB", (canvas, canvas), "#2D765C")
     draw = ImageDraw.Draw(image)
     if maskable:
         inset = round(canvas * .20)
@@ -30,7 +30,7 @@ def draw_symbol(size, maskable=False):
     stroke = max(SCALE, round(canvas * .018))
     draw.rounded_rectangle(
         (left, top, right, bottom), radius=radius,
-        fill="#286D55", outline="#A3E5B5", width=stroke
+        fill="#378368", outline="#B8F0C8", width=stroke
     )
 
     span = right - left
@@ -39,26 +39,29 @@ def draw_symbol(size, maskable=False):
 
     draw.ellipse(
         (px(.72), py(.16), px(.89), py(.33)),
-        fill="#E6C56C"
+        fill="#FFD37A"
     )
     draw.polygon(scaled([
-        (px(.10) / SCALE, py(.79) / SCALE),
-        (px(.36) / SCALE, py(.34) / SCALE),
-        (px(.52) / SCALE, py(.57) / SCALE),
-        (px(.67) / SCALE, py(.40) / SCALE),
-        (px(.91) / SCALE, py(.79) / SCALE),
-    ], SCALE), fill="#70AD87")
+        (px(.09) / SCALE, py(.76) / SCALE),
+        (px(.35) / SCALE, py(.34) / SCALE),
+        (px(.50) / SCALE, py(.55) / SCALE),
+        (px(.67) / SCALE, py(.38) / SCALE),
+        (px(.92) / SCALE, py(.76) / SCALE),
+    ], SCALE), fill="#80C49A")
     draw.polygon(scaled([
-        (px(.10) / SCALE, py(.79) / SCALE),
-        (px(.36) / SCALE, py(.40) / SCALE),
-        (px(.66) / SCALE, py(.79) / SCALE),
-    ], SCALE), fill="#C1F3CE")
+        (px(.09) / SCALE, py(.76) / SCALE),
+        (px(.35) / SCALE, py(.43) / SCALE),
+        (px(.52) / SCALE, py(.65) / SCALE),
+        (px(.62) / SCALE, py(.54) / SCALE),
+        (px(.82) / SCALE, py(.76) / SCALE),
+    ], SCALE), fill="#D9F7DE")
 
     line = [
-        (px(.11), py(.80)), (px(.25), py(.83)), (px(.40), py(.83)),
-        (px(.56), py(.79)), (px(.72), py(.78)), (px(.89), py(.81)),
+        (px(.12), py(.80)), (px(.27), py(.80)), (px(.31), py(.74)),
+        (px(.36), py(.84)), (px(.42), py(.77)), (px(.55), py(.77)),
+        (px(.59), py(.73)), (px(.64), py(.82)), (px(.88), py(.82)),
     ]
-    draw.line(line, fill="#A3E2EE", width=max(SCALE, round(span * .035)), joint="curve")
+    draw.line(line, fill="#A9ECF4", width=max(SCALE, round(span * .032)), joint="curve")
     return image.resize((size, size), Image.Resampling.LANCZOS)
 
 
@@ -74,4 +77,4 @@ save(192, "icon-192.png")
 save(512, "icon-512.png")
 save(192, "icon-maskable-192.png", maskable=True)
 save(512, "icon-maskable-512.png", maskable=True)
-print("Paquet d’icones V12.2 generat.")
+print("Paquet d’icones V21 generat.")

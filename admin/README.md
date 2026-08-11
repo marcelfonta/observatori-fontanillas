@@ -23,3 +23,7 @@ Si `ADMIN_TOKEN` no existeix, el Worker retorna “panell no configurat”. Una 
 - Orígens permesos limitats a la web de l’Observatori i als entorns locals ja autoritzats.
 
 Si canvia el domini públic, cal afegir-lo a `ALLOWED_CONTACT_ORIGINS` del Worker abans de desplegar-lo.
+
+## Cua social V21
+
+El panell mostra si `META_SYSTEM_USER_TOKEN` està configurat i resumeix `social_drafts`, però no retorna mai la credencial. A V21 la cua és exclusivament de revisió: no hi ha cap botó ni endpoint de publicació. Per activar-la cal aplicar `worker/schema.sql` a D1 i desplegar el Worker V21.
