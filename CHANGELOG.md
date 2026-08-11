@@ -1,24 +1,26 @@
 # Changelog
 
-## V21.1.0 — 2026-08-11
+## V21.2.0 — 2026-08-11
 
 ### Gestor editorial protegit
 
 - Afegida al panell d’administració una cua editorial completa per revisar, editar, aprovar, descartar i restaurar els esborranys socials.
-- Aprovar un contingut no el publica: Telegram i Bluesky només s’envien després de prémer el botó del canal i acceptar una confirmació explícita.
+- Aprovar un contingut no el publica: cada xarxa només s’envia després de prémer el seu botó i acceptar una confirmació explícita.
 - Els continguts publicats queden bloquejats contra modificacions accidentals i els descartats es conserven a l’historial.
 - Afegits filtres, recompte d’estats, protecció contra pèrdua d’edicions i una disposició responsive per a ordinador i mòbil.
 
-### Publicació manual i traçabilitat
+### Diagnòstic, publicació manual i traçabilitat
 
-- Incorporades publicacions manuals independents per a Telegram i Bluesky, sempre des del Worker i sense exposar credencials al navegador.
+- Afegida una comprovació segura i individual de Facebook, Instagram, Bluesky i Telegram que valida comptes, permisos i credencials sense publicar.
+- Incorporades publicacions manuals independents per als quatre canals, sempre des del Worker i sense exposar credencials al navegador.
+- Facebook publica text i enllaç a la pàgina configurada; Instagram crea i valida el contenidor multimèdia abans de publicar la targeta social de 1200 × 630 px.
 - Cada intent, correcte o fallit, queda registrat per canal a la nova taula D1 `social_publications` i és visible des del mateix esborrany.
-- Facebook i Instagram continuen preparats però sense cap crida de publicació; el cron només genera esborranys i mai envia contingut automàticament.
+- El cron només genera esborranys i mai envia contingut automàticament.
 - Afegits endpoints administratius protegits per consultar i actualitzar la cua i executar únicament una publicació manual autoritzada.
 
 ### Compatibilitat i validació
 
-- Actualitzats Worker, esquema D1, panell, PWA, proves i documentació a V21.1.0.
+- Actualitzats Worker, esquema D1, panell, PWA, proves i documentació a V21.2.0.
 - Preservats els contractes públics de dades, avisos AEMET/Meteocat, OneSignal, Meteo IA, comparador, compartir i PWA.
 
 ## V21.0.2 — 2026-08-11

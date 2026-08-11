@@ -85,13 +85,13 @@ La mateixa versió reorganitza Centre de Dades amb un únic període per a resum
 
 Implementat a V16.0.0 com un panell de diagnòstic protegit pel Worker: estat de l’estació i la qualitat de dades, base D1, arxiu d’avisos, formulari, push, versions, PWA, memòries cau locals i incidències de la sessió. La clau només viu durant la pestanya, les respostes administratives no es desen a la PWA i no s’exposa cap secret. Per seguretat, la primera versió és de només lectura i no inclou operacions destructives.
 
-## Milestone 9 — Xarxes socials — En curs amb V21.1
+## Milestone 9 — Xarxes socials — En curs amb V21.2
 
 - Connectar amb l’usuari Instagram i Facebook; X queda descartat per decisió del projecte.
 - Resums, avisos, pluja, rècords, efemèrides i episodis.
 - Regles, calendari, aprovació opcional i historial editorial.
 
-V21 incorpora Instagram, Facebook, Bluesky i Telegram al portal i prepara una cua D1 d’esborranys diaris. V21.1 hi afegeix revisió, edició, aprovació, descart, restauració, historial per canal i publicació manual confirmada a Telegram o Bluesky. Aprovar mai no publica, el cron només crea esborranys i Meta continua sense enviaments. La fita quedarà completa després de validar publicacions reals controlades i decidir explícitament si Facebook i Instagram s’activen.
+V21 incorpora Instagram, Facebook, Bluesky i Telegram al portal i prepara una cua D1 d’esborranys diaris. V21.2 hi afegeix revisió, edició, aprovació, descart, restauració, historial per canal, diagnòstic sense publicació i enviament manual confirmat als quatre canals. Aprovar mai no publica i el cron només crea esborranys. La fita quedarà completa després de validar una publicació real controlada a cada xarxa i, només llavors, definir el calendari automàtic i els límits editorials.
 
 ## Milestone transversal — Historial d’avisos — Completat
 

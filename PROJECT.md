@@ -139,15 +139,15 @@ L’analítica diferencia tres conceptes: configuració al domini, proveïdor i 
 
 `assets/images/observatori-fontanillas-avatar-v21.png` és l’avatar rodó de 1024 × 1024 px compartit per les capçaleres del portal i els perfils socials. El menú lateral incorpora una targeta contextual superior i un peu propi amb copyright; en pantalles petites el copyright continua al peu general. El peu reserva espai al xat flotant perquè els accessos socials no quedin tapats.
 
-El Worker crea com a màxim un esborrany diari a `social_drafts`, amb fets derivats de l’última observació i una clau de deduplicació. `/admin/status` només retorna si les credencials de Meta, Bluesky i Telegram existeixen, expressades com a booleans, i un resum de la cua; mai les credencials. No hi ha cap endpoint ni cap petició de publicació. L’estat `draft` és una barrera funcional deliberada fins que existeixi una interfície de revisió i una prova manual autoritzada.
+El Worker crea com a màxim un esborrany diari a `social_drafts`, amb fets derivats de l’última observació i una clau de deduplicació. `/admin/status` només retorna booleans de configuració i un resum de la cua; mai les credencials. La publicació queda separada del cron i només existeix sota autenticació administrativa, per a continguts aprovats i amb confirmació explícita.
 
-## Evolució V21.1
+## Evolució V21.2
 
 `administracio.html` i `src/features/admin.js` converteixen la cua social en un gestor editorial protegit. Els esborranys es poden editar, passar a revisió, aprovar, descartar i restaurar. Aprovar és només una decisió editorial: no executa cap publicació. Els continguts ja publicats queden immutables per evitar correccions accidentals sobre un registre històric.
 
-`worker/index.js` exposa sota `ADMIN_TOKEN` la consulta i actualització de la cua i una acció de publicació manual per canal. Només Telegram i Bluesky són canals actius en aquesta fase, cadascun amb confirmació explícita des del panell. Facebook i Instagram conserven configuració i credencials preparades, però no tenen cap petició de publicació implementada.
+`worker/index.js` exposa sota `ADMIN_TOKEN` la consulta i actualització de la cua, un diagnòstic de només lectura i una acció de publicació manual per canal. Facebook, Instagram, Bluesky i Telegram poden provar-se per separat; cada publicació exigeix confirmació explícita des del panell. La comprovació prèvia no crea cap publicació.
 
-`social_publications` registra per esborrany i canal l’estat, l’identificador extern, la URL resultant, l’error normalitzat i l’hora de cada intent. Aquest registre no conté credencials. El cron continua cridant exclusivament `createDailySocialDraft()` i no pot aprovar ni publicar. Per tant, no existeix cap camí de publicació automàtica en V21.1.
+`social_publications` registra per esborrany i canal l’estat, l’identificador extern, la URL resultant, l’error normalitzat i l’hora de cada intent. Aquest registre no conté credencials. El cron continua cridant exclusivament `createDailySocialDraft()` i no pot aprovar ni publicar. Per tant, no existeix cap camí de publicació automàtica en V21.2.
 
 ## Normes de canvi
 

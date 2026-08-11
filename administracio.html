@@ -10,11 +10,11 @@
   <title>Administració · Observatori Fontanillas</title>
   <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="css/variables.css?v=21.1.0" />
-  <link rel="stylesheet" href="css/layout.css?v=21.1.0" />
-  <link rel="stylesheet" href="css/style.css?v=21.1.0" />
-  <link rel="stylesheet" href="css/portal.css?v=21.1.0" />
-  <script type="module" src="src/features/admin.js?v=21.1.0"></script>
+  <link rel="stylesheet" href="css/variables.css?v=21.2.0" />
+  <link rel="stylesheet" href="css/layout.css?v=21.2.0" />
+  <link rel="stylesheet" href="css/style.css?v=21.2.0" />
+  <link rel="stylesheet" href="css/portal.css?v=21.2.0" />
+  <script type="module" src="src/features/admin.js?v=21.2.0"></script>
 </head>
 <body id="top" class="admin-body">
   <a class="skip-link" href="#admin-main">Saltar al panell</a>
@@ -52,19 +52,33 @@
 
         <article class="admin-panel panel"><header><div><p class="eyebrow">Serveis</p><h2>Integracions</h2></div><span class="admin-status-pill" id="admin-integrations-pill">Pendent</span></header><div class="admin-service-list" id="admin-integrations"><div data-integration="weatherUnderground"><span>Weather Underground</span><b>—</b></div><div data-integration="database"><span>Cloudflare D1</span><b>—</b></div><div data-integration="contact"><span>Formulari de contacte</span><b>—</b></div><div data-integration="pushClient"><span>OneSignal · web</span><b>—</b></div><div data-integration="pushWorker"><span>OneSignal · Worker</span><b>—</b></div><div data-integration="admin"><span>Accés administratiu</span><b>—</b></div><div data-integration="analytics"><span>Analítica web</span><b>—</b></div><div data-integration="social"><span>Xarxes socials · 4 canals</span><b>—</b></div></div><p class="admin-note">OneSignal web i Worker estan operatius quan totes dues files apareixen en verd. Cloudflare Web Analytics està activat al domini. Les quatre xarxes només preparen esborranys: la publicació automàtica continua desactivada expressament.</p></article>
 
-        <article class="admin-panel panel"><header><div><p class="eyebrow">Aplicació</p><h2>PWA i versions</h2></div><span class="admin-status-pill" id="admin-pwa-pill">Pendent</span></header><dl class="admin-detail-list"><div><dt>Versió web</dt><dd>V21.1.0</dd></div><div><dt>Versió Worker</dt><dd id="admin-worker-version">—</dd></div><div><dt>Entorn</dt><dd id="admin-environment">—</dd></div><div><dt>Service Worker</dt><dd id="admin-service-worker">—</dd></div><div><dt>Mode instal·lat</dt><dd id="admin-installed">—</dd></div><div><dt>Memòries cau locals</dt><dd id="admin-cache-count">—</dd></div></dl></article>
+        <article class="admin-panel panel"><header><div><p class="eyebrow">Aplicació</p><h2>PWA i versions</h2></div><span class="admin-status-pill" id="admin-pwa-pill">Pendent</span></header><dl class="admin-detail-list"><div><dt>Versió web</dt><dd>V21.2.0</dd></div><div><dt>Versió Worker</dt><dd id="admin-worker-version">—</dd></div><div><dt>Entorn</dt><dd id="admin-environment">—</dd></div><div><dt>Service Worker</dt><dd id="admin-service-worker">—</dd></div><div><dt>Mode instal·lat</dt><dd id="admin-installed">—</dd></div><div><dt>Memòries cau locals</dt><dd id="admin-cache-count">—</dd></div></dl></article>
 
         <article class="admin-panel panel"><header><div><p class="eyebrow">Publicació</p><h2>Cercadors i privacitat</h2></div><span class="admin-status-pill" id="admin-publication-pill">Pendent</span></header><dl class="admin-detail-list"><div><dt>Sitemap</dt><dd id="admin-sitemap">—</dd></div><div><dt>Robots</dt><dd id="admin-robots">—</dd></div><div><dt>Verificació Google</dt><dd id="admin-search-console">—</dd></div><div><dt>Pàgina de privacitat</dt><dd id="admin-privacy">—</dd></div><div><dt>Càrrega inicial</dt><dd id="admin-navigation-time">—</dd></div></dl><p class="admin-note">La propietat de domini es va verificar per DNS i Google va processar correctament el sitemap amb 13 URL descobertes el 10 d’agost de 2026.</p></article>
 
         <article class="admin-panel panel"><header><div><p class="eyebrow">Rendiment local</p><h2>Core Web Vitals</h2></div><span class="admin-status-pill" id="admin-performance-pill">Recollint dades</span></header><dl class="admin-detail-list"><div><dt>LCP · contingut principal</dt><dd id="admin-lcp">—</dd></div><div><dt>CLS · estabilitat visual</dt><dd id="admin-cls">—</dd></div><div><dt>INP · resposta a interaccions</dt><dd id="admin-inp">—</dd></div><div><dt>TTFB · resposta inicial</dt><dd id="admin-ttfb">—</dd></div></dl><p class="admin-note" id="admin-performance-context">Mesura local d’aquesta càrrega; no s’envia a cap servei extern.</p></article>
 
-        <article class="admin-panel admin-social-panel panel"><header><div><p class="eyebrow">Xarxes · V21.1</p><h2>Revisió editorial</h2><p>Edita, aprova o descarta els continguts abans de qualsevol enviament.</p></div><span class="admin-status-pill is-warning" id="admin-social-pill">Mode segur</span></header><div class="admin-social-summary"><dl class="admin-detail-list"><div><dt>Mode</dt><dd id="admin-social-mode">Esborranys</dd></div><div><dt>Meta · Facebook i Instagram</dt><dd id="admin-social-token">—</dd></div><div><dt>Bluesky</dt><dd id="admin-social-bluesky">—</dd></div><div><dt>Telegram</dt><dd id="admin-social-telegram">—</dd></div></dl><dl class="admin-detail-list"><div><dt>Pendents de revisió</dt><dd id="admin-social-drafts">0</dd></div><div><dt>Aprovats</dt><dd id="admin-social-approved">0</dd></div><div><dt>Publicats</dt><dd id="admin-social-published">0</dd></div><div><dt>Darrer esborrany</dt><dd id="admin-social-last">—</dd></div></dl></div><div class="admin-social-safety"><strong>Publicació automàtica desactivada</strong><span>Aprovar mai no publica. Telegram i Bluesky només s’envien amb el botó del canal i una confirmació explícita. Meta continua en preparació.</span></div><div class="admin-social-toolbar" aria-label="Filtrar la cua editorial"><button type="button" class="is-active" data-social-filter="">Tots</button><button type="button" data-social-filter="draft">Esborranys</button><button type="button" data-social-filter="review">En revisió</button><button type="button" data-social-filter="approved">Aprovats</button><button type="button" data-social-filter="published">Publicats</button><button type="button" data-social-filter="discarded">Descartats</button></div><p class="admin-social-feedback" id="admin-social-feedback" role="status" hidden></p><div class="admin-social-list" id="admin-social-list" aria-live="polite"><p class="admin-social-empty">Carregant la cua editorial…</p></div><p class="admin-note">Cada intent queda registrat per canal, inclosos els errors. Els continguts descartats no s’eliminen i es poden restaurar.</p></article>
+        <article class="admin-panel admin-social-panel panel">
+          <header><div><p class="eyebrow">Xarxes · V21.2</p><h2>Revisió editorial i proves</h2><p>Edita, aprova o descarta els continguts abans de qualsevol enviament.</p></div><span class="admin-status-pill is-warning" id="admin-social-pill">Mode segur</span></header>
+          <div class="admin-social-summary">
+            <dl class="admin-detail-list"><div><dt>Mode</dt><dd id="admin-social-mode">Esborranys</dd></div><div><dt>Facebook</dt><dd id="admin-social-facebook">—</dd></div><div><dt>Instagram</dt><dd id="admin-social-instagram">—</dd></div><div><dt>Bluesky</dt><dd id="admin-social-bluesky">—</dd></div><div><dt>Telegram</dt><dd id="admin-social-telegram">—</dd></div></dl>
+            <dl class="admin-detail-list"><div><dt>Pendents de revisió</dt><dd id="admin-social-drafts">0</dd></div><div><dt>Aprovats</dt><dd id="admin-social-approved">0</dd></div><div><dt>Publicats</dt><dd id="admin-social-published">0</dd></div><div><dt>Darrer esborrany</dt><dd id="admin-social-last">—</dd></div></dl>
+          </div>
+          <section class="admin-social-diagnostics" aria-labelledby="admin-social-diagnostics-title">
+            <div><strong id="admin-social-diagnostics-title">Comprovació segura de les quatre xarxes</strong><span>Valida credencials, comptes i permisos sense publicar cap missatge.</span></div>
+            <button type="button" id="admin-social-diagnose">Comprovar connexions</button>
+            <div class="admin-social-diagnostic-list" id="admin-social-diagnostic-list" aria-live="polite"><p class="admin-social-diagnostic-empty">Encara no s’han comprovat les connexions.</p></div>
+          </section>
+          <div class="admin-social-safety"><strong>Publicació automàtica desactivada</strong><span>Aprovar mai no publica. Facebook, Instagram, Bluesky i Telegram només s’envien amb el botó del canal i una confirmació explícita.</span></div>
+          <div class="admin-social-toolbar" aria-label="Filtrar la cua editorial"><button type="button" class="is-active" data-social-filter="">Tots</button><button type="button" data-social-filter="draft">Esborranys</button><button type="button" data-social-filter="review">En revisió</button><button type="button" data-social-filter="approved">Aprovats</button><button type="button" data-social-filter="published">Publicats</button><button type="button" data-social-filter="discarded">Descartats</button></div>
+          <p class="admin-social-feedback" id="admin-social-feedback" role="status" hidden></p><div class="admin-social-list" id="admin-social-list" aria-live="polite"><p class="admin-social-empty">Carregant la cua editorial…</p></div><p class="admin-note">Cada intent queda registrat per canal, inclosos els errors. Els continguts descartats no s’eliminen i es poden restaurar.</p>
+        </article>
       </div>
 
       <article class="admin-incidents panel"><header><div><p class="eyebrow">Sessió actual</p><h2>Incidències del navegador</h2><p>Només recull errors produïts mentre aquest panell és obert; no desa informació personal.</p></div><span class="tag" id="admin-incident-count">0 incidències</span></header><ol id="admin-incident-list"><li>Cap incidència registrada en aquesta sessió.</li></ol></article>
     </section>
   </main>
 
-  <footer class="shell"><span>© 2026 Observatori Meteorològic Fontanillas</span><small>Administració · V21.1.0</small><div><a href="#top">Tornar amunt ↑</a></div></footer>
+  <footer class="shell"><span>© 2026 Observatori Meteorològic Fontanillas</span><small>Administració · V21.2.0</small><div><a href="#top">Tornar amunt ↑</a></div></footer>
 </body>
 </html>

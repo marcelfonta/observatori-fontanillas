@@ -1,16 +1,18 @@
-# Xarxes socials — mode segur V21.1.0
+# Xarxes socials — mode segur V21.2.0
 
 Facebook i Instagram estan connectats al portafolis de Meta. Bluesky i Telegram també tenen les seves credencials privades al Worker. El portal només enllaça els quatre perfils públics i no carrega cap SDK social.
 
-La publicació automàtica no està activa. El Worker crea esborranys a `social_drafts` i el panell protegit permet editar-los, aprovar-los o descartar-los. Només un contingut aprovat es pot enviar manualment a Telegram o Bluesky, amb un botó i una confirmació independents per canal.
+La publicació automàtica no està activa. El Worker crea esborranys a `social_drafts` i el panell protegit permet editar-los, aprovar-los o descartar-los. Només un contingut aprovat es pot enviar manualment a Facebook, Instagram, Bluesky o Telegram, amb un botó i una confirmació independents per canal.
 
 ## Abans de connectar res
 
-1. Aplicar `worker/schema.sql` a D1 i publicar el Worker V21.1; l’esquema afegeix `social_publications` sense eliminar els esborranys existents.
-2. Confirmar al panell que Meta, Bluesky i Telegram mostren «Credencial activa».
-3. Revisar diversos esborranys reals, editar-los i aprovar-ne un abans d’autoritzar una primera prova manual per un sol canal.
-4. Mantenir doble factor, permisos mínims i totes les credencials exclusivament com a secrets de Cloudflare.
-5. No afegir píxels, analítica o formularis de Meta sense una decisió explícita de privacitat.
+1. Aplicar `worker/schema.sql` a D1 i publicar el Worker V21.2; l’esquema afegeix `social_publications` sense eliminar els esborranys existents.
+2. Prémer «Comprovar les 4 connexions». Aquesta prova només valida compte, permisos i credencials; no publica res.
+3. Confirmar que Facebook, Instagram, Bluesky i Telegram apareixen en verd. Si Meta no identifica bé els actius, definir `META_FACEBOOK_PAGE_ID` i `META_INSTAGRAM_ACCOUNT_ID` al Worker.
+4. Revisar diversos esborranys reals, editar-los i aprovar-ne un de prova abans d’autoritzar una publicació manual per un sol canal.
+5. Publicar el mateix esborrany, d’un en un, en aquest ordre recomanat: Telegram, Bluesky, Facebook i Instagram. Verificar la publicació externa abans de continuar al canal següent.
+6. Mantenir doble factor, permisos mínims i totes les credencials exclusivament com a secrets de Cloudflare.
+7. No afegir píxels, analítica o formularis de Meta sense una decisió explícita de privacitat.
 
 ## Pilars de contingut
 
@@ -29,15 +31,18 @@ La publicació automàtica no està activa. El Worker crea esborranys a `social_
 - Mai desar tokens de xarxes dins del frontend o del repositori; només secrets del Worker.
 - Aprovar i publicar són accions diferents; cada enviament demana confirmació i queda registrat, també si falla.
 - Un contingut publicat és immutable al panell. Per corregir-lo, cal preparar un esborrany nou.
-- Facebook i Instagram continuen sense publicació des del Worker fins a una fase posterior validada explícitament.
+- Facebook i Instagram només es publiquen manualment des del panell protegit i amb confirmació explícita.
 - X queda fora del projecte.
 
 ## Secrets de Cloudflare
 
 - `META_SYSTEM_USER_TOKEN`: token del sistema Meta per a Facebook i Instagram.
+- `META_FACEBOOK_PAGE_ID`: identificador opcional de la pàgina; evita ambigüitats si el token gestiona més d’una pàgina.
+- `META_INSTAGRAM_ACCOUNT_ID`: identificador opcional del compte professional d’Instagram.
+- `META_INSTAGRAM_IMAGE_URL`: imatge pública opcional per a Instagram; si falta s’utilitza la targeta social del portal.
 - `BLUESKY_HANDLE`: `meteofontanillas.bsky.social`.
 - `BLUESKY_APP_PASSWORD`: contrasenya d’aplicació, mai la contrasenya principal.
 - `TELEGRAM_BOT_TOKEN`: token privat creat amb BotFather.
 - `TELEGRAM_CHANNEL_ID`: identificador públic del canal, per exemple `@meteofontanillas`.
 
-Que una credencial aparegui en verd només confirma que existeix al Worker. No activa cap automatització. Telegram i Bluesky només es publiquen manualment després d’una aprovació humana; Meta continua en mode preparat.
+Que una credencial aparegui en verd només confirma que existeix al Worker. La comprovació de connexions valida també l’accés real sense publicar. Cap canal s’envia fins que un esborrany ha estat aprovat, es prem el seu botó i s’accepta la confirmació.

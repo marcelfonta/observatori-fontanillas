@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V21.1.0
+# Observatori Meteorològic Fontanillas — V21.2.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.1.0 incorpora un gestor editorial protegit per revisar els continguts socials i publicar-los manualment a Telegram o Bluesky, sense activar cap automatització ni exposar credencials.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.2.0 incorpora un gestor editorial protegit per comprovar i provar Facebook, Instagram, Bluesky i Telegram, sense activar cap automatització ni exposar credencials.
 
 ## Estat actual
 
@@ -51,9 +51,11 @@ Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas 
 
 ## Worker
 
-El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V21.1.0 també s’ha de desplegar aquest Worker i aplicar `worker/schema.sql`, que manté `social_drafts` i afegeix el registre `social_publications`. Les credencials `META_SYSTEM_USER_TOKEN`, `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`, `TELEGRAM_BOT_TOKEN` i `TELEGRAM_CHANNEL_ID` es mantenen només a Cloudflare; el Worker no en retorna mai els valors.
+El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V21.2.0 també s’ha de desplegar aquest Worker i aplicar `worker/schema.sql`, que manté `social_drafts` i afegeix el registre `social_publications`. Les credencials `META_SYSTEM_USER_TOKEN`, `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`, `TELEGRAM_BOT_TOKEN` i `TELEGRAM_CHANNEL_ID` es mantenen només a Cloudflare; el Worker no en retorna mai els valors.
 
-La V21.1 permet publicar manualment un esborrany aprovat a Telegram o Bluesky des de l’àrea protegida. Aprovar mai no publica i cada canal exigeix una confirmació separada. El cron continua limitat a preparar esborranys; Meta continua sense cap crida de publicació i no hi ha cap enviament automàtic.
+La V21.2 permet comprovar les quatre connexions sense publicar i, després, enviar manualment un esborrany aprovat a Facebook, Instagram, Bluesky o Telegram. Aprovar mai no publica, cada canal exigeix una confirmació separada i cada intent queda registrat. El cron continua limitat a preparar esborranys: no hi ha cap enviament automàtic.
+
+Per a Meta es poden definir opcionalment `META_FACEBOOK_PAGE_ID`, `META_FACEBOOK_PAGE_NAME`, `META_INSTAGRAM_ACCOUNT_ID`, `META_GRAPH_VERSION` i `META_INSTAGRAM_IMAGE_URL`. Si no s’indiquen els identificadors, el Worker intenta resoldre la pàgina i el compte professional a partir del token del sistema. La imatge predeterminada d’Instagram és `assets/images/observatori-fontanillas-social.jpg`.
 
 ## Configuració
 
