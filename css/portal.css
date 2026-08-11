@@ -1,4 +1,4 @@
-:root { --portal-sidebar: 210px; --portal-header: 92px; }
+:root { --portal-sidebar: 228px; --portal-header: 72px; }
 
 body.has-portal-shell { padding-top: var(--portal-header); padding-left: var(--portal-sidebar); }
 body.has-portal-shell.has-portal-menu { overflow: hidden; }
@@ -12,7 +12,7 @@ body.has-portal-shell.has-portal-menu { overflow: hidden; }
   width: auto;
   height: var(--portal-header);
   margin: 0;
-  padding-inline: max(32px, calc((100vw - var(--portal-sidebar) - 1420px) / 2));
+  padding-inline: max(24px, calc((100vw - var(--portal-sidebar) - 1420px) / 2));
   border-bottom: 1px solid var(--line);
   background: rgba(6, 16, 14, .9);
   box-shadow: 0 12px 36px rgba(0, 0, 0, .16);
@@ -22,7 +22,7 @@ body.has-portal-shell.has-portal-menu { overflow: hidden; }
 .has-portal-shell .site-header .nav { display: none; }
 .has-portal-shell > .mobile-nav, .has-portal-shell > .mobile-more { display: none !important; }
 .portal-menu-button { display: none; }
-.header-context { margin-left: auto; color: var(--muted); font-size: 12px; }
+.header-context { margin: 0; color: var(--muted); font-size: 12px; }
 
 .portal-sidebar {
   position: fixed;
@@ -31,38 +31,42 @@ body.has-portal-shell.has-portal-menu { overflow: hidden; }
   width: var(--portal-sidebar);
   display: flex;
   flex-direction: column;
-  padding: calc(var(--portal-header) + 10px) 12px 18px;
+  padding: 12px 12px 14px;
   overflow: hidden;
   border-right: 1px solid var(--line);
   background: rgba(7, 17, 15, .96);
   backdrop-filter: blur(18px);
 }
 
-.portal-sidebar__intro { display: grid; gap: 4px; margin: 0 3px 9px; padding: 13px 12px; border: 1px solid rgba(137,214,163,.18); border-radius: 14px; background: linear-gradient(135deg,rgba(137,214,163,.1),rgba(62,133,107,.025)); }
-.portal-sidebar__intro > span { color: var(--green); font-size: 8px; font-weight: 800; letter-spacing: .12em; }
-.portal-sidebar__intro i { display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(137,214,163,.09); }
-.portal-sidebar__intro strong { font: 700 17px/1.1 var(--font-display); }
-.portal-sidebar__intro small { color: var(--muted); font-size: 8px; line-height: 1.45; }
-.portal-sidebar > nav { display: grid; gap: 2px; overflow-y: auto; scrollbar-width: thin; }
-.portal-sidebar a {
+.portal-sidebar__brand { display: flex; align-items: center; gap: 11px; min-height: 70px; margin: 0 3px 8px; padding: 8px 7px 13px; border-bottom: 1px solid var(--line); border-radius: 0; color: var(--text); text-decoration: none; }
+.portal-sidebar__brand-mark { display: grid; width: 52px; height: 52px; flex: 0 0 52px; place-items: center; overflow: hidden; border: 1px solid rgba(163,229,181,.65); border-radius: 50%; background: #4d9e8f; box-shadow: 0 0 0 3px rgba(137,214,163,.055); }
+.portal-sidebar__brand-mark img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.portal-sidebar__brand-copy { display: grid; min-width: 0; gap: 3px; }
+.portal-sidebar__brand-copy strong { color: var(--text); font: 750 17px/1 var(--font-display); letter-spacing: -.02em; }
+.portal-sidebar__brand-copy small { color: var(--muted); font-size: 10px; line-height: 1.2; }
+.portal-sidebar > nav { display: grid; gap: 1px; min-height: 0; padding: 1px 2px 8px 0; overflow-y: auto; scrollbar-color: rgba(137,214,163,.22) transparent; scrollbar-width: thin; }
+.portal-sidebar > nav::-webkit-scrollbar { width: 5px; }
+.portal-sidebar > nav::-webkit-scrollbar-thumb { border-radius: 99px; background: rgba(137,214,163,.22); }
+.portal-sidebar > nav a {
   display: grid;
   grid-template-columns: 32px 1fr;
   align-items: center;
-  min-height: 43px;
-  padding: 7px 10px;
+  min-height: 40px;
+  padding: 6px 9px;
   border-radius: 12px;
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
 }
-.portal-sidebar a span { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid var(--line); border-radius: 9px; color: var(--green); }
-.portal-sidebar a span svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.portal-sidebar a:hover, .portal-sidebar a.is-active { background: rgba(137, 214, 163, .1); color: var(--text); }
-.portal-sidebar a.is-active span { border-color: rgba(137, 214, 163, .42); background: rgba(137, 214, 163, .12); }
-.portal-sidebar__footer { display: grid; gap: 5px; margin-top: auto; padding: 12px 4px 0; border-top: 1px solid var(--line); }
-.portal-sidebar__footer > small { color: var(--text); font-size: 9px; font-weight: 750; }
-.portal-sidebar__footer > span { color: var(--muted); font-size: 8px; }
+.portal-sidebar > nav a span { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid var(--line); border-radius: 9px; color: var(--green); }
+.portal-sidebar > nav a span svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.portal-sidebar > nav a:hover, .portal-sidebar > nav a.is-active { background: rgba(137, 214, 163, .1); color: var(--text); }
+.portal-sidebar > nav a.is-active span { border-color: rgba(137, 214, 163, .42); background: rgba(137, 214, 163, .12); }
+.portal-sidebar__footer { display: grid; gap: 9px; margin-top: auto; padding: 11px 3px 0; border-top: 1px solid var(--line); }
+.portal-sidebar__copyright { display: grid; gap: 3px; padding-inline: 3px; }
+.portal-sidebar__copyright > small { color: var(--text); font-size: 9px; font-weight: 750; }
+.portal-sidebar__copyright > span { color: var(--muted); font-size: 8px; }
 
 .portal-backdrop { display: none; }
 [data-portal-page][hidden] { display: none !important; }
@@ -494,7 +498,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   :root { --portal-header: 76px; }
   body.has-portal-shell { padding-left: 0; }
   .has-portal-shell .site-header { left: 0; padding-inline: 14px; }
-  .portal-sidebar { width: min(86vw, 330px); padding-top: calc(var(--portal-header) + 12px); transform: translateX(-105%); transition: transform .2s ease; }
+  .portal-sidebar { width: min(88vw, 330px); padding-top: calc(var(--portal-header) + 10px); transform: translateX(-105%); transition: transform .2s ease; }
   .portal-sidebar.is-open { transform: none; }
   .portal-menu-button { display: grid; width: 42px; height: 42px; place-items: center; flex: none; border: 1px solid var(--line); border-radius: 12px; background: rgba(0, 0, 0, .14); color: var(--text); font-size: 20px; }
   .portal-backdrop { position: fixed; z-index: 55; inset: 0; display: block; border: 0; background: rgba(0, 0, 0, .58); }
@@ -515,7 +519,6 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .learning-filters label:first-child { grid-column: 1 / -1; }
   .portal-placeholder .panel { min-height: 240px; padding: 28px; }
   .station-grid { grid-template-columns: 1fr; }
-  .has-portal-shell .site-header .brand { margin-right: auto; }
   .hero-webcam-preview { width: min(240px, 100%); margin: 0 0 18px; }
   .data-center-hero { grid-template-columns: 1fr; padding: 28px; }
   .data-center-controls { justify-items: start; }
@@ -617,7 +620,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .meteo-ai-context { align-items: center; flex-direction: row; padding-inline: 12px; }
   .meteo-ai-context span { white-space: normal; }
   .meteo-ai-widget__panel { max-height: calc(100vh - 90px); }
-  .portal-sidebar__intro { padding: 11px 12px; }
+  .portal-sidebar__brand { min-height: 66px; }
 }
 
 @media (max-width: 360px) {

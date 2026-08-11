@@ -1,5 +1,26 @@
 # Changelog
 
+## V21.0.2 — 2026-08-11
+
+### Nova jerarquia de marca i capçalera
+
+- Traslladats el nou avatar rodó i la identitat «Fontanillas · Sant Celoni» al capdamunt del menú lateral.
+- Eliminada la marca repetida de les capçaleres públiques perquè la franja fixa sigui més neta i funcional.
+- Reordenada la capçalera amb l’estat «En directe» i l’hora a l’esquerra, i Instagram, Facebook, Bluesky i Telegram alineats a la dreta.
+- Mantingut el context de cada pàgina només quan hi ha espai suficient, sense competir amb l’estat en directe ni amb les xarxes.
+
+### Menú lateral i adaptació mòbil
+
+- Separats clarament marca, navegació desplaçable i peu social perquè la barra de desplaçament no envaeixi els accessos inferiors.
+- Recompost el bloc social inferior com quatre botons circulars de mida uniforme, amb copyright propi sota les icones.
+- Ajustats amplada, separacions, jerarquia tipogràfica i comportament de l’hamburguesa en pantalles estretes.
+- Preservada la capçalera específica del panell d’administració, que continua identificant l’àrea protegida.
+
+### Compatibilitat i validació
+
+- Sense canvis als contractes de l’API, Worker, D1, PWA, OneSignal, avisos, compartir, comparador ni Meteo IA.
+- Actualitzats la memòria cau, les versions, les proves i la documentació a V21.0.2.
+
 ## V21.0.1 — 2026-08-11
 
 ### Xarxes visibles sense interferències

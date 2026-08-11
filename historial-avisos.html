@@ -35,22 +35,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/variables.css?v=21.0.1" />
-  <link rel="stylesheet" href="css/layout.css?v=21.0.1" />
-  <link rel="stylesheet" href="css/style.css?v=21.0.1" />
-  <link rel="stylesheet" href="css/portal.css?v=21.0.1" />
-  <script type="module" src="src/features/portal-static.js?v=21.0.1"></script>
-  <script type="module" src="src/features/alert-history-page.js?v=21.0.1"></script>
-  <script type="module" src="src/features/pwa.js?v=21.0.1"></script>
-  <script type="module" src="src/features/share-page.js?v=21.0.1"></script>
+  <link rel="stylesheet" href="css/variables.css?v=21.0.2" />
+  <link rel="stylesheet" href="css/layout.css?v=21.0.2" />
+  <link rel="stylesheet" href="css/style.css?v=21.0.2" />
+  <link rel="stylesheet" href="css/portal.css?v=21.0.2" />
+  <script type="module" src="src/features/portal-static.js?v=21.0.2"></script>
+  <script type="module" src="src/features/alert-history-page.js?v=21.0.2"></script>
+  <script type="module" src="src/features/pwa.js?v=21.0.2"></script>
+  <script type="module" src="src/features/share-page.js?v=21.0.2"></script>
 </head>
 <body data-portal-static="avisos">
   <div id="app-update-banner" class="app-update-banner" hidden role="status" aria-live="polite"><span><b>Nova versió disponible</b><small>Actualitza l’Observatori per carregar els darrers canvis.</small></span><button type="button" id="app-update-button">Actualitzar ara</button><button type="button" id="app-update-dismiss" aria-label="Tancar avís d’actualització">×</button></div>
   <a class="skip-link" href="#history-content">Saltar al contingut principal</a>
   <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
   <header class="site-header shell">
-    <a class="brand" href="./?page=inici" aria-label="Observatori Fontanillas, inici"><span class="brand__mark brand__mark--avatar" aria-hidden="true"><img src="assets/images/observatori-fontanillas-avatar-v21.png" alt="" width="40" height="40" /></span><span><strong>Observatori</strong><small>Fontanillas · Sant Celoni</small></span></a>
-    <div class="live-pill"><span></span><b>Arxiu</b><time id="header-time"></time></div>
+    <div class="live-pill"><span></span><b>En directe</b><time id="header-time"></time></div>
+    <p class="header-context">Historial d’avisos</p>
   </header>
   <main class="shell comparison-page history-page" id="history-content">
     <section class="portal-view-header portal-view-header--static panel" aria-labelledby="history-title"><div><p class="eyebrow">Vigilància oficial · arxiu</p><h1 id="history-title">Historial d’avisos meteorològics</h1><p>Els avisos antics viuen aquí perquè la pàgina principal continuï curta. Cerca i filtra els episodis registrats pel Worker.</p></div><a class="tag" href="./?page=avisos">Tornar als avisos</a></section>
@@ -83,7 +83,7 @@
       <p class="history-export-status" id="history-export-status" role="status" aria-live="polite"></p>
     </section>
   </main>
-  <footer class="shell"><span>© 2026 Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V21.0.1</small><div><a href="./privacitat.html">Privacitat</a><a href="#history-content">Tornar amunt ↑</a><button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button></div></footer>
+  <footer class="shell"><span>© 2026 Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V21.0.2</small><div><a href="./privacitat.html">Privacitat</a><a href="#history-content">Tornar amunt ↑</a><button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button></div></footer>
   <div id="shareModal" hidden style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;"><div role="dialog" aria-modal="true" aria-labelledby="share-title"><h3 id="share-title">Compartir l’Observatori</h3><div><button type="button" data-share="copy">Copiar text i enllaç</button><button type="button" data-share="whatsapp">WhatsApp</button><button type="button" data-share="facebook">Facebook</button><button type="button" data-share="email">Correu</button><button type="button" data-share="native">Altres apps</button></div><button type="button" id="share-close">Tancar</button></div></div>
 </body>
 </html>

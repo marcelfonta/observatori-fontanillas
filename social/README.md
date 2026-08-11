@@ -1,4 +1,4 @@
-# Xarxes socials — mode segur V21.0.1
+# Xarxes socials — mode segur V21.0.2
 
 Facebook i Instagram estan connectats al portafolis de Meta. Bluesky i Telegram també tenen les seves credencials privades al Worker. El portal només enllaça els quatre perfils públics i no carrega cap SDK social.
 

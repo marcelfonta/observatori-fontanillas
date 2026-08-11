@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "21.0.1";
+const WORKER_VERSION = "21.0.2";
 const WORKER_BUILT = "2026-08-11";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;

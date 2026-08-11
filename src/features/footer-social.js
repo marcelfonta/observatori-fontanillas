@@ -31,7 +31,7 @@ export function initFooterSocial(){
   const header=document.querySelector('.site-header');
   if(header){
     let slot=header.querySelector('.header-social-slot');
-    if(!slot){slot=document.createElement('div');slot.className='header-social-slot';header.insertBefore(slot,header.querySelector('.live-pill'));}
+    if(!slot){slot=document.createElement('div');slot.className='header-social-slot';header.append(slot);}
     mountSocialGroup(slot,'header-social','header');
   }
 

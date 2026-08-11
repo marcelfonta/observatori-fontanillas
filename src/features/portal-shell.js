@@ -27,18 +27,26 @@ const PAGE_LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades
 export function mountPortalShell(activePage){
   document.body.classList.add('has-portal-shell');
   const header=document.querySelector('.site-header');
+  header?.querySelector('.brand')?.remove();
   if(header&&!document.getElementById('portal-menu-button')){
     const button=document.createElement('button');button.className='portal-menu-button';button.id='portal-menu-button';button.type='button';button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls','portal-sidebar');button.setAttribute('aria-label','Obrir el menú');button.textContent='☰';header.prepend(button);
   }
-  if(header&&!header.querySelector('.header-context')){const context=document.createElement('p');context.className='header-context';context.textContent=PAGE_LABELS[activePage]||'';header.insertBefore(context,header.querySelector('.live-pill'));}
+  if(header&&!header.querySelector('.header-context')){const context=document.createElement('p');context.className='header-context';context.textContent=PAGE_LABELS[activePage]||'';header.append(context);}
+  if(header){
+    const button=header.querySelector('.portal-menu-button');
+    const live=header.querySelector('.live-pill');
+    const context=header.querySelector('.header-context');
+    if(live)header.insertBefore(live,button?.nextSibling||header.firstChild);
+    if(context)header.insertBefore(context,live?.nextSibling||header.firstChild);
+  }
   let sidebar=document.getElementById('portal-sidebar');
   if(!sidebar){
     sidebar=document.createElement('aside');sidebar.className='portal-sidebar';sidebar.id='portal-sidebar';sidebar.setAttribute('aria-label','Seccions del portal');
-    const intro=document.createElement('div');intro.className='portal-sidebar__intro';intro.innerHTML='<span><i></i> EN DIRECTE</span><strong>Sant Celoni</strong><small>Observació, previsió i coneixement del Baix Montseny</small>';
+    const brand=document.createElement('a');brand.className='portal-sidebar__brand';brand.href='./?page=inici';brand.setAttribute('aria-label','Fontanillas · Sant Celoni, inici');brand.innerHTML='<span class="portal-sidebar__brand-mark" aria-hidden="true"><img src="assets/images/observatori-fontanillas-avatar-v21.png" alt="" width="52" height="52" /></span><span class="portal-sidebar__brand-copy"><strong>Fontanillas</strong><small>· Sant Celoni</small></span>';
     const nav=document.createElement('nav');
     NAV_ITEMS.forEach(([id,label,href])=>{const link=document.createElement('a');link.href=href;link.dataset.pageLink=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span>${label}`;nav.append(link);});
-    const footer=document.createElement('div');footer.className='portal-sidebar__footer';footer.innerHTML='<div class="portal-sidebar__social"></div><small>© 2026 Fontanillas</small><span>Observatori meteorològic local</span>';
-    sidebar.append(intro,nav,footer);document.body.insertBefore(sidebar,document.querySelector('main'));
+    const footer=document.createElement('div');footer.className='portal-sidebar__footer';footer.innerHTML='<div class="portal-sidebar__social"></div><div class="portal-sidebar__copyright"><small>© 2026 Fontanillas</small><span>Observatori meteorològic local</span></div>';
+    sidebar.append(brand,nav,footer);document.body.insertBefore(sidebar,document.querySelector('main'));
   }
   let backdrop=document.getElementById('portal-backdrop');
   if(!backdrop){backdrop=document.createElement('button');backdrop.className='portal-backdrop';backdrop.id='portal-backdrop';backdrop.type='button';backdrop.hidden=true;backdrop.setAttribute('aria-label','Tancar el menú');document.body.insertBefore(backdrop,document.querySelector('main'));}
