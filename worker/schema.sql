@@ -69,3 +69,18 @@ CREATE TABLE IF NOT EXISTS social_drafts (
 );
 CREATE INDEX IF NOT EXISTS idx_social_drafts_status_created
 ON social_drafts(status, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS social_publications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  draft_id INTEGER NOT NULL,
+  channel TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  remote_id TEXT,
+  response_code INTEGER,
+  error TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  published_at TEXT,
+  FOREIGN KEY(draft_id) REFERENCES social_drafts(id)
+);
+CREATE INDEX IF NOT EXISTS idx_social_publications_draft_created
+ON social_publications(draft_id, created_at DESC);

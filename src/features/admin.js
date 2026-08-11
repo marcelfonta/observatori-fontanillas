@@ -8,6 +8,10 @@ const performanceObservers=[];
 let token='';
 let latestDiagnostic=null;
 let refreshTimer=null;
+let socialFilter='';
+let socialDrafts=[];
+let socialCredentials={meta:false,bluesky:false,telegram:false};
+let socialEditorDirty=false;
 const element=id=>document.getElementById(id);
 const text=(id,value)=>{const node=element(id);if(node)node.textContent=value ?? '—';};
 const number=value=>Number.isFinite(Number(value))?Number(value):null;
@@ -71,13 +75,98 @@ function renderSocialQueue(social={}){
   text('admin-social-bluesky',social.channelCredentials?.bluesky?'Configurada':'No configurada');
   text('admin-social-telegram',social.channelCredentials?.telegram?'Configurada':'No configurada');
   text('admin-social-drafts',formatNumber(social.pendingDrafts??0));
+  text('admin-social-approved',formatNumber(social.approved??0));
+  text('admin-social-published',formatNumber(social.published??0));
   text('admin-social-last',formatDate(social.latestCreated));
   setPill('admin-social-pill',draftMode?'Mode segur':'Publicació activa',draftMode?'is-ok':'is-warning');
-  const list=element('admin-social-list');
-  if(!list)return;
-  const recent=Array.isArray(social.recent)?social.recent:[];
-  if(!recent.length){const empty=document.createElement('li');empty.textContent='Encara no hi ha esborranys.';list.replaceChildren(empty);return;}
-  list.replaceChildren(...recent.map(item=>{const entry=document.createElement('li');const title=document.createElement('strong');const meta=document.createElement('span');title.textContent=item.title||'Resum meteorològic';meta.textContent=`${formatDate(item.createdAt||item.created_at)} · ${item.status==='draft'?'pendent de revisió':item.status||'esborrany'}`;entry.append(title,meta);return entry;}));
+  socialCredentials={...socialCredentials,...(social.channelCredentials||{})};
+}
+
+const SOCIAL_LABELS={draft:'Esborrany',review:'En revisió',approved:'Aprovat',partially_published:'Publicat parcialment',published:'Publicat',discarded:'Descartat'};
+const CHANNEL_LABELS={facebook:'Facebook',instagram:'Instagram',bluesky:'Bluesky',telegram:'Telegram'};
+function socialFeedback(message,state='ok'){
+  const node=element('admin-social-feedback');if(!node)return;
+  node.hidden=!message;node.textContent=message||'';node.className=`admin-social-feedback is-${state}`;
+}
+async function adminApi(path,{method='GET',body}={}){
+  const response=await fetch(`${CONFIG.apiUrl}${path}`,{method,headers:{Authorization:`Bearer ${token}`,Accept:'application/json',...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+  const payload=await response.json().catch(()=>({error:'Resposta no vàlida'}));
+  if(response.status===401){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('La sessió ha caducat o la clau no és correcta.',true);throw new Error('Sessió no autoritzada');}
+  if(!response.ok)throw new Error(payload.error||`Error ${response.status}`);
+  return payload;
+}
+function socialDraftValues(card){
+  return {title:card.querySelector('[name="title"]')?.value.trim()||'',body:card.querySelector('[name="body"]')?.value.trim()||'',channels:[...card.querySelectorAll('[name="channels"]:checked')].map(input=>input.value)};
+}
+function makeSocialButton(label,action,className=''){
+  const button=document.createElement('button');button.type='button';button.textContent=label;button.dataset.socialAction=action;if(className)button.className=className;return button;
+}
+function socialPublicationRows(draft){
+  const container=document.createElement('div');container.className='admin-social-publications';
+  const publications=Array.isArray(draft.publications)?draft.publications:[];
+  if(!publications.length){const empty=document.createElement('small');empty.textContent='Encara no hi ha cap intent de publicació.';container.append(empty);return container;}
+  publications.forEach(item=>{const row=document.createElement('div');const channel=document.createElement('strong');const status=document.createElement('span');channel.textContent=CHANNEL_LABELS[item.channel]||item.channel;status.textContent=item.status==='published'?`Publicat · ${formatDate(item.published_at)}`:`Error · ${item.error||'sense detall'}`;row.className=item.status==='published'?'is-ok':'is-error';row.append(channel,status);container.append(row);});
+  return container;
+}
+function socialDraftCard(draft){
+  const card=document.createElement('article');card.className='admin-social-card';card.dataset.draftId=String(draft.id);card.dataset.status=draft.status;
+  const header=document.createElement('header');const heading=document.createElement('div');const eyebrow=document.createElement('p');const title=document.createElement('h3');const badge=document.createElement('span');
+  eyebrow.className='eyebrow';eyebrow.textContent=`${draft.kind||'contingut'} · ${formatDate(draft.created_at)}`;title.textContent=draft.title||'Resum meteorològic';badge.className=`admin-social-state is-${draft.status}`;badge.textContent=SOCIAL_LABELS[draft.status]||draft.status;heading.append(eyebrow,title);header.append(heading,badge);
+  const form=document.createElement('div');form.className='admin-social-form';
+  const titleLabel=document.createElement('label');titleLabel.textContent='Títol';const titleInput=document.createElement('input');titleInput.name='title';titleInput.maxLength=180;titleInput.value=draft.title||'';titleLabel.append(titleInput);
+  const bodyLabel=document.createElement('label');bodyLabel.textContent='Text';const textarea=document.createElement('textarea');textarea.name='body';textarea.maxLength=3900;textarea.rows=5;textarea.value=draft.body||'';bodyLabel.append(textarea);
+  const channels=document.createElement('fieldset');const legend=document.createElement('legend');legend.textContent='Canals previstos';channels.append(legend);
+  Object.entries(CHANNEL_LABELS).forEach(([value,label])=>{const option=document.createElement('label');const input=document.createElement('input');input.type='checkbox';input.name='channels';input.value=value;input.checked=(draft.channels||[]).includes(value);option.append(input,document.createTextNode(label));channels.append(option);});
+  form.append(titleLabel,bodyLabel,channels);
+  const note=document.createElement('p');note.className='admin-social-meta-note';note.textContent='Facebook i Instagram queden preparats, però encara no es publiquen des del panell.';
+  const actions=document.createElement('div');actions.className='admin-social-actions';
+  if(draft.status==='published'){
+    const immutable=document.createElement('small');immutable.className='admin-social-immutable';immutable.textContent='Publicació tancada: es conserva com a registre i no es pot editar.';actions.append(immutable);
+    form.querySelectorAll('input,textarea').forEach(control=>{control.disabled=true;});
+  }else if(draft.status==='discarded')actions.append(makeSocialButton('Restaurar','restore','is-secondary'));
+  else{
+    actions.append(makeSocialButton('Desar canvis','save','is-secondary'));
+    if(!['approved','partially_published','published'].includes(draft.status))actions.append(makeSocialButton('Aprovar','approve','is-primary'));
+    if(draft.status!=='published')actions.append(makeSocialButton('Descartar','discard','is-danger'));
+  }
+  if(['approved','partially_published'].includes(draft.status)){
+    const publishedChannels=new Set((draft.publications||[]).filter(item=>item.status==='published').map(item=>item.channel));
+    const telegram=makeSocialButton(publishedChannels.has('telegram')?'Telegram · publicat':'Publicar a Telegram','publish-telegram','is-publish');telegram.disabled=publishedChannels.has('telegram')||!socialCredentials.telegram;telegram.title=publishedChannels.has('telegram')?'Aquest contingut ja s’ha publicat a Telegram':socialCredentials.telegram?'Demana confirmació abans de publicar':'Falten credencials de Telegram';
+    const bluesky=makeSocialButton(publishedChannels.has('bluesky')?'Bluesky · publicat':'Publicar a Bluesky','publish-bluesky','is-publish');bluesky.disabled=publishedChannels.has('bluesky')||!socialCredentials.bluesky;bluesky.title=publishedChannels.has('bluesky')?'Aquest contingut ja s’ha publicat a Bluesky':socialCredentials.bluesky?'Demana confirmació abans de publicar':'Falten credencials de Bluesky';actions.append(telegram,bluesky);
+  }
+  card.append(header,form,note,actions,socialPublicationRows(draft));
+  card.querySelectorAll('input:not(:disabled),textarea:not(:disabled)').forEach(control=>control.addEventListener('input',()=>{card.classList.add('is-dirty');socialEditorDirty=true;socialFeedback('Hi ha canvis sense desar.','warning');}));
+  return card;
+}
+function renderSocialEditor(){
+  const list=element('admin-social-list');if(!list)return;
+  if(!socialDrafts.length){const empty=document.createElement('p');empty.className='admin-social-empty';empty.textContent=socialFilter?'No hi ha continguts amb aquest estat.':'Encara no hi ha cap esborrany editorial.';list.replaceChildren(empty);return;}
+  list.replaceChildren(...socialDrafts.map(socialDraftCard));
+}
+async function fetchSocialDrafts(force=false){
+  if(!token||socialEditorDirty&&!force)return;
+  const list=element('admin-social-list');if(list&&!socialDrafts.length)list.setAttribute('aria-busy','true');
+  try{const query=new URLSearchParams({limit:'30'});if(socialFilter)query.set('status',socialFilter);const payload=await adminApi(`/admin/social-drafts?${query}`);socialDrafts=payload.drafts||[];socialEditorDirty=false;renderSocialEditor();socialFeedback('');}
+  catch(error){recordIncident('Cua editorial',error.message);socialFeedback(`No s’ha pogut carregar la cua: ${error.message}`,'error');}
+  finally{list?.removeAttribute('aria-busy');}
+}
+async function handleSocialAction(event){
+  const button=event.target.closest('[data-social-action]');if(!button)return;
+  const card=button.closest('[data-draft-id]');if(!card)return;
+  const draftId=Number(card.dataset.draftId);const action=button.dataset.socialAction;
+  if(action.startsWith('publish-')){
+    const channel=action.replace('publish-','');const label=CHANNEL_LABELS[channel]||channel;
+    if(!window.confirm(`Vols publicar ara aquest contingut a ${label}? Aquesta acció és real i quedarà registrada.`))return;
+    button.disabled=true;button.textContent='Publicant…';socialFeedback(`Enviant manualment a ${label}…`,'warning');
+    try{await adminApi(`/admin/social-drafts/${draftId}/publish`,{method:'POST',body:{channel}});socialEditorDirty=false;socialFeedback(`Publicació a ${label} completada i registrada.`,'ok');await Promise.all([fetchSocialDrafts(true),fetchStatus({skipDrafts:true})]);}
+    catch(error){socialFeedback(`No s’ha pogut publicar a ${label}: ${error.message}`,'error');recordIncident(`Publicació ${label}`,error.message);button.disabled=false;button.textContent=`Publicar a ${label}`;}
+    return;
+  }
+  const labels={save:'desar els canvis',approve:'aprovar',discard:'descartar',restore:'restaurar'};
+  if(action==='discard'&&!window.confirm('Vols descartar aquest contingut? No s’eliminarà i el podràs restaurar.'))return;
+  button.disabled=true;socialFeedback(`S’està intentant ${labels[action]||action}…`,'warning');
+  try{await adminApi(`/admin/social-drafts/${draftId}`,{method:'POST',body:{action,...socialDraftValues(card)}});socialEditorDirty=false;socialFeedback(action==='approve'?'Contingut aprovat. Encara no s’ha publicat.':`S’ha pogut ${labels[action]||action}.`,'ok');await Promise.all([fetchSocialDrafts(true),fetchStatus({skipDrafts:true})]);}
+  catch(error){socialFeedback(error.message,'error');recordIncident('Revisió editorial',error.message);button.disabled=false;}
 }
 
 async function renderPublicationReadiness(){
@@ -92,7 +181,7 @@ async function renderPublicationReadiness(){
 async function renderDashboard(payload,requestLatency){
   const analytics=renderIntegrations(payload.integrations);
   renderSocialQueue(payload.social);
-  latestDiagnostic={...payload,client:{webVersion:'21.0.2',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:'draft-queue'},incidents:[...incidents]};
+  latestDiagnostic={...payload,client:{webVersion:'21.1.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:'manual-review'},incidents:[...incidents]};
   const overall=overallState(payload);text('admin-overall-status',overall.label);text('admin-last-update',`Actualitzat ${formatDate(payload.generatedAt)} · ${requestLatency} ms`);
   setCard('worker',payload.ok?'is-ok':'is-error',payload.ok?'Operatiu':'Error',`V${payload.worker?.version||'—'} · ${payload.latencyMs??'—'} ms`);
   const stationOk=Boolean(payload.station?.ok);setCard('station',stationOk?'is-ok':'is-warning',stationOk?'Al dia':'Cal revisar',payload.station?.ageMinutes===null?'Antiguitat desconeguda':`${payload.station.ageMinutes} min d’antiguitat`);
@@ -105,8 +194,8 @@ async function renderDashboard(payload,requestLatency){
 }
 
 function showLogin(message='',isError=false){element('admin-dashboard').hidden=true;element('admin-login').hidden=false;text('admin-login-status',message);element('admin-login-status')?.classList.toggle('is-error',isError);element('admin-token')?.focus();}
-async function fetchStatus(){if(!token){showLogin();return;}const refresh=element('admin-refresh');if(refresh){refresh.disabled=true;refresh.textContent='Comprovant…';}const started=performance.now();try{const response=await fetch(`${CONFIG.apiUrl}/admin/status`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'},cache:'no-store'});const payload=await response.json().catch(()=>({error:'Resposta no vàlida'}));if(response.status===401){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('La clau no és correcta.',true);return;}if(response.status===429){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('Massa intents fallits. Espera quinze minuts abans de tornar-ho a provar.',true);return;}if(response.status===503&&payload.code==='ADMIN_NOT_CONFIGURED'){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('Cal configurar primer la clau privada al Worker.',true);return;}if(!response.ok)throw new Error(payload.error||`Error ${response.status}`);await renderDashboard(payload,Math.round(performance.now()-started));}catch(error){recordIncident('Connexió',error.message);text('admin-overall-status','No s’ha pogut actualitzar');text('admin-last-update',error.message);if(element('admin-dashboard').hidden)showLogin('No s’ha pogut connectar amb el Worker.',true);}finally{if(refresh){refresh.disabled=false;refresh.textContent='Actualitzar';}}}
+async function fetchStatus({skipDrafts=false}={}){if(!token){showLogin();return;}const refresh=element('admin-refresh');if(refresh){refresh.disabled=true;refresh.textContent='Comprovant…';}const started=performance.now();try{const response=await fetch(`${CONFIG.apiUrl}/admin/status`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'},cache:'no-store'});const payload=await response.json().catch(()=>({error:'Resposta no vàlida'}));if(response.status===401){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('La clau no és correcta.',true);return;}if(response.status===429){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('Massa intents fallits. Espera quinze minuts abans de tornar-ho a provar.',true);return;}if(response.status===503&&payload.code==='ADMIN_NOT_CONFIGURED'){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('Cal configurar primer la clau privada al Worker.',true);return;}if(!response.ok)throw new Error(payload.error||`Error ${response.status}`);await renderDashboard(payload,Math.round(performance.now()-started));if(!skipDrafts)await fetchSocialDrafts();}catch(error){recordIncident('Connexió',error.message);text('admin-overall-status','No s’ha pogut actualitzar');text('admin-last-update',error.message);if(element('admin-dashboard').hidden)showLogin('No s’ha pogut connectar amb el Worker.',true);}finally{if(refresh){refresh.disabled=false;refresh.textContent='Actualitzar';}}}
 function recordIncident(type,message){incidents.unshift({time:new Date().toISOString(),type,message:String(message||'Error desconegut').slice(0,240)});if(incidents.length>20)incidents.pop();const list=element('admin-incident-list');if(list){list.replaceChildren(...incidents.map(item=>{const entry=document.createElement('li');entry.innerHTML=`<time>${formatDate(item.time)}</time><b></b><span></span>`;entry.querySelector('b').textContent=item.type;entry.querySelector('span').textContent=item.message;return entry;}));}text('admin-incident-count',`${incidents.length} ${incidents.length===1?'incidència':'incidències'}`);}
 async function copyDiagnostic(){if(!latestDiagnostic)return;const safe=JSON.stringify(latestDiagnostic,null,2);try{await navigator.clipboard.writeText(safe);text('admin-last-update','Diagnòstic copiat sense incloure la clau');}catch{recordIncident('Portapapers','No s’ha pogut copiar el diagnòstic.');}}
-function init(){initFooterSocial();observePerformance();window.addEventListener('error',event=>recordIncident('JavaScript',event.message));window.addEventListener('unhandledrejection',event=>recordIncident('Promesa',event.reason?.message||event.reason));element('admin-login-form')?.addEventListener('submit',event=>{event.preventDefault();token=String(new FormData(event.currentTarget).get('token')||'').trim();if(token.length<24){showLogin('La clau és massa curta.',true);return;}sessionStorage.setItem(TOKEN_KEY,token);fetchStatus();});element('admin-refresh')?.addEventListener('click',fetchStatus);element('admin-copy-diagnostic')?.addEventListener('click',copyDiagnostic);element('admin-logout')?.addEventListener('click',()=>{sessionStorage.removeItem(TOKEN_KEY);token='';latestDiagnostic=null;showLogin('Sessió tancada.');});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token)fetchStatus();});token=sessionStorage.getItem(TOKEN_KEY)||'';if(token)fetchStatus();else showLogin();refreshTimer=setInterval(()=>{if(token&&!document.hidden)fetchStatus();},120000);window.addEventListener('pagehide',()=>{clearInterval(refreshTimer);performanceObservers.forEach(observer=>observer.disconnect());},{once:true});}
+function init(){initFooterSocial();observePerformance();window.addEventListener('error',event=>recordIncident('JavaScript',event.message));window.addEventListener('unhandledrejection',event=>recordIncident('Promesa',event.reason?.message||event.reason));element('admin-login-form')?.addEventListener('submit',event=>{event.preventDefault();token=String(new FormData(event.currentTarget).get('token')||'').trim();if(token.length<24){showLogin('La clau és massa curta.',true);return;}sessionStorage.setItem(TOKEN_KEY,token);fetchStatus();});element('admin-refresh')?.addEventListener('click',()=>{if(socialEditorDirty&&!window.confirm('Hi ha canvis editorials sense desar. Vols descartar-los i actualitzar?'))return;socialEditorDirty=false;fetchStatus();});element('admin-copy-diagnostic')?.addEventListener('click',copyDiagnostic);element('admin-social-list')?.addEventListener('click',handleSocialAction);document.querySelector('.admin-social-toolbar')?.addEventListener('click',event=>{const button=event.target.closest('[data-social-filter]');if(!button)return;if(socialEditorDirty&&!window.confirm('Hi ha canvis sense desar. Vols descartar-los i canviar el filtre?'))return;socialEditorDirty=false;socialFilter=button.dataset.socialFilter||'';document.querySelectorAll('[data-social-filter]').forEach(item=>item.classList.toggle('is-active',item===button));fetchSocialDrafts(true);});element('admin-logout')?.addEventListener('click',()=>{sessionStorage.removeItem(TOKEN_KEY);token='';latestDiagnostic=null;socialDrafts=[];socialEditorDirty=false;showLogin('Sessió tancada.');});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token&&!socialEditorDirty)fetchStatus();});token=sessionStorage.getItem(TOKEN_KEY)||'';if(token)fetchStatus();else showLogin();refreshTimer=setInterval(()=>{if(token&&!document.hidden&&!socialEditorDirty)fetchStatus();},120000);window.addEventListener('pagehide',()=>{clearInterval(refreshTimer);performanceObservers.forEach(observer=>observer.disconnect());},{once:true});}
 if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();}

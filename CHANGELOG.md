@@ -1,5 +1,26 @@
 # Changelog
 
+## V21.1.0 — 2026-08-11
+
+### Gestor editorial protegit
+
+- Afegida al panell d’administració una cua editorial completa per revisar, editar, aprovar, descartar i restaurar els esborranys socials.
+- Aprovar un contingut no el publica: Telegram i Bluesky només s’envien després de prémer el botó del canal i acceptar una confirmació explícita.
+- Els continguts publicats queden bloquejats contra modificacions accidentals i els descartats es conserven a l’historial.
+- Afegits filtres, recompte d’estats, protecció contra pèrdua d’edicions i una disposició responsive per a ordinador i mòbil.
+
+### Publicació manual i traçabilitat
+
+- Incorporades publicacions manuals independents per a Telegram i Bluesky, sempre des del Worker i sense exposar credencials al navegador.
+- Cada intent, correcte o fallit, queda registrat per canal a la nova taula D1 `social_publications` i és visible des del mateix esborrany.
+- Facebook i Instagram continuen preparats però sense cap crida de publicació; el cron només genera esborranys i mai envia contingut automàticament.
+- Afegits endpoints administratius protegits per consultar i actualitzar la cua i executar únicament una publicació manual autoritzada.
+
+### Compatibilitat i validació
+
+- Actualitzats Worker, esquema D1, panell, PWA, proves i documentació a V21.1.0.
+- Preservats els contractes públics de dades, avisos AEMET/Meteocat, OneSignal, Meteo IA, comparador, compartir i PWA.
+
 ## V21.0.2 — 2026-08-11
 
 ### Nova jerarquia de marca i capçalera

@@ -1,14 +1,14 @@
-# Xarxes socials — mode segur V21.0.2
+# Xarxes socials — mode segur V21.1.0
 
 Facebook i Instagram estan connectats al portafolis de Meta. Bluesky i Telegram també tenen les seves credencials privades al Worker. El portal només enllaça els quatre perfils públics i no carrega cap SDK social.
 
-La publicació automàtica no està activa. El Worker només crea esborranys a `social_drafts`; no conté cap crida per publicar-los.
+La publicació automàtica no està activa. El Worker crea esborranys a `social_drafts` i el panell protegit permet editar-los, aprovar-los o descartar-los. Només un contingut aprovat es pot enviar manualment a Telegram o Bluesky, amb un botó i una confirmació independents per canal.
 
 ## Abans de connectar res
 
-1. Aplicar `worker/schema.sql` a D1 i publicar el Worker V21.
+1. Aplicar `worker/schema.sql` a D1 i publicar el Worker V21.1; l’esquema afegeix `social_publications` sense eliminar els esborranys existents.
 2. Confirmar al panell que Meta, Bluesky i Telegram mostren «Credencial activa».
-3. Revisar diversos esborranys reals i corregir el format editorial abans d’autoritzar una primera prova manual.
+3. Revisar diversos esborranys reals, editar-los i aprovar-ne un abans d’autoritzar una primera prova manual per un sol canal.
 4. Mantenir doble factor, permisos mínims i totes les credencials exclusivament com a secrets de Cloudflare.
 5. No afegir píxels, analítica o formularis de Meta sense una decisió explícita de privacitat.
 
@@ -27,6 +27,9 @@ La publicació automàtica no està activa. El Worker només crea esborranys a `
 - Text alternatiu descriptiu a totes les imatges.
 - Enllaços amb UTM: `utm_source`, `utm_medium=social`, `utm_campaign` i `utm_content`.
 - Mai desar tokens de xarxes dins del frontend o del repositori; només secrets del Worker.
+- Aprovar i publicar són accions diferents; cada enviament demana confirmació i queda registrat, també si falla.
+- Un contingut publicat és immutable al panell. Per corregir-lo, cal preparar un esborrany nou.
+- Facebook i Instagram continuen sense publicació des del Worker fins a una fase posterior validada explícitament.
 - X queda fora del projecte.
 
 ## Secrets de Cloudflare
@@ -37,4 +40,4 @@ La publicació automàtica no està activa. El Worker només crea esborranys a `
 - `TELEGRAM_BOT_TOKEN`: token privat creat amb BotFather.
 - `TELEGRAM_CHANNEL_ID`: identificador públic del canal, per exemple `@meteofontanillas`.
 
-Que una credencial aparegui en verd només confirma que existeix al Worker. La publicació continua desactivada i els continguts es mantenen com a esborranys fins a una aprovació humana explícita.
+Que una credencial aparegui en verd només confirma que existeix al Worker. No activa cap automatització. Telegram i Bluesky només es publiquen manualment després d’una aprovació humana; Meta continua en mode preparat.

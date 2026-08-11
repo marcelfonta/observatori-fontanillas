@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V21.0.2
+# Observatori Meteorològic Fontanillas — V21.1.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.0.2 consolida la nova marca al menú lateral, converteix la capçalera en una franja operativa amb estat en directe i xarxes, i manté la interpretació del pol·len i la preparació social segura de la V21.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.1.0 incorpora un gestor editorial protegit per revisar els continguts socials i publicar-los manualment a Telegram o Bluesky, sense activar cap automatització ni exposar credencials.
 
 ## Estat actual
 
@@ -21,7 +21,7 @@ Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.0.2 
 - Àrea «Aprendre» amb 27 recursos verificats, itineraris per nivells, cerca i filtres per tema.
 - Privacitat publicada i control antiabús del formulari amb identificadors irreversibles.
 - OneSignal operatiu, Search Console verificat per DNS, sitemap processat, Cloudflare Web Analytics actiu i LCP, CLS, INP i TTFB locals visibles al panell administratiu.
-- Instagram, Facebook, Bluesky i Telegram visibles a la dreta de la capçalera i en un bloc compacte al peu del menú lateral, amb una cua D1 d’esborranys meteorològics pendent de revisió.
+- Instagram, Facebook, Bluesky i Telegram visibles a la dreta de la capçalera i en un bloc compacte al peu del menú lateral, amb una cua D1 editable, aprovació humana i historial de publicacions per canal.
 - Nou avatar rodó de marca, clar i lluminós, preparat per al portal i els perfils socials.
 - Identitat «Fontanillas · Sant Celoni» fixada al capdamunt del menú; la capçalera pública queda alliberada de la marca i prioritza l’estat «En directe», l’hora i els accessos socials.
 - Pol·len desglossat per espècie amb nivell, color, barra i una explicació prudent del risc orientatiu.
@@ -51,9 +51,9 @@ Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas 
 
 ## Worker
 
-El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V21.0.2 també s’ha de desplegar aquest Worker i aplicar `worker/schema.sql`, que afegeix exclusivament la taula `social_drafts`. Les credencials `META_SYSTEM_USER_TOKEN`, `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`, `TELEGRAM_BOT_TOKEN` i `TELEGRAM_CHANNEL_ID` es mantenen només a Cloudflare; el Worker no en retorna mai els valors.
+El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V21.1.0 també s’ha de desplegar aquest Worker i aplicar `worker/schema.sql`, que manté `social_drafts` i afegeix el registre `social_publications`. Les credencials `META_SYSTEM_USER_TOKEN`, `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`, `TELEGRAM_BOT_TOKEN` i `TELEGRAM_CHANNEL_ID` es mantenen només a Cloudflare; el Worker no en retorna mai els valors.
 
-La V21 només prepara esborranys: no existeix cap crida de publicació a Meta, Bluesky o Telegram ni cap publicació automàtica. Aquesta barrera es mantindrà fins que s’hagin revisat el format, els textos i el comportament amb dades reals.
+La V21.1 permet publicar manualment un esborrany aprovat a Telegram o Bluesky des de l’àrea protegida. Aprovar mai no publica i cada canal exigeix una confirmació separada. El cron continua limitat a preparar esborranys; Meta continua sense cap crida de publicació i no hi ha cap enviament automàtic.
 
 ## Configuració
 
@@ -71,6 +71,7 @@ node tests/v18.mjs
 node tests/v19.mjs
 node tests/v20.mjs
 node tests/v21.mjs
+node tests/v21-1.mjs
 ```
 
 Les proves comproven navegació, selectors crítics, PWA, Meteo IA, icones, Centre de Dades, peus, protecció administrativa i absència de duplicacions de «Tornar amunt». `node tests/meteo-ai.mjs` valida conversa geogràfica, coneixement, fonts i efemèrides; `node tests/share-card.mjs` valida que les targetes no inventin dades.

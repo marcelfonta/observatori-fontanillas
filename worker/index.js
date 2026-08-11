@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "21.0.2";
+const WORKER_VERSION = "21.1.0";
 const WORKER_BUILT = "2026-08-11";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -99,6 +99,20 @@ const CREATE_SOCIAL_DRAFTS = `CREATE TABLE IF NOT EXISTS social_drafts (
 )`;
 const CREATE_SOCIAL_DRAFTS_INDEX = `CREATE INDEX IF NOT EXISTS idx_social_drafts_status_created
 ON social_drafts(status, created_at DESC)`;
+const CREATE_SOCIAL_PUBLICATIONS = `CREATE TABLE IF NOT EXISTS social_publications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  draft_id INTEGER NOT NULL,
+  channel TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  remote_id TEXT,
+  response_code INTEGER,
+  error TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  published_at TEXT,
+  FOREIGN KEY(draft_id) REFERENCES social_drafts(id)
+)`;
+const CREATE_SOCIAL_PUBLICATIONS_INDEX = `CREATE INDEX IF NOT EXISTS idx_social_publications_draft_created
+ON social_publications(draft_id, created_at DESC)`;
 let schemaReady = false;
 let contactSchemaReady = false;
 let alertSchemaReady = false;
@@ -278,6 +292,8 @@ async function ensureSocialDraftSchema(env) {
   await env.DB.batch([
     env.DB.prepare(CREATE_SOCIAL_DRAFTS),
     env.DB.prepare(CREATE_SOCIAL_DRAFTS_INDEX),
+    env.DB.prepare(CREATE_SOCIAL_PUBLICATIONS),
+    env.DB.prepare(CREATE_SOCIAL_PUBLICATIONS_INDEX),
   ]);
   socialDraftSchemaReady = true;
   return true;
@@ -1121,7 +1137,7 @@ async function adminSocialSummary(env) {
   const [counts, recentResult] = await Promise.all([
     env.DB.prepare(`SELECT
       SUM(CASE WHEN status IN ('draft','review') THEN 1 ELSE 0 END) AS pending,
-      SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) AS approved,
+      SUM(CASE WHEN status IN ('approved','partially_published') THEN 1 ELSE 0 END) AS approved,
       SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) AS published,
       MAX(created_at) AS latest FROM social_drafts`).first(),
     env.DB.prepare(`SELECT id,kind,status,channels,title,created_at,scheduled_for
@@ -1138,6 +1154,176 @@ async function adminSocialSummary(env) {
     latestCreated:counts?.latest || null,
     recent:(recentResult?.results || []).map(row => ({ ...row, channels:(() => { try { return JSON.parse(row.channels); } catch { return []; } })() })),
   };
+}
+
+const SOCIAL_CHANNELS = new Set(['facebook','instagram','bluesky','telegram']);
+const SOCIAL_STATUSES = new Set(['draft','review','approved','partially_published','published','discarded']);
+
+function parseSocialChannels(value) {
+  let channels = value;
+  if (typeof value === 'string') {
+    try { channels = JSON.parse(value); } catch { channels = []; }
+  }
+  return [...new Set((Array.isArray(channels) ? channels : []).map(channel => String(channel).toLowerCase()).filter(channel => SOCIAL_CHANNELS.has(channel)))];
+}
+
+function socialDraftPayload(row, publications = []) {
+  return {
+    ...row,
+    channels:parseSocialChannels(row?.channels),
+    publications:(publications || []).map(entry => ({ ...entry, response_code:entry.response_code == null ? null : Number(entry.response_code) })),
+  };
+}
+
+async function authorizeAdminRequest(request, env) {
+  const origin = request.headers.get('Origin') || '*';
+  if (origin !== '*' && !ALLOWED_CONTACT_ORIGINS.has(origin)) return { response:json({ error:'Origen no autoritzat' }, 403, 'no-store', 'null') };
+  if (!env.ADMIN_TOKEN || String(env.ADMIN_TOKEN).length < 24) return { response:json({ error:'El panell administratiu encara no està configurat.', code:'ADMIN_NOT_CONFIGURED' }, 503, 'no-store', origin) };
+  if (await adminAuthLimited(request, env)) return { response:json({ error:'Massa intents. Torna-ho a provar més tard.', code:'ADMIN_RATE_LIMITED' }, 429, 'no-store', origin) };
+  if (!(await secureTokenMatch(adminRequestToken(request), String(env.ADMIN_TOKEN)))) {
+    await recordAdminAuthFailure(request, env).catch(error => console.error('Admin auth rate limit error', error));
+    return { response:json({ error:'Clau d’administració incorrecta.', code:'ADMIN_UNAUTHORIZED' }, 401, 'no-store', origin) };
+  }
+  await clearAdminAuthFailures(request, env).catch(error => console.error('Admin auth cleanup error', error));
+  return { origin };
+}
+
+async function adminJsonBody(request, origin) {
+  const contentLength = Number(request.headers.get('Content-Length') || 0);
+  if (contentLength > 20000) throw Object.assign(new Error('La petició és massa gran.'), { status:413, origin });
+  try { return await request.json(); }
+  catch { throw Object.assign(new Error('El contingut JSON no és vàlid.'), { status:400, origin }); }
+}
+
+async function socialPublicationsForDraft(env, draftId) {
+  const result = await env.DB.prepare(`SELECT id,draft_id,channel,status,remote_id,response_code,error,created_at,published_at
+    FROM social_publications WHERE draft_id = ? ORDER BY created_at DESC`).bind(draftId).all();
+  return result?.results || [];
+}
+
+async function adminSocialDrafts(request, env, url) {
+  const auth = await authorizeAdminRequest(request, env);
+  if (auth.response) return auth.response;
+  if (!(await ensureSocialDraftSchema(env))) return json({ error:'La base de dades no està disponible.' }, 503, 'no-store', auth.origin);
+  const requestedStatus = cleanText(url.searchParams.get('status'), 30).toLowerCase();
+  const status = SOCIAL_STATUSES.has(requestedStatus) ? requestedStatus : '';
+  const limit = Math.min(50, Math.max(1, Number.parseInt(url.searchParams.get('limit') || '20', 10) || 20));
+  const offset = Math.max(0, Number.parseInt(url.searchParams.get('offset') || '0', 10) || 0);
+  const statement = status
+    ? env.DB.prepare(`SELECT id,dedupe_key,kind,status,channels,title,body,source_url,payload,scheduled_for,created_at FROM social_drafts WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`).bind(status, limit, offset)
+    : env.DB.prepare(`SELECT id,dedupe_key,kind,status,channels,title,body,source_url,payload,scheduled_for,created_at FROM social_drafts ORDER BY created_at DESC LIMIT ? OFFSET ?`).bind(limit, offset);
+  const result = await statement.all();
+  const drafts = await Promise.all((result?.results || []).map(async row => socialDraftPayload(row, await socialPublicationsForDraft(env, row.id))));
+  return json({ ok:true, drafts, limit, offset, publicationMode:'manual-confirmation' }, 200, 'no-store, private', auth.origin);
+}
+
+async function findSocialDraft(env, draftId) {
+  return env.DB.prepare(`SELECT id,dedupe_key,kind,status,channels,title,body,source_url,payload,scheduled_for,created_at
+    FROM social_drafts WHERE id = ?`).bind(draftId).first();
+}
+
+async function adminUpdateSocialDraft(request, env, draftId) {
+  const auth = await authorizeAdminRequest(request, env);
+  if (auth.response) return auth.response;
+  if (!(await ensureSocialDraftSchema(env))) return json({ error:'La base de dades no està disponible.' }, 503, 'no-store', auth.origin);
+  const current = await findSocialDraft(env, draftId);
+  if (!current) return json({ error:'No s’ha trobat l’esborrany.' }, 404, 'no-store', auth.origin);
+  const body = await adminJsonBody(request, auth.origin);
+  const action = cleanText(body.action, 20).toLowerCase();
+  if (!['save','approve','discard','restore'].includes(action)) return json({ error:'Acció editorial no vàlida.' }, 400, 'no-store', auth.origin);
+  if (current.status === 'published') return json({ error:'Una publicació completada es conserva com a registre i no es pot editar.' }, 409, 'no-store', auth.origin);
+  const title = cleanText(body.title ?? current.title, 180);
+  const content = cleanText(body.body ?? current.body, 3900);
+  const channels = body.channels === undefined ? parseSocialChannels(current.channels) : parseSocialChannels(body.channels);
+  if (title.length < 3 || content.length < 20) return json({ error:'El títol o el text són massa curts.' }, 400, 'no-store', auth.origin);
+  if (!channels.length) return json({ error:'Selecciona almenys un canal.' }, 400, 'no-store', auth.origin);
+  let status = current.status;
+  if (action === 'save') status = 'review';
+  if (action === 'approve') status = 'approved';
+  if (action === 'discard') status = 'discarded';
+  if (action === 'restore') status = 'review';
+  await env.DB.prepare(`UPDATE social_drafts SET title = ?, body = ?, channels = ?, status = ? WHERE id = ?`)
+    .bind(title, content, JSON.stringify(channels), status, draftId).run();
+  const updated = await findSocialDraft(env, draftId);
+  return json({ ok:true, action, draft:socialDraftPayload(updated, await socialPublicationsForDraft(env, draftId)), published:false }, 200, 'no-store, private', auth.origin);
+}
+
+function socialPostText(draft, maxLength = 3900) {
+  const parts = [cleanText(draft.title, 180), cleanText(draft.body, 3900), cleanText(draft.source_url, 500)].filter(Boolean);
+  const text = parts.join('\n\n');
+  const graphemes = Array.from(text);
+  return graphemes.length <= maxLength ? text : `${graphemes.slice(0, Math.max(1, maxLength - 1)).join('')}…`;
+}
+
+async function publishTelegram(draft, env) {
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHANNEL_ID) throw Object.assign(new Error('Falten les credencials de Telegram.'), { status:503 });
+  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method:'POST', headers:{ 'Content-Type':'application/json' },
+    body:JSON.stringify({ chat_id:env.TELEGRAM_CHANNEL_ID, text:socialPostText(draft, 3900), disable_web_page_preview:false }),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.ok !== true) throw Object.assign(new Error(payload.description || `Telegram ha respost ${response.status}.`), { status:502, responseCode:response.status });
+  return { remoteId:String(payload.result?.message_id || ''), responseCode:response.status };
+}
+
+async function publishBluesky(draft, env) {
+  if (!env.BLUESKY_HANDLE || !env.BLUESKY_APP_PASSWORD) throw Object.assign(new Error('Falten les credencials de Bluesky.'), { status:503 });
+  const service = String(env.BLUESKY_SERVICE_URL || 'https://bsky.social').replace(/\/$/, '');
+  const sessionResponse = await fetch(`${service}/xrpc/com.atproto.server.createSession`, {
+    method:'POST', headers:{ 'Content-Type':'application/json' },
+    body:JSON.stringify({ identifier:env.BLUESKY_HANDLE, password:env.BLUESKY_APP_PASSWORD }),
+  });
+  const session = await sessionResponse.json().catch(() => ({}));
+  if (!sessionResponse.ok || !session.accessJwt || !session.did) throw Object.assign(new Error(session.message || 'Bluesky no ha pogut iniciar la sessió.'), { status:502, responseCode:sessionResponse.status });
+  const recordResponse = await fetch(`${service}/xrpc/com.atproto.repo.createRecord`, {
+    method:'POST', headers:{ 'Authorization':`Bearer ${session.accessJwt}`, 'Content-Type':'application/json' },
+    body:JSON.stringify({ repo:session.did, collection:'app.bsky.feed.post', record:{ '$type':'app.bsky.feed.post', text:socialPostText(draft, 300), createdAt:new Date().toISOString(), langs:['ca'] } }),
+  });
+  const record = await recordResponse.json().catch(() => ({}));
+  if (!recordResponse.ok || !record.uri) throw Object.assign(new Error(record.message || 'Bluesky no ha pogut crear la publicació.'), { status:502, responseCode:recordResponse.status });
+  return { remoteId:String(record.uri), responseCode:recordResponse.status };
+}
+
+async function recordSocialPublication(env, draftId, channel, status, details = {}) {
+  await env.DB.prepare(`INSERT INTO social_publications (draft_id,channel,status,remote_id,response_code,error,published_at)
+    VALUES (?,?,?,?,?,?,?)`)
+    .bind(draftId, channel, status, details.remoteId || null, details.responseCode || null, details.error || null, status === 'published' ? new Date().toISOString() : null).run();
+}
+
+async function refreshSocialDraftPublicationStatus(env, draft) {
+  const publishable = parseSocialChannels(draft.channels).filter(channel => ['telegram','bluesky'].includes(channel));
+  const publications = await socialPublicationsForDraft(env, draft.id);
+  const published = new Set(publications.filter(item => item.status === 'published').map(item => item.channel));
+  const status = publishable.length && publishable.every(channel => published.has(channel)) ? 'published' : published.size ? 'partially_published' : 'approved';
+  await env.DB.prepare('UPDATE social_drafts SET status = ? WHERE id = ?').bind(status, draft.id).run();
+  return status;
+}
+
+async function adminPublishSocialDraft(request, env, draftId) {
+  const auth = await authorizeAdminRequest(request, env);
+  if (auth.response) return auth.response;
+  if (!(await ensureSocialDraftSchema(env))) return json({ error:'La base de dades no està disponible.' }, 503, 'no-store', auth.origin);
+  const draft = await findSocialDraft(env, draftId);
+  if (!draft) return json({ error:'No s’ha trobat l’esborrany.' }, 404, 'no-store', auth.origin);
+  if (!['approved','partially_published'].includes(draft.status)) return json({ error:'Primer cal aprovar l’esborrany. Aprovar no el publica.' }, 409, 'no-store', auth.origin);
+  const body = await adminJsonBody(request, auth.origin);
+  const channel = cleanText(body.channel, 20).toLowerCase();
+  if (!['telegram','bluesky'].includes(channel)) return json({ error:'Aquest canal encara no admet publicació manual des del panell.' }, 400, 'no-store', auth.origin);
+  if (!parseSocialChannels(draft.channels).includes(channel)) return json({ error:'El canal no està seleccionat en aquest esborrany.' }, 409, 'no-store', auth.origin);
+  const previousAttempts = await socialPublicationsForDraft(env, draftId);
+  if (previousAttempts.some(item => item.channel === channel && item.status === 'published')) {
+    return json({ error:'Aquest contingut ja s’ha publicat en aquest canal i no es tornarà a enviar.' }, 409, 'no-store', auth.origin);
+  }
+  try {
+    const details = channel === 'telegram' ? await publishTelegram(draft, env) : await publishBluesky(draft, env);
+    await recordSocialPublication(env, draftId, channel, 'published', details);
+    const status = await refreshSocialDraftPublicationStatus(env, draft);
+    const updated = await findSocialDraft(env, draftId);
+    return json({ ok:true, channel, status, draft:socialDraftPayload(updated, await socialPublicationsForDraft(env, draftId)) }, 200, 'no-store, private', auth.origin);
+  } catch (error) {
+    await recordSocialPublication(env, draftId, channel, 'failed', { error:cleanText(error.message, 500), responseCode:error.responseCode || null }).catch(recordError => console.error('Social publication log error', recordError));
+    return json({ error:error.message || 'No s’ha pogut publicar.', channel, retryable:true }, error.status || 502, 'no-store', auth.origin);
+  }
 }
 
 async function adminStatus(request, env) {
@@ -1365,6 +1551,11 @@ export default {
     }
     try {
       if (request.method === "POST" && url.pathname === "/contact") return contact(request, env);
+      if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
+      const socialPublishMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/publish$/);
+      if (request.method === "POST" && socialPublishMatch) return adminPublishSocialDraft(request, env, Number(socialPublishMatch[1]));
+      const socialDraftMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)$/);
+      if (request.method === "POST" && socialDraftMatch) return adminUpdateSocialDraft(request, env, Number(socialDraftMatch[1]));
       if (request.method !== "GET") return json({ error:"Mètode no permès" }, 405);
       if (url.pathname === "/" || url.pathname === "") {
         const observation = await currentObservation(env);
@@ -1381,7 +1572,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/version", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/version", "/admin/status", "/admin/social-drafts", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

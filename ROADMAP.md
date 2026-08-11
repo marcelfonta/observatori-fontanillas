@@ -85,13 +85,13 @@ La mateixa versió reorganitza Centre de Dades amb un únic període per a resum
 
 Implementat a V16.0.0 com un panell de diagnòstic protegit pel Worker: estat de l’estació i la qualitat de dades, base D1, arxiu d’avisos, formulari, push, versions, PWA, memòries cau locals i incidències de la sessió. La clau només viu durant la pestanya, les respostes administratives no es desen a la PWA i no s’exposa cap secret. Per seguretat, la primera versió és de només lectura i no inclou operacions destructives.
 
-## Milestone 9 — Xarxes socials — En curs amb V21
+## Milestone 9 — Xarxes socials — En curs amb V21.1
 
 - Connectar amb l’usuari Instagram i Facebook; X queda descartat per decisió del projecte.
 - Resums, avisos, pluja, rècords, efemèrides i episodis.
 - Regles, calendari, aprovació opcional i historial editorial.
 
-V21 incorpora els perfils de Facebook i Instagram al portal i prepara una cua D1 d’esborranys diaris. La credencial de Meta només viu al Worker. La publicació automàtica continua bloquejada: la següent fase haurà d’afegir revisió, aprovació i proves controlades abans d’enviar cap contingut.
+V21 incorpora Instagram, Facebook, Bluesky i Telegram al portal i prepara una cua D1 d’esborranys diaris. V21.1 hi afegeix revisió, edició, aprovació, descart, restauració, historial per canal i publicació manual confirmada a Telegram o Bluesky. Aprovar mai no publica, el cron només crea esborranys i Meta continua sense enviaments. La fita quedarà completa després de validar publicacions reals controlades i decidir explícitament si Facebook i Instagram s’activen.
 
 ## Milestone transversal — Historial d’avisos — Completat
 
@@ -155,7 +155,7 @@ La biblioteca es manté en dades estructurades a `src/data/learning-resources.js
 1. Recollir dades de camp de Core Web Vitals quan Search Console disposi de prou trànsit i corregir només els colls d’ampolla observats.
 2. Revisar les primeres dades de Cloudflare Web Analytics quan hi hagi prou visites i contrastar-les amb Search Console; Google Analytics continua descartat mentre no aporti una necessitat clara.
 3. Ampliar les proves automàtiques del Worker i el seguiment dels primers avisos push reals.
-4. Afegir una pantalla de revisió i aprovació dels esborranys socials; provar primer una publicació manual controlada abans de valorar cap automatització.
+4. Provar amb l’usuari una publicació manual controlada a Telegram i una a Bluesky; revisar-ne el registre abans de valorar Meta o qualsevol automatització.
 5. Revisar periòdicament els llindars i les fonts del pol·len, els enllaços educatius i valorar un centre de notícies meteorològiques verificades com a evolució separada.
 
 ## Backlog

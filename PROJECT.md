@@ -141,6 +141,14 @@ L’analítica diferencia tres conceptes: configuració al domini, proveïdor i 
 
 El Worker crea com a màxim un esborrany diari a `social_drafts`, amb fets derivats de l’última observació i una clau de deduplicació. `/admin/status` només retorna si les credencials de Meta, Bluesky i Telegram existeixen, expressades com a booleans, i un resum de la cua; mai les credencials. No hi ha cap endpoint ni cap petició de publicació. L’estat `draft` és una barrera funcional deliberada fins que existeixi una interfície de revisió i una prova manual autoritzada.
 
+## Evolució V21.1
+
+`administracio.html` i `src/features/admin.js` converteixen la cua social en un gestor editorial protegit. Els esborranys es poden editar, passar a revisió, aprovar, descartar i restaurar. Aprovar és només una decisió editorial: no executa cap publicació. Els continguts ja publicats queden immutables per evitar correccions accidentals sobre un registre històric.
+
+`worker/index.js` exposa sota `ADMIN_TOKEN` la consulta i actualització de la cua i una acció de publicació manual per canal. Només Telegram i Bluesky són canals actius en aquesta fase, cadascun amb confirmació explícita des del panell. Facebook i Instagram conserven configuració i credencials preparades, però no tenen cap petició de publicació implementada.
+
+`social_publications` registra per esborrany i canal l’estat, l’identificador extern, la URL resultant, l’error normalitzat i l’hora de cada intent. Aquest registre no conté credencials. El cron continua cridant exclusivament `createDailySocialDraft()` i no pot aprovar ni publicar. Per tant, no existeix cap camí de publicació automàtica en V21.1.
+
 ## Normes de canvi
 
 1. Treballar una sola fita cada vegada.
