@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS social_drafts (
   dedupe_key TEXT NOT NULL UNIQUE,
   kind TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'draft',
-  channels TEXT NOT NULL DEFAULT '["facebook","instagram"]',
+  channels TEXT NOT NULL DEFAULT '["facebook","instagram","bluesky","telegram"]',
   title TEXT NOT NULL,
   body TEXT NOT NULL,
   source_url TEXT NOT NULL DEFAULT 'https://meteo.fontanillas.cat/',

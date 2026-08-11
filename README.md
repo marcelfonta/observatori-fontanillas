@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V21.0.0
+# Observatori Meteorològic Fontanillas — V21.0.1
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.0.0 inicia la fase social de manera segura, interpreta el pol·len amb nivells orientatius, incorpora accessos visibles a Instagram i Facebook i renova la marca gràfica.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.0.1 amplia la fase social segura, interpreta el pol·len amb nivells orientatius, incorpora accessos visibles a Instagram, Facebook, Bluesky i Telegram i renova la marca gràfica.
 
 ## Estat actual
 
@@ -21,8 +21,8 @@ Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.0.0 
 - Àrea «Aprendre» amb 27 recursos verificats, itineraris per nivells, cerca i filtres per tema.
 - Privacitat publicada i control antiabús del formulari amb identificadors irreversibles.
 - OneSignal operatiu, Search Console verificat per DNS, sitemap processat, Cloudflare Web Analytics actiu i LCP, CLS, INP i TTFB locals visibles al panell administratiu.
-- Facebook i Instagram connectats a Meta, amb accessos visibles al peu i una cua D1 d’esborranys meteorològics pendent de revisió.
-- Nou símbol de marca més clar i lluminós, reproduïble des de la seva font vectorial.
+- Instagram, Facebook, Bluesky i Telegram visibles a la capçalera, al menú lateral i al peu, amb una cua D1 d’esborranys meteorològics pendent de revisió.
+- Nou avatar rodó de marca, clar i lluminós, preparat per al portal i els perfils socials.
 - Pol·len desglossat per espècie amb nivell, color, barra i una explicació prudent del risc orientatiu.
 
 ## Estructura activa
@@ -50,9 +50,9 @@ Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas 
 
 ## Worker
 
-El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V21.0.0 també s’ha de desplegar aquest Worker i aplicar `worker/schema.sql`, que afegeix exclusivament la taula `social_drafts`. El secret `META_SYSTEM_USER_TOKEN` es manté només a Cloudflare i el Worker no en retorna mai el valor.
+El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V21.0.1 també s’ha de desplegar aquest Worker i aplicar `worker/schema.sql`, que afegeix exclusivament la taula `social_drafts`. Les credencials `META_SYSTEM_USER_TOKEN`, `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`, `TELEGRAM_BOT_TOKEN` i `TELEGRAM_CHANNEL_ID` es mantenen només a Cloudflare; el Worker no en retorna mai els valors.
 
-La V21 només prepara esborranys: no existeix cap crida de publicació a Meta ni cap publicació automàtica. Aquesta barrera es mantindrà fins que s’hagin revisat el format, els textos i el comportament amb dades reals.
+La V21 només prepara esborranys: no existeix cap crida de publicació a Meta, Bluesky o Telegram ni cap publicació automàtica. Aquesta barrera es mantindrà fins que s’hagin revisat el format, els textos i el comportament amb dades reals.
 
 ## Configuració
 

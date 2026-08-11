@@ -135,9 +135,11 @@ L’analítica diferencia tres conceptes: configuració al domini, proveïdor i 
 
 `src/features/environment.js` converteix les concentracions de pol·len en una lectura orientativa per espècie. Les bandes no són un diagnòstic mèdic: serveixen per distingir una presència residual, baixa, moderada, alta o molt alta i sempre mostren la concentració original en grans per metre cúbic. L’estil reutilitza el llenguatge visual dels contaminants sense confondre les dues escales.
 
-`src/features/footer-social.js` és l’únic component que afegeix els accessos oficials a Instagram i Facebook. Les adreces viuen a `src/core/config.js`, els enllaços tenen etiqueta accessible, obren una pestanya nova i no introdueixen SDK, píxels ni seguiment de Meta al frontend. El símbol de l’Observatori continua sent vectorial i reproduïble des de `scripts/build-brand-assets.py`, però V21 n’augmenta la lluminositat i la llegibilitat.
+`src/features/footer-social.js` és l’únic component que afegeix els accessos oficials a Instagram, Facebook, Bluesky i Telegram. Les adreces viuen a `src/core/config.js`, els enllaços tenen etiqueta accessible, obren una pestanya nova i no introdueixen SDK, píxels ni seguiment de tercers al frontend. El component reutilitza les mateixes icones a la capçalera, al menú lateral i al peu, sense duplicar configuració.
 
-El Worker crea com a màxim un esborrany diari a `social_drafts`, amb fets derivats de l’última observació i una clau de deduplicació. `/admin/status` només retorna si `META_SYSTEM_USER_TOKEN` existeix i un resum de la cua; mai la credencial. No hi ha cap endpoint ni cap petició a Meta per publicar. L’estat `draft` és una barrera funcional deliberada fins que existeixi una interfície de revisió i una prova manual autoritzada.
+`assets/images/observatori-fontanillas-avatar-v21.png` és l’avatar rodó de 1024 × 1024 px compartit per les capçaleres del portal i els perfils socials. El menú lateral incorpora una targeta contextual superior i un peu propi amb copyright; en pantalles petites el copyright continua al peu general. El peu reserva espai al xat flotant perquè els accessos socials no quedin tapats.
+
+El Worker crea com a màxim un esborrany diari a `social_drafts`, amb fets derivats de l’última observació i una clau de deduplicació. `/admin/status` només retorna si les credencials de Meta, Bluesky i Telegram existeixen, expressades com a booleans, i un resum de la cua; mai les credencials. No hi ha cap endpoint ni cap petició de publicació. L’estat `draft` és una barrera funcional deliberada fins que existeixi una interfície de revisió i una prova manual autoritzada.
 
 ## Normes de canvi
 

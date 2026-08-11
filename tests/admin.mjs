@@ -34,7 +34,7 @@ const fakeDb={
   batch:async()=>[],
   prepare(sql){
     const statement={sql,bindings:[],bind(...values){this.bindings=values;return this;},async run(){return {meta:{changes:0}};},async all(){
-      if(sql.includes('FROM social_drafts'))return {results:[{id:1,kind:'daily_observation',status:'draft',channels:'["facebook","instagram"]',title:'Dades de Sant Celoni',created_at:new Date().toISOString(),scheduled_for:null}]};
+      if(sql.includes('FROM social_drafts'))return {results:[{id:1,kind:'daily_observation',status:'draft',channels:'["facebook","instagram","bluesky","telegram"]',title:'Dades de Sant Celoni',created_at:new Date().toISOString(),scheduled_for:null}]};
       return {results:[]};
     },async first(){
       if(sql.includes('SELECT * FROM observations'))return {observed_epoch:nowSeconds-60,local_time:new Date((nowSeconds-60)*1000).toISOString(),observed_at_utc:new Date((nowSeconds-60)*1000).toISOString(),temperature:24,humidity:55,pressure:1016,wind_speed:4,rain_total:0};
@@ -51,17 +51,20 @@ const fakeDb={
 };
 const originalFetch=global.fetch;
 global.fetch=async()=>new Response('<rss><channel><lastBuildDate>Sun, 10 Aug 2026 12:00:00 GMT</lastBuildDate><item><title>Sin avisos</title><description>No hay avisos</description></item></channel></rss>',{status:200,headers:{'Content-Type':'application/rss+xml'}});
-const authorized=await worker.fetch(new Request('https://fonta-meteo.example/admin/status',{headers:{Origin:'https://meteo.fontanillas.cat',Authorization:'Bearer '+('a'.repeat(32))}}),{ADMIN_TOKEN:'a'.repeat(32),WU_API_KEY:'configured',META_SYSTEM_USER_TOKEN:'test-token-not-a-secret',DB:fakeDb,ENVIRONMENT:'test'},context);
+const authorized=await worker.fetch(new Request('https://fonta-meteo.example/admin/status',{headers:{Origin:'https://meteo.fontanillas.cat',Authorization:'Bearer '+('a'.repeat(32))}}),{ADMIN_TOKEN:'a'.repeat(32),WU_API_KEY:'configured',META_SYSTEM_USER_TOKEN:'test-token-not-a-secret',BLUESKY_HANDLE:'meteofontanillas.bsky.social',BLUESKY_APP_PASSWORD:'test-app-password',TELEGRAM_BOT_TOKEN:'test-bot-token',TELEGRAM_CHANNEL_ID:'@meteofontanillas',DB:fakeDb,ENVIRONMENT:'test'},context);
 global.fetch=originalFetch;
 assert.equal(authorized.status,200);
 assert.match(authorized.headers.get('Cache-Control'),/no-store/);
 const adminPayload=await authorized.json();
-assert.equal(adminPayload.worker.version,'21.0.0');
+assert.equal(adminPayload.worker.version,'21.0.1');
 assert.equal(adminPayload.station.ok,true);
 assert.equal(adminPayload.database.observations,1200);
 assert.equal(adminPayload.integrations.database,true);
 assert.equal(adminPayload.integrations.socialToken,true);
+assert.equal(adminPayload.integrations.bluesky,true);
+assert.equal(adminPayload.integrations.telegram,true);
 assert.equal(adminPayload.social.mode,'draft');
+assert.deepEqual(adminPayload.social.channelCredentials,{meta:true,bluesky:true,telegram:true});
 assert.equal(adminPayload.social.pendingDrafts,2);
 assert.equal(adminPayload.social.recent.length,1);
 

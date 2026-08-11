@@ -1,5 +1,29 @@
 # Changelog
 
+## V21.0.1 — 2026-08-11
+
+### Xarxes visibles sense interferències
+
+- Afegits accessos oficials a Instagram, Facebook, Bluesky i Telegram, amb icones accessibles i sense carregar SDK ni seguiment de tercers.
+- Les quatre icones apareixen a la capçalera d’escriptori, al peu i al menú lateral; al mòbil es prioritza l’espai útil i es mantenen al peu.
+- Corregida l’adreça pública de Facebook a `facebook.com/meteofontanillas` i afegits els perfils públics de Bluesky i Telegram.
+- Reservat espai al peu perquè el botó flotant de Meteo IA no tapi els enllaços socials.
+
+### Menú lateral i marca
+
+- Reequilibrat el menú lateral amb una targeta contextual superior de Sant Celoni i un peu propi amb xarxes i copyright.
+- Traslladat el copyright principal al final del menú lateral en escriptori; continua disponible al peu en pantalles petites.
+- Incorporat un avatar rodó i lluminós de 1024 × 1024 px, apte per al portal i per als perfils socials.
+- Substituït el símbol antic de les capçaleres pel nou avatar, mantenint nom i identitat textual.
+- Regenerats els favicons i les icones d’instal·lació amb la mateixa marca V21, incloses les variants maskable.
+
+### Preparació social segura
+
+- El panell administratiu diferencia les credencials de Meta, Bluesky i Telegram sense exposar-ne cap valor.
+- Els esborranys diaris queden preparats per als quatre canals i continuen en mode `draft`.
+- No s’ha implementat cap publicació automàtica: la revisió humana continua sent obligatòria.
+- Actualitzats Service Worker, memòria cau, proves i documentació a V21.0.1.
+
 ## V21.0.0 — 2026-08-11
 
 ### Medi ambient i lectura del pol·len

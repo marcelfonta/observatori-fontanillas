@@ -29,14 +29,21 @@ body.has-portal-shell.has-portal-menu { overflow: hidden; }
   z-index: 60;
   inset: 0 auto 0 0;
   width: var(--portal-sidebar);
-  padding: calc(var(--portal-header) + 16px) 12px 24px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--portal-header) + 10px) 12px 18px;
+  overflow: hidden;
   border-right: 1px solid var(--line);
   background: rgba(7, 17, 15, .96);
   backdrop-filter: blur(18px);
 }
 
-.portal-sidebar nav { display: grid; gap: 3px; }
+.portal-sidebar__intro { display: grid; gap: 4px; margin: 0 3px 9px; padding: 13px 12px; border: 1px solid rgba(137,214,163,.18); border-radius: 14px; background: linear-gradient(135deg,rgba(137,214,163,.1),rgba(62,133,107,.025)); }
+.portal-sidebar__intro > span { color: var(--green); font-size: 8px; font-weight: 800; letter-spacing: .12em; }
+.portal-sidebar__intro i { display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(137,214,163,.09); }
+.portal-sidebar__intro strong { font: 700 17px/1.1 var(--font-display); }
+.portal-sidebar__intro small { color: var(--muted); font-size: 8px; line-height: 1.45; }
+.portal-sidebar > nav { display: grid; gap: 2px; overflow-y: auto; scrollbar-width: thin; }
 .portal-sidebar a {
   display: grid;
   grid-template-columns: 32px 1fr;
@@ -53,6 +60,9 @@ body.has-portal-shell.has-portal-menu { overflow: hidden; }
 .portal-sidebar a span svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .portal-sidebar a:hover, .portal-sidebar a.is-active { background: rgba(137, 214, 163, .1); color: var(--text); }
 .portal-sidebar a.is-active span { border-color: rgba(137, 214, 163, .42); background: rgba(137, 214, 163, .12); }
+.portal-sidebar__footer { display: grid; gap: 5px; margin-top: auto; padding: 12px 4px 0; border-top: 1px solid var(--line); }
+.portal-sidebar__footer > small { color: var(--text); font-size: 9px; font-weight: 750; }
+.portal-sidebar__footer > span { color: var(--muted); font-size: 8px; }
 
 .portal-backdrop { display: none; }
 [data-portal-page][hidden] { display: none !important; }
@@ -484,7 +494,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   :root { --portal-header: 76px; }
   body.has-portal-shell { padding-left: 0; }
   .has-portal-shell .site-header { left: 0; padding-inline: 14px; }
-  .portal-sidebar { width: min(82vw, 310px); padding-top: calc(var(--portal-header) + 16px); transform: translateX(-105%); transition: transform .2s ease; }
+  .portal-sidebar { width: min(86vw, 330px); padding-top: calc(var(--portal-header) + 12px); transform: translateX(-105%); transition: transform .2s ease; }
   .portal-sidebar.is-open { transform: none; }
   .portal-menu-button { display: grid; width: 42px; height: 42px; place-items: center; flex: none; border: 1px solid var(--line); border-radius: 12px; background: rgba(0, 0, 0, .14); color: var(--text); font-size: 20px; }
   .portal-backdrop { position: fixed; z-index: 55; inset: 0; display: block; border: 0; background: rgba(0, 0, 0, .58); }
@@ -607,6 +617,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .meteo-ai-context { align-items: center; flex-direction: row; padding-inline: 12px; }
   .meteo-ai-context span { white-space: normal; }
   .meteo-ai-widget__panel { max-height: calc(100vh - 90px); }
+  .portal-sidebar__intro { padding: 11px 12px; }
 }
 
 @media (max-width: 360px) {

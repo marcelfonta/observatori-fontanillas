@@ -142,11 +142,13 @@ La biblioteca es manté en dades estructurades a `src/data/learning-resources.js
 ## V21 — Pol·len interpretable, marca i fase social segura — Completat
 
 - Nivells de pol·len orientatius per espècie amb colors, etiquetes, barres i consell pràctic.
-- Instagram i Facebook visibles i accessibles al peu de totes les pàgines.
+- Instagram, Facebook, Bluesky i Telegram visibles i accessibles a la capçalera, al menú lateral i al peu.
 - Símbol de l’Observatori redibuixat amb més llum, contrast i lectura a mida petita.
-- Copyright coherent a totes les pàgines públiques i administratives.
+- Avatar rodó de 1024 px preparat per a capçaleres i perfils socials.
+- Copyright traslladat al peu del menú lateral en escriptori i preservat al peu general en mòbil.
+- Menú lateral reequilibrat amb context local superior i accessos socials inferiors.
 - Cua `social_drafts` al Worker, deduplicada per dia i visible des del panell d’administració.
-- Credencial Meta detectada només com a booleà; cap token s’exposa i cap crida de publicació està implementada.
+- Credencials de Meta, Bluesky i Telegram detectades només com a booleans; cap token s’exposa i cap crida de publicació està implementada.
 
 ## Fases pendents després de V21
 

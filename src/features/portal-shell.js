@@ -34,9 +34,11 @@ export function mountPortalShell(activePage){
   let sidebar=document.getElementById('portal-sidebar');
   if(!sidebar){
     sidebar=document.createElement('aside');sidebar.className='portal-sidebar';sidebar.id='portal-sidebar';sidebar.setAttribute('aria-label','Seccions del portal');
+    const intro=document.createElement('div');intro.className='portal-sidebar__intro';intro.innerHTML='<span><i></i> EN DIRECTE</span><strong>Sant Celoni</strong><small>Observació, previsió i coneixement del Baix Montseny</small>';
     const nav=document.createElement('nav');
     NAV_ITEMS.forEach(([id,label,href])=>{const link=document.createElement('a');link.href=href;link.dataset.pageLink=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span>${label}`;nav.append(link);});
-    sidebar.append(nav);document.body.insertBefore(sidebar,document.querySelector('main'));
+    const footer=document.createElement('div');footer.className='portal-sidebar__footer';footer.innerHTML='<div class="portal-sidebar__social"></div><small>© 2026 Fontanillas</small><span>Observatori meteorològic local</span>';
+    sidebar.append(intro,nav,footer);document.body.insertBefore(sidebar,document.querySelector('main'));
   }
   let backdrop=document.getElementById('portal-backdrop');
   if(!backdrop){backdrop=document.createElement('button');backdrop.className='portal-backdrop';backdrop.id='portal-backdrop';backdrop.type='button';backdrop.hidden=true;backdrop.setAttribute('aria-label','Tancar el menú');document.body.insertBefore(backdrop,document.querySelector('main'));}

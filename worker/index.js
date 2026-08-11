@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "21.0.0";
+const WORKER_VERSION = "21.0.1";
 const WORKER_BUILT = "2026-08-11";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -89,7 +89,7 @@ const CREATE_SOCIAL_DRAFTS = `CREATE TABLE IF NOT EXISTS social_drafts (
   dedupe_key TEXT NOT NULL UNIQUE,
   kind TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'draft',
-  channels TEXT NOT NULL DEFAULT '["facebook","instagram"]',
+  channels TEXT NOT NULL DEFAULT '["facebook","instagram","bluesky","telegram"]',
   title TEXT NOT NULL,
   body TEXT NOT NULL,
   source_url TEXT NOT NULL DEFAULT 'https://meteo.fontanillas.cat/',
@@ -686,7 +686,7 @@ async function createDailySocialDraft(observation, env) {
   const result = await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
     (dedupe_key, kind, status, channels, title, body, source_url, payload)
     VALUES (?, 'daily_observation', 'draft', ?, ?, ?, ?, ?)`)
-    .bind(`daily:${localDate}`, JSON.stringify(['facebook','instagram']), title, body, 'https://meteo.fontanillas.cat/', payload).run();
+    .bind(`daily:${localDate}`, JSON.stringify(['facebook','instagram','bluesky','telegram']), title, body, 'https://meteo.fontanillas.cat/', payload).run();
   return { created:Boolean(result?.meta?.changes), localDate };
 }
 
@@ -1112,7 +1112,12 @@ async function adminDatabaseSummary(env) {
 async function adminSocialSummary(env) {
   const mode = 'draft';
   const tokenConfigured = Boolean(env.META_SYSTEM_USER_TOKEN);
-  if (!(await ensureSocialDraftSchema(env))) return { enabled:false, mode, tokenConfigured, pendingDrafts:0, approved:0, published:0, latestCreated:null, recent:[] };
+  const channelCredentials = {
+    meta:tokenConfigured,
+    bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
+    telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
+  };
+  if (!(await ensureSocialDraftSchema(env))) return { enabled:false, mode, tokenConfigured, channelCredentials, pendingDrafts:0, approved:0, published:0, latestCreated:null, recent:[] };
   const [counts, recentResult] = await Promise.all([
     env.DB.prepare(`SELECT
       SUM(CASE WHEN status IN ('draft','review') THEN 1 ELSE 0 END) AS pending,
@@ -1126,6 +1131,7 @@ async function adminSocialSummary(env) {
     enabled:true,
     mode,
     tokenConfigured,
+    channelCredentials,
     pendingDrafts:Number(counts?.pending) || 0,
     approved:Number(counts?.approved) || 0,
     published:Number(counts?.published) || 0,
@@ -1150,7 +1156,7 @@ async function adminStatus(request, env) {
     quality(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     alerts(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     adminDatabaseSummary(env),
-    adminSocialSummary(env).catch(error => ({ enabled:false, mode:'draft', tokenConfigured:Boolean(env.META_SYSTEM_USER_TOKEN), error:error.message, pendingDrafts:0, recent:[] })),
+    adminSocialSummary(env).catch(error => ({ enabled:false, mode:'draft', tokenConfigured:Boolean(env.META_SYSTEM_USER_TOKEN), channelCredentials:{ meta:Boolean(env.META_SYSTEM_USER_TOKEN), bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD), telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID) }, error:error.message, pendingDrafts:0, recent:[] })),
   ]);
   return json({
     ok:true,
@@ -1168,6 +1174,8 @@ async function adminStatus(request, env) {
       push:Boolean(env.ONESIGNAL_APP_ID && env.ONESIGNAL_REST_API_KEY),
       admin:true,
       socialToken:Boolean(env.META_SYSTEM_USER_TOKEN),
+      bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
+      telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
     },
     schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"comprovació programada" },
   }, 200, "no-store, private", origin);
