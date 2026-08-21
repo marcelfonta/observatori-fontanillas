@@ -1723,13 +1723,42 @@ function socialCardHtml(draft) {
   </body></html>`;
 }
 
+async function enrichedSocialCardDraft(draft, env) {
+  let data = {};
+  try { data = JSON.parse(draft.payload || '{}'); } catch {}
+  const missing = ['feelsLike','pressure','windGust'].some(key => finite(data[key]) === null);
+  if (!missing || !env.DB) return draft;
+  const observedAt = cleanText(data.observationUpdated, 32);
+  const localDate = cleanText(data.localDate, 20);
+  let row = null;
+  if (observedAt) {
+    row = await env.DB.prepare(`SELECT local_time,temperature,feels_like,humidity,pressure,wind_speed,wind_gust,rain_total
+      FROM observations WHERE local_time = ? LIMIT 1`).bind(observedAt).first();
+  }
+  if (!row && localDate) {
+    row = await env.DB.prepare(`SELECT local_time,temperature,feels_like,humidity,pressure,wind_speed,wind_gust,rain_total
+      FROM observations WHERE local_date = ? ORDER BY local_time ASC LIMIT 1`).bind(localDate).first();
+  }
+  if (!row) return draft;
+  const historical = {
+    observationUpdated:row.local_time,
+    temperature:finite(row.temperature), feelsLike:finite(row.feels_like), humidity:finite(row.humidity),
+    pressure:finite(row.pressure), windSpeed:finite(row.wind_speed), windGust:finite(row.wind_gust), rainToday:finite(row.rain_total),
+  };
+  for (const [key, value] of Object.entries(historical)) {
+    if ((data[key] === undefined || data[key] === null) && value !== null) data[key] = value;
+  }
+  return { ...draft, payload:JSON.stringify(data) };
+}
+
 async function socialCard(request, env, draftId, url, format = 'png') {
   if (!env.BROWSER) return json({ error:'La generació de targetes encara no està configurada.' }, 503);
   if (!(await ensureSocialDraftSchema(env))) return json({ error:'D1 no configurat.' }, 503);
   const expected = await socialCardSignature(draftId, env);
   if (!(await secureTokenMatch(String(url.searchParams.get('sig') || ''), expected))) return json({ error:'Signatura no vàlida.' }, 403);
-  const draft = await findSocialDraft(env, draftId);
-  if (!draft) return json({ error:'Targeta no trobada.' }, 404);
+  const storedDraft = await findSocialDraft(env, draftId);
+  if (!storedDraft) return json({ error:'Targeta no trobada.' }, 404);
+  const draft = await enrichedSocialCardDraft(storedDraft, env);
   const jpeg = format === 'jpeg';
   const rendered = await env.BROWSER.quickAction('screenshot', {
     html:socialCardHtml(draft),
