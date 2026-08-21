@@ -9,9 +9,9 @@ const [worker,schema,adminPage,adminFeature,portalCss,serviceWorker,project]=awa
   read('worker/index.js'),read('worker/schema.sql'),read('administracio.html'),read('src/features/admin.js'),read('css/portal.css'),read('service-worker.js'),read('project.json')
 ]);
 
-assert.equal(JSON.parse(project).version,'21.5.0','La versió web del projecte no és V21.5.0.');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v21-5-0'),'La memòria cau PWA no és V21.5.0.');
-assert.ok(serviceWorker.includes('/assets/images/observatori-fontanillas-social.jpg'),'La targeta social d’Instagram no forma part del paquet PWA.');
+assert.equal(JSON.parse(project).version,'22.0.0','La versió web del projecte no és V22.0.0.');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-0-0'),'La memòria cau PWA no és V22.0.0.');
+assert.ok(worker.includes('socialCardHtml')&&worker.includes("env.BROWSER.quickAction('screenshot'"),'Falta la targeta social dinàmica amb dades reals.');
 
 for(const source of [worker,schema]){
   assert.ok(source.includes('CREATE TABLE IF NOT EXISTS social_publications'),'Falta el registre de publicacions socials.');
@@ -31,7 +31,7 @@ assert.ok(scheduled.includes('createDailySocialDraft'),'El cron ha de poder crea
 for(const publisher of ['publishFacebook(','publishInstagram(','publishTelegram(','publishBluesky('])assert.ok(!scheduled.includes(publisher),`El cron no pot executar ${publisher}.`);
 
 for(const id of ['admin-social-list','admin-social-feedback','admin-social-mode','admin-social-drafts','admin-social-diagnose','admin-social-diagnostic-list','admin-social-facebook','admin-social-instagram'])assert.ok(adminPage.includes(`id="${id}"`),`Panell editorial: falta ${id}.`);
-for(const text of ['Aprovar mai no publica','Publicació automàtica desactivada'])assert.ok(adminPage.includes(text),`Panell editorial: falta l’avís «${text}».`);
+for(const text of ['Publicació automàtica i control','Una publicació diària amb dades reals'])assert.ok(adminPage.includes(text),`Panell editorial: falta l’avís «${text}».`);
 for(const token of ['/admin/social-drafts','/admin/social-diagnostics','runSocialDiagnostics','window.confirm','socialEditorDirty','textContent','socialPublicationRows',"facebook:'Facebook'","instagram:'Instagram'","telegram:'Telegram'","bluesky:'Bluesky'",'Publicar a ${label}'])assert.ok(adminFeature.includes(token),`Editor social: falta ${token}.`);
 for(const token of ['.admin-social-card','.admin-social-publications','.admin-social-actions','@media'])assert.ok(portalCss.includes(token),`Estils editorials: falta ${token}.`);
 

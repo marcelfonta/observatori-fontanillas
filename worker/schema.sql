@@ -84,3 +84,23 @@ CREATE TABLE IF NOT EXISTS social_publications (
 );
 CREATE INDEX IF NOT EXISTS idx_social_publications_draft_created
 ON social_publications(draft_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS forecast_snapshots (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  snapshot_key TEXT NOT NULL UNIQUE,
+  issued_at TEXT NOT NULL,
+  issued_epoch INTEGER NOT NULL,
+  target_date TEXT NOT NULL,
+  horizon_day INTEGER NOT NULL,
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  weather_code INTEGER,
+  temperature_max REAL,
+  temperature_min REAL,
+  precipitation_probability REAL,
+  precipitation_sum REAL,
+  wind_gust_max REAL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_forecast_target_horizon
+ON forecast_snapshots(target_date, horizon_day, issued_epoch DESC);

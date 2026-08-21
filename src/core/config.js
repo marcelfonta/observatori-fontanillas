@@ -14,7 +14,11 @@ export const CONFIG = {
     instagram: 'https://www.instagram.com/meteo_fontanillas/',
     facebook: 'https://www.facebook.com/meteofontanillas',
     bluesky: 'https://bsky.app/profile/meteofontanillas.bsky.social',
-    telegram: 'https://t.me/meteo_fontanillas'
+    telegram: 'https://t.me/meteofontanillas',
+    threads: 'https://www.threads.com/@meteo_fontanillas',
+    x: 'https://x.com/meteo_fonta',
+    tiktok: 'https://www.tiktok.com/@meteo_fontanillas',
+    whatsapp: 'https://whatsapp.com/channel/0029VbD9jmL4CrfajJnZIi25'
   },
   googleSiteVerification: '', // Valor del meta-tag, només si es verifica per prefix d’URL
   searchConsoleVerified: true, // Propietat de domini verificada per DNS el 2026-08-10

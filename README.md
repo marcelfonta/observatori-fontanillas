@@ -1,10 +1,10 @@
-# Observatori Meteorològic Fontanillas — V21.5.0
+# Observatori Meteorològic Fontanillas — V22.0.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.5.0 incorpora Meteo IA híbrida amb Workers AI, simplifica la comparació d’estacions a les lectures actuals i activa monitoratge amb correu i dades D1 de suport quan Weather Underground falla. Conserva el gestor editorial protegit de xarxes sense exposar credencials.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V22.0.0 incorpora una verificació transparent de predicció contra observacions reals i publicacions socials automàtiques amb targetes generades a partir de dades actuals.
 
 ### Predicció vs realitat
 
-És una ampliació viable, però les prediccions s’han de desar abans de la data que es vol verificar. La fase prevista crearà snapshots horaris a D1 amb data d’emissió, data vàlida, horitzó, model, temperatura, pluja, vent i estat del cel. Quan hi hagi prou mostra, una secció pròpia mostrarà l’error i el biaix de temperatura, l’encert o error de pluja i l’error de vent per horitzons 0–24 h, 24–48 h i 3–7 dies. Fins aleshores no es publicaran percentatges reconstruïts a posteriori.
+La V22 desa snapshots de previsió a D1 amb data d’emissió, data vàlida, horitzó, model, temperatura, pluja, vent i estat del cel. La secció pròpia mostra l’error i el biaix de temperatura, l’encert de pluja i l’error de vent per horitzons. Fins a tenir set dies complets, presenta clarament l’estat de recollida i no publica percentatges reconstruïts a posteriori.
 
 ## Estat actual
 
@@ -57,7 +57,7 @@ Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas 
 
 El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V21.2.0 també s’ha de desplegar aquest Worker i aplicar `worker/schema.sql`, que manté `social_drafts` i afegeix el registre `social_publications`. Les credencials `META_SYSTEM_USER_TOKEN`, `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`, `TELEGRAM_BOT_TOKEN` i `TELEGRAM_CHANNEL_ID` es mantenen només a Cloudflare; el Worker no en retorna mai els valors.
 
-La V21.2 permet comprovar les quatre connexions sense publicar i, després, enviar manualment un esborrany aprovat a Facebook, Instagram, Bluesky o Telegram. Aprovar mai no publica, cada canal exigeix una confirmació separada i cada intent queda registrat. El cron continua limitat a preparar esborranys: no hi ha cap enviament automàtic.
+La V22 publica automàticament, per defecte a les 08:00, a Facebook, Instagram, Bluesky i Telegram quan les credencials corresponents són presents. Cada intent queda registrat i els errors generen un correu operatiu. Threads, X, TikTok i YouTube queden com a següents integracions oficials, subjectes a OAuth i aprovació de cada plataforma.
 
 Per a Meta es poden definir opcionalment `META_FACEBOOK_PAGE_ID`, `META_FACEBOOK_PAGE_NAME`, `META_INSTAGRAM_ACCOUNT_ID`, `META_GRAPH_VERSION` i `META_INSTAGRAM_IMAGE_URL`. Si no s’indiquen els identificadors, el Worker intenta resoldre la pàgina i el compte professional a partir del token del sistema. La imatge predeterminada d’Instagram és `assets/images/observatori-fontanillas-social.jpg`.
 

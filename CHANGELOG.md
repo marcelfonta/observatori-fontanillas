@@ -1,5 +1,15 @@
 # Changelog
 
+## V22.0.0 — 2026-08-21
+
+- Nova secció visual «Predicció vs realitat», basada exclusivament en pronòstics desats abans del dia verificat i lectures reals de l’estació.
+- Captures de previsió Open-Meteo cada sis hores en D1, amb mètriques d’error de temperatura i vent i encert de pluja per horitzó.
+- Publicació automàtica diària a Facebook, Instagram, Bluesky i Telegram quan el canal està configurat.
+- Nova targeta social vertical 1080×1350 generada al Worker amb dades reals, hora i font; eliminada la imatge estàtica d’Instagram.
+- Correu operatiu si una publicació automàtica falla i registre complet per canal.
+- Enllaços web a Instagram, Facebook, Threads, X, Bluesky, Telegram, TikTok i WhatsApp.
+- Preparació d’estat de credencials per a Threads, X, TikTok i YouTube; Shorts queda pendent del flux OAuth i de vídeo.
+
 ## V21.5.0 — 2026-08-21
 
 - Meteo IA passa a una arquitectura híbrida: manté les respostes calculades amb dades verificades i usa Workers AI per entendre preguntes obertes o formulades de manera imprevista.

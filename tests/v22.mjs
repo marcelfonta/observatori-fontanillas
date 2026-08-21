@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { dirname,resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const read=path=>readFile(resolve(root,path),'utf8');
+const [worker,schema,html,feature,api,app,config,footer,sw]=await Promise.all(['worker/index.js','worker/schema.sql','index.html','src/features/forecast-verification.js','src/services/weather-api.js','src/app.js','src/core/config.js','src/features/footer-social.js','service-worker.js'].map(read));
+for(const token of ['forecast_snapshots','captureForecastSnapshot','forecastVerification','/forecast-verification','temperatureMae','rainAccuracy','windMae'])assert.ok(worker.includes(token),`Verificació V22: falta ${token}`);
+assert.ok(schema.includes('CREATE TABLE IF NOT EXISTS forecast_snapshots'));
+assert.ok(html.includes('id="forecast-verification"')&&html.includes('Predicció vs realitat'));
+assert.ok(feature.includes('initForecastVerification')&&api.includes('fetchForecastVerification')&&app.includes('initForecastVerification'));
+for(const token of ['socialCardHtml','socialCardUrl','publishAutomaticSocialDraft','/photos','sendPhoto','uploadBlob','META_INSTAGRAM_IMAGE_URL'])assert.ok(token==='META_INSTAGRAM_IMAGE_URL'?!worker.includes(token):worker.includes(token),`Automatització V22: comprovació fallida ${token}`);
+for(const network of ['threads','x','tiktok','whatsapp'])assert.ok(config.includes(`${network}:`)&&footer.includes(`['${network}'`),`Enllaç social V22 absent: ${network}`);
+assert.ok(sw.includes('/src/features/forecast-verification.js'));
+console.log('Test V22: verificació real, targetes dinàmiques i xarxes correctes');

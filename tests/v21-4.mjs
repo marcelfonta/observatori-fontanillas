@@ -14,7 +14,7 @@ for(const token of ['maxTemperatureTime','minTemperatureTime'])assert.ok(history
 assert.ok(station.includes("timeZone: 'Europe/Madrid'"),'Extrems V21.4: l’hora no es fixa al fus local.');
 assert.ok(style.includes('width:82px;height:82px')&&style.includes('font:50px/1')&&style.includes('font:44px/1'),'Predicció V21.4: els símbols encara no tenen prou presència.');
 for(const symbol of ['☀️','☁️','🌧️','⛈️'])assert.ok(forecast.includes(symbol),`Predicció V21.4: falta la variant emoji ${symbol}.`);
-assert.ok(html.includes('apple-touch-icon-v21.png?v=21.5.0'),'PWA V21.4: la icona iOS no té una URL renovada.');
+assert.ok(html.includes('apple-touch-icon-v21.png?v=22.0.0'),'PWA V21.4: la icona iOS no té una URL renovada.');
 assert.ok(serviceWorker.includes("'/assets/icons/apple-touch-icon-v21.png'"),'PWA V21.4: la nova icona iOS no és a la memòria cau.');
 assert.ok(!seo.includes("setAttribute('href',url)"),'SEO V21.4: el JavaScript encara canvia la canònica.');
 assert.ok(!sitemap.includes('?page='),'SEO V21.4: el sitemap encara conté vistes internes duplicades.');
