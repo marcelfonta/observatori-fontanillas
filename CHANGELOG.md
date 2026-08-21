@@ -7,7 +7,7 @@
 - Publicació automàtica diària a Facebook, Instagram, Bluesky i Telegram quan el canal està configurat.
 - Nova targeta social vertical 1080×1350 generada al Worker amb dades reals, hora i font; eliminada la imatge estàtica d’Instagram.
 - Correu operatiu si una publicació automàtica falla i registre complet per canal.
-- Enllaços web a Instagram, Facebook, Threads, X, Bluesky, Telegram, TikTok i WhatsApp.
+- Enllaços web a Instagram, Facebook, Threads, X, Bluesky, Telegram, TikTok, WhatsApp i YouTube.
 - Preparació d’estat de credencials per a Threads, X, TikTok i YouTube; Shorts queda pendent del flux OAuth i de vídeo.
 
 ## V21.5.0 — 2026-08-21

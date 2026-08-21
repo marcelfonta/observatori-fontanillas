@@ -18,7 +18,8 @@ export const CONFIG = {
     threads: 'https://www.threads.com/@meteo_fontanillas',
     x: 'https://x.com/meteo_fonta',
     tiktok: 'https://www.tiktok.com/@meteo_fontanillas',
-    whatsapp: 'https://whatsapp.com/channel/0029VbD9jmL4CrfajJnZIi25'
+    whatsapp: 'https://whatsapp.com/channel/0029VbD9jmL4CrfajJnZIi25',
+    youtube: 'https://www.youtube.com/@MeteoFontanillas'
   },
   googleSiteVerification: '', // Valor del meta-tag, només si es verifica per prefix d’URL
   searchConsoleVerified: true, // Propietat de domini verificada per DNS el 2026-08-10

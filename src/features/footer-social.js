@@ -8,10 +8,11 @@ const ICONS={
   threads:'<svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="17" text-anchor="middle" class="is-fill" font-size="15" font-weight="800">@</text></svg>',
   x:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 4 14 16M19 4 5 20" stroke-width="2.4"/></svg>',
   tiktok:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4v11a4 4 0 1 1-4-4M14 4c.5 3 2.2 4.5 5 4.7" stroke-width="2.2"/></svg>',
-  whatsapp:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="11.5" r="8"/><path d="m6.2 17.2-1 3.3 3.5-1.1M9 8.3c1 3.2 2.4 4.6 5.7 5.7" stroke-width="1.8"/></svg>'
+  whatsapp:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="11.5" r="8"/><path d="m6.2 17.2-1 3.3 3.5-1.1M9 8.3c1 3.2 2.4 4.6 5.7 5.7" stroke-width="1.8"/></svg>',
+  youtube:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="4"/><path class="is-fill" d="m10 9 5 3-5 3Z"/></svg>'
 };
 
-const NETWORKS=[['instagram','Instagram'],['facebook','Facebook'],['threads','Threads'],['x','X'],['bluesky','Bluesky'],['telegram','Telegram'],['tiktok','TikTok'],['whatsapp','WhatsApp']];
+const NETWORKS=[['instagram','Instagram'],['facebook','Facebook'],['threads','Threads'],['x','X'],['bluesky','Bluesky'],['telegram','Telegram'],['tiktok','TikTok'],['whatsapp','WhatsApp'],['youtube','YouTube']];
 
 function socialLink(key,label,variant){
   const href=CONFIG.social?.[key];

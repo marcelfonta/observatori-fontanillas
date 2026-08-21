@@ -10,6 +10,6 @@ assert.ok(schema.includes('CREATE TABLE IF NOT EXISTS forecast_snapshots'));
 assert.ok(html.includes('id="forecast-verification"')&&html.includes('Predicció vs realitat'));
 assert.ok(feature.includes('initForecastVerification')&&api.includes('fetchForecastVerification')&&app.includes('initForecastVerification'));
 for(const token of ['socialCardHtml','socialCardUrl','publishAutomaticSocialDraft','/photos','sendPhoto','uploadBlob','META_INSTAGRAM_IMAGE_URL'])assert.ok(token==='META_INSTAGRAM_IMAGE_URL'?!worker.includes(token):worker.includes(token),`Automatització V22: comprovació fallida ${token}`);
-for(const network of ['threads','x','tiktok','whatsapp'])assert.ok(config.includes(`${network}:`)&&footer.includes(`['${network}'`),`Enllaç social V22 absent: ${network}`);
+for(const network of ['threads','x','tiktok','whatsapp','youtube'])assert.ok(config.includes(`${network}:`)&&footer.includes(`['${network}'`),`Enllaç social V22 absent: ${network}`);
 assert.ok(sw.includes('/src/features/forecast-verification.js'));
 console.log('Test V22: verificació real, targetes dinàmiques i xarxes correctes');
