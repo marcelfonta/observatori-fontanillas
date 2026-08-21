@@ -1,0 +1,51 @@
+name: YouTube Short · prova privada
+
+on:
+  workflow_dispatch:
+    inputs:
+      privacy:
+        description: Visibilitat del vídeo de prova
+        required: true
+        default: private
+        type: choice
+        options: [private, unlisted]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: youtube-short-private
+  cancel-in-progress: false
+
+jobs:
+  render-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+      YOUTUBE_PRIVACY_STATUS: ${{ inputs.privacy }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instal·la el renderitzador
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg librsvg2-bin
+      - name: Genera les pantalles amb dades reals
+        run: node scripts/youtube-short.mjs
+      - name: Renderitza el Short vertical
+        run: |
+          for image in build/youtube-short/slide-*.svg; do rsvg-convert -w 1080 -h 1920 "$image" -o "${image%.svg}.png"; done
+          printf "file 'slide-1.png'\nduration 5\nfile 'slide-2.png'\nduration 5\nfile 'slide-3.png'\nduration 5\nfile 'slide-4.png'\nduration 5\nfile 'slide-5.png'\nduration 5\nfile 'slide-5.png'\n" > build/youtube-short/slides.txt
+          ffmpeg -y -f concat -safe 0 -i build/youtube-short/slides.txt -vf "scale=1080:1920,format=yuv420p" -r 30 -c:v libx264 -pix_fmt yuv420p -movflags +faststart -t 25 build/youtube-short/short.mp4
+          ffprobe -v error -show_entries format=duration,size -of json build/youtube-short/short.mp4
+      - name: Conserva una previsualització
+        uses: actions/upload-artifact@v4
+        with:
+          name: meteo-fontanillas-short-preview
+          path: build/youtube-short/short.mp4
+          retention-days: 7
+      - name: Puja el vídeo privat a YouTube
+        run: node scripts/youtube-upload.mjs
