@@ -1773,8 +1773,8 @@ async function meteoAI(request, env) {
   }
   const context = JSON.stringify(body.context || {}).slice(0, 16000);
   const prompt = `Ets Meteo IA de l’Observatori Fontanillas de Sant Celoni. Respon en català clar, útil i breu (màxim 180 paraules). Interpreta llenguatge natural i errors ortogràfics. Usa només les dades del context per afirmar valors actuals, prediccions o avisos; si hi falten, digues-ho explícitament. Pots explicar coneixement meteorològic general. No inventis dades, fonts ni alertes. Per emergències remet a Meteocat, AEMET, Protecció Civil i 112.\n\nContext verificat: ${context}\n\nPregunta: ${question}`;
-  const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", { messages:[{ role:"user", content:prompt }], max_tokens:420, temperature:0.25 });
-  const textAnswer = cleanText(typeof result === "string" ? result : result?.response, 3000);
+  const result = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", { messages:[{ role:"user", content:prompt }], max_tokens:420, temperature:0.25 });
+  const textAnswer = cleanText(typeof result === "string" ? result : result?.response || result?.choices?.[0]?.message?.content, 3000);
   if (!textAnswer) return json({ error:"La IA no ha generat cap resposta" }, 502, "no-store", origin);
   return json({ title:"Resposta de Meteo IA", body:textAnswer, facts:[], sources:[{ label:"Meteo IA", detail:"Workers AI · resposta basada en el context disponible" }] }, 200, "no-store", origin);
 }

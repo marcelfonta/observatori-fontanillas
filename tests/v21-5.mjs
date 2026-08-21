@@ -14,7 +14,7 @@ assert.ok(worker.includes('consecutive_failures')&&worker.includes('Weather Unde
 assert.ok(worker.includes('Weather Underground torna a funcionar'));
 assert.ok(worker.includes('latestStoredObservation')&&worker.includes('d1-emergency'));
 assert.ok(worker.includes('POST" && url.pathname === "/meteo-ai"'));
-assert.ok(worker.includes('env.AI.run("@cf/zai-org/glm-4.7-flash"'));
+assert.ok(worker.includes('env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast"'));
 assert.ok(worker.includes('CREATE TABLE IF NOT EXISTS ai_rate_limit'));
 assert.ok(!comparison.includes('data-compare-period="today"'));
 assert.ok(!comparison.includes('data-compare-period="24h"'));
