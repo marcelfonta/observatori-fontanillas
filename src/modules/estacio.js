@@ -18,6 +18,13 @@ function renderTrend(id, current, previous, suffix = '') {
   node.className = `trend ${stable ? '' : delta > 0 ? 'trend--up' : 'trend--down'}`;
 }
 
+function extremeTime(value) {
+  const date = new Date(value);
+  return Number.isFinite(date.getTime())
+    ? new Intl.DateTimeFormat('ca-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }).format(date)
+    : '—';
+}
+
 function beaufort(speed) {
   const value = Number(speed);
   if (!Number.isFinite(value)) return { force: '—', label: 'No disponible' };
@@ -98,6 +105,7 @@ export function renderStation(data, context = {}) {
   setText('chart-humidity-now',format(data.humidity,0)); setText('chart-wind-now',format(data.windSpeed,1)); setText('chart-rain-now',format(data.rainToday,1));
   setText('chart-uv-now',isNumber(data.uv)?format(data.uv,1):'—');
   setText('temp-max', `${format(context.stats?.maxTemperature ?? data.temperature, 1)}°`); setText('temp-min', `${format(context.stats?.minTemperature ?? data.temperature, 1)}°`);
+  setText('temp-max-time', extremeTime(context.stats?.maxTemperatureTime)); setText('temp-min-time', extremeTime(context.stats?.minTemperatureTime));
   renderTrend('temp-trend', data.temperature, context.previous?.temperature, '°'); renderTrend('pressure-trend', data.pressure, context.previous?.pressure, ' hPa'); renderTrend('chart-pressure-trend', data.pressure, context.previous?.pressure, ' hPa'); renderTrend('wind-trend', data.windSpeed, context.previous?.windSpeed, ' km/h');
   const [title, copy] = interpret(data); setText('quick-title', title); setText('quick-copy', copy); setText('condition-label', Number(data.rainRate) > 0 ? 'Pluja a l’observatori' : Number(data.windSpeed) > 15 ? 'Vent moderat' : 'Observació en directe');
   const comfort = document.getElementById('comfort-meter'); if (comfort) comfort.style.width = `${isNumber(thermal.apparent)?clamp(100 - Math.abs(thermal.apparent - 22) * 5, 15, 100):0}%`;

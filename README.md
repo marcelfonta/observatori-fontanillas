@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V21.3.0
+# Observatori Meteorològic Fontanillas — V21.4.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.3.0 simplifica la portada: l’avís superior obre directament la pàgina d’avisos i la previsió explica visualment què passarà el que queda d’avui, demà i els dies següents. Conserva el gestor editorial protegit de xarxes sense activar cap automatització ni exposar credencials.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.4.0 fa més llegible la previsió de portada, mostra l’hora de les màximes i mínimes, renova la icona instal·lable amb la marca actual i unifica els senyals canònics per a Google. Conserva el gestor editorial protegit de xarxes sense activar cap automatització ni exposar credencials.
 
 ## Estat actual
 

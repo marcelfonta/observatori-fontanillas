@@ -1,5 +1,13 @@
 # Changelog
 
+## V21.4.0 — 2026-08-21
+
+- Ampliats els símbols meteorològics del resum de portada i forçada la presentació emoji en color perquè siguin més immediats d’interpretar.
+- Afegida l’hora de la màxima i la mínima del dia al costat dels valors de la portada.
+- Renovades les icones d’iPhone i PWA a partir de l’avatar actual de la web i les xarxes, amb un nom de fitxer nou per evitar la memòria cau antiga d’iOS.
+- Consolidada la URL canònica de l’aplicació i eliminades del sitemap les vistes internes amb paràmetres per evitar senyals duplicats a Google Search Console.
+- Renovada la memòria cau de la PWA a V21.4.0.
+
 ## V21.3.0 — 2026-08-13
 
 ### Portada més directa

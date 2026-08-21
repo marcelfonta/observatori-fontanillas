@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v21-3-0';
+const CACHE = 'observatori-fontanillas-v21-4-0';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
@@ -15,7 +15,7 @@ const APP_SHELL = [
   '/src/modules/radar.js', '/src/modules/resum.js', '/src/modules/situacio.js', '/src/modules/webcams.js',
   '/assets/icons/favicon-16.png', '/assets/icons/favicon-32.png', '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png', '/assets/icons/icon-maskable-192.png', '/assets/icons/icon-maskable-512.png',
-  '/assets/icons/apple-touch-icon.png', '/assets/logos/observatori-symbol.svg', '/assets/logos/observatori-lockup.svg',
+  '/assets/icons/apple-touch-icon.png', '/assets/icons/apple-touch-icon-v21.png', '/assets/logos/observatori-symbol.svg', '/assets/logos/observatori-lockup.svg',
   '/assets/images/observatori-fontanillas-social-v12-2.png', '/assets/images/observatori-fontanillas-avatar-v21.png',
   '/assets/images/observatori-fontanillas-social.jpg'
 ];

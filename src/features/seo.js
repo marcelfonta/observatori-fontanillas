@@ -20,23 +20,23 @@ function setMeta(selector,value){const node=document.querySelector(selector);if(
 
 export function updateSeoMetadata(page='inici'){
   const current=PAGES[page]||PAGES.inici;
-  const url=page==='inici'?BASE:`${BASE}?page=${encodeURIComponent(page)}`;
+  const viewUrl=page==='inici'?BASE:`${BASE}?page=${encodeURIComponent(page)}`;
+  const canonicalUrl=BASE;
   const verification=String(CONFIG.googleSiteVerification||'').trim();
   let verificationMeta=document.querySelector('meta[name="google-site-verification"]');
   if(verification&&!verificationMeta){verificationMeta=document.createElement('meta');verificationMeta.name='google-site-verification';document.head.append(verificationMeta);}
   if(verificationMeta){if(verification)verificationMeta.content=verification;else verificationMeta.remove();}
   document.title=current.title;
-  document.querySelector('link[rel="canonical"]')?.setAttribute('href',url);
   setMeta('meta[name="description"]',current.description);
-  setMeta('meta[property="og:title"]',current.title);setMeta('meta[property="og:description"]',current.description);setMeta('meta[property="og:url"]',url);
+  setMeta('meta[property="og:title"]',current.title);setMeta('meta[property="og:description"]',current.description);setMeta('meta[property="og:url"]',viewUrl);
   setMeta('meta[name="twitter:title"]',current.title);setMeta('meta[name="twitter:description"]',current.description);
   const schema=document.getElementById('seo-structured-data');if(!schema)return;
   schema.textContent=JSON.stringify({
     '@context':'https://schema.org','@graph':[
       {'@type':'WebSite','@id':`${BASE}#website`,name:'Observatori Meteorològic Fontanillas',url:BASE,inLanguage:'ca',description:PAGES.inici.description},
-      {'@type':'WebPage','@id':`${url}#webpage`,url,name:current.title,description:current.description,inLanguage:'ca',isPartOf:{'@id':`${BASE}#website`},about:{'@id':`${BASE}#dataset`}},
-      {'@type':'Dataset','@id':`${BASE}#dataset`,name:'Observacions meteorològiques de l’estació Fontanillas',description:'Sèries meteorològiques locals de temperatura, humitat, pressió, vent, precipitació, radiació solar i índex UV.',url:`${BASE}?page=centre-dades`,inLanguage:'ca',spatialCoverage:{'@type':'Place',name:'Sant Celoni, Vallès Oriental',geo:{'@type':'GeoCoordinates',latitude:41.6906,longitude:2.489}},temporalCoverage:'2025/..',measurementTechnique:'Estació meteorològica automàtica',variableMeasured:['Temperatura','Humitat relativa','Pressió atmosfèrica','Velocitat i ratxa del vent','Precipitació','Radiació solar','Índex UV']},
-      {'@type':'BreadcrumbList','@id':`${url}#breadcrumb`,itemListElement:page==='inici'?[{'@type':'ListItem',position:1,name:'Inici',item:BASE}]:[{'@type':'ListItem',position:1,name:'Inici',item:BASE},{'@type':'ListItem',position:2,name:current.title,item:url}]}
+      {'@type':'WebPage','@id':`${canonicalUrl}#webpage`,url:canonicalUrl,name:current.title,description:current.description,inLanguage:'ca',isPartOf:{'@id':`${BASE}#website`},about:{'@id':`${BASE}#dataset`}},
+      {'@type':'Dataset','@id':`${BASE}#dataset`,name:'Observacions meteorològiques de l’estació Fontanillas',description:'Sèries meteorològiques locals de temperatura, humitat, pressió, vent, precipitació, radiació solar i índex UV.',url:BASE,inLanguage:'ca',spatialCoverage:{'@type':'Place',name:'Sant Celoni, Vallès Oriental',geo:{'@type':'GeoCoordinates',latitude:41.6906,longitude:2.489}},temporalCoverage:'2025/..',measurementTechnique:'Estació meteorològica automàtica',variableMeasured:['Temperatura','Humitat relativa','Pressió atmosfèrica','Velocitat i ratxa del vent','Precipitació','Radiació solar','Índex UV']},
+      {'@type':'BreadcrumbList','@id':`${canonicalUrl}#breadcrumb`,itemListElement:[{'@type':'ListItem',position:1,name:'Inici',item:BASE}]}
     ]
   });
 }
