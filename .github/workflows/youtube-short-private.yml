@@ -34,12 +34,14 @@ jobs:
       - name: Instal·la el renderitzador
         run: sudo apt-get update && sudo apt-get install -y ffmpeg librsvg2-bin
       - name: Genera les pantalles amb dades reals
-        run: node scripts/youtube-short.mjs
+        run: |
+          node scripts/youtube-short.mjs
+          node scripts/youtube-music.mjs
       - name: Renderitza el Short vertical
         run: |
           for image in build/youtube-short/slide-*.svg; do rsvg-convert -w 1080 -h 1920 "$image" -o "${image%.svg}.png"; done
           printf "file 'slide-1.png'\nduration 5\nfile 'slide-2.png'\nduration 5\nfile 'slide-3.png'\nduration 5\nfile 'slide-4.png'\nduration 5\nfile 'slide-5.png'\nduration 5\nfile 'slide-5.png'\n" > build/youtube-short/slides.txt
-          ffmpeg -y -f concat -safe 0 -i build/youtube-short/slides.txt -vf "scale=1080:1920,format=yuv420p" -r 30 -c:v libx264 -pix_fmt yuv420p -movflags +faststart -t 25 build/youtube-short/short.mp4
+          ffmpeg -y -f concat -safe 0 -i build/youtube-short/slides.txt -i build/youtube-short/music.wav -vf "scale=1080:1920,format=yuv420p" -r 30 -c:v libx264 -c:a aac -b:a 160k -shortest -pix_fmt yuv420p -movflags +faststart -t 25 build/youtube-short/short.mp4
           ffprobe -v error -show_entries format=duration,size -of json build/youtube-short/short.mp4
       - name: Conserva una previsualització
         uses: actions/upload-artifact@v4
