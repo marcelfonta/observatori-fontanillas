@@ -40,8 +40,6 @@ export function initFooterSocial(){
     mountSocialGroup(slot,'header-social','header');
   }
 
-  mountSocialGroup(document.querySelector('.portal-sidebar__social'),'sidebar-social','sidebar');
-
   document.querySelectorAll('footer.shell').forEach(footer=>{
     const copyright=[...footer.children].find(item=>item.tagName==='SPAN'&&item.textContent.includes('©'));
     if(copyright)copyright.classList.add('footer-copyright');

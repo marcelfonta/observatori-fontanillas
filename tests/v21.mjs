@@ -19,10 +19,11 @@ assert.ok(html.includes('id="pollen-summary-title"')&&html.includes('https://aer
 assert.ok(portalCss.includes('.pollen-summary')&&portalCss.includes('.environment-level.is-extreme'),'Pol·len V21: falten els estils interpretatius.');
 
 for(const url of ['https://www.instagram.com/meteo_fontanillas/','https://www.facebook.com/meteofontanillas','https://bsky.app/profile/meteofontanillas.bsky.social','https://t.me/meteofontanillas','https://www.threads.com/@meteo_fontanillas','https://x.com/meteo_fonta','https://www.tiktok.com/@meteo_fontanillas','https://whatsapp.com/channel/0029VbD9jmL4CrfajJnZIi25'])assert.ok(config.includes(url),`Xarxes V22.0.0: falta ${url}.`);
-for(const token of ['header-social','sidebar-social','footer-social','noopener noreferrer',"['instagram','Instagram']","['facebook','Facebook']","['bluesky','Bluesky']","['telegram','Telegram']",'Meteo Fontanillas (s’obre en una pestanya nova)'])assert.ok(footerSocial.includes(token),`Xarxes V22.0.0: falta ${token}.`);
+for(const token of ['header-social','footer-social','noopener noreferrer',"['instagram','Instagram']","['facebook','Facebook']","['bluesky','Bluesky']","['telegram','Telegram']",'Meteo Fontanillas (s’obre en una pestanya nova)'])assert.ok(footerSocial.includes(token),`Xarxes V22.0.0: falta ${token}.`);
 for(const token of ['portal-sidebar__brand','portal-sidebar__brand-mark','Fontanillas</strong><small>· Sant Celoni','portal-sidebar__footer','© 2026 Fontanillas'])assert.ok(portalShell.includes(token),`Menú lateral V22.0.0: falta ${token}.`);
-for(const token of ['header.append(slot)','.portal-sidebar__social'])assert.ok(`${footerSocial}\n${portalShell}`.includes(token),`Muntatge social V22.0.0: falta ${token}.`);
-for(const token of ['.header-social','.sidebar-social','.footer-social','.footer-copyright{display:none','.portal-sidebar__brand','.has-portal-shell .site-header>.live-pill'])assert.ok(`${styleCss}\n${portalCss}`.includes(token),`Estils V22.0.0: falta ${token}.`);
+assert.ok(footerSocial.includes('header.append(slot)'),'Muntatge social V22.0.0: falten les xarxes de capçalera.');
+assert.ok(!`${footerSocial}\n${portalShell}\n${styleCss}`.includes('sidebar-social')&&!portalShell.includes('portal-sidebar__social'),'Menú lateral: encara conté el bloc de xarxes socials.');
+for(const token of ['.header-social','.footer-social','.footer-copyright{display:none','.portal-sidebar__brand','.has-portal-shell .site-header>.live-pill'])assert.ok(`${styleCss}\n${portalCss}`.includes(token),`Estils V22.0.0: falta ${token}.`);
 for(const page of ['index.html','comparativa.html','metodologia.html','historial-avisos.html','privacitat.html','administracio.html'])assert.ok((await read(page)).includes('© 2026'),`${page}: falta el copyright.`);
 for(const page of ['index.html','comparativa.html','metodologia.html','historial-avisos.html','privacitat.html']){
   const pageHtml=await read(page);
@@ -38,10 +39,10 @@ for(const token of ['graph.facebook.com','media_publish','publishFacebook','publ
 for(const id of ['admin-social-pill','admin-social-mode','admin-social-facebook','admin-social-instagram','admin-social-bluesky','admin-social-telegram','admin-social-drafts','admin-social-last','admin-social-list','admin-social-diagnose','admin-social-diagnostic-list'])assert.ok(adminPage.includes(`id="${id}"`),`Administració V22.0.0: falta ${id}.`);
 for(const token of ['renderSocialEditor','fetchSocialDrafts','runSocialDiagnostics','channelCredentials'])assert.ok(adminFeature.includes(token),`Administració V22.0.0: falta ${token}.`);
 
-assert.ok(serviceWorker.includes("observatori-fontanillas-v22-0-0")&&serviceWorker.includes("'/src/features/footer-social.js'")&&serviceWorker.includes("'/assets/images/observatori-fontanillas-avatar-v21.png'"),'PWA V22.0.0: versió, mòdul social o avatar absents.');
+assert.ok(serviceWorker.includes("observatori-fontanillas-v22-0-1")&&serviceWorker.includes("'/src/features/footer-social.js'")&&serviceWorker.includes("'/assets/images/observatori-fontanillas-avatar-v21.png'"),'PWA V22.0.1: versió, mòdul social o avatar absents.');
 const avatar=await readFile(resolve(root,'assets/images/observatori-fontanillas-avatar-v21.png'));
 assert.equal(avatar.toString('ascii',1,4),'PNG','Marca V22.0.0: l’avatar no és PNG.');
 assert.deepEqual([avatar.readUInt32BE(16),avatar.readUInt32BE(20)],[1024,1024],'Marca V22.0.0: l’avatar no és quadrat a 1024 px.');
-assert.equal(JSON.parse(await read('project.json')).version,'22.0.0');
+assert.equal(JSON.parse(await read('project.json')).version,'22.0.1');
 
 console.log('Test V21: pol·len, marca, xarxes i cua segura correctes');

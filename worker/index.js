@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.0.0";
+const WORKER_VERSION = "22.1.0";
 const WORKER_BUILT = "2026-08-21";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -911,7 +911,7 @@ async function createDailySocialDraft(observation, env, slot = null) {
   const result = await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
     (dedupe_key, kind, status, channels, title, body, source_url, payload)
     VALUES (?, 'daily_observation', ?, ?, ?, ?, ?, ?)`)
-    .bind(`daily:${localDate}:${slot}`, initialStatus, JSON.stringify(['facebook','instagram','bluesky','telegram']), title, body, 'https://meteo.fontanillas.cat/', payload).run();
+    .bind(`daily:${localDate}:${slot}`, initialStatus, JSON.stringify(['facebook','instagram','bluesky','telegram','threads']), title, body, 'https://meteo.fontanillas.cat/', payload).run();
   const created = Boolean(result?.meta?.changes);
   const draft = await env.DB.prepare("SELECT * FROM social_drafts WHERE dedupe_key = ?").bind(`daily:${localDate}:${slot}`).first();
   return { created, localDate, slot, draft };
@@ -1345,7 +1345,7 @@ async function adminSocialSummary(env) {
     instagram:tokenConfigured,
     bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
     telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
-    threads:Boolean(env.THREADS_ACCESS_TOKEN && env.THREADS_USER_ID),
+    threads:Boolean(env.THREADS_ACCESS_TOKEN),
     x:Boolean(env.X_ACCESS_TOKEN),
     tiktok:Boolean(env.TIKTOK_ACCESS_TOKEN && env.TIKTOK_OPEN_ID),
     youtube:Boolean(env.YOUTUBE_REFRESH_TOKEN && env.YOUTUBE_CLIENT_ID && env.YOUTUBE_CLIENT_SECRET),
@@ -1374,7 +1374,7 @@ async function adminSocialSummary(env) {
   };
 }
 
-const SOCIAL_CHANNELS = new Set(['facebook','instagram','bluesky','telegram']);
+const SOCIAL_CHANNELS = new Set(['facebook','instagram','bluesky','telegram','threads']);
 const SOCIAL_STATUSES = new Set(['draft','review','approved','partially_published','published','discarded']);
 
 function parseSocialChannels(value) {
@@ -1628,6 +1628,42 @@ async function publishInstagram(draft, env) {
   return { remoteId:String(published.payload.id), responseCode:published.responseCode };
 }
 
+async function threadsGraphRequest(env, path, { method='GET', params={} } = {}) {
+  if (!env.THREADS_ACCESS_TOKEN) throw Object.assign(new Error('Falta THREADS_ACCESS_TOKEN.'), { status:503 });
+  const url = new URL(`https://graph.threads.net/v1.0/${String(path).replace(/^\/+/, '')}`);
+  const values = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') values.set(key, String(value));
+  });
+  const options = { method, headers:{ Accept:'application/json', Authorization:`Bearer ${env.THREADS_ACCESS_TOKEN}` } };
+  if (method === 'GET') url.search = values.toString();
+  else {
+    options.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+    options.body = values.toString();
+  }
+  const response = await fetch(url.toString(), options);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.error) {
+    const message = cleanText(payload.error?.message || `Threads ha respost ${response.status}.`, 500);
+    throw Object.assign(new Error(message), { status:502, responseCode:response.status, metaCode:payload.error?.code || null });
+  }
+  return { payload, responseCode:response.status };
+}
+
+async function publishThreads(draft, env) {
+  const text = socialPostText(draft, 500);
+  const created = await threadsGraphRequest(env, 'me/threads', {
+    method:'POST',
+    params:{ media_type:'IMAGE', image_url:await socialCardUrl(draft, env), text, alt_text:'Dades meteorològiques reals de l’Observatori Fontanillas' },
+  });
+  if (!created.payload.id) throw Object.assign(new Error('Threads no ha pogut preparar la publicació.'), { status:502, responseCode:created.responseCode });
+  const published = await threadsGraphRequest(env, 'me/threads_publish', {
+    method:'POST', params:{ creation_id:created.payload.id },
+  });
+  if (!published.payload.id) throw Object.assign(new Error('Threads no ha retornat l’identificador de la publicació.'), { status:502, responseCode:published.responseCode });
+  return { remoteId:String(published.payload.id), responseCode:published.responseCode };
+}
+
 async function diagnoseSocialChannel(channel, env) {
   try {
     if (channel === 'facebook' || channel === 'instagram') {
@@ -1657,6 +1693,11 @@ async function diagnoseSocialChannel(channel, env) {
       const session = await response.json().catch(() => ({}));
       if (!response.ok || !session.did) throw new Error(session.message || 'Bluesky no ha pogut iniciar la sessió.');
       return { channel, ok:true, label:`@${session.handle || env.BLUESKY_HANDLE}`, detail:'Contrasenya d’aplicació operativa. No s’ha publicat res.' };
+    }
+    if (channel === 'threads') {
+      const { payload } = await threadsGraphRequest(env, 'me', { params:{ fields:'id,username' } });
+      if (!payload.id) throw new Error('Threads no ha retornat el perfil autoritzat.');
+      return { channel, ok:true, label:payload.username ? `@${payload.username}` : 'Perfil de Threads identificat', detail:'Token i permisos operatius. No s’ha publicat res.' };
     }
     throw new Error('Canal desconegut.');
   } catch (error) {
@@ -1733,8 +1774,9 @@ async function publishAutomaticSocialDraft(result, env) {
     facebook:Boolean(env.META_SYSTEM_USER_TOKEN), instagram:Boolean(env.META_SYSTEM_USER_TOKEN),
     bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
     telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
+    threads:Boolean(env.THREADS_ACCESS_TOKEN),
   };
-  const publishers = { facebook:publishFacebook, instagram:publishInstagram, telegram:publishTelegram, bluesky:publishBluesky };
+  const publishers = { facebook:publishFacebook, instagram:publishInstagram, telegram:publishTelegram, bluesky:publishBluesky, threads:publishThreads };
   const previous = await socialPublicationsForDraft(env, draft.id);
   const completed = new Set(previous.filter(item=>item.status==='published').map(item=>item.channel));
   const channels = parseSocialChannels(draft.channels).filter(channel=>configured[channel] && !completed.has(channel));
@@ -1771,7 +1813,7 @@ async function adminPublishSocialDraft(request, env, draftId) {
     return json({ error:'Aquest contingut ja s’ha publicat en aquest canal i no es tornarà a enviar.' }, 409, 'no-store', auth.origin);
   }
   try {
-    const publishers = { facebook:publishFacebook, instagram:publishInstagram, telegram:publishTelegram, bluesky:publishBluesky };
+    const publishers = { facebook:publishFacebook, instagram:publishInstagram, telegram:publishTelegram, bluesky:publishBluesky, threads:publishThreads };
     const details = await publishers[channel](draft, env);
     await recordSocialPublication(env, draftId, channel, 'published', details);
     const status = await refreshSocialDraftPublicationStatus(env, draft);
@@ -1799,7 +1841,7 @@ async function adminStatus(request, env) {
     quality(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     alerts(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     adminDatabaseSummary(env),
-    adminSocialSummary(env).catch(error => ({ enabled:false, mode:'draft', tokenConfigured:Boolean(env.META_SYSTEM_USER_TOKEN), channelCredentials:{ meta:Boolean(env.META_SYSTEM_USER_TOKEN), facebook:Boolean(env.META_SYSTEM_USER_TOKEN), instagram:Boolean(env.META_SYSTEM_USER_TOKEN), bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD), telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID) }, error:error.message, pendingDrafts:0, recent:[] })),
+    adminSocialSummary(env).catch(error => ({ enabled:false, mode:'draft', tokenConfigured:Boolean(env.META_SYSTEM_USER_TOKEN), channelCredentials:{ meta:Boolean(env.META_SYSTEM_USER_TOKEN), facebook:Boolean(env.META_SYSTEM_USER_TOKEN), instagram:Boolean(env.META_SYSTEM_USER_TOKEN), bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD), telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID), threads:Boolean(env.THREADS_ACCESS_TOKEN) }, error:error.message, pendingDrafts:0, recent:[] })),
   ]);
   return json({
     ok:true,
@@ -1821,6 +1863,7 @@ async function adminStatus(request, env) {
       instagram:Boolean(env.META_SYSTEM_USER_TOKEN),
       bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
       telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
+      threads:Boolean(env.THREADS_ACCESS_TOKEN),
     },
     schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"comprovació programada" },
   }, 200, "no-store, private", origin);

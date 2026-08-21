@@ -479,7 +479,7 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 
 body[data-page="inici"] #avisos .alerts-hub,
 body[data-page="inici"] #avisos .alerts-heading-actions,
-body[data-page="inici"] #prediccio > *:not(.forecast-overview):not(.section-heading),
+body[data-page="inici"] #prediccio > *:not(.forecast-overview):not(.section-heading):not(.forecast-verification),
 body[data-page="inici"] #territori .webcam-card { display: none !important; }
 body[data-page="inici"] #avisos,
 body[data-page="inici"] #prediccio,

@@ -45,7 +45,7 @@ export function mountPortalShell(activePage){
     const brand=document.createElement('a');brand.className='portal-sidebar__brand';brand.href='./?page=inici';brand.setAttribute('aria-label','Fontanillas · Sant Celoni, inici');brand.innerHTML='<span class="portal-sidebar__brand-mark" aria-hidden="true"><img src="assets/images/observatori-fontanillas-avatar-v21.png" alt="" width="52" height="52" /></span><span class="portal-sidebar__brand-copy"><strong>Fontanillas</strong><small>· Sant Celoni</small></span>';
     const nav=document.createElement('nav');
     NAV_ITEMS.forEach(([id,label,href])=>{const link=document.createElement('a');link.href=href;link.dataset.pageLink=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span>${label}`;nav.append(link);});
-    const footer=document.createElement('div');footer.className='portal-sidebar__footer';footer.innerHTML='<div class="portal-sidebar__social"></div><div class="portal-sidebar__copyright"><small>© 2026 Fontanillas</small><span>Observatori meteorològic local</span></div>';
+    const footer=document.createElement('div');footer.className='portal-sidebar__footer';footer.innerHTML='<div class="portal-sidebar__copyright"><small>© 2026 Fontanillas</small><span>Observatori meteorològic local</span></div>';
     sidebar.append(brand,nav,footer);document.body.insertBefore(sidebar,document.querySelector('main'));
   }
   let backdrop=document.getElementById('portal-backdrop');
