@@ -1346,7 +1346,6 @@ async function adminSocialSummary(env) {
     bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
     telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
     threads:Boolean(env.THREADS_ACCESS_TOKEN),
-    x:Boolean(env.X_ACCESS_TOKEN),
     tiktok:Boolean(env.TIKTOK_ACCESS_TOKEN && env.TIKTOK_OPEN_ID),
     youtube:Boolean(env.YOUTUBE_REFRESH_TOKEN && env.YOUTUBE_CLIENT_ID && env.YOUTUBE_CLIENT_SECRET),
     whatsapp:false,

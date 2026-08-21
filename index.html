@@ -40,13 +40,13 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=22.0.1" />
-    <link rel="stylesheet" href="css/portal.css?v=22.0.1" />
+    <link rel="stylesheet" href="css/style.css?v=22.0.2" />
+    <link rel="stylesheet" href="css/portal.css?v=22.0.2" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="src/features/push.js?v=22.0.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=22.0.1"></script>
+    <script type="module" src="src/app.js?v=22.0.2"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","url":"https://meteo.fontanillas.cat/","spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -101,6 +101,7 @@
       <section class="portal-view-header panel" aria-labelledby="station-page-title" data-portal-page="estacio"><div><p class="eyebrow">Estació Fontanillas</p><h1 id="station-page-title">L’estació, sensor a sensor.</h1><p>Lectures actuals, valors calculats i resum del dia des de Sant Celoni.</p></div><span class="tag">Cada 5 minuts</span></section>
       <section class="portal-view-header panel" aria-labelledby="meteo-ai-page-title" data-portal-page="meteo-ia"><div><p class="eyebrow">Meteo IA · dades verificades</p><h1 id="meteo-ai-page-title">Pregunta al temps, amb les fonts a la vista.</h1><p>Respostes construïdes amb l’estació, la predicció i els avisos disponibles; sense inventar lectures.</p></div><span class="tag">Consulta guiada</span></section>
       <section class="portal-view-header panel" aria-labelledby="forecast-page-title" data-portal-page="prediccio"><div><p class="eyebrow">Predicció</p><h1 id="forecast-page-title">La previsió, ordenada per horitzons.</h1><p>Properes hores, dies i models de confiança per entendre què pot canviar.</p></div><span class="tag">Sant Celoni</span></section>
+      <section class="portal-view-header panel" aria-labelledby="verification-page-title" data-portal-page="verificacio"><div><p class="eyebrow">Verificació transparent</p><h1 id="verification-page-title">Predicció vs realitat.</h1><p>Mesurem amb dades reals fins a quin punt encerta la previsió meteorològica.</p></div><span class="tag">Dades pròpies</span></section>
       <section class="portal-view-header panel" aria-labelledby="alerts-page-title" data-portal-page="avisos"><div><p class="eyebrow">Vigilància oficial</p><h1 id="alerts-page-title">Avisos que poden afectar Sant Celoni.</h1><p>Seguiment del Vallès Oriental i del Prelitoral de Barcelona amb fonts oficials.</p></div><span class="tag">Meteocat · AEMET</span></section>
       <section class="portal-view-header panel" aria-labelledby="sky-page-title" data-portal-page="cel"><div><p class="eyebrow">Astronomia</p><h1 id="sky-page-title">El cel, de dia i de nit.</h1><p>Sol, Lluna, fases, estacions i esdeveniments visibles des de Catalunya.</p></div><span class="tag">Hora local</span></section>
       <section class="portal-view-header panel" aria-labelledby="radar-page-title" data-portal-page="radar"><div><p class="eyebrow">Observació territorial</p><h1 id="radar-page-title">Radar, precipitació i activitat elèctrica.</h1><p>Animació interactiva i productes oficials dins del mateix portal.</p></div><span class="tag">En directe</span></section>
@@ -379,14 +380,6 @@
         </div>
         <div class="forecast-subheading"><div><span>Previsió de 7 dies</span><small>Màximes, mínimes, pluja, vent i hores de llum</small></div></div>
         <div class="daily-forecast" id="daily-forecast" aria-live="polite"><div class="forecast-loading">Preparant la previsió diària…</div></div>
-        <section class="forecast-verification panel" id="forecast-verification" aria-labelledby="forecast-verification-title">
-          <header><div><p class="eyebrow">Predicció vs realitat</p><h3 id="forecast-verification-title">Quina precisió té la previsió?</h3><p>Desem la previsió abans que passi el dia i després la contrastem amb les lectures reals de l’estació.</p></div><span class="tag" id="verification-status">Començant l’arxiu</span></header>
-          <div class="verification-hero" id="verification-hero"><div class="verification-orbit"><strong>0</strong><span>dies verificats</span></div><div><h4>La comparació comença avui</h4><p>No inventem dades del passat. Quan hi hagi dies complets, aquí veuràs els errors reals de temperatura i vent i l’encert de pluja.</p></div></div>
-          <div class="verification-metrics" id="verification-metrics" hidden></div>
-          <div class="verification-horizons" id="verification-horizons" hidden></div>
-          <div class="verification-detail" id="verification-detail" hidden></div>
-          <p class="verification-method" id="verification-method">Cada pronòstic queda segellat amb data i hora; la realitat prové de l’Observatori Fontanillas.</p>
-        </section>
         <section id="fonts" class="official-forecast panel" aria-labelledby="official-forecast-title" data-mobile-advanced>
           <header><div><p class="eyebrow">Cinc fonts contrastades</p><h3 id="official-forecast-title">Cinc mirades sobre la previsió</h3><p>Meteocat · AEMET · eltiempo.es · Yr · Meteoblue, sense repetir la previsió Open‑Meteo que ja tens just a sobre.</p></div><span class="tag" id="four-look-status">5 fonts fiables</span></header>
           <div class="source-viewer__toolbar">
@@ -468,6 +461,15 @@
           <p class="long-range-note"><span>i</span> A partir de la segona setmana la incertesa augmenta molt. Aquesta vista serveix per detectar una tendència més càlida, freda, seca o humida; cal tornar a la previsió de 7 dies abans de prendre decisions.</p>
         </section>
         <p class="forecast-disclaimer">La predicció descriu un escenari de model per a Sant Celoni, no una certesa. L’observació real de l’estació és la referència del temps que està fent.</p>
+      </section>
+
+      <section class="forecast-verification panel section-block" id="forecast-verification" aria-labelledby="forecast-verification-title" data-portal-page="verificacio">
+        <header><div><p class="eyebrow">Predicció vs realitat</p><h2 id="forecast-verification-title">Quina precisió té la previsió?</h2><p>Desem la previsió abans que passi el dia i després la contrastem amb les lectures reals de l’estació.</p></div><span class="tag" id="verification-status">Començant l’arxiu</span></header>
+        <div class="verification-hero" id="verification-hero"><div class="verification-orbit"><strong>0</strong><span>dies verificats</span></div><div><h3>La comparació comença avui</h3><p>No inventem dades del passat. Quan hi hagi dies complets, aquí veuràs els errors reals de temperatura i vent i l’encert de pluja.</p></div></div>
+        <div class="verification-metrics" id="verification-metrics" hidden></div>
+        <div class="verification-horizons" id="verification-horizons" hidden></div>
+        <div class="verification-detail" id="verification-detail" hidden></div>
+        <p class="verification-method" id="verification-method">Cada pronòstic queda segellat amb data i hora; la realitat prové de l’Observatori Fontanillas.</p>
       </section>
 
       <section id="tendencies" class="section-block" data-mobile-advanced data-portal-page="centre-dades">
@@ -656,7 +658,7 @@
 
     <footer class="shell">
       <span>© 2026 Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V22.0.1</small>
+      <small>Dades locals · Sant Celoni, Montseny · V22.0.2</small>
       <div>
         <a href="./privacitat.html">Privacitat</a>
         <a href="#top">Tornar amunt ↑</a>

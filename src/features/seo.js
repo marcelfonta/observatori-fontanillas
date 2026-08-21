@@ -6,6 +6,7 @@ const PAGES={
   'meteo-ia':{title:'Meteo IA · Pregunta pel temps',description:'Assistent meteorològic amb fonts visibles per consultar Sant Celoni, altres poblacions, dates i activitats.'},
   estacio:{title:'Estació Fontanillas · Dades meteorològiques en directe',description:'Temperatura, humitat, vent, pressió, pluja, radiació i índex UV mesurats a Sant Celoni.'},
   prediccio:{title:'Predicció del temps a Sant Celoni · 7 dies i tendència',description:'Previsió horària i diària, comparació de models i tendència ECMWF fins a sis setmanes per a Sant Celoni.'},
+  verificacio:{title:'Predicció vs realitat · Precisió meteorològica a Sant Celoni',description:'Comprovació transparent de la previsió comparada amb les observacions reals de l’estació Fontanillas.'},
   cel:{title:'Sol, Lluna i astronomia a Sant Celoni',description:'Sortida i posta del Sol, fases de la Lluna, estacions i esdeveniments del cel visibles des del Baix Montseny.'},
   avisos:{title:'Avisos meteorològics per a Sant Celoni',description:'Avisos oficials de Meteocat i AEMET per al Vallès Oriental i el Prelitoral de Barcelona.'},
   radar:{title:'Radar meteorològic i llamps a Catalunya',description:'Radar de precipitació i activitat elèctrica centrats a Sant Celoni i el Baix Montseny.'},

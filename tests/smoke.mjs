@@ -40,7 +40,7 @@ for(const metric of ['temperature','humidity','pressure','wind','rain'])if(!comp
 const comparisonFeature=await readFile(resolve(root,'src/features/stations-comparison.js'),'utf8');
 for(const feature of ['ensureLeaflet','renderMap','historySeries','compare-variable-chart'])if(!comparisonFeature.includes(feature))throw new Error(`Comparativa: falta la funció ${feature}.`);
 if(!html.includes('data-portal-page="cel"')||html.match(/id="cel-nocturn"[^>]*data-mobile-advanced/))throw new Error('La pàgina del cel no és independent o pot quedar oculta en mòbil.');
-if((html.match(/class="portal-view-header panel"/g)||[]).length!==11)throw new Error('Les onze subpàgines principals no comparteixen capçalera.');
+if((html.match(/class="portal-view-header panel"/g)||[]).length!==12)throw new Error('Les dotze subpàgines principals no comparteixen capçalera.');
 if(!html.includes('data-history-limit="5"')||!html.includes('historial-avisos.html'))throw new Error('La vista principal no limita l’historial o no enllaça amb l’arxiu complet.');
 for(const viewer of ['fire','drought','jellyfish'])if(!html.includes(`data-environment-viewer="${viewer}"`))throw new Error(`Medi Ambient: falta el visor ${viewer}.`);
 if(!html.includes('https://meduseo.com/es/')||!html.includes('https://www.medusapp.net/mapa/mapa-portada.php'))throw new Error('Medi Ambient: falten MedusApp o Meduseo.');
@@ -109,5 +109,5 @@ for(const capability of ['alertHistoryParams','alertHistoryWhere','pagination','
 for(const capability of ['alert_level_${normalizedLevel}','?page=avisos','INSERT OR IGNORE INTO alert_events'])if(!backend.includes(capability))throw new Error(`Notificacions V18: falta ${capability}.`);
 if(worker.includes("APP_SHELL = [\n  '/administracio.html'")||!worker.includes("url.pathname.startsWith('/admin/')")||!worker.includes("url.pathname === '/administracio.html'"))throw new Error('La PWA desa la pàgina o les respostes administratives quan no ho hauria de fer.');
 const robots=await readFile(resolve(root,'robots.txt'),'utf8');const sitemapText=await readFile(resolve(root,'sitemap.xml'),'utf8');if(!robots.includes('Disallow: /administracio.html')||sitemapText.includes('administracio.html'))throw new Error('Administració no està correctament exclosa dels cercadors.');
-const project=JSON.parse(await readFile(resolve(root,'project.json'),'utf8'));if(project.version!=='22.0.1')throw new Error('La versió web del projecte no és V22.0.1.');
+const project=JSON.parse(await readFile(resolve(root,'project.json'),'utf8'));if(project.version!=='22.0.2')throw new Error('La versió web del projecte no és V22.0.2.');
 console.log('Smoke test V21: correcte');
