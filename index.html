@@ -40,13 +40,13 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=21.2.0" />
-    <link rel="stylesheet" href="css/portal.css?v=21.2.0" />
+    <link rel="stylesheet" href="css/style.css?v=21.3.0" />
+    <link rel="stylesheet" href="css/portal.css?v=21.3.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=21.2.0"></script>
+    <script type="module" src="src/features/push.js?v=21.3.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=21.2.0"></script>
+    <script type="module" src="src/app.js?v=21.3.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","url":"https://meteo.fontanillas.cat/?page=centre-dades","spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -90,7 +90,7 @@
           <p id="quick-copy">Esperant les dades de l’estació per generar una lectura contextual.</p>
           <div class="mini-meter"><span id="comfort-meter"></span></div>
           <small id="comfort-label">Confort tèrmic</small>
-          <a class="quick-alert is-pending" id="quick-alert-link" href="#avisos" aria-label="Consultar els avisos meteorològics oficials">
+          <a class="quick-alert is-pending" id="quick-alert-link" href="./?page=avisos" aria-label="Obrir la pàgina d’avisos meteorològics oficials">
             <span class="quick-alert__signal" aria-hidden="true">!</span>
             <span><small id="quick-alert-kicker">Avisos oficials</small><strong id="quick-alert-title">Comprovant la situació</strong></span>
             <em id="quick-alert-action">Consultar →</em>
@@ -293,7 +293,7 @@
         </section>
       </section>
 
-      <section id="avisos" class="alerts-section section-block" aria-labelledby="alerts-title" data-portal-page="inici avisos">
+      <section id="avisos" class="alerts-section section-block" aria-labelledby="alerts-title" data-portal-page="avisos">
         <div class="section-heading alerts-heading">
           <div><p class="eyebrow">Vigilància oficial</p><h2 id="alerts-title">Avisos que poden afectar Sant Celoni</h2><p>Seguiment del Vallès Oriental i del prelitoral de Barcelona amb fonts oficials.</p></div>
           <div class="alerts-heading-actions">
@@ -352,14 +352,26 @@
 
       <section id="prediccio" class="forecast-section section-block" aria-labelledby="forecast-title" data-portal-page="inici prediccio">
         <div class="section-heading forecast-heading">
-          <div><p class="eyebrow">Centre de predicció</p><h2 id="forecast-title">Com evolucionarà el temps?</h2></div>
+          <div><p class="eyebrow">Previsió fàcil de llegir</p><h2 id="forecast-title">Què passarà avui, demà i els pròxims dies?</h2><p class="forecast-heading__intro">Una lectura ràpida del que queda d’avui i de com canviarà el temps després.</p></div>
           <div class="forecast-source"><span id="forecast-status">Actualitzant models…</span><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Dades de model: Open-Meteo ↗</a></div>
         </div>
-        <div class="forecast-overview">
-          <article class="forecast-lead panel"><span class="forecast-kicker">Lectura dels pròxims 7 dies</span><strong id="forecast-headline">Analitzant l’escenari meteorològic…</strong><p id="forecast-headline-copy">Creuant temperatura, precipitació i vent per generar una lectura ràpida.</p></article>
-          <article class="forecast-stat panel"><span>Pluja prevista</span><strong><b id="forecast-rain-total">—</b><small> mm</small></strong><p id="forecast-rain-signal">Calculant probabilitat</p></article>
-          <article class="forecast-stat panel"><span>Ratxa màxima</span><strong><b id="forecast-gust-max">—</b><small> km/h</small></strong><p id="forecast-gust-day">Calculant el dia</p></article>
-          <article class="forecast-stat panel"><span>Llum avui</span><strong><b id="forecast-daylight">—</b><small> h</small></strong><p id="forecast-sun-times">Sortida i posta del sol</p></article>
+        <div class="forecast-overview" aria-label="Resum de la previsió per períodes">
+          <article class="forecast-period panel is-today">
+            <header><span>El que queda d’avui</span><small id="forecast-today-date">Avui</small></header>
+            <div class="forecast-period__main"><span class="forecast-period__symbol" id="forecast-today-symbol" aria-hidden="true">◌</span><div><strong id="forecast-today-title">Calculant…</strong><p id="forecast-today-copy">Revisant les hores que queden fins a mitjanit.</p></div></div>
+            <div class="forecast-period__facts"><span><small>Temperatura</small><b id="forecast-today-temp">—</b></span><span><small>Pluja</small><b id="forecast-today-rain">—</b></span><span><small>Vent</small><b id="forecast-today-wind">—</b></span></div>
+          </article>
+          <article class="forecast-period panel is-tomorrow">
+            <header><span>Demà</span><small id="forecast-tomorrow-date">Pròxim dia</small></header>
+            <div class="forecast-period__main"><span class="forecast-period__symbol" id="forecast-tomorrow-symbol" aria-hidden="true">◌</span><div><strong id="forecast-tomorrow-title">Calculant…</strong><p id="forecast-tomorrow-copy">Preparant el resum de tota la jornada.</p></div></div>
+            <div class="forecast-period__facts"><span><small>Màx. / mín.</small><b id="forecast-tomorrow-temp">—</b></span><span><small>Pluja</small><b id="forecast-tomorrow-rain">—</b></span><span><small>Ratxa</small><b id="forecast-tomorrow-wind">—</b></span></div>
+          </article>
+          <article class="forecast-period panel is-next-days">
+            <header><span>Els pròxims dies</span><small>Vista ràpida</small></header>
+            <strong class="forecast-period__trend" id="forecast-headline">Analitzant la tendència…</strong>
+            <p class="forecast-period__trend-copy" id="forecast-headline-copy">Comparant temperatura, precipitació i vent.</p>
+            <div class="forecast-next-days" id="forecast-next-days" aria-label="Resum dels dies següents"><span>Preparant els pròxims dies…</span></div>
+          </article>
         </div>
         <div class="forecast-subheading forecast-subheading--controls"><div><span>Pròximes 48 hores exactes</span><small>17 punts · intervals de 3 hores · hora local</small></div><div class="forecast-controls"><button id="forecast-prev" type="button" aria-label="Veure hores anteriors">←</button><span>Desplaça o utilitza les fletxes</span><button id="forecast-next" type="button" aria-label="Veure hores posteriors">→</button></div></div>
         <div class="forecast-strip panel" id="forecast-strip" aria-live="polite">
@@ -636,7 +648,7 @@
 
     <footer class="shell">
       <span>© 2026 Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V21.2.0</small>
+      <small>Dades locals · Sant Celoni, Montseny · V21.3.0</small>
       <div>
         <a href="./privacitat.html">Privacitat</a>
         <a href="#top">Tornar amunt ↑</a>

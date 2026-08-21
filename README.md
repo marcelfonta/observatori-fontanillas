@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V21.2.0
+# Observatori Meteorològic Fontanillas — V21.3.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.2.0 incorpora un gestor editorial protegit per comprovar i provar Facebook, Instagram, Bluesky i Telegram, sense activar cap automatització ni exposar credencials.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.3.0 simplifica la portada: l’avís superior obre directament la pàgina d’avisos i la previsió explica visualment què passarà el que queda d’avui, demà i els dies següents. Conserva el gestor editorial protegit de xarxes sense activar cap automatització ni exposar credencials.
 
 ## Estat actual
 
