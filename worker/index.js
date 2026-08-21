@@ -119,6 +119,13 @@ const CREATE_SOCIAL_PUBLICATIONS = `CREATE TABLE IF NOT EXISTS social_publicatio
 )`;
 const CREATE_SOCIAL_PUBLICATIONS_INDEX = `CREATE INDEX IF NOT EXISTS idx_social_publications_draft_created
 ON social_publications(draft_id, created_at DESC)`;
+const CREATE_OAUTH_TOKENS = `CREATE TABLE IF NOT EXISTS oauth_tokens (
+  provider TEXT PRIMARY KEY,
+  ciphertext TEXT NOT NULL,
+  iv TEXT NOT NULL,
+  expires_at INTEGER,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`;
 const CREATE_MONITOR_STATE = `CREATE TABLE IF NOT EXISTS monitor_state (
   service_key TEXT PRIMARY KEY,
   status TEXT NOT NULL DEFAULT 'unknown',
@@ -161,6 +168,7 @@ let adminAuthSchemaReady = false;
 let socialDraftSchemaReady = false;
 let operationsSchemaReady = false;
 let forecastSchemaReady = false;
+let oauthTokenSchemaReady = false;
 
 // Offset (en segons) de la zona horària de Madrid respecte a UTC, calculat
 // dinàmicament perquè s'adapti automàticament a CET (UTC+1) i CEST (UTC+2).
@@ -339,6 +347,14 @@ async function ensureSocialDraftSchema(env) {
     env.DB.prepare(CREATE_SOCIAL_PUBLICATIONS_INDEX),
   ]);
   socialDraftSchemaReady = true;
+  return true;
+}
+
+async function ensureOAuthTokenSchema(env) {
+  if (!env.DB) return false;
+  if (oauthTokenSchemaReady) return true;
+  await env.DB.prepare(CREATE_OAUTH_TOKENS).run();
+  oauthTokenSchemaReady = true;
   return true;
 }
 
@@ -1429,6 +1445,57 @@ async function tiktokOAuthCallback(request, env, url) {
   return tiktokOAuthPage("TikTok autoritzat", `<p class="ok">La connexió amb @meteo_fontanillas s’ha completat.</p><p>Desa aquests dos valors com a secrets de Cloudflare. No els enviïs pel xat.</p><p><strong>TIKTOK_REFRESH_TOKEN</strong></p><code>${escapeHtml(refreshToken)}</code><p><strong>TIKTOK_OPEN_ID</strong></p><code>${escapeHtml(openId)}</code><p>Quan els hagis desat, pots tancar aquesta pestanya.</p>`);
 }
 
+function bytesToBase64(bytes) {
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function base64ToBytes(value) {
+  return Uint8Array.from(atob(value), character => character.charCodeAt(0));
+}
+
+async function oauthEncryptionKey(env) {
+  if (!env.ADMIN_TOKEN || String(env.ADMIN_TOKEN).length < 24) throw new Error('Falta la clau de protecció dels tokens OAuth.');
+  const material = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`oauth-token-store:${env.ADMIN_TOKEN}`));
+  return crypto.subtle.importKey('raw', material, { name:'AES-GCM' }, false, ['encrypt','decrypt']);
+}
+
+async function readStoredOAuthToken(provider, env) {
+  if (!(await ensureOAuthTokenSchema(env))) return null;
+  const row = await env.DB.prepare('SELECT ciphertext,iv,expires_at FROM oauth_tokens WHERE provider = ?').bind(provider).first();
+  if (!row) return null;
+  const clear = await crypto.subtle.decrypt({ name:'AES-GCM', iv:base64ToBytes(row.iv), additionalData:new TextEncoder().encode(provider) }, await oauthEncryptionKey(env), base64ToBytes(row.ciphertext));
+  return { ...JSON.parse(new TextDecoder().decode(clear)), expiresAt:Number(row.expires_at) || 0 };
+}
+
+async function storeOAuthToken(provider, value, expiresAt, env) {
+  if (!(await ensureOAuthTokenSchema(env))) throw new Error('La base de dades segura de tokens no està disponible.');
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt({ name:'AES-GCM', iv, additionalData:new TextEncoder().encode(provider) }, await oauthEncryptionKey(env), new TextEncoder().encode(JSON.stringify(value)));
+  await env.DB.prepare(`INSERT INTO oauth_tokens(provider,ciphertext,iv,expires_at,updated_at) VALUES(?,?,?,?,CURRENT_TIMESTAMP)
+    ON CONFLICT(provider) DO UPDATE SET ciphertext=excluded.ciphertext,iv=excluded.iv,expires_at=excluded.expires_at,updated_at=CURRENT_TIMESTAMP`)
+    .bind(provider, bytesToBase64(new Uint8Array(ciphertext)), bytesToBase64(iv), expiresAt || null).run();
+}
+
+async function tiktokAccessToken(env) {
+  if (!env.TIKTOK_CLIENT_KEY || !env.TIKTOK_CLIENT_SECRET || !env.TIKTOK_REFRESH_TOKEN) throw new Error('Falten les credencials de TikTok.');
+  const stored = await readStoredOAuthToken('tiktok', env).catch(() => null);
+  if (stored?.accessToken && stored.expiresAt > Math.floor(Date.now() / 1000) + 120) return stored;
+  const refreshToken = stored?.refreshToken || String(env.TIKTOK_REFRESH_TOKEN);
+  const response = await fetch('https://open.tiktokapis.com/v2/oauth/token/', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/x-www-form-urlencoded', 'Cache-Control':'no-cache' },
+    body:new URLSearchParams({ client_key:String(env.TIKTOK_CLIENT_KEY), client_secret:String(env.TIKTOK_CLIENT_SECRET), grant_type:'refresh_token', refresh_token:refreshToken }),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.error || !payload.access_token) throw new Error(cleanText(payload.error_description || payload.message || `TikTok ha respost ${response.status}.`, 500));
+  const tokens = { accessToken:String(payload.access_token), refreshToken:String(payload.refresh_token || refreshToken), openId:String(payload.open_id || env.TIKTOK_OPEN_ID || '') };
+  const expiresAt = Math.floor(Date.now() / 1000) + Math.max(60, Number(payload.expires_in) || 86400);
+  await storeOAuthToken('tiktok', tokens, expiresAt, env);
+  return { ...tokens, expiresAt };
+}
+
 function adminRequestToken(request) {
   const authorization = request.headers.get("Authorization") || "";
   return authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() || "";
@@ -1515,6 +1582,7 @@ async function adminSocialSummary(env) {
 }
 
 const SOCIAL_CHANNELS = new Set(['facebook','instagram','bluesky','telegram','threads']);
+const SOCIAL_DIAGNOSTIC_CHANNELS = new Set([...SOCIAL_CHANNELS, 'tiktok']);
 const SOCIAL_STATUSES = new Set(['draft','review','approved','partially_published','published','discarded']);
 
 function parseSocialChannels(value) {
@@ -1839,6 +1907,15 @@ async function diagnoseSocialChannel(channel, env) {
       if (!payload.id) throw new Error('Threads no ha retornat el perfil autoritzat.');
       return { channel, ok:true, label:payload.username ? `@${payload.username}` : 'Perfil de Threads identificat', detail:'Token i permisos operatius. No s’ha publicat res.' };
     }
+    if (channel === 'tiktok') {
+      const tokens = await tiktokAccessToken(env);
+      const response = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,avatar_url', { headers:{ Authorization:`Bearer ${tokens.accessToken}` } });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.error?.code !== 'ok' || !payload.data?.user?.open_id) throw new Error(cleanText(payload.error?.message || `TikTok ha respost ${response.status}.`, 500));
+      const user = payload.data.user;
+      if (env.TIKTOK_OPEN_ID && String(env.TIKTOK_OPEN_ID) !== String(user.open_id)) throw new Error('El token correspon a un compte de TikTok diferent del configurat.');
+      return { channel, ok:true, label:user.display_name || 'Compte de TikTok identificat', detail:'Refresh token, compte i permís bàsic operatius. No s’ha publicat res.' };
+    }
     throw new Error('Canal desconegut.');
   } catch (error) {
     return { channel, ok:false, label:'Cal revisar', detail:cleanText(error.message, 500) };
@@ -1850,7 +1927,7 @@ async function adminSocialDiagnostics(request, env) {
   if (auth.response) return auth.response;
   const body = await adminJsonBody(request, auth.origin);
   const requested = cleanText(body.channel || 'all', 20).toLowerCase();
-  const channels = requested === 'all' ? [...SOCIAL_CHANNELS] : SOCIAL_CHANNELS.has(requested) ? [requested] : [];
+  const channels = requested === 'all' ? [...SOCIAL_DIAGNOSTIC_CHANNELS] : SOCIAL_DIAGNOSTIC_CHANNELS.has(requested) ? [requested] : [];
   if (!channels.length) return json({ error:'Canal de diagnòstic no vàlid.' }, 400, 'no-store', auth.origin);
   const results = await Promise.all(channels.map(channel => diagnoseSocialChannel(channel, env)));
   return json({ ok:results.every(item => item.ok), readOnly:true, checkedAt:new Date().toISOString(), results }, 200, 'no-store, private', auth.origin);

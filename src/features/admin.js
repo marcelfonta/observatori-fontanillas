@@ -87,6 +87,7 @@ function renderSocialQueue(social={}){
 
 const SOCIAL_LABELS={draft:'Esborrany',review:'En revisió',approved:'Aprovat',partially_published:'Publicat parcialment',published:'Publicat',discarded:'Descartat'};
 const CHANNEL_LABELS={facebook:'Facebook',instagram:'Instagram',bluesky:'Bluesky',telegram:'Telegram',threads:'Threads'};
+const DIAGNOSTIC_CHANNEL_LABELS={...CHANNEL_LABELS,tiktok:'TikTok'};
 function socialFeedback(message,state='ok'){
   const node=element('admin-social-feedback');if(!node)return;
   node.hidden=!message;node.textContent=message||'';node.className=`admin-social-feedback is-${state}`;
@@ -101,14 +102,14 @@ async function adminApi(path,{method='GET',body}={}){
 function renderSocialDiagnostics(results=[]){
   const list=element('admin-social-diagnostic-list');if(!list)return;
   if(!results.length){list.innerHTML='<p class="admin-social-diagnostic-empty">Encara no s’han comprovat les connexions.</p>';return;}
-  list.replaceChildren(...results.map(result=>{const row=document.createElement('div');const label=document.createElement('strong');const detail=document.createElement('span');const state=document.createElement('b');row.className=`admin-social-diagnostic ${result.ok?'is-ok':'is-error'}`;label.textContent=CHANNEL_LABELS[result.channel]||result.channel;detail.textContent=result.detail||'';state.textContent=result.ok?'Connexió correcta':'Cal revisar';row.append(label,detail,state);return row;}));
+  list.replaceChildren(...results.map(result=>{const row=document.createElement('div');const label=document.createElement('strong');const detail=document.createElement('span');const state=document.createElement('b');row.className=`admin-social-diagnostic ${result.ok?'is-ok':'is-error'}`;label.textContent=DIAGNOSTIC_CHANNEL_LABELS[result.channel]||result.channel;detail.textContent=result.detail||'';state.textContent=result.ok?'Connexió correcta':'Cal revisar';row.append(label,detail,state);return row;}));
 }
 async function runSocialDiagnostics(){
   const button=element('admin-social-diagnose');if(!button)return;
-  button.disabled=true;button.textContent='Comprovant…';socialFeedback('Comprovant les cinc connexions sense publicar res…','warning');
-  try{const payload=await adminApi('/admin/social-diagnostics',{method:'POST',body:{channel:'all'}});renderSocialDiagnostics(payload.results||[]);const failed=(payload.results||[]).filter(item=>!item.ok).length;socialFeedback(failed?`${failed} connexió o connexions necessiten revisió.`:'Les cinc xarxes estan connectades. Ja pots fer publicacions de prova controlades.',failed?'error':'ok');}
+  button.disabled=true;button.textContent='Comprovant…';socialFeedback('Comprovant les sis connexions sense publicar res…','warning');
+  try{const payload=await adminApi('/admin/social-diagnostics',{method:'POST',body:{channel:'all'}});renderSocialDiagnostics(payload.results||[]);const failed=(payload.results||[]).filter(item=>!item.ok).length;socialFeedback(failed?`${failed} connexió o connexions necessiten revisió.`:'Les sis xarxes estan connectades. Ja pots fer publicacions de prova controlades.',failed?'error':'ok');}
   catch(error){renderSocialDiagnostics([]);socialFeedback(`No s’ha pogut completar el diagnòstic: ${error.message}`,'error');recordIncident('Diagnòstic social',error.message);}
-  finally{button.disabled=false;button.textContent='Comprovar les 5 connexions';}
+  finally{button.disabled=false;button.textContent='Comprovar les 6 connexions';}
 }
 function socialDraftValues(card){
   return {title:card.querySelector('[name="title"]')?.value.trim()||'',body:card.querySelector('[name="body"]')?.value.trim()||'',channels:[...card.querySelectorAll('[name="channels"]:checked')].map(input=>input.value)};
