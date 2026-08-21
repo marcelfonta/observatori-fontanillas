@@ -1,12 +1,12 @@
 import { format, setText } from '../core/dom.js';
 
 const codes = {
-  0:['☀','Cel serè'],1:['🌤','Poc ennuvolat'],2:['⛅','Intervals'],3:['☁','Cobert'],
+  0:['☀️','Cel serè'],1:['🌤️','Poc ennuvolat'],2:['⛅','Intervals'],3:['☁️','Cobert'],
   45:['≋','Boira'],48:['≋','Boira gebradora'],51:['☂','Plugim'],53:['☂','Plugim'],55:['☂','Plugim intens'],
-  56:['☂','Plugim glaçat'],57:['☂','Plugim glaçat'],61:['🌧','Pluja feble'],63:['🌧','Pluja'],65:['🌧','Pluja intensa'],
-  66:['🌧','Pluja glaçada'],67:['🌧','Pluja glaçada'],71:['❄','Neu feble'],73:['❄','Neu'],75:['❄','Nevada intensa'],
-  77:['❄','Neu granulada'],80:['🌦','Ruixats'],81:['🌦','Ruixats'],82:['⛈','Ruixats forts'],85:['🌨','Ruixat de neu'],86:['🌨','Ruixat de neu'],
-  95:['⛈','Tempesta'],96:['⛈','Tempesta i calamarsa'],99:['⛈','Tempesta forta']
+  56:['☂️','Plugim glaçat'],57:['☂️','Plugim glaçat'],61:['🌧️','Pluja feble'],63:['🌧️','Pluja'],65:['🌧️','Pluja intensa'],
+  66:['🌧️','Pluja glaçada'],67:['🌧️','Pluja glaçada'],71:['❄️','Neu feble'],73:['❄️','Neu'],75:['❄️','Nevada intensa'],
+  77:['❄️','Neu granulada'],80:['🌦️','Ruixats'],81:['🌦️','Ruixats'],82:['⛈️','Ruixats forts'],85:['🌨️','Ruixat de neu'],86:['🌨️','Ruixat de neu'],
+  95:['⛈️','Tempesta'],96:['⛈️','Tempesta i calamarsa'],99:['⛈️','Tempesta forta']
 };
 
 const dayName = date => new Intl.DateTimeFormat('ca-ES',{weekday:'short'}).format(date).replace('.','');

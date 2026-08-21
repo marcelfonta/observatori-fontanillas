@@ -17,12 +17,16 @@ export function recordReading(data) {
   const start = new Date(); start.setHours(0, 0, 0, 0);
   const today = trimmed.filter(item => item.t >= start.getTime());
   const temperatures = today.map(item => item.temperature).filter(Number.isFinite);
+  const high = extreme(today, 'temperature', 'max');
+  const low = extreme(today, 'temperature', 'min');
   return {
     history: trimmed,
     previous,
     stats: {
       maxTemperature: temperatures.length ? Math.max(...temperatures) : Number(data.temperature),
-      minTemperature: temperatures.length ? Math.min(...temperatures) : Number(data.temperature)
+      maxTemperatureTime: high?.t ?? timestamp,
+      minTemperature: temperatures.length ? Math.min(...temperatures) : Number(data.temperature),
+      minTemperatureTime: low?.t ?? timestamp
     }
   };
 }
@@ -66,7 +70,9 @@ export function summarizeRemoteHistory(data, history) {
     previous: compare,
     stats: {
       maxTemperature: high ? Number(high.temperatureMax ?? high.temperature) : Number(data.temperature),
-      minTemperature: low ? Number(low.temperatureMin ?? low.temperature) : Number(data.temperature)
+      maxTemperatureTime: high?.t ?? currentTime,
+      minTemperature: low ? Number(low.temperatureMin ?? low.temperature) : Number(data.temperature),
+      minTemperatureTime: low?.t ?? currentTime
     },
     summary: {
       high, low, gust, rain24h, rainToday, wetHours,

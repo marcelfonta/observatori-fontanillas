@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "assets" / "icons"
+AVATAR = ROOT / "assets" / "images" / "observatori-fontanillas-avatar-v21.png"
 SCALE = 4
 
 
@@ -69,12 +70,18 @@ def save(size, name, maskable=False):
     draw_symbol(size, maskable=maskable).save(OUT / name, optimize=True)
 
 
+def save_avatar(size, name):
+    with Image.open(AVATAR) as source:
+        source.convert("RGB").resize((size, size), Image.Resampling.LANCZOS).save(OUT / name, optimize=True)
+
+
 OUT.mkdir(parents=True, exist_ok=True)
 save(16, "favicon-16.png")
 save(32, "favicon-32.png")
-save(180, "apple-touch-icon.png")
-save(192, "icon-192.png")
-save(512, "icon-512.png")
+save_avatar(180, "apple-touch-icon.png")
+save_avatar(180, "apple-touch-icon-v21.png")
+save_avatar(192, "icon-192.png")
+save_avatar(512, "icon-512.png")
 save(192, "icon-maskable-192.png", maskable=True)
 save(512, "icon-maskable-512.png", maskable=True)
 print("Paquet d’icones V21 generat.")

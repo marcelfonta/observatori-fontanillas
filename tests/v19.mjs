@@ -56,6 +56,6 @@ assert.match(config,/searchConsoleSitemapSubmitted: true/);
 assert.match(pushGuide,/`\/OneSignalSDKWorker\.js`/);
 assert.doesNotMatch(pushGuide,/push\/onesignal\/OneSignalSDKWorker/);
 assert.match(roadmap,/V19\.1 — Activacions externes i observabilitat local — Completat/);
-assert.match(sitemap,/page=aprendre/);
+assert.doesNotMatch(sitemap,/\?page=/);
 assert.match(sitemap,/privacitat\.html/);
 console.log('Test V19 de disseny, privacitat i publicació: correcte');
