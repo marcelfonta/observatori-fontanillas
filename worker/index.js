@@ -1729,7 +1729,11 @@ async function socialCard(request, env, draftId, url) {
   if (!(await secureTokenMatch(String(url.searchParams.get('sig') || ''), expected))) return json({ error:'Signatura no vàlida.' }, 403);
   const draft = await findSocialDraft(env, draftId);
   if (!draft) return json({ error:'Targeta no trobada.' }, 404);
-  const rendered = await env.BROWSER.quickAction('screenshot', { html:socialCardHtml(draft), viewport:{ width:1080,height:1350 }, screenshotOptions:{ type:'png', fullPage:false } });
+  const rendered = await env.BROWSER.quickAction('screenshot', { html:socialCardHtml(draft), viewport:{ width:1080,height:1350 } });
+  if (!rendered.ok) {
+    const details = cleanText(await rendered.clone().text().catch(() => ''), 500);
+    console.error('Social card rendering error', JSON.stringify({ draftId, status:rendered.status, details }));
+  }
   const headers = new Headers(rendered.headers);
   headers.set('Content-Type','image/png'); headers.set('Cache-Control','public, max-age=31536000, immutable');
   headers.set('X-Content-Type-Options','nosniff');
@@ -1954,15 +1958,23 @@ async function publishBluesky(draft, env) {
   const session = await sessionResponse.json().catch(() => ({}));
   if (!sessionResponse.ok || !session.accessJwt || !session.did) throw Object.assign(new Error(session.message || 'Bluesky no ha pogut iniciar la sessió.'), { status:502, responseCode:sessionResponse.status });
   const imageResponse = await fetch(await socialCardUrl(draft, env));
-  if (!imageResponse.ok) throw Object.assign(new Error('No s’ha pogut generar la targeta amb dades reals.'), { status:502, responseCode:imageResponse.status });
-  const uploadResponse = await fetch(`${service}/xrpc/com.atproto.repo.uploadBlob`, {
-    method:'POST', headers:{ 'Authorization':`Bearer ${session.accessJwt}`, 'Content-Type':'image/png' }, body:await imageResponse.arrayBuffer(),
-  });
-  const uploaded = await uploadResponse.json().catch(() => ({}));
-  if (!uploadResponse.ok || !uploaded.blob) throw Object.assign(new Error(uploaded.message || 'Bluesky no ha pogut rebre la imatge.'), { status:502, responseCode:uploadResponse.status });
+  let imageEmbed = null;
+  if (imageResponse.ok) {
+    const uploadResponse = await fetch(`${service}/xrpc/com.atproto.repo.uploadBlob`, {
+      method:'POST', headers:{ 'Authorization':`Bearer ${session.accessJwt}`, 'Content-Type':'image/png' }, body:await imageResponse.arrayBuffer(),
+    });
+    const uploaded = await uploadResponse.json().catch(() => ({}));
+    if (!uploadResponse.ok || !uploaded.blob) throw Object.assign(new Error(uploaded.message || 'Bluesky no ha pogut rebre la imatge.'), { status:502, responseCode:uploadResponse.status });
+    imageEmbed = { '$type':'app.bsky.embed.images', images:[{ alt:'Dades meteorològiques reals de l’Observatori Fontanillas', image:uploaded.blob }] };
+  } else {
+    const details = cleanText(await imageResponse.text().catch(() => ''), 500);
+    console.error('Bluesky card fallback', JSON.stringify({ draftId:draft.id, status:imageResponse.status, details }));
+  }
+  const post = { '$type':'app.bsky.feed.post', text:socialPostText(draft, 300), createdAt:new Date().toISOString(), langs:['ca'] };
+  if (imageEmbed) post.embed = imageEmbed;
   const recordResponse = await fetch(`${service}/xrpc/com.atproto.repo.createRecord`, {
     method:'POST', headers:{ 'Authorization':`Bearer ${session.accessJwt}`, 'Content-Type':'application/json' },
-    body:JSON.stringify({ repo:session.did, collection:'app.bsky.feed.post', record:{ '$type':'app.bsky.feed.post', text:socialPostText(draft, 300), createdAt:new Date().toISOString(), langs:['ca'], embed:{ '$type':'app.bsky.embed.images', images:[{ alt:'Dades meteorològiques reals de l’Observatori Fontanillas', image:uploaded.blob }] } } }),
+    body:JSON.stringify({ repo:session.did, collection:'app.bsky.feed.post', record:post }),
   });
   const record = await recordResponse.json().catch(() => ({}));
   if (!recordResponse.ok || !record.uri) throw Object.assign(new Error(record.message || 'Bluesky no ha pogut crear la publicació.'), { status:502, responseCode:recordResponse.status });
