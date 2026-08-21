@@ -33,20 +33,20 @@
     <meta name="twitter:image:alt" content="Observatori Meteorològic Fontanillas davant del Montseny" />
     <link rel="icon" href="assets/icons/favicon-16.png" sizes="16x16" type="image/png" />
     <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-v21.png?v=21.5.0" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-v21.png?v=22.0.0" />
     <link rel="manifest" href="site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=21.5.0" />
-    <link rel="stylesheet" href="css/portal.css?v=21.5.0" />
+    <link rel="stylesheet" href="css/style.css?v=22.0.0" />
+    <link rel="stylesheet" href="css/portal.css?v=22.0.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=21.5.0"></script>
+    <script type="module" src="src/features/push.js?v=22.0.0"></script>
     <script type="module" src="src/features/pwa.js?v=7.0-stable"></script>
-    <script type="module" src="src/app.js?v=21.5.0"></script>
+    <script type="module" src="src/app.js?v=22.0.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","url":"https://meteo.fontanillas.cat/","spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -379,6 +379,14 @@
         </div>
         <div class="forecast-subheading"><div><span>Previsió de 7 dies</span><small>Màximes, mínimes, pluja, vent i hores de llum</small></div></div>
         <div class="daily-forecast" id="daily-forecast" aria-live="polite"><div class="forecast-loading">Preparant la previsió diària…</div></div>
+        <section class="forecast-verification panel" id="forecast-verification" aria-labelledby="forecast-verification-title">
+          <header><div><p class="eyebrow">Predicció vs realitat</p><h3 id="forecast-verification-title">Quina precisió té la previsió?</h3><p>Desem la previsió abans que passi el dia i després la contrastem amb les lectures reals de l’estació.</p></div><span class="tag" id="verification-status">Començant l’arxiu</span></header>
+          <div class="verification-hero" id="verification-hero"><div class="verification-orbit"><strong>0</strong><span>dies verificats</span></div><div><h4>La comparació comença avui</h4><p>No inventem dades del passat. Quan hi hagi dies complets, aquí veuràs els errors reals de temperatura i vent i l’encert de pluja.</p></div></div>
+          <div class="verification-metrics" id="verification-metrics" hidden></div>
+          <div class="verification-horizons" id="verification-horizons" hidden></div>
+          <div class="verification-detail" id="verification-detail" hidden></div>
+          <p class="verification-method" id="verification-method">Cada pronòstic queda segellat amb data i hora; la realitat prové de l’Observatori Fontanillas.</p>
+        </section>
         <section id="fonts" class="official-forecast panel" aria-labelledby="official-forecast-title" data-mobile-advanced>
           <header><div><p class="eyebrow">Cinc fonts contrastades</p><h3 id="official-forecast-title">Cinc mirades sobre la previsió</h3><p>Meteocat · AEMET · eltiempo.es · Yr · Meteoblue, sense repetir la previsió Open‑Meteo que ja tens just a sobre.</p></div><span class="tag" id="four-look-status">5 fonts fiables</span></header>
           <div class="source-viewer__toolbar">
@@ -648,7 +656,7 @@
 
     <footer class="shell">
       <span>© 2026 Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V21.5.0</small>
+      <small>Dades locals · Sant Celoni, Montseny · V22.0.0</small>
       <div>
         <a href="./privacitat.html">Privacitat</a>
         <a href="#top">Tornar amunt ↑</a>

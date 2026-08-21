@@ -69,8 +69,8 @@ function cloudflareAnalyticsDetected(){const script=Boolean(document.querySelect
 function renderIntegrations(integrations={}){const analytics=analyticsServiceState({googleMeasurementId:CONFIG.analyticsMeasurementId,cloudflareBeacon:cloudflareAnalyticsDetected(),cloudflareEnabled:Boolean(CONFIG.cloudflareWebAnalyticsEnabled)});const socialCount=[integrations.facebook,integrations.instagram,integrations.bluesky,integrations.telegram].filter(Boolean).length;const socialState=socialCount===4?{label:'4 canals preparats',className:'is-ok'}:socialCount?{label:`${socialCount}/4 canals`,className:'is-warning'}:{label:'No configurat',className:'is-muted'};const states={weatherUnderground:serviceState(Boolean(integrations.weatherUnderground)),database:serviceState(Boolean(integrations.database)),contact:serviceState(Boolean(integrations.contact)),pushClient:serviceState(Boolean(CONFIG.oneSignalAppId)),pushWorker:serviceState(Boolean(integrations.push)),admin:serviceState(Boolean(integrations.admin)),analytics,social:socialState};document.querySelectorAll('#admin-integrations > [data-integration]').forEach(row=>{const state=states[row.dataset.integration]||serviceState(false);const badge=row.querySelector('b');badge.textContent=state.label;badge.className=state.className;});const required=Boolean(integrations.weatherUnderground&&integrations.database&&integrations.admin);setPill('admin-integrations-pill',required?'Principals actives':'Configuració incompleta',required?'is-ok':'is-warning');return analytics;}
 
 function renderSocialQueue(social={}){
-  const draftMode=social.mode!=='publish';
-  text('admin-social-mode',draftMode?'Només esborranys':'Publicació');
+  const automatic=social.mode==='automatic';
+  text('admin-social-mode',automatic?'Automàtic · 08:00':'Revisió manual');
   text('admin-social-facebook',social.channelCredentials?.facebook?'Configurada':'No configurada');
   text('admin-social-instagram',social.channelCredentials?.instagram?'Configurada':'No configurada');
   text('admin-social-bluesky',social.channelCredentials?.bluesky?'Configurada':'No configurada');
@@ -79,7 +79,7 @@ function renderSocialQueue(social={}){
   text('admin-social-approved',formatNumber(social.approved??0));
   text('admin-social-published',formatNumber(social.published??0));
   text('admin-social-last',formatDate(social.latestCreated));
-  setPill('admin-social-pill',draftMode?'Mode segur':'Publicació activa',draftMode?'is-ok':'is-warning');
+  setPill('admin-social-pill',automatic?'Automàtic actiu':'Revisió manual',automatic?'is-ok':'is-warning');
   socialCredentials={...socialCredentials,...(social.channelCredentials||{})};
 }
 
@@ -193,7 +193,7 @@ async function renderPublicationReadiness(){
 async function renderDashboard(payload,requestLatency){
   const analytics=renderIntegrations(payload.integrations);
   renderSocialQueue(payload.social);
-  latestDiagnostic={...payload,client:{webVersion:'21.5.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:'manual-review'},incidents:[...incidents]};
+  latestDiagnostic={...payload,client:{webVersion:'22.0.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
   const overall=overallState(payload);text('admin-overall-status',overall.label);text('admin-last-update',`Actualitzat ${formatDate(payload.generatedAt)} · ${requestLatency} ms`);
   setCard('worker',payload.ok?'is-ok':'is-error',payload.ok?'Operatiu':'Error',`V${payload.worker?.version||'—'} · ${payload.latencyMs??'—'} ms`);
   const stationOk=Boolean(payload.station?.ok);setCard('station',stationOk?'is-ok':'is-warning',stationOk?'Al dia':'Cal revisar',payload.station?.ageMinutes===null?'Antiguitat desconeguda':`${payload.station.ageMinutes} min d’antiguitat`);

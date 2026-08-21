@@ -56,15 +56,15 @@ global.fetch=originalFetch;
 assert.equal(authorized.status,200);
 assert.match(authorized.headers.get('Cache-Control'),/no-store/);
 const adminPayload=await authorized.json();
-assert.equal(adminPayload.worker.version,'21.5.0');
+assert.equal(adminPayload.worker.version,'22.0.0');
 assert.equal(adminPayload.station.ok,true);
 assert.equal(adminPayload.database.observations,1200);
 assert.equal(adminPayload.integrations.database,true);
 assert.equal(adminPayload.integrations.socialToken,true);
 assert.equal(adminPayload.integrations.bluesky,true);
 assert.equal(adminPayload.integrations.telegram,true);
-assert.equal(adminPayload.social.mode,'draft');
-assert.deepEqual(adminPayload.social.channelCredentials,{meta:true,facebook:true,instagram:true,bluesky:true,telegram:true});
+assert.equal(adminPayload.social.mode,'automatic');
+assert.deepEqual(Object.fromEntries(['meta','facebook','instagram','bluesky','telegram'].map(key=>[key,adminPayload.social.channelCredentials[key]])),{meta:true,facebook:true,instagram:true,bluesky:true,telegram:true});
 assert.equal(adminPayload.social.pendingDrafts,2);
 assert.equal(adminPayload.social.recent.length,1);
 

@@ -24,4 +24,4 @@ assert.ok(meteoAI.includes('answerMeteoQuestionAdvanced')&&meteoAI.includes('nee
 assert.ok(weatherApi.includes('fetchAdvancedMeteoAI'));
 assert.ok(app.includes("label.textContent='Dades de suport'"));
 
-console.log('Test V21.5.0: correcte');
+console.log('Test V22.0.0: correcte');

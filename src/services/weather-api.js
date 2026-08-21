@@ -91,6 +91,12 @@ export async function fetchModelComparison() {
   return { ecmwf, gfs, icon };
 }
 
+export async function fetchForecastVerification(days = 45) {
+  const response=await request(`${CONFIG.apiUrl}/forecast-verification?days=${Math.min(180,Math.max(7,Number(days)||45))}`,{headers:{Accept:'application/json'},cache:'no-store'},15000);
+  if(!response.ok)throw new Error(`Forecast verification API ${response.status}`);
+  return response.json();
+}
+
 export async function fetchStationHistory(days = 31, resolution = 'auto') {
   const response = await request(`${CONFIG.apiUrl}/history?days=${days}&resolution=${resolution}`, { headers: { Accept: 'application/json' }, cache: 'no-store' },18000);
   if (!response.ok) throw new Error(`History API ${response.status}`);

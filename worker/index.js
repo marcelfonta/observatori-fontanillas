@@ -1,8 +1,10 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "21.5.0";
+const WORKER_VERSION = "22.0.0";
 const WORKER_BUILT = "2026-08-21";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
+const STATION_LATITUDE = 41.6906;
+const STATION_LONGITUDE = 2.4890;
 const WEBCAM_URL = "https://www.alvar.cat/WebCam/Imatge-Camera.jpg";
 const BACKGROUND_URL = "https://santceloni.cat/ARXIUS/agenda/2011/made_in_montseny.jpg";
 const DEFAULT_CONTACT_FROM = "Observatori Fontanillas <formulari@fontanillas.cat>";
@@ -129,12 +131,32 @@ const CREATE_AI_RATE_LIMIT = `CREATE TABLE IF NOT EXISTS ai_rate_limit (
 )`;
 const CREATE_AI_RATE_LIMIT_INDEX = `CREATE INDEX IF NOT EXISTS idx_ai_rate_limit_time
 ON ai_rate_limit(asked_at)`;
+const CREATE_FORECAST_SNAPSHOTS = `CREATE TABLE IF NOT EXISTS forecast_snapshots (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  snapshot_key TEXT NOT NULL UNIQUE,
+  issued_at TEXT NOT NULL,
+  issued_epoch INTEGER NOT NULL,
+  target_date TEXT NOT NULL,
+  horizon_day INTEGER NOT NULL,
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  weather_code INTEGER,
+  temperature_max REAL,
+  temperature_min REAL,
+  precipitation_probability REAL,
+  precipitation_sum REAL,
+  wind_gust_max REAL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`;
+const CREATE_FORECAST_SNAPSHOTS_INDEX = `CREATE INDEX IF NOT EXISTS idx_forecast_target_horizon
+ON forecast_snapshots(target_date DESC,horizon_day,issued_epoch DESC)`;
 let schemaReady = false;
 let contactSchemaReady = false;
 let alertSchemaReady = false;
 let adminAuthSchemaReady = false;
 let socialDraftSchemaReady = false;
 let operationsSchemaReady = false;
+let forecastSchemaReady = false;
 
 // Offset (en segons) de la zona horària de Madrid respecte a UTC, calculat
 // dinàmicament perquè s'adapti automàticament a CET (UTC+1) i CEST (UTC+2).
@@ -325,6 +347,17 @@ async function ensureOperationsSchema(env) {
     env.DB.prepare(CREATE_AI_RATE_LIMIT_INDEX),
   ]);
   operationsSchemaReady = true;
+  return true;
+}
+
+async function ensureForecastSchema(env) {
+  if (!env.DB) return false;
+  if (forecastSchemaReady) return true;
+  await env.DB.batch([
+    env.DB.prepare(CREATE_FORECAST_SNAPSHOTS),
+    env.DB.prepare(CREATE_FORECAST_SNAPSHOTS_INDEX),
+  ]);
+  forecastSchemaReady = true;
   return true;
 }
 
@@ -737,13 +770,129 @@ async function captureObservation(env) {
   return { observation, storage };
 }
 
+async function captureForecastSnapshot(env) {
+  if (!(await ensureForecastSchema(env))) return { stored:false, reason:"D1 no configurat" };
+  const issued = new Date();
+  const issuedAt = issued.toISOString();
+  const issuedEpoch = Math.floor(issued.getTime() / 1000);
+  const bucket = `${issuedAt.slice(0,10)}T${String(Math.floor(issued.getUTCHours() / 6) * 6).padStart(2,"0")}`;
+  const existing = await env.DB.prepare("SELECT 1 AS found FROM forecast_snapshots WHERE snapshot_key LIKE ? LIMIT 1").bind(`open-meteo:${bucket}:%`).first();
+  if (existing?.found) return { stored:false, reason:"bucket_exists", bucket };
+  const params = new URLSearchParams({
+    latitude:String(STATION_LATITUDE), longitude:String(STATION_LONGITUDE),
+    daily:"weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max",
+    timezone:TIME_ZONE, forecast_days:"7",
+  });
+  const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, { headers:{ Accept:"application/json" } });
+  if (!response.ok) throw new Error(`Open-Meteo snapshot ${response.status}`);
+  const payload = await response.json();
+  const daily = payload.daily || {};
+  if (!Array.isArray(daily.time) || !daily.time.length) throw new Error("Open-Meteo no ha retornat la previsió diària");
+  const statements = daily.time.slice(0, 7).map((targetDate, index) => env.DB.prepare(`INSERT OR IGNORE INTO forecast_snapshots
+    (snapshot_key,issued_at,issued_epoch,target_date,horizon_day,provider,model,weather_code,
+     temperature_max,temperature_min,precipitation_probability,precipitation_sum,wind_gust_max)
+    VALUES (?,?,?,?,?,'Open-Meteo','best_match',?,?,?,?,?,?)`).bind(
+      `open-meteo:${bucket}:${targetDate}`, issuedAt, issuedEpoch, targetDate, index,
+      finite(daily.weather_code?.[index]), finite(daily.temperature_2m_max?.[index]),
+      finite(daily.temperature_2m_min?.[index]), finite(daily.precipitation_probability_max?.[index]),
+      finite(daily.precipitation_sum?.[index]), finite(daily.wind_gusts_10m_max?.[index])
+    ));
+  const results = await env.DB.batch(statements);
+  return { stored:true, inserted:results.reduce((sum,item)=>sum+(Number(item?.meta?.changes)||0),0), issuedAt, bucket };
+}
+
+function verificationMean(values) {
+  const valid = values.filter(Number.isFinite);
+  return valid.length ? valid.reduce((sum,item)=>sum+item,0) / valid.length : null;
+}
+
+function verificationRound(value, digits = 1) {
+  return Number.isFinite(value) ? Number(value.toFixed(digits)) : null;
+}
+
+async function forecastVerification(url, env) {
+  if (!(await ensureForecastSchema(env)) || !(await ensureSchema(env))) return json({ ok:false, status:"collecting", sampleDays:0, message:"Encara no hi ha dades disponibles." });
+  const requestedDays = Math.min(180, Math.max(7, Number(url.searchParams.get("days")) || 45));
+  const cutoff = new Date(Date.now() - requestedDays * 86400000).toISOString().slice(0, 10);
+  const query = await env.DB.prepare(`WITH daily_observed AS (
+      SELECT local_date AS target_date, MAX(temperature) AS observed_max, MIN(temperature) AS observed_min,
+        SUM(COALESCE(rain_delta,0)) AS observed_rain, MAX(wind_gust) AS observed_gust,
+        COUNT(*) AS observed_samples
+      FROM observations WHERE local_date >= ? GROUP BY local_date
+    ), ranked AS (
+      SELECT f.*, ROW_NUMBER() OVER (PARTITION BY f.target_date,f.horizon_day ORDER BY f.issued_epoch DESC) AS position
+      FROM forecast_snapshots f WHERE f.target_date >= ? AND f.target_date < ?
+    )
+    SELECT r.target_date,r.horizon_day,r.issued_at,r.temperature_max,r.temperature_min,
+      r.precipitation_probability,r.precipitation_sum,r.wind_gust_max,r.weather_code,
+      o.observed_max,o.observed_min,o.observed_rain,o.observed_gust,o.observed_samples
+    FROM ranked r JOIN daily_observed o ON o.target_date=r.target_date
+    WHERE r.position=1 AND o.observed_samples>=72 ORDER BY r.target_date DESC,r.horizon_day ASC`)
+    .bind(cutoff, cutoff, new Intl.DateTimeFormat("en-CA", { timeZone:TIME_ZONE }).format(new Date())).all();
+  const rows = (query?.results || []).map(row => ({ ...row,
+    temperatureError:verificationMean([
+      Number(row.temperature_max)-Number(row.observed_max),
+      Number(row.temperature_min)-Number(row.observed_min),
+    ]),
+    temperatureAbsoluteError:verificationMean([
+      Math.abs(Number(row.temperature_max)-Number(row.observed_max)),
+      Math.abs(Number(row.temperature_min)-Number(row.observed_min)),
+    ]),
+    rainCorrect:(Number(row.precipitation_probability)>=40 || Number(row.precipitation_sum)>=0.2) === (Number(row.observed_rain)>=0.2),
+    windError:Math.abs(Number(row.wind_gust_max)-Number(row.observed_gust)),
+  }));
+  const horizonDefinitions = [
+    { key:"today", label:"Avui", min:0, max:0 },
+    { key:"tomorrow", label:"Demà", min:1, max:1 },
+    { key:"two-three", label:"2–3 dies", min:2, max:3 },
+    { key:"four-seven", label:"4–7 dies", min:4, max:6 },
+  ];
+  const summarize = subset => ({
+    samples:subset.length,
+    temperatureMae:verificationRound(verificationMean(subset.map(row=>row.temperatureAbsoluteError))),
+    temperatureBias:verificationRound(verificationMean(subset.map(row=>row.temperatureError))),
+    rainAccuracy:verificationRound(verificationMean(subset.map(row=>row.rainCorrect?100:0)),0),
+    windMae:verificationRound(verificationMean(subset.map(row=>row.windError))),
+  });
+  const summary = summarize(rows);
+  const horizons = horizonDefinitions.map(definition => ({ ...definition, ...summarize(rows.filter(row=>Number(row.horizon_day)>=definition.min&&Number(row.horizon_day)<=definition.max)) }));
+  const detail = rows.filter(row=>Number(row.horizon_day)===1).slice(0,14).map(row=>({
+    date:row.target_date, issuedAt:row.issued_at,
+    forecast:{ max:row.temperature_max,min:row.temperature_min,rain:row.precipitation_sum,rainProbability:row.precipitation_probability,gust:row.wind_gust_max,weatherCode:row.weather_code },
+    observed:{ max:row.observed_max,min:row.observed_min,rain:verificationRound(Number(row.observed_rain)),gust:row.observed_gust },
+  }));
+  const firstSnapshot = await env.DB.prepare("SELECT MIN(issued_at) AS firstIssued,COUNT(*) AS total FROM forecast_snapshots").first();
+  const status = rows.length >= 7 ? "ready" : "collecting";
+  return json({ ok:true,status,requestedDays,generatedAt:new Date().toISOString(),firstIssued:firstSnapshot?.firstIssued||null,storedForecasts:Number(firstSnapshot?.total)||0,sampleDays:new Set(rows.map(row=>row.target_date)).size,summary,horizons,detail,method:{ provider:"Open-Meteo · best_match",observation:"Observatori Fontanillas · D1",minimumObservedSamples:72,note:"Cada predicció es desa abans del dia verificat; no es reconstrueixen pronòstics passats." } }, 200, "public, max-age=900");
+}
+
 function socialNumber(value, digits = 1) {
   const number = finite(value);
   return number === null ? null : number.toFixed(digits).replace('.', ',');
 }
 
-async function createDailySocialDraft(observation, env) {
-  if (!(await ensureSocialDraftSchema(env)) || !observation) return { created:false, reason:'storage_disabled' };
+function localClockParts(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone:TIME_ZONE, hour:'2-digit', minute:'2-digit', hourCycle:'h23' }).formatToParts(date);
+  return Object.fromEntries(parts.map(part=>[part.type,part.value]));
+}
+
+function activeSocialSlot(env, date = new Date()) {
+  const schedules = String(env.SOCIAL_AUTO_TIMES || '08:00').split(',').map(value=>value.trim()).filter(value=>/^\d{2}:\d{2}$/.test(value));
+  const parts = localClockParts(date);
+  const current = Number(parts.hour) * 60 + Number(parts.minute);
+  return schedules.find(value => {
+    const [hour,minute] = value.split(':').map(Number);
+    const scheduled = hour * 60 + minute;
+    return current >= scheduled && current < scheduled + STORAGE_INTERVAL_MINUTES;
+  }) || null;
+}
+
+function socialAutomationEnabled(env) {
+  return String(env.SOCIAL_AUTOMATION_ENABLED || 'true').toLowerCase() !== 'false';
+}
+
+async function createDailySocialDraft(observation, env, slot = null) {
+  if (!(await ensureSocialDraftSchema(env)) || !observation || !slot) return { created:false, reason:slot?'storage_disabled':'outside_schedule' };
   const localDate = String(observation.updated || '').slice(0, 10) || new Intl.DateTimeFormat('en-CA', { timeZone:TIME_ZONE }).format(new Date());
   const temperature = socialNumber(observation.temperature);
   const humidity = socialNumber(observation.humidity, 0);
@@ -755,14 +904,17 @@ async function createDailySocialDraft(observation, env) {
     wind === null ? null : `vent ${wind} km/h`,
     rain === null ? null : `pluja avui ${rain} mm`,
   ].filter(Boolean);
-  const title = `Dades de Sant Celoni · ${localDate}`;
-  const body = `Bon dia des de l’Observatori Fontanillas. Lectura de l’estació: ${facts.join(' · ')}. Consulta les dades en directe i les fonts a meteo.fontanillas.cat.`;
-  const payload = JSON.stringify({ localDate, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), humidity:finite(observation.humidity), windSpeed:finite(observation.windSpeed), rainToday:finite(observation.rainToday) });
+  const title = `El temps a Sant Celoni · ${localDate}`;
+  const body = `Bon dia des de l’Observatori Fontanillas. Dades reals de les ${String(observation.updated || '').slice(11,16)}: ${facts.join(' · ')}. Consulta l’evolució i la predicció a meteo.fontanillas.cat.`;
+  const payload = JSON.stringify({ localDate, slot, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv) });
+  const initialStatus = socialAutomationEnabled(env) ? 'approved' : 'draft';
   const result = await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
     (dedupe_key, kind, status, channels, title, body, source_url, payload)
-    VALUES (?, 'daily_observation', 'draft', ?, ?, ?, ?, ?)`)
-    .bind(`daily:${localDate}`, JSON.stringify(['facebook','instagram','bluesky','telegram']), title, body, 'https://meteo.fontanillas.cat/', payload).run();
-  return { created:Boolean(result?.meta?.changes), localDate };
+    VALUES (?, 'daily_observation', ?, ?, ?, ?, ?, ?)`)
+    .bind(`daily:${localDate}:${slot}`, initialStatus, JSON.stringify(['facebook','instagram','bluesky','telegram']), title, body, 'https://meteo.fontanillas.cat/', payload).run();
+  const created = Boolean(result?.meta?.changes);
+  const draft = await env.DB.prepare("SELECT * FROM social_drafts WHERE dedupe_key = ?").bind(`daily:${localDate}:${slot}`).first();
+  return { created, localDate, slot, draft };
 }
 
 function mapHistoryObservation(obs) {
@@ -1185,7 +1337,7 @@ async function adminDatabaseSummary(env) {
 }
 
 async function adminSocialSummary(env) {
-  const mode = 'draft';
+  const mode = socialAutomationEnabled(env) ? 'automatic' : 'draft';
   const tokenConfigured = Boolean(env.META_SYSTEM_USER_TOKEN);
   const channelCredentials = {
     meta:tokenConfigured,
@@ -1193,6 +1345,11 @@ async function adminSocialSummary(env) {
     instagram:tokenConfigured,
     bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
     telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
+    threads:Boolean(env.THREADS_ACCESS_TOKEN && env.THREADS_USER_ID),
+    x:Boolean(env.X_ACCESS_TOKEN),
+    tiktok:Boolean(env.TIKTOK_ACCESS_TOKEN && env.TIKTOK_OPEN_ID),
+    youtube:Boolean(env.YOUTUBE_REFRESH_TOKEN && env.YOUTUBE_CLIENT_ID && env.YOUTUBE_CLIENT_SECRET),
+    whatsapp:false,
   };
   if (!(await ensureSocialDraftSchema(env))) return { enabled:false, mode, tokenConfigured, channelCredentials, pendingDrafts:0, approved:0, published:0, latestCreated:null, recent:[] };
   const [counts, recentResult] = await Promise.all([
@@ -1275,7 +1432,7 @@ async function adminSocialDrafts(request, env, url) {
     : env.DB.prepare(`SELECT id,dedupe_key,kind,status,channels,title,body,source_url,payload,scheduled_for,created_at FROM social_drafts ORDER BY created_at DESC LIMIT ? OFFSET ?`).bind(limit, offset);
   const result = await statement.all();
   const drafts = await Promise.all((result?.results || []).map(async row => socialDraftPayload(row, await socialPublicationsForDraft(env, row.id))));
-  return json({ ok:true, drafts, limit, offset, publicationMode:'manual-confirmation' }, 200, 'no-store, private', auth.origin);
+  return json({ ok:true, drafts, limit, offset, publicationMode:socialAutomationEnabled(env)?'automatic':'manual-confirmation', schedule:String(env.SOCIAL_AUTO_TIMES || '08:00') }, 200, 'no-store, private', auth.origin);
 }
 
 async function findSocialDraft(env, draftId) {
@@ -1314,6 +1471,61 @@ function socialPostText(draft, maxLength = 3900) {
   const text = parts.join('\n\n');
   const graphemes = Array.from(text);
   return graphemes.length <= maxLength ? text : `${graphemes.slice(0, Math.max(1, maxLength - 1)).join('')}…`;
+}
+
+async function socialCardSignature(draftId, env) {
+  const secret = String(env.ADMIN_TOKEN || '');
+  if (secret.length < 24) throw new Error('Falta una clau segura per signar la targeta social.');
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name:'HMAC', hash:'SHA-256' }, false, ['sign']);
+  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`social-card:${draftId}`));
+  return [...new Uint8Array(signature)].map(byte=>byte.toString(16).padStart(2,'0')).join('').slice(0,32);
+}
+
+async function socialCardUrl(draft, env) {
+  const signature = await socialCardSignature(draft.id, env);
+  return `https://fonta-meteo.marcelfonta.workers.dev/social-card/${draft.id}.png?sig=${signature}`;
+}
+
+function socialCardHtml(draft) {
+  let data = {};
+  try { data = JSON.parse(draft.payload || '{}'); } catch {}
+  const display = (value, suffix = '', digits = 1) => finite(value) === null ? '—' : `${Number(value).toFixed(digits).replace('.',',')}${suffix}`;
+  const time = cleanText(String(data.observationUpdated || '').slice(11,16), 10) || '—';
+  const date = cleanText(data.localDate || '', 20);
+  const temperature = display(data.temperature, '°', 1);
+  const feeling = display(data.feelsLike, '°', 1);
+  const humidity = display(data.humidity, '%', 0);
+  const wind = display(data.windSpeed, ' km/h', 1);
+  const gust = display(data.windGust, ' km/h', 1);
+  const rain = display(data.rainToday, ' mm', 1);
+  const pressure = display(data.pressure, ' hPa', 1);
+  return `<!doctype html><html><head><meta charset="utf-8"><style>
+    *{box-sizing:border-box}html,body{margin:0;width:1080px;height:1350px;overflow:hidden;font-family:Arial,sans-serif;background:#061713;color:#f5faf7}
+    body{padding:64px;background:radial-gradient(circle at 84% 10%,#286d55 0,rgba(40,109,85,.18) 28%,transparent 44%),linear-gradient(145deg,#061713,#0b241c 62%,#102e24)}
+    .top{display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:20px}.mark{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#bdebd0,#66b895);border:4px solid rgba(255,255,255,.72);color:#0b3125;font-size:44px;font-weight:900}.brand b{font-size:38px}.brand span{display:block;color:#a9beb5;font-size:21px;margin-top:5px}.live{padding:15px 22px;border:1px solid #5e8d79;border-radius:999px;color:#b9f0ce;font-weight:800;letter-spacing:2px;font-size:18px}
+    .eyebrow{margin:94px 0 20px;color:#8fe0ad;font-weight:800;letter-spacing:4px;font-size:22px;text-transform:uppercase}h1{margin:0;font-size:70px;line-height:1.02;letter-spacing:-3px;max-width:850px}.stamp{margin-top:22px;color:#b2c5bc;font-size:26px}.hero{margin-top:62px;display:flex;align-items:flex-end;justify-content:space-between;padding:42px;border-radius:34px;border:1px solid #416d5b;background:rgba(12,43,33,.84)}.hero small{display:block;color:#9db5aa;font-size:23px;margin-bottom:12px}.temp{font-size:138px;line-height:.86;font-weight:900;letter-spacing:-8px}.feels{text-align:right;font-size:28px;color:#cfe0d8}.feels b{display:block;color:#fff;font-size:42px;margin-top:10px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.metric{padding:28px 30px;border-radius:25px;border:1px solid #315c4b;background:rgba(5,28,22,.74)}.metric span{display:block;color:#91aa9f;font-size:21px;margin-bottom:9px}.metric b{font-size:36px}.footer{position:absolute;left:64px;right:64px;bottom:58px;display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid #315c4b;color:#9eb4aa;font-size:21px}.footer strong{color:#8fe0ad}
+  </style></head><body>
+    <div class="top"><div class="brand"><div class="mark">F</div><div><b>Fontanillas</b><span>Observatori meteorològic · Sant Celoni</span></div></div><div class="live">DADA REAL</div></div>
+    <p class="eyebrow">El temps ara</p><h1>Dades de l’estació, sense estimacions.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p>
+    <section class="hero"><div><small>Temperatura</small><div class="temp">${escapeHtml(temperature)}</div></div><div class="feels">Sensació tèrmica<b>${escapeHtml(feeling)}</b></div></section>
+    <section class="grid"><div class="metric"><span>Humitat</span><b>${escapeHtml(humidity)}</b></div><div class="metric"><span>Pressió</span><b>${escapeHtml(pressure)}</b></div><div class="metric"><span>Vent · ratxa</span><b>${escapeHtml(wind)} · ${escapeHtml(gust)}</b></div><div class="metric"><span>Pluja acumulada avui</span><b>${escapeHtml(rain)}</b></div></section>
+    <div class="footer"><span>Font: estació Fontanillas · Weather Underground</span><strong>meteo.fontanillas.cat</strong></div>
+  </body></html>`;
+}
+
+async function socialCard(request, env, draftId, url) {
+  if (!env.BROWSER) return json({ error:'La generació de targetes encara no està configurada.' }, 503);
+  if (!(await ensureSocialDraftSchema(env))) return json({ error:'D1 no configurat.' }, 503);
+  const expected = await socialCardSignature(draftId, env);
+  if (!(await secureTokenMatch(String(url.searchParams.get('sig') || ''), expected))) return json({ error:'Signatura no vàlida.' }, 403);
+  const draft = await findSocialDraft(env, draftId);
+  if (!draft) return json({ error:'Targeta no trobada.' }, 404);
+  const rendered = await env.BROWSER.quickAction('screenshot', { html:socialCardHtml(draft), viewport:{ width:1080,height:1350 }, screenshotOptions:{ type:'png', fullPage:false } });
+  const headers = new Headers(rendered.headers);
+  headers.set('Content-Type','image/png'); headers.set('Cache-Control','public, max-age=31536000, immutable');
+  headers.set('X-Content-Type-Options','nosniff');
+  return new Response(rendered.body,{status:rendered.status,headers});
 }
 
 function metaGraphBase(env) {
@@ -1378,9 +1590,9 @@ async function resolveMetaAssets(env) {
 async function publishFacebook(draft, env) {
   const assets = await resolveMetaAssets(env);
   if (!assets.pageId) throw Object.assign(new Error('No s’ha identificat la pàgina de Facebook.'), { status:503 });
-  const { payload, responseCode } = await metaGraphRequest(env, `${assets.pageId}/feed`, {
+  const { payload, responseCode } = await metaGraphRequest(env, `${assets.pageId}/photos`, {
     method:'POST', accessToken:assets.pageToken,
-    params:{ message:socialPostText(draft, 6000), link:cleanText(draft.source_url, 500) || 'https://meteo.fontanillas.cat/' },
+    params:{ caption:socialPostText(draft, 6000), url:await socialCardUrl(draft, env), published:true },
   });
   if (!payload.id) throw Object.assign(new Error('Facebook no ha retornat l’identificador de la publicació.'), { status:502, responseCode });
   return { remoteId:String(payload.id), responseCode };
@@ -1389,7 +1601,7 @@ async function publishFacebook(draft, env) {
 async function publishInstagram(draft, env) {
   const assets = await resolveMetaAssets(env);
   if (!assets.instagramId) throw Object.assign(new Error('La pàgina no té cap compte professional d’Instagram vinculat. També pots afegir META_INSTAGRAM_ACCOUNT_ID.'), { status:503 });
-  const imageUrl = cleanText(env.META_INSTAGRAM_IMAGE_URL || 'https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-social.jpg', 600);
+  const imageUrl = await socialCardUrl(draft, env);
   const created = await metaGraphRequest(env, `${assets.instagramId}/media`, {
     method:'POST', accessToken:assets.pageToken,
     params:{ image_url:imageUrl, caption:socialPostText(draft, 2200) },
@@ -1465,9 +1677,9 @@ async function adminSocialDiagnostics(request, env) {
 
 async function publishTelegram(draft, env) {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHANNEL_ID) throw Object.assign(new Error('Falten les credencials de Telegram.'), { status:503 });
-  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, {
     method:'POST', headers:{ 'Content-Type':'application/json' },
-    body:JSON.stringify({ chat_id:env.TELEGRAM_CHANNEL_ID, text:socialPostText(draft, 3900), disable_web_page_preview:false }),
+    body:JSON.stringify({ chat_id:env.TELEGRAM_CHANNEL_ID, photo:await socialCardUrl(draft, env), caption:socialPostText(draft, 1000) }),
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || payload.ok !== true) throw Object.assign(new Error(payload.description || `Telegram ha respost ${response.status}.`), { status:502, responseCode:response.status });
@@ -1483,9 +1695,16 @@ async function publishBluesky(draft, env) {
   });
   const session = await sessionResponse.json().catch(() => ({}));
   if (!sessionResponse.ok || !session.accessJwt || !session.did) throw Object.assign(new Error(session.message || 'Bluesky no ha pogut iniciar la sessió.'), { status:502, responseCode:sessionResponse.status });
+  const imageResponse = await fetch(await socialCardUrl(draft, env));
+  if (!imageResponse.ok) throw Object.assign(new Error('No s’ha pogut generar la targeta amb dades reals.'), { status:502, responseCode:imageResponse.status });
+  const uploadResponse = await fetch(`${service}/xrpc/com.atproto.repo.uploadBlob`, {
+    method:'POST', headers:{ 'Authorization':`Bearer ${session.accessJwt}`, 'Content-Type':'image/png' }, body:await imageResponse.arrayBuffer(),
+  });
+  const uploaded = await uploadResponse.json().catch(() => ({}));
+  if (!uploadResponse.ok || !uploaded.blob) throw Object.assign(new Error(uploaded.message || 'Bluesky no ha pogut rebre la imatge.'), { status:502, responseCode:uploadResponse.status });
   const recordResponse = await fetch(`${service}/xrpc/com.atproto.repo.createRecord`, {
     method:'POST', headers:{ 'Authorization':`Bearer ${session.accessJwt}`, 'Content-Type':'application/json' },
-    body:JSON.stringify({ repo:session.did, collection:'app.bsky.feed.post', record:{ '$type':'app.bsky.feed.post', text:socialPostText(draft, 300), createdAt:new Date().toISOString(), langs:['ca'] } }),
+    body:JSON.stringify({ repo:session.did, collection:'app.bsky.feed.post', record:{ '$type':'app.bsky.feed.post', text:socialPostText(draft, 300), createdAt:new Date().toISOString(), langs:['ca'], embed:{ '$type':'app.bsky.embed.images', images:[{ alt:'Dades meteorològiques reals de l’Observatori Fontanillas', image:uploaded.blob }] } } }),
   });
   const record = await recordResponse.json().catch(() => ({}));
   if (!recordResponse.ok || !record.uri) throw Object.assign(new Error(record.message || 'Bluesky no ha pogut crear la publicació.'), { status:502, responseCode:recordResponse.status });
@@ -1505,6 +1724,35 @@ async function refreshSocialDraftPublicationStatus(env, draft) {
   const status = publishable.length && publishable.every(channel => published.has(channel)) ? 'published' : published.size ? 'partially_published' : 'approved';
   await env.DB.prepare('UPDATE social_drafts SET status = ? WHERE id = ?').bind(status, draft.id).run();
   return status;
+}
+
+async function publishAutomaticSocialDraft(result, env) {
+  const draft = result?.draft;
+  if (!draft || !socialAutomationEnabled(env)) return { published:false, reason:result?.reason || 'automation_disabled' };
+  const configured = {
+    facebook:Boolean(env.META_SYSTEM_USER_TOKEN), instagram:Boolean(env.META_SYSTEM_USER_TOKEN),
+    bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
+    telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
+  };
+  const publishers = { facebook:publishFacebook, instagram:publishInstagram, telegram:publishTelegram, bluesky:publishBluesky };
+  const previous = await socialPublicationsForDraft(env, draft.id);
+  const completed = new Set(previous.filter(item=>item.status==='published').map(item=>item.channel));
+  const channels = parseSocialChannels(draft.channels).filter(channel=>configured[channel] && !completed.has(channel));
+  const outcomes = [];
+  for (const channel of channels) {
+    try {
+      const details = await publishers[channel](draft, env);
+      await recordSocialPublication(env, draft.id, channel, 'published', details);
+      outcomes.push({ channel, ok:true });
+    } catch (error) {
+      await recordSocialPublication(env, draft.id, channel, 'failed', { error:cleanText(error.message,500), responseCode:error.responseCode||null });
+      outcomes.push({ channel, ok:false, error:cleanText(error.message,500) });
+    }
+  }
+  await refreshSocialDraftPublicationStatus(env, draft);
+  const failed = outcomes.filter(item=>!item.ok);
+  if (failed.length) await sendOperationalEmail(env, '[Observatori] Publicació automàtica incompleta', `No s’ha pogut publicar l’informe de ${result.localDate || 'avui'} a: ${failed.map(item=>item.channel).join(', ')}.\n\n${failed.map(item=>`${item.channel}: ${item.error}`).join('\n')}`, 'social_publish_failed').catch(error=>console.error('Social notification error',error));
+  return { published:outcomes.some(item=>item.ok), outcomes };
 }
 
 async function adminPublishSocialDraft(request, env, draftId) {
@@ -1837,6 +2085,8 @@ export default {
     try {
       if (request.method === "POST" && url.pathname === "/contact") return contact(request, env);
       if (request.method === "POST" && url.pathname === "/meteo-ai") return meteoAI(request, env);
+      const socialCardMatch = url.pathname.match(/^\/social-card\/(\d+)\.png$/);
+      if (request.method === "GET" && socialCardMatch) return socialCard(request, env, Number(socialCardMatch[1]), url);
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
       const socialPublishMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/publish$/);
@@ -1855,11 +2105,12 @@ export default {
       if (url.pathname === "/alerts") return alerts(env);
       if (url.pathname === "/alert-history") return alertHistory(url, env);
       if (url.pathname === "/stations") return comparisonStations(url, env);
+      if (url.pathname === "/forecast-verification") return forecastVerification(url, env);
       if (url.pathname === "/admin/status") return adminStatus(request, env);
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);
@@ -1868,9 +2119,12 @@ export default {
 
   async scheduled(_event, env, ctx) {
     const capture = monitorWeatherUnderground(env, captureObservation(env));
+    const social = capture.then(result => createDailySocialDraft(result.observation, env, activeSocialSlot(env)))
+      .then(result => publishAutomaticSocialDraft(result, env));
     ctx.waitUntil(Promise.all([
       capture.catch(error => console.error("Captura programada fallida", error)),
-      capture.then(result => createDailySocialDraft(result.observation, env)).catch(error => console.error("Esborrany social fallit", error)),
+      captureForecastSnapshot(env).catch(error => console.error("Captura de predicció fallida", error)),
+      social.catch(error => console.error("Publicació social automàtica fallida", error)),
       checkAlertsAndNotify(env).catch(error => console.error("Comprovació d’avisos fallida", error)),
     ]));
   },
