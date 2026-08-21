@@ -2,7 +2,7 @@ const CACHE = 'observatori-fontanillas-v22-0-2';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
-  '/', '/index.html', '/metodologia.html', '/comparativa.html', '/historial-avisos.html', '/privacitat.html', '/site.webmanifest',
+  '/', '/index.html', '/metodologia.html', '/comparativa.html', '/historial-avisos.html', '/privacitat.html', '/condicions.html', '/site.webmanifest',
   '/css/variables.css', '/css/layout.css', '/css/style.css', '/css/portal.css',
   '/src/app.js', '/src/core/config.js', '/src/core/dom.js', '/src/core/notification-preferences.js', '/src/data/meteorological-ephemerides.js', '/src/data/learning-resources.js', '/src/services/weather-api.js',
   '/src/features/analytics.js', '/src/features/push.js', '/src/features/pwa.js', '/src/features/share.js',
