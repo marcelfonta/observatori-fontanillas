@@ -1,6 +1,10 @@
-# Observatori Meteorològic Fontanillas — V21.4.0
+# Observatori Meteorològic Fontanillas — V21.5.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.4.0 fa més llegible la previsió de portada, mostra l’hora de les màximes i mínimes, renova la icona instal·lable amb la marca actual i unifica els senyals canònics per a Google. Conserva el gestor editorial protegit de xarxes sense activar cap automatització ni exposar credencials.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V21.5.0 incorpora Meteo IA híbrida amb Workers AI, simplifica la comparació d’estacions a les lectures actuals i activa monitoratge amb correu i dades D1 de suport quan Weather Underground falla. Conserva el gestor editorial protegit de xarxes sense exposar credencials.
+
+### Predicció vs realitat
+
+És una ampliació viable, però les prediccions s’han de desar abans de la data que es vol verificar. La fase prevista crearà snapshots horaris a D1 amb data d’emissió, data vàlida, horitzó, model, temperatura, pluja, vent i estat del cel. Quan hi hagi prou mostra, una secció pròpia mostrarà l’error i el biaix de temperatura, l’encert o error de pluja i l’error de vent per horitzons 0–24 h, 24–48 h i 3–7 dies. Fins aleshores no es publicaran percentatges reconstruïts a posteriori.
 
 ## Estat actual
 

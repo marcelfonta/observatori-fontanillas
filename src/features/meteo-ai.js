@@ -1,4 +1,4 @@
-import { fetchAlertHistory, fetchAlerts, fetchCurrentWeather, fetchForecast, fetchLocalityWeather, fetchNearbyStations } from '../services/weather-api.js';
+import { fetchAdvancedMeteoAI, fetchAlertHistory, fetchAlerts, fetchCurrentWeather, fetchForecast, fetchLocalityWeather, fetchNearbyStations } from '../services/weather-api.js';
 import { ephemerisDateLabel, meteorologicalEphemeridesForDate } from '../data/meteorological-ephemerides.js';
 
 const state={current:null,history:[],forecast:null,alerts:null,environment:null};
@@ -399,7 +399,20 @@ export async function answerMeteoQuestion(question,context=state,services={fetch
   if(/historic|evoluc|canviat|ultimes 24/.test(q))return historyAnswer(context);
   if(/plour|previsi|dema|avui|temps fara|setmana|cap de setmana|dilluns|dimarts|dimecres|dijous|divendres|dissabte|diumenge|quin dia.*(?:millor|vent|calor|fred)/.test(q))return forecastAnswer(context,resolvedQuestion,services);
   if(/temperatura|temps fa|ara|humitat|vent|pressio|pluja actual/.test(q))return currentAnswer(context);
-  return response('Et puc ajudar amb el temps i entendre la meteorologia','Pregunta’m per la situació actual, la predicció, els avisos, l’històric, les efemèrides, les fonts fiables o conceptes com una DANA, els fronts, les isòbares i els models.',{sources:[source('Meteo IA','Interpretació local al navegador'),source('AEMET · MeteoGlosario','Consulta didàctica oficial')],followups:['Què és una DANA?','On puc consultar dades meteorològiques oficials?','Efemèrides de l’estació']});
+  return {...response('Ampliant la consulta','Interpretaré la pregunta amb el model avançat i les dades meteorològiques disponibles.',{sources:[source('Meteo IA','Processament avançat protegit')]}),needsAI:true};
+}
+
+function advancedContext(context){
+  const current=context.current?Object.fromEntries(['updated','temperature','feelsLike','humidity','pressure','windSpeed','windGust','windDirection','rainToday','rainRate','solarRadiation','uv','degraded','stale','ageMinutes'].map(key=>[key,context.current[key]])):null;
+  const daily=context.forecast?.daily||null;
+  return {station:'Fontanillas · Sant Celoni',current,forecast:daily?{time:daily.time,weather_code:daily.weather_code,temperature_2m_max:daily.temperature_2m_max,temperature_2m_min:daily.temperature_2m_min,precipitation_probability_max:daily.precipitation_probability_max,precipitation_sum:daily.precipitation_sum,wind_gusts_10m_max:daily.wind_gusts_10m_max}:null,alerts:context.alerts?{active:context.alerts.active,maxLevel:context.alerts.maxLevel,alerts:context.alerts.alerts}:null,environment:context.environment||null};
+}
+
+export async function answerMeteoQuestionAdvanced(question,context=state,services={fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},memory=null){
+  const local=await answerMeteoQuestion(question,context,services,memory);
+  if(!local.needsAI)return local;
+  try{return await fetchAdvancedMeteoAI(question,advancedContext(context));}
+  catch(error){console.warn('Meteo IA avançada no disponible.',error);return response('No he pogut completar la resposta','El model avançat no està disponible ara mateix. Prova de concretar si preguntes per la situació actual, una predicció, avisos, una activitat o un concepte meteorològic.',{level:'warning',sources:[source('Meteo IA','Mode local de seguretat')],followups:['Quin temps farà demà?','Hi ha avisos actius?','Què és un front fred?']});}
 }
 
 function createMessage(role,resultOrText){
@@ -434,7 +447,7 @@ async function ask(question){
   const log=document.getElementById('meteo-ai-messages');const input=document.getElementById('meteo-ai-input');const submit=document.getElementById('meteo-ai-submit');
   log?.append(createMessage('user',text));if(input)input.value='';if(submit){submit.disabled=true;submit.textContent='Consultant…';}
   const pending=document.createElement('div');pending.className='meteo-ai-typing';pending.textContent='Creuant les dades disponibles…';log?.append(pending);log?.scrollTo({top:log.scrollHeight,behavior:'smooth'});
-  try{const result=await answerMeteoQuestion(text,state,{fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},conversationMemory);pending.replaceWith(createMessage('assistant',result));updateConversationUi();}
+  try{const result=await answerMeteoQuestionAdvanced(text,state,{fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},conversationMemory);pending.replaceWith(createMessage('assistant',result));updateConversationUi();}
   catch{pending.replaceWith(createMessage('assistant',response('No he pogut completar la consulta','Les dades principals continuen disponibles al portal. Torna-ho a provar d’aquí uns instants.',{level:'warning'})));}
   if(submit){submit.disabled=false;submit.textContent='Preguntar';}log?.scrollTo({top:log.scrollHeight,behavior:'smooth'});input?.focus();
 }
@@ -474,7 +487,7 @@ export function initMeteoAIWidget(){
     event.preventDefault();const form=event.currentTarget;const input=form.querySelector('input');const button=form.querySelector('button');const messages=panel.querySelector('.meteo-ai-widget__messages');const question=String(input?.value||'').trim();if(!question)return;
     button.disabled=true;button.textContent='Consultant…';messages.replaceChildren();const user=createMessage('user',question);const typing=document.createElement('div');typing.className='meteo-ai-typing';typing.textContent='Comprovant dades…';messages.append(user,typing);
     await hydrateWidgetContext();
-    const result=await answerMeteoQuestion(question,state,{fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},conversationMemory);const answer=createMessage('assistant',result);answer.querySelector('.meteo-ai-followups')?.remove();typing.replaceWith(answer);form.hidden=true;panel.querySelector('.meteo-ai-widget__continue').hidden=false;
+    const result=await answerMeteoQuestionAdvanced(question,state,{fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},conversationMemory);const answer=createMessage('assistant',result);answer.querySelector('.meteo-ai-followups')?.remove();typing.replaceWith(answer);form.hidden=true;panel.querySelector('.meteo-ai-widget__continue').hidden=false;
   });
   panel.querySelector('.meteo-ai-widget__continue')?.addEventListener('click',event=>{if(document.body.dataset.page==='meteo-ia'){event.preventDefault();close();document.getElementById('meteo-ai-input')?.scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('meteo-ai-input')?.focus();}});
 }
