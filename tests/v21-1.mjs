@@ -9,8 +9,8 @@ const [worker,schema,adminPage,adminFeature,portalCss,serviceWorker,project]=awa
   read('worker/index.js'),read('worker/schema.sql'),read('administracio.html'),read('src/features/admin.js'),read('css/portal.css'),read('service-worker.js'),read('project.json')
 ]);
 
-assert.equal(JSON.parse(project).version,'21.2.0','La versió del projecte no és V21.2.0.');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v21-2-0'),'La memòria cau PWA no és V21.2.0.');
+assert.equal(JSON.parse(project).version,'21.3.0','La versió del projecte no és V21.3.0.');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v21-3-0'),'La memòria cau PWA no és V21.3.0.');
 assert.ok(serviceWorker.includes('/assets/images/observatori-fontanillas-social.jpg'),'La targeta social d’Instagram no forma part del paquet PWA.');
 
 for(const source of [worker,schema]){

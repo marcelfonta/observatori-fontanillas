@@ -41,15 +41,60 @@ function forecastNarrative(daily) {
   return ['Escenari majoritàriament estable',`Pocs canvis bruscos a la vista, amb màximes al voltant dels ${format(hottest,0)} °C.`];
 }
 
-function renderOverview(daily) {
+function periodSummary(label,rainChance,gust) {
+  if(rainChance>=70)return `${label} amb pluja probable`;
+  if(rainChance>=40)return `${label} amb possibilitat de ruixats`;
+  if(gust>=50)return `${label} amb vent destacat`;
+  return `${label} amb temps tranquil`;
+}
+
+function renderOverview(data) {
+  const daily=data?.daily; const hourly=data?.hourly;
   if(!daily?.time?.length) return;
-  const [headline,copy]=forecastNarrative(daily);
+  const [headline,copy]=forecastNarrative({
+    ...daily,
+    time:daily.time.slice(2,7),
+    precipitation_sum:daily.precipitation_sum?.slice(2,7),
+    precipitation_probability_max:daily.precipitation_probability_max?.slice(2,7),
+    temperature_2m_max:daily.temperature_2m_max?.slice(2,7),
+    temperature_2m_min:daily.temperature_2m_min?.slice(2,7)
+  });
   setText('forecast-headline',headline); setText('forecast-headline-copy',copy);
-  const rainTotal=sum(daily.precipitation_sum||[]); const rainIndex=maxIndex(daily.precipitation_probability_max||[0]);
-  setText('forecast-rain-total',format(rainTotal,1)); setText('forecast-rain-signal',`${format(daily.precipitation_probability_max?.[rainIndex],0)}% màxim · ${dayName(new Date(daily.time[rainIndex]))}`);
-  const gustIndex=maxIndex(daily.wind_gusts_10m_max||[0]); setText('forecast-gust-max',format(daily.wind_gusts_10m_max?.[gustIndex],0)); setText('forecast-gust-day',`Prevista ${dayName(new Date(daily.time[gustIndex]))}`);
-  const daylight=(Number(daily.daylight_duration?.[0])||0)/3600; setText('forecast-daylight',format(daylight,1));
-  setText('forecast-sun-times',`${shortTime(daily.sunrise?.[0])} → ${shortTime(daily.sunset?.[0])}`);
+
+  const now=Date.now();
+  const todayKey=daily.time[0];
+  const remaining=(hourly?.time||[]).map((time,index)=>({time,index,date:new Date(time)})).filter(item=>item.date.getTime()>=now-1800000&&String(hourly.time[item.index]).slice(0,10)===todayKey);
+  const remainingIndices=remaining.map(item=>item.index);
+  const todayCodes=remainingIndices.map(index=>hourly.weather_code?.[index]);
+  const remainingRain=remainingIndices.map(index=>hourly.precipitation_probability?.[index]);
+  const remainingWind=remainingIndices.map(index=>hourly.wind_speed_10m?.[index]);
+  const todayRain=max(remainingRain.length?remainingRain:[daily.precipitation_probability_max?.[0]]);
+  const todayWind=max(remainingWind.length?remainingWind:[daily.wind_gusts_10m_max?.[0]]);
+  const todayTemps=remainingIndices.map(index=>Number(hourly.temperature_2m?.[index])).filter(Number.isFinite);
+  const todayCode=todayCodes.length?todayCodes[Math.floor(todayCodes.length/2)]:daily.weather_code?.[0];
+  const [todaySymbol,todayLabel]=weather(todayCode);
+  setText('forecast-today-date',new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(new Date(daily.time[0])));
+  setText('forecast-today-symbol',todaySymbol);
+  setText('forecast-today-title',remaining.length?periodSummary('Tarda i vespre',todayRain,todayWind):'Jornada gairebé acabada');
+  setText('forecast-today-copy',remaining.length?`${todayLabel}. Resum calculat només amb les hores que encara queden.`:'Consulta demà per veure una nova jornada completa.');
+  setText('forecast-today-temp',todayTemps.length?`${format(Math.min(...todayTemps),0)}°–${format(Math.max(...todayTemps),0)}°`:`${format(daily.temperature_2m_min?.[0],0)}°–${format(daily.temperature_2m_max?.[0],0)}°`);
+  setText('forecast-today-rain',`${format(todayRain,0)}%`);
+  setText('forecast-today-wind',`${format(todayWind,0)} km/h`);
+
+  const tomorrow=1; const [tomorrowSymbol,tomorrowLabel]=weather(daily.weather_code?.[tomorrow]);
+  setText('forecast-tomorrow-date',new Intl.DateTimeFormat('ca-ES',{weekday:'long',day:'numeric',month:'short'}).format(new Date(daily.time[tomorrow])));
+  setText('forecast-tomorrow-symbol',tomorrowSymbol);
+  setText('forecast-tomorrow-title',periodSummary('Jornada',Number(daily.precipitation_probability_max?.[tomorrow])||0,Number(daily.wind_gusts_10m_max?.[tomorrow])||0));
+  setText('forecast-tomorrow-copy',`${tomorrowLabel}. La temperatura anirà de ${format(daily.temperature_2m_min?.[tomorrow],0)}° a ${format(daily.temperature_2m_max?.[tomorrow],0)}°.`);
+  setText('forecast-tomorrow-temp',`${format(daily.temperature_2m_max?.[tomorrow],0)}° / ${format(daily.temperature_2m_min?.[tomorrow],0)}°`);
+  setText('forecast-tomorrow-rain',`${format(daily.precipitation_probability_max?.[tomorrow],0)}%`);
+  setText('forecast-tomorrow-wind',`${format(daily.wind_gusts_10m_max?.[tomorrow],0)} km/h`);
+
+  const next=document.getElementById('forecast-next-days');
+  if(next)next.innerHTML=daily.time.slice(2,5).map((value,offset)=>{
+    const index=offset+2; const [symbol,label]=weather(daily.weather_code?.[index]);
+    return `<span><small>${dayName(new Date(value))}</small><i aria-hidden="true">${symbol}</i><b>${format(daily.temperature_2m_max?.[index],0)}°</b><em>${format(daily.precipitation_probability_max?.[index],0)}% pluja</em><span class="sr-only">${label}</span></span>`;
+  }).join('');
 }
 
 function renderDaily(daily) {
@@ -69,7 +114,7 @@ export function renderForecast(data) {
     const time=new Date(data.hourly.time[index]); const [symbol,label]=weather(data.hourly.weather_code[index]); const rain=Number(data.hourly.precipitation_probability[index])||0;
     return `<article class="forecast-item ${position===0?'is-now':''}"><div class="forecast-item__time"><span>${timelineLabel(time,position)}</span>${position===0?'<i></i>':''}</div><div class="forecast-item__condition"><span class="forecast-symbol" aria-hidden="true">${symbol}</span><b>${label}</b></div><div class="forecast-item__temp">${format(data.hourly.temperature_2m[index],0)}°</div><div class="forecast-item__meta"><span><b>${format(rain,0)}%</b> pluja</span><span>${format(data.hourly.wind_speed_10m[index],0)} km/h</span></div><div class="forecast-mini-rain"><span style="width:${Math.min(100,rain)}%"></span></div></article>`;
   }).join('');
-  renderOverview(data.daily); renderDaily(data.daily);
+  renderOverview(data); renderDaily(data.daily);
   setText('forecast-status',`Actualitzat · ${new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit'}).format(new Date())}`);
 }
 

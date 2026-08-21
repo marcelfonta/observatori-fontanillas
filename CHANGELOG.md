@@ -1,5 +1,26 @@
 # Changelog
 
+## V21.3.0 — 2026-08-13
+
+### Portada més directa
+
+- L’accés d’avisos de la capçalera de la portada obre directament la pàgina completa d’Avisos.
+- Retirat de la portada el bloc extens d’avisos, que es manté íntegrament a la seva pàgina pròpia.
+- Eliminada la duplicació de contingut i escurçat el recorregut principal de consulta.
+
+### Predicció més fàcil de llegir
+
+- Reorganitzada la lectura inicial en tres períodes clars: el que queda d’avui, demà i els pròxims dies.
+- El resum d’avui utilitza només les hores que encara queden i mostra temperatura, probabilitat de pluja i vent.
+- Demà disposa d’un resum de jornada amb màxima, mínima, pluja i ratxa prevista.
+- Els tres dies següents es presenten en una franja visual compacta, mantenint a sota el detall de 48 hores i la previsió de set dies.
+
+### Compatibilitat
+
+- Renovada la memòria cau de la PWA a V21.3.0.
+- Mantinguts els contractes de dades, D1, avisos oficials, push, administració i publicació social manual.
+- Superades les dotze proves automatitzades del projecte.
+
 ## V21.2.0 — 2026-08-11
 
 ### Gestor editorial protegit
