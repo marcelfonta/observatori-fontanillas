@@ -1,6 +1,6 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "21.3.0";
-const WORKER_BUILT = "2026-08-13";
+const WORKER_VERSION = "21.5.0";
+const WORKER_BUILT = "2026-08-21";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const WEBCAM_URL = "https://www.alvar.cat/WebCam/Imatge-Camera.jpg";
@@ -113,11 +113,28 @@ const CREATE_SOCIAL_PUBLICATIONS = `CREATE TABLE IF NOT EXISTS social_publicatio
 )`;
 const CREATE_SOCIAL_PUBLICATIONS_INDEX = `CREATE INDEX IF NOT EXISTS idx_social_publications_draft_created
 ON social_publications(draft_id, created_at DESC)`;
+const CREATE_MONITOR_STATE = `CREATE TABLE IF NOT EXISTS monitor_state (
+  service_key TEXT PRIMARY KEY,
+  status TEXT NOT NULL DEFAULT 'unknown',
+  consecutive_failures INTEGER NOT NULL DEFAULT 0,
+  last_checked_at TEXT,
+  last_failure_at TEXT,
+  last_success_at TEXT,
+  last_notified_at TEXT,
+  detail TEXT
+)`;
+const CREATE_AI_RATE_LIMIT = `CREATE TABLE IF NOT EXISTS ai_rate_limit (
+  ip_hash TEXT NOT NULL,
+  asked_at INTEGER NOT NULL
+)`;
+const CREATE_AI_RATE_LIMIT_INDEX = `CREATE INDEX IF NOT EXISTS idx_ai_rate_limit_time
+ON ai_rate_limit(asked_at)`;
 let schemaReady = false;
 let contactSchemaReady = false;
 let alertSchemaReady = false;
 let adminAuthSchemaReady = false;
 let socialDraftSchemaReady = false;
+let operationsSchemaReady = false;
 
 // Offset (en segons) de la zona horària de Madrid respecte a UTC, calculat
 // dinàmicament perquè s'adapti automàticament a CET (UTC+1) i CEST (UTC+2).
@@ -296,6 +313,18 @@ async function ensureSocialDraftSchema(env) {
     env.DB.prepare(CREATE_SOCIAL_PUBLICATIONS_INDEX),
   ]);
   socialDraftSchemaReady = true;
+  return true;
+}
+
+async function ensureOperationsSchema(env) {
+  if (!env.DB) return false;
+  if (operationsSchemaReady) return true;
+  await env.DB.batch([
+    env.DB.prepare(CREATE_MONITOR_STATE),
+    env.DB.prepare(CREATE_AI_RATE_LIMIT),
+    env.DB.prepare(CREATE_AI_RATE_LIMIT_INDEX),
+  ]);
+  operationsSchemaReady = true;
   return true;
 }
 
@@ -580,15 +609,13 @@ async function comparisonHistoryStation(station, period, env) {
 }
 
 async function comparisonStations(url, env) {
-  const period = ["now","today","24h"].includes(url.searchParams.get("period")) ? url.searchParams.get("period") : "now";
+  const period = "now";
   const nearbyStations=await discoverComparisonStations(env);
   const results = await Promise.all(nearbyStations.map(async station => {
     try {
       const current = await comparisonCurrentStation(station, env);
       if (!current) throw new Error("Sense observació actual");
-      let history = [];
-      if (period !== "now") history = await comparisonHistoryStation(station, period, env);
-      return { ...current, status:"online", history };
+      return { ...current, status:"online", history:[] };
     } catch (error) {
       console.warn(`Comparativa ${station.stationId}:`, error.message);
       return { ...station, status:"offline", error:"Dades temporalment no disponibles", history:[] };
@@ -633,6 +660,38 @@ async function currentObservation(env) {
     webcam: WEBCAM_URL,
     background: BACKGROUND_URL,
   };
+}
+
+async function latestStoredObservation(env) {
+  if (!(await ensureSchema(env))) return null;
+  const row = await env.DB.prepare("SELECT * FROM observations ORDER BY observed_epoch DESC LIMIT 1").first();
+  if (!row) return null;
+  const ageMinutes = Math.max(0, Math.round((Date.now() / 1000 - Number(row.observed_epoch)) / 60));
+  return {
+    station:"Observatori Meteorològic Fontanillas", stationId:STATION_ID,
+    location:"Sant Celoni · Montseny", updated:row.local_time,
+    updatedUtc:row.observed_at_utc, epoch:row.observed_epoch,
+    temperature:row.temperature, feelsLike:row.feels_like, humidity:row.humidity,
+    dewPoint:row.dew_point, pressure:row.pressure, windSpeed:row.wind_speed,
+    windGust:row.wind_gust, windDirection:row.wind_direction,
+    rainToday:row.rain_total, rainRate:row.rain_rate,
+    solarRadiation:row.solar_radiation, uv:row.uv, quality:row.quality,
+    webcam:WEBCAM_URL, background:BACKGROUND_URL,
+    source:"d1-emergency", degraded:true, stale:ageMinutes >= 30, ageMinutes,
+    sourceMessage:"Weather Underground no respon. Es mostra l’última lectura fiable desada per l’Observatori.",
+  };
+}
+
+async function resilientCurrentObservation(env) {
+  try {
+    const observation = await currentObservation(env);
+    return { ...observation, source:"weather-underground", degraded:false, stale:false, ageMinutes:0 };
+  } catch (error) {
+    console.error("Weather Underground current error", error);
+    const fallback = await latestStoredObservation(env).catch(() => null);
+    if (fallback) return fallback;
+    throw error;
+  }
 }
 
 async function persistObservation(observation, env) {
@@ -1646,6 +1705,80 @@ async function alerts(env) {
   }
 }
 
+async function sendOperationalEmail(env, subject, message, kind) {
+  if (!env.RESEND_API_KEY || !env.CONTACT_TO) return { sent:false, reason:"email_not_configured" };
+  const response = await fetch("https://api.resend.com/emails", {
+    method:"POST",
+    headers:{ "Authorization":`Bearer ${env.RESEND_API_KEY}`, "Content-Type":"application/json", "Idempotency-Key":crypto.randomUUID() },
+    body:JSON.stringify({
+      from:env.CONTACT_FROM || DEFAULT_CONTACT_FROM,
+      to:[env.CONTACT_TO], subject, text:message,
+      html:`<div style="font-family:Arial,sans-serif;line-height:1.6;color:#15211d"><h2>${escapeHtml(subject)}</h2><p style="white-space:pre-wrap">${escapeHtml(message)}</p><p><a href="https://meteo.fontanillas.cat/">Obrir l’Observatori</a></p></div>`,
+      tags:[{ name:"source", value:"observatori_monitor" },{ name:"event", value:kind }],
+    }),
+  });
+  if (!response.ok) throw new Error(`Resend monitor ${response.status}: ${await response.text()}`);
+  return { sent:true };
+}
+
+async function monitorWeatherUnderground(env, capturePromise) {
+  const now = new Date().toISOString();
+  let previous = null;
+  if (await ensureOperationsSchema(env)) previous = await env.DB.prepare("SELECT * FROM monitor_state WHERE service_key = 'weather-underground'").first();
+  try {
+    const result = await capturePromise;
+    const wasDown = previous?.status === "down" && Boolean(previous?.last_notified_at);
+    if (env.DB) await env.DB.prepare(`INSERT INTO monitor_state
+      (service_key,status,consecutive_failures,last_checked_at,last_success_at,detail)
+      VALUES ('weather-underground','healthy',0,?,?,NULL)
+      ON CONFLICT(service_key) DO UPDATE SET status='healthy', consecutive_failures=0,
+      last_checked_at=excluded.last_checked_at, last_success_at=excluded.last_success_at, detail=NULL`)
+      .bind(now, now).run();
+    if (wasDown) await sendOperationalEmail(env, "[Observatori] Weather Underground torna a funcionar", `El servei s’ha recuperat a les ${now}. La lectura en directe torna a ser la font principal.`, "weather_recovered");
+    return result;
+  } catch (error) {
+    const failures = (Number(previous?.consecutive_failures) || 0) + 1;
+    const lastNotified = previous?.last_notified_at ? new Date(previous.last_notified_at).getTime() : 0;
+    const shouldNotify = failures >= 3 && (!lastNotified || Date.now() - lastNotified >= 6 * 60 * 60 * 1000);
+    if (env.DB) await env.DB.prepare(`INSERT INTO monitor_state
+      (service_key,status,consecutive_failures,last_checked_at,last_failure_at,last_notified_at,detail)
+      VALUES ('weather-underground','down',?,?,?,?,?)
+      ON CONFLICT(service_key) DO UPDATE SET status='down', consecutive_failures=excluded.consecutive_failures,
+      last_checked_at=excluded.last_checked_at, last_failure_at=excluded.last_failure_at,
+      last_notified_at=COALESCE(excluded.last_notified_at,monitor_state.last_notified_at), detail=excluded.detail`)
+      .bind(failures, now, now, shouldNotify ? now : null, cleanText(error.message, 500)).run();
+    if (shouldNotify) await sendOperationalEmail(env, "[Observatori] Weather Underground no respon", `S’han produït ${failures} comprovacions fallides consecutives.\n\nHora: ${now}\nError: ${cleanText(error.message, 500)}\n\nLa web mostrarà l’última lectura fiable de D1 i indicarà clarament el mode degradat.`, "weather_down");
+    throw error;
+  }
+}
+
+async function meteoAI(request, env) {
+  const origin = request.headers.get("Origin") || "*";
+  if (origin !== "*" && !ALLOWED_CONTACT_ORIGINS.has(origin)) return json({ error:"Origen no autoritzat" }, 403, "no-store", "null");
+  if (!env.AI) return json({ error:"Meteo IA avançada no configurada" }, 503, "no-store", origin);
+  const contentLength = Number(request.headers.get("Content-Length") || 0);
+  if (contentLength > 24000) return json({ error:"Consulta massa gran" }, 413, "no-store", origin);
+  let body;
+  try { body = await request.json(); } catch { return json({ error:"Consulta no vàlida" }, 400, "no-store", origin); }
+  const question = cleanText(body.question, 240);
+  if (question.length < 3) return json({ error:"Escriu una pregunta meteorològica" }, 400, "no-store", origin);
+  if (await ensureOperationsSchema(env)) {
+    const ip = cleanText(request.headers.get("CF-Connecting-IP") || "anonymous", 100);
+    const ipHash = await sha256Text(`meteo-ai:${ip}`);
+    const now = Math.floor(Date.now() / 1000);
+    await env.DB.prepare("DELETE FROM ai_rate_limit WHERE asked_at < ?").bind(now - 3600).run();
+    const row = await env.DB.prepare("SELECT COUNT(*) AS total FROM ai_rate_limit WHERE ip_hash = ? AND asked_at > ?").bind(ipHash, now - 3600).first();
+    if ((Number(row?.total) || 0) >= 30) return json({ error:"Massa consultes. Torna-ho a provar més tard." }, 429, "no-store", origin);
+    await env.DB.prepare("INSERT INTO ai_rate_limit (ip_hash,asked_at) VALUES (?,?)").bind(ipHash, now).run();
+  }
+  const context = JSON.stringify(body.context || {}).slice(0, 16000);
+  const prompt = `Ets Meteo IA de l’Observatori Fontanillas de Sant Celoni. Respon en català clar, útil i breu (màxim 180 paraules). Interpreta llenguatge natural i errors ortogràfics. Usa només les dades del context per afirmar valors actuals, prediccions o avisos; si hi falten, digues-ho explícitament. Pots explicar coneixement meteorològic general. No inventis dades, fonts ni alertes. Per emergències remet a Meteocat, AEMET, Protecció Civil i 112.\n\nContext verificat: ${context}\n\nPregunta: ${question}`;
+  const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", { messages:[{ role:"user", content:prompt }], max_tokens:420, temperature:0.25 });
+  const textAnswer = cleanText(typeof result === "string" ? result : result?.response, 3000);
+  if (!textAnswer) return json({ error:"La IA no ha generat cap resposta" }, 502, "no-store", origin);
+  return json({ title:"Resposta de Meteo IA", body:textAnswer, facts:[], sources:[{ label:"Meteo IA", detail:"Workers AI · resposta basada en el context disponible" }] }, 200, "no-store", origin);
+}
+
 async function contact(request, env) {
   const origin = request.headers.get("Origin") || "";
   if (!ALLOWED_CONTACT_ORIGINS.has(origin)) return json({ error:"Origen no autoritzat" }, 403, "no-store", origin || "null");
@@ -1703,6 +1836,7 @@ export default {
     }
     try {
       if (request.method === "POST" && url.pathname === "/contact") return contact(request, env);
+      if (request.method === "POST" && url.pathname === "/meteo-ai") return meteoAI(request, env);
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
       const socialPublishMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/publish$/);
@@ -1711,8 +1845,8 @@ export default {
       if (request.method === "POST" && socialDraftMatch) return adminUpdateSocialDraft(request, env, Number(socialDraftMatch[1]));
       if (request.method !== "GET") return json({ error:"Mètode no permès" }, 405);
       if (url.pathname === "/" || url.pathname === "") {
-        const observation = await currentObservation(env);
-        if (env.DB) ctx.waitUntil(persistObservation(observation, env).catch(error => console.error("D1 persist error", error)));
+        const observation = await resilientCurrentObservation(env);
+        if (env.DB && !observation.degraded) ctx.waitUntil(persistObservation(observation, env).catch(error => console.error("D1 persist error", error)));
         return json(observation, 200, "public, max-age=60");
       }
       if (url.pathname === "/history") return history(url, env);
@@ -1725,7 +1859,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/version", "/admin/status", "/admin/social-drafts", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);
@@ -1733,7 +1867,7 @@ export default {
   },
 
   async scheduled(_event, env, ctx) {
-    const capture = captureObservation(env);
+    const capture = monitorWeatherUnderground(env, captureObservation(env));
     ctx.waitUntil(Promise.all([
       capture.catch(error => console.error("Captura programada fallida", error)),
       capture.then(result => createDailySocialDraft(result.observation, env)).catch(error => console.error("Esborrany social fallit", error)),

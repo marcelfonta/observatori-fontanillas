@@ -41,7 +41,7 @@ export async function fetchCurrentWeather() {
   const response = await request(CONFIG.apiUrl, { headers: { Accept: 'application/json' }, cache: 'no-store' });
   if (!response.ok) throw new Error(`API ${response.status}`);
   const data = await response.json();
-  storeLastObs(data);
+  if(!data.degraded)storeLastObs(data);
   return data;
 }
 
@@ -119,9 +119,17 @@ export async function fetchAlertHistory(filters={}) {
 }
 
 export async function fetchNearbyStations(period = 'now') {
-  const safePeriod=['now','today','24h'].includes(period)?period:'now';
-  const response=await request(`${CONFIG.apiUrl}/stations?period=${encodeURIComponent(safePeriod)}`,{headers:{Accept:'application/json'},cache:'no-store'},15000);
+  const response=await request(`${CONFIG.apiUrl}/stations?period=now`,{headers:{Accept:'application/json'},cache:'no-store'},15000);
   if(!response.ok)throw new Error(`Stations API ${response.status}`);
+  return response.json();
+}
+
+export async function fetchAdvancedMeteoAI(question, context) {
+  const response=await request(`${CONFIG.apiUrl}/meteo-ai`,{
+    method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},cache:'no-store',
+    body:JSON.stringify({question,context})
+  },20000);
+  if(!response.ok)throw new Error(`Meteo AI API ${response.status}`);
   return response.json();
 }
 

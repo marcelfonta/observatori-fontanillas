@@ -36,7 +36,7 @@ let qualityFetchedAt = 0;
 let alertsFetchedAt = 0;
 
 const OFFLINE_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hores
-function showOfflineBanner(ageMinutes){ const banner=document.getElementById('offline-banner'); if(!banner)return; banner.textContent=`Mostrant dades de fa ${ageMinutes} min (mode sense connexió)`; banner.hidden=false; }
+function showOfflineBanner(ageMinutes,message=''){ const banner=document.getElementById('offline-banner'); if(!banner)return; banner.textContent=message||`Mostrant dades de fa ${ageMinutes} min (mode sense connexió)`; banner.hidden=false; }
 function hideOfflineBanner(){ const banner=document.getElementById('offline-banner'); if(banner)banner.hidden=true; }
 function updateClock(){ setText('header-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Europe/Madrid'}).format(new Date())); }
 function setUpdated(value){ const date=value?new Date(String(value).replace(' ','T')):new Date(); const safe=Number.isNaN(date.getTime())?new Date():date; setText('updated-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(safe)); setText('webcam-time',`Captura ${new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(new Date())}`); const mins=Math.max(0,Math.round((Date.now()-safe.getTime())/60000)); setText('updated-relative',mins<2?'ara mateix':`fa ${mins} min`); }
@@ -104,8 +104,8 @@ async function load(){
       renderSummaryFallback();
     }
     renderStation(latest,context); renderCharts(latest,latestHistory); renderMetricSparklines(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenter(latestHistory,latest); setUpdated(latest.updated); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:latestHistory});updateShareContext({current:latest});
-    hideOfflineBanner();
-    if(label){label.textContent='En directe';label.parentElement.classList.remove('is-offline');}
+    if(latest.degraded){showOfflineBanner(latest.ageMinutes,latest.sourceMessage||`Weather Underground no respon. Mostrant l’última lectura fiable de fa ${latest.ageMinutes} min.`);if(label){label.textContent='Dades de suport';label.parentElement.classList.add('is-offline');}}
+    else{hideOfflineBanner();if(label){label.textContent='En directe';label.parentElement.classList.remove('is-offline');}}
   } catch(error) {
     console.warn('No s’han pogut carregar les dades en directe.',error);
     const cached=getLastCachedObs();

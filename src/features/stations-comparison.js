@@ -1,6 +1,6 @@
 import { CONFIG } from '../core/config.js';
 
-const state = { period: 'now', metric: 'temperature', payload: null, charts: [] };
+const state = { metric: 'temperature', payload: null, charts: [] };
 const COLORS = ['#89d6a3','#e6c56c','#79c5d8','#ee8e73','#b59be8','#5fc4a6','#e48fb8','#a6c875'];
 const METRICS = {
   temperature:{ label:'Temperatura', key:'temperature', suffix:'°C', digits:1, value:s=>s.temperature },
@@ -38,26 +38,7 @@ function deltaText(value, base, unit='°C') {
 }
 
 function periodSummary(station) {
-  if (state.period === 'now' || !station.history?.length) return station;
-  const history = station.history;
-  const avg = key => {
-    const vals = history.map(x => Number(x[key])).filter(Number.isFinite);
-    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
-  };
-  const max = key => {
-    const vals = history.map(x => Number(x[key])).filter(Number.isFinite);
-    return vals.length ? Math.max(...vals) : null;
-  };
-  const rainVals = history.map(x => Number(x.rainTotal)).filter(Number.isFinite);
-  return {
-    ...station,
-    temperature: avg('temperature'),
-    humidity: avg('humidity'),
-    pressure: avg('pressure'),
-    windSpeed: avg('windSpeed'),
-    windGust: max('windGust'),
-    rainToday: rainVals.length ? Math.max(...rainVals) - Math.min(...rainVals) : station.rainToday,
-  };
+  return station;
 }
 
 function renderCards(payload) {
@@ -157,11 +138,11 @@ function renderCharts(payload) {
   const metric=METRICS[state.metric]||METRICS.temperature;
   const sourceStations=(payload.stations||[]).filter(station=>station.status==='online');
   const summaries=sourceStations.map(periodSummary);
-  const historical=state.period!=='now'&&sourceStations.some(station=>station.history?.length);
+  const historical=false;
   const copy=document.getElementById('comparison-chart-copy');
   const note=document.getElementById('comparison-variable-note');
   if(copy)copy.textContent=historical?`Evolució de ${metric.label.toLowerCase()} durant ${state.period==='today'?'el dia d’avui':'les últimes 24 hores'}.`:`Valors actuals de ${metric.label.toLowerCase()} entre les estacions actives.`;
-  if(note)note.textContent=historical?'Cada línia correspon a una estació i manté les mateixes unitats.':'Selecciona Avui o 24 h per veure l’evolució històrica de totes les estacions.';
+  if(note)note.textContent='Lectures actuals comparades amb les mateixes unitats i criteris.';
   if(!canvas||!window.Chart)return;
   let labels;
   let datasets;
@@ -195,13 +176,11 @@ function renderMeta(payload) {
   if(status) status.textContent=`${(payload.stations||[]).filter(s=>s.status==='online').length}/${(payload.stations||[]).length} estacions actives`;
   if(source) source.textContent=payload.sourcePolicy?.note || 'Fonts normalitzades pel Worker de l’Observatori.';
 }
-async function load(period='now') {
-  state.period=period;
-  document.querySelectorAll('[data-compare-period]').forEach(b=>b.classList.toggle('is-active',b.dataset.comparePeriod===period));
+async function load() {
   const loading=document.getElementById('station-grid');
   if(loading) loading.innerHTML='<div class="comparison-loading panel">Actualitzant les estacions properes…</div>';
   try {
-    const r=await fetch(`${CONFIG.apiUrl}/stations?period=${encodeURIComponent(period)}`,{cache:'no-store',headers:{Accept:'application/json'}});
+    const r=await fetch(`${CONFIG.apiUrl}/stations?period=now`,{cache:'no-store',headers:{Accept:'application/json'}});
     if(!r.ok) throw new Error(`API ${r.status}`);
     state.payload=await r.json();
     renderCards(state.payload); renderCharts(state.payload); renderReading(state.payload); renderMeta(state.payload); renderMap(state.payload);
@@ -215,9 +194,8 @@ async function load(period='now') {
 function updateClock(){ const el=document.getElementById('header-time'); if(el) el.textContent=new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date()); }
 function init() {
   updateClock(); setInterval(updateClock,1000);
-  document.querySelectorAll('[data-compare-period]').forEach(btn=>btn.addEventListener('click',()=>load(btn.dataset.comparePeriod)));
   document.querySelectorAll('[data-compare-metric]').forEach(btn=>btn.addEventListener('click',()=>{state.metric=btn.dataset.compareMetric;document.querySelectorAll('[data-compare-metric]').forEach(item=>item.classList.toggle('is-active',item===btn));if(state.payload)renderCharts(state.payload);}));
-  load('now');
-  setInterval(()=>load(state.period),5*60*1000);
+  load();
+  setInterval(load,5*60*1000);
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();

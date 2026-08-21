@@ -1,5 +1,15 @@
 # Changelog
 
+## V21.5.0 — 2026-08-21
+
+- Meteo IA passa a una arquitectura híbrida: manté les respostes calculades amb dades verificades i usa Workers AI per entendre preguntes obertes o formulades de manera imprevista.
+- Afegits límits d’ús i context meteorològic acotat a l’endpoint d’IA.
+- La comparació d’estacions mostra només les lectures actuals i elimina «Avui» i «24 h».
+- El Worker detecta fallades consecutives de Weather Underground i envia correus d’incidència i recuperació, evitant avisos repetitius.
+- Si Weather Underground falla, la portada mostra l’última observació fiable de D1 i identifica clarament el mode degradat.
+- Definida la fase «Predicció vs realitat» amb snapshots previs de la predicció i verificació posterior contra D1.
+- Renovada la memòria cau de la PWA a V21.5.0.
+
 ## V21.4.0 — 2026-08-21
 
 - Ampliats els símbols meteorològics del resum de portada i forçada la presentació emoji en color perquè siguin més immediats d’interpretar.

@@ -30,21 +30,21 @@
   <meta name="twitter:image:alt" content="Observatori Meteorològic Fontanillas davant del Montseny" />
   <link rel="icon" href="assets/icons/favicon-16.png" sizes="16x16" type="image/png" />
   <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-v21.png?v=21.4.0" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-v21.png?v=21.5.0" />
   <link rel="manifest" href="site.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/variables.css?v=7.3" />
   <link rel="stylesheet" href="css/layout.css?v=7.3" />
-  <link rel="stylesheet" href="css/style.css?v=21.4.0" />
-  <link rel="stylesheet" href="css/portal.css?v=21.4.0" />
+  <link rel="stylesheet" href="css/style.css?v=21.5.0" />
+  <link rel="stylesheet" href="css/portal.css?v=21.5.0" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
   <script type="module" src="src/features/analytics.js?v=7.3"></script>
   <script type="module" src="src/features/pwa.js?v=7.3"></script>
   <script type="module" src="src/features/share-page.js?v=7.3"></script>
-  <script type="module" src="src/features/stations-comparison.js?v=21.4.0"></script>
-  <script type="module" src="src/features/portal-static.js?v=21.4.0"></script>
+  <script type="module" src="src/features/stations-comparison.js?v=21.5.0"></script>
+  <script type="module" src="src/features/portal-static.js?v=21.5.0"></script>
 </head>
 <body data-portal-static="comparar">
   <div id="app-update-banner" class="app-update-banner" hidden role="status" aria-live="polite"><span><b>Nova versió disponible</b><small>Actualitza l’Observatori per carregar els darrers canvis.</small></span><button type="button" id="app-update-button">Actualitzar ara</button><button type="button" id="app-update-dismiss" aria-label="Tancar avís d’actualització">×</button></div>
@@ -57,20 +57,20 @@
   <main class="shell comparison-page" id="top">
     <section class="portal-view-header portal-view-header--static panel">
       <div><p class="eyebrow">Comparació d’estacions properes</p><h1>Com canvia el temps al Baix Montseny?</h1><p>Fontanillas i fins a cinc estacions properes, descobertes automàticament i normalitzades amb les mateixes unitats.</p></div>
-      <div class="comparison-periods" role="group" aria-label="Període de comparació"><button class="is-active" data-compare-period="now">Ara</button><button data-compare-period="today">Avui</button><button data-compare-period="24h">24 h</button></div>
+      <span class="tag">Dades d’ara</span>
     </section>
 
     <section class="comparison-reading panel"><p class="eyebrow">Lectura automàtica</p><h2>Què destaca?</h2><p id="comparison-reading">Creuant les dades de les estacions properes…</p></section>
 
     <section class="comparison-map-panel panel" aria-labelledby="comparison-map-title">
-      <header><div><p class="eyebrow">Baix Montseny</p><h2 id="comparison-map-title">Les estacions, situades al mapa</h2><p>Selecciona un marcador per consultar les dades normalitzades del període actiu.</p></div><span class="tag" id="comparison-map-status">Preparant el mapa</span></header>
+      <header><div><p class="eyebrow">Baix Montseny</p><h2 id="comparison-map-title">Les estacions, situades al mapa</h2><p>Selecciona un marcador per consultar-ne la lectura actual normalitzada.</p></div><span class="tag" id="comparison-map-status">Preparant el mapa</span></header>
       <div class="comparison-map-layout"><div id="comparison-map" aria-label="Mapa interactiu de les estacions meteorològiques comparades"></div><aside id="comparison-map-list" aria-label="Llegenda de les estacions"><span>Carregant ubicacions…</span></aside></div>
     </section>
 
     <section class="station-grid" id="station-grid" aria-live="polite"><div class="comparison-loading panel">Carregant estacions properes…</div></section>
 
     <section class="comparison-explorer section-block" aria-labelledby="comparison-explorer-title">
-      <div class="section-heading"><div><p class="eyebrow">Comparació visual</p><h2 id="comparison-explorer-title">Cinc variables, una mateixa escala</h2><p id="comparison-chart-copy">Valors actuals de temperatura entre les estacions actives.</p></div><span class="tag">Ara · avui · 24 h</span></div>
+      <div class="section-heading"><div><p class="eyebrow">Comparació visual</p><h2 id="comparison-explorer-title">Cinc variables, una mateixa escala</h2><p id="comparison-chart-copy">Valors actuals de temperatura entre les estacions actives.</p></div><span class="tag">Ara</span></div>
       <div class="comparison-variable-tabs" role="group" aria-label="Variable que es vol comparar">
         <button type="button" class="is-active" data-compare-metric="temperature">Temperatura</button>
         <button type="button" data-compare-metric="humidity">Humitat</button>
@@ -78,13 +78,13 @@
         <button type="button" data-compare-metric="wind">Vent</button>
         <button type="button" data-compare-metric="rain">Pluja</button>
       </div>
-      <article class="comparison-variable-chart panel"><div class="chart-wrap"><canvas id="compare-variable-chart" aria-label="Gràfica comparativa de la variable seleccionada"></canvas></div><p id="comparison-variable-note">Selecciona Avui o 24 h per veure l’evolució històrica de totes les estacions.</p></article>
+      <article class="comparison-variable-chart panel"><div class="chart-wrap"><canvas id="compare-variable-chart" aria-label="Gràfica comparativa de la variable seleccionada"></canvas></div><p id="comparison-variable-note">Lectures actuals comparades amb les mateixes unitats i criteris.</p></article>
     </section>
 
     <section class="comparison-method panel"><div><p class="eyebrow">Fonts i criteri</p><h2>Com es trien les dades?</h2><p id="comparison-source-note">El Worker prioritza dades homogènies i disponibles, i deixa preparada la capa de fallback per a fonts oficials.</p></div><div class="comparison-method-grid"><span><b>1</b><small>Font oficial quan és disponible i comparable</small></span><span><b>2</b><small>Estació PWS propera com a fallback</small></span><span><b>3</b><small>Qualsevol estació sense dades queda marcada com a no disponible</small></span></div></section>
   </main>
 
-  <footer class="shell"><span>© 2026 Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V21.4.0</small><div><a href="./privacitat.html">Privacitat</a><a href="#top">Tornar amunt ↑</a><button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button></div></footer>
+  <footer class="shell"><span>© 2026 Observatori Meteorològic Fontanillas</span><small>Dades locals · Sant Celoni, Montseny · V21.5.0</small><div><a href="./privacitat.html">Privacitat</a><a href="#top">Tornar amunt ↑</a><button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button></div></footer>
 
   <div id="shareModal" hidden style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;"><div style="background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(340px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.4);" role="dialog" aria-modal="true" aria-labelledby="share-title"><h3 id="share-title" style="margin:0 0 16px;font-size:1.1rem;color:var(--text);">Compartir l'Observatori</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><button type="button" data-share="copy">📋 Copiar</button><button type="button" data-share="whatsapp">📱 WhatsApp</button><button type="button" data-share="facebook">📢 Facebook</button><button type="button" data-share="email">✉️ Correu</button><button type="button" data-share="instagram">📸 Instagram</button><button type="button" data-share="native">🔗 Altres apps</button></div><button type="button" id="share-close" style="margin-top:16px;width:100%;padding:10px;border:0;border-radius:10px;background:var(--green);color:#07110f;font-weight:700;cursor:pointer;">Tancar</button></div></div>
 </body>

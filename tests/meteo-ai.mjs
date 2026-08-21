@@ -144,6 +144,7 @@ assert.match(ephemeris.title,/Un dia com avui/);
 assert.match(ephemeris.facts.join(' '),/31,4 °C/);
 
 const unknown=await answerMeteoQuestion('Explica’m alguna cosa',context,services);
-assert.match(unknown.body,/conceptes/i);
+assert.equal(unknown.needsAI,true);
+assert.match(unknown.body,/model avançat/i);
 
 console.log('Test Meteo IA V18: correcte');
