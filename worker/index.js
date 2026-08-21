@@ -1689,9 +1689,10 @@ async function socialCardSignature(draftId, env) {
   return [...new Uint8Array(signature)].map(byte=>byte.toString(16).padStart(2,'0')).join('').slice(0,32);
 }
 
-async function socialCardUrl(draft, env) {
+async function socialCardUrl(draft, env, format = 'png') {
   const signature = await socialCardSignature(draft.id, env);
-  return `https://fonta-meteo.marcelfonta.workers.dev/social-card/${draft.id}.png?sig=${signature}`;
+  const extension = format === 'jpeg' ? 'jpg' : 'png';
+  return `https://fonta-meteo.marcelfonta.workers.dev/social-card/${draft.id}.${extension}?sig=${signature}`;
 }
 
 function socialCardHtml(draft) {
@@ -1722,20 +1723,25 @@ function socialCardHtml(draft) {
   </body></html>`;
 }
 
-async function socialCard(request, env, draftId, url) {
+async function socialCard(request, env, draftId, url, format = 'png') {
   if (!env.BROWSER) return json({ error:'La generació de targetes encara no està configurada.' }, 503);
   if (!(await ensureSocialDraftSchema(env))) return json({ error:'D1 no configurat.' }, 503);
   const expected = await socialCardSignature(draftId, env);
   if (!(await secureTokenMatch(String(url.searchParams.get('sig') || ''), expected))) return json({ error:'Signatura no vàlida.' }, 403);
   const draft = await findSocialDraft(env, draftId);
   if (!draft) return json({ error:'Targeta no trobada.' }, 404);
-  const rendered = await env.BROWSER.quickAction('screenshot', { html:socialCardHtml(draft), viewport:{ width:1080,height:1350 } });
+  const jpeg = format === 'jpeg';
+  const rendered = await env.BROWSER.quickAction('screenshot', {
+    html:socialCardHtml(draft),
+    viewport:{ width:1080,height:1350 },
+    ...(jpeg ? { screenshotOptions:{ type:'jpeg', quality:90 } } : {}),
+  });
   if (!rendered.ok) {
     const details = cleanText(await rendered.clone().text().catch(() => ''), 500);
     console.error('Social card rendering error', JSON.stringify({ draftId, status:rendered.status, details }));
   }
   const headers = new Headers(rendered.headers);
-  headers.set('Content-Type','image/png'); headers.set('Cache-Control','public, max-age=31536000, immutable');
+  headers.set('Content-Type',jpeg ? 'image/jpeg' : 'image/png'); headers.set('Cache-Control','public, max-age=31536000, immutable');
   headers.set('X-Content-Type-Options','nosniff');
   return new Response(rendered.body,{status:rendered.status,headers});
 }
@@ -1813,7 +1819,7 @@ async function publishFacebook(draft, env) {
 async function publishInstagram(draft, env) {
   const assets = await resolveMetaAssets(env);
   if (!assets.instagramId) throw Object.assign(new Error('La pàgina no té cap compte professional d’Instagram vinculat. També pots afegir META_INSTAGRAM_ACCOUNT_ID.'), { status:503 });
-  const imageUrl = await socialCardUrl(draft, env);
+  const imageUrl = await socialCardUrl(draft, env, 'jpeg');
   const created = await metaGraphRequest(env, `${assets.instagramId}/media`, {
     method:'POST', accessToken:assets.pageToken,
     params:{ image_url:imageUrl, caption:socialPostText(draft, 2200) },
@@ -2361,8 +2367,8 @@ export default {
       if (request.method === "GET" && url.pathname === "/oauth/youtube/callback") return youtubeOAuthCallback(request, env, url);
       if (request.method === "GET" && url.pathname === "/oauth/tiktok/start") return tiktokOAuthStart(request, env);
       if (request.method === "GET" && url.pathname === "/oauth/tiktok/callback") return tiktokOAuthCallback(request, env, url);
-      const socialCardMatch = url.pathname.match(/^\/social-card\/(\d+)\.png$/);
-      if (request.method === "GET" && socialCardMatch) return socialCard(request, env, Number(socialCardMatch[1]), url);
+      const socialCardMatch = url.pathname.match(/^\/social-card\/(\d+)\.(png|jpg)$/);
+      if (request.method === "GET" && socialCardMatch) return socialCard(request, env, Number(socialCardMatch[1]), url, socialCardMatch[2] === 'jpg' ? 'jpeg' : 'png');
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
       const socialPublishMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/publish$/);
