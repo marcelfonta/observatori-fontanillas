@@ -10,7 +10,7 @@ let latestDiagnostic=null;
 let refreshTimer=null;
 let socialFilter='';
 let socialDrafts=[];
-let socialCredentials={meta:false,facebook:false,instagram:false,bluesky:false,telegram:false,threads:false};
+let socialCredentials={meta:false,facebook:false,instagram:false,bluesky:false,telegram:false,threads:false,tiktok:false};
 let socialEditorDirty=false;
 const element=id=>document.getElementById(id);
 const text=(id,value)=>{const node=element(id);if(node)node.textContent=value ?? '—';};
@@ -76,6 +76,7 @@ function renderSocialQueue(social={}){
   text('admin-social-bluesky',social.channelCredentials?.bluesky?'Configurada':'No configurada');
   text('admin-social-telegram',social.channelCredentials?.telegram?'Configurada':'No configurada');
   text('admin-social-threads',social.channelCredentials?.threads?'Configurada':'No configurada');
+  text('admin-social-tiktok',social.channelCredentials?.tiktok?'Connectat':'Pendent d’autoritzar');
   text('admin-social-drafts',formatNumber(social.pendingDrafts??0));
   text('admin-social-approved',formatNumber(social.approved??0));
   text('admin-social-published',formatNumber(social.published??0));
