@@ -8,6 +8,8 @@ const STATION_LONGITUDE = 2.4890;
 const WEBCAM_URL = "https://www.alvar.cat/WebCam/Imatge-Camera.jpg";
 const BACKGROUND_URL = "https://santceloni.cat/ARXIUS/agenda/2011/made_in_montseny.jpg";
 const DEFAULT_CONTACT_FROM = "Observatori Fontanillas <formulari@fontanillas.cat>";
+const YOUTUBE_OAUTH_REDIRECT_URI = "https://fonta-meteo.marcelfonta.workers.dev/oauth/youtube/callback";
+const YOUTUBE_UPLOAD_SCOPE = "https://www.googleapis.com/auth/youtube.upload";
 const AEMET_PRELITORAL_FEED = "https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAZ690803_RSS.xml";
 const AEMET_PRELITORAL_PAGE = "https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&w=hoy";
 const COMPARISON_STATIONS = [
@@ -1288,6 +1290,81 @@ async function secureTokenMatch(candidate, expected) {
   return difference === 0;
 }
 
+function base64Url(bytes) {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+}
+
+async function youtubeOAuthSignature(payload, env) {
+  const secret = String(env.ADMIN_TOKEN || "");
+  if (secret.length < 24) throw Object.assign(new Error("Falta configurar la clau d’administració."), { status:503 });
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name:"HMAC", hash:"SHA-256" }, false, ["sign"]);
+  return base64Url(new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload))));
+}
+
+function youtubeOAuthCookie(request) {
+  const cookies = request.headers.get("Cookie") || "";
+  return cookies.split(";").map(value => value.trim()).find(value => value.startsWith("youtube_oauth_nonce="))?.slice("youtube_oauth_nonce=".length) || "";
+}
+
+async function youtubeOAuthStart(_request, env) {
+  if (!env.YOUTUBE_CLIENT_ID || !env.YOUTUBE_CLIENT_SECRET) return json({ error:"Falten les credencials OAuth de YouTube." }, 503);
+  const timestamp = Math.floor(Date.now() / 1000);
+  const nonce = base64Url(crypto.getRandomValues(new Uint8Array(24)));
+  const payload = `${timestamp}.${nonce}`;
+  const state = `${payload}.${await youtubeOAuthSignature(payload, env)}`;
+  const params = new URLSearchParams({
+    client_id:String(env.YOUTUBE_CLIENT_ID),
+    redirect_uri:YOUTUBE_OAUTH_REDIRECT_URI,
+    response_type:"code",
+    scope:YOUTUBE_UPLOAD_SCOPE,
+    access_type:"offline",
+    include_granted_scopes:"true",
+    prompt:"consent",
+    state,
+  });
+  return new Response(null, {
+    status:302,
+    headers:{
+      ...securityHeaders(),
+      "Cache-Control":"no-store",
+      "Location":`https://accounts.google.com/o/oauth2/v2/auth?${params}`,
+      "Set-Cookie":`youtube_oauth_nonce=${nonce}; Max-Age=600; Path=/oauth/youtube/callback; HttpOnly; Secure; SameSite=Lax`,
+    },
+  });
+}
+
+function youtubeOAuthPage(title, body, status = 200) {
+  const html = `<!doctype html><html lang="ca"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title><style>body{margin:0;background:#07130f;color:#f4fbf7;font:17px/1.55 system-ui,sans-serif}.card{max-width:720px;margin:8vh auto;padding:32px;border:1px solid #315246;border-radius:22px;background:#10251e}h1{margin-top:0}code{display:block;overflow-wrap:anywhere;padding:16px;border-radius:12px;background:#07130f;color:#8ee7ba}.ok{color:#8ee7ba}p{color:#c4d4cd}</style></head><body><main class="card"><h1>${escapeHtml(title)}</h1>${body}</main></body></html>`;
+  return new Response(html, { status, headers:{ ...securityHeaders(), "Content-Security-Policy":"default-src 'none'; style-src 'unsafe-inline'", "Content-Type":"text/html;charset=UTF-8", "Cache-Control":"no-store", "Set-Cookie":"youtube_oauth_nonce=; Max-Age=0; Path=/oauth/youtube/callback; HttpOnly; Secure; SameSite=Lax" } });
+}
+
+async function youtubeOAuthCallback(request, env, url) {
+  const error = cleanText(url.searchParams.get("error"), 120);
+  if (error) return youtubeOAuthPage("Autorització cancel·lada", `<p>Google ha retornat: ${escapeHtml(error)}.</p>`, 400);
+  const code = url.searchParams.get("code") || "";
+  const state = url.searchParams.get("state") || "";
+  const parts = state.split(".");
+  if (!code || parts.length !== 3) return youtubeOAuthPage("Autorització no vàlida", "<p>Falta el codi o l’estat de seguretat.</p>", 400);
+  const [timestampText, nonce, signature] = parts;
+  const timestamp = Number(timestampText);
+  const payload = `${timestampText}.${nonce}`;
+  const expected = await youtubeOAuthSignature(payload, env);
+  const fresh = Number.isFinite(timestamp) && Math.abs(Math.floor(Date.now() / 1000) - timestamp) <= 600;
+  if (!fresh || nonce !== youtubeOAuthCookie(request) || !(await secureTokenMatch(signature, expected))) return youtubeOAuthPage("Autorització caducada", "<p>Torna a iniciar la connexió de YouTube.</p>", 403);
+  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+    method:"POST",
+    headers:{ "Content-Type":"application/x-www-form-urlencoded" },
+    body:new URLSearchParams({ code, client_id:String(env.YOUTUBE_CLIENT_ID || ""), client_secret:String(env.YOUTUBE_CLIENT_SECRET || ""), redirect_uri:YOUTUBE_OAUTH_REDIRECT_URI, grant_type:"authorization_code" }),
+  });
+  const tokens = await tokenResponse.json().catch(() => ({}));
+  if (!tokenResponse.ok) return youtubeOAuthPage("No s’ha pogut completar", `<p>Google ha rebutjat l’intercanvi del codi (${tokenResponse.status}). Torna-ho a provar.</p>`, 502);
+  const refreshToken = String(tokens.refresh_token || "");
+  if (!refreshToken) return youtubeOAuthPage("Falta el token permanent", "<p>Google no ha retornat cap refresh token. Torna a iniciar la connexió i accepta tots els permisos.</p>", 409);
+  return youtubeOAuthPage("YouTube autoritzat", `<p class="ok">La connexió amb el canal s’ha completat.</p><p>Copia el valor següent i desa’l a Cloudflare com a secret <strong>YOUTUBE_REFRESH_TOKEN</strong>. No l’enviïs pel xat.</p><code>${escapeHtml(refreshToken)}</code><p>Quan l’hagis desat, pots tancar aquesta pestanya.</p>`);
+}
+
 function adminRequestToken(request) {
   const authorization = request.headers.get("Authorization") || "";
   return authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() || "";
@@ -2127,6 +2204,8 @@ export default {
     try {
       if (request.method === "POST" && url.pathname === "/contact") return contact(request, env);
       if (request.method === "POST" && url.pathname === "/meteo-ai") return meteoAI(request, env);
+      if (request.method === "GET" && url.pathname === "/oauth/youtube/start") return youtubeOAuthStart(request, env);
+      if (request.method === "GET" && url.pathname === "/oauth/youtube/callback") return youtubeOAuthCallback(request, env, url);
       const socialCardMatch = url.pathname.match(/^\/social-card\/(\d+)\.png$/);
       if (request.method === "GET" && socialCardMatch) return socialCard(request, env, Number(socialCardMatch[1]), url);
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
