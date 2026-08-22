@@ -4,10 +4,11 @@ import { answerMeteoQuestion } from '../src/features/meteo-ai.js';
 const now=Date.now();
 const dates=Array.from({length:14},(_,index)=>`2026-08-${String(10+index).padStart(2,'0')}`);
 const daily={time:dates,weather_code:[1,61,2,3,1,80,2,1,2,61,3,1,80,2],temperature_2m_max:[28,25,27,26,29,24,27,28,29,25,24,27,23,26],temperature_2m_min:[18,17,18,17,19,16,17,18,19,17,16,18,15,17],precipitation_probability_max:[15,75,20,30,10,65,25,20,30,70,40,20,80,30],precipitation_sum:[0,6.2,0,0.3,0,4.5,0,0,0.2,5,1,0,8,0],wind_gusts_10m_max:[18,32,20,22,17,35,20,18,21,33,24,19,38,20],uv_index_max:[6,5,6,5,6,4,5,5,6,4,4,5,3,5]};
+const hourly={time:Array.from({length:48},(_,index)=>`2026-08-${index<24?'10':'11'}T${String(index%24).padStart(2,'0')}:00`),precipitation_probability:Array.from({length:48},(_,index)=>index>=17&&index<=20?65:10),precipitation:Array.from({length:48},(_,index)=>index>=18&&index<=19?0.4:0),temperature_2m:Array(48).fill(23),wind_gusts_10m:Array(48).fill(20)};
 const context={
   current:{temperature:24.2,feelsLike:24.8,humidity:58,windSpeed:5.1,windGust:12.4,pressure:1016.2,rainToday:0,rainRate:0,updated:new Date(now).toISOString()},
   history:[{t:now-23*3600000,temperature:19.1},{t:now,temperature:24.2}],
-  forecast:{daily:Object.fromEntries(Object.entries(daily).map(([key,value])=>[key,value.slice(0,7)]))},
+  forecast:{daily:Object.fromEntries(Object.entries(daily).map(([key,value])=>[key,value.slice(0,7)])),hourly},
   alerts:{ok:true,active:0,maxLevel:'none',alerts:[],checkedAt:new Date(now).toISOString()},
   environment:{european_aqi:18,pm25:7.2,pm10:13.4,uv:4,uvSource:'Sensor Fontanillas',pollenMain:'Gramínies · 2,0',time:new Date(now).toISOString()}
 };
@@ -25,6 +26,23 @@ assert.equal(current.sources[0].href,'./?page=estacio');
 const forecast=await answerMeteoQuestion('Plourà demà?',context,services);
 assert.match(forecast.body,/75%/);
 assert.equal(forecast.level,'caution');
+
+const guide=await answerMeteoQuestion('Què pots fer?',context,services);
+assert.match(guide.body,/paraigua|jaqueta/i);
+
+const umbrella=await answerMeteoQuestion('Necessito paraigua demà?',context,services);
+assert.match(umbrella.title,/recomanable/i);
+assert.match(umbrella.body,/75%/);
+
+const clothes=await answerMeteoQuestion('Com m’he de vestir?',context,services);
+assert.match(clothes.title,/convé/i);
+
+const laundry=await answerMeteoQuestion('Puc estendre roba avui?',context,services);
+assert.equal(laundry.level,'safe');
+
+const rainTime=await answerMeteoQuestion('A quina hora pot ploure avui?',context,services);
+assert.match(rainTime.title,/17:00.*20:00/);
+assert.match(rainTime.body,/65%/);
 
 const alerts=await answerMeteoQuestion('Hi ha avisos actius?',context,services);
 assert.equal(alerts.level,'safe');

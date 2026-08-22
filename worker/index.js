@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.3.0";
+const WORKER_VERSION = "22.4.0";
 const WORKER_BUILT = "2026-08-22";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -2470,7 +2470,7 @@ async function meteoAI(request, env) {
   }
   const rawContext=body.context&&typeof body.context==='object'?body.context:{};
   const context=JSON.stringify({current:rawContext.current||null,forecast:rawContext.forecast||null,alerts:rawContext.alerts||null,environment:rawContext.environment||null,historySummary:rawContext.historySummary||rawContext.history||null,conversation:rawContext.conversation||null}).slice(0,18000);
-  const system=`Ets Meteo IA, l’assistent expert de l’Observatori Fontanillas de Sant Celoni. Respon sempre en català clar, natural i útil, en un màxim de 180 paraules. Entén errades ortogràfiques i preguntes molt senzilles. Si és una pregunta meteorològica general, respon amb coneixement científic encara que no depengui de les dades locals. Si pregunta per valors actuals, prediccions o avisos, prioritza el context verificat i diferencia observació de previsió. Si una dada concreta falta, explica què sí que pots concloure amb les dades disponibles en lloc d’aturar-te amb un “no ho trobo”. No inventis valors, fonts ni alertes. En emergències remet a Meteocat, AEMET, Protecció Civil i 112.`;
+  const system=`Ets Meteo IA, l’assistent expert de l’Observatori Fontanillas de Sant Celoni. Respon sempre en català clar, natural i útil, en un màxim de 180 paraules. Entén errades ortogràfiques, frases incompletes i preguntes quotidianes molt senzilles. Dona primer una resposta directa i després una explicació breu. Si és una pregunta meteorològica general, respon amb coneixement científic encara que no depengui de les dades locals. Si pregunta per valors actuals, prediccions o avisos, prioritza el context verificat, indica el període utilitzat i diferencia observació de previsió. Pots donar consells pràctics prudents —paraigua, roba o activitat exterior—, però no presentis una predicció com una certesa. Si una dada concreta falta, explica què sí que pots concloure amb les dades disponibles en lloc d’aturar-te amb un “no ho trobo”. No inventis valors, fonts ni alertes. En emergències remet a Meteocat, AEMET, Protecció Civil i 112.`;
   const result = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", { messages:[{role:"system",content:system},{role:"user",content:`Context verificat (JSON): ${context}\n\nPregunta: ${question}`}], max_tokens:520, temperature:0.2 });
   const textAnswer = cleanText(typeof result === "string" ? result : result?.response || result?.choices?.[0]?.message?.content, 3000);
   if (!textAnswer) return json({ error:"La IA no ha generat cap resposta" }, 502, "no-store", origin);

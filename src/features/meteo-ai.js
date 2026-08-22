@@ -266,6 +266,52 @@ function environmentAnswer(context){
   return response('Lectura ambiental',`La qualitat de l’aire estimada és ${quality}${aqi===null?'':` (índex europeu ${fmt(aqi,0)})`}. L’índex UV és ${fmt(uv,0)} i el pol·len dominant és ${pollen}.`,{level,facts:[`PM2,5 · ${fmt(env.pm25)} µg/m³`,`PM10 · ${fmt(env.pm10)} µg/m³`,`UV · ${fmt(uv,0)} · ${env.uvSource||'font no indicada'}`],sources:[source('CAMS via Open‑Meteo',`Actualitzat a les ${timeLabel(env.time)}`),source(env.uvSource||'Sensor Fontanillas','Índex UV')],followups:['Puc sortir a córrer?','Quin temps farà avui?']});
 }
 
+function assistantGuideAnswer(){
+  return response('Pregunta’m com ho diries a una persona','Puc explicar-te què passa ara, què farà avui o qualsevol dia de la previsió, si et convé paraigua o jaqueta, quan pot ploure, si pots estendre roba o fer una activitat a l’exterior. També consulto avisos, qualitat de l’aire, altres poblacions i conceptes meteorològics.',{
+    facts:['Dades actuals · estació Fontanillas','Predicció · fins a 14 dies','Seguretat · avisos oficials diferenciats de la previsió'],
+    sources:[source('Meteo IA','Guia de consultes disponibles')],
+    followups:['Necessito paraigua avui?','Com m’he de vestir demà?','A quina hora pot ploure?']
+  });
+}
+
+function hourlyRainAnswer(context,question){
+  const hourly=context.forecast?.hourly;
+  if(!hourly?.time?.length)return response('Horari de pluja pendent','Tinc el resum diari, però ara mateix no s’ha carregat el detall per hores. Puc dir-te la probabilitat màxima del dia o tornar-ho a provar quan acabi de carregar la predicció.',{sources:[source('Open‑Meteo','Detall horari no disponible')],followups:['Plourà avui?','Plourà demà?']});
+  const period=requestedPeriod(question,context.forecast?.daily);
+  const day=context.forecast?.daily?.time?.[period.type==='day'?period.index:0];
+  if(!day)return response('Dia fora de l’horitzó','No tinc detall horari per al dia demanat.',{sources:[source('Open‑Meteo','Horitzó horari no disponible')]});
+  const rows=hourly.time.map((time,index)=>({time,chance:n(hourly.precipitation_probability?.[index]),rain:n(hourly.precipitation?.[index])})).filter(row=>String(row.time).startsWith(day));
+  const likely=rows.filter(row=>(row.chance??0)>=40||(row.rain??0)>0);
+  if(!likely.length)return response(`No s’hi veu una franja clara de pluja ${period.label||'avui'}`,`La predicció horària no supera el 40% de probabilitat ni indica precipitació mesurable durant ${period.label||'avui'}. Encara pot canviar: revisa el radar abans de sortir.`,{level:'safe',sources:[source('Open‑Meteo',`${day} · predicció horària`)],followups:['Necessito paraigua?','Quin temps farà demà?']});
+  const first=likely[0],last=likely.at(-1),peak=[...likely].sort((a,b)=>(b.chance??0)-(a.chance??0))[0];
+  const start=timeLabel(first.time),end=timeLabel(last.time);const window=start===end?`cap a les ${start}`:`entre les ${start} i les ${end}`;
+  return response(`La franja més probable és ${window}`,`La predicció situa el risc de pluja ${window}, amb un màxim aproximat del ${fmt(peak.chance,0)}%. És una previsió horària, no una observació: comprova el radar quan s’acosti el moment.`,{level:(peak.chance??0)>=70?'caution':'info',facts:[`Inici orientatiu · ${start}`,`Final orientatiu · ${end}`,`Màxim · ${fmt(peak.chance,0)}%`],sources:[source('Open‑Meteo',`${day} · predicció horària`)],followups:['Necessito paraigua?','Hi ha avisos actius?']});
+}
+
+function everydayAdviceAnswer(context,question){
+  const q=normalize(question);const daily=context.forecast?.daily;const period=requestedPeriod(question,daily);const day=forecastDayFromDaily(daily,period.type==='day'?period.index:0);const current=context.current||{};
+  const rainChance=day?.rainChance??0;const rainNow=(n(current.rainRate)??0)>0;const temperature=period.type==='day'&&period.index>0?day?.max:(n(current.feelsLike)??n(current.temperature)??day?.max);
+  if(/paraigua|paraguas|mullare|mullar[eé]|impermeable/.test(q)){
+    if(rainNow)return response('Sí: ara mateix convé paraigua','L’estació detecta pluja en aquest instant. Si has de sortir, porta paraigua o impermeable i consulta el radar per veure com evoluciona.',{level:'caution',facts:[`Intensitat actual · ${fmt(current.rainRate)} mm/h`,`Pluja acumulada avui · ${fmt(current.rainToday)} mm`],sources:[source('Sensor Fontanillas',`Lectura de les ${timeLabel(current.updated)}`),source('Estació i predicció','Radar i evolució')]});
+    const recommendation=rainChance>=55?'Sí, és recomanable':rainChance>=25?'Millor portar-ne un de plegable':'En principi no sembla necessari';
+    return response(recommendation,`Per ${period.label||'avui'}, la probabilitat màxima prevista de pluja és del ${fmt(rainChance,0)}% i l’acumulació prevista és de ${fmt(day?.rain)} mm. És una previsió: revisa el radar abans de sortir.`,{level:rainChance>=55?'caution':'info',sources:[source('Open‑Meteo',`${day?.date||'avui'} · predicció diària`)],followups:['A quina hora pot ploure?','Quin temps farà demà?']});
+  }
+  if(/que em poso|com em vesteixo|com m['’ ]?he de vestir|jaqueta|abric|maniga curta|maniga llarga/.test(q)){
+    const clothes=(temperature??20)<=10?'abric i capes d’abric':(temperature??20)<=16?'jaqueta i una capa lleugera':(temperature??20)>=29?'roba fresca, gorra i aigua':'roba lleugera amb una capa fina per si refresca';
+    const rain=rainChance>=40?' Afegeix impermeable o paraigua.':'';
+    return response(`${period.label==='demà'?'Demà':'Avui'} et convé ${clothes}`,`La referència disponible és de ${fmt(temperature)} °C${day?`, amb una mínima prevista de ${fmt(day.min)} °C i una màxima de ${fmt(day.max)} °C`:''}.${rain}`,{level:(temperature??20)>=32?'caution':'info',facts:[`Pluja prevista · ${fmt(rainChance,0)}%`,`Ratxa màxima · ${fmt(day?.gust,0)} km/h`],sources:[source(day?'Open‑Meteo':'Sensor Fontanillas',day?`${day.date} · predicció`:`Lectura de les ${timeLabel(current.updated)}`)],followups:['Necessito paraigua?','Quin temps farà al vespre?']});
+  }
+  if(/estendre|estenc|assecar roba|rentar roba/.test(q)){
+    const suitable=!rainNow&&rainChance<30&&(day?.gust??0)<40;
+    return response(suitable?'Sí, sembla un bon moment per estendre':'Millor esperar o vigilar l’evolució',suitable?`No plou ara i la probabilitat màxima prevista és del ${fmt(rainChance,0)}%. Recull la roba si el cel canvia.`:`Hi ha ${rainNow?'pluja en aquest moment':`un ${fmt(rainChance,0)}% de probabilitat de pluja`} i ratxes previstes de fins a ${fmt(day?.gust,0)} km/h.`,{level:suitable?'safe':'caution',sources:[source('Sensor Fontanillas','Situació actual'),source('Open‑Meteo',`${day?.date||'avui'} · predicció`)],followups:['A quina hora pot ploure?','I demà?']});
+  }
+  if(/fara fred|fara calor|fa fred|fa calor|refrescar|baixara la temperatura|pujara la temperatura/.test(q)){
+    const feeling=(temperature??20)>=30?'calor marcada':(temperature??20)>=25?'calor moderada':(temperature??20)<=10?'fred':(temperature??20)<=16?'ambient fresc':'temperatura suau';
+    return response(`S’espera ${feeling}`,`La temperatura de referència és de ${fmt(temperature)} °C${day?` i el rang previst va de ${fmt(day.min)} a ${fmt(day.max)} °C`:''}.`,{level:(temperature??20)>=32?'caution':'info',sources:[source(day?'Open‑Meteo':'Sensor Fontanillas',day?`${day.date} · predicció`:`Lectura de les ${timeLabel(current.updated)}`)],followups:['Com m’he de vestir?','Quin temps farà demà?']});
+  }
+  return null;
+}
+
 function recommendationAnswer(context,question){
   const q=normalize(question);
   const activity=q.includes('bicicleta')||q.includes('bici')?'anar amb bicicleta':q.includes('correr')||q.includes('running')?'córrer':q.includes('excurs')||q.includes('muntanya')?'fer una excursió':q.includes('nens')||q.includes('famil')?'fer una activitat familiar':'fer activitat a l’exterior';
@@ -382,6 +428,7 @@ function shouldUseConversation(q){return /\bhi\b|alla|aquella zona|quin temps|qu
 
 export async function answerMeteoQuestion(question,context=state,services={fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},memory=null){
   const q=normalize(question);
+  if(/^(hola|bon dia|bona tarda|bona nit|ajuda|que pots fer|com em pots ajudar)$/.test(q))return assistantGuideAnswer();
   if(/on (puc|es pot)|on consultar|quina font|fonts fiables|d on treure|dades obertes|informacio meteorologica/.test(q))return sourceGuideAnswer();
   if(/efemer|un dia com avui|record historic|record meteorologic|curiositat meteorologica/.test(q))return stationEphemerisAnswer(context);
   const knowledge=meteorologyKnowledgeAnswer(question);if(knowledge)return knowledge;
@@ -397,6 +444,8 @@ export async function answerMeteoQuestion(question,context=state,services={fetch
     return localityAnswer(locality,services,resolvedQuestion,{memory,activity:effectiveActivity});
   }
   if(memory&&explicitLocality){memory.location={query:'Sant Celoni',label:'Sant Celoni · Fontanillas',country:'Catalunya',local:true};saveMemory(memory);}
+  if(/a quina hora|quina hora|quan ploura|quan comencara.*plou|franja.*pluja/.test(q))return hourlyRainAnswer(context,resolvedQuestion);
+  const everyday=everydayAdviceAnswer(context,resolvedQuestion);if(everyday)return everyday;
   if(alertHistoryIntent(question))return alertHistoryAnswer(question,services);
   if(/avis|alert|perill/.test(q))return alertsAnswer(context);
   if(/correr|running|excurs|muntanya|famil|nens|sortir|passeig|bicicleta|bici|bon moment/.test(q))return recommendationAnswer(context,resolvedQuestion);
@@ -411,7 +460,8 @@ export async function answerMeteoQuestion(question,context=state,services={fetch
 function advancedContext(context){
   const current=context.current?Object.fromEntries(['updated','temperature','feelsLike','humidity','pressure','windSpeed','windGust','windDirection','rainToday','rainRate','solarRadiation','uv','degraded','stale','ageMinutes'].map(key=>[key,context.current[key]])):null;
   const daily=context.forecast?.daily||null;
-  return {station:'Fontanillas · Sant Celoni',current,forecast:daily?{time:daily.time,weather_code:daily.weather_code,temperature_2m_max:daily.temperature_2m_max,temperature_2m_min:daily.temperature_2m_min,precipitation_probability_max:daily.precipitation_probability_max,precipitation_sum:daily.precipitation_sum,wind_gusts_10m_max:daily.wind_gusts_10m_max}:null,alerts:context.alerts?{active:context.alerts.active,maxLevel:context.alerts.maxLevel,alerts:context.alerts.alerts}:null,environment:context.environment||null};
+  const hourly=context.forecast?.hourly||null;
+  return {station:'Fontanillas · Sant Celoni',current,forecast:daily?{time:daily.time,weather_code:daily.weather_code,temperature_2m_max:daily.temperature_2m_max,temperature_2m_min:daily.temperature_2m_min,precipitation_probability_max:daily.precipitation_probability_max,precipitation_sum:daily.precipitation_sum,wind_gusts_10m_max:daily.wind_gusts_10m_max,hourly:hourly?{time:hourly.time?.slice(0,48),precipitation_probability:hourly.precipitation_probability?.slice(0,48),precipitation:hourly.precipitation?.slice(0,48),temperature_2m:hourly.temperature_2m?.slice(0,48),wind_gusts_10m:hourly.wind_gusts_10m?.slice(0,48)}:null}:null,alerts:context.alerts?{active:context.alerts.active,maxLevel:context.alerts.maxLevel,alerts:context.alerts.alerts}:null,environment:context.environment||null};
 }
 
 export async function answerMeteoQuestionAdvanced(question,context=state,services={fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},memory=null){
