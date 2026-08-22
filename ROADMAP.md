@@ -1,5 +1,14 @@
 # Roadmap oficial
 
+## V22.1.0 — Rendiment, comprensió i resiliència — En verificació
+
+- [x] Pintat inicial amb dades reals i fallback segur.
+- [x] Dades estructurades de la darrera observació abans d’executar JavaScript.
+- [x] Més coneixement meteorològic local sense cost de model extern.
+- [x] Verificació de prediccions més visual, completa i accessible.
+- [x] Diagnòstic explícit del model avançat al panell.
+- [ ] Validació a l’entorn de previsualització abans d’integrar a producció.
+
 ## Visió
 
 Construir el portal meteorològic del Baix Montseny combinant dades pròpies, fonts oficials i eines intel·ligents amb una experiència clara, moderna i sostenible.

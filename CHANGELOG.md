@@ -1,5 +1,13 @@
 # Changelog
 
+## V22.1.0 — 2026-08-22
+
+- Primera càrrega enriquida al servidor amb la darrera observació real, dades estructurades i alternativa segura si l’API no respon a temps.
+- Meteo IA local ampliada amb boira, inversió tèrmica, tempestes, sensació tèrmica, vent i radiació UV; el mode de seguretat deixa de respondre amb un error genèric.
+- «Predicció vs realitat» mostra el biaix de temperatura, la ratxa prevista i observada, una llegenda més clara i un progrés accessible.
+- El panell d’administració diferencia el mode local de Meteo IA de l’ampliació avançada opcional.
+- Versions web, Worker i memòria cau PWA unificades.
+
 ## V22.0.3 — 2026-08-22
 
 - Nova navegació inferior mòbil amb cinc accessos clars, indicador de pàgina activa i accés complet a la resta de seccions.
