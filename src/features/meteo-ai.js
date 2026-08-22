@@ -238,7 +238,13 @@ const knowledgeTopics=[
   {test:/probabilitat de pluja|percentatge de pluja|\bpop\b/,title:'Què vol dir la probabilitat de pluja?',body:'És la probabilitat que hi hagi precipitació mesurable en un punt de la zona i durant el període indicat. Un 60% no vol dir que plourà el 60% del temps ni sobre el 60% del territori.',facts:['Probabilitat i quantitat prevista són variables diferents','Cal mirar també intensitat, acumulació i horari','En ruixats locals la distribució pot ser molt irregular']},
   {test:/radar.*satel|satel.*radar|radar meteorologic/,title:'Radar i satèl·lit no mostren el mateix',body:'El radar estima precipitació i moviment dels ecos a prop de la superfície; el satèl·lit observa núvols i propietats de l’atmosfera des de l’espai. Per saber si plou ara, el radar és més directe; per entendre l’estructura nuvolosa, el satèl·lit aporta més context.',facts:['Radar · precipitació estimada','Satèl·lit · núvols i masses d’aire','Cap dels dos substitueix una observació a terra']},
   {test:/model|ensemble|conjunt|incertesa/,title:'Models i incertesa meteorològica',body:'Un model meteorològic calcula l’evolució de l’atmosfera a partir d’un estat inicial. Els conjunts o ensembles repeteixen el càlcul amb petites variacions: si les solucions divergeixen, la incertesa és més alta.',facts:['Una sortida única no és una certesa','El conjunt ajuda a veure escenaris i probabilitats','La fiabilitat disminueix amb l’horitzó temporal']},
-  {test:/tipus de nuvol|nuvols|cirrus|cumulonimbus/,title:'Com s’identifiquen els núvols?',body:'Els núvols es classifiquen per forma, altura i evolució. Cirrus són núvols alts de cristalls de gel; cúmuls tenen desenvolupament vertical; un cumulonimbus és un núvol de tempesta amb gran extensió vertical.',facts:['La classificació internacional és de l’OMM','Forma i evolució importen tant com l’altura','Un núvol per si sol no basta per fer una previsió']}
+  {test:/tipus de nuvol|nuvols|cirrus|cumulonimbus/,title:'Com s’identifiquen els núvols?',body:'Els núvols es classifiquen per forma, altura i evolució. Cirrus són núvols alts de cristalls de gel; cúmuls tenen desenvolupament vertical; un cumulonimbus és un núvol de tempesta amb gran extensió vertical.',facts:['La classificació internacional és de l’OMM','Forma i evolució importen tant com l’altura','Un núvol per si sol no basta per fer una previsió']},
+  {test:/boira|boirina|visibilitat/,title:'Com es forma la boira?',body:'La boira és un núvol en contacte amb el terra. Sol aparèixer quan l’aire pròxim a la superfície es refreda fins al punt de rosada o rep prou humitat; el vent, el relleu i l’estat del sòl en determinen la persistència.',facts:['Temperatura i punt de rosada pròxims afavoreixen la boira','Una mica de vent pot formar-la o dissipar-la segons la situació','Al Baix Montseny el relleu crea diferències locals importants']},
+  {test:/inversio termica|inversio de temperatura/,title:'Què és una inversió tèrmica?',body:'Normalment la temperatura baixa amb l’altura. En una inversió passa al revés durant una capa: l’aire fred queda atrapat a baix i l’aire més càlid a sobre. És freqüent en nits serenes i amb poc vent.',facts:['Pot afavorir boira i glaçada a les fondalades','Pot retenir contaminació a prop del terra','El sol i el vent acostumen a trencar-la']},
+  {test:/tempesta|llamp|tro|calamarsa/,title:'Tempestes, llamps i calamarsa',body:'Una tempesta necessita aire humit, inestabilitat i un mecanisme que faci pujar l’aire. Els llamps indiquen fortes càrregues elèctriques dins del núvol; la calamarsa es forma en corrents ascendents intensos.',facts:['El radar i la xarxa de llamps ajuden a seguir-ne el moviment','La intensitat pot variar molt en pocs quilòmetres','Davant un avís oficial, cal seguir Protecció Civil']},
+  {test:/sensacio termica|xafogor|index de calor/,title:'Sensació tèrmica i xafogor',body:'La sensació tèrmica estima com percep el cos la temperatura combinant altres variables. Amb calor, la humitat dificulta que la suor s’evapori i augmenta la xafogor; amb fred, el vent accelera la pèrdua de calor.',facts:['No és una temperatura mesurada directament','Sol i activitat física també modifiquen la percepció','En calor intensa, hidrata’t i evita les hores centrals']},
+  {test:/ratxa|velocitat del vent|direccio del vent/,title:'Vent mitjà, ratxa i direcció',body:'El vent mitjà resumeix la velocitat durant un interval; la ratxa és un màxim breu i pot ser molt superior. La direcció indica d’on ve el vent, no cap on va.',facts:['Una ratxa descriu un pic curt','El relleu i els edificis poden accelerar o desviar el vent','Per activitats a l’exterior convé mirar sobretot les ratxes']},
+  {test:/radiacio solar|index uv|ultraviolada/,title:'Radiació solar i índex UV',body:'La radiació solar mesura l’energia que arriba del Sol. L’índex UV resumeix el risc de radiació ultraviolada per a la pell i els ulls; pot ser elevat fins i tot amb temperatura moderada.',facts:['UV 3 o més ja recomana protecció','Els núvols no sempre bloquegen tota la radiació UV','Ombra, roba, ulleres i protector solar redueixen l’exposició']}
 ];
 
 function meteorologyKnowledgeAnswer(question){
@@ -258,6 +264,52 @@ function environmentAnswer(context){
   const quality=aqi===null?'no disponible':aqi<=20?'bona':aqi<=40?'raonablement bona':aqi<=60?'moderada':aqi<=80?'dolenta':'molt dolenta';
   const level=(aqi??0)>60||(uv??0)>=8?'warning':(aqi??0)>40||(uv??0)>=6?'caution':'safe';
   return response('Lectura ambiental',`La qualitat de l’aire estimada és ${quality}${aqi===null?'':` (índex europeu ${fmt(aqi,0)})`}. L’índex UV és ${fmt(uv,0)} i el pol·len dominant és ${pollen}.`,{level,facts:[`PM2,5 · ${fmt(env.pm25)} µg/m³`,`PM10 · ${fmt(env.pm10)} µg/m³`,`UV · ${fmt(uv,0)} · ${env.uvSource||'font no indicada'}`],sources:[source('CAMS via Open‑Meteo',`Actualitzat a les ${timeLabel(env.time)}`),source(env.uvSource||'Sensor Fontanillas','Índex UV')],followups:['Puc sortir a córrer?','Quin temps farà avui?']});
+}
+
+function assistantGuideAnswer(){
+  return response('Pregunta’m com ho diries a una persona','Puc explicar-te què passa ara, què farà avui o qualsevol dia de la previsió, si et convé paraigua o jaqueta, quan pot ploure, si pots estendre roba o fer una activitat a l’exterior. També consulto avisos, qualitat de l’aire, altres poblacions i conceptes meteorològics.',{
+    facts:['Dades actuals · estació Fontanillas','Predicció · fins a 14 dies','Seguretat · avisos oficials diferenciats de la previsió'],
+    sources:[source('Meteo IA','Guia de consultes disponibles')],
+    followups:['Necessito paraigua avui?','Com m’he de vestir demà?','A quina hora pot ploure?']
+  });
+}
+
+function hourlyRainAnswer(context,question){
+  const hourly=context.forecast?.hourly;
+  if(!hourly?.time?.length)return response('Horari de pluja pendent','Tinc el resum diari, però ara mateix no s’ha carregat el detall per hores. Puc dir-te la probabilitat màxima del dia o tornar-ho a provar quan acabi de carregar la predicció.',{sources:[source('Open‑Meteo','Detall horari no disponible')],followups:['Plourà avui?','Plourà demà?']});
+  const period=requestedPeriod(question,context.forecast?.daily);
+  const day=context.forecast?.daily?.time?.[period.type==='day'?period.index:0];
+  if(!day)return response('Dia fora de l’horitzó','No tinc detall horari per al dia demanat.',{sources:[source('Open‑Meteo','Horitzó horari no disponible')]});
+  const rows=hourly.time.map((time,index)=>({time,chance:n(hourly.precipitation_probability?.[index]),rain:n(hourly.precipitation?.[index])})).filter(row=>String(row.time).startsWith(day));
+  const likely=rows.filter(row=>(row.chance??0)>=40||(row.rain??0)>0);
+  if(!likely.length)return response(`No s’hi veu una franja clara de pluja ${period.label||'avui'}`,`La predicció horària no supera el 40% de probabilitat ni indica precipitació mesurable durant ${period.label||'avui'}. Encara pot canviar: revisa el radar abans de sortir.`,{level:'safe',sources:[source('Open‑Meteo',`${day} · predicció horària`)],followups:['Necessito paraigua?','Quin temps farà demà?']});
+  const first=likely[0],last=likely.at(-1),peak=[...likely].sort((a,b)=>(b.chance??0)-(a.chance??0))[0];
+  const start=timeLabel(first.time),end=timeLabel(last.time);const window=start===end?`cap a les ${start}`:`entre les ${start} i les ${end}`;
+  return response(`La franja més probable és ${window}`,`La predicció situa el risc de pluja ${window}, amb un màxim aproximat del ${fmt(peak.chance,0)}%. És una previsió horària, no una observació: comprova el radar quan s’acosti el moment.`,{level:(peak.chance??0)>=70?'caution':'info',facts:[`Inici orientatiu · ${start}`,`Final orientatiu · ${end}`,`Màxim · ${fmt(peak.chance,0)}%`],sources:[source('Open‑Meteo',`${day} · predicció horària`)],followups:['Necessito paraigua?','Hi ha avisos actius?']});
+}
+
+function everydayAdviceAnswer(context,question){
+  const q=normalize(question);const daily=context.forecast?.daily;const period=requestedPeriod(question,daily);const day=forecastDayFromDaily(daily,period.type==='day'?period.index:0);const current=context.current||{};
+  const rainChance=day?.rainChance??0;const rainNow=(n(current.rainRate)??0)>0;const temperature=period.type==='day'&&period.index>0?day?.max:(n(current.feelsLike)??n(current.temperature)??day?.max);
+  if(/paraigua|paraguas|mullare|mullar[eé]|impermeable/.test(q)){
+    if(rainNow)return response('Sí: ara mateix convé paraigua','L’estació detecta pluja en aquest instant. Si has de sortir, porta paraigua o impermeable i consulta el radar per veure com evoluciona.',{level:'caution',facts:[`Intensitat actual · ${fmt(current.rainRate)} mm/h`,`Pluja acumulada avui · ${fmt(current.rainToday)} mm`],sources:[source('Sensor Fontanillas',`Lectura de les ${timeLabel(current.updated)}`),source('Estació i predicció','Radar i evolució')]});
+    const recommendation=rainChance>=55?'Sí, és recomanable':rainChance>=25?'Millor portar-ne un de plegable':'En principi no sembla necessari';
+    return response(recommendation,`Per ${period.label||'avui'}, la probabilitat màxima prevista de pluja és del ${fmt(rainChance,0)}% i l’acumulació prevista és de ${fmt(day?.rain)} mm. És una previsió: revisa el radar abans de sortir.`,{level:rainChance>=55?'caution':'info',sources:[source('Open‑Meteo',`${day?.date||'avui'} · predicció diària`)],followups:['A quina hora pot ploure?','Quin temps farà demà?']});
+  }
+  if(/que em poso|com em vesteixo|com m['’ ]?he de vestir|jaqueta|abric|maniga curta|maniga llarga/.test(q)){
+    const clothes=(temperature??20)<=10?'abric i capes d’abric':(temperature??20)<=16?'jaqueta i una capa lleugera':(temperature??20)>=29?'roba fresca, gorra i aigua':'roba lleugera amb una capa fina per si refresca';
+    const rain=rainChance>=40?' Afegeix impermeable o paraigua.':'';
+    return response(`${period.label==='demà'?'Demà':'Avui'} et convé ${clothes}`,`La referència disponible és de ${fmt(temperature)} °C${day?`, amb una mínima prevista de ${fmt(day.min)} °C i una màxima de ${fmt(day.max)} °C`:''}.${rain}`,{level:(temperature??20)>=32?'caution':'info',facts:[`Pluja prevista · ${fmt(rainChance,0)}%`,`Ratxa màxima · ${fmt(day?.gust,0)} km/h`],sources:[source(day?'Open‑Meteo':'Sensor Fontanillas',day?`${day.date} · predicció`:`Lectura de les ${timeLabel(current.updated)}`)],followups:['Necessito paraigua?','Quin temps farà al vespre?']});
+  }
+  if(/estendre|estenc|assecar roba|rentar roba/.test(q)){
+    const suitable=!rainNow&&rainChance<30&&(day?.gust??0)<40;
+    return response(suitable?'Sí, sembla un bon moment per estendre':'Millor esperar o vigilar l’evolució',suitable?`No plou ara i la probabilitat màxima prevista és del ${fmt(rainChance,0)}%. Recull la roba si el cel canvia.`:`Hi ha ${rainNow?'pluja en aquest moment':`un ${fmt(rainChance,0)}% de probabilitat de pluja`} i ratxes previstes de fins a ${fmt(day?.gust,0)} km/h.`,{level:suitable?'safe':'caution',sources:[source('Sensor Fontanillas','Situació actual'),source('Open‑Meteo',`${day?.date||'avui'} · predicció`)],followups:['A quina hora pot ploure?','I demà?']});
+  }
+  if(/fara fred|fara calor|fa fred|fa calor|refrescar|baixara la temperatura|pujara la temperatura/.test(q)){
+    const feeling=(temperature??20)>=30?'calor marcada':(temperature??20)>=25?'calor moderada':(temperature??20)<=10?'fred':(temperature??20)<=16?'ambient fresc':'temperatura suau';
+    return response(`S’espera ${feeling}`,`La temperatura de referència és de ${fmt(temperature)} °C${day?` i el rang previst va de ${fmt(day.min)} a ${fmt(day.max)} °C`:''}.`,{level:(temperature??20)>=32?'caution':'info',sources:[source(day?'Open‑Meteo':'Sensor Fontanillas',day?`${day.date} · predicció`:`Lectura de les ${timeLabel(current.updated)}`)],followups:['Com m’he de vestir?','Quin temps farà demà?']});
+  }
+  return null;
 }
 
 function recommendationAnswer(context,question){
@@ -376,6 +428,7 @@ function shouldUseConversation(q){return /\bhi\b|alla|aquella zona|quin temps|qu
 
 export async function answerMeteoQuestion(question,context=state,services={fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},memory=null){
   const q=normalize(question);
+  if(/^(hola|bon dia|bona tarda|bona nit|ajuda|que pots fer|com em pots ajudar)$/.test(q))return assistantGuideAnswer();
   if(/on (puc|es pot)|on consultar|quina font|fonts fiables|d on treure|dades obertes|informacio meteorologica/.test(q))return sourceGuideAnswer();
   if(/efemer|un dia com avui|record historic|record meteorologic|curiositat meteorologica/.test(q))return stationEphemerisAnswer(context);
   const knowledge=meteorologyKnowledgeAnswer(question);if(knowledge)return knowledge;
@@ -391,6 +444,8 @@ export async function answerMeteoQuestion(question,context=state,services={fetch
     return localityAnswer(locality,services,resolvedQuestion,{memory,activity:effectiveActivity});
   }
   if(memory&&explicitLocality){memory.location={query:'Sant Celoni',label:'Sant Celoni · Fontanillas',country:'Catalunya',local:true};saveMemory(memory);}
+  if(/a quina hora|quina hora|quan ploura|quan comencara.*plou|franja.*pluja/.test(q))return hourlyRainAnswer(context,resolvedQuestion);
+  const everyday=everydayAdviceAnswer(context,resolvedQuestion);if(everyday)return everyday;
   if(alertHistoryIntent(question))return alertHistoryAnswer(question,services);
   if(/avis|alert|perill/.test(q))return alertsAnswer(context);
   if(/correr|running|excurs|muntanya|famil|nens|sortir|passeig|bicicleta|bici|bon moment/.test(q))return recommendationAnswer(context,resolvedQuestion);
@@ -405,14 +460,15 @@ export async function answerMeteoQuestion(question,context=state,services={fetch
 function advancedContext(context){
   const current=context.current?Object.fromEntries(['updated','temperature','feelsLike','humidity','pressure','windSpeed','windGust','windDirection','rainToday','rainRate','solarRadiation','uv','degraded','stale','ageMinutes'].map(key=>[key,context.current[key]])):null;
   const daily=context.forecast?.daily||null;
-  return {station:'Fontanillas · Sant Celoni',current,forecast:daily?{time:daily.time,weather_code:daily.weather_code,temperature_2m_max:daily.temperature_2m_max,temperature_2m_min:daily.temperature_2m_min,precipitation_probability_max:daily.precipitation_probability_max,precipitation_sum:daily.precipitation_sum,wind_gusts_10m_max:daily.wind_gusts_10m_max}:null,alerts:context.alerts?{active:context.alerts.active,maxLevel:context.alerts.maxLevel,alerts:context.alerts.alerts}:null,environment:context.environment||null};
+  const hourly=context.forecast?.hourly||null;
+  return {station:'Fontanillas · Sant Celoni',current,forecast:daily?{time:daily.time,weather_code:daily.weather_code,temperature_2m_max:daily.temperature_2m_max,temperature_2m_min:daily.temperature_2m_min,precipitation_probability_max:daily.precipitation_probability_max,precipitation_sum:daily.precipitation_sum,wind_gusts_10m_max:daily.wind_gusts_10m_max,hourly:hourly?{time:hourly.time?.slice(0,48),precipitation_probability:hourly.precipitation_probability?.slice(0,48),precipitation:hourly.precipitation?.slice(0,48),temperature_2m:hourly.temperature_2m?.slice(0,48),wind_gusts_10m:hourly.wind_gusts_10m?.slice(0,48)}:null}:null,alerts:context.alerts?{active:context.alerts.active,maxLevel:context.alerts.maxLevel,alerts:context.alerts.alerts}:null,environment:context.environment||null};
 }
 
 export async function answerMeteoQuestionAdvanced(question,context=state,services={fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},memory=null){
   const local=await answerMeteoQuestion(question,context,services,memory);
   if(!local.needsAI)return local;
   try{return await fetchAdvancedMeteoAI(question,advancedContext(context));}
-  catch(error){console.warn('Meteo IA avançada no disponible.',error);return response('No he pogut completar la resposta','El model avançat no està disponible ara mateix. Prova de concretar si preguntes per la situació actual, una predicció, avisos, una activitat o un concepte meteorològic.',{level:'warning',sources:[source('Meteo IA','Mode local de seguretat')],followups:['Quin temps farà demà?','Hi ha avisos actius?','Què és un front fred?']});}
+  catch(error){console.warn('Meteo IA avançada no disponible.',error);return response('Puc ajudar-te amb les dades disponibles','No vull inventar una resposta que les fonts no permeten verificar. Puc respondre ara mateix sobre la situació actual, la predicció de 14 dies, els avisos, activitats a l’exterior, altres poblacions o conceptes meteorològics.',{level:'info',sources:[source('Meteo IA','Mode local fiable')],followups:['Quin temps farà demà?','Hi ha avisos actius?','Explica’m què és la boira']});}
 }
 
 function createMessage(role,resultOrText){

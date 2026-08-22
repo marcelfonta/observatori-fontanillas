@@ -12,8 +12,10 @@ const testButton = document.getElementById('push-preferences-test');
 const fields = [...document.querySelectorAll('[data-alert-preference]')];
 const levelFields = [...document.querySelectorAll('[data-alert-level]')];
 const summary = document.getElementById('push-preference-summary');
+const diagnostic = document.getElementById('push-device-diagnostic');
 const STORAGE_KEY = CONFIG.pushPreferencesKey || 'fontanillas-alert-preferences-v1';
 const INVITE_KEY = 'fontanillas-alert-invite-v1';
+const INVITE_DELAY_MS = 10000;
 const invite = document.getElementById('alertInviteModal');
 const inviteYes = document.getElementById('alert-invite-yes');
 const inviteNo = document.getElementById('alert-invite-no');
@@ -72,6 +74,18 @@ function setState(label, text, active = false, disabled = false) {
   }
   if (status) { status.textContent = text; status.hidden = false; }
 }
+async function renderDeviceDiagnostic(){
+  if(!diagnostic)return;
+  const permission=typeof Notification==='undefined'?'no compatible':Notification.permission;
+  const subscription=await optedIn();
+  const checks=[
+    ['Navegador',typeof Notification==='undefined'?'No compatible':'Compatible'],
+    ['Permís',permission==='granted'?'Concedit':permission==='denied'?'Bloquejat':'Pendent'],
+    ['Subscripció',subscription?'Activa':appId&&sdkReady?'Pendent':'No verificada'],
+    ...(isIos()?[['Mode iPhone',isStandalone()?'Obert com a app':'Cal afegir a la pantalla d’inici']]:[]),
+  ];
+  diagnostic.innerHTML=`<strong>Diagnosi d’aquest dispositiu</strong><ul>${checks.map(([label,value])=>`<li><span>${label}</span><b>${value}</b></li>`).join('')}</ul><small>La prova local comprova el dispositiu; una subscripció activa confirma també la connexió amb el servei d’avisos.</small>`;
+}
 function openModal(){
   if(!modal)return;
   const prefs=loadPrefs();
@@ -80,11 +94,12 @@ function openModal(){
   levelFields.forEach(field=>{field.checked=selected.includes(field.value);});
   if(summary){ summary.textContent=notificationPreferenceSummary(prefs); summary.classList.remove('is-error'); }
   setPushActionState(false);
+  renderDeviceDiagnostic();
   modal.hidden=false; modal.style.display='flex'; document.body.style.overflow='hidden';
 }
 function closeModal(){ if(!modal)return; modal.hidden=true; modal.style.display='none'; document.body.style.overflow=''; }
 function openInvite(){
-  if(!invite||inviteDecision())return;
+  if(!invite||inviteDecision()||document.visibilityState!=='visible'||(modal&&!modal.hidden))return;
   invite.hidden=false;
   document.body.style.overflow='hidden';
   inviteYes?.focus();
@@ -128,6 +143,7 @@ async function refresh(){
   if(active) setState('Gestionar avisos',notificationPreferenceSummary(prefs),true,false);
   else if(isIos()&&!isStandalone()) setState('Activar avisos','A iPhone, afegeix primer la web a la pantalla d’inici',false,false);
   else setState('Activar avisos','Rep només avisos meteorològics importants',false,false);
+  await renderDeviceDiagnostic();
 }
 
 async function enablePush(){
@@ -196,7 +212,8 @@ async function testPush(){
     const registration=await navigator.serviceWorker?.ready;
     if(registration?.showNotification)await registration.showNotification('Avisos Meteo Fontanillas',{body:'Prova correcta: aquest dispositiu pot mostrar avisos meteorològics.',icon:'/assets/icons/icon-192.png',badge:'/assets/icons/icon-192.png',tag:'fontanillas-push-test'});
     else new Notification('Avisos Meteo Fontanillas',{body:'Prova correcta: aquest dispositiu pot mostrar avisos meteorològics.'});
-    showPushProgress('Prova enviada. Si no la veus, revisa el centre de notificacions del dispositiu.');
+    showPushProgress('Prova local enviada. Si no la veus, revisa el centre de notificacions del dispositiu.');
+    await renderDeviceDiagnostic();
   }catch(error){console.warn('No s’ha pogut mostrar la notificació de prova.',error);showPushProgress('No s’ha pogut mostrar la prova en aquest dispositiu.',true);}
 }
 
@@ -215,7 +232,11 @@ function bindUi(){
   inviteNo?.addEventListener('click',()=>{closeInvite('declined');window.observatoriTrack?.('push_invite_declined');});
   inviteYes?.addEventListener('click',()=>{closeInvite('accepted');openModal();window.observatoriTrack?.('push_invite_accepted');});
   refresh();
-  window.setTimeout(openInvite,1200);
+  // Evita tapar la portada abans que la persona hagi pogut orientar-se.
+  window.setTimeout(()=>{
+    if(document.visibilityState==='visible')openInvite();
+    else document.addEventListener('visibilitychange',openInvite,{once:true});
+  },INVITE_DELAY_MS);
 }
 
 bindUi();

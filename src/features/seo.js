@@ -20,7 +20,30 @@ const PAGES={
 function setMeta(selector,value){const node=document.querySelector(selector);if(node)node.setAttribute('content',value);}
 
 let activePage='inici';
-let latestObservation=null;
+
+function observationFromInitialSchema(){
+  if(typeof document==='undefined')return null;
+  const schema=document.getElementById('seo-structured-data');
+  if(!schema?.textContent)return null;
+  try{
+    const parsed=JSON.parse(schema.textContent);
+    const observation=parsed?.['@graph']?.find(item=>item?.['@type']==='Observation');
+    if(!observation)return null;
+    const values=new Map((observation.measuredProperty||[]).map(item=>[item?.name,item?.value]));
+    const temperature=Number(values.get('Temperatura'));
+    if(!Number.isFinite(temperature))return null;
+    return {
+      temperature,
+      humidity:values.get('Humitat relativa'),
+      pressure:values.get('Pressió atmosfèrica'),
+      windSpeed:values.get('Velocitat del vent'),
+      rainToday:values.get('Precipitació acumulada avui'),
+      updated:observation.observationDate
+    };
+  }catch{return null;}
+}
+
+let latestObservation=observationFromInitialSchema();
 
 function structuredGraph(page,observation){
   const current=PAGES[page]||PAGES.inici;

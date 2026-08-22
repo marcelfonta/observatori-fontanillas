@@ -1,5 +1,22 @@
 # Changelog
 
+## V22.2.0 — 2026-08-22
+
+- La invitació per activar avisos espera deu segons i no s’obre sobre una pestanya amagada ni sobre el diàleg de preferències.
+- Nova comprovació preventiva diària de Facebook, Instagram, Bluesky, Telegram, Threads i TikTok a les 07:45, abans de la publicació de les 08:00.
+- El diagnòstic preventiu valida credencials, compte i permisos sense crear cap publicació.
+- Si una connexió no està preparada, s’envia un correu operatiu i la resta de canals continuen funcionant de manera independent.
+- El panell d’administració mostra el resultat i l’hora de la darrera comprovació preventiva.
+- Versions web, Worker i memòria cau PWA unificades a V22.2.0.
+
+## V22.1.0 — 2026-08-22
+
+- Primera càrrega enriquida al servidor amb la darrera observació real, dades estructurades i alternativa segura si l’API no respon a temps.
+- Meteo IA local ampliada amb boira, inversió tèrmica, tempestes, sensació tèrmica, vent i radiació UV; el mode de seguretat deixa de respondre amb un error genèric.
+- «Predicció vs realitat» mostra el biaix de temperatura, la ratxa prevista i observada, una llegenda més clara i un progrés accessible.
+- El panell d’administració diferencia el mode local de Meteo IA de l’ampliació avançada opcional.
+- Versions web, Worker i memòria cau PWA unificades.
+
 ## V22.0.3 — 2026-08-22
 
 - Nova navegació inferior mòbil amb cinc accessos clars, indicador de pàgina activa i accés complet a la resta de seccions.

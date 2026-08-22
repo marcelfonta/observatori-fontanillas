@@ -1,5 +1,52 @@
 # Roadmap oficial
 
+## V22.4.0 — Meteo IA més útil i entenedora — Preparada per revisar
+
+- Respostes locals immediates per a preguntes quotidianes: paraigua, roba, fred o calor, estendre roba i ajuda inicial.
+- Interpretació de la franja horària de pluja amb probabilitat, inici, final i advertiment de revisar el radar.
+- El model avançat rep també les pròximes 48 hores de predicció horària, sense exposar dades personals ni inventar valors.
+- Fonts visibles mantenen separades l’observació real, la predicció, els avisos oficials i el raonament avançat.
+
+### Validacions externes que continuen pendents
+
+- Confirmar una notificació OneSignal real en cada dispositiu desitjat.
+- Observar una execució automàtica completa de les 07:45 i les 08:00 després del desplegament.
+- Completar TikTok només quan la plataforma aprovi l’accés de publicació.
+- Activar nous horaris socials únicament després d’aprovar una vista prèvia per canal.
+
+## V22.3.0 — Fiabilitat d’avisos i publicacions contextuals — Preparada per revisar
+
+- Diagnosi visible de notificacions per dispositiu: compatibilitat, permís, subscripció i requisit PWA a iPhone.
+- La prova de notificacions queda identificada com a prova local, diferenciada de l’enviament real de OneSignal.
+- Les publicacions automàtiques adapten títol i redacció al matí, migdia i vespre sense duplicar contingut.
+- La targeta social mostra tres dies, probabilitat de pluja i ratxa prevista, amb el logotip oficial.
+- Hashtags locals ampliats de manera moderada per millorar descoberta sense semblar contingut brossa.
+- YouTube Shorts queda visible al panell com a flux separat de GitHub Actions.
+
+### Abans d’activar nous horaris
+
+- Validar una targeta real en vista prèvia i una prova per cada canal.
+- Decidir els horaris definitius i configurar `SOCIAL_AUTO_TIMES` només després de l’aprovació. Proposta preparada: `08:00,14:00,21:30`.
+- Confirmar recepció d’un avís real de prova en Android/iPhone i escriptori.
+
+## V22.2.0 — Publicacions preparades i avisos menys intrusius — Verificada
+
+- [x] Retardar deu segons la invitació d’avisos i respectar la visibilitat de la pàgina.
+- [x] Comprovar les sis connexions socials abans de l’horari automàtic sense publicar res.
+- [x] Avisar per correu si una connexió social no està preparada.
+- [x] Mostrar el resultat preventiu al panell d’administració.
+- [ ] Confirmar una execució real de les 07:45 i una publicació real de les 08:00 després del desplegament.
+- [ ] Completar TikTok quan la plataforma aprovi l’accés de publicació.
+
+## V22.1.0 — Rendiment, comprensió i resiliència — En verificació
+
+- [x] Pintat inicial amb dades reals i fallback segur.
+- [x] Dades estructurades de la darrera observació abans d’executar JavaScript.
+- [x] Més coneixement meteorològic local sense cost de model extern.
+- [x] Verificació de prediccions més visual, completa i accessible.
+- [x] Diagnòstic explícit del model avançat al panell.
+- [ ] Validació a l’entorn de previsualització abans d’integrar a producció.
+
 ## Visió
 
 Construir el portal meteorològic del Baix Montseny combinant dades pròpies, fonts oficials i eines intel·ligents amb una experiència clara, moderna i sostenible.
@@ -85,13 +132,13 @@ La mateixa versió reorganitza Centre de Dades amb un únic període per a resum
 
 Implementat a V16.0.0 com un panell de diagnòstic protegit pel Worker: estat de l’estació i la qualitat de dades, base D1, arxiu d’avisos, formulari, push, versions, PWA, memòries cau locals i incidències de la sessió. La clau només viu durant la pestanya, les respostes administratives no es desen a la PWA i no s’exposa cap secret. Per seguretat, la primera versió és de només lectura i no inclou operacions destructives.
 
-## Milestone 9 — Xarxes socials — En curs amb V21.2
+## Milestone 9 — Xarxes socials — En curs amb V22.2
 
 - Connectar amb l’usuari Instagram i Facebook; X queda descartat per decisió del projecte.
 - Resums, avisos, pluja, rècords, efemèrides i episodis.
 - Regles, calendari, aprovació opcional i historial editorial.
 
-V21 incorpora Instagram, Facebook, Bluesky i Telegram al portal i prepara una cua D1 d’esborranys diaris. V21.2 hi afegeix revisió, edició, aprovació, descart, restauració, historial per canal, diagnòstic sense publicació i enviament manual confirmat als quatre canals. Aprovar mai no publica i el cron només crea esborranys. La fita quedarà completa després de validar una publicació real controlada a cada xarxa i, només llavors, definir el calendari automàtic i els límits editorials.
+V21 incorpora Instagram, Facebook, Bluesky i Telegram al portal i prepara una cua D1 d’esborranys diaris. V21.2 hi afegeix revisió, edició, aprovació, descart, restauració, historial per canal i enviament manual confirmat. V22 activa la publicació diària independent per canal i integra Threads; V22.2 comprova preventivament Facebook, Instagram, Bluesky, Telegram, Threads i TikTok abans de l’horari automàtic. TikTok continua pendent de l’aprovació externa del permís de publicació i YouTube manté el seu flux separat de Shorts.
 
 ## V22.0.3 — Experiència mòbil i avisos verificables — Completat
 
