@@ -1,6 +1,21 @@
 # Roadmap oficial
 
-## V22.2.0 — Publicacions preparades i avisos menys intrusius — En verificació
+## V22.3.0 — Fiabilitat d’avisos i publicacions contextuals — Preparada per revisar
+
+- Diagnosi visible de notificacions per dispositiu: compatibilitat, permís, subscripció i requisit PWA a iPhone.
+- La prova de notificacions queda identificada com a prova local, diferenciada de l’enviament real de OneSignal.
+- Les publicacions automàtiques adapten títol i redacció al matí, migdia i vespre sense duplicar contingut.
+- La targeta social mostra tres dies, probabilitat de pluja i ratxa prevista, amb el logotip oficial.
+- Hashtags locals ampliats de manera moderada per millorar descoberta sense semblar contingut brossa.
+- YouTube Shorts queda visible al panell com a flux separat de GitHub Actions.
+
+### Abans d’activar nous horaris
+
+- Validar una targeta real en vista prèvia i una prova per cada canal.
+- Decidir els horaris definitius i configurar `SOCIAL_AUTO_TIMES` només després de l’aprovació. Proposta preparada: `08:00,14:00,21:30`.
+- Confirmar recepció d’un avís real de prova en Android/iPhone i escriptori.
+
+## V22.2.0 — Publicacions preparades i avisos menys intrusius — Verificada
 
 - [x] Retardar deu segons la invitació d’avisos i respectar la visibilitat de la pàgina.
 - [x] Comprovar les sis connexions socials abans de l’horari automàtic sense publicar res.

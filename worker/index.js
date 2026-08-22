@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.2.0";
+const WORKER_VERSION = "22.3.0";
 const WORKER_BUILT = "2026-08-22";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -918,7 +918,14 @@ async function socialForecast(){
 function socialHashtags(kind='daily_observation'){
   return kind==='official_alert'
     ? '#MeteoFontanillas #SantCeloni #BaixMontseny #AvisMeteorologic #AEMET #ProteccioCivil'
-    : '#MeteoFontanillas #SantCeloni #BaixMontseny #ElTemps #Meteorologia';
+    : '#MeteoFontanillas #SantCeloni #BaixMontseny #Montseny #ElTemps #MeteoCatalunya';
+}
+
+function socialSlotProfile(slot='08:00'){
+  const hour=Number(String(slot).slice(0,2));
+  if(hour>=19)return {period:'vespre',eyebrow:'Balanç del dia',greeting:'Bona nit',lead:'Tanquem el dia amb les dades reals de l’Observatori',forecastLead:'Demà'};
+  if(hour>=12)return {period:'migdia',eyebrow:'Actualització del migdia',greeting:'Bon dia',lead:'Actualització de les dades reals de l’Observatori',forecastLead:'La resta del dia'};
+  return {period:'mati',eyebrow:'Previsió del dia',greeting:'Bon dia',lead:'Dades reals de l’Observatori',forecastLead:'Avui'};
 }
 
 function localClockParts(date = new Date()) {
@@ -964,10 +971,11 @@ async function createDailySocialDraft(observation, env, slot = null) {
   ].filter(Boolean);
   const forecast=await socialForecast().catch(error=>{console.error('Social forecast error',error);return [];});
   const today=forecast[0];const tomorrow=forecast[1];
-  const forecastText=today?` Avui: ${today.condition}, màxima ${socialNumber(today.max,0)}° i mínima ${socialNumber(today.min,0)}°, pluja ${socialNumber(today.rainProbability,0)}%.${tomorrow?` Demà: ${tomorrow.condition}, ${socialNumber(tomorrow.max,0)}°/${socialNumber(tomorrow.min,0)}°.`:''}`:'';
-  const title = `El temps a Sant Celoni · ${localDate}`;
-  const body = `Bon dia des de l’Observatori Fontanillas. Dades reals de les ${String(observation.updated || '').slice(11,16)}: ${facts.join(' · ')}.${forecastText} Consulta l’evolució i la predicció a meteo.fontanillas.cat.\n\n${socialHashtags()}`;
-  const payload = JSON.stringify({ localDate, slot, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv), forecast });
+  const profile=socialSlotProfile(slot);
+  const forecastText=today?` ${profile.forecastLead}: ${today.condition}, màxima ${socialNumber(today.max,0)}° i mínima ${socialNumber(today.min,0)}°, pluja ${socialNumber(today.rainProbability,0)}%.${tomorrow?` Demà: ${tomorrow.condition}, ${socialNumber(tomorrow.max,0)}°/${socialNumber(tomorrow.min,0)}°, pluja ${socialNumber(tomorrow.rainProbability,0)}%.`:''}`:'';
+  const title = `${profile.eyebrow} a Sant Celoni · ${localDate}`;
+  const body = `${profile.greeting} des de Meteo Fontanillas. ${profile.lead} a les ${String(observation.updated || '').slice(11,16)}: ${facts.join(' · ')}.${forecastText} Consulta l’evolució i la predicció a meteo.fontanillas.cat.\n\n${socialHashtags()}`;
+  const payload = JSON.stringify({ localDate, slot, period:profile.period, eyebrow:profile.eyebrow, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv), forecast });
   const initialStatus = socialAutomationEnabled(env) ? 'approved' : 'draft';
   const result = await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
     (dedupe_key, kind, status, channels, title, body, source_url, payload)
@@ -1786,19 +1794,19 @@ function socialCardHtml(draft) {
   const rain = display(data.rainToday, ' mm', 1);
   const pressure = display(data.pressure, ' hPa', 1);
   const forecast=Array.isArray(data.forecast)?data.forecast:[];
-  const today=forecast[0]||{};const tomorrow=forecast[1]||{};
+  const today=forecast[0]||{};const tomorrow=forecast[1]||{};const afterTomorrow=forecast[2]||{};
   const isAlert=draft.kind==='official_alert';
   const alertColor=data.level==='red'?'#ef5350':'#ffad42';
-  const main=isAlert?`<p class="eyebrow" style="color:${alertColor}">AVÍS OFICIAL · ${escapeHtml(data.levelLabel||'')}</p><h1>Avís per ${escapeHtml(data.phenomenon||'fenomen meteorològic')}</h1><p class="stamp">Àrea del Prelitoral de Barcelona · Sant Celoni</p><section class="alert" style="border-color:${alertColor}"><b style="color:${alertColor}">${escapeHtml(data.levelLabel||'AVÍS')}</b><p>${escapeHtml(cleanText(data.description||draft.body,700))}</p></section><p class="advice">Consulta el detall oficial i segueix les indicacions de Protecció Civil.</p>`:`<p class="eyebrow">El temps ara</p><h1>Dades reals i previsió per entendre el dia.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p>
+  const main=isAlert?`<p class="eyebrow" style="color:${alertColor}">AVÍS OFICIAL · ${escapeHtml(data.levelLabel||'')}</p><h1>Avís per ${escapeHtml(data.phenomenon||'fenomen meteorològic')}</h1><p class="stamp">Àrea del Prelitoral de Barcelona · Sant Celoni</p><section class="alert" style="border-color:${alertColor}"><b style="color:${alertColor}">${escapeHtml(data.levelLabel||'AVÍS')}</b><p>${escapeHtml(cleanText(data.description||draft.body,700))}</p></section><p class="advice">Consulta el detall oficial i segueix les indicacions de Protecció Civil.</p>`:`<p class="eyebrow">${escapeHtml(data.eyebrow||'El temps ara')}</p><h1>Dades reals i previsió per entendre el dia.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p>
     <section class="hero"><div><small>Temperatura</small><div class="temp">${escapeHtml(temperature)}</div></div><div class="feels">Sensació tèrmica<b>${escapeHtml(feeling)}</b></div></section>
     <section class="grid"><div class="metric"><span>Humitat</span><b>${escapeHtml(humidity)}</b></div><div class="metric"><span>Vent · ratxa</span><b>${escapeHtml(wind)} · ${escapeHtml(gust)}</b></div></section>
-    ${forecast.length?`<section class="forecast"><div><span>AVUI · ${escapeHtml(today.condition||'')}</span><b>${escapeHtml(display(today.max,'°',0))} / ${escapeHtml(display(today.min,'°',0))}</b><small>${escapeHtml(display(today.rainProbability,'% pluja',0))}</small></div><div><span>DEMÀ · ${escapeHtml(tomorrow.condition||'')}</span><b>${escapeHtml(display(tomorrow.max,'°',0))} / ${escapeHtml(display(tomorrow.min,'°',0))}</b><small>${escapeHtml(display(tomorrow.rainProbability,'% pluja',0))}</small></div></section>`:`<section class="grid"><div class="metric"><span>Pressió</span><b>${escapeHtml(pressure)}</b></div><div class="metric"><span>Pluja acumulada avui</span><b>${escapeHtml(rain)}</b></div></section>`}`;
+    ${forecast.length?`<section class="forecast"><div><span>AVUI · ${escapeHtml(today.condition||'')}</span><b>${escapeHtml(display(today.max,'°',0))} / ${escapeHtml(display(today.min,'°',0))}</b><small>${escapeHtml(display(today.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(today.gust,' km/h',0))}</small></div><div><span>DEMÀ · ${escapeHtml(tomorrow.condition||'')}</span><b>${escapeHtml(display(tomorrow.max,'°',0))} / ${escapeHtml(display(tomorrow.min,'°',0))}</b><small>${escapeHtml(display(tomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(tomorrow.gust,' km/h',0))}</small></div><div><span>DEMÀ PASSAT · ${escapeHtml(afterTomorrow.condition||'')}</span><b>${escapeHtml(display(afterTomorrow.max,'°',0))} / ${escapeHtml(display(afterTomorrow.min,'°',0))}</b><small>${escapeHtml(display(afterTomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(afterTomorrow.gust,' km/h',0))}</small></div></section>`:`<section class="grid"><div class="metric"><span>Pressió</span><b>${escapeHtml(pressure)}</b></div><div class="metric"><span>Pluja acumulada avui</span><b>${escapeHtml(rain)}</b></div></section>`}`;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     *{box-sizing:border-box}html,body{margin:0;width:1080px;height:1350px;overflow:hidden;font-family:Arial,sans-serif;background:#061713;color:#f5faf7}
     body{padding:64px;background:radial-gradient(circle at 84% 10%,#286d55 0,rgba(40,109,85,.18) 28%,transparent 44%),linear-gradient(145deg,#061713,#0b241c 62%,#102e24)}
     .top{display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:20px}.mark{width:92px;height:92px;border-radius:22px;object-fit:cover;border:2px solid rgba(255,255,255,.5)}.brand b{font-size:38px}.brand span{display:block;color:#a9beb5;font-size:21px;margin-top:5px}.live{padding:15px 22px;border:1px solid #5e8d79;border-radius:999px;color:#b9f0ce;font-weight:800;letter-spacing:2px;font-size:18px}
     .eyebrow{margin:94px 0 20px;color:#8fe0ad;font-weight:800;letter-spacing:4px;font-size:22px;text-transform:uppercase}h1{margin:0;font-size:70px;line-height:1.02;letter-spacing:-3px;max-width:850px}.stamp{margin-top:22px;color:#b2c5bc;font-size:26px}.hero{margin-top:62px;display:flex;align-items:flex-end;justify-content:space-between;padding:42px;border-radius:34px;border:1px solid #416d5b;background:rgba(12,43,33,.84)}.hero small{display:block;color:#9db5aa;font-size:23px;margin-bottom:12px}.temp{font-size:138px;line-height:.86;font-weight:900;letter-spacing:-8px}.feels{text-align:right;font-size:28px;color:#cfe0d8}.feels b{display:block;color:#fff;font-size:42px;margin-top:10px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.metric{padding:25px 30px;border-radius:25px;border:1px solid #315c4b;background:rgba(5,28,22,.74)}.metric span{display:block;color:#a8beb4;font-size:21px;margin-bottom:9px}.metric b{font-size:34px}.forecast{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.forecast div{padding:25px 28px;border-radius:25px;border:1px solid #477764;background:rgba(7,31,24,.92)}.forecast span,.forecast small{display:block;color:#91d8ad;font-size:19px}.forecast b{display:block;font-size:38px;margin:12px 0}.alert{margin-top:70px;padding:45px;border:2px solid;border-radius:34px;background:rgba(5,28,22,.82)}.alert b{font-size:56px}.alert p{font-size:34px;line-height:1.32}.advice{font-size:29px;line-height:1.35;color:#d7e5de;margin-top:36px}.footer{position:absolute;left:64px;right:64px;bottom:58px;display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid #315c4b;color:#aec3b9;font-size:21px}.footer strong{color:#8fe0ad}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.metric{padding:25px 30px;border-radius:25px;border:1px solid #315c4b;background:rgba(5,28,22,.74)}.metric span{display:block;color:#a8beb4;font-size:21px;margin-bottom:9px}.metric b{font-size:34px}.forecast{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}.forecast div{padding:22px 20px;border-radius:25px;border:1px solid #477764;background:rgba(7,31,24,.92)}.forecast span,.forecast small{display:block;color:#91d8ad;font-size:16px;line-height:1.25}.forecast b{display:block;font-size:31px;margin:11px 0}.alert{margin-top:70px;padding:45px;border:2px solid;border-radius:34px;background:rgba(5,28,22,.82)}.alert b{font-size:56px}.alert p{font-size:34px;line-height:1.32}.advice{font-size:29px;line-height:1.35;color:#d7e5de;margin-top:36px}.footer{position:absolute;left:64px;right:64px;bottom:58px;display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid #315c4b;color:#aec3b9;font-size:21px}.footer strong{color:#8fe0ad}
   </style></head><body>
     <div class="top"><div class="brand"><img class="mark" src="https://meteo.fontanillas.cat/assets/icons/icon-512.png" alt=""><div><b>Meteo Fontanillas</b><span>Observatori meteorològic · Sant Celoni</span></div></div><div class="live">${isAlert?'AEMET':'DADA REAL'}</div></div>
     ${main}
