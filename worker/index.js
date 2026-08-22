@@ -1327,22 +1327,10 @@ async function quality(env) {
 }
 
 async function health(env) {
-  let result;
-  try {
-    result = await quality(env);
-  } catch (error) {
-    if (error?.message !== "Falta la variable secreta WU_API_KEY") throw error;
-    return json({
-      ok:false,
-      status:"not_configured",
-      stationId:STATION_ID,
-      missingConfiguration:["WU_API_KEY"],
-    }, 503, "no-store");
-  }
+  const result = await quality(env);
   const payload = await result.json();
   return json({
     ok:payload.ok,
-    status:payload.status,
     stationId:payload.stationId,
     updated:payload.updated,
     ageMinutes:payload.ageMinutes,
