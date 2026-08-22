@@ -149,6 +149,12 @@ El Worker crea com a màxim un esborrany diari a `social_drafts`, amb fets deriv
 
 `social_publications` registra per esborrany i canal l’estat, l’identificador extern, la URL resultant, l’error normalitzat i l’hora de cada intent. Aquest registre no conté credencials. El cron continua cridant exclusivament `createDailySocialDraft()` i no pot aprovar ni publicar. Per tant, no existeix cap camí de publicació automàtica en V21.2.
 
+## Evolució V22.2
+
+La publicació automàtica de V22 manté l’aïllament per canal: una incidència a Instagram o Threads no impedeix que Facebook, Bluesky o Telegram completin el seu enviament. A les 07:45, `runDailyIntegrationPreflight()` valida els comptes i permisos de les sis integracions configurades sense crear contingut. El resultat queda a `monitor_state`, apareix al panell d’administració i genera un correu operatiu si cal intervenir abans de les 08:00.
+
+La invitació d’avisos deixa de competir amb la primera lectura de la portada. El navegador espera deu segons, comprova que la pestanya sigui visible i evita obrir-la si la persona ja està gestionant les preferències. La decisió de l’usuari continua persistint localment i no s’activa cap subscripció sense consentiment explícit.
+
 ## Normes de canvi
 
 1. Treballar una sola fita cada vegada.

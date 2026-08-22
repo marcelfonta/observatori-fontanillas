@@ -1,5 +1,14 @@
 # Changelog
 
+## V22.2.0 — 2026-08-22
+
+- La invitació per activar avisos espera deu segons i no s’obre sobre una pestanya amagada ni sobre el diàleg de preferències.
+- Nova comprovació preventiva diària de Facebook, Instagram, Bluesky, Telegram, Threads i TikTok a les 07:45, abans de la publicació de les 08:00.
+- El diagnòstic preventiu valida credencials, compte i permisos sense crear cap publicació.
+- Si una connexió no està preparada, s’envia un correu operatiu i la resta de canals continuen funcionant de manera independent.
+- El panell d’administració mostra el resultat i l’hora de la darrera comprovació preventiva.
+- Versions web, Worker i memòria cau PWA unificades a V22.2.0.
+
 ## V22.1.0 — 2026-08-22
 
 - Primera càrrega enriquida al servidor amb la darrera observació real, dades estructurades i alternativa segura si l’API no respon a temps.

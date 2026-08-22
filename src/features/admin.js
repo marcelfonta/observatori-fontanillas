@@ -81,6 +81,7 @@ function renderSocialQueue(social={}){
   text('admin-social-approved',formatNumber(social.approved??0));
   text('admin-social-published',formatNumber(social.published??0));
   text('admin-social-last',formatDate(social.latestCreated));
+  text('admin-social-preflight',social.preflight?.checkedAt?`${social.preflight.status==='healthy'?'Correcta':'Cal revisar'} · ${formatDate(social.preflight.checkedAt)}`:'Pendent de la primera comprovació');
   setPill('admin-social-pill',automatic?'Automàtic actiu':'Revisió manual',automatic?'is-ok':'is-warning');
   socialCredentials={...socialCredentials,...(social.channelCredentials||{})};
 }
@@ -209,7 +210,7 @@ async function renderPublicationReadiness(){
 async function renderDashboard(payload,requestLatency){
   const analytics=renderIntegrations(payload.integrations);
   renderSocialQueue(payload.social);
-  latestDiagnostic={...payload,client:{webVersion:'22.1.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
+  latestDiagnostic={...payload,client:{webVersion:'22.2.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
   const overall=overallState(payload);text('admin-overall-status',overall.label);text('admin-last-update',`Actualitzat ${formatDate(payload.generatedAt)} · ${requestLatency} ms`);
   setCard('worker',payload.ok?'is-ok':'is-error',payload.ok?'Operatiu':'Error',`V${payload.worker?.version||'—'} · ${payload.latencyMs??'—'} ms`);
   const stationOk=Boolean(payload.station?.ok);setCard('station',stationOk?'is-ok':'is-warning',stationOk?'Al dia':'Cal revisar',payload.station?.ageMinutes===null?'Antiguitat desconeguda':`${payload.station.ageMinutes} min d’antiguitat`);
