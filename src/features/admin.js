@@ -137,17 +137,18 @@ function socialDraftCard(draft){
   const note=document.createElement('p');note.className='admin-social-meta-note';note.textContent='Cada canal publica només quan prems el seu botó i confirmes l’acció. Els intents i errors queden registrats.';
   const actions=document.createElement('div');actions.className='admin-social-actions';
   if(draft.status==='published'){
-    const immutable=document.createElement('small');immutable.className='admin-social-immutable';immutable.textContent='Publicació tancada: es conserva com a registre i no es pot editar.';actions.append(immutable);
-    form.querySelectorAll('input,textarea').forEach(control=>{control.disabled=true;});
+    const immutable=document.createElement('small');immutable.className='admin-social-immutable';immutable.textContent='El text queda protegit. Pots marcar un canal que faltava, desar-lo i publicar-hi després.';actions.append(immutable,makeSocialButton('Desar canals nous','save','is-secondary'));
+    titleInput.disabled=true;textarea.disabled=true;
   }else if(draft.status==='discarded')actions.append(makeSocialButton('Restaurar','restore','is-secondary'));
   else{
     actions.append(makeSocialButton('Desar canvis','save','is-secondary'));
     if(!['approved','partially_published','published'].includes(draft.status))actions.append(makeSocialButton('Aprovar','approve','is-primary'));
     if(draft.status!=='published')actions.append(makeSocialButton('Descartar','discard','is-danger'));
   }
-  if(['approved','partially_published'].includes(draft.status)){
+  if(['approved','partially_published','published'].includes(draft.status)){
     const publishedChannels=new Set((draft.publications||[]).filter(item=>item.status==='published').map(item=>item.channel));
-    Object.entries(CHANNEL_LABELS).forEach(([channel,label])=>{const published=publishedChannels.has(channel);const button=makeSocialButton(published?`${label} · publicat`:`Publicar a ${label}`,`publish-${channel}`,'is-publish');button.disabled=published||!socialCredentials[channel];button.title=published?`Aquest contingut ja s’ha publicat a ${label}`:socialCredentials[channel]?'Demana confirmació abans de publicar':`Falten credencials de ${label}`;actions.append(button);});
+    Object.entries(CHANNEL_LABELS).forEach(([channel,label])=>{const published=publishedChannels.has(channel);const selected=(draft.channels||[]).includes(channel);const button=makeSocialButton(published?`${label} · publicat`:`Publicar a ${label}`,`publish-${channel}`,'is-publish');button.disabled=published||!selected||!socialCredentials[channel];button.title=published?`Aquest contingut ja s’ha publicat a ${label}`:!selected?`Marca ${label} i desa els canals abans de publicar`:socialCredentials[channel]?'Demana confirmació abans de publicar':`Falten credencials de ${label}`;actions.append(button);});
+    actions.append(makeSocialButton('Preparar per al canal de WhatsApp','whatsapp','is-secondary'));
   }
   card.append(header,form,note,actions,socialPublicationRows(draft));
   card.querySelectorAll('input:not(:disabled),textarea:not(:disabled)').forEach(control=>control.addEventListener('input',()=>{card.classList.add('is-dirty');socialEditorDirty=true;socialFeedback('Hi ha canvis sense desar.','warning');}));
@@ -169,6 +170,18 @@ async function handleSocialAction(event){
   const button=event.target.closest('[data-social-action]');if(!button)return;
   const card=button.closest('[data-draft-id]');if(!card)return;
   const draftId=Number(card.dataset.draftId);const action=button.dataset.socialAction;
+  if(action==='whatsapp'){
+    button.disabled=true;button.textContent='Preparant…';socialFeedback('Preparant la imatge i el text per compartir a WhatsApp…','warning');
+    try{
+      const payload=await adminApi(`/admin/social-drafts/${draftId}/prepare-whatsapp`,{method:'POST',body:{}});
+      const response=await fetch(payload.imageUrl);if(!response.ok)throw new Error('No s’ha pogut baixar la imatge.');
+      const file=new File([await response.blob()],'meteo-fontanillas.jpg',{type:'image/jpeg'});
+      if(navigator.share&&navigator.canShare?.({files:[file]}))await navigator.share({title:'Meteo Fontanillas',text:payload.text,files:[file]});
+      else{await navigator.clipboard.writeText(`${payload.text}\n\nImatge: ${payload.imageUrl}`);window.open(payload.channelUrl||CONFIG.social.whatsapp,'_blank','noopener,noreferrer');socialFeedback('Text i enllaç de la imatge copiats. Enganxa’ls al canal de WhatsApp.','ok');}
+    }catch(error){if(error.name!=='AbortError'){socialFeedback(`No s’ha pogut preparar WhatsApp: ${error.message}`,'error');recordIncident('WhatsApp',error.message);}}
+    finally{button.disabled=false;button.textContent='Preparar per al canal de WhatsApp';}
+    return;
+  }
   if(action.startsWith('publish-')){
     const channel=action.replace('publish-','');const label=CHANNEL_LABELS[channel]||channel;
     if(!window.confirm(`Vols publicar ara aquest contingut a ${label}? Aquesta acció és real i quedarà registrada.`))return;

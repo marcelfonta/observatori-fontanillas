@@ -19,7 +19,34 @@ const PAGES={
 
 function setMeta(selector,value){const node=document.querySelector(selector);if(node)node.setAttribute('content',value);}
 
+let activePage='inici';
+let latestObservation=null;
+
+function structuredGraph(page,observation){
+  const current=PAGES[page]||PAGES.inici;
+  const canonicalUrl=BASE;
+  const graph=[
+    {'@type':'WebSite','@id':`${BASE}#website`,name:'Observatori Meteorològic Fontanillas',url:BASE,inLanguage:'ca',description:PAGES.inici.description},
+    {'@type':'WebPage','@id':`${canonicalUrl}#webpage`,url:canonicalUrl,name:current.title,description:current.description,inLanguage:'ca',isPartOf:{'@id':`${BASE}#website`},about:{'@id':`${BASE}#dataset`}},
+    {'@type':'Dataset','@id':`${BASE}#dataset`,name:'Observacions meteorològiques de l’estació Fontanillas',description:'Sèries meteorològiques locals de temperatura, humitat, pressió, vent, precipitació, radiació solar i índex UV.',url:BASE,inLanguage:'ca',spatialCoverage:{'@type':'Place',name:'Sant Celoni, Vallès Oriental',geo:{'@type':'GeoCoordinates',latitude:41.6906,longitude:2.489}},temporalCoverage:'2025/..',measurementTechnique:'Estació meteorològica automàtica',variableMeasured:['Temperatura','Humitat relativa','Pressió atmosfèrica','Velocitat i ratxa del vent','Precipitació','Radiació solar','Índex UV']},
+    {'@type':'BreadcrumbList','@id':`${canonicalUrl}#breadcrumb`,itemListElement:[{'@type':'ListItem',position:1,name:'Inici',item:BASE}]}
+  ];
+  if(observation&&Number.isFinite(Number(observation.temperature))){
+    const property=(name,value,unit)=>({'@type':'PropertyValue',name,value:Number(value),...(unit?{unitText:unit}:{})});
+    const values=[property('Temperatura',observation.temperature,'°C')];
+    if(Number.isFinite(Number(observation.humidity)))values.push(property('Humitat relativa',observation.humidity,'%'));
+    if(Number.isFinite(Number(observation.pressure)))values.push(property('Pressió atmosfèrica',observation.pressure,'hPa'));
+    if(Number.isFinite(Number(observation.windSpeed)))values.push(property('Velocitat del vent',observation.windSpeed,'km/h'));
+    if(Number.isFinite(Number(observation.rainToday)))values.push(property('Precipitació acumulada avui',observation.rainToday,'mm'));
+    graph.push({'@type':'Observation','@id':`${BASE}#latest-observation`,name:'Darrera observació meteorològica de Fontanillas',observationDate:observation.updated||new Date().toISOString(),measuredProperty:values,about:{'@id':`${BASE}#dataset`},spatialCoverage:{'@type':'Place',name:'Sant Celoni'}});
+  }
+  return {'@context':'https://schema.org','@graph':graph};
+}
+
+function renderStructuredData(){const schema=document.getElementById('seo-structured-data');if(schema)schema.textContent=JSON.stringify(structuredGraph(activePage,latestObservation));}
+
 export function updateSeoMetadata(page='inici'){
+  activePage=page;
   const current=PAGES[page]||PAGES.inici;
   const viewUrl=page==='inici'?BASE:`${BASE}?page=${encodeURIComponent(page)}`;
   const canonicalUrl=BASE;
@@ -31,13 +58,7 @@ export function updateSeoMetadata(page='inici'){
   setMeta('meta[name="description"]',current.description);
   setMeta('meta[property="og:title"]',current.title);setMeta('meta[property="og:description"]',current.description);setMeta('meta[property="og:url"]',viewUrl);
   setMeta('meta[name="twitter:title"]',current.title);setMeta('meta[name="twitter:description"]',current.description);
-  const schema=document.getElementById('seo-structured-data');if(!schema)return;
-  schema.textContent=JSON.stringify({
-    '@context':'https://schema.org','@graph':[
-      {'@type':'WebSite','@id':`${BASE}#website`,name:'Observatori Meteorològic Fontanillas',url:BASE,inLanguage:'ca',description:PAGES.inici.description},
-      {'@type':'WebPage','@id':`${canonicalUrl}#webpage`,url:canonicalUrl,name:current.title,description:current.description,inLanguage:'ca',isPartOf:{'@id':`${BASE}#website`},about:{'@id':`${BASE}#dataset`}},
-      {'@type':'Dataset','@id':`${BASE}#dataset`,name:'Observacions meteorològiques de l’estació Fontanillas',description:'Sèries meteorològiques locals de temperatura, humitat, pressió, vent, precipitació, radiació solar i índex UV.',url:BASE,inLanguage:'ca',spatialCoverage:{'@type':'Place',name:'Sant Celoni, Vallès Oriental',geo:{'@type':'GeoCoordinates',latitude:41.6906,longitude:2.489}},temporalCoverage:'2025/..',measurementTechnique:'Estació meteorològica automàtica',variableMeasured:['Temperatura','Humitat relativa','Pressió atmosfèrica','Velocitat i ratxa del vent','Precipitació','Radiació solar','Índex UV']},
-      {'@type':'BreadcrumbList','@id':`${canonicalUrl}#breadcrumb`,itemListElement:[{'@type':'ListItem',position:1,name:'Inici',item:BASE}]}
-    ]
-  });
+  renderStructuredData();
 }
+
+export function updateSeoObservation(observation){latestObservation=observation||null;renderStructuredData();}

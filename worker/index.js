@@ -1,6 +1,6 @@
 const STATION_ID = "ISANTC198";
 const WORKER_VERSION = "22.1.0";
-const WORKER_BUILT = "2026-08-21";
+const WORKER_BUILT = "2026-08-22";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const STATION_LATITUDE = 41.6906;
@@ -492,8 +492,6 @@ async function sendOneSignalAlert(entry, env){
   const body=String(entry.description || entry.title || 'Consulta el detall oficial.').slice(0,180);
   const filters=[
     {field:'tag',key:'alert_all',relation:'=',value:'1'},
-    {operator:'AND'},
-    {field:'tag',key:`alert_level_${normalizedLevel}`,relation:'=',value:'1'},
     {operator:'OR'},
     {field:'tag',key:`alert_${category}`,relation:'=',value:'1'},
     {operator:'AND'},
@@ -515,7 +513,13 @@ async function checkAlertsAndNotify(env){
   const parsed=parseAemetFeed(xml);
   const payload={ok:true,alerts:parsed.activeAlerts,maxLevel:parsed.maxLevel};
   const fresh=await recordAlertEvents(payload,env);
-  for(const entry of fresh){ await sendOneSignalAlert(entry,env); }
+  for(const entry of fresh){
+    await sendOneSignalAlert(entry,env);
+    if(['orange','red'].includes(String(entry.level||'').toLowerCase())){
+      const social=await createOfficialAlertSocialDraft(entry,env);
+      await publishAutomaticSocialDraft(social,env);
+    }
+  }
   return fresh.length;
 }
 
@@ -891,6 +895,32 @@ function socialNumber(value, digits = 1) {
   return number === null ? null : number.toFixed(digits).replace('.', ',');
 }
 
+function socialWeatherLabel(code){
+  const value=Number(code);
+  if(value===0)return 'cel serè';
+  if(value<=3)return 'núvols i clarianes';
+  if(value<=48)return 'boira o núvols baixos';
+  if(value<=67)return 'pluja';
+  if(value<=77)return 'neu';
+  if(value<=86)return 'ruixats';
+  if(value>=95)return 'tempesta';
+  return 'temps variable';
+}
+
+async function socialForecast(){
+  const params=new URLSearchParams({latitude:String(STATION_LATITUDE),longitude:String(STATION_LONGITUDE),timezone:TIME_ZONE,forecast_days:'4',daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max'});
+  const response=await fetch(`https://api.open-meteo.com/v1/forecast?${params}`,{headers:{Accept:'application/json'},cf:{cacheEverything:true,cacheTtl:900}});
+  if(!response.ok)throw new Error(`Open-Meteo social ${response.status}`);
+  const daily=(await response.json()).daily||{};
+  return daily.time?.map((date,index)=>({date,weatherCode:finite(daily.weather_code?.[index]),condition:socialWeatherLabel(daily.weather_code?.[index]),max:finite(daily.temperature_2m_max?.[index]),min:finite(daily.temperature_2m_min?.[index]),rainProbability:finite(daily.precipitation_probability_max?.[index]),rain:finite(daily.precipitation_sum?.[index]),gust:finite(daily.wind_gusts_10m_max?.[index])}))||[];
+}
+
+function socialHashtags(kind='daily_observation'){
+  return kind==='official_alert'
+    ? '#MeteoFontanillas #SantCeloni #BaixMontseny #AvisMeteorologic #AEMET #ProteccioCivil'
+    : '#MeteoFontanillas #SantCeloni #BaixMontseny #ElTemps #Meteorologia';
+}
+
 function localClockParts(date = new Date()) {
   const parts = new Intl.DateTimeFormat('en-GB', { timeZone:TIME_ZONE, hour:'2-digit', minute:'2-digit', hourCycle:'h23' }).formatToParts(date);
   return Object.fromEntries(parts.map(part=>[part.type,part.value]));
@@ -924,9 +954,12 @@ async function createDailySocialDraft(observation, env, slot = null) {
     wind === null ? null : `vent ${wind} km/h`,
     rain === null ? null : `pluja avui ${rain} mm`,
   ].filter(Boolean);
+  const forecast=await socialForecast().catch(error=>{console.error('Social forecast error',error);return [];});
+  const today=forecast[0];const tomorrow=forecast[1];
+  const forecastText=today?` Avui: ${today.condition}, màxima ${socialNumber(today.max,0)}° i mínima ${socialNumber(today.min,0)}°, pluja ${socialNumber(today.rainProbability,0)}%.${tomorrow?` Demà: ${tomorrow.condition}, ${socialNumber(tomorrow.max,0)}°/${socialNumber(tomorrow.min,0)}°.`:''}`:'';
   const title = `El temps a Sant Celoni · ${localDate}`;
-  const body = `Bon dia des de l’Observatori Fontanillas. Dades reals de les ${String(observation.updated || '').slice(11,16)}: ${facts.join(' · ')}. Consulta l’evolució i la predicció a meteo.fontanillas.cat.`;
-  const payload = JSON.stringify({ localDate, slot, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv) });
+  const body = `Bon dia des de l’Observatori Fontanillas. Dades reals de les ${String(observation.updated || '').slice(11,16)}: ${facts.join(' · ')}.${forecastText} Consulta l’evolució i la predicció a meteo.fontanillas.cat.\n\n${socialHashtags()}`;
+  const payload = JSON.stringify({ localDate, slot, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv), forecast });
   const initialStatus = socialAutomationEnabled(env) ? 'approved' : 'draft';
   const result = await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
     (dedupe_key, kind, status, channels, title, body, source_url, payload)
@@ -935,6 +968,19 @@ async function createDailySocialDraft(observation, env, slot = null) {
   const created = Boolean(result?.meta?.changes);
   const draft = await env.DB.prepare("SELECT * FROM social_drafts WHERE dedupe_key = ?").bind(`daily:${localDate}:${slot}`).first();
   return { created, localDate, slot, draft };
+}
+
+async function createOfficialAlertSocialDraft(entry,env){
+  if(!(await ensureSocialDraftSchema(env)))return {created:false,reason:'storage_disabled'};
+  const level=String(entry.level||'').toLowerCase();
+  const levelLabel=level==='red'?'VERMELL':'TARONJA';
+  const title=`Avís ${levelLabel} a Sant Celoni · ${entry.phenomenon||'meteorologia'}`;
+  const body=`⚠️ Avís oficial ${levelLabel} per ${entry.phenomenon||'fenomen meteorològic'} al Prelitoral de Barcelona, àrea de Sant Celoni. ${cleanText(entry.description||entry.title,900)} Consulta sempre el detall oficial i segueix les indicacions de Protecció Civil.\n\n${socialHashtags('official_alert')}`;
+  const payload=JSON.stringify({level,levelLabel,phenomenon:entry.phenomenon||null,description:entry.description||entry.title||null,starts:entry.published||null,expires:entry.expires||null});
+  const result=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts (dedupe_key,kind,status,channels,title,body,source_url,payload) VALUES (?,'official_alert','approved',?,?,?,?,?)`)
+    .bind(`alert:${entry.fingerprint}`,JSON.stringify(['facebook','instagram','bluesky','telegram','threads']),title,body,AEMET_PRELITORAL_PAGE,payload).run();
+  const draft=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key = ?').bind(`alert:${entry.fingerprint}`).first();
+  return {created:Boolean(result?.meta?.changes),localDate:String(entry.published||'').slice(0,10),draft};
 }
 
 function mapHistoryObservation(obs) {
@@ -1657,12 +1703,21 @@ async function adminUpdateSocialDraft(request, env, draftId) {
   const body = await adminJsonBody(request, auth.origin);
   const action = cleanText(body.action, 20).toLowerCase();
   if (!['save','approve','discard','restore'].includes(action)) return json({ error:'Acció editorial no vàlida.' }, 400, 'no-store', auth.origin);
-  if (current.status === 'published') return json({ error:'Una publicació completada es conserva com a registre i no es pot editar.' }, 409, 'no-store', auth.origin);
   const title = cleanText(body.title ?? current.title, 180);
   const content = cleanText(body.body ?? current.body, 3900);
   const channels = body.channels === undefined ? parseSocialChannels(current.channels) : parseSocialChannels(body.channels);
   if (title.length < 3 || content.length < 20) return json({ error:'El títol o el text són massa curts.' }, 400, 'no-store', auth.origin);
   if (!channels.length) return json({ error:'Selecciona almenys un canal.' }, 400, 'no-store', auth.origin);
+  if(current.status==='published'){
+    if(action!=='save'||title!==current.title||content!==current.body)return json({error:'Després de publicar només pots afegir canals pendents; el text queda protegit.'},409,'no-store',auth.origin);
+    const existing=parseSocialChannels(current.channels);
+    if(existing.some(channel=>!channels.includes(channel)))return json({error:'No es poden retirar canals del registre publicat.'},409,'no-store',auth.origin);
+    if(!channels.some(channel=>!existing.includes(channel)))return json({error:'Selecciona almenys un canal nou.'},409,'no-store',auth.origin);
+    await env.DB.prepare('UPDATE social_drafts SET channels = ? WHERE id = ?').bind(JSON.stringify(channels),draftId).run();
+    await refreshSocialDraftPublicationStatus(env,{...current,channels});
+    const updated=await findSocialDraft(env,draftId);
+    return json({ok:true,action,draft:socialDraftPayload(updated,await socialPublicationsForDraft(env,draftId)),published:true},200,'no-store, private',auth.origin);
+  }
   let status = current.status;
   if (action === 'save') status = 'review';
   if (action === 'approve') status = 'approved';
@@ -1708,18 +1763,24 @@ function socialCardHtml(draft) {
   const gust = display(data.windGust, ' km/h', 1);
   const rain = display(data.rainToday, ' mm', 1);
   const pressure = display(data.pressure, ' hPa', 1);
+  const forecast=Array.isArray(data.forecast)?data.forecast:[];
+  const today=forecast[0]||{};const tomorrow=forecast[1]||{};
+  const isAlert=draft.kind==='official_alert';
+  const alertColor=data.level==='red'?'#ef5350':'#ffad42';
+  const main=isAlert?`<p class="eyebrow" style="color:${alertColor}">AVÍS OFICIAL · ${escapeHtml(data.levelLabel||'')}</p><h1>Avís per ${escapeHtml(data.phenomenon||'fenomen meteorològic')}</h1><p class="stamp">Àrea del Prelitoral de Barcelona · Sant Celoni</p><section class="alert" style="border-color:${alertColor}"><b style="color:${alertColor}">${escapeHtml(data.levelLabel||'AVÍS')}</b><p>${escapeHtml(cleanText(data.description||draft.body,700))}</p></section><p class="advice">Consulta el detall oficial i segueix les indicacions de Protecció Civil.</p>`:`<p class="eyebrow">El temps ara</p><h1>Dades reals i previsió per entendre el dia.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p>
+    <section class="hero"><div><small>Temperatura</small><div class="temp">${escapeHtml(temperature)}</div></div><div class="feels">Sensació tèrmica<b>${escapeHtml(feeling)}</b></div></section>
+    <section class="grid"><div class="metric"><span>Humitat</span><b>${escapeHtml(humidity)}</b></div><div class="metric"><span>Vent · ratxa</span><b>${escapeHtml(wind)} · ${escapeHtml(gust)}</b></div></section>
+    ${forecast.length?`<section class="forecast"><div><span>AVUI · ${escapeHtml(today.condition||'')}</span><b>${escapeHtml(display(today.max,'°',0))} / ${escapeHtml(display(today.min,'°',0))}</b><small>${escapeHtml(display(today.rainProbability,'% pluja',0))}</small></div><div><span>DEMÀ · ${escapeHtml(tomorrow.condition||'')}</span><b>${escapeHtml(display(tomorrow.max,'°',0))} / ${escapeHtml(display(tomorrow.min,'°',0))}</b><small>${escapeHtml(display(tomorrow.rainProbability,'% pluja',0))}</small></div></section>`:`<section class="grid"><div class="metric"><span>Pressió</span><b>${escapeHtml(pressure)}</b></div><div class="metric"><span>Pluja acumulada avui</span><b>${escapeHtml(rain)}</b></div></section>`}`;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     *{box-sizing:border-box}html,body{margin:0;width:1080px;height:1350px;overflow:hidden;font-family:Arial,sans-serif;background:#061713;color:#f5faf7}
     body{padding:64px;background:radial-gradient(circle at 84% 10%,#286d55 0,rgba(40,109,85,.18) 28%,transparent 44%),linear-gradient(145deg,#061713,#0b241c 62%,#102e24)}
-    .top{display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:20px}.mark{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#bdebd0,#66b895);border:4px solid rgba(255,255,255,.72);color:#0b3125;font-size:44px;font-weight:900}.brand b{font-size:38px}.brand span{display:block;color:#a9beb5;font-size:21px;margin-top:5px}.live{padding:15px 22px;border:1px solid #5e8d79;border-radius:999px;color:#b9f0ce;font-weight:800;letter-spacing:2px;font-size:18px}
+    .top{display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:20px}.mark{width:92px;height:92px;border-radius:22px;object-fit:cover;border:2px solid rgba(255,255,255,.5)}.brand b{font-size:38px}.brand span{display:block;color:#a9beb5;font-size:21px;margin-top:5px}.live{padding:15px 22px;border:1px solid #5e8d79;border-radius:999px;color:#b9f0ce;font-weight:800;letter-spacing:2px;font-size:18px}
     .eyebrow{margin:94px 0 20px;color:#8fe0ad;font-weight:800;letter-spacing:4px;font-size:22px;text-transform:uppercase}h1{margin:0;font-size:70px;line-height:1.02;letter-spacing:-3px;max-width:850px}.stamp{margin-top:22px;color:#b2c5bc;font-size:26px}.hero{margin-top:62px;display:flex;align-items:flex-end;justify-content:space-between;padding:42px;border-radius:34px;border:1px solid #416d5b;background:rgba(12,43,33,.84)}.hero small{display:block;color:#9db5aa;font-size:23px;margin-bottom:12px}.temp{font-size:138px;line-height:.86;font-weight:900;letter-spacing:-8px}.feels{text-align:right;font-size:28px;color:#cfe0d8}.feels b{display:block;color:#fff;font-size:42px;margin-top:10px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.metric{padding:28px 30px;border-radius:25px;border:1px solid #315c4b;background:rgba(5,28,22,.74)}.metric span{display:block;color:#91aa9f;font-size:21px;margin-bottom:9px}.metric b{font-size:36px}.footer{position:absolute;left:64px;right:64px;bottom:58px;display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid #315c4b;color:#9eb4aa;font-size:21px}.footer strong{color:#8fe0ad}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.metric{padding:25px 30px;border-radius:25px;border:1px solid #315c4b;background:rgba(5,28,22,.74)}.metric span{display:block;color:#a8beb4;font-size:21px;margin-bottom:9px}.metric b{font-size:34px}.forecast{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.forecast div{padding:25px 28px;border-radius:25px;border:1px solid #477764;background:rgba(7,31,24,.92)}.forecast span,.forecast small{display:block;color:#91d8ad;font-size:19px}.forecast b{display:block;font-size:38px;margin:12px 0}.alert{margin-top:70px;padding:45px;border:2px solid;border-radius:34px;background:rgba(5,28,22,.82)}.alert b{font-size:56px}.alert p{font-size:34px;line-height:1.32}.advice{font-size:29px;line-height:1.35;color:#d7e5de;margin-top:36px}.footer{position:absolute;left:64px;right:64px;bottom:58px;display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid #315c4b;color:#aec3b9;font-size:21px}.footer strong{color:#8fe0ad}
   </style></head><body>
-    <div class="top"><div class="brand"><div class="mark">F</div><div><b>Fontanillas</b><span>Observatori meteorològic · Sant Celoni</span></div></div><div class="live">DADA REAL</div></div>
-    <p class="eyebrow">El temps ara</p><h1>Dades de l’estació, sense estimacions.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p>
-    <section class="hero"><div><small>Temperatura</small><div class="temp">${escapeHtml(temperature)}</div></div><div class="feels">Sensació tèrmica<b>${escapeHtml(feeling)}</b></div></section>
-    <section class="grid"><div class="metric"><span>Humitat</span><b>${escapeHtml(humidity)}</b></div><div class="metric"><span>Pressió</span><b>${escapeHtml(pressure)}</b></div><div class="metric"><span>Vent · ratxa</span><b>${escapeHtml(wind)} · ${escapeHtml(gust)}</b></div><div class="metric"><span>Pluja acumulada avui</span><b>${escapeHtml(rain)}</b></div></section>
-    <div class="footer"><span>Font: estació Fontanillas · Weather Underground</span><strong>meteo.fontanillas.cat</strong></div>
+    <div class="top"><div class="brand"><img class="mark" src="https://meteo.fontanillas.cat/assets/icons/icon-512.png" alt=""><div><b>Meteo Fontanillas</b><span>Observatori meteorològic · Sant Celoni</span></div></div><div class="live">${isAlert?'AEMET':'DADA REAL'}</div></div>
+    ${main}
+    <div class="footer"><span>${isAlert?'Font oficial: AEMET':'Fonts: estació Fontanillas · Open-Meteo'}</span><strong>meteo.fontanillas.cat</strong></div>
   </body></html>`;
 }
 
@@ -1768,11 +1829,26 @@ async function socialCard(request, env, draftId, url, format = 'png') {
   if (!rendered.ok) {
     const details = cleanText(await rendered.clone().text().catch(() => ''), 500);
     console.error('Social card rendering error', JSON.stringify({ draftId, status:rendered.status, details }));
+    return json({error:'No s’ha pogut generar la targeta amb dades reals.',details},502,'no-store');
   }
   const headers = new Headers(rendered.headers);
   headers.set('Content-Type',jpeg ? 'image/jpeg' : 'image/png'); headers.set('Cache-Control','public, max-age=31536000, immutable');
   headers.set('X-Content-Type-Options','nosniff');
+  headers.set('Access-Control-Allow-Origin','https://meteo.fontanillas.cat');
   return new Response(rendered.body,{status:rendered.status,headers});
+}
+
+async function ensureSocialCardUrl(draft,env,format='png'){
+  const imageUrl=await socialCardUrl(draft,env,format);
+  let lastError='resposta buida';
+  for(let attempt=0;attempt<4;attempt+=1){
+    const response=await fetch(imageUrl,{headers:{Accept:'image/*'},cf:{cacheEverything:true,cacheTtl:86400}}).catch(error=>{lastError=error.message;return null;});
+    const type=String(response?.headers.get('Content-Type')||'').toLowerCase();
+    if(response?.ok&&type.startsWith('image/'))return imageUrl;
+    if(response)lastError=`HTTP ${response.status} (${type||'sense tipus'})`;
+    await new Promise(resolve=>setTimeout(resolve,500*(attempt+1)));
+  }
+  throw Object.assign(new Error(`La targeta social no està preparada: ${lastError}.`),{status:502});
 }
 
 function metaGraphBase(env) {
@@ -1839,7 +1915,7 @@ async function publishFacebook(draft, env) {
   if (!assets.pageId) throw Object.assign(new Error('No s’ha identificat la pàgina de Facebook.'), { status:503 });
   const { payload, responseCode } = await metaGraphRequest(env, `${assets.pageId}/photos`, {
     method:'POST', accessToken:assets.pageToken,
-    params:{ caption:socialPostText(draft, 6000), url:await socialCardUrl(draft, env), published:true },
+    params:{ caption:socialPostText(draft, 6000), url:await ensureSocialCardUrl(draft, env), published:true },
   });
   if (!payload.id) throw Object.assign(new Error('Facebook no ha retornat l’identificador de la publicació.'), { status:502, responseCode });
   return { remoteId:String(payload.id), responseCode };
@@ -1848,7 +1924,7 @@ async function publishFacebook(draft, env) {
 async function publishInstagram(draft, env) {
   const assets = await resolveMetaAssets(env);
   if (!assets.instagramId) throw Object.assign(new Error('La pàgina no té cap compte professional d’Instagram vinculat. També pots afegir META_INSTAGRAM_ACCOUNT_ID.'), { status:503 });
-  const imageUrl = await socialCardUrl(draft, env, 'jpeg');
+  const imageUrl = await ensureSocialCardUrl(draft, env, 'jpeg');
   const created = await metaGraphRequest(env, `${assets.instagramId}/media`, {
     method:'POST', accessToken:assets.pageToken,
     params:{ image_url:imageUrl, caption:socialPostText(draft, 2200) },
@@ -1899,16 +1975,21 @@ async function threadsGraphRequest(env, path, { method='GET', params={} } = {}) 
 
 async function publishThreads(draft, env) {
   const text = socialPostText(draft, 500);
+  const imageUrl=await ensureSocialCardUrl(draft,env);
   const created = await threadsGraphRequest(env, 'me/threads', {
     method:'POST',
-    params:{ media_type:'IMAGE', image_url:await socialCardUrl(draft, env), text, alt_text:'Dades meteorològiques reals de l’Observatori Fontanillas' },
+    params:{ media_type:'IMAGE', image_url:imageUrl, text, alt_text:'Dades meteorològiques reals i previsió de Meteo Fontanillas' },
   });
   if (!created.payload.id) throw Object.assign(new Error('Threads no ha pogut preparar la publicació.'), { status:502, responseCode:created.responseCode });
-  const published = await threadsGraphRequest(env, 'me/threads_publish', {
-    method:'POST', params:{ creation_id:created.payload.id },
-  });
-  if (!published.payload.id) throw Object.assign(new Error('Threads no ha retornat l’identificador de la publicació.'), { status:502, responseCode:published.responseCode });
-  return { remoteId:String(published.payload.id), responseCode:published.responseCode };
+  let lastError=null;
+  for(let attempt=0;attempt<6;attempt+=1){
+    await new Promise(resolve=>setTimeout(resolve,800+attempt*400));
+    try{
+      const published=await threadsGraphRequest(env,'me/threads_publish',{method:'POST',params:{creation_id:created.payload.id}});
+      if(published.payload.id)return {remoteId:String(published.payload.id),responseCode:published.responseCode};
+    }catch(error){lastError=error;if(error.metaCode&&!['1','2'].includes(String(error.metaCode)))throw error;}
+  }
+  throw Object.assign(new Error(lastError?.message||'Threads encara està processant la publicació. Torna-ho a provar.'),{status:502,responseCode:lastError?.responseCode||created.responseCode});
 }
 
 async function diagnoseSocialChannel(channel, env) {
@@ -2067,7 +2148,7 @@ async function adminPublishSocialDraft(request, env, draftId) {
   if (!(await ensureSocialDraftSchema(env))) return json({ error:'La base de dades no està disponible.' }, 503, 'no-store', auth.origin);
   const draft = await findSocialDraft(env, draftId);
   if (!draft) return json({ error:'No s’ha trobat l’esborrany.' }, 404, 'no-store', auth.origin);
-  if (!['approved','partially_published'].includes(draft.status)) return json({ error:'Primer cal aprovar l’esborrany. Aprovar no el publica.' }, 409, 'no-store', auth.origin);
+  if (!['approved','partially_published','published'].includes(draft.status)) return json({ error:'Primer cal aprovar l’esborrany. Aprovar no el publica.' }, 409, 'no-store', auth.origin);
   const body = await adminJsonBody(request, auth.origin);
   const channel = cleanText(body.channel, 20).toLowerCase();
   if (!SOCIAL_CHANNELS.has(channel)) return json({ error:'Aquest canal no admet publicació manual des del panell.' }, 400, 'no-store', auth.origin);
@@ -2087,6 +2168,16 @@ async function adminPublishSocialDraft(request, env, draftId) {
     await recordSocialPublication(env, draftId, channel, 'failed', { error:cleanText(error.message, 500), responseCode:error.responseCode || null }).catch(recordError => console.error('Social publication log error', recordError));
     return json({ error:error.message || 'No s’ha pogut publicar.', channel, retryable:true }, error.status || 502, 'no-store', auth.origin);
   }
+}
+
+async function adminPrepareWhatsApp(request, env, draftId) {
+  const auth=await authorizeAdminRequest(request,env);
+  if(auth.response)return auth.response;
+  if(!(await ensureSocialDraftSchema(env)))return json({error:'La base de dades no està disponible.'},503,'no-store',auth.origin);
+  const draft=await findSocialDraft(env,draftId);
+  if(!draft)return json({error:'No s’ha trobat l’esborrany.'},404,'no-store',auth.origin);
+  const imageUrl=await ensureSocialCardUrl(draft,env,'jpeg');
+  return json({ok:true,text:socialPostText(draft,3000),imageUrl,channelUrl:'https://whatsapp.com/channel/0029VbD9jmL4CrfajJnZIi25'},200,'no-store, private',auth.origin);
 }
 
 async function adminStatus(request, env) {
@@ -2326,12 +2417,13 @@ async function meteoAI(request, env) {
     if ((Number(row?.total) || 0) >= 30) return json({ error:"Massa consultes. Torna-ho a provar més tard." }, 429, "no-store", origin);
     await env.DB.prepare("INSERT INTO ai_rate_limit (ip_hash,asked_at) VALUES (?,?)").bind(ipHash, now).run();
   }
-  const context = JSON.stringify(body.context || {}).slice(0, 16000);
-  const prompt = `Ets Meteo IA de l’Observatori Fontanillas de Sant Celoni. Respon en català clar, útil i breu (màxim 180 paraules). Interpreta llenguatge natural i errors ortogràfics. Usa només les dades del context per afirmar valors actuals, prediccions o avisos; si hi falten, digues-ho explícitament. Pots explicar coneixement meteorològic general. No inventis dades, fonts ni alertes. Per emergències remet a Meteocat, AEMET, Protecció Civil i 112.\n\nContext verificat: ${context}\n\nPregunta: ${question}`;
-  const result = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", { messages:[{ role:"user", content:prompt }], max_tokens:420, temperature:0.25 });
+  const rawContext=body.context&&typeof body.context==='object'?body.context:{};
+  const context=JSON.stringify({current:rawContext.current||null,forecast:rawContext.forecast||null,alerts:rawContext.alerts||null,environment:rawContext.environment||null,historySummary:rawContext.historySummary||rawContext.history||null,conversation:rawContext.conversation||null}).slice(0,18000);
+  const system=`Ets Meteo IA, l’assistent expert de l’Observatori Fontanillas de Sant Celoni. Respon sempre en català clar, natural i útil, en un màxim de 180 paraules. Entén errades ortogràfiques i preguntes molt senzilles. Si és una pregunta meteorològica general, respon amb coneixement científic encara que no depengui de les dades locals. Si pregunta per valors actuals, prediccions o avisos, prioritza el context verificat i diferencia observació de previsió. Si una dada concreta falta, explica què sí que pots concloure amb les dades disponibles en lloc d’aturar-te amb un “no ho trobo”. No inventis valors, fonts ni alertes. En emergències remet a Meteocat, AEMET, Protecció Civil i 112.`;
+  const result = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", { messages:[{role:"system",content:system},{role:"user",content:`Context verificat (JSON): ${context}\n\nPregunta: ${question}`}], max_tokens:520, temperature:0.2 });
   const textAnswer = cleanText(typeof result === "string" ? result : result?.response || result?.choices?.[0]?.message?.content, 3000);
   if (!textAnswer) return json({ error:"La IA no ha generat cap resposta" }, 502, "no-store", origin);
-  return json({ title:"Resposta de Meteo IA", body:textAnswer, facts:[], sources:[{ label:"Meteo IA", detail:"Workers AI · resposta basada en el context disponible" }] }, 200, "no-store", origin);
+  return json({ title:"Resposta de Meteo IA", body:textAnswer, facts:[], sources:[{ label:"Meteo IA", detail:"Cloudflare Workers AI · Llama 3.3 70B" }] }, 200, "no-store", origin);
 }
 
 async function contact(request, env) {
@@ -2402,6 +2494,8 @@ export default {
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
       const socialPublishMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/publish$/);
       if (request.method === "POST" && socialPublishMatch) return adminPublishSocialDraft(request, env, Number(socialPublishMatch[1]));
+      const socialWhatsAppMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/prepare-whatsapp$/);
+      if (request.method === "POST" && socialWhatsAppMatch) return adminPrepareWhatsApp(request, env, Number(socialWhatsAppMatch[1]));
       const socialDraftMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)$/);
       if (request.method === "POST" && socialDraftMatch) return adminUpdateSocialDraft(request, env, Number(socialDraftMatch[1]));
       if (request.method !== "GET") return json({ error:"Mètode no permès" }, 405);

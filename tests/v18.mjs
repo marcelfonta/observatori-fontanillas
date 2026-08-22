@@ -17,6 +17,10 @@ assert.equal(orange.alert_wind,'0');
 assert.equal(orange.alert_level_yellow,'0');
 assert.equal(orange.alert_level_orange,'1');
 assert.equal(orange.alert_level_red,'1');
-assert.match(notificationPreferenceSummary({rain:true,wind:false,storm:false,snow:false,temperature:false,minLevel:'red'}),/només vermell/);
+assert.match(notificationPreferenceSummary({rain:true,wind:false,storm:false,snow:false,temperature:false,minLevel:'red'}),/nivells vermell/);
+const selected=notificationTags({rain:true,levels:['yellow','red']});
+assert.equal(selected.alert_level_yellow,'1');
+assert.equal(selected.alert_level_orange,'0');
+assert.equal(selected.alert_level_red,'1');
 
 console.log('Test V18 d’efemèrides i notificacions: correcte');

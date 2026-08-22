@@ -40,7 +40,7 @@ for(const token of ['graph.facebook.com','media_publish','publishFacebook','publ
 for(const id of ['admin-social-pill','admin-social-mode','admin-social-facebook','admin-social-instagram','admin-social-bluesky','admin-social-telegram','admin-social-drafts','admin-social-last','admin-social-list','admin-social-diagnose','admin-social-diagnostic-list'])assert.ok(adminPage.includes(`id="${id}"`),`Administració V22.0.0: falta ${id}.`);
 for(const token of ['renderSocialEditor','fetchSocialDrafts','runSocialDiagnostics','channelCredentials'])assert.ok(adminFeature.includes(token),`Administració V22.0.0: falta ${token}.`);
 
-assert.ok(serviceWorker.includes("observatori-fontanillas-v22-0-3")&&serviceWorker.includes("'/src/features/footer-social.js'")&&serviceWorker.includes("'/assets/images/observatori-fontanillas-avatar-v21.png'"),'PWA V22.0.3: versió, mòdul social o avatar absents.');
+assert.ok(serviceWorker.includes("observatori-fontanillas-v22-0-4")&&serviceWorker.includes("'/src/features/footer-social.js'")&&serviceWorker.includes("'/assets/images/observatori-fontanillas-avatar-v21.png'"),'PWA V22.0.4: versió, mòdul social o avatar absents.');
 const avatar=await readFile(resolve(root,'assets/images/observatori-fontanillas-avatar-v21.png'));
 assert.equal(avatar.toString('ascii',1,4),'PNG','Marca V22.0.0: l’avatar no és PNG.');
 assert.deepEqual([avatar.readUInt32BE(16),avatar.readUInt32BE(20)],[1024,1024],'Marca V22.0.0: l’avatar no és quadrat a 1024 px.');

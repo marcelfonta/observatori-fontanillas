@@ -28,6 +28,8 @@ export function weatherLabel(code){
 }
 
 function baseSvg(title,kicker,content,footer,logoData){
+  const slideIndex={'Actualització meteorològica':1,'Ara mateix':2,'Avui':3,'Demà':4,'Tendència ràpida':5}[kicker]||1;
+  const progress=Array.from({length:5},(_,index)=>`<rect x="${76+index*188}" y="1684" width="164" height="8" rx="4" fill="${index<slideIndex?'#8ee7ba':'#365f50'}"/>`).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
   <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071812"/><stop offset=".52" stop-color="#123e31"/><stop offset="1" stop-color="#0a2028"/></linearGradient><radialGradient id="glow"><stop stop-color="#72e4ad" stop-opacity=".28"/><stop offset="1" stop-color="#72e4ad" stop-opacity="0"/></radialGradient></defs>
   <rect width="1080" height="1920" fill="url(#bg)"/><circle cx="920" cy="260" r="520" fill="url(#glow)"/><circle cx="120" cy="1700" r="420" fill="url(#glow)" opacity=".55"/>
@@ -36,11 +38,18 @@ function baseSvg(title,kicker,content,footer,logoData){
   <text x="224" y="170" fill="#8ee7ba" font-family="DejaVu Sans" font-size="25" letter-spacing="3">OBSERVATORI · SANT CELONI</text>
   <text x="76" y="330" fill="#8ee7ba" font-family="DejaVu Sans" font-size="29" font-weight="700" letter-spacing="4">${esc(kicker).toUpperCase()}</text>
   <text x="76" y="440" fill="#f7fcf9" font-family="DejaVu Sans" font-size="76" font-weight="750">${esc(title)}</text>
+  ${weatherGlyph(3,900,300,.34)}
   ${content}
+  ${progress}
   <line x1="76" y1="1740" x2="1004" y2="1740" stroke="#8ee7ba" stroke-opacity=".35"/>
   <text x="76" y="1810" fill="#b8cdc3" font-family="DejaVu Sans" font-size="27">${esc(footer)}</text>
   <text x="1004" y="1810" text-anchor="end" fill="#8ee7ba" font-family="DejaVu Sans" font-size="27" font-weight="700">meteo.fontanillas.cat</text>
   </svg>`;
+}
+
+function weatherGlyph(code,x=790,y=510,scale=1){
+  const value=Number(code);const rainy=value>=51&&value<=86;const storm=value>=95;const sunny=value<=1;
+  return `<g transform="translate(${x} ${y}) scale(${scale})">${sunny||value<=3?'<circle cx="28" cy="18" r="42" fill="#f7c958"/>':''}${sunny?'':'<path d="M-24 90c-33 0-59-23-59-52 0-27 23-49 52-51 13-38 49-64 91-64 51 0 93 38 97 87 31 5 55 29 55 58 0 33-29 60-65 60H-24z" fill="#edf7f2" stroke="#8ee7ba" stroke-width="8"/>'}${rainy?'<g stroke="#77b7c8" stroke-width="12" stroke-linecap="round"><path d="M-20 155l-14 28M48 155l-14 28M116 155l-14 28"/></g>':''}${storm?'<path d="M60 132h45l-30 47h30l-62 78 17-60H25z" fill="#f7c958"/>':''}</g>`;
 }
 
 function metricCard(x,y,label,value,unit=''){

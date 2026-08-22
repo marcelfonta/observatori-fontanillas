@@ -26,6 +26,7 @@ import { renderLongRangeError, renderLongRangeForecast } from './features/long-r
 import { initLearning } from './features/learning.js';
 import { initFooterSocial } from './features/footer-social.js';
 import { initForecastVerification } from './features/forecast-verification.js';
+import { updateSeoObservation } from './features/seo.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -104,18 +105,18 @@ async function load(){
       latestHistory=context.history;
       renderSummaryFallback();
     }
-    renderStation(latest,context); renderCharts(latest,latestHistory); renderMetricSparklines(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenter(latestHistory,latest); setUpdated(latest.updated); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:latestHistory});updateShareContext({current:latest});
+    renderStation(latest,context); renderCharts(latest,latestHistory); renderMetricSparklines(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenter(latestHistory,latest); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:latestHistory});updateShareContext({current:latest});
     if(latest.degraded){showOfflineBanner(latest.ageMinutes,latest.sourceMessage||`Weather Underground no respon. Mostrant l’última lectura fiable de fa ${latest.ageMinutes} min.`);if(label){label.textContent='Dades de suport';label.parentElement.classList.add('is-offline');}}
     else{hideOfflineBanner();if(label){label.textContent='En directe';label.parentElement.classList.remove('is-offline');}}
   } catch(error) {
     console.warn('No s’han pogut carregar les dades en directe.',error);
     const cached=getLastCachedObs();
     if(cached && (Date.now()-cached.ts)<OFFLINE_MAX_AGE_MS){
-      latest=cached.data; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:[]});updateShareContext({current:latest});
+      latest=cached.data; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:[]});updateShareContext({current:latest});
       showOfflineBanner(cached.ageMinutes);
       if(label){label.textContent='Sense connexió';label.parentElement.classList.add('is-offline');}
     } else {
-      latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSituation({current:latest}); updateMeteoAIContext({current:null,history:[]});updateShareContext({current:null});
+      latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSeoObservation(null); updateSituation({current:latest}); updateMeteoAIContext({current:null,history:[]});updateShareContext({current:null});
       hideOfflineBanner();
       if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
     }

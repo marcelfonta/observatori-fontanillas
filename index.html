@@ -387,7 +387,7 @@
             <span class="source-tabs-hint" id="source-tabs-hint" aria-hidden="true">Llisca per veure més fonts →</span>
           </div>
           <div class="source-viewer">
-            <div class="source-panel is-active" id="source-panel-meteocat" role="tabpanel" aria-labelledby="source-tab-meteocat" tabindex="0" data-source-panel="meteocat"><div class="source-official"><header><div><span id="source-meteocat-title">Meteocat · pròximes 72 hores</span><small id="source-meteocat-copy">Cel, temperatura, precipitació, humitat, xafogor i vent per hores</small></div><div class="source-official__actions"><div class="source-horizon" role="group" aria-label="Horitzó de Meteocat"><button class="is-active" type="button" data-source-horizon="hourly">Per hores</button><button type="button" data-source-horizon="daily">Per dies</button></div><a href="https://www.meteo.cat/prediccio/municipal/082021" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></div></header><div class="source-official__frame source-official__frame--meteocat is-hourly" id="source-meteocat-shell"><iframe id="source-meteocat-frame" title="Predicció oficial de Meteocat per a Sant Celoni" loading="lazy" src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=0f2a22&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe></div></div></div>
+            <div class="source-panel is-active" id="source-panel-meteocat" role="tabpanel" aria-labelledby="source-tab-meteocat" tabindex="0" data-source-panel="meteocat"><div class="source-official"><header><div><span id="source-meteocat-title">Meteocat · pròximes 72 hores</span><small id="source-meteocat-copy">Cel, temperatura, precipitació, humitat, xafogor i vent per hores</small></div><div class="source-official__actions"><div class="source-horizon" role="group" aria-label="Horitzó de Meteocat"><button class="is-active" type="button" data-source-horizon="hourly">Per hores</button><button type="button" data-source-horizon="daily">Per dies</button></div><a href="https://www.meteo.cat/prediccio/municipal/082021" target="_blank" rel="noreferrer">Obrir Meteocat ↗</a></div></header><div class="source-official__frame source-official__frame--meteocat is-hourly" id="source-meteocat-shell"><iframe id="source-meteocat-frame" title="Predicció oficial de Meteocat per a Sant Celoni" loading="lazy" data-src="https://static-m.meteo.cat/ginys/municipal72h?location=082021&amp;language=ca&amp;color=0f2a22&amp;tempFormat=%20%C2%BAC&amp;windSpeedFormat=km/h&amp;mainChart=estCel&amp;secondaryChart=true&amp;target=_blank"></iframe></div></div></div>
             <div class="source-panel" id="source-panel-aemet" role="tabpanel" aria-labelledby="source-tab-aemet" tabindex="0" hidden data-source-panel="aemet"><div class="source-official"><header><div><span>AEMET · giny municipal complet</span><small>4 dies · cel, temperatures, sensació, pluja, humitat, vent i avisos</small></div><div class="source-official__links"><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/horas/tabla/sant-celoni-id08202" target="_blank" rel="noreferrer">48 h per hores ↗</a><a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/sant-celoni-id08202" target="_blank" rel="noreferrer">7 dies ↗</a></div></header><div class="source-official__frame source-official__frame--aemet"><iframe name="iframe_aemet_id33044" tabindex="0" id="source-aemet-frame" title="Predicció municipal completa d’AEMET per a Sant Celoni" data-src="https://www.aemet.es/ca/eltiempo/prediccion/municipios/mostrarwidget/sant-celoni-id08202?w=g4p11110ohmffffx4f86d9t95b6e9r1s4n2" loading="lazy" scrolling="auto"></iframe></div></div></div>
             <div class="source-panel" id="source-panel-eltiempo" role="tabpanel" aria-labelledby="source-tab-eltiempo" tabindex="0" hidden data-source-panel="eltiempo">
               <div class="source-eltiempo">
@@ -658,7 +658,7 @@
 
     <footer class="shell">
       <span>© 2026 Observatori Meteorològic Fontanillas</span>
-      <small>Dades locals · Sant Celoni, Montseny · V22.0.2</small>
+      <small>Dades locals · Sant Celoni, Montseny</small>
       <div>
         <a href="./privacitat.html">Privacitat</a>
         <a href="#top">Tornar amunt ↑</a>
@@ -666,7 +666,7 @@
       </div>
     </footer>
 
-    <noscript>Cal activar JavaScript per consultar les dades meteorològiques en directe.</noscript>
+    <noscript><section class="noscript-weather"><h1>Meteo Fontanillas · Sant Celoni</h1><p>Observatori meteorològic local amb dades reals, predicció, avisos oficials i històric. Per veure les lectures en directe cal activar JavaScript.</p><p><a href="https://www.meteo.cat/prediccio/municipal/082021">Predicció oficial de Meteocat</a> · <a href="https://www.aemet.es/ca/eltiempo/prediccion/municipios/sant-celoni-id08202">Predicció d’AEMET</a></p></section></noscript>
 
     <div id="pushPreferencesModal" hidden class="push-preferences-modal">
       <section class="push-preferences-card" role="dialog" aria-modal="true" aria-labelledby="push-preferences-title">
@@ -679,7 +679,7 @@
           <label><input type="checkbox" value="temperature" data-alert-preference checked><span>🌡️<b>Temperatura extrema</b><small>Calor, fred o gelada destacables</small></span></label>
           <label class="push-pref-all"><input type="checkbox" value="all" data-alert-preference><span>🔔<b>Tots els avisos</b><small>Activa totes les categories</small></span></label>
         </div>
-        <fieldset class="push-level-preferences"><legend>A partir de quin nivell?</legend><label><input type="radio" name="push-min-level" value="yellow" data-alert-level><span><b>Groc</b><small>Tots els avisos oficials</small></span></label><label><input type="radio" name="push-min-level" value="orange" data-alert-level checked><span><b>Taronja</b><small>Només situacions importants</small></span></label><label><input type="radio" name="push-min-level" value="red" data-alert-level><span><b>Vermell</b><small>Només situacions extremes</small></span></label></fieldset>
+        <fieldset class="push-level-preferences"><legend>Quins nivells vols rebre?</legend><label><input type="checkbox" name="push-level" value="yellow" data-alert-level><span><b>Groc</b><small>Situacions que demanen precaució</small></span></label><label><input type="checkbox" name="push-level" value="orange" data-alert-level checked><span><b>Taronja</b><small>Situacions importants</small></span></label><label><input type="checkbox" name="push-level" value="red" data-alert-level checked><span><b>Vermell</b><small>Situacions extremes</small></span></label></fieldset>
         <p class="push-preference-summary" id="push-preference-summary">Pluja, vent, tempestes, neu i temperatura · taronja o vermell</p>
         <footer><button type="button" class="secondary" id="push-preferences-disable">Desactivar avisos</button><button type="button" class="primary" id="push-preferences-save">Desar i activar</button></footer>
       </section>

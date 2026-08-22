@@ -50,7 +50,7 @@ if(!html.includes('https://maps.blitzortung.org/')||!html.includes('Blitzortung 
 if(!html.includes('https://www.gencat.cat/medinatural/incendis/mapes/pla_alfa.gif')||html.includes('https://experience.arcgis.com/experience/'))throw new Error('El Pla Alfa no utilitza la imatge oficial lleugera.');
 const push=await readFile(resolve(root,'src/features/push.js'),'utf8');
 if(!push.includes('fontanillas-alert-invite-v1')||!push.includes("closeInvite('declined')")||!push.includes("closeInvite('accepted')"))throw new Error('La invitació única d’avisos no recorda les dues respostes.');
-if(!push.includes('notificationTags')||!push.includes('data-alert-level')||!html.includes('name="push-min-level"'))throw new Error('Les notificacions no filtren per nivell mínim.');
+if(!push.includes('notificationTags')||!push.includes('data-alert-level')||!html.includes('name="push-level"'))throw new Error('Les notificacions no permeten seleccionar els nivells d’avís.');
 if(html.includes('cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js')||!push.includes('loadOneSignalSdk'))throw new Error('OneSignal encara es carrega quan no està configurat.');
 const portalCss=await readFile(resolve(root,'css/portal.css'),'utf8');
 if(!portalCss.includes('#shareModal > [role="dialog"]')||!portalCss.includes('background: #091813 !important'))throw new Error('La finestra de compartir no té un fons sòlid.');

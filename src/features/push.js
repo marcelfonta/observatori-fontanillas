@@ -75,7 +75,8 @@ function openModal(){
   if(!modal)return;
   const prefs=loadPrefs();
   fields.forEach(f=>{f.checked=Boolean(prefs[f.value]);});
-  levelFields.forEach(field=>{field.checked=field.value===prefs.minLevel;});
+  const selected=Array.isArray(prefs.levels)?prefs.levels:['orange','red'];
+  levelFields.forEach(field=>{field.checked=selected.includes(field.value);});
   if(summary){ summary.textContent=notificationPreferenceSummary(prefs); summary.classList.remove('is-error'); }
   setPushActionState(false);
   modal.hidden=false; modal.style.display='flex'; document.body.style.overflow='hidden';
@@ -96,9 +97,9 @@ function closeInvite(value){
 function collectPrefs(){
   const prefs={...DEFAULT_PREFS};
   fields.forEach(f=>prefs[f.value]=Boolean(f.checked));
-  prefs.minLevel=levelFields.find(field=>field.checked)?.value||'orange';
-  if(prefs.all) Object.keys(prefs).forEach(k=>prefs[k]=true);
-  prefs.minLevel=levelFields.find(field=>field.checked)?.value||'orange';
+  prefs.levels=levelFields.filter(field=>field.checked).map(field=>field.value);
+  if(prefs.all){prefs.rain=true;prefs.wind=true;prefs.storm=true;prefs.snow=true;prefs.temperature=true;}
+  if(prefs.all)prefs.levels=levelFields.filter(field=>field.checked).map(field=>field.value);
   return prefs;
 }
 async function syncTags(prefs){
@@ -131,6 +132,7 @@ async function refresh(){
 async function enablePush(){
   if(pushActionBusy)return;
   const prefs=collectPrefs();
+  if(!prefs.levels.length){showPushProgress('Selecciona almenys un nivell d’avís.',true);return;}
   savePrefsLocal(prefs);
   if(!appId || !OneSignalRef){
     closeModal();

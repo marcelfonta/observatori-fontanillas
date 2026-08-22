@@ -1,4 +1,5 @@
 import { format, setText } from '../core/dom.js';
+import { initWhenVisible } from './navigation.js';
 
 const codes = {
   0:['☀️','Cel serè'],1:['🌤️','Poc ennuvolat'],2:['⛅','Intervals'],3:['☁️','Cobert'],
@@ -247,6 +248,8 @@ export function initForecastControls() {
   document.getElementById('model-day-prev')?.addEventListener('click',()=>{modelDayIndex=Math.max(0,modelDayIndex-1);renderModelDay();});
   document.getElementById('model-day-next')?.addEventListener('click',()=>{modelDayIndex=Math.min(6,modelDayIndex+1);renderModelDay();});
   const sourceTabs=[...document.querySelectorAll('[data-source-tab]')];
+  const activeSourcePanel=document.querySelector('[data-source-panel].is-active');
+  if(activeSourcePanel)initWhenVisible(`#${activeSourcePanel.id}`,()=>loadSourcePanel(activeSourcePanel),'500px 0px');
   const sourceTabsList=document.querySelector('.source-tabs');
   const sourceHint=document.getElementById('source-tabs-hint');
   const updateSourceHint=()=>{

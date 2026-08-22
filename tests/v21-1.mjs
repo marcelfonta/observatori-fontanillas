@@ -10,7 +10,7 @@ const [worker,schema,adminPage,adminFeature,portalCss,serviceWorker,project]=awa
 ]);
 
 assert.equal(JSON.parse(project).version,'22.0.2','La versió web del projecte no és V22.0.2.');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-0-3'),'La memòria cau PWA no és V22.0.3.');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-0-4'),'La memòria cau PWA no és V22.0.4.');
 assert.ok(worker.includes('socialCardHtml')&&worker.includes("env.BROWSER.quickAction('screenshot'"),'Falta la targeta social dinàmica amb dades reals.');
 
 for(const source of [worker,schema]){
@@ -21,7 +21,7 @@ for(const source of [worker,schema]){
 for(const token of ['adminSocialDrafts','adminUpdateSocialDraft','adminPublishSocialDraft','adminSocialDiagnostics','diagnoseSocialChannel','publishFacebook','publishInstagram','publishTelegram','publishBluesky','recordSocialPublication','/admin/social-drafts','/admin/social-diagnostics','manual-confirmation','partially_published']){
   assert.ok(worker.includes(token),`Worker V21.2: falta ${token}.`);
 }
-assert.ok(worker.includes('Una publicació completada es conserva com a registre i no es pot editar.'),'Falta la immutabilitat dels continguts publicats.');
+assert.ok(worker.includes('Després de publicar només pots afegir canals pendents; el text queda protegit.'),'Falta protegir el text publicat tot permetent completar canals pendents.');
 assert.ok(worker.includes('Aquest contingut ja s’ha publicat en aquest canal'),'Falta impedir una publicació duplicada.');
 assert.ok(worker.includes('published:false'),'Aprovar ha d’informar que no publica.');
 for(const required of ['graph.facebook.com','media_publish','META_FACEBOOK_PAGE_ID','META_INSTAGRAM_ACCOUNT_ID'])assert.ok(worker.includes(required),`La prova controlada de Meta necessita ${required}.`);
