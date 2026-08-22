@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
-  "name": "REPLACE_WITH_EXISTING_WORKER_NAME",
+  "name": "replace-with-existing-worker-name",
   "main": "../worker/index.js",
   "compatibility_date": "2026-08-22",
   "compatibility_flags": ["nodejs_compat"],
@@ -23,7 +23,7 @@
   ],
   "env": {
     "staging": {
-      "name": "REPLACE_WITH_STAGING_WORKER_NAME",
+      "name": "replace-with-staging-worker-name",
       "workers_dev": true,
       "vars": {
         "ENVIRONMENT": "staging",

@@ -1,5 +1,19 @@
 # Roadmap oficial
 
+## V22.4.0 — Meteo IA més útil i entenedora — Preparada per revisar
+
+- Respostes locals immediates per a preguntes quotidianes: paraigua, roba, fred o calor, estendre roba i ajuda inicial.
+- Interpretació de la franja horària de pluja amb probabilitat, inici, final i advertiment de revisar el radar.
+- El model avançat rep també les pròximes 48 hores de predicció horària, sense exposar dades personals ni inventar valors.
+- Fonts visibles mantenen separades l’observació real, la predicció, els avisos oficials i el raonament avançat.
+
+### Validacions externes que continuen pendents
+
+- Confirmar una notificació OneSignal real en cada dispositiu desitjat.
+- Observar una execució automàtica completa de les 07:45 i les 08:00 després del desplegament.
+- Completar TikTok només quan la plataforma aprovi l’accés de publicació.
+- Activar nous horaris socials únicament després d’aprovar una vista prèvia per canal.
+
 ## V22.3.0 — Fiabilitat d’avisos i publicacions contextuals — Preparada per revisar
 
 - Diagnosi visible de notificacions per dispositiu: compatibilitat, permís, subscripció i requisit PWA a iPhone.
