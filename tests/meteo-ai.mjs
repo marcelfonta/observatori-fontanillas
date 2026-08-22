@@ -41,8 +41,9 @@ const laundry=await answerMeteoQuestion('Puc estendre roba avui?',context,servic
 assert.equal(laundry.level,'safe');
 
 const rainTime=await answerMeteoQuestion('A quina hora pot ploure avui?',context,services);
-assert.match(rainTime.title,/17:00.*20:00/);
+assert.match(rainTime.title,/franja més probable/i);
 assert.match(rainTime.body,/65%/);
+assert.equal(rainTime.facts.length,3);
 
 const alerts=await answerMeteoQuestion('Hi ha avisos actius?',context,services);
 assert.equal(alerts.level,'safe');
