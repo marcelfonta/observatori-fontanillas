@@ -8,6 +8,7 @@ const modal = document.getElementById('pushPreferencesModal');
 const closeButton = document.getElementById('push-preferences-close');
 const saveButton = document.getElementById('push-preferences-save');
 const disableButton = document.getElementById('push-preferences-disable');
+const testButton = document.getElementById('push-preferences-test');
 const fields = [...document.querySelectorAll('[data-alert-preference]')];
 const levelFields = [...document.querySelectorAll('[data-alert-level]')];
 const summary = document.getElementById('push-preference-summary');
@@ -185,11 +186,26 @@ async function disablePush(){
   closeModal(); await refresh(); window.observatoriTrack?.('push_unsubscribed');
 }
 
+async function testPush(){
+  if(typeof Notification==='undefined'){showPushProgress('Aquest navegador no admet notificacions.',true);return;}
+  if(isIos()&&!isStandalone()){showPushProgress('A l’iPhone, obre primer l’Observatori des de la icona de la pantalla d’inici.',true);return;}
+  let permission=Notification.permission;
+  if(permission==='default')permission=await Notification.requestPermission();
+  if(permission!=='granted'){showPushProgress('Cal permetre les notificacions del navegador per fer la prova.',true);return;}
+  try{
+    const registration=await navigator.serviceWorker?.ready;
+    if(registration?.showNotification)await registration.showNotification('Avisos Meteo Fontanillas',{body:'Prova correcta: aquest dispositiu pot mostrar avisos meteorològics.',icon:'/assets/icons/icon-192.png',badge:'/assets/icons/icon-192.png',tag:'fontanillas-push-test'});
+    else new Notification('Avisos Meteo Fontanillas',{body:'Prova correcta: aquest dispositiu pot mostrar avisos meteorològics.'});
+    showPushProgress('Prova enviada. Si no la veus, revisa el centre de notificacions del dispositiu.');
+  }catch(error){console.warn('No s’ha pogut mostrar la notificació de prova.',error);showPushProgress('No s’ha pogut mostrar la prova en aquest dispositiu.',true);}
+}
+
 function bindUi(){
   if(!button||!status)return;
   button.addEventListener('click',()=>{saveInviteDecision('accepted');openModal();});
   saveButton?.addEventListener('click',enablePush);
   disableButton?.addEventListener('click',disablePush);
+  testButton?.addEventListener('click',testPush);
   closeButton?.addEventListener('click',closeModal);
   modal?.addEventListener('click',e=>{if(e.target===modal)closeModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal?.hidden)closeModal();});

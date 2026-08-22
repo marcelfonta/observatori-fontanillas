@@ -14,11 +14,15 @@ function render(payload){
   const horizons=document.getElementById('verification-horizons');
   const detail=document.getElementById('verification-detail');
   const method=document.getElementById('verification-method');
-  if(!status||!hero||!metrics||!horizons||!detail)return;
+  if(!status||!hero||!metrics||!horizons||!detail||!method)return;
   const days=Number(payload.sampleDays)||0;
   if(payload.status!=='ready'){
-    status.textContent=days?`${days} dies · encara recollint`:'Recollida iniciada';
-    hero.innerHTML=`<div class="verification-orbit"><strong>${days}</strong><span>${days===1?'dia verificat':'dies verificats'}</span></div><div><h4>${days?'Ja estem construint una mostra fiable':'La comparació comença avui'}</h4><p>Necessitem almenys 7 dies complets per evitar conclusions enganyoses. Les primeres mètriques apareixeran automàticament.</p></div>`;
+    const target=7;
+    const progress=Math.min(100,Math.max(0,days/target*100));
+    status.textContent=days?`${days} de ${target} dies · recollint`:'Recollida iniciada';
+    hero.innerHTML=`<div class="verification-orbit" style="--verification-progress:${progress}%"><strong>${days}</strong><span>de ${target} dies verificats</span></div><div><h4>${days?'La mostra creix cada dia':'La comparació comença avui'}</h4><p>Guardem la predicció abans que passi el dia i després la contrastem amb les dades reals de l’estació. Esperem 7 dies complets per no treure conclusions enganyoses.</p></div>`;
+    detail.hidden=false;
+    detail.innerHTML=`<div class="verification-collecting"><div><span class="is-done">1</span><strong>Desem la predicció</strong><small>Abans de conèixer el resultat real</small></div><div><span class="${days?'is-done':''}">2</span><strong>Mesurem què ha passat</strong><small>Temperatura, pluja i ratxa de vent</small></div><div><span>3</span><strong>Calculem l’error</strong><small>Visible quan arribem a 7 dies</small></div></div><p class="verification-example"><b>Exemple il·lustratiu:</b> si es preveuen 24 °C i l’estació en mesura 25 °C, l’error és d’1 °C. Les dades d’aquest exemple no formen part del resultat.</p>`;
     if(payload.firstIssued)method.textContent=`Primera predicció desada: ${new Date(payload.firstIssued).toLocaleString('ca-ES')}. No reconstruïm pronòstics passats.`;
     return;
   }

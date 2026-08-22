@@ -27,6 +27,7 @@ import { initLearning } from './features/learning.js';
 import { initFooterSocial } from './features/footer-social.js';
 import { initForecastVerification } from './features/forecast-verification.js';
 import { updateSeoObservation } from './features/seo.js';
+import { initHomeDensity } from './features/home-density.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -144,6 +145,7 @@ initMeteoAIWidget();
 initShare();
 initLearning();
 initFooterSocial();
+initHomeDensity();
 initWhenVisible('#forecast-verification',initForecastVerification,'700px 0px');
 document.addEventListener('observatori:alerts-updated',event=>updateSituation({alerts:event.detail}));
 initWhenVisible('.model-viewer',initModelViewer);

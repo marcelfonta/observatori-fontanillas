@@ -93,6 +93,14 @@ Implementat a V16.0.0 com un panell de diagnòstic protegit pel Worker: estat de
 
 V21 incorpora Instagram, Facebook, Bluesky i Telegram al portal i prepara una cua D1 d’esborranys diaris. V21.2 hi afegeix revisió, edició, aprovació, descart, restauració, historial per canal, diagnòstic sense publicació i enviament manual confirmat als quatre canals. Aprovar mai no publica i el cron només crea esborranys. La fita quedarà completa després de validar una publicació real controlada a cada xarxa i, només llavors, definir el calendari automàtic i els límits editorials.
 
+## V22.0.3 — Experiència mòbil i avisos verificables — Completat
+
+- Navegació inferior mòbil amb accessos directes a Inici, Ara, Previsió i Avisos, més un menú per a totes les seccions.
+- Densitat progressiva a la portada: les mètriques essencials apareixen primer i la resta es poden desplegar.
+- Prova local de notificacions i selecció múltiple dels nivells d’avís abans d’activar la subscripció.
+- Estat inicial de «Predicció vs realitat» explicat amb progrés real fins als set dies, sense presentar mostres il·lustratives com a resultats.
+- Renovació de la memòria cau PWA i revisió visual en pantalles mòbils.
+
 ## Milestone transversal — Historial d’avisos — Completat
 
 - Avisos actius i només els finalitzats recents a la vista principal.

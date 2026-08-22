@@ -23,6 +23,12 @@ const NAV_ITEMS=[
   ['centre-dades','Centre de Dades','./?page=centre-dades'],['comparar','Comparar','./comparativa.html'],
   ['medi-ambient','Medi Ambient','./?page=medi-ambient'],['aprendre','Aprendre','./?page=aprendre'],['contacte','Contacte','./?page=contacte'],['metodologia','Metodologia','./metodologia.html']
 ];
+const NAV_GROUPS=[
+  ['Ara',['inici','meteo-ia','estacio']],
+  ['Previsió i risc',['prediccio','verificacio','avisos']],
+  ['Explora',['cel','radar','webcams']],
+  ['Dades i projecte',['centre-dades','comparar','medi-ambient','aprendre','contacte','metodologia']]
+];
 const PAGE_LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams','centre-dades':'Centre de Dades',comparar:'Comparativa','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',contacte:'Contacte',metodologia:'Metodologia'};
 
 export function mountPortalShell(activePage){
@@ -45,7 +51,12 @@ export function mountPortalShell(activePage){
     sidebar=document.createElement('aside');sidebar.className='portal-sidebar';sidebar.id='portal-sidebar';sidebar.setAttribute('aria-label','Seccions del portal');
     const brand=document.createElement('a');brand.className='portal-sidebar__brand';brand.href='./?page=inici';brand.setAttribute('aria-label','Fontanillas · Sant Celoni, inici');brand.innerHTML='<span class="portal-sidebar__brand-mark" aria-hidden="true"><img src="assets/images/observatori-fontanillas-avatar-v21.png" alt="" width="52" height="52" /></span><span class="portal-sidebar__brand-copy"><strong>Fontanillas</strong><small>· Sant Celoni</small></span>';
     const nav=document.createElement('nav');
-    NAV_ITEMS.forEach(([id,label,href])=>{const link=document.createElement('a');link.href=href;link.dataset.pageLink=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span>${label}`;nav.append(link);});
+    NAV_GROUPS.forEach(([group,ids])=>{
+      const section=document.createElement('div');section.className='portal-nav-group';
+      const heading=document.createElement('p');heading.textContent=group;section.append(heading);
+      ids.forEach(id=>{const [,label,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=href;link.dataset.pageLink=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span>${label}`;section.append(link);});
+      nav.append(section);
+    });
     const footer=document.createElement('div');footer.className='portal-sidebar__footer';footer.innerHTML='<div class="portal-sidebar__copyright"><small>© 2026 Fontanillas</small><span>Observatori meteorològic local</span></div>';
     sidebar.append(brand,nav,footer);document.body.insertBefore(sidebar,document.querySelector('main'));
   }
@@ -56,4 +67,17 @@ export function mountPortalShell(activePage){
   const close=()=>{sidebar.classList.remove('is-open');backdrop.hidden=true;button?.setAttribute('aria-expanded','false');document.body.classList.remove('has-portal-menu');};
   button?.addEventListener('click',()=>{const open=!sidebar.classList.contains('is-open');sidebar.classList.toggle('is-open',open);backdrop.hidden=!open;button.setAttribute('aria-expanded',String(open));document.body.classList.toggle('has-portal-menu',open);});
   backdrop.addEventListener('click',close);sidebar.querySelectorAll('a').forEach(link=>link.addEventListener('click',close));document.addEventListener('keydown',event=>{if(event.key==='Escape')close();});
+
+  if(!document.getElementById('portal-mobile-nav')){
+    const mobile=document.createElement('nav');mobile.className='portal-mobile-nav';mobile.id='portal-mobile-nav';mobile.setAttribute('aria-label','Navegació principal mòbil');
+    [['inici','Inici'],['estacio','Ara'],['prediccio','Previsió'],['avisos','Avisos']].forEach(([id,label])=>{
+      const [, ,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=href;link.dataset.mobilePage=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span><b>${label}</b>`;mobile.append(link);
+    });
+    const more=document.createElement('button');more.type='button';more.id='portal-mobile-more';more.setAttribute('aria-label','Obrir totes les seccions');more.setAttribute('aria-controls','portal-sidebar');more.setAttribute('aria-expanded','false');more.innerHTML='<span aria-hidden="true">•••</span><b>Més</b>';
+    more.addEventListener('click',()=>{button?.click();more.setAttribute('aria-expanded',button?.getAttribute('aria-expanded')||'false');});
+    mobile.append(more);document.body.append(mobile);
+  }
+  document.querySelectorAll('[data-mobile-page]').forEach(link=>{const active=link.dataset.mobilePage===activePage;link.classList.toggle('is-active',active);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
+  const primaryMobilePages=['inici','estacio','prediccio','avisos'];
+  document.getElementById('portal-mobile-more')?.classList.toggle('is-active',!primaryMobilePages.includes(activePage));
 }
