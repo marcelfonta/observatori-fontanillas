@@ -7,8 +7,8 @@ Cris
   -> Codex/ChatGPT: criteri, arquitectura, revisió i tasques complexes
   -> Agent local: treball privat i ràpid dins d'una branca
        -> Ollama
-            -> Qwen Coder principal (14B–30B segons disponibilitat real)
-            -> model petit per tasques curtes
+            -> Qwen3 Coder 30B: principal, planificació i codi
+            -> Devstral Small 2 24B: revisió independent i visió
   -> Git: memòria verificable i historial
        -> GitHub: issues, branques, PR i comprovacions
   -> Cloudflare
@@ -25,6 +25,8 @@ El sistema és híbrid deliberadament. El model local redueix dependència i man
 - `PROJECT.md`: missió, arquitectura i invariants del producte.
 - `ROADMAP.md`: fites, estat i ordre de treball.
 - `docs/DECISIONS.md`: decisions que no s'han de redescobrir.
+- `docs/LOCAL-MODEL-MATRIX.md`: models instal·lats, proves i repartiment de funcions.
+- `docs/STAGING.md`: recursos de proves i límits de seguretat.
 - `CHANGELOG.md`: què ha canviat a cada versió.
 - Issues i PR de GitHub: debat, acceptació i evidència de revisió.
 
@@ -62,7 +64,15 @@ Classificació del canvi:
 
 Model principal recomanat: `qwen3-coder:30b`, quantització Q4_K_M d'uns 19 GB. És un model MoE de 30,5B paràmetres totals i 3,3B actius, pensat per tasques agentiques i repositoris. En aquest Mac de 32 GB s'ha d'iniciar amb un context moderat —no els 256K màxims— i mesurar pressió de memòria, velocitat i qualitat.
 
-Fallback ràpid: `qwen2.5-coder:14b`, aproximadament 9 GB i 32K de context. Serveix per tasques curtes quan el model principal pressiona massa la memòria o quan es prioritza velocitat.
+Segona opinió recomanada: `devstral-small-2`, aproximadament 15 GB. Està especialitzat en enginyeria de programari agentica, edició de diversos fitxers i també accepta imatges. Serveix per revisar plans i canvis de Qwen amb una família de model diferent.
+
+No es recomana `qwen3-coder-next` en local en aquest equip: la quantització disponible ocupa aproximadament 52 GB i supera clarament els 32 GB de memòria unificada. El model més gran no és el millor si obliga el Mac a intercanviar memòria amb el disc.
+
+Repartiment recomanat:
+
+- `qwen3-coder:30b`: implementació, anàlisi del repositori i proves.
+- `devstral-small-2`: revisió independent, canvis multifitxer i tasques amb captures.
+- Codex/ChatGPT: arquitectura, decisions de risc alt, revisió final i coordinació amb serveis remots.
 
 No descarreguis diversos models grans alhora: conserva espai i tria per evidència, no només pel nombre de paràmetres.
 
