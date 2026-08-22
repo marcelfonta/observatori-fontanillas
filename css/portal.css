@@ -47,6 +47,9 @@ body.has-portal-shell.has-portal-menu { overflow: hidden; }
 .portal-sidebar > nav { display: grid; gap: 1px; min-height: 0; padding: 1px 2px 8px 0; overflow-y: auto; scrollbar-color: rgba(137,214,163,.22) transparent; scrollbar-width: thin; }
 .portal-sidebar > nav::-webkit-scrollbar { width: 5px; }
 .portal-sidebar > nav::-webkit-scrollbar-thumb { border-radius: 99px; background: rgba(137,214,163,.22); }
+.portal-nav-group { display: grid; gap: 1px; }
+.portal-nav-group + .portal-nav-group { margin-top: 9px; padding-top: 8px; border-top: 1px solid rgba(137,214,163,.08); }
+.portal-nav-group > p { margin: 0; padding: 4px 10px 3px; color: rgba(167,194,181,.64); font-size: 8px; font-weight: 850; letter-spacing: .11em; text-transform: uppercase; }
 .portal-sidebar > nav a {
   display: grid;
   grid-template-columns: 32px 1fr;
@@ -69,6 +72,7 @@ body.has-portal-shell.has-portal-menu { overflow: hidden; }
 .portal-sidebar__copyright > span { color: var(--muted); font-size: 8px; }
 
 .portal-backdrop { display: none; }
+.portal-mobile-nav { display: none; }
 [data-portal-page][hidden] { display: none !important; }
 .portal-main, .comparison-page, #metodologia { padding-top: 24px; }
 .portal-main > [data-portal-page].is-page-content-start.section-block { padding-top: 24px; }
@@ -510,6 +514,14 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 780px) {
+  body.has-portal-shell { padding-bottom: 88px; }
+  .portal-mobile-nav { position: fixed; z-index: 72; right: 10px; bottom: max(9px,env(safe-area-inset-bottom)); left: 10px; display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 2px; padding: 5px; border: 1px solid rgba(137,214,163,.28); border-radius: 19px; background: rgba(6,20,16,.95); box-shadow: 0 16px 48px rgba(0,0,0,.48); backdrop-filter: blur(18px); }
+  .portal-mobile-nav :is(a,button) { display: grid; min-width: 0; min-height: 54px; place-items: center; align-content: center; gap: 4px; padding: 5px 2px; border: 0; border-radius: 14px; background: transparent; color: var(--muted); font: inherit; text-decoration: none; cursor: pointer; }
+  .portal-mobile-nav :is(a,button).is-active,.portal-mobile-nav :is(a,button):focus-visible { background: rgba(137,214,163,.13); color: var(--text); outline: none; }
+  .portal-mobile-nav span { display: grid; width: 23px; height: 23px; place-items: center; color: var(--green); }
+  .portal-mobile-nav svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .portal-mobile-nav b { overflow: hidden; font-size: 8px; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
+  .meteo-ai-widget { bottom: 82px; }
   .admin-body { padding-top: 76px; }
   .learning-paths,.learning-resource-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .learning-local,.learning-criteria { grid-template-columns: 1fr; }
@@ -614,12 +626,13 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .meteo-ai-message { max-width: 96%; }
   .meteo-ai-form > div { grid-template-columns: 1fr; }
   .meteo-ai-form button { min-height: 45px; }
-  .meteo-ai-widget { right: 14px; bottom: 14px; }
-  .meteo-ai-widget__toggle { min-height: 46px; padding-right: 11px; }
+  .meteo-ai-widget { right: 14px; bottom: 82px; }
+  .meteo-ai-widget__toggle { width: 46px; min-height: 46px; padding: 6px; justify-content: center; }
   .meteo-ai-widget__toggle > span { width: 31px; height: 31px; }
+  .meteo-ai-widget__toggle b { position: absolute; overflow: hidden; width: 1px; height: 1px; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
   .meteo-ai-context { align-items: center; flex-direction: row; padding-inline: 12px; }
   .meteo-ai-context span { white-space: normal; }
-  .meteo-ai-widget__panel { max-height: calc(100vh - 90px); }
+  .meteo-ai-widget__panel { max-height: calc(100vh - 165px); }
   .portal-sidebar__brand { min-height: 66px; }
 }
 

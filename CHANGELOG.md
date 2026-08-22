@@ -1,5 +1,14 @@
 # Changelog
 
+## V22.0.3 — 2026-08-22
+
+- Nova navegació inferior mòbil amb cinc accessos clars, indicador de pàgina activa i accés complet a la resta de seccions.
+- Portada mòbil més llegible: mostra primer les dades essencials i permet desplegar pressió, radiació, UV i indicadors calculats.
+- Preferències d’avisos amb selecció simultània de nivells i un botó de prova local per verificar el dispositiu abans d’esperar un episodi real.
+- «Predicció vs realitat» explica el període inicial de recollida, el progrés fins als set dies i diferencia clarament els exemples il·lustratius dels resultats reals.
+- Ajustats el xat flotant, les àrees segures del mòbil, la jerarquia del menú lateral i la memòria cau de la PWA.
+- Afegida la capçalera HSTS al domini i mantinguts els contractes del Worker, D1 i les fonts meteorològiques sense canvis.
+
 ## V22.0.0 — 2026-08-21
 
 - Nova secció visual «Predicció vs realitat», basada exclusivament en pronòstics desats abans del dia verificat i lectures reals de l’estació.
