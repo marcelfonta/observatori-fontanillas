@@ -64,6 +64,7 @@ assert.equal(adminPayload.integrations.socialToken,true);
 assert.equal(adminPayload.integrations.bluesky,true);
 assert.equal(adminPayload.integrations.telegram,true);
 assert.equal(adminPayload.integrations.threads,true);
+assert.equal(adminPayload.integrations.advancedAI,false);
 assert.equal(adminPayload.social.mode,'automatic');
 assert.deepEqual(Object.fromEntries(['meta','facebook','instagram','bluesky','telegram','threads'].map(key=>[key,adminPayload.social.channelCredentials[key]])),{meta:true,facebook:true,instagram:true,bluesky:true,telegram:true,threads:true});
 assert.equal(adminPayload.social.pendingDrafts,2);
