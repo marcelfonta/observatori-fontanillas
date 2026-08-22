@@ -1,5 +1,19 @@
 # Roadmap oficial
 
+## V22.5.0 — Control operatiu i recuperació segura — Preparada per revisar
+
+- Estat persistent de l’última execució programada, amb registre del nombre de processos i dels errors reals.
+- Seguiment separat de l’últim avís push, la darrera publicació automàtica i la comprovació preventiva de xarxes.
+- Horari social real visible al panell, inclosa la zona horària, sense mostrar un valor fix que pugui quedar desactualitzat.
+- Botó per repetir exclusivament els canals que han fallat en una publicació parcial, sense duplicar els canals completats.
+- Registres estructurats dels processos programats per facilitar la diagnosi a Cloudflare.
+
+### Validacions externes abans de donar-la per tancada
+
+- Desplegar el Worker i confirmar que el panell registra una execució programada completa.
+- Fer una prova controlada d’una publicació parcial i verificar el reintent exclusiu del canal amb error.
+- Confirmar un avís push real i comprovar que el nombre de destinataris queda registrat.
+
 ## V22.4.0 — Meteo IA més útil i entenedora — Preparada per revisar
 
 - Respostes locals immediates per a preguntes quotidianes: paraigua, roba, fred o calor, estendre roba i ajuda inicial.

@@ -70,7 +70,7 @@ function renderIntegrations(integrations={}){const analytics=analyticsServiceSta
 
 function renderSocialQueue(social={}){
   const automatic=social.mode==='automatic';
-  text('admin-social-mode',automatic?'Automàtic · 08:00':'Revisió manual');
+  text('admin-social-mode',automatic?`Automàtic · ${social.schedule||'08:00'}`:'Revisió manual');
   text('admin-social-facebook',social.channelCredentials?.facebook?'Configurada':'No configurada');
   text('admin-social-instagram',social.channelCredentials?.instagram?'Configurada':'No configurada');
   text('admin-social-bluesky',social.channelCredentials?.bluesky?'Configurada':'No configurada');
@@ -84,6 +84,20 @@ function renderSocialQueue(social={}){
   text('admin-social-preflight',social.preflight?.checkedAt?`${social.preflight.status==='healthy'?'Correcta':'Cal revisar'} · ${formatDate(social.preflight.checkedAt)}`:'Pendent de la primera comprovació');
   setPill('admin-social-pill',automatic?'Automàtic actiu':'Revisió manual',automatic?'is-ok':'is-warning');
   socialCredentials={...socialCredentials,...(social.channelCredentials||{})};
+}
+
+function renderOperations(operations={},schedule={}){
+  const scheduler=operations.scheduler;
+  const social=operations.social;
+  const push=operations.push;
+  text('admin-scheduler-last',formatDate(scheduler?.checkedAt));
+  text('admin-scheduler-state',scheduler?scheduler.status==='healthy'?`Correcte · ${scheduler.detail?.jobs??0} processos`:`Error · ${scheduler.detail?.failed??1} processos`:'Pendent de la primera execució V22.5');
+  text('admin-social-schedule',`${schedule.social||'08:00'} · ${schedule.timeZone||'Europe/Madrid'}`);
+  text('admin-social-operation',social?.checkedAt?`${social.status==='healthy'?'Correcta':'Incompleta'} · ${formatDate(social.checkedAt)}`:'Encara no registrada');
+  text('admin-push-operation',push?.checkedAt?`${push.status==='healthy'?'Enviat':'Error'} · ${formatDate(push.checkedAt)}`:'Encara no s’ha enviat cap avís');
+  text('admin-push-recipients',push?.detail?.sent?formatNumber(push.detail.recipients):push?.detail?.reason==='not_configured'?'No configurat':'—');
+  const healthy=scheduler?.status==='healthy';
+  setPill('admin-operations-pill',healthy?'Programador operatiu':scheduler?'Cal revisar':'Esperant execució',healthy?'is-ok':'is-warning');
 }
 
 const SOCIAL_LABELS={draft:'Esborrany',review:'En revisió',approved:'Aprovat',partially_published:'Publicat parcialment',published:'Publicat',discarded:'Descartat'};
@@ -148,7 +162,9 @@ function socialDraftCard(draft){
   }
   if(['approved','partially_published','published'].includes(draft.status)){
     const publishedChannels=new Set((draft.publications||[]).filter(item=>item.status==='published').map(item=>item.channel));
+    const failedChannels=[...new Set((draft.publications||[]).filter(item=>item.status==='failed'&&!publishedChannels.has(item.channel)).map(item=>item.channel))];
     Object.entries(CHANNEL_LABELS).forEach(([channel,label])=>{const published=publishedChannels.has(channel);const selected=(draft.channels||[]).includes(channel);const button=makeSocialButton(published?`${label} · publicat`:`Publicar a ${label}`,`publish-${channel}`,'is-publish');button.disabled=published||!selected||!socialCredentials[channel];button.title=published?`Aquest contingut ja s’ha publicat a ${label}`:!selected?`Marca ${label} i desa els canals abans de publicar`:socialCredentials[channel]?'Demana confirmació abans de publicar':`Falten credencials de ${label}`;actions.append(button);});
+    if(failedChannels.length){const retry=makeSocialButton(`Repetir només els errors (${failedChannels.length})`,'retry-failed','is-primary');retry.dataset.failedChannels=failedChannels.join(',');actions.append(retry);}
     actions.append(makeSocialButton('Preparar per al canal de WhatsApp','whatsapp','is-secondary'));
   }
   card.append(header,form,note,actions,socialPublicationRows(draft));
@@ -171,6 +187,14 @@ async function handleSocialAction(event){
   const button=event.target.closest('[data-social-action]');if(!button)return;
   const card=button.closest('[data-draft-id]');if(!card)return;
   const draftId=Number(card.dataset.draftId);const action=button.dataset.socialAction;
+  if(action==='retry-failed'){
+    const channels=String(button.dataset.failedChannels||'').split(',').filter(Boolean);
+    if(!channels.length||!window.confirm(`Vols repetir només ${channels.length===1?'el canal que ha fallat':'els canals que han fallat'}?`))return;
+    button.disabled=true;button.textContent='Reintentant…';socialFeedback('Reintentant exclusivament els canals amb error…','warning');
+    const results=[];
+    for(const channel of channels){try{await adminApi(`/admin/social-drafts/${draftId}/publish`,{method:'POST',body:{channel}});results.push({channel,ok:true});}catch(error){results.push({channel,ok:false,error:error.message});}}
+    socialEditorDirty=false;const failed=results.filter(item=>!item.ok);socialFeedback(failed.length?`${failed.length} canal(s) continuen amb error.`:'Tots els canals pendents s’han publicat correctament.',failed.length?'error':'ok');await Promise.all([fetchSocialDrafts(true),fetchStatus({skipDrafts:true})]);return;
+  }
   if(action==='whatsapp'){
     button.disabled=true;button.textContent='Preparant…';socialFeedback('Preparant la imatge i el text per compartir a WhatsApp…','warning');
     try{
@@ -210,7 +234,8 @@ async function renderPublicationReadiness(){
 async function renderDashboard(payload,requestLatency){
   const analytics=renderIntegrations(payload.integrations);
   renderSocialQueue(payload.social);
-  latestDiagnostic={...payload,client:{webVersion:'22.4.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
+  renderOperations(payload.operations,payload.schedule);
+  latestDiagnostic={...payload,client:{webVersion:'22.5.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
   const overall=overallState(payload);text('admin-overall-status',overall.label);text('admin-last-update',`Actualitzat ${formatDate(payload.generatedAt)} · ${requestLatency} ms`);
   setCard('worker',payload.ok?'is-ok':'is-error',payload.ok?'Operatiu':'Error',`V${payload.worker?.version||'—'} · ${payload.latencyMs??'—'} ms`);
   const stationOk=Boolean(payload.station?.ok);setCard('station',stationOk?'is-ok':'is-warning',stationOk?'Al dia':'Cal revisar',payload.station?.ageMinutes===null?'Antiguitat desconeguda':`${payload.station.ageMinutes} min d’antiguitat`);

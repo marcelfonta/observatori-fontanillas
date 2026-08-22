@@ -1,5 +1,13 @@
 # Changelog
 
+## V22.5.0 — 2026-08-24
+
+- Nou control operatiu persistent de l'execució del programador, els avisos push, la publicació social automàtica i la comprovació preventiva de connexions.
+- El panell d'administració mostra els horaris reals, la zona horària, l'últim resultat, la durada i la ratxa d'errors de cada automatització.
+- Nova recuperació segura de publicacions socials: es poden reintentar només els canals que han fallat, sense duplicar els que ja s'han publicat correctament.
+- Registres estructurats per facilitar el diagnòstic d'incidències i diferenciar execucions correctes, parcials i fallides.
+- Versions web, Worker i memòria cau PWA unificades a V22.5.0.
+
 ## V22.2.0 — 2026-08-22
 
 - La invitació per activar avisos espera deu segons i no s’obre sobre una pestanya amagada ni sobre el diàleg de preferències.
