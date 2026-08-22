@@ -1,0 +1,20 @@
+{
+  "name": "observatori-fontanillas",
+  "version": "22.0.2",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "test": "node tests/smoke.mjs && node tests/admin.mjs && node tests/alert-history.mjs && node tests/data-center.mjs && node tests/long-range.mjs && node tests/meteo-ai.mjs && node tests/share-card.mjs && node tests/v18.mjs && node tests/v19.mjs && node tests/v20.mjs && node tests/v21.mjs && node tests/v21-1.mjs && node tests/v21-4.mjs && node tests/v21-5.mjs && node tests/v22.mjs && node tests/youtube-oauth.mjs && node tests/youtube-short.mjs",
+    "check": "npm test",
+    "serve": "python3 -m http.server 8080",
+    "worker:types": "wrangler types --config ops/wrangler.example.jsonc worker-configuration.d.ts",
+    "worker:dry-run": "wrangler deploy --dry-run --config ops/wrangler.example.jsonc"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
