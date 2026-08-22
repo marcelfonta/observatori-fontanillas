@@ -1,5 +1,14 @@
 # Roadmap oficial
 
+## V22.2.0 — Publicacions preparades i avisos menys intrusius — En verificació
+
+- [x] Retardar deu segons la invitació d’avisos i respectar la visibilitat de la pàgina.
+- [x] Comprovar les sis connexions socials abans de l’horari automàtic sense publicar res.
+- [x] Avisar per correu si una connexió social no està preparada.
+- [x] Mostrar el resultat preventiu al panell d’administració.
+- [ ] Confirmar una execució real de les 07:45 i una publicació real de les 08:00 després del desplegament.
+- [ ] Completar TikTok quan la plataforma aprovi l’accés de publicació.
+
 ## V22.1.0 — Rendiment, comprensió i resiliència — En verificació
 
 - [x] Pintat inicial amb dades reals i fallback segur.
@@ -94,13 +103,13 @@ La mateixa versió reorganitza Centre de Dades amb un únic període per a resum
 
 Implementat a V16.0.0 com un panell de diagnòstic protegit pel Worker: estat de l’estació i la qualitat de dades, base D1, arxiu d’avisos, formulari, push, versions, PWA, memòries cau locals i incidències de la sessió. La clau només viu durant la pestanya, les respostes administratives no es desen a la PWA i no s’exposa cap secret. Per seguretat, la primera versió és de només lectura i no inclou operacions destructives.
 
-## Milestone 9 — Xarxes socials — En curs amb V21.2
+## Milestone 9 — Xarxes socials — En curs amb V22.2
 
 - Connectar amb l’usuari Instagram i Facebook; X queda descartat per decisió del projecte.
 - Resums, avisos, pluja, rècords, efemèrides i episodis.
 - Regles, calendari, aprovació opcional i historial editorial.
 
-V21 incorpora Instagram, Facebook, Bluesky i Telegram al portal i prepara una cua D1 d’esborranys diaris. V21.2 hi afegeix revisió, edició, aprovació, descart, restauració, historial per canal, diagnòstic sense publicació i enviament manual confirmat als quatre canals. Aprovar mai no publica i el cron només crea esborranys. La fita quedarà completa després de validar una publicació real controlada a cada xarxa i, només llavors, definir el calendari automàtic i els límits editorials.
+V21 incorpora Instagram, Facebook, Bluesky i Telegram al portal i prepara una cua D1 d’esborranys diaris. V21.2 hi afegeix revisió, edició, aprovació, descart, restauració, historial per canal i enviament manual confirmat. V22 activa la publicació diària independent per canal i integra Threads; V22.2 comprova preventivament Facebook, Instagram, Bluesky, Telegram, Threads i TikTok abans de l’horari automàtic. TikTok continua pendent de l’aprovació externa del permís de publicació i YouTube manté el seu flux separat de Shorts.
 
 ## V22.0.3 — Experiència mòbil i avisos verificables — Completat
 

@@ -14,6 +14,7 @@ const levelFields = [...document.querySelectorAll('[data-alert-level]')];
 const summary = document.getElementById('push-preference-summary');
 const STORAGE_KEY = CONFIG.pushPreferencesKey || 'fontanillas-alert-preferences-v1';
 const INVITE_KEY = 'fontanillas-alert-invite-v1';
+const INVITE_DELAY_MS = 10000;
 const invite = document.getElementById('alertInviteModal');
 const inviteYes = document.getElementById('alert-invite-yes');
 const inviteNo = document.getElementById('alert-invite-no');
@@ -84,7 +85,7 @@ function openModal(){
 }
 function closeModal(){ if(!modal)return; modal.hidden=true; modal.style.display='none'; document.body.style.overflow=''; }
 function openInvite(){
-  if(!invite||inviteDecision())return;
+  if(!invite||inviteDecision()||document.visibilityState!=='visible'||(modal&&!modal.hidden))return;
   invite.hidden=false;
   document.body.style.overflow='hidden';
   inviteYes?.focus();
@@ -215,7 +216,11 @@ function bindUi(){
   inviteNo?.addEventListener('click',()=>{closeInvite('declined');window.observatoriTrack?.('push_invite_declined');});
   inviteYes?.addEventListener('click',()=>{closeInvite('accepted');openModal();window.observatoriTrack?.('push_invite_accepted');});
   refresh();
-  window.setTimeout(openInvite,1200);
+  // Evita tapar la portada abans que la persona hagi pogut orientar-se.
+  window.setTimeout(()=>{
+    if(document.visibilityState==='visible')openInvite();
+    else document.addEventListener('visibilitychange',openInvite,{once:true});
+  },INVITE_DELAY_MS);
 }
 
 bindUi();

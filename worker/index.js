@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.1.0";
+const WORKER_VERSION = "22.2.0";
 const WORKER_BUILT = "2026-08-22";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -926,8 +926,8 @@ function localClockParts(date = new Date()) {
   return Object.fromEntries(parts.map(part=>[part.type,part.value]));
 }
 
-function activeSocialSlot(env, date = new Date()) {
-  const schedules = String(env.SOCIAL_AUTO_TIMES || '08:00').split(',').map(value=>value.trim()).filter(value=>/^\d{2}:\d{2}$/.test(value));
+function activeTimeSlot(schedule, date = new Date()) {
+  const schedules = String(schedule).split(',').map(value=>value.trim()).filter(value=>/^\d{2}:\d{2}$/.test(value));
   const parts = localClockParts(date);
   const current = Number(parts.hour) * 60 + Number(parts.minute);
   return schedules.find(value => {
@@ -935,6 +935,14 @@ function activeSocialSlot(env, date = new Date()) {
     const scheduled = hour * 60 + minute;
     return current >= scheduled && current < scheduled + STORAGE_INTERVAL_MINUTES;
   }) || null;
+}
+
+function activeSocialSlot(env, date = new Date()) {
+  return activeTimeSlot(env.SOCIAL_AUTO_TIMES || '08:00', date);
+}
+
+function localIsoDate(date = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone:TIME_ZONE }).format(date);
 }
 
 function socialAutomationEnabled(env) {
@@ -1616,8 +1624,8 @@ async function adminSocialSummary(env) {
     youtube:Boolean(env.YOUTUBE_REFRESH_TOKEN && env.YOUTUBE_CLIENT_ID && env.YOUTUBE_CLIENT_SECRET),
     whatsapp:false,
   };
-  if (!(await ensureSocialDraftSchema(env))) return { enabled:false, mode, tokenConfigured, channelCredentials, pendingDrafts:0, approved:0, published:0, latestCreated:null, recent:[] };
-  const [counts, recentResult] = await Promise.all([
+  if (!(await ensureSocialDraftSchema(env))) return { enabled:false, mode, tokenConfigured, channelCredentials, pendingDrafts:0, approved:0, published:0, latestCreated:null, recent:[], preflight:null };
+  const [counts, recentResult, preflight] = await Promise.all([
     env.DB.prepare(`SELECT
       SUM(CASE WHEN status IN ('draft','review') THEN 1 ELSE 0 END) AS pending,
       SUM(CASE WHEN status IN ('approved','partially_published') THEN 1 ELSE 0 END) AS approved,
@@ -1625,6 +1633,7 @@ async function adminSocialSummary(env) {
       MAX(created_at) AS latest FROM social_drafts`).first(),
     env.DB.prepare(`SELECT id,kind,status,channels,title,created_at,scheduled_for
       FROM social_drafts ORDER BY created_at DESC LIMIT 5`).all(),
+    ensureOperationsSchema(env).then(ready=>ready?env.DB.prepare("SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = 'social-preflight'").first():null),
   ]);
   return {
     enabled:true,
@@ -1635,6 +1644,7 @@ async function adminSocialSummary(env) {
     approved:Number(counts?.approved) || 0,
     published:Number(counts?.published) || 0,
     latestCreated:counts?.latest || null,
+    preflight:preflight?{status:preflight.status,checkedAt:preflight.last_checked_at,results:(()=>{try{return JSON.parse(preflight.detail||'[]');}catch{return [];}})()}:null,
     recent:(recentResult?.results || []).map(row => ({ ...row, channels:(() => { try { return JSON.parse(row.channels); } catch { return []; } })() })),
   };
 }
@@ -2063,6 +2073,26 @@ async function adminSocialDiagnostics(request, env) {
   if (!channels.length) return json({ error:'Canal de diagnòstic no vàlid.' }, 400, 'no-store', auth.origin);
   const results = await Promise.all(channels.map(channel => diagnoseSocialChannel(channel, env)));
   return json({ ok:results.every(item => item.ok), readOnly:true, checkedAt:new Date().toISOString(), results }, 200, 'no-store, private', auth.origin);
+}
+
+async function runDailyIntegrationPreflight(env, date = new Date()) {
+  const slot=activeTimeSlot(env.SOCIAL_PREFLIGHT_TIME || '07:45',date);
+  if(!slot || !(await ensureOperationsSchema(env)))return {checked:false,reason:slot?'storage_disabled':'outside_schedule'};
+  const localDate=localIsoDate(date);
+  const previous=await env.DB.prepare("SELECT last_checked_at FROM monitor_state WHERE service_key = 'social-preflight'").first();
+  if(previous?.last_checked_at && localIsoDate(new Date(previous.last_checked_at))===localDate)return {checked:false,reason:'already_checked'};
+  const results=await Promise.all([...SOCIAL_DIAGNOSTIC_CHANNELS].map(channel=>diagnoseSocialChannel(channel,env)));
+  const failed=results.filter(item=>!item.ok);
+  const now=new Date().toISOString();
+  const detail=JSON.stringify(results.map(item=>({channel:item.channel,ok:item.ok,detail:cleanText(item.detail,240)})));
+  await env.DB.prepare(`INSERT INTO monitor_state (service_key,status,consecutive_failures,last_checked_at,last_failure_at,last_success_at,last_notified_at,detail)
+    VALUES ('social-preflight',?,?,?,?,?,?,?)
+    ON CONFLICT(service_key) DO UPDATE SET status=excluded.status,consecutive_failures=excluded.consecutive_failures,
+      last_checked_at=excluded.last_checked_at,last_failure_at=excluded.last_failure_at,last_success_at=excluded.last_success_at,
+      last_notified_at=excluded.last_notified_at,detail=excluded.detail`)
+    .bind(failed.length?'down':'healthy',failed.length?1:0,now,failed.length?now:null,failed.length?null:now,failed.length?now:null,detail).run();
+  if(failed.length)await sendOperationalEmail(env,'[Observatori] Connexió social no preparada',`La comprovació preventiva de les ${slot} ha detectat ${failed.length} canal(s) amb incidències abans de la publicació automàtica.\n\n${failed.map(item=>`${item.channel}: ${item.detail}`).join('\n')}\n\nLa resta de canals podran continuar publicant de manera independent.`,'social_preflight_failed');
+  return {checked:true,ok:failed.length===0,results};
 }
 
 async function publishTelegram(draft, env) {
@@ -2544,6 +2574,7 @@ export default {
       captureForecastSnapshot(env).catch(error => console.error("Captura de predicció fallida", error)),
       social.catch(error => console.error("Publicació social automàtica fallida", error)),
       checkAlertsAndNotify(env).catch(error => console.error("Comprovació d’avisos fallida", error)),
+      runDailyIntegrationPreflight(env).catch(error => console.error("Comprovació preventiva d’integracions fallida", error)),
     ]));
   },
 };

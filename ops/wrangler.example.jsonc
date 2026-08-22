@@ -7,7 +7,8 @@
   "workers_dev": false,
   "vars": {
     "ENVIRONMENT": "local",
-    "SOCIAL_AUTOMATION_ENABLED": "false"
+    "SOCIAL_AUTOMATION_ENABLED": "false",
+    "SOCIAL_PREFLIGHT_TIME": "07:45"
   },
   "observability": {
     "enabled": true,
@@ -26,7 +27,8 @@
       "workers_dev": true,
       "vars": {
         "ENVIRONMENT": "staging",
-        "SOCIAL_AUTOMATION_ENABLED": "false"
+        "SOCIAL_AUTOMATION_ENABLED": "false",
+        "SOCIAL_PREFLIGHT_TIME": "07:45"
       },
       "d1_databases": [
         {
