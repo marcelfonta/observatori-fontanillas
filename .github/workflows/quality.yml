@@ -1,0 +1,39 @@
+name: Qualitat del projecte
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Proves Node 22
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Descarrega el repositori
+        uses: actions/checkout@v4
+
+      - name: Configura pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Configura Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Instal·la dependències verificades
+        run: pnpm install --frozen-lockfile
+
+      - name: Executa les comprovacions
+        run: npm run check
