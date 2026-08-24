@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+
+const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
+const [page,feature,weather,portal,worker,style,project,serviceWorker,sitemap,roadmap]=await Promise.all([
+  read('municipis.html'),read('src/features/municipality-explorer.js'),read('src/services/weather-api.js'),read('src/features/portal-shell.js'),read('worker/index.js'),read('css/portal.css'),read('project.json'),read('service-worker.js'),read('sitemap.xml'),read('ROADMAP.md')
+]);
+
+assert.equal(JSON.parse(project).version,'22.9.0');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-9-0')&&serviceWorker.includes("'/municipis.html'")&&serviceWorker.includes("'/src/features/municipality-explorer.js'"));
+assert.ok(page.includes('data-portal-static="municipis"')&&page.includes('municipality-search-form')&&page.includes('Dues fonts, dues funcions diferents'));
+assert.ok(feature.includes('searchMunicipalities')&&feature.includes('fetchLocalityForecast')&&feature.includes("fetchNearbyStations('now',location)"));
+assert.ok(feature.includes('No és una estació')&&feature.includes('Cap estació disponible en un radi de 20 km'));
+assert.ok(feature.includes('municipality-stations panel')&&feature.includes("rawLat!==null&&rawLon!==null"));
+assert.ok(weather.includes('export async function searchMunicipalities')&&weather.includes('export async function fetchLocalityForecast'));
+assert.ok(weather.includes('compatibilityWarning:true'));
+assert.ok(portal.includes("['municipis','Altres municipis','./municipis.html']"));
+assert.ok(worker.includes('hasCustomCenter')&&worker.includes('radiusKm:20')&&worker.includes('center:center?'));
+assert.ok(style.includes('.municipality-search')&&style.includes('.municipality-station-grid'));
+assert.ok(sitemap.includes('/municipis.html')&&roadmap.includes('V22.9.0 — Consulta meteorològica per municipi'));
+
+console.log('Test V22.9.0: cercador de municipis, previsió i estacions properes');

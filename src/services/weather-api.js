@@ -124,10 +124,18 @@ export async function fetchAlertHistory(filters={}) {
   return response.json();
 }
 
-export async function fetchNearbyStations(period = 'now') {
-  const response=await request(`${CONFIG.apiUrl}/stations?period=now`,{headers:{Accept:'application/json'},cache:'no-store'},15000);
+export async function fetchNearbyStations(period = 'now', center=null) {
+  const params=new URLSearchParams({period:'now'});
+  if(center&&Number.isFinite(Number(center.latitude))&&Number.isFinite(Number(center.longitude))){
+    params.set('lat',String(center.latitude));params.set('lon',String(center.longitude));params.set('name',String(center.name||'').slice(0,80));
+  }
+  const response=await request(`${CONFIG.apiUrl}/stations?${params}`,{headers:{Accept:'application/json'},cache:'no-store'},15000);
   if(!response.ok)throw new Error(`Stations API ${response.status}`);
-  return response.json();
+  const payload=await response.json();
+  // An older deployed Worker may ignore the requested coordinates. In that
+  // case, never present Sant Celoni stations as observations from elsewhere.
+  if(center&&!payload?.center)return {...payload,stations:[],compatibilityWarning:true};
+  return payload;
 }
 
 export async function fetchAdvancedMeteoAI(question, context) {
@@ -139,16 +147,22 @@ export async function fetchAdvancedMeteoAI(question, context) {
   return response.json();
 }
 
-export async function fetchLocalityWeather(query) {
+const normalizePlace=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+
+export async function searchMunicipalities(query) {
   const name=String(query||'').trim().slice(0,80);
   if(name.length<2)throw new Error('LOCALITY_REQUIRED');
   const geocoding=new URLSearchParams({name,count:'10',language:'ca',format:'json'});
   const locationResponse=await request(`https://geocoding-api.open-meteo.com/v1/search?${geocoding}`,{headers:{Accept:'application/json'},cache:'no-store'},12000);
   if(!locationResponse.ok)throw new Error(`Geocoding API ${locationResponse.status}`);
-  const candidates=(await locationResponse.json())?.results||[];
-  const requested=name.split(',')[0].trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-  const location=candidates.find(item=>String(item.name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===requested)||candidates[0];
-  if(!location)throw new Error('LOCALITY_NOT_FOUND');
+  const candidates=((await locationResponse.json())?.results||[]).filter(item=>Number.isFinite(item.latitude)&&Number.isFinite(item.longitude));
+  const unique=[];const seen=new Set();
+  for(const item of candidates){const key=`${normalizePlace(item.name)}|${normalizePlace(item.admin1)}|${item.country_code}`;if(!seen.has(key)){seen.add(key);unique.push(item);}}
+  return unique.slice(0,8);
+}
+
+export async function fetchLocalityForecast(location) {
+  if(!location||!Number.isFinite(Number(location.latitude))||!Number.isFinite(Number(location.longitude)))throw new Error('LOCALITY_NOT_FOUND');
   const forecast=new URLSearchParams({
     latitude:String(location.latitude),longitude:String(location.longitude),
     current:'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,rain,weather_code,cloud_cover,wind_speed_10m,wind_gusts_10m',
@@ -158,4 +172,13 @@ export async function fetchLocalityWeather(query) {
   const weatherResponse=await request(`https://api.open-meteo.com/v1/forecast?${forecast}`,{headers:{Accept:'application/json'},cache:'no-store'},15000);
   if(!weatherResponse.ok)throw new Error(`Forecast API ${weatherResponse.status}`);
   return {location,weather:await weatherResponse.json()};
+}
+
+export async function fetchLocalityWeather(query) {
+  const name=String(query||'').trim().slice(0,80);
+  const candidates=await searchMunicipalities(name);
+  const requested=normalizePlace(name.split(',')[0].trim());
+  const location=candidates.find(item=>normalizePlace(item.name)===requested)||candidates[0];
+  if(!location)throw new Error('LOCALITY_NOT_FOUND');
+  return fetchLocalityForecast(location);
 }

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="theme-color" content="#286d55" /><meta name="color-scheme" content="dark" />
+  <meta name="description" content="Consulta la previsió meteorològica d'un municipi i les observacions reals d'estacions properes, amb fonts i distàncies visibles." />
+  <title>El temps per municipi · Observatori Fontanillas</title>
+  <link rel="canonical" href="https://meteo.fontanillas.cat/municipis.html" />
+  <meta property="og:type" content="website" /><meta property="og:locale" content="ca_ES" /><meta property="og:site_name" content="Observatori Meteorològic Fontanillas" /><meta property="og:title" content="El temps per municipi · Observatori Fontanillas" /><meta property="og:description" content="Previsió per municipi i observacions reals d'estacions properes, sense barrejar dades." /><meta property="og:url" content="https://meteo.fontanillas.cat/municipis.html" /><meta property="og:image" content="https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-social-v12-2.png" />
+  <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" /><link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-v21.png" /><link rel="manifest" href="site.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/variables.css?v=7.3" /><link rel="stylesheet" href="css/layout.css?v=7.3" /><link rel="stylesheet" href="css/style.css?v=22.9.0" /><link rel="stylesheet" href="css/portal.css?v=22.9.0" />
+  <script type="module" src="src/features/analytics.js?v=7.3"></script><script type="module" src="src/features/pwa.js?v=22.9.0"></script><script type="module" src="src/features/municipality-explorer.js?v=22.9.0"></script><script type="module" src="src/features/portal-static.js?v=22.9.0"></script>
+</head>
+<body data-portal-static="municipis">
+  <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
+  <header class="site-header shell"><div class="live-pill"><span></span><b>Consulta oberta</b><time id="header-time"></time></div><p class="header-context">Consulta per municipi</p></header>
+  <main class="shell comparison-page" id="top">
+    <section class="portal-view-header portal-view-header--static panel"><div><p class="eyebrow">Pilot · municipis i estacions properes</p><h1>Quin temps fa al municipi que busques?</h1><p>Selecciona una localitat i consulta, per separat, la previsió calculada per les seves coordenades i les lectures reals d’estacions properes.</p></div><span class="tag">Fonts visibles</span></section>
+    <section class="municipality-search panel" aria-labelledby="municipality-search-title"><div><p class="eyebrow">Cerca</p><h2 id="municipality-search-title">Escriu un municipi</h2><p>Comença a escriure i tria la coincidència correcta de la llista.</p></div><form id="municipality-search-form" role="search"><label for="municipality-query">Municipi</label><div><input id="municipality-query" name="municipi" type="search" minlength="2" maxlength="80" autocomplete="off" placeholder="Per exemple: Girona, Vic o Granollers" /><button type="submit">Buscar</button></div><div id="municipality-suggestions" class="municipality-suggestions" role="listbox" hidden></div><p id="municipality-search-status" aria-live="polite">Encara no s’ha fet cap consulta.</p></form></section>
+    <div id="municipality-result" class="municipality-result" aria-live="polite" hidden></div>
+    <section class="municipality-method panel"><p class="eyebrow">Com llegir aquesta pàgina</p><h2>Dues fonts, dues funcions diferents</h2><div><span><b>Previsió</b><small>Model meteorològic calculat per a les coordenades del municipi.</small></span><span><b>Observació</b><small>Mesura d’una estació física propera, amb distància i hora visibles.</small></span><span><b>Sense dades</b><small>Si no hi ha cap estació disponible, ho indiquem i no inventem cap lectura.</small></span></div></section>
+  </main>
+  <footer class="shell"><span>© 2026 Observatori Meteorològic Fontanillas</span><small>Consulta per municipi · V22.9.0</small><div><a href="./privacitat.html">Privacitat</a><a href="#top">Tornar amunt ↑</a></div></footer>
+</body></html>

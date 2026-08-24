@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.8.0";
+const WORKER_VERSION = "22.9.0";
 const WORKER_BUILT = "2026-08-24";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -629,10 +629,17 @@ function distanceKm(lat1, lon1, lat2, lon2) {
   return 6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
 }
 
-async function discoverComparisonStations(env) {
-  if(!env.WU_API_KEY)return COMPARISON_STATIONS;
+async function discoverComparisonStations(env, center=null) {
+  if(!env.WU_API_KEY)return center?[]:COMPARISON_STATIONS;
   try {
-    const query=new URLSearchParams({geocode:"41.6906,2.489",product:"pws",format:"json",apiKey:env.WU_API_KEY});
+    const target={
+      latitude:finite(center?.latitude)??41.6906,
+      longitude:finite(center?.longitude)??2.489,
+      label:cleanText(center?.label||"Baix Montseny",80),
+      radiusKm:Math.min(30,Math.max(5,finite(center?.radiusKm)??20)),
+      custom:Boolean(center),
+    };
+    const query=new URLSearchParams({geocode:`${target.latitude},${target.longitude}`,product:"pws",format:"json",apiKey:env.WU_API_KEY});
     const response=await fetch(`https://api.weather.com/v3/location/near?${query}`,{cf:{cacheEverything:true,cacheTtl:3600}});
     if(!response.ok)throw new Error(`Weather location near ha respost ${response.status}`);
     const payload=await response.json();
@@ -642,16 +649,17 @@ async function discoverComparisonStations(env) {
     const latitudes=Array.isArray(location.latitude)?location.latitude:[];
     const longitudes=Array.isArray(location.longitude)?location.longitude:[];
     const distances=Array.isArray(location.distanceKm)?location.distanceKm:[];
-    const selected=new Map(COMPARISON_STATIONS.map(station=>[station.stationId,station]));
+    const cities=Array.isArray(location.city)?location.city:[];
+    const selected=new Map(target.custom?[]:COMPARISON_STATIONS.map(station=>[station.stationId,station]));
     ids.forEach((stationId,index)=>{
       if(!stationId||selected.has(stationId)||selected.size>=6)return;
       const latitude=finite(latitudes[index]);const longitude=finite(longitudes[index]);
-      const distance=finite(distances[index])??distanceKm(41.6906,2.489,latitude,longitude);
-      if(!Number.isFinite(distance)||distance>20)return;
+      const distance=finite(distances[index])??distanceKm(target.latitude,target.longitude,latitude,longitude);
+      if(!Number.isFinite(distance)||distance>target.radiusKm)return;
       selected.set(stationId,{
         id:`nearby-${String(stationId).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`,
         name:cleanText(names[index]||stationId,80),
-        municipality:"Entorn del Baix Montseny",
+        municipality:cleanText(cities[index]||(target.custom?`A prop de ${target.label}`:"Entorn del Baix Montseny"),80),
         source:"Weather Underground · estació propera",
         stationId,
         latitude,
@@ -659,10 +667,10 @@ async function discoverComparisonStations(env) {
         distanceKm:Number(distance.toFixed(1)),
       });
     });
-    return [...selected.values()].slice(0,6);
+    return [...selected.values()].sort((a,b)=>(finite(a.distanceKm)??999)-(finite(b.distanceKm)??999)).slice(0,6);
   } catch(error) {
     console.warn("Descobriment d’estacions properes:",error.message);
-    return COMPARISON_STATIONS;
+    return center?[]:COMPARISON_STATIONS;
   }
 }
 
@@ -727,7 +735,13 @@ async function comparisonHistoryStation(station, period, env) {
 
 async function comparisonStations(url, env) {
   const period = "now";
-  const nearbyStations=await discoverComparisonStations(env);
+  const rawLatitude=url.searchParams.get("lat");
+  const rawLongitude=url.searchParams.get("lon");
+  const latitude=rawLatitude===null?null:finite(rawLatitude);
+  const longitude=rawLongitude===null?null:finite(rawLongitude);
+  const hasCustomCenter=rawLatitude!==null&&rawLongitude!==null&&Number.isFinite(latitude)&&Number.isFinite(longitude)&&latitude>=-90&&latitude<=90&&longitude>=-180&&longitude<=180;
+  const center=hasCustomCenter?{latitude,longitude,label:cleanText(url.searchParams.get("name")||"municipi seleccionat",80),radiusKm:20}:null;
+  const nearbyStations=await discoverComparisonStations(env,center);
   const results = await Promise.all(nearbyStations.map(async station => {
     try {
       const current = await comparisonCurrentStation(station, env);
@@ -742,10 +756,11 @@ async function comparisonStations(url, env) {
     ok:true,
     period,
     generatedAt:new Date().toISOString(),
+    center:center?{latitude:center.latitude,longitude:center.longitude,label:center.label}:null,
     stations:results,
     sourcePolicy:{
       mode:"smart-fallback",
-      note:"Fontanillas es manté com a referència i el Worker descobreix automàticament fins a cinc estacions PWS properes en un radi màxim de 20 km. Totes les lectures es normalitzen amb les mateixes unitats."
+      note:center?"Es mostren fins a sis estacions PWS situades a un màxim de 20 km del municipi seleccionat. La distància, la font i l’hora de cada lectura es mantenen visibles.":"Fontanillas es manté com a referència i el Worker descobreix automàticament fins a cinc estacions PWS properes en un radi màxim de 20 km. Totes les lectures es normalitzen amb les mateixes unitats."
     }
   }, 200, "public, max-age=120");
 }
