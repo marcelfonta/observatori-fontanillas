@@ -40,13 +40,13 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=22.5.2" />
-    <link rel="stylesheet" href="css/portal.css?v=22.5.2" />
+    <link rel="stylesheet" href="css/style.css?v=22.6.0" />
+    <link rel="stylesheet" href="css/portal.css?v=22.6.0" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=22.5.2"></script>
-    <script type="module" src="src/features/pwa.js?v=22.5.2"></script>
-    <script type="module" src="src/app.js?v=22.5.2"></script>
+    <script type="module" src="src/features/push.js?v=22.6.0"></script>
+    <script type="module" src="src/features/pwa.js?v=22.6.0"></script>
+    <script type="module" src="src/app.js?v=22.6.0"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","url":"https://meteo.fontanillas.cat/","spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -683,7 +683,7 @@
         <fieldset class="push-level-preferences"><legend>Quins nivells vols rebre?</legend><label><input type="checkbox" name="push-level" value="yellow" data-alert-level><span><b>Groc</b><small>Situacions que demanen precaució</small></span></label><label><input type="checkbox" name="push-level" value="orange" data-alert-level checked><span><b>Taronja</b><small>Situacions importants</small></span></label><label><input type="checkbox" name="push-level" value="red" data-alert-level checked><span><b>Vermell</b><small>Situacions extremes</small></span></label></fieldset>
         <div class="push-device-diagnostic" id="push-device-diagnostic" role="status" aria-live="polite"></div>
         <p class="push-preference-summary" id="push-preference-summary">Pluja, vent, tempestes, neu i temperatura · taronja o vermell</p>
-        <footer><button type="button" class="secondary" id="push-preferences-disable">Desactivar avisos</button><button type="button" class="secondary" id="push-preferences-test">Provar avís local</button><button type="button" class="primary" id="push-preferences-save">Desar i activar</button></footer>
+        <footer><button type="button" class="secondary" id="push-preferences-disable">Desactivar avisos</button><button type="button" class="secondary" id="push-preferences-test">Enviar prova real</button><button type="button" class="primary" id="push-preferences-save">Desar i activar</button></footer>
       </section>
     </div>
 

@@ -23,6 +23,7 @@ let OneSignalRef = null;
 let sdkReady = false;
 let sdkReadyTimer = null;
 let pushActionBusy = false;
+let modalReturnFocus = null;
 
 function loadOneSignalSdk(){
   if(!appId || document.querySelector('script[data-onesignal-sdk]'))return;
@@ -78,13 +79,17 @@ async function renderDeviceDiagnostic(){
   if(!diagnostic)return;
   const permission=typeof Notification==='undefined'?'no compatible':Notification.permission;
   const subscription=await optedIn();
+  const registration=await navigator.serviceWorker?.getRegistration?.('/').catch(()=>null);
+  const subscriptionId=String(OneSignalRef?.User?.PushSubscription?.id||'').trim();
   const checks=[
     ['Navegador',typeof Notification==='undefined'?'No compatible':'Compatible'],
     ['Permís',permission==='granted'?'Concedit':permission==='denied'?'Bloquejat':'Pendent'],
     ['Subscripció',subscription?'Activa':appId&&sdkReady?'Pendent':'No verificada'],
+    ['Connexió remota',subscriptionId?'Identificada':'Pendent'],
+    ['Servei en segon pla',registration?.active?'Actiu':'No verificat'],
     ...(isIos()?[['Mode iPhone',isStandalone()?'Obert com a app':'Cal afegir a la pantalla d’inici']]:[]),
   ];
-  diagnostic.innerHTML=`<strong>Diagnosi d’aquest dispositiu</strong><ul>${checks.map(([label,value])=>`<li><span>${label}</span><b>${value}</b></li>`).join('')}</ul><small>La prova local comprova el dispositiu; una subscripció activa confirma també la connexió amb el servei d’avisos.</small>`;
+  diagnostic.innerHTML=`<strong>Diagnosi d’aquest dispositiu</strong><ul>${checks.map(([label,value])=>`<li><span>${label}</span><b>${value}</b></li>`).join('')}</ul><small>La prova real viatja pel mateix servei que utilitzen els avisos meteorològics i s’envia només a aquest dispositiu.</small>`;
 }
 function openModal(){
   if(!modal)return;
@@ -95,9 +100,11 @@ function openModal(){
   if(summary){ summary.textContent=notificationPreferenceSummary(prefs); summary.classList.remove('is-error'); }
   setPushActionState(false);
   renderDeviceDiagnostic();
+  modalReturnFocus=document.activeElement;
   modal.hidden=false; modal.style.display='flex'; document.body.style.overflow='hidden';
+  closeButton?.focus();
 }
-function closeModal(){ if(!modal)return; modal.hidden=true; modal.style.display='none'; document.body.style.overflow=''; }
+function closeModal(){ if(!modal)return; modal.hidden=true; modal.style.display='none'; document.body.style.overflow=''; modalReturnFocus?.focus?.(); modalReturnFocus=null; }
 function openInvite(){
   if(!invite||inviteDecision()||document.visibilityState!=='visible'||(modal&&!modal.hidden))return;
   invite.hidden=false;
@@ -209,12 +216,16 @@ async function testPush(){
   if(permission==='default')permission=await Notification.requestPermission();
   if(permission!=='granted'){showPushProgress('Cal permetre les notificacions del navegador per fer la prova.',true);return;}
   try{
-    const registration=await navigator.serviceWorker?.ready;
-    if(registration?.showNotification)await registration.showNotification('Avisos Meteo Fontanillas',{body:'Prova correcta: aquest dispositiu pot mostrar avisos meteorològics.',icon:'/assets/icons/icon-192.png',badge:'/assets/icons/icon-192.png',tag:'fontanillas-push-test'});
-    else new Notification('Avisos Meteo Fontanillas',{body:'Prova correcta: aquest dispositiu pot mostrar avisos meteorològics.'});
-    showPushProgress('Prova local enviada. Si no la veus, revisa el centre de notificacions del dispositiu.');
+    const subscriptionId=String(OneSignalRef?.User?.PushSubscription?.id||'').trim();
+    if(!subscriptionId||!await optedIn())throw new Error('subscription-not-ready');
+    testButton.disabled=true;showPushProgress('Enviant una prova real a aquest dispositiu…');
+    const response=await fetch(`${CONFIG.apiUrl}/push-test`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({subscriptionId})});
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok||!payload.ok)throw new Error(payload.error||`HTTP ${response.status}`);
+    showPushProgress('Prova real enviada. Pot trigar uns segons; revisa també el centre de notificacions.');
     await renderDeviceDiagnostic();
-  }catch(error){console.warn('No s’ha pogut mostrar la notificació de prova.',error);showPushProgress('No s’ha pogut mostrar la prova en aquest dispositiu.',true);}
+  }catch(error){console.warn('No s’ha pogut enviar la notificació de prova.',error);showPushProgress('No s’ha pogut completar la prova real. Activa primer la subscripció i torna-ho a provar.',true);}
+  finally{if(testButton)testButton.disabled=false;}
 }
 
 function bindUi(){
@@ -225,7 +236,15 @@ function bindUi(){
   testButton?.addEventListener('click',testPush);
   closeButton?.addEventListener('click',closeModal);
   modal?.addEventListener('click',e=>{if(e.target===modal)closeModal();});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal?.hidden)closeModal();});
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&!modal?.hidden){closeModal();return;}
+    if(e.key!=='Tab'||modal?.hidden)return;
+    const focusable=[...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href]')].filter(item=>item.offsetParent!==null);
+    if(!focusable.length)return;
+    const first=focusable[0],last=focusable.at(-1);
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  });
   fields.find(f=>f.value==='all')?.addEventListener('change',e=>{if(e.target.checked)fields.filter(f=>f!==e.target).forEach(f=>f.checked=true);});
   fields.filter(field=>field.value!=='all').forEach(field=>field.addEventListener('change',()=>{if(!field.checked){const all=fields.find(item=>item.value==='all');if(all)all.checked=false;}}));
   [...fields,...levelFields].forEach(field=>field.addEventListener('change',()=>{if(summary)summary.textContent=notificationPreferenceSummary(collectPrefs());}));

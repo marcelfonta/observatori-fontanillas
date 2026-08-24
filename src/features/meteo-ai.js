@@ -21,7 +21,10 @@ const readMemory=()=>{try{return {...emptyMemory(),...JSON.parse(sessionStorage.
 let conversationMemory=typeof sessionStorage==='undefined'?emptyMemory():readMemory();
 const saveMemory=memory=>{try{sessionStorage.setItem(CONVERSATION_KEY,JSON.stringify(memory));}catch{/* La sessió pot estar desactivada. */}};
 const timeLabel=value=>{
-  const date=new Date(String(value||'').replace(' ','T'));
+  const raw=String(value||'').trim();
+  const localTime=raw.match(/^\d{4}-\d{2}-\d{2}[T ](\d{2}:\d{2})(?::\d{2})?$/);
+  if(localTime)return localTime[1];
+  const date=new Date(raw.replace(' ','T'));
   return Number.isNaN(date.getTime())?'hora no disponible':new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(date);
 };
 const sourceLinks={
@@ -175,6 +178,26 @@ function currentAnswer(context){
   const raining=(n(current.rainRate)??0)>0;
   const body=`Ara mateix Fontanillas registra ${fmt(current.temperature)} °C, amb una sensació de ${fmt(current.feelsLike)} °C i una humitat del ${fmt(current.humidity,0)}%. ${raining?`Plou a ${fmt(current.rainRate)} mm/h.`:`No s’hi detecta pluja en aquest instant.`}`;
   return response('Situació actual a Fontanillas',body,{facts:[`Vent · ${fmt(current.windSpeed)} km/h`,`Ratxa · ${fmt(current.windGust)} km/h`,`Pressió · ${fmt(current.pressure)} hPa`,`Pluja avui · ${fmt(current.rainToday)} mm`],sources:[source('Sensor Fontanillas',`Lectura de les ${timeLabel(current.updated)}`)],followups:['Plourà avui?','Com ha canviat la temperatura?']});
+}
+
+function currentDetailAnswer(context,question){
+  const current=context.current;if(!current)return null;
+  const q=normalize(question);
+  if(/aire|contamin|pm2|pm10|pol len|pollen/.test(q))return null;
+  const details=[];
+  if(/humitat/.test(q))details.push(`Humitat relativa · ${fmt(current.humidity,0)}%`);
+  if(/pressio/.test(q))details.push(`Pressió · ${fmt(current.pressure)} hPa`);
+  if(/vent|ratxa|direccio/.test(q)){details.push(`Vent · ${fmt(current.windSpeed)} km/h`);details.push(`Ratxa · ${fmt(current.windGust)} km/h`);if(current.windDirection!==null&&current.windDirection!==undefined&&current.windDirection!=='')details.push(`Direcció · ${current.windDirection}`);}
+  if(/uv|radiacio/.test(q)){details.push(`Índex UV · ${fmt(current.uv,0)}`);details.push(`Radiació solar · ${fmt(current.solarRadiation,0)} W/m²`);}
+  if(!details.length)return null;
+  return response('Detall de la lectura actual',details.join('. ')+'.',{facts:[`Temperatura · ${fmt(current.temperature)} °C`,`Actualitzat · ${timeLabel(current.updated)}`],sources:[source('Sensor Fontanillas','Lectura directa de l’estació')],followups:['Quina temperatura fa ara?','Plourà avui?']});
+}
+
+function sunAnswer(context,question){
+  const q=normalize(question);if(!/sortida del sol|posta de sol|surt el sol|es pon el sol|hores de llum/.test(q))return null;
+  const daily=context.forecast?.daily;const period=requestedPeriod(question,daily);const index=period.type==='day'?period.index:0;
+  const sunrise=daily?.sunrise?.[index],sunset=daily?.sunset?.[index];if(!sunrise||!sunset)return null;
+  return response(`Sol ${period.label||'avui'}`,`La sortida del sol és a les ${timeLabel(sunrise)} i la posta a les ${timeLabel(sunset)}.`,{sources:[source('Open‑Meteo',`Càlcul solar per a Sant Celoni`)],followups:['Quin temps farà avui?','Quin índex UV hi haurà?']});
 }
 
 function alertsAnswer(context){
@@ -431,7 +454,6 @@ export async function answerMeteoQuestion(question,context=state,services={fetch
   if(/^(hola|bon dia|bona tarda|bona nit|ajuda|que pots fer|com em pots ajudar)$/.test(q))return assistantGuideAnswer();
   if(/on (puc|es pot)|on consultar|quina font|fonts fiables|d on treure|dades obertes|informacio meteorologica/.test(q))return sourceGuideAnswer();
   if(/efemer|un dia com avui|record historic|record meteorologic|curiositat meteorologica/.test(q))return stationEphemerisAnswer(context);
-  const knowledge=meteorologyKnowledgeAnswer(question);if(knowledge)return knowledge;
   const explicitLocality=localityFromQuestion(question);
   const explicitPeriod=periodFromQuestion(question);const explicitActivity=activityFromQuestion(question);
   if(memory&&explicitPeriod)memory.period=explicitPeriod;if(memory&&explicitActivity)memory.activity=explicitActivity;
@@ -444,7 +466,10 @@ export async function answerMeteoQuestion(question,context=state,services={fetch
     return localityAnswer(locality,services,resolvedQuestion,{memory,activity:effectiveActivity});
   }
   if(memory&&explicitLocality){memory.location={query:'Sant Celoni',label:'Sant Celoni · Fontanillas',country:'Catalunya',local:true};saveMemory(memory);}
+  const sun=sunAnswer(context,resolvedQuestion);if(sun)return sun;
   if(/a quina hora|quina hora|quan ploura|quan comencara.*plou|franja.*pluja/.test(q))return hourlyRainAnswer(context,resolvedQuestion);
+  const currentDetail=currentDetailAnswer(context,resolvedQuestion);if(currentDetail)return currentDetail;
+  const knowledge=meteorologyKnowledgeAnswer(question);if(knowledge)return knowledge;
   const everyday=everydayAdviceAnswer(context,resolvedQuestion);if(everyday)return everyday;
   if(alertHistoryIntent(question))return alertHistoryAnswer(question,services);
   if(/avis|alert|perill/.test(q))return alertsAnswer(context);

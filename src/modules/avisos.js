@@ -127,10 +127,14 @@ function alertItem(entry) {
   const validity=document.createElement('span');
   validity.className='official-alert-validity';
   validity.textContent=expiry ? expiryLabel([entry]) : 'Vigència disponible al detall oficial';
+  const scope=document.createElement('span');
+  scope.className='official-alert-validity';
+  const searchable=`${entry.area||''} ${entry.description||''} ${entry.title||''}`.toLocaleLowerCase('ca-ES');
+  scope.textContent=/sant celoni/.test(searchable)?'Sant Celoni consta explícitament al detall':'Avís zonal: l’afectació exacta a Sant Celoni pot variar';
   const link=document.createElement('a');
   link.href=entry.link || 'https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&w=hoy';
   link.target='_blank'; link.rel='noreferrer'; link.textContent='Detall oficial ↗';
-  body.append(title,copy,validity,link); article.append(level,body);
+  body.append(title,copy,validity,scope,link); article.append(level,body);
   return article;
 }
 
@@ -152,7 +156,7 @@ export function renderAlerts(payload) {
     list.append(empty);
   } else if(payload.active>0){
     setText('alerts-local-title',`${payload.active} ${payload.active===1?'avís oficial actiu':'avisos oficials actius'}`);
-    setText('alerts-local-copy',`AEMET informa d’un nivell màxim ${levelLabels[level]?.replace('Avís ','').toLowerCase() || 'actiu'} a la zona oficial del Prelitoral de Barcelona, que inclou Sant Celoni.`);
+    setText('alerts-local-copy',`AEMET informa d’un nivell màxim ${levelLabels[level]?.replace('Avís ','').toLowerCase() || 'actiu'} a la zona oficial del Prelitoral de Barcelona, que inclou Sant Celoni. És un avís zonal: no implica la mateixa intensitat a tots els municipis.`);
     setText('alerts-local-status',levelLabels[level] || 'Avís actiu');
     payload.alerts.forEach(entry=>list.append(alertItem(entry)));
   } else {
