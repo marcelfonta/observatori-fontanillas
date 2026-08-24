@@ -76,7 +76,7 @@ function renderSocialQueue(social={}){
   text('admin-social-bluesky',social.channelCredentials?.bluesky?'Configurada':'No configurada');
   text('admin-social-telegram',social.channelCredentials?.telegram?'Configurada':'No configurada');
   text('admin-social-threads',social.channelCredentials?.threads?'Configurada':'No configurada');
-  text('admin-social-tiktok',social.channelCredentials?.tiktok?'Connectat':'Pendent d’autoritzar');
+  text('admin-social-tiktok',social.channelCredentials?.tiktok?'Compte connectat · publicació pendent d’aprovació':'Pendent d’autoritzar');
   text('admin-social-drafts',formatNumber(social.pendingDrafts??0));
   text('admin-social-approved',formatNumber(social.approved??0));
   text('admin-social-published',formatNumber(social.published??0));
@@ -235,7 +235,7 @@ async function renderDashboard(payload,requestLatency){
   const analytics=renderIntegrations(payload.integrations);
   renderSocialQueue(payload.social);
   renderOperations(payload.operations,payload.schedule);
-  latestDiagnostic={...payload,client:{webVersion:'22.5.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
+  latestDiagnostic={...payload,client:{webVersion:'22.5.2',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
   const overall=overallState(payload);text('admin-overall-status',overall.label);text('admin-last-update',`Actualitzat ${formatDate(payload.generatedAt)} · ${requestLatency} ms`);
   setCard('worker',payload.ok?'is-ok':'is-error',payload.ok?'Operatiu':'Error',`V${payload.worker?.version||'—'} · ${payload.latencyMs??'—'} ms`);
   const stationOk=Boolean(payload.station?.ok);setCard('station',stationOk?'is-ok':'is-warning',stationOk?'Al dia':'Cal revisar',payload.station?.ageMinutes===null?'Antiguitat desconeguda':`${payload.station.ageMinutes} min d’antiguitat`);

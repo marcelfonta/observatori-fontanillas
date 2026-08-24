@@ -1,5 +1,14 @@
 # Changelog
 
+## V22.5.2 — 2026-08-24
+
+- Restaurats els paràmetres públics de Bluesky, Telegram, correu operatiu i OneSignal perquè els desplegaments no conservin només els secrets i deixin canals aparentment sense configurar.
+- El panell diferencia la connexió OAuth de TikTok de l'aprovació pendent de publicació automàtica, evitant mostrar un estat enganyós.
+- La capçalera mòbil incorpora un accés compacte a totes les xarxes quan no caben a la pantalla.
+- El mapa de meduses s'obre a pantalla completa en mòbil, on el visor extern funciona millor, i es manté integrat en escriptori.
+- Els avisos expliquen l'abast real de les zones oficials del Prelitoral i el Vallès Oriental sense presentar-los com un avís municipal precís.
+- Unificats el títol HTML i el títol social de la portada.
+
 ## V22.5.0 — 2026-08-24
 
 - Nou control operatiu persistent de l'execució del programador, els avisos push, la publicació social automàtica i la comprovació preventiva de connexions.

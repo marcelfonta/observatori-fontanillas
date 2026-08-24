@@ -1,5 +1,16 @@
 # Roadmap oficial
 
+## V22.5.2 — Mòbil, transparència i configuració resilient — Preparada per revisar
+
+- [x] Evitar que un desplegament perdi els identificadors públics de Bluesky, Telegram, OneSignal i correu operatiu.
+- [x] Mostrar totes les xarxes des de la capçalera mòbil amb un accés compacte.
+- [x] Oferir una alternativa fiable al visor de meduses en pantalles petites.
+- [x] Explicar que els avisos oficials són zonals i no necessàriament municipals.
+- [x] Diferenciar TikTok connectat de TikTok aprovat per publicar automàticament.
+- [ ] Confirmar a les 07:45 i les 08:00 una comprovació i una publicació completament automàtiques.
+- [ ] Afegir les franges de les 14:00 i les 21:30 només després d'aquesta validació.
+- [ ] Implementar TikTok Direct Post quan l'aplicació i l'abast `video.publish` constin com a aprovats.
+
 ## V22.5.0 — Control operatiu i recuperació segura — Preparada per revisar
 
 - Estat persistent de l’última execució programada, amb registre del nombre de processos i dels errors reals.
