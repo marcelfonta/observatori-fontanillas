@@ -4,7 +4,7 @@ const $=selector=>document.querySelector(selector);
 const escapeHtml=value=>String(value??'').replace(/[&<>"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]));
 const number=(value,digits=0)=>Number.isFinite(Number(value))?new Intl.NumberFormat('ca-ES',{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(Number(value)):'—';
 const date=value=>new Intl.DateTimeFormat('ca-ES',{weekday:'short',day:'numeric',month:'short'}).format(new Date(`${value}T12:00:00`));
-const time=value=>{const parsed=new Date(value);return value&&!Number.isNaN(parsed.getTime())?new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(parsed):'—';};
+const time=value=>{const local=String(value||'').match(/[T ](\d{2}:\d{2})/);if(local)return local[1];const parsed=new Date(value);return value&&!Number.isNaN(parsed.getTime())?new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit'}).format(parsed):'—';};
 const weatherLabel=code=>({0:'Cel serè',1:'Poc ennuvolat',2:'Núvols i clarianes',3:'Cobert',45:'Boira',48:'Boira gebradora',51:'Plugim feble',53:'Plugim',55:'Plugim intens',61:'Pluja feble',63:'Pluja',65:'Pluja intensa',71:'Neu feble',73:'Neu',75:'Neu intensa',80:'Ruixats febles',81:'Ruixats',82:'Ruixats intensos',95:'Tempesta',96:'Tempesta amb calamarsa',99:'Tempesta forta amb calamarsa'})[Number(code)]||'Temps variable';
 
 const form=$('#municipality-search-form');
@@ -42,9 +42,10 @@ function renderForecast(location,weather){
 
 function renderStations(payload,location){
   const stations=payload?.stations||[];
-  if(!stations.length)return `<section class="municipality-stations panel"><p class="eyebrow">Observacions reals properes</p><h2>Cap estació disponible en un radi de 20 km</h2><p>La previsió continua sent consultable. No substituïm una observació absent per una dada estimada.</p></section>`;
+  const radius=Number(payload?.searchRadiusKm)||200;
+  if(!stations.length)return `<section class="municipality-stations panel"><p class="eyebrow">Observacions reals properes</p><h2>Cap estació disponible fins a ${number(radius)} km</h2><p>La previsió continua sent consultable. No substituïm una observació absent per una dada estimada.</p></section>`;
   const cards=stations.map(station=>`<article class="municipality-station ${station.status==='online'?'':'is-offline'}"><header><div><b>${escapeHtml(station.name)}</b><small>${escapeHtml(station.municipality||'Estació propera')}</small></div><span>${number(station.distanceKm,1)} km</span></header>${station.status==='online'?`<strong>${number(station.temperature,1)} °C</strong><dl><div><dt>Humitat</dt><dd>${number(station.humidity)}%</dd></div><div><dt>Vent</dt><dd>${number(station.windSpeed,1)} km/h</dd></div><div><dt>Pluja avui</dt><dd>${number(station.rainToday,1)} mm</dd></div></dl><p>Lectura: ${escapeHtml(time(station.updated))}</p>`:'<p>Dades temporalment no disponibles.</p>'}<footer>${escapeHtml(station.source||'Weather Underground')}</footer></article>`).join('');
-  return `<section class="municipality-stations panel"><div class="section-heading"><div><p class="eyebrow">Mesures d’estacions</p><h2>Observacions reals a prop de ${escapeHtml(location.name)}</h2><p>La distància és respecte del centre del municipi seleccionat. Una estació propera pot pertànyer a un altre terme municipal.</p></div><span class="tag">Radi de 20 km</span></div><div class="municipality-station-grid">${cards}</div></section>`;
+  return `<section class="municipality-stations panel"><div class="section-heading"><div><p class="eyebrow">Mesures d’estacions</p><h2>Observacions reals a prop de ${escapeHtml(location.name)}</h2><p>La distància és respecte del centre del lloc seleccionat. La cerca comença a 20 km i només amplia el radi si no hi ha cobertura més propera.</p></div><span class="tag">Radi: ${number(radius)} km</span></div><div class="municipality-station-grid">${cards}</div></section>`;
 }
 
 async function selectPlace(location,{updateUrl=true}={}){

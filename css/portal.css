@@ -518,7 +518,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
 
 @media (max-width: 780px) {
   body.has-portal-shell { padding-bottom: 88px; }
-  .portal-mobile-nav { position: fixed; z-index: 72; right: 10px; bottom: max(9px,env(safe-area-inset-bottom)); left: 10px; display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 2px; padding: 5px; border: 1px solid rgba(137,214,163,.28); border-radius: 19px; background: rgba(6,20,16,.95); box-shadow: 0 16px 48px rgba(0,0,0,.48); backdrop-filter: blur(18px); }
+  .portal-mobile-nav { position: fixed; z-index: 72; right: 10px; bottom: max(9px,env(safe-area-inset-bottom)); left: 10px; display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 2px; padding: 5px; border: 1px solid rgba(137,214,163,.28); border-radius: 19px; background: rgba(6,20,16,.95); box-shadow: 0 16px 48px rgba(0,0,0,.48); backdrop-filter: blur(18px); }
   .portal-mobile-nav :is(a,button) { display: grid; min-width: 0; min-height: 54px; place-items: center; align-content: center; gap: 4px; padding: 5px 2px; border: 0; border-radius: 14px; background: transparent; color: var(--muted); font: inherit; text-decoration: none; cursor: pointer; }
   .portal-mobile-nav :is(a,button).is-active,.portal-mobile-nav :is(a,button):focus-visible { background: rgba(137,214,163,.13); color: var(--text); outline: none; }
   .portal-mobile-nav span { display: grid; width: 23px; height: 23px; place-items: center; color: var(--green); }
