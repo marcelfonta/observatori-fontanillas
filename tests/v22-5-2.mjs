@@ -15,6 +15,7 @@ const [index,style,portal,footer,admin,alerts,worker,config,roadmap]=await Promi
 
 for(const token of ['BLUESKY_HANDLE','TELEGRAM_CHANNEL_ID','CONTACT_FROM','ONESIGNAL_APP_ID'])assert.ok(config.includes(token),`Falta el paràmetre persistent ${token}`);
 assert.ok(footer.includes('header-social-more')&&style.includes('.header-social-more__panel'),'Falta l’accés mòbil a totes les xarxes.');
+assert.ok(style.includes('background:#0b211a')&&style.includes('.social-link--more>span{position:static;width:auto;height:auto;overflow:visible'),'El menú mòbil de xarxes ha de tenir un fons opac i etiquetes llegibles.');
 assert.ok(index.includes('environment-viewer-mobile-launch')&&portal.includes('environment-viewer-frame--jellyfish iframe { display: none; }'),'Falta l’alternativa mòbil del mapa de meduses.');
 assert.ok(index.includes('no implica necessàriament afectació a tot el municipi')&&alerts.includes('que inclou Sant Celoni')&&worker.includes('no implica necessàriament afectació a tot el municipi'),'L’abast territorial dels avisos no queda explicat.');
 assert.ok(admin.includes('publicació pendent d’aprovació'),'TikTok no diferencia connexió i aprovació de publicació.');
