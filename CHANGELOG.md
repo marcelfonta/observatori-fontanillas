@@ -1,5 +1,14 @@
 # Changelog
 
+## V22.7.0 — 2026-08-24
+
+- La portada substitueix els textos d’espera per esquelets visuals suaus que desapareixen tan bon punt arriba cada dada real.
+- El mapa oficial d’avisos de Meteocat deixa de carregar-se a l’inici i s’activa només quan l’usuari s’acosta a l’apartat d’avisos.
+- Les preferències d’avisos separen fenòmens i intensitat en dos passos visuals més clars.
+- En mòbil, les opcions d’avisos són més compactes i el botó principal queda sempre accessible al peu del diàleg.
+- La càrrega animada respecta la preferència del sistema de reduir el moviment.
+- Versions web, Worker i memòria cau PWA unificades a V22.7.0.
+
 ## V22.6.0 — 2026-08-24
 
 - La prova d’avisos passa pel servei real de OneSignal i s’adreça exclusivament al dispositiu des del qual es demana.
