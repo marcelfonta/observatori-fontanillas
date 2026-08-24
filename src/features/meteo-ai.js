@@ -21,7 +21,10 @@ const readMemory=()=>{try{return {...emptyMemory(),...JSON.parse(sessionStorage.
 let conversationMemory=typeof sessionStorage==='undefined'?emptyMemory():readMemory();
 const saveMemory=memory=>{try{sessionStorage.setItem(CONVERSATION_KEY,JSON.stringify(memory));}catch{/* La sessió pot estar desactivada. */}};
 const timeLabel=value=>{
-  const date=new Date(String(value||'').replace(' ','T'));
+  const raw=String(value||'').trim();
+  const localTime=raw.match(/^\d{4}-\d{2}-\d{2}[T ](\d{2}:\d{2})(?::\d{2})?$/);
+  if(localTime)return localTime[1];
+  const date=new Date(raw.replace(' ','T'));
   return Number.isNaN(date.getTime())?'hora no disponible':new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(date);
 };
 const sourceLinks={
