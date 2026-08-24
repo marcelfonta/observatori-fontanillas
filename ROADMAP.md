@@ -287,6 +287,22 @@ La biblioteca es manté en dades estructurades a `src/data/learning-resources.js
 
 Centre de notícies meteorològiques, calendari, API pública, widgets, recursos escolars, episodis destacats, fotografia automàtica, webcam amb detecció assistida i prediccions personalitzades.
 
+## V22.9.0 — Consulta meteorològica per municipi — Pilot completat
+
+- Pàgina pròpia «Altres municipis» integrada al menú lateral i a la PWA.
+- Cerca amb suggeriments geogràfics per evitar confondre municipis amb el mateix nom.
+- Previsió de set dies calculada per a les coordenades seleccionades i identificada explícitament com a model.
+- Descobriment de fins a sis estacions PWS en un radi de 20 km, amb font, distància i hora de lectura visibles.
+- Absència d’estacions tractada de forma honesta: es manté la previsió, però no es presenta cap estimació com si fos una observació.
+- Enllaç compartible amb el municipi i les coordenades, sense crear milers de pàgines indexables de poca qualitat.
+
+### Evolució pendent del cercador
+
+1. Validar la cobertura real amb municipis de costa, interior i muntanya abans d’ampliar el radi.
+2. Crear un catàleg curat d’estacions i propietaris quan es vulguin pàgines municipals estables per a Google.
+3. Incorporar preferits i municipi inicial només després de comprovar l’ús real del pilot.
+4. Afegir fonts oficials municipals quan ofereixin dades comparables i reutilitzables.
+
 ## Definició de projecte madur
 
 El projecte arribarà a 1.0 quan arquitectura, dades, comparador, medi ambient, Meteo IA, marca/PWA, SEO, compartició, xarxes i administració estiguin completats i validats.

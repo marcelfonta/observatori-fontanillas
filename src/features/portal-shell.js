@@ -11,6 +11,7 @@ const ICONS={
   webcams:icon('<rect x="3" y="6" width="18" height="13" rx="2"/><path d="m8 6 1.2-2h5.6L16 6"/><circle cx="12" cy="12.5" r="3.3"/>'),
   'centre-dades':icon('<ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6M4.5 11.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/>'),
   comparar:icon('<path d="M4 8h13M14 5l3 3-3 3M20 16H7M10 13l-3 3 3 3"/>'),
+  municipis:icon('<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4M8 11h6M11 8v6"/>'),
   'medi-ambient':icon('<path d="M19.5 4.5C12 4.7 6.2 8.4 6.2 14.2c0 3 2.2 5.3 5.2 5.3 5.9 0 8.1-6.3 8.1-15Z"/><path d="M4.2 20c2.8-5.7 6.8-9.3 12.2-11.8"/>'),
   aprendre:icon('<path d="m3.5 8.5 8.5-4 8.5 4-8.5 4-8.5-4Z"/><path d="M6.5 10.2v5.2c2.9 2.2 8.1 2.2 11 0v-5.2M20.5 8.5v6"/>'),
   contacte:icon('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4.5 7 7.5 5.7L19.5 7"/>'),
@@ -20,16 +21,16 @@ const NAV_ITEMS=[
   ['inici','Inici','./?page=inici'],['meteo-ia','Meteo IA','./?page=meteo-ia'],['estacio','Estació','./?page=estacio'],
   ['prediccio','Predicció','./?page=prediccio'],['verificacio','Predicció vs realitat','./?page=verificacio'],['avisos','Avisos','./?page=avisos'],
   ['cel','Cel de dia i de nit','./?page=cel'],['radar','Radar','./?page=radar'],['webcams','Webcams','./?page=webcams'],
-  ['centre-dades','Centre de Dades','./?page=centre-dades'],['comparar','Comparar','./comparativa.html'],
+  ['centre-dades','Centre de Dades','./?page=centre-dades'],['comparar','Comparar','./comparativa.html'],['municipis','Altres municipis','./municipis.html'],
   ['medi-ambient','Medi Ambient','./?page=medi-ambient'],['aprendre','Aprendre','./?page=aprendre'],['contacte','Contacte','./?page=contacte'],['metodologia','Metodologia','./metodologia.html']
 ];
 const NAV_GROUPS=[
   ['Ara',['inici','meteo-ia','estacio']],
   ['Previsió i risc',['prediccio','verificacio','avisos']],
   ['Explora',['cel','radar','webcams']],
-  ['Dades i projecte',['centre-dades','comparar','medi-ambient','aprendre','contacte','metodologia']]
+  ['Dades i projecte',['centre-dades','comparar','municipis','medi-ambient','aprendre','contacte','metodologia']]
 ];
-const PAGE_LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams','centre-dades':'Centre de Dades',comparar:'Comparativa','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',contacte:'Contacte',metodologia:'Metodologia'};
+const PAGE_LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams','centre-dades':'Centre de Dades',comparar:'Comparativa',municipis:'Consulta per municipi','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',contacte:'Contacte',metodologia:'Metodologia'};
 
 export function mountPortalShell(activePage){
   document.body.classList.add('has-portal-shell');
