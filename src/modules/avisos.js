@@ -128,9 +128,13 @@ function alertItem(entry) {
   validity.className='official-alert-validity';
   validity.textContent=expiry ? expiryLabel([entry]) : 'Vigència disponible al detall oficial';
   const scope=document.createElement('span');
-  scope.className='official-alert-validity';
+  scope.className='official-alert-scope';
   const searchable=`${entry.area||''} ${entry.description||''} ${entry.title||''}`.toLocaleLowerCase('ca-ES');
-  scope.textContent=/sant celoni/.test(searchable)?'Sant Celoni consta explícitament al detall':'Avís zonal: l’afectació exacta a Sant Celoni pot variar';
+  const municipal=/sant celoni/.test(searchable);
+  scope.classList.add(municipal?'is-municipal':'is-zonal');
+  scope.innerHTML=municipal
+    ? '<b>Abast municipal</b><span>Sant Celoni consta explícitament al detall oficial.</span>'
+    : '<b>Abast zonal</b><span>Prelitoral de Barcelona; la intensitat exacta a Sant Celoni pot variar.</span>';
   const link=document.createElement('a');
   link.href=entry.link || 'https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&w=hoy';
   link.target='_blank'; link.rel='noreferrer'; link.textContent='Detall oficial ↗';

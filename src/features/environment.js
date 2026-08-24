@@ -6,7 +6,13 @@ let stationUv=null;
 let modelUv=null;
 let modelCurrent={};
 
-function put(id,value){const node=document.getElementById(id);if(node)node.textContent=value;}
+function put(id,value){
+  const node=document.getElementById(id);
+  if(!node)return;
+  node.textContent=value;
+  node.classList.remove('is-placeholder');
+  node.removeAttribute('aria-busy');
+}
 function number(value,digits=1){const n=Number(value);return Number.isFinite(n)?new Intl.NumberFormat(CONFIG.locale,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(n):'—';}
 function aqiReading(value){
   const n=Number(value);
@@ -112,11 +118,23 @@ function initEnvironmentViewers(){
   const buttons=[...document.querySelectorAll('[data-environment-viewer]')];
   const panels=[...document.querySelectorAll('[data-environment-panel]')];
   if(!buttons.length)return;
+  const compactViewer=window.matchMedia('(max-width: 700px)');
   const activate=name=>{
-    buttons.forEach(button=>{const active=button.dataset.environmentViewer===name;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));});
-    panels.forEach(panel=>{const active=panel.dataset.environmentPanel===name;panel.hidden=!active;if(active){const asset=panel.querySelector('[data-src]');if(asset&&!asset.getAttribute('src')){const suffix=asset.tagName==='IMG'?`?v=${new Date().toISOString().slice(0,13)}`:'';asset.src=`${asset.dataset.src}${suffix}`;}}});
+    buttons.forEach(button=>{const active=button.dataset.environmentViewer===name;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});
+    panels.forEach(panel=>{const active=panel.dataset.environmentPanel===name;panel.hidden=!active;if(active){const asset=panel.querySelector('[data-src]');const skipEmbeddedJellyfish=name==='jellyfish'&&compactViewer.matches&&asset?.tagName==='IFRAME';if(asset&&!skipEmbeddedJellyfish&&!asset.getAttribute('src')){const suffix=asset.tagName==='IMG'?`?v=${new Date().toISOString().slice(0,13)}`:'';asset.src=`${asset.dataset.src}${suffix}`;}}});
   };
-  buttons.forEach(button=>button.addEventListener('click',()=>activate(button.dataset.environmentViewer)));
+  buttons.forEach((button,index)=>{
+    button.addEventListener('click',()=>activate(button.dataset.environmentViewer));
+    button.addEventListener('keydown',event=>{
+      let target=index;
+      if(event.key==='ArrowRight'||event.key==='ArrowDown')target=(index+1)%buttons.length;
+      else if(event.key==='ArrowLeft'||event.key==='ArrowUp')target=(index-1+buttons.length)%buttons.length;
+      else if(event.key==='Home')target=0;
+      else if(event.key==='End')target=buttons.length-1;
+      else return;
+      event.preventDefault();activate(buttons[target].dataset.environmentViewer);buttons[target].focus();
+    });
+  });
   activate(buttons[0].dataset.environmentViewer);
 }
 
