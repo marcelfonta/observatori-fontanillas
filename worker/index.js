@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.5.1";
+const WORKER_VERSION = "22.5.2";
 const WORKER_BUILT = "2026-08-24";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -1036,7 +1036,7 @@ async function createOfficialAlertSocialDraft(entry,env){
   const level=String(entry.level||'').toLowerCase();
   const levelLabel=level==='red'?'VERMELL':'TARONJA';
   const title=`Avís ${levelLabel} a Sant Celoni · ${entry.phenomenon||'meteorologia'}`;
-  const body=`⚠️ Avís oficial ${levelLabel} per ${entry.phenomenon||'fenomen meteorològic'} al Prelitoral de Barcelona, àrea de Sant Celoni. ${cleanText(entry.description||entry.title,900)} Consulta sempre el detall oficial i segueix les indicacions de Protecció Civil.\n\n${socialHashtags('official_alert')}`;
+  const body=`⚠️ Avís oficial ${levelLabel} per ${entry.phenomenon||'fenomen meteorològic'} a la zona del Prelitoral de Barcelona, que inclou Sant Celoni. L’avís no implica necessàriament afectació a tot el municipi. ${cleanText(entry.description||entry.title,820)} Consulta sempre el detall oficial i segueix les indicacions de Protecció Civil.\n\n${socialHashtags('official_alert')}`;
   const payload=JSON.stringify({level,levelLabel,phenomenon:entry.phenomenon||null,description:entry.description||entry.title||null,starts:entry.published||null,expires:entry.expires||null});
   const result=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts (dedupe_key,kind,status,channels,title,body,source_url,payload) VALUES (?,'official_alert','approved',?,?,?,?,?)`)
     .bind(`alert:${entry.fingerprint}`,JSON.stringify(['facebook','instagram','bluesky','telegram','threads']),title,body,AEMET_PRELITORAL_PAGE,payload).run();

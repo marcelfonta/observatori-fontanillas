@@ -319,6 +319,7 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .environment-viewer-panel[hidden] { display: none; }
 .environment-viewer-frame { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: #eef2ef; }
 .environment-viewer-frame iframe { display: block; width: 100%; height: 620px; border: 0; background: #fff; }
+.environment-viewer-mobile-launch { display: none; }
 .environment-viewer-frame--image { background: #07110f; }
 .environment-viewer-frame--image > img { display: block; width: auto; max-width: 100%; max-height: 640px; margin: 0 auto; background: #fff; object-fit: contain; }
 .environment-viewer-meta { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--line); background: #091813; color: var(--muted); font-size: 10px; line-height: 1.45; }
@@ -607,6 +608,10 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .history-results__tools .tag { margin-right: auto; }
   .history-pagination label { justify-content: flex-end; }
   .environment-viewer-frame iframe { height: 520px; }
+  .environment-viewer-frame--jellyfish iframe { display: none; }
+  .environment-viewer-mobile-launch { display: flex; min-height: 220px; padding: 28px; align-items: center; justify-content: center; flex-direction: column; gap: 8px; background: linear-gradient(145deg,#0b241c,#174f3c); color: var(--text); text-align: center; text-decoration: none; }
+  .environment-viewer-mobile-launch strong { color: var(--green); font: 700 22px/1.15 var(--font-display); }
+  .environment-viewer-mobile-launch span { color: var(--muted); font-size: 12px; }
   .environment-viewer-meta { align-items: flex-start; flex-direction: column; }
   .environment-viewer-meta .environment-viewer-links { margin-left: 0; flex-wrap: wrap; white-space: normal; }
   .environment-status { align-items: flex-start; flex-direction: column; gap: 5px; }

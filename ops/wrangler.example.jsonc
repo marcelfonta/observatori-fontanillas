@@ -8,7 +8,12 @@
   "vars": {
     "ENVIRONMENT": "local",
     "SOCIAL_AUTOMATION_ENABLED": "false",
-    "SOCIAL_PREFLIGHT_TIME": "07:45"
+    "SOCIAL_AUTO_TIMES": "08:00",
+    "SOCIAL_PREFLIGHT_TIME": "07:45",
+    "BLUESKY_HANDLE": "meteofontanillas.bsky.social",
+    "TELEGRAM_CHANNEL_ID": "@meteofontanillas",
+    "CONTACT_FROM": "Observatori Fontanillas <formulari@fontanillas.cat>",
+    "ONESIGNAL_APP_ID": "REPLACE_WITH_ONESIGNAL_APP_ID"
   },
   "observability": {
     "enabled": true,

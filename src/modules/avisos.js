@@ -152,12 +152,12 @@ export function renderAlerts(payload) {
     list.append(empty);
   } else if(payload.active>0){
     setText('alerts-local-title',`${payload.active} ${payload.active===1?'avís oficial actiu':'avisos oficials actius'}`);
-    setText('alerts-local-copy',`AEMET informa d’un nivell màxim ${levelLabels[level]?.replace('Avís ','').toLowerCase() || 'actiu'} al Prelitoral de Barcelona.`);
+    setText('alerts-local-copy',`AEMET informa d’un nivell màxim ${levelLabels[level]?.replace('Avís ','').toLowerCase() || 'actiu'} a la zona oficial del Prelitoral de Barcelona, que inclou Sant Celoni.`);
     setText('alerts-local-status',levelLabels[level] || 'Avís actiu');
     payload.alerts.forEach(entry=>list.append(alertItem(entry)));
   } else {
     setText('alerts-local-title','Sense avisos oficials actius');
-    setText('alerts-local-copy','AEMET no manté cap avís actiu al Prelitoral de Barcelona en la darrera comprovació.');
+    setText('alerts-local-copy','AEMET no manté cap avís actiu a la zona oficial del Prelitoral de Barcelona en la darrera comprovació.');
     setText('alerts-local-status','Situació sense avisos');
     const empty=document.createElement('div'); empty.className='official-alert-empty is-clear';
     empty.innerHTML='<strong>Prelitoral de Barcelona · sense avisos</strong><span>Continua disponible el mapa de Meteocat per contrastar el Vallès Oriental.</span>';

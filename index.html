@@ -13,7 +13,7 @@
     <meta name="description" content="Dades meteorològiques en directe des de Sant Celoni, als peus del Montseny." />
     <meta name="geo.region" content="ES-CT" />
     <meta name="geo.placename" content="Sant Celoni" />
-    <title>Observatori Fontanillas · Sant Celoni</title>
+    <title>Observatori Meteorològic Fontanillas · Sant Celoni</title>
     <link rel="canonical" href="https://meteo.fontanillas.cat/" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ca_ES" />
@@ -40,13 +40,13 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=22.5.0" />
-    <link rel="stylesheet" href="css/portal.css?v=22.5.0" />
+    <link rel="stylesheet" href="css/style.css?v=22.5.2" />
+    <link rel="stylesheet" href="css/portal.css?v=22.5.2" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=22.5.0"></script>
-    <script type="module" src="src/features/pwa.js?v=22.5.0"></script>
-    <script type="module" src="src/app.js?v=22.5.0"></script>
+    <script type="module" src="src/features/push.js?v=22.5.2"></script>
+    <script type="module" src="src/features/pwa.js?v=22.5.2"></script>
+    <script type="module" src="src/app.js?v=22.5.2"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","url":"https://meteo.fontanillas.cat/","spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -348,7 +348,7 @@
             <div id="alert-history-list" class="alert-history-list alert-history-list--preview" data-history-limit="5"><div class="alert-history-empty">Carregant historial…</div></div>
             <div class="alert-history-panel__actions"><a href="./historial-avisos.html">Veure l’historial complet →</a></div>
           </section>
-          <p class="alerts-note"><span>i</span> El mapa és el servei oficial de Meteocat. La lectura local reprodueix el canal CAP/RSS oficial d’AEMET per al Prelitoral de Barcelona i sempre enllaça amb el detall original. <b id="alerts-updated">Actualitzant…</b></p>
+          <p class="alerts-note"><span>i</span> Els organismes publiquen per comarca o zona: Vallès Oriental i Prelitoral de Barcelona inclouen Sant Celoni, però un avís no implica necessàriament afectació a tot el municipi. La web mostra l’àmbit oficial i enllaça sempre amb el detall original. <b id="alerts-updated">Actualitzant…</b></p>
         </div>
       </section>
 
@@ -608,7 +608,7 @@
           <div class="environment-viewer-tabs" role="tablist" aria-label="Visor ambiental"><button class="is-active" type="button" role="tab" aria-selected="true" data-environment-viewer="fire">Risc d’incendi</button><button type="button" role="tab" aria-selected="false" data-environment-viewer="drought">Sequera</button><button type="button" role="tab" aria-selected="false" data-environment-viewer="jellyfish">Meduses</button></div>
           <div class="environment-viewer-panel" data-environment-panel="fire"><div class="environment-viewer-frame environment-viewer-frame--image"><img alt="Mapa oficial d'avui del Pla Alfa dels Agents Rurals" data-src="https://www.gencat.cat/medinatural/incendis/mapes/pla_alfa.gif" loading="lazy" /><div class="environment-viewer-meta"><span><strong>Pla Alfa · Agents Rurals.</strong> Mapa oficial diari amb nivells municipals, data i possibles restriccions d’accés.</span><span class="environment-viewer-links"><a href="https://interior.gencat.cat/ca/serveis/informacio-geografica/visors-i-aplicacions/pla-alfa/" target="_blank" rel="noreferrer">Obrir visor interactiu ↗</a></span></div></div></div>
           <div class="environment-viewer-panel" data-environment-panel="drought" hidden><div class="environment-viewer-frame"><iframe title="Visor oficial de l'estat actual de sequera de l'ACA" data-src="https://aplicacions.aca.gencat.cat/visseq/estat-actual" loading="lazy"></iframe><div class="environment-viewer-meta"><span><strong>Agència Catalana de l’Aigua.</strong> Escenari vigent per unitat d’explotació i municipi.</span><span class="environment-viewer-links"><a href="https://aplicacions.aca.gencat.cat/visseq/estat-actual" target="_blank" rel="noreferrer">Obrir visor complet ↗</a></span></div></div></div>
-          <div class="environment-viewer-panel" data-environment-panel="jellyfish" hidden><div class="environment-viewer-frame"><iframe title="Mapa d'albiraments de meduses de MedusApp" data-src="https://www.medusapp.net/mapa/mapa-portada.php" loading="lazy"></iframe><div class="environment-viewer-meta"><span><strong>MedusApp · UPV i Universitat d’Alacant.</strong> Albiraments ciutadans recents; no substitueix la bandera ni l’avís dels socorristes.</span><span class="environment-viewer-links"><a href="https://www.medusapp.net/mapa/" target="_blank" rel="noreferrer">MedusApp complet ↗</a><a href="https://aplicacions.aca.gencat.cat/platgescat2/" target="_blank" rel="noreferrer">PlatgesCat ↗</a><a href="https://meduseo.com/es/" target="_blank" rel="noreferrer">Meduseo ↗</a></span></div></div></div>
+          <div class="environment-viewer-panel" data-environment-panel="jellyfish" hidden><div class="environment-viewer-frame environment-viewer-frame--jellyfish"><a class="environment-viewer-mobile-launch" href="https://www.medusapp.net/mapa/" target="_blank" rel="noreferrer"><strong>Obrir el mapa de meduses</strong><span>En mòbil funciona millor a pantalla completa ↗</span></a><iframe title="Mapa d'albiraments de meduses de MedusApp" data-src="https://www.medusapp.net/mapa/mapa-portada.php" loading="lazy"></iframe><div class="environment-viewer-meta"><span><strong>MedusApp · UPV i Universitat d’Alacant.</strong> Albiraments ciutadans recents; no substitueix la bandera ni l’avís dels socorristes.</span><span class="environment-viewer-links"><a href="https://www.medusapp.net/mapa/" target="_blank" rel="noreferrer">MedusApp complet ↗</a><a href="https://aplicacions.aca.gencat.cat/platgescat2/" target="_blank" rel="noreferrer">PlatgesCat ↗</a><a href="https://meduseo.com/es/" target="_blank" rel="noreferrer">Meduseo ↗</a></span></div></div></div>
         </section>
         <p class="environment-note"><span>i</span> L’UV prové prioritàriament del sensor de Fontanillas; l’aire i el pol·len són estimacions CAMS via Open‑Meteo. Pla Alfa i ACA són fonts oficials. MedusApp aporta albiraments universitaris i ciutadans; Meduseo queda com a alternativa internacional externa.</p>
       </section>
