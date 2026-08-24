@@ -1,5 +1,21 @@
 # Roadmap oficial
 
+## V22.6.0 — Prioritat alta: avisos, IA i verificació — Preparada per revisar
+
+- [x] Substituir la prova local d’avisos per un enviament real de OneSignal dirigit només al dispositiu que fa la prova.
+- [x] Mostrar una diagnosi més completa del permís, la subscripció, la connexió remota i el servei en segon pla.
+- [x] Millorar l’accessibilitat del diàleg d’avisos amb focus inicial, retorn del focus i navegació de teclat continguda.
+- [x] Fer que Meteo IA respongui preguntes senzilles de pressió, humitat, vent, radiació, índex UV, sortida i posta del sol.
+- [x] Afegir transparència territorial a cada avís zonal sense amagar ni alterar cap avís oficial.
+- [x] Fer més rigorós «Predicció vs realitat» amb dies únics de mostra, nivell de maduresa i índex Brier de probabilitat de pluja.
+- [x] Adaptar les quatre mètriques de verificació a escriptori, tauleta i mòbil.
+
+### Validacions externes abans de donar-la per tancada
+
+- [ ] Desplegar web i Worker només després de revisar i integrar la PR.
+- [ ] Enviar una prova real des de cada mòbil i ordinador que hagi de rebre avisos.
+- [ ] Confirmar que el missatge arriba també amb la web tancada o en segon pla.
+
 ## V22.5.2 — Mòbil, transparència i configuració resilient — Preparada per revisar
 
 - [x] Evitar que un desplegament perdi els identificadors públics de Bluesky, Telegram, OneSignal i correu operatiu.

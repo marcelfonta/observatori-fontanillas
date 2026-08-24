@@ -3,10 +3,10 @@ import { answerMeteoQuestion } from '../src/features/meteo-ai.js';
 
 const now=Date.now();
 const dates=Array.from({length:14},(_,index)=>`2026-08-${String(10+index).padStart(2,'0')}`);
-const daily={time:dates,weather_code:[1,61,2,3,1,80,2,1,2,61,3,1,80,2],temperature_2m_max:[28,25,27,26,29,24,27,28,29,25,24,27,23,26],temperature_2m_min:[18,17,18,17,19,16,17,18,19,17,16,18,15,17],precipitation_probability_max:[15,75,20,30,10,65,25,20,30,70,40,20,80,30],precipitation_sum:[0,6.2,0,0.3,0,4.5,0,0,0.2,5,1,0,8,0],wind_gusts_10m_max:[18,32,20,22,17,35,20,18,21,33,24,19,38,20],uv_index_max:[6,5,6,5,6,4,5,5,6,4,4,5,3,5]};
+const daily={time:dates,weather_code:[1,61,2,3,1,80,2,1,2,61,3,1,80,2],temperature_2m_max:[28,25,27,26,29,24,27,28,29,25,24,27,23,26],temperature_2m_min:[18,17,18,17,19,16,17,18,19,17,16,18,15,17],precipitation_probability_max:[15,75,20,30,10,65,25,20,30,70,40,20,80,30],precipitation_sum:[0,6.2,0,0.3,0,4.5,0,0,0.2,5,1,0,8,0],wind_gusts_10m_max:[18,32,20,22,17,35,20,18,21,33,24,19,38,20],uv_index_max:[6,5,6,5,6,4,5,5,6,4,4,5,3,5],sunrise:dates.map(date=>`${date}T07:01`),sunset:dates.map(date=>`${date}T20:54`)};
 const hourly={time:Array.from({length:48},(_,index)=>`2026-08-${index<24?'10':'11'}T${String(index%24).padStart(2,'0')}:00`),precipitation_probability:Array.from({length:48},(_,index)=>index>=17&&index<=20?65:10),precipitation:Array.from({length:48},(_,index)=>index>=18&&index<=19?0.4:0),temperature_2m:Array(48).fill(23),wind_gusts_10m:Array(48).fill(20)};
 const context={
-  current:{temperature:24.2,feelsLike:24.8,humidity:58,windSpeed:5.1,windGust:12.4,pressure:1016.2,rainToday:0,rainRate:0,updated:new Date(now).toISOString()},
+  current:{temperature:24.2,feelsLike:24.8,humidity:58,windSpeed:5.1,windGust:12.4,windDirection:0,pressure:1016.2,rainToday:0,rainRate:0,uv:4,solarRadiation:510,updated:new Date(now).toISOString()},
   history:[{t:now-23*3600000,temperature:19.1},{t:now,temperature:24.2}],
   forecast:{daily:Object.fromEntries(Object.entries(daily).map(([key,value])=>[key,value.slice(0,7)])),hourly},
   alerts:{ok:true,active:0,maxLevel:'none',alerts:[],checkedAt:new Date(now).toISOString()},
@@ -22,6 +22,15 @@ const current=await answerMeteoQuestion('Quina temperatura fa ara?',context,serv
 assert.match(current.body,/24,2 °C/);
 assert.equal(current.sources[0].label,'Sensor Fontanillas');
 assert.equal(current.sources[0].href,'./?page=estacio');
+
+const currentDetails=await answerMeteoQuestion('Quina humitat, pressió i direcció del vent hi ha?',context,services);
+assert.match(currentDetails.body,/58%/);
+assert.match(currentDetails.body,/1\.016,2 hPa/);
+assert.match(currentDetails.body,/Direcció · 0/);
+
+const sun=await answerMeteoQuestion('A quina hora surt i es pon el sol avui?',context,services);
+assert.match(sun.body,/07:01/);
+assert.match(sun.body,/20:54/);
 
 const forecast=await answerMeteoQuestion('Plourà demà?',context,services);
 assert.match(forecast.body,/75%/);

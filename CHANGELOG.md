@@ -1,5 +1,14 @@
 # Changelog
 
+## V22.6.0 — 2026-08-24
+
+- La prova d’avisos passa pel servei real de OneSignal i s’adreça exclusivament al dispositiu des del qual es demana.
+- La diagnosi d’avisos comprova permís, subscripció, identificació remota i servei en segon pla; el diàleg també millora la navegació amb teclat.
+- Meteo IA resol noves preguntes directes sobre humitat, pressió, vent, radiació, índex UV, sortida i posta del sol.
+- Cada avís oficial diferencia si Sant Celoni consta explícitament al detall o si es tracta d’un avís zonal amb afectació local variable.
+- «Predicció vs realitat» mesura la maduresa amb dies únics, incorpora l’índex Brier de pluja i adapta quatre mètriques a qualsevol pantalla.
+- Versions web, Worker i memòria cau PWA unificades a V22.6.0.
+
 ## V22.5.2 — 2026-08-24
 
 - Restaurats els paràmetres públics de Bluesky, Telegram, correu operatiu i OneSignal perquè els desplegaments no conservin només els secrets i deixin canals aparentment sense configurar.

@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.5.2";
+const WORKER_VERSION = "22.6.0";
 const WORKER_BUILT = "2026-08-24";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -551,6 +551,21 @@ async function sendOneSignalAlert(entry, env){
   return result;
 }
 
+async function pushTest(request,env){
+  const origin=request.headers.get('Origin')||'';
+  if(!ALLOWED_CONTACT_ORIGINS.has(origin))return json({ok:false,error:'Origen no autoritzat'},403,'no-store',origin||'*');
+  if(!env.ONESIGNAL_APP_ID||!env.ONESIGNAL_REST_API_KEY)return json({ok:false,error:'Servei push no configurat'},503,'no-store',origin);
+  const length=Number(request.headers.get('Content-Length')||0);
+  if(length>2048)return json({ok:false,error:'Petició massa gran'},413,'no-store',origin);
+  const body=await request.json().catch(()=>({}));
+  const subscriptionId=cleanText(body.subscriptionId,128);
+  if(!/^[A-Za-z0-9_-]{8,128}$/.test(subscriptionId))return json({ok:false,error:'Subscripció no vàlida'},400,'no-store',origin);
+  const response=await fetch('https://api.onesignal.com/notifications',{method:'POST',headers:{Authorization:`Key ${env.ONESIGNAL_REST_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',include_subscription_ids:[subscriptionId],headings:{ca:'Prova d’avisos Meteo Fontanillas',en:'Meteo Fontanillas alert test'},contents:{ca:'Connexió correcta: aquest dispositiu pot rebre avisos meteorològics.',en:'Connection successful: this device can receive weather alerts.'},url:'https://meteo.fontanillas.cat/?page=avisos'})});
+  const payload=await response.json().catch(()=>({}));
+  if(!response.ok)return json({ok:false,error:cleanText(payload.errors?.join?.(' · ')||'OneSignal no ha acceptat la prova',300)},502,'no-store',origin);
+  return json({ok:true,accepted:true},200,'no-store',origin);
+}
+
 async function checkAlertsAndNotify(env){
   const response=await fetch(AEMET_PRELITORAL_FEED,{headers:{Accept:'application/rss+xml, application/xml, text/xml;q=0.9'},cf:{cacheEverything:false}});
   if(!response.ok)throw new Error(`AEMET RSS ${response.status}`);
@@ -908,6 +923,7 @@ async function forecastVerification(url, env) {
       Math.abs(Number(row.temperature_min)-Number(row.observed_min)),
     ]),
     rainCorrect:(Number(row.precipitation_probability)>=40 || Number(row.precipitation_sum)>=0.2) === (Number(row.observed_rain)>=0.2),
+    rainBrier:Math.pow(Math.max(0,Math.min(100,Number(row.precipitation_probability)||0))/100-(Number(row.observed_rain)>=0.2?1:0),2),
     windError:Math.abs(Number(row.wind_gust_max)-Number(row.observed_gust)),
   }));
   const horizonDefinitions = [
@@ -921,6 +937,7 @@ async function forecastVerification(url, env) {
     temperatureMae:verificationRound(verificationMean(subset.map(row=>row.temperatureAbsoluteError))),
     temperatureBias:verificationRound(verificationMean(subset.map(row=>row.temperatureError))),
     rainAccuracy:verificationRound(verificationMean(subset.map(row=>row.rainCorrect?100:0)),0),
+    rainBrier:verificationRound(verificationMean(subset.map(row=>row.rainBrier)),3),
     windMae:verificationRound(verificationMean(subset.map(row=>row.windError))),
   });
   const summary = summarize(rows);
@@ -931,8 +948,10 @@ async function forecastVerification(url, env) {
     observed:{ max:row.observed_max,min:row.observed_min,rain:verificationRound(Number(row.observed_rain)),gust:row.observed_gust },
   }));
   const firstSnapshot = await env.DB.prepare("SELECT MIN(issued_at) AS firstIssued,COUNT(*) AS total FROM forecast_snapshots").first();
-  const status = rows.length >= 7 ? "ready" : "collecting";
-  return json({ ok:true,status,requestedDays,generatedAt:new Date().toISOString(),firstIssued:firstSnapshot?.firstIssued||null,storedForecasts:Number(firstSnapshot?.total)||0,sampleDays:new Set(rows.map(row=>row.target_date)).size,summary,horizons,detail,method:{ provider:"Open-Meteo · best_match",observation:"Observatori Fontanillas · D1",minimumObservedSamples:72,note:"Cada predicció es desa abans del dia verificat; no es reconstrueixen pronòstics passats." } }, 200, "public, max-age=900");
+  const sampleDays=new Set(rows.map(row=>row.target_date)).size;
+  const status = sampleDays >= 7 ? "ready" : "collecting";
+  const confidence=sampleDays>=30?{level:'consolidated',label:'Mostra consolidada',note:'30 dies o més verificats'}:sampleDays>=14?{level:'growing',label:'Mostra en creixement',note:'Calen 30 dies per consolidar tendències'}:{level:'preliminary',label:'Resultat preliminar',note:'Menys de 14 dies verificats'};
+  return json({ ok:true,status,requestedDays,generatedAt:new Date().toISOString(),firstIssued:firstSnapshot?.firstIssued||null,storedForecasts:Number(firstSnapshot?.total)||0,sampleDays,confidence,summary,horizons,detail,method:{ provider:"Open-Meteo · best_match",observation:"Observatori Fontanillas · D1",minimumObservedSamples:72,note:"Cada predicció es desa abans del dia verificat; no es reconstrueixen pronòstics passats. L’índex Brier de pluja va de 0 (millor) a 1 (pitjor)." } }, 200, "public, max-age=900");
 }
 
 function socialNumber(value, digits = 1) {
@@ -2599,6 +2618,7 @@ export default {
     try {
       if (request.method === "POST" && url.pathname === "/contact") return contact(request, env);
       if (request.method === "POST" && url.pathname === "/meteo-ai") return meteoAI(request, env);
+      if (request.method === "POST" && url.pathname === "/push-test") return pushTest(request, env);
       if (request.method === "GET" && url.pathname === "/oauth/youtube/start") return youtubeOAuthStart(request, env);
       if (request.method === "GET" && url.pathname === "/oauth/youtube/callback") return youtubeOAuthCallback(request, env, url);
       if (request.method === "GET" && url.pathname === "/oauth/tiktok/start") return tiktokOAuthStart(request, env);
@@ -2630,7 +2650,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);
