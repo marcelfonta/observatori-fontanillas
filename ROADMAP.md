@@ -1,5 +1,19 @@
 # Roadmap oficial
 
+## V22.8.0 — Visors mòbils, abast dels avisos i accessibilitat — Preparada per revisar
+
+- [x] Evitar que el visor incrustat de meduses es carregui en pantalles petites, on no ofereix una experiència fiable.
+- [x] Mantenir un accés clar al mapa complet de MedusApp amb més espai i millor control tàctil.
+- [x] Fer els tres visors ambientals navegables amb teclat i semàntica accessible de pestanyes.
+- [x] Diferenciar visualment els avisos on Sant Celoni consta explícitament dels avisos oficials d’abast zonal.
+- [x] Aplicar estats de càrrega visuals també als principals indicadors ambientals.
+
+### Validacions després d’integrar
+
+- [ ] Comprovar l’accés de MedusApp en un iPhone i un Android reals.
+- [ ] Navegar pels visors amb teclat i lector de pantalla.
+- [ ] Revisar la nova etiqueta territorial durant un avís oficial actiu.
+
 ## V22.7.0 — Experiència mòbil i rendiment percebut — Preparada per revisar
 
 - [x] Substituir els principals textos d’espera de la portada per esquelets visuals accessibles.

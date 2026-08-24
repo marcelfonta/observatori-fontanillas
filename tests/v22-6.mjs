@@ -8,15 +8,15 @@ const [project,worker,push,verification,alerts,ai,html,css,serviceWorker,roadmap
   read('project.json'),read('worker/index.js'),read('src/features/push.js'),read('src/features/forecast-verification.js'),read('src/modules/avisos.js'),read('src/features/meteo-ai.js'),read('index.html'),read('css/style.css'),read('service-worker.js'),read('ROADMAP.md')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.7.0');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-7-0'));
+assert.equal(JSON.parse(project).version,'22.8.0');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-8-0'));
 for(const token of ['async function pushTest','include_subscription_ids','url.pathname === "/push-test"'])assert.ok(worker.includes(token),`Prova push real: falta ${token}`);
 for(const token of ['rainBrier','sampleDays>=30','confidence'])assert.ok(worker.includes(token),`Verificació madura: falta ${token}`);
 assert.ok(push.includes('Enviant una prova real')&&push.includes("e.key!=='Tab'"),'La diagnosi push real o el focus del diàleg no estan protegits.');
 assert.ok(html.includes('Enviar prova real'),'El botó de prova push no és explícit.');
 assert.ok(verification.includes('Probabilitat de pluja')&&verification.includes('Brier'),'Falta la mètrica probabilística de pluja.');
 assert.ok(css.includes('repeat(auto-fit,minmax(210px,1fr))'),'Les quatre mètriques no tenen una graella adaptable.');
-assert.ok(alerts.includes('Avís zonal: l’afectació exacta a Sant Celoni pot variar'),'Falta transparència territorial als avisos.');
+assert.ok(alerts.includes('Abast zonal')&&alerts.includes('la intensitat exacta a Sant Celoni pot variar'),'Falta transparència territorial als avisos.');
 assert.ok(ai.includes('currentDetailAnswer')&&ai.includes('sunAnswer'),'La IA no cobreix les consultes senzilles noves.');
 assert.ok(roadmap.includes('V22.6.0 — Prioritat alta'));
 

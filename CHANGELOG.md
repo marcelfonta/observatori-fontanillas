@@ -1,5 +1,13 @@
 # Changelog
 
+## V22.8.0 — 2026-08-24
+
+- En mòbil, el visor incrustat de meduses deixa de consumir dades i s’ofereix un accés directe al mapa complet de MedusApp.
+- Els visors d’incendis, sequera i meduses incorporen navegació completa amb teclat i relacions accessibles entre pestanyes i contingut.
+- Els avisos oficials mostren si Sant Celoni consta explícitament al detall o si l’abast publicat és zonal i la incidència local pot variar.
+- Els principals indicadors ambientals utilitzen esquelets visuals accessibles mentre esperen les dades reals.
+- Versions web, Worker i memòria cau PWA unificades a V22.8.0.
+
 ## V22.7.0 — 2026-08-24
 
 - La portada substitueix els textos d’espera per esquelets visuals suaus que desapareixen tan bon punt arriba cada dada real.
