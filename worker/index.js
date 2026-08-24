@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.4.0";
+const WORKER_VERSION = "22.5.0";
 const WORKER_BUILT = "2026-08-22";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -370,6 +370,39 @@ async function ensureOperationsSchema(env) {
   return true;
 }
 
+async function recordOperationalState(env, serviceKey, status, detail = null) {
+  if (!(await ensureOperationsSchema(env))) return false;
+  const now = new Date().toISOString();
+  const safeDetail = detail == null ? null : JSON.stringify(detail).slice(0, 12000);
+  await env.DB.prepare(`INSERT INTO monitor_state
+    (service_key,status,consecutive_failures,last_checked_at,last_failure_at,last_success_at,detail)
+    VALUES (?,?,?,?,?,?,?)
+    ON CONFLICT(service_key) DO UPDATE SET status=excluded.status,
+      consecutive_failures=CASE WHEN excluded.status='healthy' THEN 0 ELSE monitor_state.consecutive_failures+1 END,
+      last_checked_at=excluded.last_checked_at,
+      last_failure_at=CASE WHEN excluded.status='healthy' THEN monitor_state.last_failure_at ELSE excluded.last_failure_at END,
+      last_success_at=CASE WHEN excluded.status='healthy' THEN excluded.last_success_at ELSE monitor_state.last_success_at END,
+      detail=excluded.detail`)
+    .bind(serviceKey, status, status === 'healthy' ? 0 : 1, now, status === 'healthy' ? null : now, status === 'healthy' ? now : null, safeDetail).run();
+  console.log(JSON.stringify({ event:'operational_state', service:serviceKey, status, at:now }));
+  return true;
+}
+
+function monitorPayload(row) {
+  if (!row) return null;
+  let detail = null;
+  try { detail = row.detail ? JSON.parse(row.detail) : null; } catch { detail = row.detail || null; }
+  return { status:row.status, checkedAt:row.last_checked_at, successAt:row.last_success_at, failureAt:row.last_failure_at, detail };
+}
+
+async function adminOperationsSummary(env) {
+  if (!(await ensureOperationsSchema(env))) return { enabled:false };
+  const result = await env.DB.prepare(`SELECT service_key,status,last_checked_at,last_failure_at,last_success_at,detail
+    FROM monitor_state WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight')`).all();
+  const states = Object.fromEntries((result?.results || []).map(row => [row.service_key, monitorPayload(row)]));
+  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, preflight:states['social-preflight'] || null };
+}
+
 async function ensureForecastSchema(env) {
   if (!env.DB) return false;
   if (forecastSchemaReady) return true;
@@ -484,7 +517,11 @@ function notificationCategory(entry){
 }
 
 async function sendOneSignalAlert(entry, env){
-  if(!env.ONESIGNAL_APP_ID || !env.ONESIGNAL_REST_API_KEY)return {sent:false,reason:'not_configured'};
+  if(!env.ONESIGNAL_APP_ID || !env.ONESIGNAL_REST_API_KEY){
+    const result={sent:false,reason:'not_configured'};
+    await recordOperationalState(env,'push-alert','down',result).catch(()=>{});
+    return result;
+  }
   const category=notificationCategory(entry);
   const normalizedLevel=['yellow','orange','red'].includes(String(entry.level||'').toLowerCase())?String(entry.level).toLowerCase():'unknown';
   const level=entry.levelLabel || entry.level || 'Avís';
@@ -502,8 +539,16 @@ async function sendOneSignalAlert(entry, env){
     headers:{'Authorization':`Key ${env.ONESIGNAL_REST_API_KEY}`,'Content-Type':'application/json'},
     body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',filters,headings:{ca:heading,en:heading},contents:{ca:body,en:body},url:'https://meteo.fontanillas.cat/?page=avisos'})
   });
-  if(!response.ok){ console.error('OneSignal API error',response.status,await response.text()); return {sent:false,status:response.status}; }
-  return {sent:true};
+  const payload=await response.json().catch(()=>({}));
+  if(!response.ok){
+    const result={sent:false,status:response.status,error:cleanText(payload.errors?.join?.(' · ')||payload.error||'Error de OneSignal',500)};
+    console.error(JSON.stringify({event:'push_alert',status:'failed',responseCode:response.status,error:result.error}));
+    await recordOperationalState(env,'push-alert','down',result).catch(()=>{});
+    return result;
+  }
+  const result={sent:true,id:payload.id||null,recipients:Number(payload.recipients)||0,level:normalizedLevel,category};
+  await recordOperationalState(env,'push-alert','healthy',result).catch(()=>{});
+  return result;
 }
 
 async function checkAlertsAndNotify(env){
@@ -1634,6 +1679,7 @@ async function adminSocialSummary(env) {
   return {
     enabled:true,
     mode,
+    schedule:String(env.SOCIAL_AUTO_TIMES || '08:00'),
     tokenConfigured,
     channelCredentials,
     pendingDrafts:Number(counts?.pending) || 0,
@@ -2176,6 +2222,11 @@ async function publishAutomaticSocialDraft(result, env) {
   }
   await refreshSocialDraftPublicationStatus(env, draft);
   const failed = outcomes.filter(item=>!item.ok);
+  await recordOperationalState(env,'social-automatic',failed.length?'down':'healthy',{
+    draftId:draft.id, localDate:result.localDate || null, slot:result.slot || null,
+    published:outcomes.filter(item=>item.ok).map(item=>item.channel),
+    failed:failed.map(item=>({channel:item.channel,error:item.error})), skipped:channels.length===0,
+  }).catch(()=>{});
   if (failed.length) await sendOperationalEmail(env, '[Observatori] Publicació automàtica incompleta', `No s’ha pogut publicar l’informe de ${result.localDate || 'avui'} a: ${failed.map(item=>item.channel).join(', ')}.\n\n${failed.map(item=>`${item.channel}: ${item.error}`).join('\n')}`, 'social_publish_failed').catch(error=>console.error('Social notification error',error));
   return { published:outcomes.some(item=>item.ok), outcomes };
 }
@@ -2230,11 +2281,12 @@ async function adminStatus(request, env) {
   await clearAdminAuthFailures(request, env).catch(error => console.error("Admin auth cleanup error", error));
 
   const started = Date.now();
-  const [qualityResult, alertsResult, database, social] = await Promise.all([
+  const [qualityResult, alertsResult, database, social, operations] = await Promise.all([
     quality(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     alerts(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     adminDatabaseSummary(env),
     adminSocialSummary(env).catch(error => ({ enabled:false, mode:'draft', tokenConfigured:Boolean(env.META_SYSTEM_USER_TOKEN), channelCredentials:{ meta:Boolean(env.META_SYSTEM_USER_TOKEN), facebook:Boolean(env.META_SYSTEM_USER_TOKEN), instagram:Boolean(env.META_SYSTEM_USER_TOKEN), bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD), telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID), threads:Boolean(env.THREADS_ACCESS_TOKEN) }, error:error.message, pendingDrafts:0, recent:[] })),
+    adminOperationsSummary(env).catch(error => ({ enabled:false, error:error.message })),
   ]);
   return json({
     ok:true,
@@ -2245,6 +2297,7 @@ async function adminStatus(request, env) {
     alerts:{ ok:Boolean(alertsResult.ok), status:alertsResult.status || "unavailable", active:alertsResult.active ?? null, maxLevel:alertsResult.maxLevel || "unknown", checkedAt:alertsResult.checkedAt || null, latencyMs:alertsResult.latencyMs ?? null },
     database,
     social,
+    operations,
     integrations:{
       weatherUnderground:Boolean(env.WU_API_KEY),
       database:Boolean(env.DB),
@@ -2259,7 +2312,7 @@ async function adminStatus(request, env) {
       threads:Boolean(env.THREADS_ACCESS_TOKEN),
       advancedAI:Boolean(env.AI),
     },
-    schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"comprovació programada" },
+    schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"cada 5 minuts", social:String(env.SOCIAL_AUTO_TIMES || '08:00'), preflight:String(env.SOCIAL_PREFLIGHT_TIME || '07:45'), timeZone:TIME_ZONE },
   }, 200, "no-store, private", origin);
 }
 
@@ -2561,16 +2614,25 @@ export default {
     }
   },
 
-  async scheduled(_event, env, ctx) {
+  async scheduled(event, env, ctx) {
+    const scheduledAt = new Date().toISOString();
     const capture = monitorWeatherUnderground(env, captureObservation(env));
     const social = capture.then(result => createDailySocialDraft(result.observation, env, activeSocialSlot(env)))
       .then(result => publishAutomaticSocialDraft(result, env));
-    ctx.waitUntil(Promise.all([
-      capture.catch(error => console.error("Captura programada fallida", error)),
-      captureForecastSnapshot(env).catch(error => console.error("Captura de predicció fallida", error)),
-      social.catch(error => console.error("Publicació social automàtica fallida", error)),
-      checkAlertsAndNotify(env).catch(error => console.error("Comprovació d’avisos fallida", error)),
-      runDailyIntegrationPreflight(env).catch(error => console.error("Comprovació preventiva d’integracions fallida", error)),
-    ]));
+    const observedJob=(label,promise)=>promise.catch(error=>{console.error(JSON.stringify({event:'scheduled_job_failed',job:label,error:cleanText(error.message,500)}));throw error;});
+    const jobs = [
+      observedJob('observation',capture),
+      observedJob('forecast',captureForecastSnapshot(env)),
+      observedJob('social',social),
+      observedJob('alerts',checkAlertsAndNotify(env)),
+      observedJob('preflight',runDailyIntegrationPreflight(env)),
+    ];
+    ctx.waitUntil(Promise.allSettled(jobs).then(async results => {
+      const rejected=results.filter(item=>item.status==='rejected');
+      await recordOperationalState(env,'scheduler',rejected.length?'down':'healthy',{
+        scheduledAt, cron:event?.cron || null, jobs:results.length, failed:rejected.length,
+        errors:rejected.map(item=>cleanText(item.reason?.message||item.reason,300)),
+      });
+    }).catch(error=>console.error(JSON.stringify({event:'scheduler_audit_failed',error:cleanText(error.message,500)}))));
   },
 };
