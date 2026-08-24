@@ -1,6 +1,6 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.5.0";
-const WORKER_BUILT = "2026-08-22";
+const WORKER_VERSION = "22.5.1";
+const WORKER_BUILT = "2026-08-24";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const STATION_LATITUDE = 41.6906;
@@ -1811,7 +1811,7 @@ async function socialCardSignature(draftId, env) {
 async function socialCardUrl(draft, env, format = 'png') {
   const signature = await socialCardSignature(draft.id, env);
   const extension = format === 'jpeg' ? 'jpg' : 'png';
-  return `https://fonta-meteo.marcelfonta.workers.dev/social-card/${draft.id}.${extension}?sig=${signature}`;
+  return `https://fonta-meteo.marcelfonta.workers.dev/social-card/${draft.id}.${extension}?sig=${signature}&v=${WORKER_VERSION}`;
 }
 
 function socialCardHtml(draft) {
@@ -1905,12 +1905,15 @@ async function socialCard(request, env, draftId, url, format = 'png') {
 async function ensureSocialCardUrl(draft,env,format='png'){
   const imageUrl=await socialCardUrl(draft,env,format);
   let lastError='resposta buida';
-  for(let attempt=0;attempt<4;attempt+=1){
-    const response=await fetch(imageUrl,{headers:{Accept:'image/*'},cf:{cacheEverything:true,cacheTtl:86400}}).catch(error=>{lastError=error.message;return null;});
+  for(let attempt=0;attempt<6;attempt+=1){
+    // The draft can take a moment to become visible through the public Worker.
+    // Never cache that transient 404: it would otherwise poison the card URL for a day.
+    const readinessUrl=`${imageUrl}&ready=${attempt}-${Date.now()}`;
+    const response=await fetch(readinessUrl,{headers:{Accept:'image/*','Cache-Control':'no-cache'},cf:{cacheEverything:false}}).catch(error=>{lastError=error.message;return null;});
     const type=String(response?.headers.get('Content-Type')||'').toLowerCase();
     if(response?.ok&&type.startsWith('image/'))return imageUrl;
     if(response)lastError=`HTTP ${response.status} (${type||'sense tipus'})`;
-    await new Promise(resolve=>setTimeout(resolve,500*(attempt+1)));
+    await new Promise(resolve=>setTimeout(resolve,750*(attempt+1)));
   }
   throw Object.assign(new Error(`La targeta social no està preparada: ${lastError}.`),{status:502});
 }
@@ -2208,7 +2211,8 @@ async function publishAutomaticSocialDraft(result, env) {
   const publishers = { facebook:publishFacebook, instagram:publishInstagram, telegram:publishTelegram, bluesky:publishBluesky, threads:publishThreads };
   const previous = await socialPublicationsForDraft(env, draft.id);
   const completed = new Set(previous.filter(item=>item.status==='published').map(item=>item.channel));
-  const channels = parseSocialChannels(draft.channels).filter(channel=>configured[channel] && !completed.has(channel));
+  const retryChannels = Array.isArray(result?.retryChannels) ? new Set(result.retryChannels) : null;
+  const channels = parseSocialChannels(draft.channels).filter(channel=>configured[channel] && !completed.has(channel) && (!retryChannels || retryChannels.has(channel)));
   const outcomes = [];
   for (const channel of channels) {
     try {
@@ -2229,6 +2233,25 @@ async function publishAutomaticSocialDraft(result, env) {
   }).catch(()=>{});
   if (failed.length) await sendOperationalEmail(env, '[Observatori] Publicació automàtica incompleta', `No s’ha pogut publicar l’informe de ${result.localDate || 'avui'} a: ${failed.map(item=>item.channel).join(', ')}.\n\n${failed.map(item=>`${item.channel}: ${item.error}`).join('\n')}`, 'social_publish_failed').catch(error=>console.error('Social notification error',error));
   return { published:outcomes.some(item=>item.ok), outcomes };
+}
+
+async function recoverIncompleteDailySocialDraft(env, date = new Date()) {
+  if (!socialAutomationEnabled(env) || !(await ensureSocialDraftSchema(env))) return null;
+  const localDate = localIsoDate(date);
+  const draft = await env.DB.prepare(`SELECT * FROM social_drafts
+    WHERE dedupe_key LIKE ? AND status IN ('approved','partially_published')
+    ORDER BY id DESC LIMIT 1`).bind(`daily:${localDate}:%`).first();
+  if (!draft) return null;
+  const publications = await socialPublicationsForDraft(env, draft.id);
+  const published = new Set(publications.filter(item=>item.status==='published').map(item=>item.channel));
+  const pending = parseSocialChannels(draft.channels).filter(channel=>!published.has(channel));
+  if (!pending.length) return null;
+  // Avoid retry storms for persistent provider errors while allowing transient card failures to recover.
+  const attempts = new Map();
+  for (const item of publications) attempts.set(item.channel,(attempts.get(item.channel)||0)+1);
+  const retryChannels=pending.filter(channel=>(attempts.get(channel)||0)<4);
+  if (!retryChannels.length) return null;
+  return { created:false, recovered:true, localDate, slot:'recovery', retryChannels, draft };
 }
 
 async function adminPublishSocialDraft(request, env, draftId) {
@@ -2617,7 +2640,10 @@ export default {
   async scheduled(event, env, ctx) {
     const scheduledAt = new Date().toISOString();
     const capture = monitorWeatherUnderground(env, captureObservation(env));
-    const social = capture.then(result => createDailySocialDraft(result.observation, env, activeSocialSlot(env)))
+    const social = capture.then(async result => {
+      const slot=activeSocialSlot(env);
+      return slot ? createDailySocialDraft(result.observation,env,slot) : recoverIncompleteDailySocialDraft(env);
+    })
       .then(result => publishAutomaticSocialDraft(result, env));
     const observedJob=(label,promise)=>promise.catch(error=>{console.error(JSON.stringify({event:'scheduled_job_failed',job:label,error:cleanText(error.message,500)}));throw error;});
     const jobs = [
