@@ -303,6 +303,14 @@ Centre de notícies meteorològiques, calendari, API pública, widgets, recursos
 3. Incorporar preferits i municipi inicial només després de comprovar l’ús real del pilot.
 4. Afegir fonts oficials municipals quan ofereixin dades comparables i reutilitzables.
 
+### V22.9 — Ampliació global i base social preparada
+
+- La consulta accepta qualsevol lloc retornat pel cercador geogràfic, no només municipis catalans.
+- Les estacions reals es busquen primer a 20 km i, si la cobertura és escassa, el radi s’amplia progressivament a 50, 100 o 200 km.
+- La interfície mostra sempre el radi i la distància; una estació llunyana mai es presenta com si fos local.
+- «Qualsevol lloc» passa al primer bloc del menú lateral i a la barra inferior mòbil.
+- Es deixa preparada l’estructura de 08:00, 14:00 i 20:30 per a matí, migdia i balanç del dia. Només les hores presents a `SOCIAL_AUTO_TIMES` publiquen; el valor per defecte continua sent exclusivament `08:00`.
+
 ## Definició de projecte madur
 
 El projecte arribarà a 1.0 quan arquitectura, dades, comparador, medi ambient, Meteo IA, marca/PWA, SEO, compartició, xarxes i administració estiguin completats i validats.

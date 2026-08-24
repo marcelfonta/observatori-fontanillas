@@ -630,13 +630,12 @@ function distanceKm(lat1, lon1, lat2, lon2) {
 }
 
 async function discoverComparisonStations(env, center=null) {
-  if(!env.WU_API_KEY)return center?[]:COMPARISON_STATIONS;
+  if(!env.WU_API_KEY)return {stations:center?[]:COMPARISON_STATIONS,searchRadiusKm:center?200:20};
   try {
     const target={
       latitude:finite(center?.latitude)??41.6906,
       longitude:finite(center?.longitude)??2.489,
       label:cleanText(center?.label||"Baix Montseny",80),
-      radiusKm:Math.min(30,Math.max(5,finite(center?.radiusKm)??20)),
       custom:Boolean(center),
     };
     const query=new URLSearchParams({geocode:`${target.latitude},${target.longitude}`,product:"pws",format:"json",apiKey:env.WU_API_KEY});
@@ -650,13 +649,13 @@ async function discoverComparisonStations(env, center=null) {
     const longitudes=Array.isArray(location.longitude)?location.longitude:[];
     const distances=Array.isArray(location.distanceKm)?location.distanceKm:[];
     const cities=Array.isArray(location.city)?location.city:[];
-    const selected=new Map(target.custom?[]:COMPARISON_STATIONS.map(station=>[station.stationId,station]));
+    const candidates=[];
     ids.forEach((stationId,index)=>{
-      if(!stationId||selected.has(stationId)||selected.size>=6)return;
+      if(!stationId)return;
       const latitude=finite(latitudes[index]);const longitude=finite(longitudes[index]);
       const distance=finite(distances[index])??distanceKm(target.latitude,target.longitude,latitude,longitude);
-      if(!Number.isFinite(distance)||distance>target.radiusKm)return;
-      selected.set(stationId,{
+      if(!Number.isFinite(distance))return;
+      candidates.push({
         id:`nearby-${String(stationId).toLowerCase().replace(/[^a-z0-9]+/g,'-')}`,
         name:cleanText(names[index]||stationId,80),
         municipality:cleanText(cities[index]||(target.custom?`A prop de ${target.label}`:"Entorn del Baix Montseny"),80),
@@ -667,10 +666,16 @@ async function discoverComparisonStations(env, center=null) {
         distanceKm:Number(distance.toFixed(1)),
       });
     });
-    return [...selected.values()].sort((a,b)=>(finite(a.distanceKm)??999)-(finite(b.distanceKm)??999)).slice(0,6);
+    candidates.sort((a,b)=>a.distanceKm-b.distanceKm);
+    const searchRadiusKm=target.custom?([20,50,100,200].find(radius=>candidates.some(station=>station.distanceKm<=radius))||200):20;
+    const selected=new Map(target.custom?[]:COMPARISON_STATIONS.map(station=>[station.stationId,station]));
+    candidates.forEach(station=>{
+      if(selected.size<6&&station.distanceKm<=searchRadiusKm&&!selected.has(station.stationId))selected.set(station.stationId,station);
+    });
+    return {stations:[...selected.values()].sort((a,b)=>(finite(a.distanceKm)??999)-(finite(b.distanceKm)??999)).slice(0,6),searchRadiusKm};
   } catch(error) {
     console.warn("Descobriment d’estacions properes:",error.message);
-    return center?[]:COMPARISON_STATIONS;
+    return {stations:center?[]:COMPARISON_STATIONS,searchRadiusKm:center?200:20};
   }
 }
 
@@ -740,8 +745,9 @@ async function comparisonStations(url, env) {
   const latitude=rawLatitude===null?null:finite(rawLatitude);
   const longitude=rawLongitude===null?null:finite(rawLongitude);
   const hasCustomCenter=rawLatitude!==null&&rawLongitude!==null&&Number.isFinite(latitude)&&Number.isFinite(longitude)&&latitude>=-90&&latitude<=90&&longitude>=-180&&longitude<=180;
-  const center=hasCustomCenter?{latitude,longitude,label:cleanText(url.searchParams.get("name")||"municipi seleccionat",80),radiusKm:20}:null;
-  const nearbyStations=await discoverComparisonStations(env,center);
+  const center=hasCustomCenter?{latitude,longitude,label:cleanText(url.searchParams.get("name")||"lloc seleccionat",80)}:null;
+  const discovery=await discoverComparisonStations(env,center);
+  const nearbyStations=discovery.stations;
   const results = await Promise.all(nearbyStations.map(async station => {
     try {
       const current = await comparisonCurrentStation(station, env);
@@ -757,10 +763,11 @@ async function comparisonStations(url, env) {
     period,
     generatedAt:new Date().toISOString(),
     center:center?{latitude:center.latitude,longitude:center.longitude,label:center.label}:null,
+    searchRadiusKm:discovery.searchRadiusKm,
     stations:results,
     sourcePolicy:{
       mode:"smart-fallback",
-      note:center?"Es mostren fins a sis estacions PWS situades a un màxim de 20 km del municipi seleccionat. La distància, la font i l’hora de cada lectura es mantenen visibles.":"Fontanillas es manté com a referència i el Worker descobreix automàticament fins a cinc estacions PWS properes en un radi màxim de 20 km. Totes les lectures es normalitzen amb les mateixes unitats."
+      note:center?`Es mostren fins a sis estacions PWS dins d’un radi adaptatiu de ${discovery.searchRadiusKm} km. La cerca comença a 20 km i només s’amplia en zones amb poca cobertura; la distància, la font i l’hora sempre són visibles.`:"Fontanillas es manté com a referència i el Worker descobreix automàticament fins a cinc estacions PWS properes en un radi màxim de 20 km. Totes les lectures es normalitzen amb les mateixes unitats."
     }
   }, 200, "public, max-age=120");
 }
@@ -1005,6 +1012,17 @@ function socialSlotProfile(slot='08:00'){
   if(hour>=19)return {period:'vespre',eyebrow:'Balanç del dia',greeting:'Bona nit',lead:'Tanquem el dia amb les dades reals de l’Observatori',forecastLead:'Demà'};
   if(hour>=12)return {period:'migdia',eyebrow:'Actualització del migdia',greeting:'Bon dia',lead:'Actualització de les dades reals de l’Observatori',forecastLead:'La resta del dia'};
   return {period:'mati',eyebrow:'Previsió del dia',greeting:'Bon dia',lead:'Dades reals de l’Observatori',forecastLead:'Avui'};
+}
+
+const SOCIAL_SCHEDULE_BLUEPRINT=[
+  {time:'08:00',period:'mati',label:'Bon dia i previsió',purpose:'Dades reals, previsió d’avui i avanç de demà'},
+  {time:'14:00',period:'migdia',label:'Actualització del migdia',purpose:'Evolució observada i canvis per a la resta del dia'},
+  {time:'20:30',period:'vespre',label:'Balanç del dia',purpose:'Resum del dia i previsió de l’endemà'},
+];
+
+function socialSchedulePlan(env){
+  const active=new Set(String(env.SOCIAL_AUTO_TIMES||'08:00').split(',').map(value=>value.trim()));
+  return SOCIAL_SCHEDULE_BLUEPRINT.map(item=>({...item,enabled:active.has(item.time)}));
 }
 
 function localClockParts(date = new Date()) {
@@ -1699,7 +1717,7 @@ async function adminSocialSummary(env) {
     youtube:Boolean(env.YOUTUBE_REFRESH_TOKEN && env.YOUTUBE_CLIENT_ID && env.YOUTUBE_CLIENT_SECRET),
     whatsapp:false,
   };
-  if (!(await ensureSocialDraftSchema(env))) return { enabled:false, mode, tokenConfigured, channelCredentials, pendingDrafts:0, approved:0, published:0, latestCreated:null, recent:[], preflight:null };
+  if (!(await ensureSocialDraftSchema(env))) return { enabled:false, mode, tokenConfigured, channelCredentials, schedulePlan:socialSchedulePlan(env), pendingDrafts:0, approved:0, published:0, latestCreated:null, recent:[], preflight:null };
   const [counts, recentResult, preflight] = await Promise.all([
     env.DB.prepare(`SELECT
       SUM(CASE WHEN status IN ('draft','review') THEN 1 ELSE 0 END) AS pending,
@@ -1714,6 +1732,7 @@ async function adminSocialSummary(env) {
     enabled:true,
     mode,
     schedule:String(env.SOCIAL_AUTO_TIMES || '08:00'),
+    schedulePlan:socialSchedulePlan(env),
     tokenConfigured,
     channelCredentials,
     pendingDrafts:Number(counts?.pending) || 0,
