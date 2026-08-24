@@ -21,7 +21,7 @@ const NAV_ITEMS=[
   ['inici','Inici','./?page=inici'],['meteo-ia','Meteo IA','./?page=meteo-ia'],['estacio','Estació','./?page=estacio'],
   ['prediccio','Predicció','./?page=prediccio'],['verificacio','Predicció vs realitat','./?page=verificacio'],['avisos','Avisos','./?page=avisos'],
   ['cel','Cel de dia i de nit','./?page=cel'],['radar','Radar','./?page=radar'],['webcams','Webcams','./?page=webcams'],
-  ['centre-dades','Centre de Dades','./?page=centre-dades'],['comparar','Comparar','./comparativa.html'],['municipis','Qualsevol lloc','./municipis.html'],
+  ['centre-dades','Centre de Dades','./?page=centre-dades'],['comparar','Comparar','./comparativa.html'],['municipis','El temps arreu','./municipis.html'],
   ['medi-ambient','Medi Ambient','./?page=medi-ambient'],['aprendre','Aprendre','./?page=aprendre'],['contacte','Contacte','./?page=contacte'],['metodologia','Metodologia','./metodologia.html']
 ];
 const NAV_GROUPS=[
@@ -30,7 +30,7 @@ const NAV_GROUPS=[
   ['Explora',['cel','radar','webcams']],
   ['Dades i projecte',['centre-dades','comparar','medi-ambient','aprendre','contacte','metodologia']]
 ];
-const PAGE_LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams','centre-dades':'Centre de Dades',comparar:'Comparativa',municipis:'Consulta per municipi','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',contacte:'Contacte',metodologia:'Metodologia'};
+const PAGE_LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams','centre-dades':'Centre de Dades',comparar:'Comparativa',municipis:'El temps arreu','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',contacte:'Contacte',metodologia:'Metodologia'};
 
 export function mountPortalShell(activePage){
   document.body.classList.add('has-portal-shell');
@@ -71,7 +71,7 @@ export function mountPortalShell(activePage){
 
   if(!document.getElementById('portal-mobile-nav')){
     const mobile=document.createElement('nav');mobile.className='portal-mobile-nav';mobile.id='portal-mobile-nav';mobile.setAttribute('aria-label','Navegació principal mòbil');
-    [['inici','Inici'],['estacio','Ara'],['municipis','Llocs'],['prediccio','Previsió'],['avisos','Avisos']].forEach(([id,label])=>{
+    [['inici','Inici'],['estacio','Ara'],['municipis','Arreu'],['prediccio','Previsió'],['avisos','Avisos']].forEach(([id,label])=>{
       const [, ,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=href;link.dataset.mobilePage=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span><b>${label}</b>`;mobile.append(link);
     });
     const more=document.createElement('button');more.type='button';more.id='portal-mobile-more';more.setAttribute('aria-label','Obrir totes les seccions');more.setAttribute('aria-controls','portal-sidebar');more.setAttribute('aria-expanded','false');more.innerHTML='<span aria-hidden="true">•••</span><b>Més</b>';
