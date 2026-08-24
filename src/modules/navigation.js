@@ -100,3 +100,13 @@ export function initWhenVisible(selector, callback, rootMargin='500px 0px') {
   },{rootMargin,threshold:0});
   observer.observe(target);
 }
+
+export function loadDeferredAssets(selector) {
+  const target=document.querySelector(selector);
+  if(!target)return;
+  target.querySelectorAll('iframe[data-src],img[data-src]').forEach(asset=>{
+    if(asset.getAttribute('src'))return;
+    asset.setAttribute('src',asset.dataset.src);
+    asset.removeAttribute('data-src');
+  });
+}

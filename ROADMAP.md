@@ -1,5 +1,20 @@
 # Roadmap oficial
 
+## V22.7.0 — Experiència mòbil i rendiment percebut — Preparada per revisar
+
+- [x] Substituir els principals textos d’espera de la portada per esquelets visuals accessibles.
+- [x] Retirar automàticament l’estat de càrrega quan arriba cada lectura real.
+- [x] Carregar el mapa oficial d’avisos només quan la secció és a prop de la pantalla.
+- [x] Separar visualment fenòmens i nivells dins les preferències d’avisos.
+- [x] Fer el diàleg d’avisos més compacte i accionable en pantalles petites.
+- [x] Verificar que totes les imatges HTML disposen de text alternatiu.
+
+### Validacions després d’integrar
+
+- [ ] Comprovar el diàleg d’avisos en un iPhone petit i en Android.
+- [ ] Confirmar visualment que el mapa de Meteocat apareix en arribar a Avisos.
+- [ ] Mesurar de nou la portada amb Lighthouse en producció.
+
 ## V22.6.0 — Prioritat alta: avisos, IA i verificació — Preparada per revisar
 
 - [x] Substituir la prova local d’avisos per un enviament real de OneSignal dirigit només al dispositiu que fa la prova.
