@@ -311,6 +311,14 @@ Centre de notícies meteorològiques, calendari, API pública, widgets, recursos
 - «Qualsevol lloc» passa al primer bloc del menú lateral i a la barra inferior mòbil.
 - Es deixa preparada l’estructura de 08:00, 14:00 i 20:30 per a matí, migdia i balanç del dia. Només les hores presents a `SOCIAL_AUTO_TIMES` publiquen; el valor per defecte continua sent exclusivament `08:00`.
 
+## V22.10.0 — El temps arreu i fonts independents
+
+- La consulta global adopta el nom públic «El temps arreu» i l'accés mòbil breu «Arreu».
+- Open-Meteo continua oferint la previsió principal i MET Norway / Yr s'incorpora com a segona previsió integrada per a les mateixes coordenades.
+- Meteoblue i eltiempo.es apareixen com a consultes complementàries externes, sense presentar-ne les dades com si fossin pròpies.
+- El Worker identifica correctament el projecte davant MET Norway, valida coordenades i conserva temporalment la resposta per evitar peticions innecessàries.
+- El disseny separa previsió, contrast de models i observacions reals, també en pantalla petita.
+
 ## Definició de projecte madur
 
 El projecte arribarà a 1.0 quan arquitectura, dades, comparador, medi ambient, Meteo IA, marca/PWA, SEO, compartició, xarxes i administració estiguin completats i validats.

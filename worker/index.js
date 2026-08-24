@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.9.0";
+const WORKER_VERSION = "22.10.0";
 const WORKER_BUILT = "2026-08-24";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -770,6 +770,58 @@ async function comparisonStations(url, env) {
       note:center?`Es mostren fins a sis estacions PWS dins d’un radi adaptatiu de ${discovery.searchRadiusKm} km. La cerca comença a 20 km i només s’amplia en zones amb poca cobertura; la distància, la font i l’hora sempre són visibles.`:"Fontanillas es manté com a referència i el Worker descobreix automàticament fins a cinc estacions PWS properes en un radi màxim de 20 km. Totes les lectures es normalitzen amb les mateixes unitats."
     }
   }, 200, "public, max-age=120");
+}
+
+async function metNorwayForecast(url) {
+  const rawLatitude=url.searchParams.get("lat");
+  const rawLongitude=url.searchParams.get("lon");
+  const latitude=rawLatitude===null?null:finite(rawLatitude);
+  const longitude=rawLongitude===null?null:finite(rawLongitude);
+  if(rawLatitude===null||rawLongitude===null||!Number.isFinite(latitude)||!Number.isFinite(longitude)||latitude < -90||latitude > 90||longitude < -180||longitude > 180){
+    return json({error:"Coordenades no vàlides"},400);
+  }
+  const lat=Number(latitude.toFixed(4));
+  const lon=Number(longitude.toFixed(4));
+  const requestedTimezone=String(url.searchParams.get("timezone")||"UTC").slice(0,80);
+  let timezone="UTC";
+  try{new Intl.DateTimeFormat("en-CA",{timeZone:requestedTimezone}).format(new Date());timezone=requestedTimezone;}catch{}
+  const localDate=value=>new Intl.DateTimeFormat("en-CA",{timeZone:timezone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(value));
+  const endpoint=`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
+  const response=await fetch(endpoint,{
+    headers:{Accept:"application/json","User-Agent":"MeteoFontanillas/22.10 (+https://meteo.fontanillas.cat/)"},
+    cf:{cacheEverything:true,cacheTtl:1800},
+  });
+  if(!response.ok)throw Object.assign(new Error(`MET Norway ${response.status}`),{status:502});
+  const payload=await response.json();
+  const series=Array.isArray(payload?.properties?.timeseries)?payload.properties.timeseries:[];
+  if(!series.length)throw Object.assign(new Error("MET Norway sense dades"),{status:502});
+  const optional=value=>value===null||value===undefined?null:finite(value);
+  const first=series[0];
+  const instant=first?.data?.instant?.details||{};
+  const days=new Map();
+  for(const entry of series){
+    const key=entry.time?localDate(entry.time):"";
+    if(!key)continue;
+    const details=entry?.data?.instant?.details||{};
+    const temperature=optional(details.air_temperature);
+    const oneHour=entry?.data?.next_1_hours;
+    const symbol=oneHour?.summary?.symbol_code||entry?.data?.next_6_hours?.summary?.symbol_code||"";
+    const precipitation=optional(oneHour?.details?.precipitation_amount)??0;
+    const item=days.get(key)||{date:key,max:null,min:null,precipitation:0,symbolCode:"",symbolHour:99};
+    if(Number.isFinite(temperature)){item.max=item.max===null?temperature:Math.max(item.max,temperature);item.min=item.min===null?temperature:Math.min(item.min,temperature);}
+    item.precipitation+=precipitation;
+    const hour=Number(String(entry.time||"").slice(11,13));
+    if(symbol&&Math.abs(hour-12)<item.symbolHour){item.symbolCode=symbol;item.symbolHour=Math.abs(hour-12);}
+    days.set(key,item);
+  }
+  return json({
+    ok:true,
+    source:{name:"MET Norway / Yr",provider:"Norwegian Meteorological Institute",url:"https://api.met.no/weatherapi/locationforecast/2.0/documentation"},
+    generatedAt:payload?.properties?.meta?.updated_at||new Date().toISOString(),
+    coordinates:{latitude:lat,longitude:lon,timezone},
+    current:{time:first.time,temperature:optional(instant.air_temperature),humidity:optional(instant.relative_humidity),windSpeedKmh:Number.isFinite(optional(instant.wind_speed))?optional(instant.wind_speed)*3.6:null,symbolCode:first?.data?.next_1_hours?.summary?.symbol_code||""},
+    days:[...days.values()].slice(0,7).map(({symbolHour,...day})=>({...day,precipitation:Number(day.precipitation.toFixed(1))})),
+  },200,"public, max-age=900");
 }
 
 async function currentObservation(env) {
@@ -2679,12 +2731,13 @@ export default {
       if (url.pathname === "/alerts") return alerts(env);
       if (url.pathname === "/alert-history") return alertHistory(url, env);
       if (url.pathname === "/stations") return comparisonStations(url, env);
+      if (url.pathname === "/met-forecast") return metNorwayForecast(url);
       if (url.pathname === "/forecast-verification") return forecastVerification(url, env);
       if (url.pathname === "/admin/status") return adminStatus(request, env);
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

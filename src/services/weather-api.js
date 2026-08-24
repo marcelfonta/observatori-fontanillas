@@ -174,6 +174,15 @@ export async function fetchLocalityForecast(location) {
   return {location,weather:await weatherResponse.json()};
 }
 
+export async function fetchMetNorwayForecast(location) {
+  if(!location||!Number.isFinite(Number(location.latitude))||!Number.isFinite(Number(location.longitude)))throw new Error('LOCALITY_NOT_FOUND');
+  const params=new URLSearchParams({lat:String(location.latitude),lon:String(location.longitude)});
+  if(location.timezone)params.set('timezone',String(location.timezone));
+  const response=await request(`${CONFIG.apiUrl}/met-forecast?${params}`,{headers:{Accept:'application/json'},cache:'no-store'},15000);
+  if(!response.ok)throw new Error(`MET Norway API ${response.status}`);
+  return response.json();
+}
+
 export async function fetchLocalityWeather(query) {
   const name=String(query||'').trim().slice(0,80);
   const candidates=await searchMunicipalities(name);

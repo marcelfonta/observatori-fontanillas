@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+
+const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
+const [page,feature,weather,portal,worker,style,project,serviceWorker]=await Promise.all([
+  read('municipis.html'),read('src/features/municipality-explorer.js'),read('src/services/weather-api.js'),read('src/features/portal-shell.js'),read('worker/index.js'),read('css/style.css'),read('project.json'),read('service-worker.js')
+]);
+
+assert.equal(JSON.parse(project).version,'22.10.0');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-10-0'));
+assert.ok(page.includes('El temps arreu')&&page.includes('MET Norway / Yr')&&page.includes('Meteoblue')&&page.includes('eltiempo.es'));
+assert.ok(portal.includes("['municipis','El temps arreu','./municipis.html']")&&portal.includes("['municipis','Arreu']"));
+assert.ok(feature.includes('fetchMetNorwayForecast')&&feature.includes('renderComparisons')&&feature.includes('www.meteoblue.com/en/weather/search'));
+assert.ok(weather.includes('export async function fetchMetNorwayForecast'));
+assert.ok(worker.includes('api.met.no/weatherapi/locationforecast/2.0/compact')&&worker.includes('MeteoFontanillas/22.10')&&worker.includes('requestedTimezone')&&worker.includes('url.pathname === "/met-forecast"'));
+assert.ok(style.includes('.municipality-comparisons')&&style.includes('.municipality-met-days')&&style.includes('.municipality-external-grid'));
+
+console.log('Test V22.10.0: El temps arreu i contrast transparent de fonts');
