@@ -1,5 +1,10 @@
 # Changelog
 
+## V22.16.0 — En verificació
+
+- OneSignal confirma que un missatge s’ha creat a partir del seu identificador, que és el resultat fiable de l’API; el recompte de destinataris pot arribar més tard.
+- Els avisos acceptats no es tornen a enviar per un recompte inicial de destinataris a zero.
+
 ## V22.15.0 — En verificació
 
 - El registre de notificacions delega la petició de permís a OneSignal Web SDK i espera la Subscription ID remota abans d’indicar que l’activació ha acabat.
