@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.12.0";
+const WORKER_VERSION = "22.13.0";
 const WORKER_BUILT = "2026-08-25";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -422,9 +422,15 @@ function monitorPayload(row) {
 async function adminOperationsSummary(env) {
   if (!(await ensureOperationsSchema(env))) return { enabled:false };
   const result = await env.DB.prepare(`SELECT service_key,status,last_checked_at,last_failure_at,last_success_at,detail
-    FROM monitor_state WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight')`).all();
-  const states = Object.fromEntries((result?.results || []).map(row => [row.service_key, monitorPayload(row)]));
-  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, preflight:states['social-preflight'] || null };
+    FROM monitor_state
+    WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight')
+       OR service_key LIKE 'social-preflight:%'`).all();
+  const rows = result?.results || [];
+  const states = Object.fromEntries(rows.map(row => [row.service_key, monitorPayload(row)]));
+  const preflightRow = rows
+    .filter(row => row.service_key === 'social-preflight' || String(row.service_key).startsWith('social-preflight:'))
+    .sort((a,b) => String(b.last_checked_at || '').localeCompare(String(a.last_checked_at || '')))[0];
+  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, preflight:monitorPayload(preflightRow) };
 }
 
 async function ensureForecastSchema(env) {
@@ -1149,8 +1155,14 @@ const SOCIAL_SCHEDULE_BLUEPRINT=[
   {time:'20:30',period:'vespre',label:'Balanç del dia',purpose:'Resum del dia i previsió de l’endemà'},
 ];
 
+// Horaris operatius per defecte. Es poden ajustar des de les variables del
+// Worker sense publicar una nova versió, però el portal ja queda útil sense
+// configuració addicional.
+const DEFAULT_SOCIAL_AUTO_TIMES='08:00,14:00,20:30';
+const DEFAULT_SOCIAL_PREFLIGHT_TIMES='07:45,13:45,20:15';
+
 function socialSchedulePlan(env){
-  const active=new Set(String(env.SOCIAL_AUTO_TIMES||'08:00').split(',').map(value=>value.trim()));
+  const active=new Set(String(env.SOCIAL_AUTO_TIMES||DEFAULT_SOCIAL_AUTO_TIMES).split(',').map(value=>value.trim()));
   return SOCIAL_SCHEDULE_BLUEPRINT.map(item=>({...item,enabled:active.has(item.time)}));
 }
 
@@ -1171,7 +1183,7 @@ function activeTimeSlot(schedule, date = new Date()) {
 }
 
 function activeSocialSlot(env, date = new Date()) {
-  return activeTimeSlot(env.SOCIAL_AUTO_TIMES || '08:00', date);
+  return activeTimeSlot(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES, date);
 }
 
 function localIsoDate(date = new Date()) {
@@ -1854,12 +1866,12 @@ async function adminSocialSummary(env) {
       MAX(created_at) AS latest FROM social_drafts`).first(),
     env.DB.prepare(`SELECT id,kind,status,channels,title,created_at,scheduled_for
       FROM social_drafts ORDER BY created_at DESC LIMIT 5`).all(),
-    ensureOperationsSchema(env).then(ready=>ready?env.DB.prepare("SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = 'social-preflight'").first():null),
+    ensureOperationsSchema(env).then(ready=>ready?env.DB.prepare("SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = 'social-preflight' OR service_key LIKE 'social-preflight:%' ORDER BY last_checked_at DESC LIMIT 1").first():null),
   ]);
   return {
     enabled:true,
     mode,
-    schedule:String(env.SOCIAL_AUTO_TIMES || '08:00'),
+    schedule:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES),
     schedulePlan:socialSchedulePlan(env),
     tokenConfigured,
     channelCredentials,
@@ -1931,7 +1943,7 @@ async function adminSocialDrafts(request, env, url) {
     : env.DB.prepare(`SELECT id,dedupe_key,kind,status,channels,title,body,source_url,payload,scheduled_for,created_at FROM social_drafts ORDER BY created_at DESC LIMIT ? OFFSET ?`).bind(limit, offset);
   const result = await statement.all();
   const drafts = await Promise.all((result?.results || []).map(async row => socialDraftPayload(row, await socialPublicationsForDraft(env, row.id))));
-  return json({ ok:true, drafts, limit, offset, publicationMode:socialAutomationEnabled(env)?'automatic':'manual-confirmation', schedule:String(env.SOCIAL_AUTO_TIMES || '08:00') }, 200, 'no-store, private', auth.origin);
+  return json({ ok:true, drafts, limit, offset, publicationMode:socialAutomationEnabled(env)?'automatic':'manual-confirmation', schedule:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES) }, 200, 'no-store, private', auth.origin);
 }
 
 async function findSocialDraft(env, draftId) {
@@ -2320,21 +2332,22 @@ async function adminSocialDiagnostics(request, env) {
 }
 
 async function runDailyIntegrationPreflight(env, date = new Date()) {
-  const slot=activeTimeSlot(env.SOCIAL_PREFLIGHT_TIME || '07:45',date);
+  const slot=activeTimeSlot(env.SOCIAL_PREFLIGHT_TIME || DEFAULT_SOCIAL_PREFLIGHT_TIMES,date);
   if(!slot || !(await ensureOperationsSchema(env)))return {checked:false,reason:slot?'storage_disabled':'outside_schedule'};
   const localDate=localIsoDate(date);
-  const previous=await env.DB.prepare("SELECT last_checked_at FROM monitor_state WHERE service_key = 'social-preflight'").first();
+  const serviceKey=`social-preflight:${localDate}:${slot}`;
+  const previous=await env.DB.prepare('SELECT last_checked_at FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
   if(previous?.last_checked_at && localIsoDate(new Date(previous.last_checked_at))===localDate)return {checked:false,reason:'already_checked'};
   const results=await Promise.all([...SOCIAL_DIAGNOSTIC_CHANNELS].map(channel=>diagnoseSocialChannel(channel,env)));
   const failed=results.filter(item=>!item.ok);
   const now=new Date().toISOString();
   const detail=JSON.stringify(results.map(item=>({channel:item.channel,ok:item.ok,detail:cleanText(item.detail,240)})));
   await env.DB.prepare(`INSERT INTO monitor_state (service_key,status,consecutive_failures,last_checked_at,last_failure_at,last_success_at,last_notified_at,detail)
-    VALUES ('social-preflight',?,?,?,?,?,?,?)
+    VALUES (?,?,?,?,?,?,?,?)
     ON CONFLICT(service_key) DO UPDATE SET status=excluded.status,consecutive_failures=excluded.consecutive_failures,
       last_checked_at=excluded.last_checked_at,last_failure_at=excluded.last_failure_at,last_success_at=excluded.last_success_at,
       last_notified_at=excluded.last_notified_at,detail=excluded.detail`)
-    .bind(failed.length?'down':'healthy',failed.length?1:0,now,failed.length?now:null,failed.length?null:now,failed.length?now:null,detail).run();
+    .bind(serviceKey,failed.length?'down':'healthy',failed.length?1:0,now,failed.length?now:null,failed.length?null:now,failed.length?now:null,detail).run();
   if(failed.length)await sendOperationalEmail(env,'[Observatori] Connexió social no preparada',`La comprovació preventiva de les ${slot} ha detectat ${failed.length} canal(s) amb incidències abans de la publicació automàtica.\n\n${failed.map(item=>`${item.channel}: ${item.detail}`).join('\n')}\n\nLa resta de canals podran continuar publicant de manera independent.`,'social_preflight_failed');
   return {checked:true,ok:failed.length===0,results};
 }
@@ -2534,7 +2547,7 @@ async function adminStatus(request, env) {
       threads:Boolean(env.THREADS_ACCESS_TOKEN),
       advancedAI:Boolean(env.AI),
     },
-    schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"cada 5 minuts", social:String(env.SOCIAL_AUTO_TIMES || '08:00'), preflight:String(env.SOCIAL_PREFLIGHT_TIME || '07:45'), timeZone:TIME_ZONE },
+    schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"cada 5 minuts", social:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES), preflight:String(env.SOCIAL_PREFLIGHT_TIME || DEFAULT_SOCIAL_PREFLIGHT_TIMES), timeZone:TIME_ZONE },
   }, 200, "no-store, private", origin);
 }
 

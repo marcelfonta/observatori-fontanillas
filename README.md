@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V22.0.0
+# Observatori Meteorològic Fontanillas — V22.13.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V22.0.0 incorpora una verificació transparent de predicció contra observacions reals i publicacions socials automàtiques amb targetes generades a partir de dades actuals.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V22.13.0 incorpora verificació transparent de predicció, avisos, PWA, consultes globals i publicacions socials automàtiques amb targetes generades a partir de dades actuals.
 
 ### Predicció vs realitat
 
@@ -57,7 +57,7 @@ Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas 
 
 El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V21.2.0 també s’ha de desplegar aquest Worker i aplicar `worker/schema.sql`, que manté `social_drafts` i afegeix el registre `social_publications`. Les credencials `META_SYSTEM_USER_TOKEN`, `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`, `TELEGRAM_BOT_TOKEN` i `TELEGRAM_CHANNEL_ID` es mantenen només a Cloudflare; el Worker no en retorna mai els valors.
 
-La V22 publica automàticament, per defecte a les 08:00, a Facebook, Instagram, Bluesky, Telegram i Threads quan les credencials corresponents són presents. Cada intent queda registrat i els errors generen un correu operatiu. La V22.2 comprova aquestes connexions i TikTok a les 07:45 sense publicar res. TikTok queda pendent de l’aprovació de publicació de la plataforma; YouTube funciona amb el seu flux separat de Shorts i X està descartat.
+La V22.13 publica automàticament, per defecte a les 08:00, 14:00 i 20:30, a Facebook, Instagram, Bluesky, Telegram i Threads quan les credencials corresponents són presents. Cada intent queda registrat i els errors generen un correu operatiu. Les comprovacions preventives s’executen a les 07:45, 13:45 i 20:15 sense publicar res. TikTok queda pendent de l’aprovació de publicació de la plataforma; YouTube funciona amb el seu flux separat de Shorts i X està descartat.
 
 Per a Meta es poden definir opcionalment `META_FACEBOOK_PAGE_ID`, `META_FACEBOOK_PAGE_NAME`, `META_INSTAGRAM_ACCOUNT_ID`, `META_GRAPH_VERSION` i `META_INSTAGRAM_IMAGE_URL`. Si no s’indiquen els identificadors, el Worker intenta resoldre la pàgina i el compte professional a partir del token del sistema. La imatge predeterminada d’Instagram és `assets/images/observatori-fontanillas-social.jpg`.
 

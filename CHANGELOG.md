@@ -1,7 +1,11 @@
 # Changelog
 
-## V22.12.0 — 2026-08-25
+## V22.13.0 — 2026-08-25
 
+- Les publicacions automàtiques queden preparades per a tres franges diàries: 08:00, 14:00 i 20:30, amb comprovació preventiva independent abans de cadascuna.
+- El panell conserva i mostra l’última comprovació preventiva encara que provingui d’una franja nova.
+- Google rep metadades de rastreig completes i dades estructurades més riques de l’Organització i el conjunt d’observacions.
+- S’actualitzen recursos de web i PWA perquè els navegadors no reutilitzin fitxers antics després del desplegament.
 - La publicació social comprova que el Worker públic tingui la mateixa versió abans de preparar targetes, evitant errors 404 opacs quan producció va per darrere.
 - OneSignal usa `ONESIGNAL_API_KEY` com a secret preferit i conserva `ONESIGNAL_REST_API_KEY` com a alias temporal; els errors 401/403 expliquen que cal revisar la clau server-side.
 - Les neteges de rate limit passen a manteniment programat i s’afegeixen índexs compostos a D1 per reduir lectures innecessàries.

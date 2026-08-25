@@ -1,6 +1,6 @@
 # Roadmap oficial
 
-## V22.12.0 — Fiabilitat operativa i auditoria — Preparada per revisar
+## V22.13.0 — Fiabilitat operativa i auditoria — Preparada per revisar
 
 - [x] Detectar explícitament el desalineament entre Worker públic i codi abans de publicar targetes socials.
 - [x] Fer més clar l’error de OneSignal i prioritzar `ONESIGNAL_API_KEY`.
@@ -9,7 +9,7 @@
 
 ### Validacions externes abans de tancar
 
-- [ ] Integrar la PR i desplegar el Worker V22.12.
+- [ ] Integrar la PR i desplegar el Worker V22.13.
 - [ ] Configurar o verificar `ONESIGNAL_API_KEY` real a Cloudflare.
 - [ ] Enviar una prova push real des de mòbil i portàtil.
 - [ ] Confirmar una publicació automàtica de les 08:00 amb Facebook, Instagram i Threads després del desplegament.
@@ -108,11 +108,13 @@
 - Hashtags locals ampliats de manera moderada per millorar descoberta sense semblar contingut brossa.
 - YouTube Shorts queda visible al panell com a flux separat de GitHub Actions.
 
-### Abans d’activar nous horaris
+### Activació de les tres franges diàries
 
-- Validar una targeta real en vista prèvia i una prova per cada canal.
-- Decidir els horaris definitius i configurar `SOCIAL_AUTO_TIMES` només després de l’aprovació. Proposta preparada: `08:00,14:00,21:30`.
-- Confirmar recepció d’un avís real de prova en Android/iPhone i escriptori.
+- [x] Codi preparat per a les franges `08:00`, `14:00` i `20:30`, amb textos diferents de matí, migdia i vespre.
+- [x] Comprovació preventiva abans de cada franja: `07:45`, `13:45` i `20:15`.
+- [ ] Aplicar a producció `SOCIAL_AUTO_TIMES=08:00,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=07:45,13:45,20:15` en desplegar el Worker V22.13.
+- [ ] Confirmar una execució automàtica real de cada franja als cinc canals actius.
+- [ ] Confirmar recepció d’un avís real de prova en Android/iPhone i escriptori.
 
 ## V22.2.0 — Publicacions preparades i avisos menys intrusius — Verificada
 
@@ -324,7 +326,7 @@ Centre de notícies meteorològiques, calendari, API pública, widgets, recursos
 - Les estacions reals es busquen primer a 20 km i, si la cobertura és escassa, el radi s’amplia progressivament a 50, 100 o 200 km.
 - La interfície mostra sempre el radi i la distància; una estació llunyana mai es presenta com si fos local.
 - «Qualsevol lloc» passa al primer bloc del menú lateral i a la barra inferior mòbil.
-- Es deixa preparada l’estructura de 08:00, 14:00 i 20:30 per a matí, migdia i balanç del dia. Només les hores presents a `SOCIAL_AUTO_TIMES` publiquen; el valor per defecte continua sent exclusivament `08:00`.
+- Es deixa preparada l’estructura de 08:00, 14:00 i 20:30 per a matí, migdia i balanç del dia. Només les hores presents a `SOCIAL_AUTO_TIMES` publiquen; el valor recomanat i predeterminat és `08:00,14:00,20:30`.
 
 ## V22.10.0 — El temps arreu i fonts independents
 
