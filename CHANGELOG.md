@@ -1,5 +1,10 @@
 # Changelog
 
+## V22.15.0 — En verificació
+
+- El registre de notificacions delega la petició de permís a OneSignal Web SDK i espera la Subscription ID remota abans d’indicar que l’activació ha acabat.
+- Quan no es crea la subscripció remota, el diàleg diferencia aquest cas dels permisos bloquejats i evita un èxit local enganyós.
+
 ## Documentació i manteniment obert
 
 - Afegides guies d'arquitectura, desplegament, API, fonts de dades, desenvolupament i Meteo IA.

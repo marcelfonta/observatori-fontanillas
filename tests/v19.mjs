@@ -28,7 +28,7 @@ assert.match(push,/Esperant el permís del navegador/);
 assert.match(push,/waitUntil/);
 assert.match(push,/permission-not-granted/);
 assert.match(push,/setPushActionState/);
-assert.match(push,/Notification\.requestPermission/);
+assert.match(push,/notifications\.requestPermission\(\)/);
 assert.match(push,/Notification\.permission/);
 assert.match(push,/permission-denied/);
 assert.match(push,/serviceWorkerPath:'\/OneSignalSDKWorker\.js'/);

@@ -6,6 +6,12 @@
 - [x] Afegir llicència MIT i plantilles per informar d'incidències o correccions de dades.
 - [ ] Crear un entorn de prova separat amb Worker i D1 propis abans de canvis que escriguin dades reals.
 
+## V22.15.0 — Registre remot OneSignal — En verificació
+
+- [x] Fer que el permís es demani des de l’SDK de OneSignal, evitant una sincronització separada entre el navegador i el servei.
+- [x] Exigir una Subscription ID remota abans de considerar activat el dispositiu i mostrar un diagnòstic específic si no s’arriba a crear.
+- [ ] Integrar, desplegar a previsualització i enviar una prova real a un dispositiu subscrit abans de tancar la versió.
+
 ## V22.14.0 — Protecció de D1 i diagnòstic operatiu — Preparada per revisar
 
 - [x] Evitar escriptures a D1 en cada visita pública; les captures programades de cinc minuts mantenen l’historial.
