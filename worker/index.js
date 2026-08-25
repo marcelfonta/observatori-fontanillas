@@ -2169,13 +2169,9 @@ async function socialCard(request, env, draftId, url, format = 'png') {
 }
 
 async function ensureSocialCardUrl(draft,env,format='png'){
-  const versionResponse = await fetch(`${publicWorkerBaseUrl(env)}/version?social=${Date.now()}`, {
-    headers:{ 'Cache-Control':'no-cache' }, cf:{ cacheEverything:false },
-  }).catch(() => null);
-  const deployed = await versionResponse?.json().catch(() => null);
-  if (!versionResponse?.ok || deployed?.version !== WORKER_VERSION) {
-    throw Object.assign(new Error(`El Worker públic no coincideix amb el codi actiu (públic: ${deployed?.version || 'desconegut'}; requerit: ${WORKER_VERSION}). Cal desplegar el Worker abans de publicar.`),{status:503});
-  }
+  // This runs inside the active Worker, so its code is already the deployed
+  // version. Fetching /version through workers.dev from the same Worker can
+  // be rejected as a loop even though the public endpoint is healthy.
   const imageUrl=await socialCardUrl(draft,env,format);
   let lastError='resposta buida';
   for(let attempt=0;attempt<6;attempt+=1){
