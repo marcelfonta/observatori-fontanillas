@@ -1,5 +1,10 @@
 # Changelog
 
+## Entorn de staging — 2026-08-25
+
+- Worker `fonta-meteo-staging` actualitzat amb D1 pròpia, IA i Browser Rendering; les xarxes socials estan desactivades i no hi ha cap programador actiu.
+- La D1 de staging conserva l’esquema del projecte i no conté ni secrets ni dades de producció.
+
 ## V22.16.0 — En verificació
 
 - OneSignal confirma que un missatge s’ha creat a partir del seu identificador, que és el resultat fiable de l’API; el recompte de destinataris pot arribar més tard.
