@@ -1,0 +1,32 @@
+name: Validació de l'entorn de proves
+
+on:
+  workflow_dispatch:
+    inputs:
+      staging_url:
+        description: URL de l'entorn de proves
+        required: false
+        default: https://fonta-meteo-staging.marcelfonta.workers.dev
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Rutes públiques de staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Descarrega el repositori
+        uses: actions/checkout@v4
+
+      - name: Configura Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Valida l'entorn de proves
+        env:
+          STAGING_URL: ${{ inputs.staging_url }}
+        run: node scripts/staging-smoke.mjs

@@ -1,5 +1,10 @@
 # Changelog
 
+## V22.19.0 — Validació de staging — En verificació
+
+- Nova comprovació pública i sense secrets per validar la versió, la salut, l’historial i els avisos de l’entorn de proves.
+- Disponible amb `npm run test:staging` i manualment des de GitHub Actions abans de valorar un desplegament a producció.
+
 ## V22.18.0 — Salut de staging — En verificació
 
 - La ruta `/health` de staging respon com a degradada, sense error intern, quan no es configura cap font d’observacions independent.
