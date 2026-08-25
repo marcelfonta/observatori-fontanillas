@@ -1,6 +1,6 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.11.0";
-const WORKER_BUILT = "2026-08-24";
+const WORKER_VERSION = "22.12.0";
+const WORKER_BUILT = "2026-08-25";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const STATION_LATITUDE = 41.6906;
@@ -66,6 +66,10 @@ const CREATE_CONTACT_RATE_LIMIT = `CREATE TABLE IF NOT EXISTS contact_rate_limit
 )`;
 const CREATE_CONTACT_RATE_LIMIT_INDEX = `CREATE INDEX IF NOT EXISTS idx_contact_rate_limit_sent_at
 ON contact_rate_limit(sent_at)`;
+const CREATE_CONTACT_RATE_LIMIT_IP_INDEX = `CREATE INDEX IF NOT EXISTS idx_contact_rate_limit_ip_time
+ON contact_rate_limit(ip, sent_at DESC)`;
+const CREATE_CONTACT_RATE_LIMIT_EMAIL_INDEX = `CREATE INDEX IF NOT EXISTS idx_contact_rate_limit_email_time
+ON contact_rate_limit(email, sent_at DESC)`;
 const CREATE_ALERT_EVENTS = `CREATE TABLE IF NOT EXISTS alert_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   fingerprint TEXT NOT NULL UNIQUE,
@@ -142,6 +146,8 @@ const CREATE_AI_RATE_LIMIT = `CREATE TABLE IF NOT EXISTS ai_rate_limit (
 )`;
 const CREATE_AI_RATE_LIMIT_INDEX = `CREATE INDEX IF NOT EXISTS idx_ai_rate_limit_time
 ON ai_rate_limit(asked_at)`;
+const CREATE_AI_RATE_LIMIT_IP_INDEX = `CREATE INDEX IF NOT EXISTS idx_ai_rate_limit_ip_time
+ON ai_rate_limit(ip_hash, asked_at DESC)`;
 const CREATE_FORECAST_SNAPSHOTS = `CREATE TABLE IF NOT EXISTS forecast_snapshots (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   snapshot_key TEXT NOT NULL UNIQUE,
@@ -274,6 +280,8 @@ async function ensureContactSchema(env) {
   await env.DB.batch([
     env.DB.prepare(CREATE_CONTACT_RATE_LIMIT),
     env.DB.prepare(CREATE_CONTACT_RATE_LIMIT_INDEX),
+    env.DB.prepare(CREATE_CONTACT_RATE_LIMIT_IP_INDEX),
+    env.DB.prepare(CREATE_CONTACT_RATE_LIMIT_EMAIL_INDEX),
   ]);
   contactSchemaReady = true;
   return true;
@@ -286,8 +294,6 @@ async function checkContactRateLimit(env, ip, email) {
   const now = Math.floor(Date.now() / 1000);
   const ipKey = ip ? await sha256Text(`contact-ip:${ip}`) : '';
   const emailKey = email ? await sha256Text(`contact-email:${String(email).trim().toLowerCase()}`) : '';
-  // Neteja de registres antics (> 24 h).
-  await env.DB.prepare("DELETE FROM contact_rate_limit WHERE sent_at < ?").bind(now - 86400).run();
   // Màxim 3 enviaments per IP a la darrera hora.
   if (ipKey) {
     const perIp = await env.DB.prepare(
@@ -365,6 +371,7 @@ async function ensureOperationsSchema(env) {
     env.DB.prepare(CREATE_MONITOR_STATE),
     env.DB.prepare(CREATE_AI_RATE_LIMIT),
     env.DB.prepare(CREATE_AI_RATE_LIMIT_INDEX),
+    env.DB.prepare(CREATE_AI_RATE_LIMIT_IP_INDEX),
   ]);
   operationsSchemaReady = true;
   return true;
@@ -386,6 +393,23 @@ async function recordOperationalState(env, serviceKey, status, detail = null) {
     .bind(serviceKey, status, status === 'healthy' ? 0 : 1, now, status === 'healthy' ? null : now, status === 'healthy' ? now : null, safeDetail).run();
   console.log(JSON.stringify({ event:'operational_state', service:serviceKey, status, at:now }));
   return true;
+}
+
+async function runDatabaseMaintenance(env) {
+  if (!(await ensureOperationsSchema(env))) return { skipped:'no_database' };
+  const previous = await env.DB.prepare("SELECT last_success_at FROM monitor_state WHERE service_key = 'database-maintenance'").first();
+  const lastSuccess = previous?.last_success_at ? new Date(previous.last_success_at).getTime() : 0;
+  if (lastSuccess && Date.now() - lastSuccess < 23 * 60 * 60 * 1000) return { skipped:'recent' };
+  await Promise.all([ensureContactSchema(env), ensureAdminAuthSchema(env)]);
+  const now = Math.floor(Date.now() / 1000);
+  const results = await env.DB.batch([
+    env.DB.prepare('DELETE FROM contact_rate_limit WHERE sent_at < ?').bind(now - 2 * 86400),
+    env.DB.prepare('DELETE FROM ai_rate_limit WHERE asked_at < ?').bind(now - 2 * 3600),
+    env.DB.prepare('DELETE FROM admin_auth_attempts WHERE attempted_at < ?').bind(now - 86400),
+  ]);
+  const deleted = results.reduce((total, result) => total + (Number(result?.meta?.changes) || 0), 0);
+  await recordOperationalState(env, 'database-maintenance', 'healthy', { deleted });
+  return { deleted };
 }
 
 function monitorPayload(row) {
@@ -518,6 +542,17 @@ function notificationCategory(entry){
 
 function alertPushStateKey(fingerprint){return `push-alert:${fingerprint}`;}
 
+function oneSignalApiKey(env){
+  return String(env.ONESIGNAL_API_KEY || env.ONESIGNAL_REST_API_KEY || '').trim();
+}
+
+function oneSignalFailureMessage(response, payload){
+  if([401,403].includes(Number(response?.status))){
+    return 'La clau API de OneSignal no és vàlida per a aquesta aplicació. Configura ONESIGNAL_API_KEY amb l’App API key de la mateixa app que ONESIGNAL_APP_ID.';
+  }
+  return cleanText(payload?.errors?.join?.(' · ') || payload?.error || 'OneSignal no ha acceptat la petició.',500);
+}
+
 async function readAlertPushState(env,fingerprint){
   if(!env.DB||!fingerprint)return null;
   const row=await env.DB.prepare('SELECT state_value FROM alert_state WHERE state_key = ?').bind(alertPushStateKey(fingerprint)).first();
@@ -538,7 +573,8 @@ function canRetryAlertPush(state){
 }
 
 async function sendOneSignalAlert(entry, env){
-  if(!env.ONESIGNAL_APP_ID || !env.ONESIGNAL_REST_API_KEY){
+  const apiKey=oneSignalApiKey(env);
+  if(!env.ONESIGNAL_APP_ID || !apiKey){
     const result={sent:false,reason:'not_configured'};
     await recordOperationalState(env,'push-alert','down',result).catch(()=>{});
     return result;
@@ -555,12 +591,12 @@ async function sendOneSignalAlert(entry, env){
   filters.push({field:'tag',key:`alert_level_${normalizedLevel}`,relation:'=',value:'1'});
   const response=await fetch('https://api.onesignal.com/notifications',{
     method:'POST',
-    headers:{'Authorization':`Key ${env.ONESIGNAL_REST_API_KEY}`,'Content-Type':'application/json'},
+    headers:{'Authorization':`Key ${apiKey}`,'Content-Type':'application/json'},
     body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',filters,headings:{ca:heading,en:heading},contents:{ca:body,en:body},url:'https://meteo.fontanillas.cat/?page=avisos'})
   });
   const payload=await response.json().catch(()=>({}));
   if(!response.ok){
-    const result={sent:false,status:response.status,error:cleanText(payload.errors?.join?.(' · ')||payload.error||'Error de OneSignal',500)};
+    const result={sent:false,status:response.status,error:oneSignalFailureMessage(response,payload)};
     console.error(JSON.stringify({event:'push_alert',status:'failed',responseCode:response.status,error:result.error}));
     await recordOperationalState(env,'push-alert','down',result).catch(()=>{});
     return result;
@@ -579,15 +615,16 @@ async function sendOneSignalAlert(entry, env){
 async function pushTest(request,env){
   const origin=request.headers.get('Origin')||'';
   if(!ALLOWED_CONTACT_ORIGINS.has(origin))return json({ok:false,error:'Origen no autoritzat'},403,'no-store',origin||'*');
-  if(!env.ONESIGNAL_APP_ID||!env.ONESIGNAL_REST_API_KEY)return json({ok:false,error:'Servei push no configurat'},503,'no-store',origin);
+  const apiKey=oneSignalApiKey(env);
+  if(!env.ONESIGNAL_APP_ID||!apiKey)return json({ok:false,error:'Servei push no configurat'},503,'no-store',origin);
   const length=Number(request.headers.get('Content-Length')||0);
   if(length>2048)return json({ok:false,error:'Petició massa gran'},413,'no-store',origin);
   const body=await request.json().catch(()=>({}));
   const subscriptionId=cleanText(body.subscriptionId,128);
   if(!/^[A-Za-z0-9_-]{8,128}$/.test(subscriptionId))return json({ok:false,error:'Subscripció no vàlida'},400,'no-store',origin);
-  const response=await fetch('https://api.onesignal.com/notifications',{method:'POST',headers:{Authorization:`Key ${env.ONESIGNAL_REST_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',include_subscription_ids:[subscriptionId],headings:{ca:'Prova d’avisos Meteo Fontanillas',en:'Meteo Fontanillas alert test'},contents:{ca:'Connexió correcta: aquest dispositiu pot rebre avisos meteorològics.',en:'Connection successful: this device can receive weather alerts.'},url:'https://meteo.fontanillas.cat/?page=avisos'})});
+  const response=await fetch('https://api.onesignal.com/notifications',{method:'POST',headers:{Authorization:`Key ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',include_subscription_ids:[subscriptionId],headings:{ca:'Prova d’avisos Meteo Fontanillas',en:'Meteo Fontanillas alert test'},contents:{ca:'Connexió correcta: aquest dispositiu pot rebre avisos meteorològics.',en:'Connection successful: this device can receive weather alerts.'},url:'https://meteo.fontanillas.cat/?page=avisos'})});
   const payload=await response.json().catch(()=>({}));
-  if(!response.ok)return json({ok:false,error:cleanText(payload.errors?.join?.(' · ')||'OneSignal no ha acceptat la prova',300)},502,'no-store',origin);
+  if(!response.ok)return json({ok:false,error:oneSignalFailureMessage(response,payload)},502,'no-store',origin);
   const recipients=Number(payload.recipients)||0;
   if(!recipients)return json({ok:false,accepted:true,id:payload.id||null,recipients:0,error:'OneSignal ha acceptat la petició però no ha trobat aquest dispositiu com a destinatari.'},502,'no-store',origin);
   return json({ok:true,accepted:true,id:payload.id||null,recipients},200,'no-store',origin);
@@ -1757,7 +1794,6 @@ async function adminAuthLimited(request, env) {
   const ip = cleanText(request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For"), 80);
   if (!ip) return false;
   const now = Math.floor(Date.now() / 1000);
-  await env.DB.prepare("DELETE FROM admin_auth_attempts WHERE attempted_at < ?").bind(now - 3600).run();
   const row = await env.DB.prepare("SELECT COUNT(*) AS total FROM admin_auth_attempts WHERE ip = ? AND attempted_at > ?").bind(ip, now - 900).first();
   return (Number(row?.total) || 0) >= 10;
 }
@@ -1956,7 +1992,18 @@ async function socialCardSignature(draftId, env) {
 async function socialCardUrl(draft, env, format = 'png') {
   const signature = await socialCardSignature(draft.id, env);
   const extension = format === 'jpeg' ? 'jpg' : 'png';
-  return `https://fonta-meteo.marcelfonta.workers.dev/social-card/${draft.id}.${extension}?sig=${signature}&v=${WORKER_VERSION}`;
+  return `${publicWorkerBaseUrl(env)}/social-card/${draft.id}.${extension}?sig=${signature}&v=${WORKER_VERSION}`;
+}
+
+function publicWorkerBaseUrl(env) {
+  const configured = String(env.PUBLIC_WORKER_URL || 'https://fonta-meteo.marcelfonta.workers.dev').trim();
+  try {
+    const url = new URL(configured);
+    if (url.protocol !== 'https:') throw new Error();
+    return url.origin;
+  } catch {
+    throw new Error('PUBLIC_WORKER_URL no és una URL HTTPS vàlida.');
+  }
 }
 
 function socialCardHtml(draft) {
@@ -2048,6 +2095,13 @@ async function socialCard(request, env, draftId, url, format = 'png') {
 }
 
 async function ensureSocialCardUrl(draft,env,format='png'){
+  const versionResponse = await fetch(`${publicWorkerBaseUrl(env)}/version?social=${Date.now()}`, {
+    headers:{ 'Cache-Control':'no-cache' }, cf:{ cacheEverything:false },
+  }).catch(() => null);
+  const deployed = await versionResponse?.json().catch(() => null);
+  if (!versionResponse?.ok || deployed?.version !== WORKER_VERSION) {
+    throw Object.assign(new Error(`El Worker públic no coincideix amb el codi actiu (públic: ${deployed?.version || 'desconegut'}; requerit: ${WORKER_VERSION}). Cal desplegar el Worker abans de publicar.`),{status:503});
+  }
   const imageUrl=await socialCardUrl(draft,env,format);
   let lastError='resposta buida';
   for(let attempt=0;attempt<6;attempt+=1){
@@ -2470,7 +2524,7 @@ async function adminStatus(request, env) {
       weatherUnderground:Boolean(env.WU_API_KEY),
       database:Boolean(env.DB),
       contact:Boolean(env.RESEND_API_KEY && env.CONTACT_TO),
-      push:Boolean(env.ONESIGNAL_APP_ID && env.ONESIGNAL_REST_API_KEY),
+      push:Boolean(env.ONESIGNAL_APP_ID && oneSignalApiKey(env)),
       admin:true,
       socialToken:Boolean(env.META_SYSTEM_USER_TOKEN),
       facebook:Boolean(env.META_SYSTEM_USER_TOKEN),
@@ -2672,7 +2726,6 @@ async function meteoAI(request, env) {
     const ip = cleanText(request.headers.get("CF-Connecting-IP") || "anonymous", 100);
     const ipHash = await sha256Text(`meteo-ai:${ip}`);
     const now = Math.floor(Date.now() / 1000);
-    await env.DB.prepare("DELETE FROM ai_rate_limit WHERE asked_at < ?").bind(now - 3600).run();
     const row = await env.DB.prepare("SELECT COUNT(*) AS total FROM ai_rate_limit WHERE ip_hash = ? AND asked_at > ?").bind(ipHash, now - 3600).first();
     if ((Number(row?.total) || 0) >= 30) return json({ error:"Massa consultes. Torna-ho a provar més tard." }, 429, "no-store", origin);
     await env.DB.prepare("INSERT INTO ai_rate_limit (ip_hash,asked_at) VALUES (?,?)").bind(ipHash, now).run();
@@ -2799,6 +2852,7 @@ export default {
       observedJob('social',social),
       observedJob('alerts',checkAlertsAndNotify(env)),
       observedJob('preflight',runDailyIntegrationPreflight(env)),
+      observedJob('database-maintenance',runDatabaseMaintenance(env)),
     ];
     ctx.waitUntil(Promise.allSettled(jobs).then(async results => {
       const rejected=results.filter(item=>item.status==='rejected');

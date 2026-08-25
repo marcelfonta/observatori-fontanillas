@@ -15,7 +15,9 @@ oneSignalAppId: '108a857e-d115-4fc9-85b4-0a84fb0936f4'
 Actualitza el Worker amb `worker/index.js`. Mantén les variables i bindings actuals (`DB`, `WU_API_KEY`, etc.) i afegeix:
 
 - Variable `ONESIGNAL_APP_ID`: el mateix App ID.
-- Secret `ONESIGNAL_REST_API_KEY`: REST API Key de l’app OneSignal.
+- Secret `ONESIGNAL_API_KEY`: API Key server-side de l’app OneSignal.
+
+`ONESIGNAL_REST_API_KEY` continua acceptat com a alias temporal, però no és el nom recomanat per a configuracions noves.
 
 ## 3. D1
 En una instal·lació nova, executa les sentències de `worker/schema.sql`. S’afegeixen les taules `alert_events` i `alert_state`; no s’esborra cap dada meteorològica existent. A Fontanillas aquesta migració ja està aplicada.

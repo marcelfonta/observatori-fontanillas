@@ -54,6 +54,41 @@ CREATE TABLE IF NOT EXISTS admin_auth_attempts (
 CREATE INDEX IF NOT EXISTS idx_admin_auth_attempts_ip_time
 ON admin_auth_attempts(ip, attempted_at DESC);
 
+CREATE TABLE IF NOT EXISTS contact_rate_limit (
+  ip TEXT,
+  email TEXT,
+  sent_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_contact_rate_limit_sent_at ON contact_rate_limit(sent_at);
+CREATE INDEX IF NOT EXISTS idx_contact_rate_limit_ip_time ON contact_rate_limit(ip, sent_at DESC);
+CREATE INDEX IF NOT EXISTS idx_contact_rate_limit_email_time ON contact_rate_limit(email, sent_at DESC);
+
+CREATE TABLE IF NOT EXISTS ai_rate_limit (
+  ip_hash TEXT NOT NULL,
+  asked_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ai_rate_limit_time ON ai_rate_limit(asked_at);
+CREATE INDEX IF NOT EXISTS idx_ai_rate_limit_ip_time ON ai_rate_limit(ip_hash, asked_at DESC);
+
+CREATE TABLE IF NOT EXISTS monitor_state (
+  service_key TEXT PRIMARY KEY,
+  status TEXT NOT NULL DEFAULT 'unknown',
+  consecutive_failures INTEGER NOT NULL DEFAULT 0,
+  last_checked_at TEXT,
+  last_failure_at TEXT,
+  last_success_at TEXT,
+  last_notified_at TEXT,
+  detail TEXT
+);
+
+CREATE TABLE IF NOT EXISTS oauth_tokens (
+  provider TEXT PRIMARY KEY,
+  ciphertext TEXT NOT NULL,
+  iv TEXT NOT NULL,
+  expires_at INTEGER,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS social_drafts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   dedupe_key TEXT NOT NULL UNIQUE,

@@ -7,10 +7,12 @@ La selecció per fenomen i nivell mínim està activa. OneSignal està configura
 1. Crear una aplicació Web Push a OneSignal per al domini `https://meteo.fontanillas.cat`.
 2. Configurar el lloc exacte `https://meteo.fontanillas.cat` i el Worker compartit a `/OneSignalSDKWorker.js`, amb scope `/`.
 3. Copiar l’App ID públic a `oneSignalAppId` dins de `src/core/config.js`.
-4. Afegir al Worker els secrets `ONESIGNAL_APP_ID` i `ONESIGNAL_REST_API_KEY`. La clau REST no s’ha de posar mai al web ni al ZIP públic.
+4. Afegir al Worker els secrets `ONESIGNAL_APP_ID` i `ONESIGNAL_API_KEY`. La clau API no s’ha de posar mai al web ni al ZIP públic.
 5. Publicar la web i el Worker de la mateixa versió.
 
-No s’ha d’escriure la REST API Key en cap HTML, JavaScript públic, captura o URL.
+`ONESIGNAL_REST_API_KEY` continua acceptat com a alias temporal, però el nom preferit és `ONESIGNAL_API_KEY`.
+
+No s’ha d’escriure la clau API en cap HTML, JavaScript públic, captura o URL.
 
 ## Com funciona
 

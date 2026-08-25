@@ -1,5 +1,20 @@
 # Roadmap oficial
 
+## V22.12.0 — Fiabilitat operativa i auditoria — Preparada per revisar
+
+- [x] Detectar explícitament el desalineament entre Worker públic i codi abans de publicar targetes socials.
+- [x] Fer més clar l’error de OneSignal i prioritzar `ONESIGNAL_API_KEY`.
+- [x] Reduir pressió sobre D1 movent neteges recurrents a manteniment programat i afegint índexs compostos.
+- [x] Crear guia ràpida d’agents, checklist d’entrega i auditoria tècnica.
+
+### Validacions externes abans de tancar
+
+- [ ] Integrar la PR i desplegar el Worker V22.12.
+- [ ] Configurar o verificar `ONESIGNAL_API_KEY` real a Cloudflare.
+- [ ] Enviar una prova push real des de mòbil i portàtil.
+- [ ] Confirmar una publicació automàtica de les 08:00 amb Facebook, Instagram i Threads després del desplegament.
+- [ ] Monitorar D1 després de l’1 de setembre de 2026 per confirmar que els índexs i la neteja programada redueixen l’ús.
+
 ## V22.8.0 — Visors mòbils, abast dels avisos i accessibilitat — Preparada per revisar
 
 - [x] Evitar que el visor incrustat de meduses es carregui en pantalles petites, on no ofereix una experiència fiable.
