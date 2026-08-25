@@ -1,5 +1,9 @@
 # Changelog
 
+## V22.18.0 — Salut de staging — En verificació
+
+- La ruta `/health` de staging respon com a degradada, sense error intern, quan no es configura cap font d’observacions independent.
+
 ## Entorn de staging — 2026-08-25
 
 - Worker `fonta-meteo-staging` actualitzat amb D1 pròpia, IA i Browser Rendering; les xarxes socials estan desactivades i no hi ha cap programador actiu.
