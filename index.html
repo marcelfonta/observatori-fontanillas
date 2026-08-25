@@ -54,6 +54,25 @@
     </script>
   </head>
   <body>
+    <script>
+      (() => {
+        const pages = new Set(['inici','meteo-ia','estacio','prediccio','verificacio','cel','avisos','radar','webcams','centre-dades','medi-ambient','aprendre','contacte']);
+        const requested = new URLSearchParams(location.search).get('page') || 'inici';
+        const page = pages.has(requested) ? requested : 'inici';
+        document.body.dataset.page = page;
+        const applyRoute = node => {
+          if (node.nodeType !== Node.ELEMENT_NODE) return;
+          const sections = node.matches?.('[data-portal-page]') ? [node] : [...node.querySelectorAll?.('[data-portal-page]') || []];
+          sections.forEach(section => { section.hidden = !section.dataset.portalPage.split(/\s+/).includes(page); });
+        };
+        const observer = new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(applyRoute)));
+        observer.observe(document.body, { childList:true, subtree:true });
+        document.addEventListener('DOMContentLoaded', () => {
+          applyRoute(document.body);
+          observer.disconnect();
+        }, { once:true });
+      })();
+    </script>
     <div id="app-update-banner" class="app-update-banner" hidden role="status" aria-live="polite">
       <span><b>Nova versió disponible</b><small>Actualitza l’Observatori per carregar els darrers canvis.</small></span>
       <button type="button" id="app-update-button">Actualitzar ara</button>
