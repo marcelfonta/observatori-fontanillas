@@ -1,5 +1,13 @@
 # Changelog
 
+## V22.11.0 — 2026-08-25
+
+- Els avisos push exigeixen sempre el nivell escollit i apliquen la categoria només quan el fenomen es pot classificar amb seguretat.
+- OneSignal ja no es considera saludable quan accepta una petició però no troba cap dispositiu destinatari.
+- Els avisos oficials actius que no han arribat es reintenten cada 30 minuts mentre continuen vigents; un enviament reeixit queda deduplicat.
+- La prova real informa quan el dispositiu no existeix com a destinatari, en comptes de mostrar un èxit enganyós.
+- La pàgina d’avisos incorpora ESTOFEX com a context europeu complementari, separat dels avisos oficials locals i amb la jerarquia de fonts explícita.
+
 ## V22.10.0 — 2026-08-25
 
 - «El temps arreu» incorpora icones meteorològiques accessibles a la lectura actual i a les previsions d’Open-Meteo i MET Norway.

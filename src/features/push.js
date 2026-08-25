@@ -224,7 +224,13 @@ async function testPush(){
     if(!response.ok||!payload.ok)throw new Error(payload.error||`HTTP ${response.status}`);
     showPushProgress('Prova real enviada. Pot trigar uns segons; revisa també el centre de notificacions.');
     await renderDeviceDiagnostic();
-  }catch(error){console.warn('No s’ha pogut enviar la notificació de prova.',error);showPushProgress('No s’ha pogut completar la prova real. Activa primer la subscripció i torna-ho a provar.',true);}
+  }catch(error){
+    console.warn('No s’ha pogut enviar la notificació de prova.',error);
+    const detail=String(error?.message||'').trim();
+    showPushProgress(detail
+      ? `No s’ha pogut completar la prova real: ${detail}`
+      : 'No s’ha pogut completar la prova real. Activa primer la subscripció i torna-ho a provar.',true);
+  }
   finally{if(testButton)testButton.disabled=false;}
 }
 
