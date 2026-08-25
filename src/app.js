@@ -4,6 +4,7 @@ import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetc
 import { setText } from './core/dom.js';
 import { renderStation } from './modules/estacio.js';
 import { renderCharts, renderMetricSparklines } from './modules/grafiques.js';
+import { loadChartJs } from './modules/chart-loader.js';
 import { initWebcam } from './modules/webcams.js';
 import { recordReading, normalizeRemoteHistory, summarizeRemoteHistory } from './modules/historics.js';
 import { renderForecast, renderForecastError, renderModelComparison, renderModelError, initForecastControls } from './modules/prediccio.js';
@@ -37,10 +38,20 @@ let currentFetchedAt = 0;
 let forecastFetchedAt = 0;
 let qualityFetchedAt = 0;
 let alertsFetchedAt = 0;
+let chartsAvailable = false;
+let chartPeriod = '24h';
+let chartData = null;
+let chartHistory = [];
 
 const OFFLINE_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hores
 function showOfflineBanner(ageMinutes,message=''){ const banner=document.getElementById('offline-banner'); if(!banner)return; banner.textContent=message||`Mostrant dades de fa ${ageMinutes} min (mode sense connexió)`; banner.hidden=false; }
 function hideOfflineBanner(){ const banner=document.getElementById('offline-banner'); if(banner)banner.hidden=true; }
+function refreshCharts(data, history = [], period = chartPeriod) {
+  chartData=data; chartHistory=history; chartPeriod=period;
+  if (!chartsAvailable) return;
+  renderCharts(chartData,chartHistory,chartPeriod); renderMetricSparklines(chartData,chartHistory);
+}
+async function enableCharts(){try{await loadChartJs();chartsAvailable=true;if(chartData)refreshCharts(chartData,chartHistory,chartPeriod);}catch(error){console.warn('Les gràfiques no estan disponibles ara mateix.',error);}}
 function updateClock(){ setText('header-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Europe/Madrid'}).format(new Date())); }
 function setUpdated(value){ const date=value?new Date(String(value).replace(' ','T')):new Date(); const safe=Number.isNaN(date.getTime())?new Date():date; setText('updated-time',new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(safe)); setText('webcam-time',`Captura ${new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(new Date())}`); const mins=Math.max(0,Math.round((Date.now()-safe.getTime())/60000)); setText('updated-relative',mins<2?'ara mateix':`fa ${mins} min`); }
 async function loadForecastSuite(){
@@ -106,18 +117,18 @@ async function load(){
       latestHistory=context.history;
       renderSummaryFallback();
     }
-    renderStation(latest,context); renderCharts(latest,latestHistory); renderMetricSparklines(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenter(latestHistory,latest); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:latestHistory});updateShareContext({current:latest});
+    renderStation(latest,context); refreshCharts(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenter(latestHistory,latest); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:latestHistory});updateShareContext({current:latest});
     if(latest.degraded){showOfflineBanner(latest.ageMinutes,latest.sourceMessage||`Weather Underground no respon. Mostrant l’última lectura fiable de fa ${latest.ageMinutes} min.`);if(label){label.textContent='Dades de suport';label.parentElement.classList.add('is-offline');}}
     else{hideOfflineBanner();if(label){label.textContent='En directe';label.parentElement.classList.remove('is-offline');}}
   } catch(error) {
     console.warn('No s’han pogut carregar les dades en directe.',error);
     const cached=getLastCachedObs();
     if(cached && (Date.now()-cached.ts)<OFFLINE_MAX_AGE_MS){
-      latest=cached.data; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:[]});updateShareContext({current:latest});
+      latest=cached.data; renderStation(latest); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:[]});updateShareContext({current:latest});
       showOfflineBanner(cached.ageMinutes);
       if(label){label.textContent='Sense connexió';label.parentElement.classList.add('is-offline');}
     } else {
-      latest=demo; renderStation(latest); renderCharts(latest,[]); renderMetricSparklines(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSeoObservation(null); updateSituation({current:latest}); updateMeteoAIContext({current:null,history:[]});updateShareContext({current:null});
+      latest=demo; renderStation(latest); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSeoObservation(null); updateSituation({current:latest}); updateMeteoAIContext({current:null,history:[]});updateShareContext({current:null});
       hideOfflineBanner();
       if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
     }
@@ -126,7 +137,7 @@ async function load(){
   currentFetchedAt=Date.now();
 }
 const periodLabels={ '24h':'Lectures de les últimes 24 hores','7d':'Evolució dels últims 7 dies','30d':'Evolució dels últims 30 dies','1y':'Evolució de l’últim any disponible' };
-document.querySelectorAll('[data-period]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-period]').forEach(b=>b.classList.remove('is-active'));button.classList.add('is-active');setText('evolution-period-copy',periodLabels[button.dataset.period]||'Històric disponible');renderCharts(latest,latestHistory,button.dataset.period);}));
+document.querySelectorAll('[data-period]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-period]').forEach(b=>b.classList.remove('is-active'));button.classList.add('is-active');setText('evolution-period-copy',periodLabels[button.dataset.period]||'Històric disponible');refreshCharts(latest,latestHistory,button.dataset.period);}));
 document.addEventListener('observatori:data-period-change',event=>{
   const days=Number(event.detail?.days)||30;const chartPeriod=days===365?'1y':`${days}d`;const label=days===365?'1 any':`${days} dies`;
   const chartButton=document.querySelector(`[data-period="${chartPeriod}"]`);if(chartButton)chartButton.click();
@@ -134,6 +145,7 @@ document.addEventListener('observatori:data-period-change',event=>{
   setText('data-evolution-period-label',`Període del Centre de Dades · ${label}`);setText('data-extremes-period-label',`Període del Centre de Dades · ${label}`);
 });
 initPortal();
+if(['estacio','centre-dades'].includes(document.body.dataset.page))enableCharts();
 initNavigation();
 initWebcam();
 initContact();
