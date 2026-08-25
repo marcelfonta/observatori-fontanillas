@@ -12,6 +12,12 @@
 - [x] Exigir una Subscription ID remota abans de considerar activat el dispositiu i mostrar un diagnòstic específic si no s’arriba a crear.
 - [ ] Integrar, desplegar a previsualització i enviar una prova real a un dispositiu subscrit abans de tancar la versió.
 
+## V22.16.0 — Confirmació d’enviament OneSignal — En verificació
+
+- [x] Considerar l’ID del missatge retornat per OneSignal com a confirmació d’acceptació, encara que el recompte immediat de destinataris sigui zero.
+- [x] Evitar reintents d’avisos ja acceptats que podrien crear notificacions duplicades.
+- [ ] Integrar i confirmar que la capseta mostra èxit quan el navegador rep la prova real.
+
 ## V22.14.0 — Protecció de D1 i diagnòstic operatiu — Preparada per revisar
 
 - [x] Evitar escriptures a D1 en cada visita pública; les captures programades de cinc minuts mantenen l’historial.

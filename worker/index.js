@@ -568,6 +568,14 @@ function oneSignalFailureMessage(response, payload){
   return cleanText(payload?.errors?.join?.(' · ') || payload?.error || 'OneSignal no ha acceptat la petició.',500);
 }
 
+// A la Create Message API, l'identificador confirma que OneSignal ha creat i
+// posat el missatge en cua. El recompte de destinataris no és fiable en la
+// resposta immediata (la distribució és asíncrona), i no s'ha d'usar per
+// decidir si cal reintentar un avís.
+function oneSignalMessageAccepted(payload){
+  return Boolean(String(payload?.id||'').trim());
+}
+
 async function readAlertPushState(env,fingerprint){
   if(!env.DB||!fingerprint)return null;
   const row=await env.DB.prepare('SELECT state_value FROM alert_state WHERE state_key = ?').bind(alertPushStateKey(fingerprint)).first();
@@ -617,12 +625,12 @@ async function sendOneSignalAlert(entry, env){
     return result;
   }
   const recipients=Number(payload.recipients)||0;
-  if(!recipients){
+  if(!oneSignalMessageAccepted(payload)){
     const result={sent:false,accepted:true,id:payload.id||null,recipients:0,reason:'no_recipients',level:normalizedLevel,category};
     await recordOperationalState(env,'push-alert','down',result).catch(()=>{});
     return result;
   }
-  const result={sent:true,id:payload.id||null,recipients,level:normalizedLevel,category};
+  const result={sent:true,id:payload.id,recipients,deliveryPending:recipients===0,level:normalizedLevel,category};
   await recordOperationalState(env,'push-alert','healthy',result).catch(()=>{});
   return result;
 }
@@ -649,13 +657,13 @@ async function pushTest(request,env){
     return json({ok:false,error},502,'no-store',origin);
   }
   const recipients=Number(payload.recipients)||0;
-  if(!recipients){
+  if(!oneSignalMessageAccepted(payload)){
     const error='OneSignal ha acceptat la petició però no ha trobat aquest dispositiu com a destinatari.';
     await recordOperationalState(env,'push-alert','down',{sent:false,accepted:true,id:payload.id||null,recipients:0,error,source:'manual-test'}).catch(()=>{});
     return json({ok:false,accepted:true,id:payload.id||null,recipients:0,error},502,'no-store',origin);
   }
-  await recordOperationalState(env,'push-alert','healthy',{sent:true,id:payload.id||null,recipients,source:'manual-test'}).catch(()=>{});
-  return json({ok:true,accepted:true,id:payload.id||null,recipients},200,'no-store',origin);
+  await recordOperationalState(env,'push-alert','healthy',{sent:true,id:payload.id,recipients,deliveryPending:recipients===0,source:'manual-test'}).catch(()=>{});
+  return json({ok:true,accepted:true,id:payload.id,recipients,deliveryPending:recipients===0},200,'no-store',origin);
 }
 
 async function checkAlertsAndNotify(env){
@@ -671,7 +679,7 @@ async function checkAlertsAndNotify(env){
     if(!canRetryAlertPush(state))continue;
     const result=await sendOneSignalAlert({...entry,fingerprint},env);
     await writeAlertPushState(env,fingerprint,{
-      delivered:Boolean(result.sent&&result.recipients>0),
+      delivered:Boolean(result.sent),
       recipients:Number(result.recipients)||0,
       attempts:(Number(state?.attempts)||0)+1,
       lastAttempt:new Date().toISOString(),

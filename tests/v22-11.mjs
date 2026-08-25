@@ -12,6 +12,6 @@ assert.ok(page.includes('ESTOFEX: vigilància de tempestes severes')&&page.inclu
 assert.ok(style.includes('.estofex-card'));
 assert.ok(worker.includes("function alertPushStateKey")&&worker.includes("reason:'no_recipients'")&&worker.includes('canRetryAlertPush'));
 assert.ok(!worker.includes("key:'alert_all',relation:'=',value:'1'"));
-assert.ok(worker.includes("OneSignal ha acceptat la petició però no ha trobat aquest dispositiu"));
+assert.ok(worker.includes('oneSignalMessageAccepted'));
 
 console.log('Test V22.14.0: avisos push fiables i ESTOFEX complementari');
