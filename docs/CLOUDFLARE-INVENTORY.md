@@ -19,7 +19,7 @@ Comprovat en lectura el 22 d'agost de 2026. Aquest document no conté valors sec
 - D1 separada: `fonta-meteo-staging`, en jurisdicció europea i amb l’esquema base aplicat.
 - Binding de D1 `DB`, Workers AI `AI` i Browser Rendering `BROWSER`.
 - Xarxes socials desactivades i cap secret de producció copiat a staging.
-- Sense credencial independent de l’estació, les rutes que consulten dades en directe no s’han de considerar una prova funcional; el punt de partida segur és `/version` i les proves de contracte sense escriptura.
+- Sense credencial independent de l’estació, les rutes que consulten dades en directe no s’han de considerar una prova funcional; `/health` informa explícitament l’estat degradat i el punt de partida segur és `/version` i les proves de contracte sense escriptura.
 
 ## Variables i secrets
 

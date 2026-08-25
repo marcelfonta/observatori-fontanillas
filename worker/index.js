@@ -1611,17 +1611,27 @@ async function quality(env) {
 }
 
 async function health(env) {
-  const result = await quality(env);
-  const payload = await result.json();
-  return json({
-    ok:payload.ok,
-    stationId:payload.stationId,
-    updated:payload.updated,
-    ageMinutes:payload.ageMinutes,
-    missingFields:payload.missingFields,
-    latencyMs:payload.latencyMs,
-    storage:payload.storage,
-  });
+  try {
+    const result = await quality(env);
+    const payload = await result.json();
+    return json({
+      ok:payload.ok,
+      status:payload.status,
+      stationId:payload.stationId,
+      updated:payload.updated,
+      ageMinutes:payload.ageMinutes,
+      missingFields:payload.missingFields,
+      latencyMs:payload.latencyMs,
+      storage:payload.storage,
+    });
+  } catch (error) {
+    // Staging no reutilitza credencials de producció. Que faltin no ha de
+    // convertir la seva comprovació de salut en un error intern del Worker.
+    if(String(env.ENVIRONMENT||'').toLowerCase()==='staging'&&!env.WU_API_KEY){
+      return json({ok:false,status:'degraded',reason:'weather_source_not_configured',message:'Staging no té configurada una font d’observacions.'},200,'no-store');
+    }
+    throw error;
+  }
 }
 
 async function secureTokenMatch(candidate, expected) {
