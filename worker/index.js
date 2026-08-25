@@ -255,6 +255,11 @@ function finite(input) {
   return Number.isFinite(number) ? number : null;
 }
 
+function observationIsPlausible(observation) {
+  const ranges={temperature:[-50,60],humidity:[0,100],pressure:[850,1100],windSpeed:[0,200],windGust:[0,250],windDirection:[0,360],rainToday:[0,1000],rainRate:[0,500],solarRadiation:[0,1600],uv:[0,20]};
+  return Object.entries(ranges).every(([key,[min,max]])=>{const number=finite(observation[key]);return number===null||(number>=min&&number<=max);});
+}
+
 function cleanText(value, maxLength) {
   return String(value || "").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").trim().slice(0, maxLength);
 }
@@ -483,12 +488,14 @@ function alertHistoryParams(url) {
   const month=/^(?:0[1-9]|1[0-2])$/.test(url.searchParams.get('month')||'')?url.searchParams.get('month'):'';
   const requestedLevel=cleanText(url.searchParams.get('level'),16).toLowerCase();
   const level=['yellow','orange','red','unknown','none'].includes(requestedLevel)?requestedLevel:'';
-  return {
+  const observation={
     page:integer('page',1,1,100000),pageSize,year,month,level,
     source:cleanText(url.searchParams.get('source'),50),
     phenomenon:cleanText(url.searchParams.get('phenomenon'),100),
     q:cleanText(url.searchParams.get('q'),100),
   };
+  if(!observationIsPlausible(observation))throw new Error("Weather Underground ha retornat una lectura fora dels límits físics esperats");
+  return observation;
 }
 
 function alertHistoryWhere(filters) {
