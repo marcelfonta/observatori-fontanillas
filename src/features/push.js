@@ -140,6 +140,21 @@ function pushSubscriptionId(){
 async function waitForPushSubscription(timeout=30000){
   return waitUntil(async()=>Boolean(pushSubscriptionId())&&await optedIn(),timeout);
 }
+async function requestOneSignalPermission(notifications){
+  if(typeof notifications?.requestPermission!=='function')throw new Error('onesignal-permission-api-unavailable');
+  showPushProgress('Esperant el permís del navegador…');
+  await notifications.requestPermission();
+  const permissionReady=await waitUntil(()=>notifications.permission===true,10000);
+  if(!permissionReady){
+    const denied=typeof Notification!=='undefined'&&Notification.permission==='denied';
+    throw new Error(denied?'permission-denied':'permission-not-synced');
+  }
+}
+function pushSubscriptionApi(){
+  const subscription=OneSignalRef?.User?.PushSubscription;
+  if(typeof subscription?.optIn!=='function')throw new Error('onesignal-subscription-api-unavailable');
+  return subscription;
+}
 
 async function refresh(){
   if(!button||!status)return;
@@ -177,20 +192,19 @@ async function enablePush(){
   setPushActionState(true,'Activant…');
   try {
     const notifications=OneSignalRef.Notifications;
-    const subscription=OneSignalRef.User?.PushSubscription;
     if(!notifications?.isPushSupported?.())throw new Error('push-not-supported');
     if(typeof Notification==='undefined')throw new Error('push-not-supported');
-    let browserPermission=Notification.permission;
-    if(browserPermission==='default'){
-      showPushProgress('Esperant el permís del navegador…');
-      browserPermission=await Notification.requestPermission();
+    if(Notification.permission==='default')await requestOneSignalPermission(notifications);
+    else if(Notification.permission==='denied')throw new Error('permission-denied');
+    else if(notifications.permission!==true){
+      // El navegador ja ha concedit el permís, però l’SDK pot arribar uns
+      // instants més tard després de restaurar un service worker.
+      const permissionReady=await waitUntil(()=>notifications.permission===true,10000);
+      if(!permissionReady)throw new Error('permission-not-synced');
     }
-    if(browserPermission!=='granted')throw new Error(browserPermission==='denied'?'permission-denied':'permission-not-granted');
-    const oneSignalPermissionReady=await waitUntil(()=>Boolean(notifications.permission),5000);
-    if(!oneSignalPermissionReady)throw new Error('permission-not-synced');
     if(!await optedIn()){
       showPushProgress('Creant la subscripció d’avisos…');
-      await subscription?.optIn?.();
+      await pushSubscriptionApi().optIn();
       const subscriptionReady=await waitForPushSubscription();
       if(!subscriptionReady)throw new Error('subscription-not-ready');
     }
@@ -201,10 +215,17 @@ async function enablePush(){
     window.observatoriTrack?.('push_subscribed');
   } catch(error){
     console.warn('No s’ha pogut activar Web Push.',error);
-    const denied=['permission-not-granted','permission-denied'].includes(error?.message);
-    showPushProgress(denied
-      ? 'Firefox té les notificacions bloquejades per a aquesta web. Restableix el permís a Configuració → Privadesa i seguretat → Notificacions i torna-ho a provar.'
-      : 'No s’ha pogut completar l’activació. Revisa els permisos de notificacions del navegador i torna-ho a provar.',true);
+    const detail=String(error?.message||'').trim();
+    const message=['permission-not-granted','permission-denied'].includes(detail)
+      ? 'Les notificacions estan bloquejades per a aquesta web. Restableix el permís del navegador i torna-ho a provar.'
+      : detail==='permission-not-synced'
+        ? 'El navegador ha concedit el permís, però OneSignal encara no l’ha sincronitzat. Recarrega la pàgina normal del navegador i torna-ho a provar.'
+        : detail==='subscription-not-ready'
+          ? 'OneSignal no ha creat la subscripció remota d’aquest navegador. Recarrega la pàgina normal (no privada) i torna-ho a provar; si continua igual, envia la prova des d’un altre navegador.'
+          : detail==='onesignal-subscription-api-unavailable'
+            ? 'El servei de notificacions s’ha carregat incomplet. Recarrega la pàgina i torna-ho a provar.'
+            : 'No s’ha pogut completar l’activació. Revisa els permisos de notificacions del navegador i torna-ho a provar.';
+    showPushProgress(message,true);
     setState('Activar avisos','L’activació està pendent; revisa el permís del navegador',false,false);
   } finally { setPushActionState(false); }
 }
@@ -218,16 +239,17 @@ async function disablePush(){
 async function testPush(){
   if(typeof Notification==='undefined'){showPushProgress('Aquest navegador no admet notificacions.',true);return;}
   if(isIos()&&!isStandalone()){showPushProgress('A l’iPhone, obre primer l’Observatori des de la icona de la pantalla d’inici.',true);return;}
-  let permission=Notification.permission;
-  if(permission==='default')permission=await Notification.requestPermission();
-  if(permission!=='granted'){showPushProgress('Cal permetre les notificacions del navegador per fer la prova.',true);return;}
   try{
     if(!OneSignalRef||!sdkReady)throw new Error('onesignal-not-ready');
+    const notifications=OneSignalRef.Notifications;
+    if(!notifications?.isPushSupported?.())throw new Error('push-not-supported');
+    if(Notification.permission==='default')await requestOneSignalPermission(notifications);
+    else if(Notification.permission!=='granted')throw new Error('permission-denied');
     testButton.disabled=true;
     let subscriptionId=pushSubscriptionId();
     if(!subscriptionId||!await optedIn()){
       showPushProgress('Preparant la subscripció d’aquest dispositiu…');
-      if(!await optedIn())await OneSignalRef.User?.PushSubscription?.optIn?.();
+      if(!await optedIn())await pushSubscriptionApi().optIn();
       const subscriptionReady=await waitForPushSubscription(45000);
       if(!subscriptionReady)throw new Error('subscription-not-ready');
       subscriptionId=pushSubscriptionId();
