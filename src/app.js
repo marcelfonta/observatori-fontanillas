@@ -145,7 +145,8 @@ document.addEventListener('observatori:data-period-change',event=>{
   setText('data-evolution-period-label',`Període del Centre de Dades · ${label}`);setText('data-extremes-period-label',`Període del Centre de Dades · ${label}`);
 });
 initPortal();
-if(['estacio','centre-dades'].includes(document.body.dataset.page))enableCharts();
+if(document.body.dataset.page==='estacio')initWhenVisible('#calculats',enableCharts,'0px 0px');
+if(document.body.dataset.page==='centre-dades')initWhenVisible('#tendencies',enableCharts,'200px 0px');
 initNavigation();
 initWebcam();
 initContact();
