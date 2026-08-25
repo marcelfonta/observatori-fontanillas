@@ -37,6 +37,28 @@
     <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-v21.png?v=22.0.0" />
     <link rel="manifest" href="site.webmanifest" />
+    <script>
+      (() => {
+        const pages = new Set(['inici','meteo-ia','estacio','prediccio','verificacio','cel','avisos','radar','webcams','centre-dades','medi-ambient','aprendre','contacte']);
+        const requested = new URLSearchParams(location.search).get('page') || 'inici';
+        document.documentElement.dataset.portalPage = pages.has(requested) ? requested : 'inici';
+      })();
+    </script>
+    <style>
+      html[data-portal-page="inici"] [data-portal-page]:not([data-portal-page~="inici"]),
+      html[data-portal-page="meteo-ia"] [data-portal-page]:not([data-portal-page~="meteo-ia"]),
+      html[data-portal-page="estacio"] [data-portal-page]:not([data-portal-page~="estacio"]),
+      html[data-portal-page="prediccio"] [data-portal-page]:not([data-portal-page~="prediccio"]),
+      html[data-portal-page="verificacio"] [data-portal-page]:not([data-portal-page~="verificacio"]),
+      html[data-portal-page="cel"] [data-portal-page]:not([data-portal-page~="cel"]),
+      html[data-portal-page="avisos"] [data-portal-page]:not([data-portal-page~="avisos"]),
+      html[data-portal-page="radar"] [data-portal-page]:not([data-portal-page~="radar"]),
+      html[data-portal-page="webcams"] [data-portal-page]:not([data-portal-page~="webcams"]),
+      html[data-portal-page="centre-dades"] [data-portal-page]:not([data-portal-page~="centre-dades"]),
+      html[data-portal-page="medi-ambient"] [data-portal-page]:not([data-portal-page~="medi-ambient"]),
+      html[data-portal-page="aprendre"] [data-portal-page]:not([data-portal-page~="aprendre"]),
+      html[data-portal-page="contacte"] [data-portal-page]:not([data-portal-page~="contacte"]) { display:none !important; }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
@@ -54,25 +76,6 @@
     </script>
   </head>
   <body>
-    <script>
-      (() => {
-        const pages = new Set(['inici','meteo-ia','estacio','prediccio','verificacio','cel','avisos','radar','webcams','centre-dades','medi-ambient','aprendre','contacte']);
-        const requested = new URLSearchParams(location.search).get('page') || 'inici';
-        const page = pages.has(requested) ? requested : 'inici';
-        document.body.dataset.page = page;
-        const applyRoute = node => {
-          if (node.nodeType !== Node.ELEMENT_NODE) return;
-          const sections = node.matches?.('[data-portal-page]') ? [node] : [...node.querySelectorAll?.('[data-portal-page]') || []];
-          sections.forEach(section => { section.hidden = !section.dataset.portalPage.split(/\s+/).includes(page); });
-        };
-        const observer = new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(applyRoute)));
-        observer.observe(document.body, { childList:true, subtree:true });
-        document.addEventListener('DOMContentLoaded', () => {
-          applyRoute(document.body);
-          observer.disconnect();
-        }, { once:true });
-      })();
-    </script>
     <div id="app-update-banner" class="app-update-banner" hidden role="status" aria-live="polite">
       <span><b>Nova versió disponible</b><small>Actualitza l’Observatori per carregar els darrers canvis.</small></span>
       <button type="button" id="app-update-button">Actualitzar ara</button>
