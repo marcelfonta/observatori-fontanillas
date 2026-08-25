@@ -1,9 +1,10 @@
-import { CONFIG } from '../core/config.js';
-
 export function initWebcam() {
   document.querySelectorAll('#webcam-image, #hero-webcam-image').forEach(image => {
     image.addEventListener('error', () => {
-      if (!image.src.startsWith(CONFIG.fallbackWebcam)) image.src = CONFIG.fallbackWebcam;
+      image.removeAttribute('src');
+      image.alt = 'La webcam no està disponible temporalment. Les dades de l’estació continuen actualitzant-se.';
+      image.closest('a')?.classList.add('is-unavailable');
     });
+    image.addEventListener('load', () => image.closest('a')?.classList.remove('is-unavailable'));
   });
 }
