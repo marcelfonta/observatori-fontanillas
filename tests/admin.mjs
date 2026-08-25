@@ -34,15 +34,17 @@ const fakeDb={
   batch:async()=>[],
   prepare(sql){
     const statement={sql,bindings:[],bind(...values){this.bindings=values;return this;},async run(){return {meta:{changes:0}};},async all(){
+      if(sql.includes('sqlite_master'))return {results:[{name:'observations'},{name:'alert_events'},{name:'contact_rate_limit'}]};
       if(sql.includes('FROM social_drafts'))return {results:[{id:1,kind:'daily_observation',status:'draft',channels:'["facebook","instagram","bluesky","telegram"]',title:'Dades de Sant Celoni',created_at:new Date().toISOString(),scheduled_for:null}]};
       return {results:[]};
     },async first(){
       if(sql.includes('SELECT * FROM observations'))return {observed_epoch:nowSeconds-60,local_time:new Date((nowSeconds-60)*1000).toISOString(),observed_at_utc:new Date((nowSeconds-60)*1000).toISOString(),temperature:24,humidity:55,pressure:1016,wind_speed:4,rain_total:0};
+      if(sql.includes('SELECT COUNT(*) AS total FROM')&&sql.includes('observations'))return {total:1200};
       if(sql.includes('FROM observations')&&sql.includes('storedReadings'))return {storedReadings:1200,firstEpoch:nowSeconds-864000,lastEpoch:nowSeconds-60,firstObservation:new Date((nowSeconds-864000)*1000).toISOString(),lastObservation:new Date((nowSeconds-60)*1000).toISOString()};
       if(sql.includes('FROM observations WHERE'))return {samples:280,temperature:280,humidity:280,pressure:280,wind:280,rain:280,solar:240,uv:180,firstEpoch:nowSeconds-84000,lastEpoch:nowSeconds-60};
-      if(sql.includes('FROM alert_events'))return {total:4,latest:new Date().toISOString()};
+      if(sql.includes('alert_events'))return {total:4,latest:new Date().toISOString()};
       if(sql.includes('FROM social_drafts'))return {pending:2,approved:0,published:0,latest:new Date().toISOString()};
-      if(sql.includes('FROM contact_rate_limit'))return {total:1};
+      if(sql.includes('contact_rate_limit'))return {total:1};
       if(sql.includes('FROM admin_auth_attempts'))return {total:0};
       return {};
     }};
@@ -59,6 +61,7 @@ const adminPayload=await authorized.json();
 assert.equal(adminPayload.worker.version,'22.14.0');
 assert.equal(adminPayload.station.ok,true);
 assert.equal(adminPayload.database.observations,1200);
+assert.equal(adminPayload.database.totalRows,1205);
 assert.equal(adminPayload.integrations.database,true);
 assert.equal(adminPayload.integrations.socialToken,true);
 assert.equal(adminPayload.integrations.bluesky,true);

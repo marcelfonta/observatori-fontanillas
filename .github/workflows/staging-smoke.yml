@@ -19,10 +19,10 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: Descarrega el repositori
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configura Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
 
