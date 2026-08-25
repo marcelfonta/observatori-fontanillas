@@ -80,7 +80,7 @@ async function renderDeviceDiagnostic(){
   const permission=typeof Notification==='undefined'?'no compatible':Notification.permission;
   const subscription=await optedIn();
   const registration=await navigator.serviceWorker?.getRegistration?.('/').catch(()=>null);
-  const subscriptionId=String(OneSignalRef?.User?.PushSubscription?.id||'').trim();
+  const subscriptionId=pushSubscriptionId();
   const checks=[
     ['Navegador',typeof Notification==='undefined'?'No compatible':'Compatible'],
     ['Permís',permission==='granted'?'Concedit':permission==='denied'?'Bloquejat':'Pendent'],
@@ -134,6 +134,12 @@ async function syncTags(prefs){
   } catch(error){ console.warn('No s’han pogut sincronitzar les preferències push.',error); }
 }
 async function optedIn(){ try { return Boolean(OneSignalRef?.User?.PushSubscription?.optedIn); } catch { return false; } }
+function pushSubscriptionId(){
+  try { return String(OneSignalRef?.User?.PushSubscription?.id||'').trim(); } catch { return ''; }
+}
+async function waitForPushSubscription(timeout=30000){
+  return waitUntil(async()=>Boolean(pushSubscriptionId())&&await optedIn(),timeout);
+}
 
 async function refresh(){
   if(!button||!status)return;
@@ -185,7 +191,7 @@ async function enablePush(){
     if(!await optedIn()){
       showPushProgress('Creant la subscripció d’avisos…');
       await subscription?.optIn?.();
-      const subscriptionReady=await waitUntil(optedIn);
+      const subscriptionReady=await waitForPushSubscription();
       if(!subscriptionReady)throw new Error('subscription-not-ready');
     }
     showPushProgress('Desant les teves preferències…');
@@ -216,9 +222,17 @@ async function testPush(){
   if(permission==='default')permission=await Notification.requestPermission();
   if(permission!=='granted'){showPushProgress('Cal permetre les notificacions del navegador per fer la prova.',true);return;}
   try{
-    const subscriptionId=String(OneSignalRef?.User?.PushSubscription?.id||'').trim();
-    if(!subscriptionId||!await optedIn())throw new Error('subscription-not-ready');
-    testButton.disabled=true;showPushProgress('Enviant una prova real a aquest dispositiu…');
+    if(!OneSignalRef||!sdkReady)throw new Error('onesignal-not-ready');
+    testButton.disabled=true;
+    let subscriptionId=pushSubscriptionId();
+    if(!subscriptionId||!await optedIn()){
+      showPushProgress('Preparant la subscripció d’aquest dispositiu…');
+      if(!await optedIn())await OneSignalRef.User?.PushSubscription?.optIn?.();
+      const subscriptionReady=await waitForPushSubscription(45000);
+      if(!subscriptionReady)throw new Error('subscription-not-ready');
+      subscriptionId=pushSubscriptionId();
+    }
+    showPushProgress('Enviant una prova real a aquest dispositiu…');
     const response=await fetch(`${CONFIG.apiUrl}/push-test`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({subscriptionId})});
     const payload=await response.json().catch(()=>({}));
     if(!response.ok||!payload.ok)throw new Error(payload.error||`HTTP ${response.status}`);
@@ -227,9 +241,14 @@ async function testPush(){
   }catch(error){
     console.warn('No s’ha pogut enviar la notificació de prova.',error);
     const detail=String(error?.message||'').trim();
-    showPushProgress(detail
-      ? `No s’ha pogut completar la prova real: ${detail}`
-      : 'No s’ha pogut completar la prova real. Activa primer la subscripció i torna-ho a provar.',true);
+    const message=detail==='subscription-not-ready'
+      ? 'La subscripció encara no s’ha acabat de registrar. Espera uns segons, recarrega la pàgina normal del navegador i torna a prémer «Enviar prova real». El mode privat no manté de forma fiable les notificacions.'
+      : detail==='onesignal-not-ready'
+        ? 'El servei de notificacions encara s’està preparant. Espera uns segons i torna-ho a provar.'
+        : detail
+          ? `No s’ha pogut completar la prova real: ${detail}`
+          : 'No s’ha pogut completar la prova real. Activa primer la subscripció i torna-ho a provar.';
+    showPushProgress(message,true);
   }
   finally{if(testButton)testButton.disabled=false;}
 }
