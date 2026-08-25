@@ -8,6 +8,17 @@
 - Afegit executor de proves automàtic amb `npm run test:quick`.
 - Simplificada la documentació principal i afegides guia d’arrencada, checklist d’entrega i auditoria del projecte.
 
+## Unreleased
+
+### Documentation and open-source stewardship
+
+- Added a contributor-facing README plus architecture, deployment, API, data-source, Meteo IA and development guides.
+- Added contribution, conduct, security and support policies.
+- Documented the existing Node 22 GitHub Actions quality workflow and added issue forms for bugs, feature proposals and source/data corrections.
+- Added the MIT licence, allowing reuse, modification and distribution under its notice and disclaimer.
+- Verified the existing `main` branch protection: required Node 22 checks, pull-request workflow, linear history, resolved conversations, and blocked force-pushes/deletions.
+- Recorded the remaining governance work: licence selection, versioned CI, branch protection, issue templates and independent staging.
+
 ## V22.11.0 — 2026-08-25
 
 - Els avisos push exigeixen sempre el nivell escollit i apliquen la categoria només quan el fenomen es pot classificar amb seguretat.

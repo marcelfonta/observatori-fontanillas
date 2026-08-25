@@ -1,0 +1,35 @@
+name: Data or source correction
+description: Report an incorrect attribution, stale source, or misleading presentation of weather data.
+title: "data: "
+labels:
+  - data
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not use this form for urgent weather safety reports. Follow official channels and emergency guidance first.
+  - type: textarea
+    id: location
+    attributes:
+      label: Where is the issue?
+      description: Include the portal page, date/time and section if known.
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: What appears incorrect or misleading?
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Supporting source URL
+      description: Prefer an official or primary source.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I understand this report does not replace emergency or official-alert channels.
+          required: true

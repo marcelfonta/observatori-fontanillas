@@ -1,0 +1,31 @@
+name: Feature proposal
+description: Suggest a focused improvement to the portal or contributor experience.
+title: "feature: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: Explain the user need, not just an implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Data, safety or accessibility considerations
+      description: Name official sources or constraints when the proposal concerns meteorological data, alerts or accessibility.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and did not include sensitive information.
+          required: true

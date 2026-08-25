@@ -15,6 +15,23 @@
 - [ ] Confirmar una publicació automàtica de les 08:00 amb Facebook, Instagram i Threads després del desplegament.
 - [ ] Monitorar D1 després de l’1 de setembre de 2026 per confirmar que els índexs i la neteja programada redueixen l’ús.
 
+## Open-source stewardship — Next governance milestone
+
+The portal is active and public. This milestone makes its maintenance practices easier for outside contributors and reviewers to verify; it does not change weather functionality.
+
+- [x] Publish an entry-point README, contribution guide, code of conduct, security policy, support guide and focused technical documentation.
+- [x] Select the MIT SPDX licence and add a `LICENSE` file.
+- [x] Add a versioned GitHub Actions workflow that runs `npm run check` on pull requests and `main`.
+- [x] Protect `main` with required Node 22 checks, pull-request workflow, linear history, resolved conversations, and blocked force-pushes/deletions.
+- [x] Create an issue template set for bug reports, feature proposals and source/data corrections.
+- [ ] Establish a staging Worker and separate D1 database before accepting changes that can write state.
+
+### Evidence to maintain
+
+- Release notes in `CHANGELOG.md`, roadmap status and design decisions remain current.
+- Pull requests record tests, user impact and review for high-risk changes.
+- Deployment and service credentials remain outside Git.
+
 ## V22.8.0 — Visors mòbils, abast dels avisos i accessibilitat — Preparada per revisar
 
 - [x] Evitar que el visor incrustat de meduses es carregui en pantalles petites, on no ofereix una experiència fiable.
