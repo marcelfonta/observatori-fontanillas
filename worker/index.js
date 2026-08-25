@@ -1864,8 +1864,12 @@ async function clearAdminAuthFailures(request, env) {
 }
 
 async function adminDatabaseSummary(env) {
-  if (!env.DB) return { enabled:false, observations:null, alertEvents:null, contactRequests24h:null };
+  if (!env.DB) return { enabled:false, observations:null, alertEvents:null, contactRequests24h:null, totalRows:null, tableRows:{} };
   const storage = await storageSummary(env).catch(() => ({ enabled:true, storedReadings:0, coverageDays:0 }));
+  const usage = await d1RowUsage(env).catch(error => {
+    console.error("Admin D1 row usage error", error);
+    return { totalRows:null, tableRows:{} };
+  });
   let alertEvents = null;
   let latestAlertEvent = null;
   let contactRequests24h = null;
@@ -1880,7 +1884,25 @@ async function adminDatabaseSummary(env) {
     const contactsRow = await env.DB.prepare("SELECT COUNT(*) AS total FROM contact_rate_limit WHERE sent_at > ?").bind(Math.floor(Date.now() / 1000) - 86400).first();
     contactRequests24h = Number(contactsRow?.total) || 0;
   } catch (error) { console.error("Admin contact summary error", error); }
-  return { enabled:true, observations:storage.storedReadings, coverageDays:storage.coverageDays, firstObservation:storage.firstObservation || null, lastObservation:storage.lastObservation || null, alertEvents, latestAlertEvent, contactRequests24h };
+  return { enabled:true, observations:storage.storedReadings, coverageDays:storage.coverageDays, firstObservation:storage.firstObservation || null, lastObservation:storage.lastObservation || null, alertEvents, latestAlertEvent, contactRequests24h, ...usage };
+}
+
+async function d1RowUsage(env) {
+  const cacheKey = "d1:row-usage";
+  const cached = runtimeStateCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  const tablesResult = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all();
+  const names = (tablesResult.results || [])
+    .map(row => String(row.name || ''))
+    .filter(name => /^[A-Za-z_][A-Za-z0-9_]*$/.test(name) && !name.startsWith('sqlite_'));
+  const counts = await Promise.all(names.map(async name => {
+    const row = await env.DB.prepare(`SELECT COUNT(*) AS total FROM "${name}"`).first();
+    return [name, Number(row?.total) || 0];
+  }));
+  const tableRows = Object.fromEntries(counts);
+  const value = { totalRows:counts.reduce((total, [, count]) => total + count, 0), tableRows };
+  runtimeStateCache.set(cacheKey, { value, expiresAt:Date.now() + STORAGE_SUMMARY_CACHE_MS });
+  return value;
 }
 
 async function adminSocialSummary(env) {

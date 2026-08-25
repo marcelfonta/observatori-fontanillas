@@ -1,5 +1,12 @@
 # Changelog
 
+## V22.20.0 — Barreres operatives i ús de D1 — En verificació
+
+- Plantilla de configuració i flux manual de GitHub Actions per desplegar i validar únicament l'entorn de proves.
+- Actualitzades les accions de GitHub per usar el runtime compatible actual.
+- El panell d'administració mostra les files totals desades a D1, diferenciant-les del consum de lectures i escriptures diàries.
+- Documentada la recuperació de staging i de les proves reals de notificacions.
+
 ## V22.19.0 — Validació de staging — En verificació
 
 - Nova comprovació pública i sense secrets per validar la versió, la salut, l’historial i els avisos de l’entorn de proves.

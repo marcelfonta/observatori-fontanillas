@@ -6,18 +6,20 @@
 - [x] Afegir llicència MIT i plantilles per informar d'incidències o correccions de dades.
 - [x] Crear un entorn de prova separat amb Worker i D1 propis abans de canvis que escriguin dades reals.
 - [x] Afegir una validació repetible de l’entorn de proves abans de plantejar un desplegament a producció.
+- [x] Preparar una configuració de staging sense secrets i un flux manual que desplega i valida només aquest entorn.
+- [x] Mostrar al panell administratiu el recompte de files reals desades a D1.
 
-## V22.15.0 — Registre remot OneSignal — En verificació
+## V22.15.0 — Registre remot OneSignal — Verificada
 
 - [x] Fer que el permís es demani des de l’SDK de OneSignal, evitant una sincronització separada entre el navegador i el servei.
 - [x] Exigir una Subscription ID remota abans de considerar activat el dispositiu i mostrar un diagnòstic específic si no s’arriba a crear.
-- [ ] Integrar, desplegar a previsualització i enviar una prova real a un dispositiu subscrit abans de tancar la versió.
+- [x] Integrar, desplegar a previsualització i enviar una prova real a un dispositiu subscrit abans de tancar la versió.
 
-## V22.16.0 — Confirmació d’enviament OneSignal — En verificació
+## V22.16.0 — Confirmació d’enviament OneSignal — Verificada
 
 - [x] Considerar l’ID del missatge retornat per OneSignal com a confirmació d’acceptació, encara que el recompte immediat de destinataris sigui zero.
 - [x] Evitar reintents d’avisos ja acceptats que podrien crear notificacions duplicades.
-- [ ] Integrar i confirmar que la capseta mostra èxit quan el navegador rep la prova real.
+- [x] Integrar i confirmar que la capseta mostra èxit quan el navegador rep la prova real.
 
 ## V22.14.0 — Protecció de D1 i diagnòstic operatiu — Preparada per revisar
 

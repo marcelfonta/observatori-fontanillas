@@ -9,12 +9,12 @@ Cloudflare Pages serves the static site. The Cloudflare Worker supplies the API 
 1. Run `npm run check` and review the complete diff.
 2. Validate the static site in a preview environment.
 3. For Worker work, create an independent staging Worker and D1 database.
-4. Compare a reviewed staging configuration with `ops/wrangler.example.jsonc`; keep actual IDs and secrets out of Git.
+4. Per a staging, parteix de `ops/wrangler.staging.template.jsonc`; l'identificador de la D1 es conserva com a variable de GitHub i la clau de Cloudflare com a secret.
 5. Run `npm run worker:dry-run` only after providing a reviewed Wrangler configuration.
 6. Apply and test schema changes in staging with a rollback plan.
 7. Obtain explicit human approval before production.
 
-The repository deliberately does not include a canonical production `wrangler.jsonc`. Existing deployment inventory and outstanding risks are documented in [CLOUDFLARE-INVENTORY.md](CLOUDFLARE-INVENTORY.md). Do not use the production D1 database for write tests.
+El repositori no inclou cap desplegament automàtic a producció. El flux «Desplegament controlat a staging» només es pot iniciar manualment i acaba amb la validació pública de staging. Existing deployment inventory and outstanding risks are documented in [CLOUDFLARE-INVENTORY.md](CLOUDFLARE-INVENTORY.md). Do not use the production D1 database for write tests.
 
 ## Secrets
 
