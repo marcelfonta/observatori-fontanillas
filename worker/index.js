@@ -1,8 +1,10 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.13.0";
+const WORKER_VERSION = "22.14.0";
 const WORKER_BUILT = "2026-08-25";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
+const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
+const runtimeStateCache = new Map();
 const STATION_LATITUDE = 41.6906;
 const STATION_LONGITUDE = 2.4890;
 const WEBCAM_URL = "https://www.alvar.cat/WebCam/Imatge-Camera.jpg";
@@ -552,6 +554,13 @@ function oneSignalApiKey(env){
   return String(env.ONESIGNAL_API_KEY || env.ONESIGNAL_REST_API_KEY || '').trim();
 }
 
+function oneSignalConfigurationMessage(env){
+  const missing=[];
+  if(!String(env.ONESIGNAL_APP_ID || '').trim())missing.push('ONESIGNAL_APP_ID');
+  if(!oneSignalApiKey(env))missing.push('ONESIGNAL_API_KEY');
+  return `Falta configurar ${missing.join(' i ')} al Worker. ONESIGNAL_API_KEY ha de ser l’App API key de la mateixa aplicació de OneSignal.`;
+}
+
 function oneSignalFailureMessage(response, payload){
   if([401,403].includes(Number(response?.status))){
     return 'La clau API de OneSignal no és vàlida per a aquesta aplicació. Configura ONESIGNAL_API_KEY amb l’App API key de la mateixa app que ONESIGNAL_APP_ID.';
@@ -581,7 +590,7 @@ function canRetryAlertPush(state){
 async function sendOneSignalAlert(entry, env){
   const apiKey=oneSignalApiKey(env);
   if(!env.ONESIGNAL_APP_ID || !apiKey){
-    const result={sent:false,reason:'not_configured'};
+    const result={sent:false,reason:'not_configured',error:oneSignalConfigurationMessage(env)};
     await recordOperationalState(env,'push-alert','down',result).catch(()=>{});
     return result;
   }
@@ -622,7 +631,11 @@ async function pushTest(request,env){
   const origin=request.headers.get('Origin')||'';
   if(!ALLOWED_CONTACT_ORIGINS.has(origin))return json({ok:false,error:'Origen no autoritzat'},403,'no-store',origin||'*');
   const apiKey=oneSignalApiKey(env);
-  if(!env.ONESIGNAL_APP_ID||!apiKey)return json({ok:false,error:'Servei push no configurat'},503,'no-store',origin);
+  if(!env.ONESIGNAL_APP_ID||!apiKey){
+    const error=oneSignalConfigurationMessage(env);
+    await recordOperationalState(env,'push-alert','down',{sent:false,reason:'not_configured',error}).catch(()=>{});
+    return json({ok:false,error},503,'no-store',origin);
+  }
   const length=Number(request.headers.get('Content-Length')||0);
   if(length>2048)return json({ok:false,error:'Petició massa gran'},413,'no-store',origin);
   const body=await request.json().catch(()=>({}));
@@ -630,9 +643,18 @@ async function pushTest(request,env){
   if(!/^[A-Za-z0-9_-]{8,128}$/.test(subscriptionId))return json({ok:false,error:'Subscripció no vàlida'},400,'no-store',origin);
   const response=await fetch('https://api.onesignal.com/notifications',{method:'POST',headers:{Authorization:`Key ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',include_subscription_ids:[subscriptionId],headings:{ca:'Prova d’avisos Meteo Fontanillas',en:'Meteo Fontanillas alert test'},contents:{ca:'Connexió correcta: aquest dispositiu pot rebre avisos meteorològics.',en:'Connection successful: this device can receive weather alerts.'},url:'https://meteo.fontanillas.cat/?page=avisos'})});
   const payload=await response.json().catch(()=>({}));
-  if(!response.ok)return json({ok:false,error:oneSignalFailureMessage(response,payload)},502,'no-store',origin);
+  if(!response.ok){
+    const error=oneSignalFailureMessage(response,payload);
+    await recordOperationalState(env,'push-alert','down',{sent:false,status:response.status,error,source:'manual-test'}).catch(()=>{});
+    return json({ok:false,error},502,'no-store',origin);
+  }
   const recipients=Number(payload.recipients)||0;
-  if(!recipients)return json({ok:false,accepted:true,id:payload.id||null,recipients:0,error:'OneSignal ha acceptat la petició però no ha trobat aquest dispositiu com a destinatari.'},502,'no-store',origin);
+  if(!recipients){
+    const error='OneSignal ha acceptat la petició però no ha trobat aquest dispositiu com a destinatari.';
+    await recordOperationalState(env,'push-alert','down',{sent:false,accepted:true,id:payload.id||null,recipients:0,error,source:'manual-test'}).catch(()=>{});
+    return json({ok:false,accepted:true,id:payload.id||null,recipients:0,error},502,'no-store',origin);
+  }
+  await recordOperationalState(env,'push-alert','healthy',{sent:true,id:payload.id||null,recipients,source:'manual-test'}).catch(()=>{});
   return json({ok:true,accepted:true,id:payload.id||null,recipients},200,'no-store',origin);
 }
 
@@ -987,14 +1009,7 @@ async function persistObservation(observation, env) {
     wind_speed, wind_gust, wind_direction, rain_total, rain_rate, rain_delta,
     solar_radiation, uv, quality
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  ON CONFLICT(observed_epoch) DO UPDATE SET
-    observed_at_utc=excluded.observed_at_utc, local_time=excluded.local_time,
-    temperature=excluded.temperature, feels_like=excluded.feels_like,
-    humidity=excluded.humidity, dew_point=excluded.dew_point, pressure=excluded.pressure,
-    wind_speed=excluded.wind_speed, wind_gust=excluded.wind_gust,
-    wind_direction=excluded.wind_direction, rain_total=excluded.rain_total,
-    rain_rate=excluded.rain_rate, solar_radiation=excluded.solar_radiation,
-    uv=excluded.uv, quality=excluded.quality`).bind(
+  ON CONFLICT(observed_epoch) DO NOTHING`).bind(
     epoch, observation.updatedUtc, localTime, localDate, STATION_ID,
     finite(observation.temperature), finite(observation.feelsLike), finite(observation.humidity),
     finite(observation.dewPoint), finite(observation.pressure), finite(observation.windSpeed),
@@ -1002,6 +1017,7 @@ async function persistObservation(observation, env) {
     finite(observation.rainRate), rainDelta, finite(observation.solarRadiation),
     finite(observation.uv), finite(observation.quality)
   ).run();
+  runtimeStateCache.delete('d1:storage-summary');
   return { stored:true, epoch };
 }
 
@@ -1468,14 +1484,20 @@ function mergeHistories(databaseRows, wuRows, resolution) {
 }
 
 async function storageSummary(env) {
-  if (!(await ensureSchema(env))) return { enabled:false, storedReadings:0, coverageDays:0 };
-  const row = await env.DB.prepare(`SELECT COUNT(*) AS storedReadings,
-    MIN(observed_epoch) AS firstEpoch, MAX(observed_epoch) AS lastEpoch,
-    MIN(local_time) AS firstObservation, MAX(local_time) AS lastObservation
-    FROM observations`).first();
-  const count = Number(row?.storedReadings) || 0;
-  const coverageDays = row?.firstEpoch && row?.lastEpoch ? Math.max(0, (row.lastEpoch - row.firstEpoch) / 86400) : 0;
-  return { enabled:true, storedReadings:count, coverageDays, firstObservation:row?.firstObservation || null, lastObservation:row?.lastObservation || null };
+  const cached=runtimeStateCache.get('d1:storage-summary');
+  if(cached && cached.expiresAt>Date.now())return cached.value;
+  const value=await (async()=>{
+    if (!(await ensureSchema(env))) return { enabled:false, storedReadings:0, coverageDays:0 };
+    const row = await env.DB.prepare(`SELECT COUNT(*) AS storedReadings,
+      MIN(observed_epoch) AS firstEpoch, MAX(observed_epoch) AS lastEpoch,
+      MIN(local_time) AS firstObservation, MAX(local_time) AS lastObservation
+      FROM observations`).first();
+    const count = Number(row?.storedReadings) || 0;
+    const coverageDays = row?.firstEpoch && row?.lastEpoch ? Math.max(0, (row.lastEpoch - row.firstEpoch) / 86400) : 0;
+    return { enabled:true, storedReadings:count, coverageDays, firstObservation:row?.firstObservation || null, lastObservation:row?.lastObservation || null };
+  })();
+  runtimeStateCache.set('d1:storage-summary',{value,expiresAt:Date.now()+STORAGE_SUMMARY_CACHE_MS});
+  return value;
 }
 
 async function history(requestUrl, env) {
@@ -2424,8 +2446,15 @@ async function publishAutomaticSocialDraft(result, env) {
   const previous = await socialPublicationsForDraft(env, draft.id);
   const completed = new Set(previous.filter(item=>item.status==='published').map(item=>item.channel));
   const retryChannels = Array.isArray(result?.retryChannels) ? new Set(result.retryChannels) : null;
-  const channels = parseSocialChannels(draft.channels).filter(channel=>configured[channel] && !completed.has(channel) && (!retryChannels || retryChannels.has(channel)));
+  const requested = parseSocialChannels(draft.channels).filter(channel=>!completed.has(channel) && (!retryChannels || retryChannels.has(channel)));
+  const unavailable = requested.filter(channel=>!configured[channel]);
+  const channels = requested.filter(channel=>configured[channel]);
   const outcomes = [];
+  for (const channel of unavailable) {
+    const error='El canal no té les credencials necessàries configurades a Cloudflare.';
+    await recordSocialPublication(env, draft.id, channel, 'failed', { error, responseCode:503 });
+    outcomes.push({ channel, ok:false, error });
+  }
   for (const channel of channels) {
     try {
       const details = await publishers[channel](draft, env);
@@ -2441,7 +2470,7 @@ async function publishAutomaticSocialDraft(result, env) {
   await recordOperationalState(env,'social-automatic',failed.length?'down':'healthy',{
     draftId:draft.id, localDate:result.localDate || null, slot:result.slot || null,
     published:outcomes.filter(item=>item.ok).map(item=>item.channel),
-    failed:failed.map(item=>({channel:item.channel,error:item.error})), skipped:channels.length===0,
+    failed:failed.map(item=>({channel:item.channel,error:item.error})), skipped:requested.length===0,
   }).catch(()=>{});
   if (failed.length) await sendOperationalEmail(env, '[Observatori] Publicació automàtica incompleta', `No s’ha pogut publicar l’informe de ${result.localDate || 'avui'} a: ${failed.map(item=>item.channel).join(', ')}.\n\n${failed.map(item=>`${item.channel}: ${item.error}`).join('\n')}`, 'social_publish_failed').catch(error=>console.error('Social notification error',error));
   return { published:outcomes.some(item=>item.ok), outcomes };
@@ -2828,7 +2857,9 @@ export default {
       if (request.method !== "GET") return json({ error:"Mètode no permès" }, 405);
       if (url.pathname === "/" || url.pathname === "") {
         const observation = await resilientCurrentObservation(env);
-        if (env.DB && !observation.degraded) ctx.waitUntil(persistObservation(observation, env).catch(error => console.error("D1 persist error", error)));
+        if (String(env.PERSIST_ON_REQUEST || "").toLowerCase() === "true" && env.DB && !observation.degraded) {
+          ctx.waitUntil(persistObservation(observation, env).catch(error => console.error("D1 persist error", error)));
+        }
         return json(observation, 200, "public, max-age=60");
       }
       if (url.pathname === "/history") return history(url, env);

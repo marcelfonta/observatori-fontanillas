@@ -5,6 +5,13 @@
 - Afegides guies d'arquitectura, desplegament, API, fonts de dades, desenvolupament i Meteo IA.
 - Afegides normes de contribució, conducta, seguretat, suport, llicència MIT i plantilles d'incidències.
 
+## V22.14.0 — 2026-08-25
+
+- D1 deixa de persistir lectures en cada visita pública; les captures programades de cinc minuts són el camí normal de l’historial.
+- La persistència d’una observació és idempotent i el resum de magatzem es conserva cinc minuts a memòria per reduir lectures.
+- Els canals socials sol·licitats sense credencials queden registrats com a error explícit, reintentable i notificable per correu.
+- La prova d’avisos push registra l’estat operatiu real i indica quin secret de OneSignal falta o és incorrecte.
+
 ## V22.13.0 — 2026-08-25
 
 - Les publicacions automàtiques queden preparades per a tres franges diàries: 08:00, 14:00 i 20:30, amb comprovació preventiva independent abans de cadascuna.
