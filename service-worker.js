@@ -8,7 +8,7 @@ const APP_SHELL = [
   '/src/features/analytics.js', '/src/features/push.js', '/src/features/pwa.js', '/src/features/share.js',
   '/src/features/share-page.js', '/src/features/stations-comparison.js', '/src/features/municipality-explorer.js', '/src/features/alert-history-init.js', '/src/features/alert-history-page.js',
   '/src/features/portal-router.js', '/src/features/portal-shell.js', '/src/features/portal-static.js', '/src/features/footer-social.js', '/src/features/home-density.js', '/src/features/forecast-verification.js', '/src/features/data-center.js', '/src/features/environment.js', '/src/features/meteo-ai.js', '/src/features/long-range.js', '/src/features/learning.js', '/src/features/seo.js',
-  '/src/modules/alert-history.js', '/src/modules/astronomia.js', '/src/modules/avisos.js', '/src/modules/confort.js',
+  '/src/modules/alert-history.js', '/src/modules/astronomia.js', '/src/modules/avisos.js', '/src/modules/chart-loader.js', '/src/modules/confort.js',
   '/src/modules/contacte.js', '/src/modules/estacio.js', '/src/modules/extrems.js',
   '/src/modules/grafiques.js', '/src/modules/historics.js', '/src/modules/models.js',
   '/src/modules/navigation.js', '/src/modules/prediccio.js', '/src/modules/qualitat.js',
