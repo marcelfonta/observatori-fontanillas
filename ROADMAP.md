@@ -5,6 +5,7 @@
 - [x] Publicar guies de contribució, seguretat, suport i arquitectura.
 - [x] Afegir llicència MIT i plantilles per informar d'incidències o correccions de dades.
 - [x] Crear un entorn de prova separat amb Worker i D1 propis abans de canvis que escriguin dades reals.
+- [x] Afegir una validació repetible de l’entorn de proves abans de plantejar un desplegament a producció.
 
 ## V22.15.0 — Registre remot OneSignal — En verificació
 

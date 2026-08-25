@@ -20,6 +20,7 @@ Comprovat en lectura el 22 d'agost de 2026. Aquest document no conté valors sec
 - Binding de D1 `DB`, Workers AI `AI` i Browser Rendering `BROWSER`.
 - Xarxes socials desactivades i cap secret de producció copiat a staging.
 - Sense credencial independent de l’estació, les rutes que consulten dades en directe no s’han de considerar una prova funcional; `/health` informa explícitament l’estat degradat i el punt de partida segur és `/version` i les proves de contracte sense escriptura.
+- Abans de proposar un desplegament a producció, executar `npm run test:staging` o el flux manual «Validació de l'entorn de proves» de GitHub Actions. La prova no requereix secrets ni escriu dades.
 
 ## Variables i secrets
 
