@@ -1,9 +1,10 @@
-name: YouTube Short · publicació diària
+name: YouTube Short · dues actualitzacions diàries
 
 on:
   schedule:
     # GitHub Actions treballa en UTC. A l'agost, 06:00 UTC = 08:00 a Sant Celoni.
     - cron: '0 6 * * *'
+    - cron: '30 18 * * *'
   workflow_dispatch:
     inputs:
       privacy:
@@ -17,7 +18,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: youtube-short-daily
+  group: youtube-short-${{ github.event.schedule || 'manual' }}
   cancel-in-progress: false
 
 jobs:
@@ -29,6 +30,7 @@ jobs:
       YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
       YOUTUBE_PRIVACY_STATUS: ${{ github.event_name == 'schedule' && 'public' || inputs.privacy || 'private' }}
+      SHORT_SLOT: ${{ github.event.schedule == '30 18 * * *' && 'vespre' || 'mati' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
