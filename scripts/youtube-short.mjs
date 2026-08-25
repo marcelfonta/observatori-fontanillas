@@ -81,8 +81,11 @@ async function main(){
   const rows=today.time.slice(2,5).map((date,index)=>{const i=index+2;return `<rect x="76" y="${590+index*245}" width="928" height="205" rx="34" fill="#071712" fill-opacity=".6" stroke="#8ee7ba" stroke-opacity=".24"/><text x="120" y="${660+index*245}" fill="#8ee7ba" font-family="DejaVu Sans" font-size="29" font-weight="700">${esc(dateLabel(date).toUpperCase())}</text><text x="120" y="${740+index*245}" fill="#f7fcf9" font-family="DejaVu Sans" font-size="43" font-weight="700">${esc(weatherLabel(today.weather_code[i]))}</text><text x="950" y="${700+index*245}" text-anchor="end" fill="#f7fcf9" font-family="DejaVu Sans" font-size="57" font-weight="800">${esc(number(today.temperature_2m_max[i]))}°</text><text x="950" y="${755+index*245}" text-anchor="end" fill="#8ee7ba" font-family="DejaVu Sans" font-size="27">${esc(number(today.precipitation_probability_max[i]))}% pluja</text>`;}).join('');
   slides.push(baseSvg('Els pròxims dies','Tendència ràpida',rows,'Segueix l’evolució actualitzada a la web',logoData));
   await Promise.all(slides.map((svg,index)=>writeFile(resolve(OUTPUT,`slide-${index+1}.svg`),svg)));
-  const title=`El temps a Sant Celoni · ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'long',timeZone:'Europe/Madrid'}).format(now)} #Shorts`;
-  await writeFile(resolve(OUTPUT,'metadata.json'),JSON.stringify({title,description:'Dades meteorològiques reals i previsió automàtica de Meteo Fontanillas, Sant Celoni.\n\nConsulta totes les dades: https://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #ElTemps #Meteo #Shorts',tags:['Meteo Fontanillas','Sant Celoni','meteorologia','el temps','Shorts']},null,2));
+  const slot=process.env.SHORT_SLOT==='vespre'?'vespre':'mati';
+  const date=new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'long',timeZone:'Europe/Madrid'}).format(now);
+  const title=slot==='vespre'?`Previsió de demà a Sant Celoni · ${date} #Shorts`:`El temps avui a Sant Celoni · ${date} #Shorts`;
+  const description=slot==='vespre'?'Actualització de vespre: situació actual i previsió de demà des de Meteo Fontanillas.':'Actualització de matí: dades reals i previsió del dia des de Meteo Fontanillas.';
+  await writeFile(resolve(OUTPUT,'metadata.json'),JSON.stringify({title,description:`${description}\n\nConsulta totes les dades: https://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #ElTemps #Meteo #Shorts`,tags:['Meteo Fontanillas','Sant Celoni','meteorologia','el temps','Shorts']},null,2));
   console.log(`Generades ${slides.length} pantalles a ${OUTPUT}`);
 }
 
