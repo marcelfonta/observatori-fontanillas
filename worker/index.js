@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.10.0";
+const WORKER_VERSION = "22.11.0";
 const WORKER_BUILT = "2026-08-24";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -509,11 +509,32 @@ async function alertHistory(url, env) {
 function notificationCategory(entry){
   const p=String(entry?.phenomenon||'').toLowerCase();
   if(/pluj|lluv|precipit/.test(p))return 'rain';
-  if(/vent|viento|ratxa|racha/.test(p))return 'wind';
+  if(/vent|viento|ratxa|racha|costa|costaner|oleaje|mar[ií]tim/.test(p))return 'wind';
   if(/tempest|torment|llamp|rayo/.test(p))return 'storm';
   if(/neu|nieve/.test(p))return 'snow';
-  if(/calor|fred|frío|temperatur/.test(p))return 'temperature';
-  return 'all';
+  if(/calor|fred|fr[ií]o|temperatur/.test(p))return 'temperature';
+  return null;
+}
+
+function alertPushStateKey(fingerprint){return `push-alert:${fingerprint}`;}
+
+async function readAlertPushState(env,fingerprint){
+  if(!env.DB||!fingerprint)return null;
+  const row=await env.DB.prepare('SELECT state_value FROM alert_state WHERE state_key = ?').bind(alertPushStateKey(fingerprint)).first();
+  try{return row?.state_value?JSON.parse(row.state_value):null;}catch{return null;}
+}
+
+async function writeAlertPushState(env,fingerprint,value){
+  if(!env.DB||!fingerprint)return;
+  await env.DB.prepare(`INSERT INTO alert_state (state_key,state_value,updated_at) VALUES (?,?,CURRENT_TIMESTAMP)
+    ON CONFLICT(state_key) DO UPDATE SET state_value=excluded.state_value,updated_at=CURRENT_TIMESTAMP`)
+    .bind(alertPushStateKey(fingerprint),JSON.stringify(value)).run();
+}
+
+function canRetryAlertPush(state){
+  if(!state||state.delivered)return !state?.delivered;
+  const lastAttempt=Date.parse(state.lastAttempt||'');
+  return !Number.isFinite(lastAttempt)||Date.now()-lastAttempt>=30*60*1000;
 }
 
 async function sendOneSignalAlert(entry, env){
@@ -527,13 +548,11 @@ async function sendOneSignalAlert(entry, env){
   const level=entry.levelLabel || entry.level || 'Avís';
   const heading=`${level}: ${entry.phenomenon || 'avís meteorològic'}`;
   const body=String(entry.description || entry.title || 'Consulta el detall oficial.').slice(0,180);
-  const filters=[
-    {field:'tag',key:'alert_all',relation:'=',value:'1'},
-    {operator:'OR'},
-    {field:'tag',key:`alert_${category}`,relation:'=',value:'1'},
-    {operator:'AND'},
-    {field:'tag',key:`alert_level_${normalizedLevel}`,relation:'=',value:'1'},
-  ];
+  // OneSignal avalua els operadors en una llista plana. Exigim sempre el nivell
+  // triat i, quan el fenomen és conegut, també la categoria corresponent.
+  const filters=[];
+  if(category)filters.push({field:'tag',key:`alert_${category}`,relation:'=',value:'1'},{operator:'AND'});
+  filters.push({field:'tag',key:`alert_level_${normalizedLevel}`,relation:'=',value:'1'});
   const response=await fetch('https://api.onesignal.com/notifications',{
     method:'POST',
     headers:{'Authorization':`Key ${env.ONESIGNAL_REST_API_KEY}`,'Content-Type':'application/json'},
@@ -546,7 +565,13 @@ async function sendOneSignalAlert(entry, env){
     await recordOperationalState(env,'push-alert','down',result).catch(()=>{});
     return result;
   }
-  const result={sent:true,id:payload.id||null,recipients:Number(payload.recipients)||0,level:normalizedLevel,category};
+  const recipients=Number(payload.recipients)||0;
+  if(!recipients){
+    const result={sent:false,accepted:true,id:payload.id||null,recipients:0,reason:'no_recipients',level:normalizedLevel,category};
+    await recordOperationalState(env,'push-alert','down',result).catch(()=>{});
+    return result;
+  }
+  const result={sent:true,id:payload.id||null,recipients,level:normalizedLevel,category};
   await recordOperationalState(env,'push-alert','healthy',result).catch(()=>{});
   return result;
 }
@@ -563,7 +588,9 @@ async function pushTest(request,env){
   const response=await fetch('https://api.onesignal.com/notifications',{method:'POST',headers:{Authorization:`Key ${env.ONESIGNAL_REST_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',include_subscription_ids:[subscriptionId],headings:{ca:'Prova d’avisos Meteo Fontanillas',en:'Meteo Fontanillas alert test'},contents:{ca:'Connexió correcta: aquest dispositiu pot rebre avisos meteorològics.',en:'Connection successful: this device can receive weather alerts.'},url:'https://meteo.fontanillas.cat/?page=avisos'})});
   const payload=await response.json().catch(()=>({}));
   if(!response.ok)return json({ok:false,error:cleanText(payload.errors?.join?.(' · ')||'OneSignal no ha acceptat la prova',300)},502,'no-store',origin);
-  return json({ok:true,accepted:true},200,'no-store',origin);
+  const recipients=Number(payload.recipients)||0;
+  if(!recipients)return json({ok:false,accepted:true,id:payload.id||null,recipients:0,error:'OneSignal ha acceptat la petició però no ha trobat aquest dispositiu com a destinatari.'},502,'no-store',origin);
+  return json({ok:true,accepted:true,id:payload.id||null,recipients},200,'no-store',origin);
 }
 
 async function checkAlertsAndNotify(env){
@@ -573,8 +600,21 @@ async function checkAlertsAndNotify(env){
   const parsed=parseAemetFeed(xml);
   const payload={ok:true,alerts:parsed.activeAlerts,maxLevel:parsed.maxLevel};
   const fresh=await recordAlertEvents(payload,env);
+  for(const entry of parsed.activeAlerts){
+    const fingerprint=await alertFingerprint(entry);
+    const state=await readAlertPushState(env,fingerprint).catch(()=>null);
+    if(!canRetryAlertPush(state))continue;
+    const result=await sendOneSignalAlert({...entry,fingerprint},env);
+    await writeAlertPushState(env,fingerprint,{
+      delivered:Boolean(result.sent&&result.recipients>0),
+      recipients:Number(result.recipients)||0,
+      attempts:(Number(state?.attempts)||0)+1,
+      lastAttempt:new Date().toISOString(),
+      reason:result.reason||result.error||null,
+      notificationId:result.id||null,
+    }).catch(error=>console.error('Alert push state error',error));
+  }
   for(const entry of fresh){
-    await sendOneSignalAlert(entry,env);
     if(['orange','red'].includes(String(entry.level||'').toLowerCase())){
       const social=await createOfficialAlertSocialDraft(entry,env);
       await publishAutomaticSocialDraft(social,env);

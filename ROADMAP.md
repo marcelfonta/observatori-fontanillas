@@ -323,4 +323,12 @@ Centre de notícies meteorològiques, calendari, API pública, widgets, recursos
 
 ## Definició de projecte madur
 
+## V22.11.0 — Fiabilitat dels avisos i context convectiu europeu
+
+- Corregit el filtre de destinataris de OneSignal perquè respecti nivell i fenomen sense perdre avisos no classificats.
+- Afegit estat de lliurament i reintent controlat dels avisos oficials actius.
+- La diagnosi diferencia una petició acceptada d’una notificació amb destinataris reals.
+- ESTOFEX queda disponible dins d’Avisos com a orientació europea no oficial; no alimenta la porta d’avisos de la portada perquè no es pot garantir una delimitació automàtica fiable a l’entorn de Sant Celoni.
+- Pendent de validació real: activar avisos en un mòbil i un ordinador, executar la prova individual i confirmar el primer avís oficial rebut.
+
 El projecte arribarà a 1.0 quan arquitectura, dades, comparador, medi ambient, Meteo IA, marca/PWA, SEO, compartició, xarxes i administració estiguin completats i validats.
