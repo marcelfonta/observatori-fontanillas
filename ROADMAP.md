@@ -1,5 +1,11 @@
 # Roadmap oficial
 
+## Manteniment obert — En curs
+
+- [x] Publicar guies de contribució, seguretat, suport i arquitectura.
+- [x] Afegir llicència MIT i plantilles per informar d'incidències o correccions de dades.
+- [ ] Crear un entorn de prova separat amb Worker i D1 propis abans de canvis que escriguin dades reals.
+
 ## V22.13.0 — Fiabilitat operativa i auditoria — Preparada per revisar
 
 - [x] Detectar explícitament el desalineament entre Worker públic i codi abans de publicar targetes socials.

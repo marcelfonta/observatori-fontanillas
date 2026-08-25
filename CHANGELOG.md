@@ -1,5 +1,10 @@
 # Changelog
 
+## Documentació i manteniment obert
+
+- Afegides guies d'arquitectura, desplegament, API, fonts de dades, desenvolupament i Meteo IA.
+- Afegides normes de contribució, conducta, seguretat, suport, llicència MIT i plantilles d'incidències.
+
 ## V22.13.0 — 2026-08-25
 
 - Les publicacions automàtiques queden preparades per a tres franges diàries: 08:00, 14:00 i 20:30, amb comprovació preventiva independent abans de cadascuna.

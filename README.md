@@ -83,3 +83,13 @@ node tests/v21-1.mjs
 Les proves comproven navegació, selectors crítics, PWA, Meteo IA, icones, Centre de Dades, peus, protecció administrativa i absència de duplicacions de «Tornar amunt». `node tests/meteo-ai.mjs` valida conversa geogràfica, coneixement, fonts i efemèrides; `node tests/share-card.mjs` valida que les targetes no inventin dades.
 
 Consulta `PROJECT.md`, `ROADMAP.md` i `CHANGELOG.md` per a les normes, l’ordre de les fases i el detall de la versió.
+
+## Documentació i contribucions
+
+- Arquitectura: [docs/architecture.md](docs/architecture.md)
+- Desenvolupament i proves: [docs/development.md](docs/development.md)
+- Desplegament: [docs/deployment.md](docs/deployment.md)
+- API i fonts de dades: [docs/api.md](docs/api.md) i [docs/data-sources.md](docs/data-sources.md)
+- Contribucions, seguretat i suport: [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md) i [SUPPORT.md](SUPPORT.md)
+
+El projecte es distribueix sota la [llicència MIT](LICENSE). Les credencials i la configuració de producció no formen part del repositori.
