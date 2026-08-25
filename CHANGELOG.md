@@ -1,23 +1,21 @@
 # Changelog
 
-## V22.12.0 — 2026-08-25
+## Documentació i manteniment obert
 
+- Afegides guies d'arquitectura, desplegament, API, fonts de dades, desenvolupament i Meteo IA.
+- Afegides normes de contribució, conducta, seguretat, suport, llicència MIT i plantilles d'incidències.
+
+## V22.13.0 — 2026-08-25
+
+- Les publicacions automàtiques queden preparades per a tres franges diàries: 08:00, 14:00 i 20:30, amb comprovació preventiva independent abans de cadascuna.
+- El panell conserva i mostra l’última comprovació preventiva encara que provingui d’una franja nova.
+- Google rep metadades de rastreig completes i dades estructurades més riques de l’Organització i el conjunt d’observacions.
+- S’actualitzen recursos de web i PWA perquè els navegadors no reutilitzin fitxers antics després del desplegament.
 - La publicació social comprova que el Worker públic tingui la mateixa versió abans de preparar targetes, evitant errors 404 opacs quan producció va per darrere.
 - OneSignal usa `ONESIGNAL_API_KEY` com a secret preferit i conserva `ONESIGNAL_REST_API_KEY` com a alias temporal; els errors 401/403 expliquen que cal revisar la clau server-side.
 - Les neteges de rate limit passen a manteniment programat i s’afegeixen índexs compostos a D1 per reduir lectures innecessàries.
 - Afegit executor de proves automàtic amb `npm run test:quick`.
 - Simplificada la documentació principal i afegides guia d’arrencada, checklist d’entrega i auditoria del projecte.
-
-## Unreleased
-
-### Documentation and open-source stewardship
-
-- Added a contributor-facing README plus architecture, deployment, API, data-source, Meteo IA and development guides.
-- Added contribution, conduct, security and support policies.
-- Documented the existing Node 22 GitHub Actions quality workflow and added issue forms for bugs, feature proposals and source/data corrections.
-- Added the MIT licence, allowing reuse, modification and distribution under its notice and disclaimer.
-- Verified the existing `main` branch protection: required Node 22 checks, pull-request workflow, linear history, resolved conversations, and blocked force-pushes/deletions.
-- Recorded the remaining governance work: licence selection, versioned CI, branch protection, issue templates and independent staging.
 
 ## V22.11.0 — 2026-08-25
 
