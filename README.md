@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V22.13.0
+# Observatori Meteorològic Fontanillas — V22.14.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V22.13.0 incorpora verificació transparent de predicció, avisos, PWA, consultes globals i publicacions socials automàtiques amb targetes generades a partir de dades actuals.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V22.14.0 prioritza la fiabilitat operativa: redueix escriptures innecessàries a D1, deixa rastre explícit de canals socials sense credencials i fa més diagnosticable la configuració d'avisos push.
 
 ### Predicció vs realitat
 
@@ -57,7 +57,9 @@ Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas 
 
 El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V21.2.0 també s’ha de desplegar aquest Worker i aplicar `worker/schema.sql`, que manté `social_drafts` i afegeix el registre `social_publications`. Les credencials `META_SYSTEM_USER_TOKEN`, `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`, `TELEGRAM_BOT_TOKEN` i `TELEGRAM_CHANNEL_ID` es mantenen només a Cloudflare; el Worker no en retorna mai els valors.
 
-La V22.13 publica automàticament, per defecte a les 08:00, 14:00 i 20:30, a Facebook, Instagram, Bluesky, Telegram i Threads quan les credencials corresponents són presents. Cada intent queda registrat i els errors generen un correu operatiu. Les comprovacions preventives s’executen a les 07:45, 13:45 i 20:15 sense publicar res. TikTok queda pendent de l’aprovació de publicació de la plataforma; YouTube funciona amb el seu flux separat de Shorts i X està descartat.
+La V22.14 publica automàticament, per defecte a les 08:00, 14:00 i 20:30, a Facebook, Instagram, Bluesky, Telegram i Threads quan les credencials corresponents són presents. Cada intent queda registrat i els errors generen un correu operatiu. Un canal sol·licitat sense credencials queda registrat com a error explícit, en lloc de desaparèixer silenciosament. Les comprovacions preventives s’executen a les 07:45, 13:45 i 20:15 sense publicar res. TikTok queda pendent de l’aprovació de publicació de la plataforma; YouTube funciona amb el seu flux separat de Shorts i X està descartat.
+
+Les observacions a D1 les guarda el procés programat de cinc minuts. Les visites públiques ja no escriuen a la base de dades per defecte; només es pot reactivar temporalment amb `PERSIST_ON_REQUEST=true` si hi ha una incidència concreta. El resum d'emmagatzematge es conserva cinc minuts a la memòria del Worker per evitar comptatges repetits.
 
 Per a Meta es poden definir opcionalment `META_FACEBOOK_PAGE_ID`, `META_FACEBOOK_PAGE_NAME`, `META_INSTAGRAM_ACCOUNT_ID`, `META_GRAPH_VERSION` i `META_INSTAGRAM_IMAGE_URL`. Si no s’indiquen els identificadors, el Worker intenta resoldre la pàgina i el compte professional a partir del token del sistema. La imatge predeterminada d’Instagram és `assets/images/observatori-fontanillas-social.jpg`.
 
@@ -66,6 +68,8 @@ Per a Meta es poden definir opcionalment `META_FACEBOOK_PAGE_ID`, `META_FACEBOOK
 La configuració de frontend és a `src/core/config.js`. Inclou URL de l’API, intervals d’actualització, coordenades, webcam, OneSignal i el camp opcional de GA4, que continua buit. Cloudflare Web Analytics s’activa des de Cloudflare i no necessita cap clau dins del projecte.
 
 El panell `/administracio.html` necessita el secret `ADMIN_TOKEN` al Worker. La guia d’activació i les garanties de seguretat són a `admin/README.md`.
+
+Per a avisos push, configura `ONESIGNAL_API_KEY` exclusivament com a secret del Worker. Ha de ser l'App API key de la mateixa aplicació que `ONESIGNAL_APP_ID`; no la copiïs al repositori ni a variables públiques.
 
 ## Validació
 

@@ -5,6 +5,13 @@
 - Afegides guies d'arquitectura, desplegament, API, fonts de dades, desenvolupament i Meteo IA.
 - Afegides normes de contribució, conducta, seguretat, suport, llicència MIT i plantilles d'incidències.
 
+## V22.14.0 — 2026-08-25
+
+- Les captures programades de cinc minuts passen a ser el camí ordinari de persistència; les visites a la portada ja no generen escriptures a D1 per defecte.
+- La persistència d'observacions és idempotent i el resum d'emmagatzematge es memoritza cinc minuts per reduir lectures repetitives.
+- Els canals socials sol·licitats sense credencials es registren explícitament com a fallits, de manera que el panell, els correus i els reintents no amaguen cap incidència.
+- La diagnosi d'avisos push indica quina configuració de OneSignal falta i conserva l'estat operatiu de cada prova.
+
 ## V22.13.0 — 2026-08-25
 
 - Les publicacions automàtiques queden preparades per a tres franges diàries: 08:00, 14:00 i 20:30, amb comprovació preventiva independent abans de cadascuna.

@@ -19,3 +19,9 @@ The repository deliberately does not include a canonical production `wrangler.js
 ## Secrets
 
 Use Cloudflare or GitHub secret stores for credentials, including Weather Underground, administrative, OneSignal, email and social/OAuth credentials. Never add a secret to frontend code, commit history, screenshots or issue text.
+
+`ONESIGNAL_API_KEY` is a Worker secret and must contain the App API key belonging to the same OneSignal app as the public `ONESIGNAL_APP_ID`. Verify it with a real test after deployment; a browser permission by itself does not prove that delivery works.
+
+## D1 operating policy
+
+Scheduled captures are the normal writer to D1. Do not enable `PERSIST_ON_REQUEST` in production unless investigating a specific incident, and disable it afterwards. Check D1 daily row reads and writes after a release that changes a public endpoint.

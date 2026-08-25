@@ -43,6 +43,7 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - Facebook, Instagram i Threads necessiten una targeta social publica generada pel Worker.
 - `PUBLIC_WORKER_URL` ha d'apuntar al Worker public real i tenir la mateixa versio que el codi desplegat.
 - Si produccio va per darrere del repositori, la publicacio pot fallar amb targeta no preparada. Des de V22.13 el codi ho detecta amb un missatge explicit de versio.
+- Des de V22.14, un canal escollit sense credencials queda registrat com a error operatiu; no es considera una publicacio omesa sense explicacio.
 - TikTok queda diferenciat entre compte connectat i direct post aprovat per la plataforma.
 - YouTube Shorts va per GitHub Actions, no pel mateix boto de publicacio social.
 
@@ -51,6 +52,8 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - Cloudflare D1 te limits diaris al pla gratuit; cal evitar neteges per peticio i consultes sense index.
 - Les taules de rate limit tenen indexos compostos i neteja programada diaria.
 - `monitor_state` guarda ultims estats operatius per evitar reprocessaments i facilitar diagnosi.
+- Les captures programades cada cinc minuts son l'únic cami de persistencia ordinari. Les lectures de la portada no escriuen a D1, excepte amb `PERSIST_ON_REQUEST=true` per una incidencia temporal.
+- El resum d'emmagatzematge es desa a memoria cinc minuts per evitar recomptar la base de dades a cada consulta.
 
 ## Ordres de comprovacio
 
@@ -69,10 +72,10 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.13
+## Estat V22.14
 
 - Branca de treball: `fix/v22-13-reliability-audit`.
-- Versio codi: V22.13.0.
-- Produccio observada durant la revisio: V22.12.0; cal desplegar el Worker V22.13 i actualitzar les variables d’horari per activar les tres franges diàries.
+- Versio codi: V22.14.0.
+- Abans de produccio: desplegar el Worker V22.14 i verificar les tres franges diàries.
 - Configuració de producció prevista: `SOCIAL_AUTO_TIMES=08:00,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=07:45,13:45,20:15`.
-- Accio externa pendent per avisos: revisar `ONESIGNAL_API_KEY` a Cloudflare i confirmar que pertany a la mateixa app que el `oneSignalAppId` public.
+- Accio externa pendent per avisos: revisar `ONESIGNAL_API_KEY` a Cloudflare i confirmar que pertany a la mateixa app que el `oneSignalAppId` public. Ha de ser un secret, mai una variable publica.
