@@ -50,7 +50,7 @@ export function mountPortalShell(activePage){
   let sidebar=document.getElementById('portal-sidebar');
   if(!sidebar){
     sidebar=document.createElement('aside');sidebar.className='portal-sidebar';sidebar.id='portal-sidebar';sidebar.setAttribute('aria-label','Seccions del portal');
-    const brand=document.createElement('a');brand.className='portal-sidebar__brand';brand.href='./?page=inici';brand.setAttribute('aria-label','Fontanillas · Sant Celoni, inici');brand.innerHTML='<span class="portal-sidebar__brand-mark" aria-hidden="true"><img src="assets/images/observatori-fontanillas-avatar-v21.png" alt="" width="52" height="52" /></span><span class="portal-sidebar__brand-copy"><strong>Fontanillas</strong><small>· Sant Celoni</small></span>';
+    const brand=document.createElement('a');brand.className='portal-sidebar__brand';brand.href='./?page=inici';brand.setAttribute('aria-label','Fontanillas · Sant Celoni, inici');brand.innerHTML='<span class="portal-sidebar__brand-mark" aria-hidden="true"><img src="assets/images/observatori-fontanillas-avatar-v21.png" alt="" width="52" height="52" /></span><span class="portal-sidebar__brand-copy"><strong>Fontanillas</strong><small>Sant Celoni</small></span>';
     const nav=document.createElement('nav');
     NAV_GROUPS.forEach(([group,ids])=>{
       const section=document.createElement('div');section.className='portal-nav-group';

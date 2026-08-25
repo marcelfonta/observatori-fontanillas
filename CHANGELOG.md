@@ -1,5 +1,12 @@
 # Changelog
 
+## V22.10.0 — 2026-08-25
+
+- «El temps arreu» incorpora icones meteorològiques accessibles a la lectura actual i a les previsions d’Open-Meteo i MET Norway.
+- Les fonts globals queden ordenades en pestanyes: Yr/MET integrada i accessos separats a Meteoblue i eltiempo.es, sense barrejar-ne les dades.
+- El cercador limita i desplaça els resultats llargs dins una capa pròpia perquè no quedin tapats pels blocs següents.
+- La marca lateral alinea «Fontanillas» i «Sant Celoni» sense el separador decoratiu anterior.
+
 ## V22.8.0 — 2026-08-24
 
 - En mòbil, el visor incrustat de meduses deixa de consumir dades i s’ofereix un accés directe al mapa complet de MedusApp.

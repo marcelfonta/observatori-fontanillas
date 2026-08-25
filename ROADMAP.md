@@ -318,6 +318,8 @@ Centre de notícies meteorològiques, calendari, API pública, widgets, recursos
 - Meteoblue i eltiempo.es apareixen com a consultes complementàries externes, sense presentar-ne les dades com si fossin pròpies.
 - El Worker identifica correctament el projecte davant MET Norway, valida coordenades i conserva temporalment la resposta per evitar peticions innecessàries.
 - El disseny separa previsió, contrast de models i observacions reals, també en pantalla petita.
+- La lectura i els dies previstos incorporen iconografia meteorològica accessible, i els resultats geogràfics llargs queden limitats dins un desplegable desplaçable.
+- Pendent de validació final: comprovar en dispositius reals la capa de resultats, les tres pestanyes de fonts i la mida de les icones.
 
 ## Definició de projecte madur
 
