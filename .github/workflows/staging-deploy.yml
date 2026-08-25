@@ -32,6 +32,11 @@ jobs:
           node-version: 22
           package-manager-cache: false
 
+      - name: Configura pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+
       - name: Prepara la configuració de proves
         env:
           STAGING_D1_DATABASE_ID: ${{ vars.STAGING_D1_DATABASE_ID }}
