@@ -2446,14 +2446,14 @@ async function publishAutomaticSocialDraft(result, env) {
   const previous = await socialPublicationsForDraft(env, draft.id);
   const completed = new Set(previous.filter(item=>item.status==='published').map(item=>item.channel));
   const retryChannels = Array.isArray(result?.retryChannels) ? new Set(result.retryChannels) : null;
-  const requested=parseSocialChannels(draft.channels).filter(channel=>!completed.has(channel) && (!retryChannels || retryChannels.has(channel)));
-  const unavailable=requested.filter(channel=>!configured[channel]);
-  const channels=requested.filter(channel=>configured[channel]);
+  const requested = parseSocialChannels(draft.channels).filter(channel=>!completed.has(channel) && (!retryChannels || retryChannels.has(channel)));
+  const unavailable = requested.filter(channel=>!configured[channel]);
+  const channels = requested.filter(channel=>configured[channel]);
   const outcomes = [];
-  for(const channel of unavailable){
+  for (const channel of unavailable) {
     const error='El canal no té les credencials necessàries configurades a Cloudflare.';
-    await recordSocialPublication(env,draft.id,channel,'failed',{error,responseCode:503});
-    outcomes.push({channel,ok:false,error});
+    await recordSocialPublication(env, draft.id, channel, 'failed', { error, responseCode:503 });
+    outcomes.push({ channel, ok:false, error });
   }
   for (const channel of channels) {
     try {
@@ -2857,9 +2857,7 @@ export default {
       if (request.method !== "GET") return json({ error:"Mètode no permès" }, 405);
       if (url.pathname === "/" || url.pathname === "") {
         const observation = await resilientCurrentObservation(env);
-        // Les captures periòdiques són propietat del cron. Una visita pública no ha
-        // d'escriure a D1: en hores de trànsit això multiplicava el consum diari.
-        if (env.DB && !observation.degraded && String(env.PERSIST_ON_REQUEST || '').toLowerCase()==='true') {
+        if (String(env.PERSIST_ON_REQUEST || "").toLowerCase() === "true" && env.DB && !observation.degraded) {
           ctx.waitUntil(persistObservation(observation, env).catch(error => console.error("D1 persist error", error)));
         }
         return json(observation, 200, "public, max-age=60");

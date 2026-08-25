@@ -7,10 +7,10 @@
 
 ## V22.14.0 — 2026-08-25
 
-- Les captures programades de cinc minuts passen a ser el camí ordinari de persistència; les visites a la portada ja no generen escriptures a D1 per defecte.
-- La persistència d'observacions és idempotent i el resum d'emmagatzematge es memoritza cinc minuts per reduir lectures repetitives.
-- Els canals socials sol·licitats sense credencials es registren explícitament com a fallits, de manera que el panell, els correus i els reintents no amaguen cap incidència.
-- La diagnosi d'avisos push indica quina configuració de OneSignal falta i conserva l'estat operatiu de cada prova.
+- D1 deixa de persistir lectures en cada visita pública; les captures programades de cinc minuts són el camí normal de l’historial.
+- La persistència d’una observació és idempotent i el resum de magatzem es conserva cinc minuts a memòria per reduir lectures.
+- Els canals socials sol·licitats sense credencials queden registrats com a error explícit, reintentable i notificable per correu.
+- La prova d’avisos push registra l’estat operatiu real i indica quin secret de OneSignal falta o és incorrecte.
 
 ## V22.13.0 — 2026-08-25
 

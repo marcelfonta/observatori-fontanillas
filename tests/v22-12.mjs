@@ -19,4 +19,4 @@ assert.match(worker, /El canal no té les credencials necessàries configurades 
 assert.match(worker, /oneSignalConfigurationMessage/);
 assert.match(schema, /idx_contact_rate_limit_ip_time/);
 assert.match(schema, /idx_ai_rate_limit_ip_time/);
-console.log('Test V22.14.0: fiabilitat de publicacions, push i manteniment D1');
+console.log('Test V22.14.0: protecció D1 i diagnòstic operatiu');

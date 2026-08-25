@@ -8,15 +8,15 @@
 
 ## V22.14.0 — Protecció de D1 i diagnòstic operatiu — Preparada per revisar
 
-- [x] Evitar escriptures a D1 en cada visita pública; les captures programades de cinc minuts mantenen l'historial.
-- [x] Fer idempotent la persistència d'una observació ja existent i memoritzar cinc minuts el resum d'emmagatzematge.
+- [x] Evitar escriptures a D1 en cada visita pública; les captures programades de cinc minuts mantenen l’historial.
+- [x] Fer idempotent la persistència d’una observació ja existent i memoritzar cinc minuts el resum d’emmagatzematge.
 - [x] Registrar explícitament els canals socials demanats sense credencials perquè puguin rebre reintent, correu i diagnòstic.
-- [x] Fer explícit al diagnòstic push quin secret de OneSignal falta o és necessari.
+- [x] Fer explícit al diagnòstic push quin secret de OneSignal falta o cal revisar.
 
 ### Validacions externes abans de tancar
 
 - [ ] Integrar la PR i desplegar el Worker V22.14.
-- [ ] Configurar el secret real `ONESIGNAL_API_KEY` a Cloudflare amb l'App API key correcta.
+- [ ] Configurar el secret real `ONESIGNAL_API_KEY` amb l’App API key correcta.
 - [ ] Fer una prova real de OneSignal des de mòbil i ordinador.
 - [ ] Confirmar les franges socials de les 08:00, 14:00 i 20:30 després del desplegament.
 - [ ] Revisar el consum diari de files llegides i escrites a D1 durant la primera setmana de setembre.
