@@ -1,5 +1,13 @@
 # Changelog
 
+## V22.12.0 — 2026-08-25
+
+- La publicació social comprova que el Worker públic tingui la mateixa versió abans de preparar targetes, evitant errors 404 opacs quan producció va per darrere.
+- OneSignal usa `ONESIGNAL_API_KEY` com a secret preferit i conserva `ONESIGNAL_REST_API_KEY` com a alias temporal; els errors 401/403 expliquen que cal revisar la clau server-side.
+- Les neteges de rate limit passen a manteniment programat i s’afegeixen índexs compostos a D1 per reduir lectures innecessàries.
+- Afegit executor de proves automàtic amb `npm run test:quick`.
+- Simplificada la documentació principal i afegides guia d’arrencada, checklist d’entrega i auditoria del projecte.
+
 ## V22.11.0 — 2026-08-25
 
 - Els avisos push exigeixen sempre el nivell escollit i apliquen la categoria només quan el fenomen es pot classificar amb seguretat.
