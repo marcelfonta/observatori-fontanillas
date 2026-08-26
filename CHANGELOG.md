@@ -1,5 +1,9 @@
 # Changelog
 
+## Higiene del sitemap — 2026-08-26
+
+- Actualitzades les dates `lastmod` de la portada i de «El temps arreu» perquè reflecteixin els canvis públics recents sense introduir URLs duplicades.
+
 ## Millores d’anàlisi i consulta local — 2026-08-26
 
 - El Centre de Dades compara les últimes 24 hores amb les 24 anteriors, separant temperatura mitjana i pluja observada.
