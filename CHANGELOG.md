@@ -1,5 +1,9 @@
 # Changelog
 
+## Alertes de publicació social — 2026-08-26
+
+- Un error temporal d’un canal queda registrat i es reintenta automàticament, però el correu d’alerta només s’envia si el canal continua fallant després de quatre intents. Així una recuperació correcta no genera una alarma definitiva.
+
 ## Higiene del sitemap — 2026-08-26
 
 - Actualitzades les dates `lastmod` de la portada i de «El temps arreu» perquè reflecteixin els canvis públics recents sense introduir URLs duplicades.

@@ -4,6 +4,7 @@ const WORKER_BUILT = "2026-08-25";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
+const SOCIAL_AUTOMATIC_MAX_ATTEMPTS = 4;
 const runtimeStateCache = new Map();
 const STATION_LATITUDE = 41.6906;
 const STATION_LONGITUDE = 2.4890;
@@ -2580,12 +2581,19 @@ async function publishAutomaticSocialDraft(result, env) {
   }
   await refreshSocialDraftPublicationStatus(env, draft);
   const failed = outcomes.filter(item=>!item.ok);
+  const definitiveFailures = failed.filter(item=>{
+    const previousAttempts=previous.filter(publication=>publication.channel===item.channel).length;
+    return previousAttempts + 1 >= SOCIAL_AUTOMATIC_MAX_ATTEMPTS;
+  });
   await recordOperationalState(env,'social-automatic',failed.length?'down':'healthy',{
     draftId:draft.id, localDate:result.localDate || null, slot:result.slot || null,
     published:outcomes.filter(item=>item.ok).map(item=>item.channel),
     failed:failed.map(item=>({channel:item.channel,error:item.error})), skipped:requested.length===0,
   }).catch(()=>{});
-  if (failed.length) await sendOperationalEmail(env, '[Observatori] Publicació automàtica incompleta', `No s’ha pogut publicar l’informe de ${result.localDate || 'avui'} a: ${failed.map(item=>item.channel).join(', ')}.\n\n${failed.map(item=>`${item.channel}: ${item.error}`).join('\n')}`, 'social_publish_failed').catch(error=>console.error('Social notification error',error));
+  // A provider pot fallar puntualment. El planificador reintenta cada cinc minuts;
+  // avisem per correu només quan s'han esgotat tots els intents, per no convertir
+  // una recuperació automàtica correcta en una alarma aparentment definitiva.
+  if (definitiveFailures.length) await sendOperationalEmail(env, '[Observatori] Publicació automàtica incompleta', `No s’ha pogut publicar l’informe de ${result.localDate || 'avui'} després de ${SOCIAL_AUTOMATIC_MAX_ATTEMPTS} intents a: ${definitiveFailures.map(item=>item.channel).join(', ')}.\n\n${definitiveFailures.map(item=>`${item.channel}: ${item.error}`).join('\n')}`, 'social_publish_failed').catch(error=>console.error('Social notification error',error));
   return { published:outcomes.some(item=>item.ok), outcomes };
 }
 
@@ -2603,7 +2611,7 @@ async function recoverIncompleteDailySocialDraft(env, date = new Date()) {
   // Avoid retry storms for persistent provider errors while allowing transient card failures to recover.
   const attempts = new Map();
   for (const item of publications) attempts.set(item.channel,(attempts.get(item.channel)||0)+1);
-  const retryChannels=pending.filter(channel=>(attempts.get(channel)||0)<4);
+  const retryChannels=pending.filter(channel=>(attempts.get(channel)||0)<SOCIAL_AUTOMATIC_MAX_ATTEMPTS);
   if (!retryChannels.length) return null;
   return { created:false, recovered:true, localDate, slot:'recovery', retryChannels, draft };
 }
