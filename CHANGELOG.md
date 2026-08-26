@@ -2,6 +2,8 @@
 
 ## En desenvolupament
 
+- Abans d’enviar una imatge a Facebook, Instagram o Threads, el Worker genera i desa temporalment la targeta PNG/JPEG a R2. Meta rep així una imatge ja materialitzada, no una captura sota demanda que pugui respondre tard o amb un tipus invàlid.
+- Les targetes temporals s’eliminen al cap de tres dies; una edició del contingut invalida les dues variants per evitar reutilitzar una imatge antiga.
 - El registre editorial de l’administració es pagina de sis en sis i conserva el filtre actiu.
 - Les publicacions publicades o descartades queden plegades fins que se’n demana el detall, sense eliminar-ne l’historial ni els resultats per canal.
 
