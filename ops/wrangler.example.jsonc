@@ -27,6 +27,12 @@
       "database_id": "REPLACE_WITH_STAGING_D1_ID"
     }
   ],
+  "r2_buckets": [
+    {
+      "binding": "SOCIAL_VIDEO_BUCKET",
+      "bucket_name": "meteo-fontanillas-social-video"
+    }
+  ],
   "env": {
     "staging": {
       "name": "replace-with-staging-worker-name",

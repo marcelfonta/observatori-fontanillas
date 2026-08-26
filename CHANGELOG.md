@@ -1,5 +1,11 @@
 # Changelog
 
+## Vídeos socials temporals — Preparació segura
+
+- Creat un bucket R2 privat europeu per als vídeos temporals de Shorts, sense domini ni accés públic.
+- El Worker només accepta MP4 amb una clau prevista, autenticació separada per pujar-los i un màxim de 30 MB.
+- Els vídeos només es poden recuperar amb una URL signada, d’un màxim d’una hora, i el manteniment elimina els fitxers amb més de tres dies.
+- No s’activa ni es publica cap Story automàtica amb aquest canvi: queda pendent d’una prova explícita amb Meta.
 ## V22.14.1 — 2026-08-26
 
 - Els dos YouTube Shorts diaris es pugen amb marge com a privats i es programen amb `publishAt` per fer-se públics exactament a les 08:00 i a les 20:30 de Sant Celoni.

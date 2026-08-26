@@ -2087,6 +2087,88 @@ function publicWorkerBaseUrl(env) {
   }
 }
 
+const SOCIAL_VIDEO_KEY = /^shorts\/(\d{4}-\d{2}-\d{2})\/(morning|evening)\.mp4$/;
+const SOCIAL_VIDEO_MAX_BYTES = 30 * 1024 * 1024;
+const SOCIAL_VIDEO_RETENTION_MS = 3 * 24 * 60 * 60 * 1000;
+
+function socialVideoKey(value) {
+  const key = String(value || '');
+  return SOCIAL_VIDEO_KEY.test(key) ? key : '';
+}
+
+function socialVideoUploadToken(request) {
+  const authorization = String(request.headers.get('Authorization') || '');
+  return authorization.startsWith('Bearer ') ? authorization.slice(7).trim() : '';
+}
+
+async function socialVideoSignature(key, expires, env) {
+  const secret = String(env.SOCIAL_VIDEO_SIGNING_SECRET || env.ADMIN_TOKEN || '');
+  if (secret.length < 24) throw Object.assign(new Error('Falta una clau segura per signar els vídeos socials.'), { status:503 });
+  const cryptoKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name:'HMAC', hash:'SHA-256' }, false, ['sign']);
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(`social-video:${key}:${expires}`));
+  return [...new Uint8Array(signature)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function socialVideoUrl(key, env, lifetimeSeconds = 1800) {
+  const safeKey = socialVideoKey(key);
+  if (!safeKey) throw new Error('La clau del vídeo social no és vàlida.');
+  const seconds = Math.min(3600, Math.max(60, Number(lifetimeSeconds) || 1800));
+  const expires = Math.floor(Date.now() / 1000) + seconds;
+  const signature = await socialVideoSignature(safeKey, expires, env);
+  return `${publicWorkerBaseUrl(env)}/social-video/${safeKey}?expires=${expires}&sig=${signature}`;
+}
+
+async function serveSocialVideo(_request, env, key, url) {
+  if (!env.SOCIAL_VIDEO_BUCKET) return json({ error:'L’emmagatzematge temporal de vídeo encara no està configurat.' }, 503, 'no-store');
+  const safeKey = socialVideoKey(key);
+  const expires = Number(url.searchParams.get('expires'));
+  if (!safeKey || !Number.isSafeInteger(expires) || expires < Math.floor(Date.now() / 1000) || expires > Math.floor(Date.now() / 1000) + 3600) {
+    return json({ error:'L’enllaç temporal del vídeo no és vàlid o ha caducat.' }, 403, 'no-store');
+  }
+  const expected = await socialVideoSignature(safeKey, expires, env);
+  if (!(await secureTokenMatch(String(url.searchParams.get('sig') || ''), expected))) return json({ error:'Signatura de vídeo no vàlida.' }, 403, 'no-store');
+  const object = await env.SOCIAL_VIDEO_BUCKET.get(safeKey);
+  if (!object) return json({ error:'Vídeo temporal no trobat.' }, 404, 'no-store');
+  const headers = new Headers();
+  if (typeof object.writeHttpMetadata === 'function') object.writeHttpMetadata(headers);
+  headers.set('Content-Type', headers.get('Content-Type') || 'video/mp4');
+  headers.set('Cache-Control', 'private, no-store, max-age=0');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('Content-Disposition', 'inline');
+  if (object.etag) headers.set('ETag', object.etag);
+  return new Response(object.body, { headers });
+}
+
+async function uploadSocialVideo(request, env, key) {
+  if (!env.SOCIAL_VIDEO_BUCKET) return json({ error:'L’emmagatzematge temporal de vídeo encara no està configurat.' }, 503, 'no-store');
+  const expected = String(env.SOCIAL_VIDEO_UPLOAD_TOKEN || '');
+  if (expected.length < 24) return json({ error:'La càrrega de vídeo encara no està configurada.' }, 503, 'no-store');
+  if (!(await secureTokenMatch(socialVideoUploadToken(request), expected))) return json({ error:'No autoritzat.' }, 401, 'no-store');
+  const safeKey = socialVideoKey(key);
+  if (!safeKey) return json({ error:'Nom de vídeo no permès.' }, 400, 'no-store');
+  const contentLength = Number(request.headers.get('Content-Length') || 0);
+  if (!Number.isFinite(contentLength) || contentLength < 1 || contentLength > SOCIAL_VIDEO_MAX_BYTES) return json({ error:'El vídeo ha de tenir entre 1 byte i 30 MB.' }, 413, 'no-store');
+  if (!String(request.headers.get('Content-Type') || '').toLowerCase().startsWith('video/mp4')) return json({ error:'Només s’accepten vídeos MP4.' }, 415, 'no-store');
+  const video = await request.arrayBuffer();
+  if (video.byteLength < 1 || video.byteLength > SOCIAL_VIDEO_MAX_BYTES) return json({ error:'El vídeo ha de tenir entre 1 byte i 30 MB.' }, 413, 'no-store');
+  await env.SOCIAL_VIDEO_BUCKET.put(safeKey, video, {
+    httpMetadata:{ contentType:'video/mp4', cacheControl:'private, no-store, max-age=0' },
+    customMetadata:{ uploadedAt:new Date().toISOString(), source:'youtube-short' },
+  });
+  return json({ ok:true, key:safeKey, url:await socialVideoUrl(safeKey, env) }, 201, 'no-store');
+}
+
+async function cleanupSocialVideos(env, date = new Date()) {
+  if (!env.SOCIAL_VIDEO_BUCKET) return { skipped:'binding_missing' };
+  const clock = localClockParts(date);
+  if (Number(clock.hour) !== 3 || Number(clock.minute) >= STORAGE_INTERVAL_MINUTES) return { skipped:'outside_window' };
+  const listing = await env.SOCIAL_VIDEO_BUCKET.list({ prefix:'shorts/', limit:1000 });
+  const cutoff = date.getTime() - SOCIAL_VIDEO_RETENTION_MS;
+  const keys = listing.objects.filter(object => new Date(object.uploaded).getTime() < cutoff).map(object => object.key);
+  if (keys.length) await env.SOCIAL_VIDEO_BUCKET.delete(keys);
+  return { scanned:listing.objects.length, deleted:keys.length };
+}
+
 function socialCardHtml(draft) {
   let data = {};
   try { data = JSON.parse(draft.payload || '{}'); } catch {}
@@ -2889,6 +2971,10 @@ export default {
       if (request.method === "GET" && url.pathname === "/oauth/tiktok/callback") return tiktokOAuthCallback(request, env, url);
       const socialCardMatch = url.pathname.match(/^\/social-card\/(\d+)\.(png|jpg)$/);
       if (request.method === "GET" && socialCardMatch) return socialCard(request, env, Number(socialCardMatch[1]), url, socialCardMatch[2] === 'jpg' ? 'jpeg' : 'png');
+      const socialVideoMatch = url.pathname.match(/^\/social-video\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
+      if (request.method === 'GET' && socialVideoMatch) return serveSocialVideo(request, env, socialVideoMatch[1], url);
+      const socialVideoUploadMatch = url.pathname.match(/^\/admin\/social-video-upload\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
+      if (request.method === 'POST' && socialVideoUploadMatch) return uploadSocialVideo(request, env, socialVideoUploadMatch[1]);
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
       const socialPublishMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/publish$/);
@@ -2940,6 +3026,7 @@ export default {
       observedJob('alerts',checkAlertsAndNotify(env)),
       observedJob('preflight',runDailyIntegrationPreflight(env)),
       observedJob('database-maintenance',runDatabaseMaintenance(env)),
+      observedJob('social-video-cleanup',cleanupSocialVideos(env)),
     ];
     ctx.waitUntil(Promise.allSettled(jobs).then(async results => {
       const rejected=results.filter(item=>item.status==='rejected');
