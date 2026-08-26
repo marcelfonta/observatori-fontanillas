@@ -21,10 +21,18 @@ const input=$('#municipality-query');
 const suggestions=$('#municipality-suggestions');
 const status=$('#municipality-search-status');
 const result=$('#municipality-result');
+const favoritesHost=$('#municipality-favorites');
+const favoritesList=$('#municipality-favorites-list');
+const FAVORITES_KEY='fontanillas-municipality-favorites-v1';
 let candidates=[];
 let timer=null;
 
 function placeLabel(place){return [place.name,place.admin2||place.admin1,place.country].filter(Boolean).join(' · ');}
+function validPlace(place){return Boolean(place&&String(place.name||'').trim())&&Number.isFinite(Number(place.latitude))&&Number.isFinite(Number(place.longitude));}
+function savedFavorites(){try{const items=JSON.parse(localStorage.getItem(FAVORITES_KEY)||'[]');return Array.isArray(items)?items.filter(validPlace).slice(0,6):[];}catch{return [];}}
+function favoriteKey(place){return `${String(place.name).toLocaleLowerCase('ca-ES')}|${Number(place.latitude).toFixed(3)}|${Number(place.longitude).toFixed(3)}`;}
+function renderFavorites(){const items=savedFavorites();if(!favoritesHost||!favoritesList)return;favoritesHost.hidden=!items.length;favoritesList.replaceChildren(...items.map((place,index)=>{const button=document.createElement('button');button.type='button';button.dataset.favoriteIndex=String(index);button.textContent=placeLabel(place);return button;}));}
+function toggleFavorite(place){if(!validPlace(place))return false;const key=favoriteKey(place);const items=savedFavorites();const index=items.findIndex(item=>favoriteKey(item)===key);if(index>=0)items.splice(index,1);else items.unshift({name:String(place.name).trim(),admin1:String(place.admin1||''),admin2:String(place.admin2||''),country:String(place.country||''),latitude:Number(place.latitude),longitude:Number(place.longitude)});try{localStorage.setItem(FAVORITES_KEY,JSON.stringify(items.slice(0,6)));}catch{}renderFavorites();return index<0;}
 
 function renderSuggestions(items){
   candidates=items.slice(0,8);
@@ -43,11 +51,11 @@ async function suggest(){
   }catch(error){renderSuggestions([]);status.textContent='No s’ha pogut completar la cerca. Torna-ho a provar.';}
 }
 
-function renderForecast(location,weather){
+function renderForecast(location,weather,selectedLocation=location){
   const current=weather.current||{};const daily=weather.daily||{};
   const days=(daily.time||[]).slice(0,7).map((day,index)=>{const label=weatherLabel(daily.weather_code?.[index]);return `<article><time datetime="${escapeHtml(day)}">${escapeHtml(date(day))}</time>${weatherIcon(weatherKind(daily.weather_code?.[index]),label)}<strong>${escapeHtml(label)}</strong><span><b>${number(daily.temperature_2m_max?.[index])}°</b><small>${number(daily.temperature_2m_min?.[index])}°</small></span><em>${number(daily.precipitation_probability_max?.[index])}% pluja</em></article>`;}).join('');
   const currentLabel=weatherLabel(current.weather_code);
-  return `<section class="municipality-summary panel"><header><div><p class="eyebrow">Previsió del model · coordenades del municipi</p><h2>${escapeHtml(location.name)}</h2><p>${escapeHtml([location.admin2||location.admin1,location.country].filter(Boolean).join(' · '))}</p></div><span class="tag">No és una estació</span></header><div class="municipality-now"><div><small>Temperatura estimada ara</small><div class="municipality-now-reading">${weatherIcon(weatherKind(current.weather_code),currentLabel)}<strong>${number(current.temperature_2m,1)} °C</strong></div><span>${escapeHtml(currentLabel)}</span></div><dl><div><dt>Sensació</dt><dd>${number(current.apparent_temperature,1)} °C</dd></div><div><dt>Humitat</dt><dd>${number(current.relative_humidity_2m)}%</dd></div><div><dt>Vent</dt><dd>${number(current.wind_speed_10m,1)} km/h</dd></div><div><dt>Pluja</dt><dd>${number(current.precipitation,1)} mm</dd></div></dl></div><div class="municipality-days">${days}</div><p class="municipality-source">Font: Open-Meteo. Valors calculats pel model per a les coordenades seleccionades; no són mesures d’una estació.</p></section>`;
+  return `<section class="municipality-summary panel"><header><div><p class="eyebrow">Previsió del model · coordenades del municipi</p><h2>${escapeHtml(location.name)}</h2><p>${escapeHtml([location.admin2||location.admin1,location.country].filter(Boolean).join(' · '))}</p></div><div class="municipality-summary__actions"><button type="button" class="municipality-favorite-toggle" data-favorite-toggle aria-pressed="false">☆ Desar municipi</button><span class="tag">No és una estació</span></div></header><div class="municipality-now"><div><small>Temperatura estimada ara</small><div class="municipality-now-reading">${weatherIcon(weatherKind(current.weather_code),currentLabel)}<strong>${number(current.temperature_2m,1)} °C</strong></div><span>${escapeHtml(currentLabel)}</span></div><dl><div><dt>Sensació</dt><dd>${number(current.apparent_temperature,1)} °C</dd></div><div><dt>Humitat</dt><dd>${number(current.relative_humidity_2m)}%</dd></div><div><dt>Vent</dt><dd>${number(current.wind_speed_10m,1)} km/h</dd></div><div><dt>Pluja</dt><dd>${number(current.precipitation,1)} mm</dd></div></dl></div><div class="municipality-days">${days}</div><p class="municipality-source">Font: Open-Meteo. Valors calculats pel model per a les coordenades seleccionades; no són mesures d’una estació.</p></section>`;
 }
 
 function renderStations(payload,location){
@@ -74,7 +82,7 @@ async function selectPlace(location,{updateUrl=true}={}){
   try{
     const [forecast,stations,met]=await Promise.allSettled([fetchLocalityForecast(location),fetchNearbyStations('now',location),fetchMetNorwayForecast(location)]);
     if(forecast.status==='rejected')throw forecast.reason;
-    result.innerHTML=renderForecast(forecast.value.location,forecast.value.weather)+renderComparisons(location,met.status==='fulfilled'?met.value:null)+(stations.status==='fulfilled'?renderStations(stations.value,location):renderStations({stations:[]},location));
+    result.innerHTML=renderForecast(forecast.value.location,forecast.value.weather,location)+renderComparisons(location,met.status==='fulfilled'?met.value:null)+(stations.status==='fulfilled'?renderStations(stations.value,location):renderStations({stations:[]},location));
     status.textContent=`Resultats actualitzats per a ${placeLabel(location)}.`;
   }catch(error){result.innerHTML='<div class="panel municipality-loading is-error"><strong>No hem pogut carregar aquest lloc.</strong><span>Comprova la connexió o prova una altra localitat.</span></div>';status.textContent='Consulta no disponible temporalment.';}
 }
@@ -83,9 +91,11 @@ input?.addEventListener('input',()=>{clearTimeout(timer);renderSuggestions([]);t
 input?.addEventListener('keydown',event=>{if(event.key==='Escape')renderSuggestions([]);});
 form?.addEventListener('submit',async event=>{event.preventDefault();if(candidates[0])selectPlace(candidates[0]);else await suggest();});
 suggestions?.addEventListener('click',event=>{const button=event.target.closest('[data-place-index]');if(button)selectPlace(candidates[Number(button.dataset.placeIndex)]);});
-result?.addEventListener('click',event=>{const tab=event.target.closest('[data-forecast-tab]');if(!tab)return;const tabs=tab.closest('[data-source-tabs]');tabs.querySelectorAll('[data-forecast-tab]').forEach(button=>{const active=button===tab;button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});tabs.querySelectorAll('[data-source-panel]').forEach(panel=>{panel.hidden=panel.dataset.sourcePanel!==tab.dataset.forecastTab;});});
+result?.addEventListener('click',event=>{const favorite=event.target.closest('[data-favorite-toggle]');if(favorite){const url=new URL(window.location.href);const added=toggleFavorite({name:url.searchParams.get('municipi')||input.value,latitude:Number(url.searchParams.get('lat')),longitude:Number(url.searchParams.get('lon'))});favorite.setAttribute('aria-pressed',String(added));favorite.textContent=added?'★ Desat':'☆ Desar municipi';return;}const tab=event.target.closest('[data-forecast-tab]');if(!tab)return;const tabs=tab.closest('[data-source-tabs]');tabs.querySelectorAll('[data-forecast-tab]').forEach(button=>{const active=button===tab;button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});tabs.querySelectorAll('[data-source-panel]').forEach(panel=>{panel.hidden=panel.dataset.sourcePanel!==tab.dataset.forecastTab;});});
 result?.addEventListener('keydown',event=>{const tab=event.target.closest('[data-forecast-tab]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;const buttons=[...tab.closest('[role="tablist"]').querySelectorAll('[data-forecast-tab]')];let index=buttons.indexOf(tab);if(event.key==='Home')index=0;else if(event.key==='End')index=buttons.length-1;else index=(index+(event.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length;event.preventDefault();buttons[index].focus();buttons[index].click();});
 document.addEventListener('click',event=>{if(!event.target.closest('.municipality-search'))suggestions.hidden=true;});
+favoritesList?.addEventListener('click',event=>{const place=savedFavorites()[Number(event.target.closest('[data-favorite-index]')?.dataset.favoriteIndex)];if(place)selectPlace(place);});
+renderFavorites();
 
 const params=new URLSearchParams(location.search);const rawLat=params.get('lat');const rawLon=params.get('lon');const lat=Number(rawLat);const lon=Number(rawLon);
 if(params.get('municipi')&&rawLat!==null&&rawLon!==null&&Number.isFinite(lat)&&Number.isFinite(lon))selectPlace({name:params.get('municipi'),latitude:lat,longitude:lon},{updateUrl:false});

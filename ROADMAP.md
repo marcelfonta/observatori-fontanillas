@@ -2,6 +2,10 @@
 
 ## Manteniment obert — En curs
 
+- [x] Completar l’anàlisi visible amb la comparació de les últimes 24 hores respecte de les 24 anteriors.
+- [x] Afegir accessos locals a municipis favorits sense crear cap perfil ni desar dades al servidor.
+- [ ] Mesurar Core Web Vitals mòbils en producció amb Chrome DevTools o PageSpeed Insights quan la traça estigui disponible.
+
 - [x] Publicar guies de contribució, seguretat, suport i arquitectura.
 - [x] Afegir llicència MIT i plantilles per informar d'incidències o correccions de dades.
 - [x] Crear un entorn de prova separat amb Worker i D1 propis abans de canvis que escriguin dades reals.

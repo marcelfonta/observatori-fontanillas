@@ -22,6 +22,8 @@ assert.match(nodes.get('data-ephemeris-copy').textContent,/efemèrides històriq
 assert.match(nodes.get('data-ephemeris-list').innerHTML,/Meteocat|OMM/);
 const timeline=buildWeatherTimeline(history,[{started_at:new Date(atNoon(2)).toISOString(),level:'orange',phenomenon:'Vent',source:'AEMET'}]);
 assert.ok(timeline.some(item=>item.type==='alert'));
+assert.match(nodes.get('data-summary-temp-24h').textContent,/°C|—/,'Falta la comparació de temperatura de les últimes 24 hores.');
+assert.match(nodes.get('data-summary-rain-24h').textContent,/mm/,'Falta la comparació de pluja de les últimes 24 hores.');
 assert.ok(timeline.some(item=>item.type==='rain'));
 assert.ok(timeline.some(item=>item.type==='extreme'));
 console.log('Test de pluviometria V18: correcte');

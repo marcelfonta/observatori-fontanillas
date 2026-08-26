@@ -9,6 +9,7 @@ const [page,feature,weather,portal,worker,style,project,serviceWorker,sitemap,ro
 assert.equal(JSON.parse(project).version,'22.14.0');
 assert.ok(serviceWorker.includes('observatori-fontanillas-v22-14-0')&&serviceWorker.includes("'/municipis.html'")&&serviceWorker.includes("'/src/features/municipality-explorer.js'"));
 assert.ok(page.includes('data-portal-static="municipis"')&&page.includes('municipality-search-form')&&page.includes('Fonts diferents, papers diferents'));
+assert.ok(page.includes('municipality-favorites')&&feature.includes('fontanillas-municipality-favorites-v1')&&feature.includes('toggleFavorite'),'Falten els municipis desats localment.');
 assert.ok(feature.includes('searchMunicipalities')&&feature.includes('fetchLocalityForecast')&&feature.includes("fetchNearbyStations('now',location)"));
 assert.ok(feature.includes('No és una estació')&&feature.includes('Cap estació disponible fins a'));
 assert.ok(feature.includes('municipality-stations panel')&&feature.includes("rawLat!==null&&rawLon!==null"));
