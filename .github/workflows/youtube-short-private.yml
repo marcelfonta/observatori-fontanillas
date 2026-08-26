@@ -4,16 +4,29 @@ on:
   schedule:
     # GitHub Actions pot iniciar-se amb retard. Pugem el Short amb marge i
     # YouTube el fa públic exactament a l'hora local programada.
-    - cron: '30 4 * * *'
-    - cron: '0 17 * * *'
+    # Evitem l'inici de l'hora, on GitHub acostuma a endarrerir més els crons,
+    # i deixem més de tres hores de marge abans de cada publicació pública.
+    - cron: '17 2 * * *'
+    - cron: '17 14 * * *'
   workflow_dispatch:
     inputs:
+      slot:
+        description: Franja que s'ha de preparar
+        required: true
+        default: mati
+        type: choice
+        options: [mati, vespre]
       privacy:
         description: Visibilitat del vídeo de prova
         required: true
         default: private
         type: choice
         options: [private, unlisted, public]
+      schedule_publication:
+        description: Programa'l a l'hora pública de la franja (només si encara hi ha marge)
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -31,7 +44,8 @@ jobs:
       YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
       YOUTUBE_PRIVACY_STATUS: ${{ github.event_name == 'schedule' && 'private' || inputs.privacy || 'private' }}
-      SHORT_SLOT: ${{ github.event.schedule == '0 17 * * *' && 'vespre' || 'mati' }}
+      SHORT_SLOT: ${{ github.event_name == 'schedule' && (github.event.schedule == '17 14 * * *' && 'vespre' || 'mati') || inputs.slot || 'mati' }}
+      SHOULD_SCHEDULE_PUBLICATION: ${{ github.event_name == 'schedule' || inputs.schedule_publication }}
       SOCIAL_VIDEO_UPLOAD_URL: ${{ secrets.SOCIAL_VIDEO_UPLOAD_URL }}
       SOCIAL_VIDEO_UPLOAD_TOKEN: ${{ secrets.SOCIAL_VIDEO_UPLOAD_TOKEN }}
     steps:
@@ -46,7 +60,7 @@ jobs:
           node scripts/youtube-short.mjs
           node scripts/youtube-music.mjs
       - name: Programa l'hora pública del Short
-        if: github.event_name == 'schedule'
+        if: env.SHOULD_SCHEDULE_PUBLICATION == 'true'
         run: node scripts/youtube-publish-at.mjs >> "$GITHUB_ENV"
       - name: Renderitza el Short vertical
         run: |
