@@ -1,5 +1,12 @@
 # Changelog
 
+## Vídeos socials temporals — Preparació segura
+
+- Creat un bucket R2 privat europeu per als vídeos temporals de Shorts, sense domini ni accés públic.
+- El Worker només accepta MP4 amb una clau prevista, autenticació separada per pujar-los i un màxim de 30 MB.
+- Els vídeos només es poden recuperar amb una URL signada, d’un màxim d’una hora, i el manteniment elimina els fitxers amb més de tres dies.
+- No s’activa ni es publica cap Story automàtica amb aquest canvi: queda pendent d’una prova explícita amb Meta.
+
 ## V22.20.0 — Barreres operatives i ús de D1 — En verificació
 
 - Plantilla de configuració i flux manual de GitHub Actions per desplegar i validar únicament l'entorn de proves.

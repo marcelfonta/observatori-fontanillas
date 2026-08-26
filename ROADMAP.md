@@ -9,6 +9,14 @@
 - [x] Preparar una configuració de staging sense secrets i un flux manual que desplega i valida només aquest entorn.
 - [x] Mostrar al panell administratiu el recompte de files reals desades a D1.
 
+## Vídeos temporals i Stories — Preparació segura
+
+- [x] Crear un bucket R2 privat a Europa per als vídeos temporals de Shorts, sense domini públic.
+- [x] Preparar càrrega autenticada, URL signada i neteja automàtica de vídeos amb més de tres dies.
+- [ ] Afegir els secrets de càrrega només després d’integrar i desplegar el Worker amb la vinculació R2.
+- [ ] Fer una prova manual d’una Story d’Instagram amb el compte propi; la publicació automàtica resta desactivada fins que Meta l’accepti.
+- [ ] Determinar amb una prova real si Facebook Page Stories admet el mateix flux abans de prometre aquesta sortida.
+
 ## V22.15.0 — Registre remot OneSignal — Verificada
 
 - [x] Fer que el permís es demani des de l’SDK de OneSignal, evitant una sincronització separada entre el navegador i el servei.
