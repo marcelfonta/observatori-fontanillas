@@ -1,5 +1,8 @@
 # Changelog
 
+## Higiene del sitemap — 2026-08-26
+
+- Actualitzades les dates `lastmod` de la portada i de «El temps arreu» perquè reflecteixin els canvis públics recents sense introduir URLs duplicades.
 ## Correcció de municipis desats — 2026-08-26
 
 - Quan s’obre un municipi ja desat en aquest navegador, el botó mostra des del primer moment «★ Desat» i permet retirar-lo sense un clic intermedi enganyós.
