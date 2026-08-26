@@ -13,7 +13,7 @@
 
 - [x] Crear un bucket R2 privat a Europa per als vídeos temporals de Shorts, sense domini públic.
 - [x] Preparar càrrega autenticada, URL signada i neteja automàtica de vídeos amb més de tres dies.
-- [ ] Afegir els secrets de càrrega només després d’integrar i desplegar el Worker amb la vinculació R2.
+- [x] Afegir els secrets de càrrega a Cloudflare i GitHub després d’integrar i desplegar el Worker amb la vinculació R2.
 - [ ] Fer una prova manual d’una Story d’Instagram amb el compte propi; la publicació automàtica resta desactivada fins que Meta l’accepti.
 - [ ] Determinar amb una prova real si Facebook Page Stories admet el mateix flux abans de prometre aquesta sortida.
 
