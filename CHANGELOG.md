@@ -2,6 +2,7 @@
 
 ## En desenvolupament
 
+- La programació dels Shorts admet ara cinc minuts de marge: l’execució real de les 20:24 podia acabar el renderitzat i la pujada, però el llindar anterior de quinze minuts la descartava sense necessitat.
 - Abans d’enviar una imatge a Facebook, Instagram o Threads, el Worker genera i desa temporalment la targeta PNG/JPEG a R2. Meta rep així una imatge ja materialitzada, no una captura sota demanda que pugui respondre tard o amb un tipus invàlid.
 - Les targetes temporals s’eliminen al cap de tres dies; una edició del contingut invalida les dues variants per evitar reutilitzar una imatge antiga.
 - El registre editorial de l’administració es pagina de sis en sis i conserva el filtre actiu.
