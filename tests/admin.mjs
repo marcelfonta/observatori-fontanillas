@@ -73,4 +73,12 @@ assert.deepEqual(Object.fromEntries(['meta','facebook','instagram','bluesky','te
 assert.equal(adminPayload.social.pendingDrafts,2);
 assert.equal(adminPayload.social.recent.length,1);
 
+const socialDrafts=await worker.fetch(new Request('https://fonta-meteo.example/admin/social-drafts?limit=6&offset=0',{headers:{Origin:'https://meteo.fontanillas.cat',Authorization:'Bearer '+('a'.repeat(32))}}),{ADMIN_TOKEN:'a'.repeat(32),DB:fakeDb},context);
+assert.equal(socialDrafts.status,200);
+const socialDraftPayload=await socialDrafts.json();
+assert.equal(socialDraftPayload.limit,6);
+assert.equal(socialDraftPayload.offset,0);
+assert.equal(socialDraftPayload.hasMore,false);
+assert.equal(socialDraftPayload.drafts.length,1);
+
 console.log('Test d’Administració V21: correcte');

@@ -1,5 +1,10 @@
 # Changelog
 
+## En desenvolupament
+
+- El registre editorial de l’administració es pagina de sis en sis i conserva el filtre actiu.
+- Les publicacions publicades o descartades queden plegades fins que se’n demana el detall, sense eliminar-ne l’historial ni els resultats per canal.
+
 ## Recuperació independent dels Shorts — 2026-08-26
 
 - El Worker comprova les franges de Shorts a les 06:40 i 18:40 de Sant Celoni i, si GitHub no ha iniciat el flux, el dispara per l'API amb una única execució per franja.

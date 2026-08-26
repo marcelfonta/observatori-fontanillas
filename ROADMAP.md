@@ -2,6 +2,8 @@
 
 ## Manteniment obert — En curs
 
+- [x] Fer manejable el registre editorial de l’administració amb paginació i detalls plegables, sense perdre publicacions antigues.
+
 - [x] Completar l’anàlisi visible amb la comparació de les últimes 24 hores respecte de les 24 anteriors.
 - [x] Afegir accessos locals a municipis favorits sense crear cap perfil ni desar dades al servidor.
 - [ ] Mesurar Core Web Vitals mòbils en producció amb Chrome DevTools o PageSpeed Insights quan la traça estigui disponible.

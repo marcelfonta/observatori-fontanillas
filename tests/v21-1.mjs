@@ -30,9 +30,9 @@ const scheduled=worker.slice(worker.indexOf('async scheduled('));
 assert.ok(scheduled.includes('createDailySocialDraft'),'El cron ha de poder crear esborranys.');
 for(const publisher of ['publishFacebook(','publishInstagram(','publishTelegram(','publishBluesky('])assert.ok(!scheduled.includes(publisher),`El cron no pot executar ${publisher}.`);
 
-for(const id of ['admin-social-list','admin-social-feedback','admin-social-mode','admin-social-drafts','admin-social-diagnose','admin-social-diagnostic-list','admin-social-facebook','admin-social-instagram'])assert.ok(adminPage.includes(`id="${id}"`),`Panell editorial: falta ${id}.`);
+for(const id of ['admin-social-list','admin-social-feedback','admin-social-mode','admin-social-drafts','admin-social-diagnose','admin-social-diagnostic-list','admin-social-facebook','admin-social-instagram','admin-social-pagination','admin-social-previous','admin-social-next'])assert.ok(adminPage.includes(`id="${id}"`),`Panell editorial: falta ${id}.`);
 for(const text of ['Publicació automàtica i control','Una publicació diària amb dades reals'])assert.ok(adminPage.includes(text),`Panell editorial: falta l’avís «${text}».`);
-for(const token of ['/admin/social-drafts','/admin/social-diagnostics','runSocialDiagnostics','window.confirm','socialEditorDirty','textContent','socialPublicationRows',"facebook:'Facebook'","instagram:'Instagram'","telegram:'Telegram'","bluesky:'Bluesky'",'Publicar a ${label}'])assert.ok(adminFeature.includes(token),`Editor social: falta ${token}.`);
+for(const token of ['/admin/social-drafts','/admin/social-diagnostics','runSocialDiagnostics','window.confirm','socialEditorDirty','textContent','socialPublicationRows',"facebook:'Facebook'","instagram:'Instagram'","telegram:'Telegram'","bluesky:'Bluesky'",'Publicar a ${label}','SOCIAL_PAGE_SIZE','hasMore','initSocialPagination','admin-social-card__details'])assert.ok(adminFeature.includes(token),`Editor social: falta ${token}.`);
 for(const token of ['.admin-social-card','.admin-social-publications','.admin-social-actions','@media'])assert.ok(portalCss.includes(token),`Estils editorials: falta ${token}.`);
 
 console.log('Test V21.2: diagnòstic segur, quatre canals manuals, registre i anti-duplicats correctes');
