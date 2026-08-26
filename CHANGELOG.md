@@ -1,5 +1,11 @@
 # Changelog
 
+## Recuperació independent dels Shorts — 2026-08-26
+
+- El Worker comprova les franges de Shorts a les 06:40 i 18:40 de Sant Celoni i, si GitHub no ha iniciat el flux, el dispara per l'API amb una única execució per franja.
+- La coordinació amb D1 evita vídeos duplicats entre el cron de GitHub, el disparador alternatiu i les recuperacions manuals.
+- El mecanisme roman desactivat fins que Cloudflare rep el secret `GITHUB_SHORTS_DISPATCH_TOKEN`; cal un token restringit només al repositori amb permís «Actions: Write».
+
 ## Shorts amb dades més recents — 2026-08-26
 
 - La preparació automàtica dels dos Shorts diaris queda a les 04:17 i 16:47 UTC, lluny de l'inici de l'hora però a menys de dues hores de les publicacions de les 08:00 i 20:30 locals.

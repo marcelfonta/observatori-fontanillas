@@ -1192,6 +1192,9 @@ const SOCIAL_SCHEDULE_BLUEPRINT=[
 // configuració addicional.
 const DEFAULT_SOCIAL_AUTO_TIMES='08:00,14:00,20:30';
 const DEFAULT_SOCIAL_PREFLIGHT_TIMES='07:45,13:45,20:15';
+const YOUTUBE_SHORT_FALLBACK_WINDOWS={ mati:{ hour:6, minute:40 }, vespre:{ hour:18, minute:40 } };
+const YOUTUBE_SHORT_FALLBACK_WINDOW_MINUTES=35;
+const YOUTUBE_SHORT_RUN_STALE_MS=20*60*1000;
 
 function socialSchedulePlan(env){
   const active=new Set(String(env.SOCIAL_AUTO_TIMES||DEFAULT_SOCIAL_AUTO_TIMES).split(',').map(value=>value.trim()));
@@ -1216,6 +1219,15 @@ function activeTimeSlot(schedule, date = new Date()) {
 
 function activeSocialSlot(env, date = new Date()) {
   return activeTimeSlot(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES, date);
+}
+
+export function youtubeShortFallbackSlot(date = new Date()) {
+  const parts=localClockParts(date);
+  const current=Number(parts.hour)*60+Number(parts.minute);
+  return Object.entries(YOUTUBE_SHORT_FALLBACK_WINDOWS).find(([, time]) => {
+    const start=time.hour*60+time.minute;
+    return current>=start && current<start+YOUTUBE_SHORT_FALLBACK_WINDOW_MINUTES;
+  })?.[0] || null;
 }
 
 function localIsoDate(date = new Date()) {
@@ -2170,6 +2182,89 @@ async function cleanupSocialVideos(env, date = new Date()) {
   return { scanned:listing.objects.length, deleted:keys.length };
 }
 
+function youtubeShortRunKey(localDate, slot) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(localDate || '')) && (slot === 'mati' || slot === 'vespre')
+    ? `youtube-short:${localDate}:${slot}` : '';
+}
+
+function parseYoutubeShortRunDetail(value) {
+  try { return JSON.parse(value || '{}'); } catch { return {}; }
+}
+
+async function authorizeYoutubeShortRequest(request, env) {
+  const expected=String(env.SOCIAL_VIDEO_UPLOAD_TOKEN || '');
+  if (expected.length < 24) return false;
+  return secureTokenMatch(socialVideoUploadToken(request), expected);
+}
+
+async function updateYoutubeShortRun(env, key, status, detail) {
+  const now=new Date().toISOString();
+  await env.DB.prepare(`INSERT INTO monitor_state
+    (service_key,status,consecutive_failures,last_checked_at,last_failure_at,last_success_at,detail)
+    VALUES (?,?,?,?,?,?,?)
+    ON CONFLICT(service_key) DO UPDATE SET status=excluded.status,
+      consecutive_failures=CASE WHEN excluded.status='healthy' THEN 0 ELSE monitor_state.consecutive_failures+1 END,
+      last_checked_at=excluded.last_checked_at,
+      last_failure_at=CASE WHEN excluded.status='down' THEN excluded.last_failure_at ELSE monitor_state.last_failure_at END,
+      last_success_at=CASE WHEN excluded.status='healthy' THEN excluded.last_success_at ELSE monitor_state.last_success_at END,
+      detail=excluded.detail`)
+    .bind(key,status,status==='healthy'?0:1,now,status==='down'?now:null,status==='healthy'?now:null,JSON.stringify(detail).slice(0,12000)).run();
+}
+
+async function youtubeShortRunControl(request, env, localDate, slot) {
+  if (!(await authorizeYoutubeShortRequest(request,env))) return json({ error:'No autoritzat.' },401,'no-store');
+  if (!(await ensureOperationsSchema(env))) return json({ error:'La coordinació de Shorts no està disponible.' },503,'no-store');
+  const key=youtubeShortRunKey(localDate,slot);
+  if (!key) return json({ error:'Franja o data de Short no vàlida.' },400,'no-store');
+  const body=await request.json().catch(()=>({}));
+  const action=cleanText(body.action,20).toLowerCase();
+  const source=cleanText(body.source,80) || 'github-actions';
+  const previous=await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(key).first();
+  const detail=parseYoutubeShortRunDetail(previous?.detail);
+  if (action === 'start') {
+    if (previous?.status === 'healthy' && detail.localDate === localDate && detail.slot === slot) {
+      return json({ ok:true, shouldRun:false, reason:'already_completed' },200,'no-store');
+    }
+    await updateYoutubeShortRun(env,key,'running',{ localDate,slot,source,stage:'running' });
+    return json({ ok:true, shouldRun:true },200,'no-store');
+  }
+  if (action === 'complete') {
+    await updateYoutubeShortRun(env,key,'healthy',{ localDate,slot,source,stage:'completed' });
+    return json({ ok:true, completed:true },200,'no-store');
+  }
+  return json({ error:'Acció de coordinació no vàlida.' },400,'no-store');
+}
+
+async function dispatchYoutubeShortFallback(env, date = new Date()) {
+  const slot=youtubeShortFallbackSlot(date);
+  if (!slot) return { skipped:'outside_window' };
+  if (!(await ensureOperationsSchema(env))) return { skipped:'no_database' };
+  const token=String(env.GITHUB_SHORTS_DISPATCH_TOKEN || '');
+  const repository=cleanText(env.GITHUB_SHORTS_REPOSITORY || 'marcelfonta/observatori-fontanillas',160);
+  if (token.length < 24 || !/^[\w.-]+\/[\w.-]+$/.test(repository)) {
+    return { skipped:'not_configured' };
+  }
+  const localDate=localIsoDate(date);
+  const key=youtubeShortRunKey(localDate,slot);
+  const previous=await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(key).first();
+  const previousDetail=parseYoutubeShortRunDetail(previous?.detail);
+  const age=previous?.last_checked_at ? date.getTime()-new Date(previous.last_checked_at).getTime() : Infinity;
+  if (previous?.status === 'healthy' && previousDetail.localDate === localDate && previousDetail.slot === slot) return { skipped:'completed' };
+  if ((previous?.status === 'running' || previous?.status === 'dispatching') && age >= 0 && age < YOUTUBE_SHORT_RUN_STALE_MS) return { skipped:'in_progress' };
+  const response=await fetch(`https://api.github.com/repos/${repository}/actions/workflows/youtube-short-private.yml/dispatches`,{
+    method:'POST',
+    headers:{ Accept:'application/vnd.github+json', Authorization:`Bearer ${token}`, 'Content-Type':'application/json', 'X-GitHub-Api-Version':'2026-03-10', 'User-Agent':'fonta-meteo-worker' },
+    body:JSON.stringify({ ref:'main', inputs:{ slot, privacy:'private', schedule_publication:'true' } }),
+  });
+  if (!response.ok) {
+    const detail=cleanText(await response.text().catch(()=>''),500);
+    await updateYoutubeShortRun(env,key,'down',{ localDate,slot,stage:'dispatch_failed',responseCode:response.status,error:detail });
+    throw Object.assign(new Error(`GitHub no ha acceptat la recuperació del Short (${response.status}).`),{ responseCode:response.status });
+  }
+  await updateYoutubeShortRun(env,key,'dispatching',{ localDate,slot,stage:'dispatched',source:'cloudflare-fallback' });
+  return { dispatched:true,slot,localDate };
+}
+
 function socialCardHtml(draft) {
   let data = {};
   try { data = JSON.parse(draft.payload || '{}'); } catch {}
@@ -2971,6 +3066,8 @@ export default {
       if (request.method === 'GET' && socialVideoMatch) return serveSocialVideo(request, env, socialVideoMatch[1], url);
       const socialVideoUploadMatch = url.pathname.match(/^\/admin\/social-video-upload\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
       if (request.method === 'POST' && socialVideoUploadMatch) return uploadSocialVideo(request, env, socialVideoUploadMatch[1]);
+      const youtubeShortRunMatch = url.pathname.match(/^\/admin\/youtube-short-runs\/(\d{4}-\d{2}-\d{2})\/(mati|vespre)$/);
+      if (request.method === 'POST' && youtubeShortRunMatch) return youtubeShortRunControl(request, env, youtubeShortRunMatch[1], youtubeShortRunMatch[2]);
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
       const socialPublishMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/publish$/);
@@ -3023,6 +3120,7 @@ export default {
       observedJob('preflight',runDailyIntegrationPreflight(env)),
       observedJob('database-maintenance',runDatabaseMaintenance(env)),
       observedJob('social-video-cleanup',cleanupSocialVideos(env)),
+      observedJob('youtube-shorts-fallback',dispatchYoutubeShortFallback(env)),
     ];
     ctx.waitUntil(Promise.allSettled(jobs).then(async results => {
       const rejected=results.filter(item=>item.status==='rejected');
