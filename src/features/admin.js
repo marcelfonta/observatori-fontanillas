@@ -10,6 +10,9 @@ let latestDiagnostic=null;
 let refreshTimer=null;
 let socialFilter='';
 let socialDrafts=[];
+const SOCIAL_PAGE_SIZE=6;
+let socialOffset=0;
+let socialHasMore=false;
 let socialCredentials={meta:false,facebook:false,instagram:false,bluesky:false,telegram:false,threads:false,tiktok:false};
 let socialEditorDirty=false;
 const element=id=>document.getElementById(id);
@@ -167,19 +170,41 @@ function socialDraftCard(draft){
     if(failedChannels.length){const retry=makeSocialButton(`Repetir només els errors (${failedChannels.length})`,'retry-failed','is-primary');retry.dataset.failedChannels=failedChannels.join(',');actions.append(retry);}
     actions.append(makeSocialButton('Preparar per al canal de WhatsApp','whatsapp','is-secondary'));
   }
-  card.append(header,form,note,actions,socialPublicationRows(draft));
+  const archived=['published','discarded'].includes(draft.status);
+  if(archived){
+    const details=document.createElement('details');details.className='admin-social-card__details';
+    const summary=document.createElement('summary');summary.textContent='Veure el detall i el registre per canal';
+    details.append(summary,form,note,actions,socialPublicationRows(draft));
+    card.append(header,details);
+  }else card.append(header,form,note,actions,socialPublicationRows(draft));
   card.querySelectorAll('input:not(:disabled),textarea:not(:disabled)').forEach(control=>control.addEventListener('input',()=>{card.classList.add('is-dirty');socialEditorDirty=true;socialFeedback('Hi ha canvis sense desar.','warning');}));
   return card;
 }
+function renderSocialPagination(){
+  const pagination=element('admin-social-pagination');
+  const previous=element('admin-social-previous');
+  const next=element('admin-social-next');
+  if(!pagination||!previous||!next)return;
+  const first=socialDrafts.length?socialOffset+1:0;
+  const last=socialOffset+socialDrafts.length;
+  pagination.hidden=!socialDrafts.length;
+  previous.disabled=socialOffset===0;
+  next.disabled=!socialHasMore;
+  text('admin-social-page',socialDrafts.length?`Registres ${first}–${last}${socialFilter?' · filtre actiu':''}`:'Sense registres');
+}
+function initSocialPagination(){
+  element('admin-social-previous')?.addEventListener('click',()=>{if(socialOffset===0)return;socialOffset=Math.max(0,socialOffset-SOCIAL_PAGE_SIZE);fetchSocialDrafts(true);});
+  element('admin-social-next')?.addEventListener('click',()=>{if(!socialHasMore)return;socialOffset+=SOCIAL_PAGE_SIZE;fetchSocialDrafts(true);});
+}
 function renderSocialEditor(){
   const list=element('admin-social-list');if(!list)return;
-  if(!socialDrafts.length){const empty=document.createElement('p');empty.className='admin-social-empty';empty.textContent=socialFilter?'No hi ha continguts amb aquest estat.':'Encara no hi ha cap esborrany editorial.';list.replaceChildren(empty);return;}
-  list.replaceChildren(...socialDrafts.map(socialDraftCard));
+  if(!socialDrafts.length){const empty=document.createElement('p');empty.className='admin-social-empty';empty.textContent=socialFilter?'No hi ha continguts amb aquest estat.':'Encara no hi ha cap esborrany editorial.';list.replaceChildren(empty);renderSocialPagination();return;}
+  list.replaceChildren(...socialDrafts.map(socialDraftCard));renderSocialPagination();
 }
 async function fetchSocialDrafts(force=false){
   if(!token||socialEditorDirty&&!force)return;
   const list=element('admin-social-list');if(list&&!socialDrafts.length)list.setAttribute('aria-busy','true');
-  try{const query=new URLSearchParams({limit:'30'});if(socialFilter)query.set('status',socialFilter);const payload=await adminApi(`/admin/social-drafts?${query}`);socialDrafts=payload.drafts||[];socialEditorDirty=false;renderSocialEditor();socialFeedback('');}
+  try{const query=new URLSearchParams({limit:String(SOCIAL_PAGE_SIZE),offset:String(socialOffset)});if(socialFilter)query.set('status',socialFilter);const payload=await adminApi(`/admin/social-drafts?${query}`);socialDrafts=payload.drafts||[];socialHasMore=Boolean(payload.hasMore);socialEditorDirty=false;renderSocialEditor();socialFeedback('');}
   catch(error){recordIncident('Cua editorial',error.message);socialFeedback(`No s’ha pogut carregar la cua: ${error.message}`,'error');}
   finally{list?.removeAttribute('aria-busy');}
 }
@@ -251,5 +276,5 @@ function showLogin(message='',isError=false){element('admin-dashboard').hidden=t
 async function fetchStatus({skipDrafts=false}={}){if(!token){showLogin();return;}const refresh=element('admin-refresh');if(refresh){refresh.disabled=true;refresh.textContent='Comprovant…';}const started=performance.now();try{const response=await fetch(`${CONFIG.apiUrl}/admin/status`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'},cache:'no-store'});const payload=await response.json().catch(()=>({error:'Resposta no vàlida'}));if(response.status===401){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('La clau no és correcta.',true);return;}if(response.status===429){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('Massa intents fallits. Espera quinze minuts abans de tornar-ho a provar.',true);return;}if(response.status===503&&payload.code==='ADMIN_NOT_CONFIGURED'){sessionStorage.removeItem(TOKEN_KEY);token='';showLogin('Cal configurar primer la clau privada al Worker.',true);return;}if(!response.ok)throw new Error(payload.error||`Error ${response.status}`);await renderDashboard(payload,Math.round(performance.now()-started));if(!skipDrafts)await fetchSocialDrafts();}catch(error){recordIncident('Connexió',error.message);text('admin-overall-status','No s’ha pogut actualitzar');text('admin-last-update',error.message);if(element('admin-dashboard').hidden)showLogin('No s’ha pogut connectar amb el Worker.',true);}finally{if(refresh){refresh.disabled=false;refresh.textContent='Actualitzar';}}}
 function recordIncident(type,message){incidents.unshift({time:new Date().toISOString(),type,message:String(message||'Error desconegut').slice(0,240)});if(incidents.length>20)incidents.pop();const list=element('admin-incident-list');if(list){list.replaceChildren(...incidents.map(item=>{const entry=document.createElement('li');entry.innerHTML=`<time>${formatDate(item.time)}</time><b></b><span></span>`;entry.querySelector('b').textContent=item.type;entry.querySelector('span').textContent=item.message;return entry;}));}text('admin-incident-count',`${incidents.length} ${incidents.length===1?'incidència':'incidències'}`);}
 async function copyDiagnostic(){if(!latestDiagnostic)return;const safe=JSON.stringify(latestDiagnostic,null,2);try{await navigator.clipboard.writeText(safe);text('admin-last-update','Diagnòstic copiat sense incloure la clau');}catch{recordIncident('Portapapers','No s’ha pogut copiar el diagnòstic.');}}
-function init(){initFooterSocial();observePerformance();window.addEventListener('error',event=>recordIncident('JavaScript',event.message));window.addEventListener('unhandledrejection',event=>recordIncident('Promesa',event.reason?.message||event.reason));element('admin-login-form')?.addEventListener('submit',event=>{event.preventDefault();token=String(new FormData(event.currentTarget).get('token')||'').trim();if(token.length<24){showLogin('La clau és massa curta.',true);return;}sessionStorage.setItem(TOKEN_KEY,token);fetchStatus();});element('admin-refresh')?.addEventListener('click',()=>{if(socialEditorDirty&&!window.confirm('Hi ha canvis editorials sense desar. Vols descartar-los i actualitzar?'))return;socialEditorDirty=false;fetchStatus();});element('admin-copy-diagnostic')?.addEventListener('click',copyDiagnostic);element('admin-social-diagnose')?.addEventListener('click',runSocialDiagnostics);element('admin-social-list')?.addEventListener('click',handleSocialAction);document.querySelector('.admin-social-toolbar')?.addEventListener('click',event=>{const button=event.target.closest('[data-social-filter]');if(!button)return;if(socialEditorDirty&&!window.confirm('Hi ha canvis sense desar. Vols descartar-los i canviar el filtre?'))return;socialEditorDirty=false;socialFilter=button.dataset.socialFilter||'';document.querySelectorAll('[data-social-filter]').forEach(item=>item.classList.toggle('is-active',item===button));fetchSocialDrafts(true);});element('admin-logout')?.addEventListener('click',()=>{sessionStorage.removeItem(TOKEN_KEY);token='';latestDiagnostic=null;socialDrafts=[];socialEditorDirty=false;showLogin('Sessió tancada.');});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token&&!socialEditorDirty)fetchStatus();});token=sessionStorage.getItem(TOKEN_KEY)||'';if(token)fetchStatus();else showLogin();refreshTimer=setInterval(()=>{if(token&&!document.hidden&&!socialEditorDirty)fetchStatus();},120000);window.addEventListener('pagehide',()=>{clearInterval(refreshTimer);performanceObservers.forEach(observer=>observer.disconnect());},{once:true});}
+function init(){initFooterSocial();observePerformance();initSocialPagination();window.addEventListener('error',event=>recordIncident('JavaScript',event.message));window.addEventListener('unhandledrejection',event=>recordIncident('Promesa',event.reason?.message||event.reason));element('admin-login-form')?.addEventListener('submit',event=>{event.preventDefault();token=String(new FormData(event.currentTarget).get('token')||'').trim();if(token.length<24){showLogin('La clau és massa curta.',true);return;}sessionStorage.setItem(TOKEN_KEY,token);fetchStatus();});element('admin-refresh')?.addEventListener('click',()=>{if(socialEditorDirty&&!window.confirm('Hi ha canvis editorials sense desar. Vols descartar-los i actualitzar?'))return;socialEditorDirty=false;fetchStatus();});element('admin-copy-diagnostic')?.addEventListener('click',copyDiagnostic);element('admin-social-diagnose')?.addEventListener('click',runSocialDiagnostics);element('admin-social-list')?.addEventListener('click',handleSocialAction);document.querySelector('.admin-social-toolbar')?.addEventListener('click',event=>{const button=event.target.closest('[data-social-filter]');if(!button)return;if(socialEditorDirty&&!window.confirm('Hi ha canvis sense desar. Vols descartar-los i canviar el filtre?'))return;socialEditorDirty=false;socialFilter=button.dataset.socialFilter||'';socialOffset=0;document.querySelectorAll('[data-social-filter]').forEach(item=>item.classList.toggle('is-active',item===button));fetchSocialDrafts(true);});element('admin-logout')?.addEventListener('click',()=>{sessionStorage.removeItem(TOKEN_KEY);token='';latestDiagnostic=null;socialDrafts=[];socialOffset=0;socialHasMore=false;socialEditorDirty=false;showLogin('Sessió tancada.');});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&token&&!socialEditorDirty)fetchStatus();});token=sessionStorage.getItem(TOKEN_KEY)||'';if(token)fetchStatus();else showLogin();refreshTimer=setInterval(()=>{if(token&&!document.hidden&&!socialEditorDirty)fetchStatus();},120000);window.addEventListener('pagehide',()=>{clearInterval(refreshTimer);performanceObservers.forEach(observer=>observer.disconnect());},{once:true});}
 if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();}

@@ -2021,11 +2021,13 @@ async function adminSocialDrafts(request, env, url) {
   const limit = Math.min(50, Math.max(1, Number.parseInt(url.searchParams.get('limit') || '20', 10) || 20));
   const offset = Math.max(0, Number.parseInt(url.searchParams.get('offset') || '0', 10) || 0);
   const statement = status
-    ? env.DB.prepare(`SELECT id,dedupe_key,kind,status,channels,title,body,source_url,payload,scheduled_for,created_at FROM social_drafts WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`).bind(status, limit, offset)
-    : env.DB.prepare(`SELECT id,dedupe_key,kind,status,channels,title,body,source_url,payload,scheduled_for,created_at FROM social_drafts ORDER BY created_at DESC LIMIT ? OFFSET ?`).bind(limit, offset);
+    ? env.DB.prepare(`SELECT id,dedupe_key,kind,status,channels,title,body,source_url,payload,scheduled_for,created_at FROM social_drafts WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`).bind(status, limit + 1, offset)
+    : env.DB.prepare(`SELECT id,dedupe_key,kind,status,channels,title,body,source_url,payload,scheduled_for,created_at FROM social_drafts ORDER BY created_at DESC LIMIT ? OFFSET ?`).bind(limit + 1, offset);
   const result = await statement.all();
-  const drafts = await Promise.all((result?.results || []).map(async row => socialDraftPayload(row, await socialPublicationsForDraft(env, row.id))));
-  return json({ ok:true, drafts, limit, offset, publicationMode:socialAutomationEnabled(env)?'automatic':'manual-confirmation', schedule:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES) }, 200, 'no-store, private', auth.origin);
+  const rows = result?.results || [];
+  const hasMore = rows.length > limit;
+  const drafts = await Promise.all(rows.slice(0, limit).map(async row => socialDraftPayload(row, await socialPublicationsForDraft(env, row.id))));
+  return json({ ok:true, drafts, limit, offset, hasMore, publicationMode:socialAutomationEnabled(env)?'automatic':'manual-confirmation', schedule:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES) }, 200, 'no-store, private', auth.origin);
 }
 
 async function findSocialDraft(env, draftId) {
