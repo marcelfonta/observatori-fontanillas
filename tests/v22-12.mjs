@@ -10,7 +10,8 @@ const project = JSON.parse(await readFile(resolve(root, 'project.json'), 'utf8')
 assert.equal(project.version, '22.14.0');
 assert.match(worker, /WORKER_VERSION = "22\.14\.0"/);
 assert.match(worker, /publicWorkerBaseUrl/);
-assert.match(worker, /inside the active Worker/);
+assert.match(worker, /A self-fetch through workers\.dev can be treated as a loop/);
+assert.doesNotMatch(worker, /fetch\(readinessUrl/);
 assert.doesNotMatch(worker, /Worker públic no coincideix/);
 assert.match(worker, /ONESIGNAL_API_KEY \|\| env\.ONESIGNAL_REST_API_KEY/);
 assert.match(worker, /runDatabaseMaintenance/);

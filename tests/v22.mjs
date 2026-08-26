@@ -12,7 +12,7 @@ assert.ok(!portalCss.includes(':not(.forecast-verification)'),'La verificació j
 assert.ok(app.includes("initWhenVisible('#forecast-verification'")&&app.includes('initPortal()'),'La pàgina de verificació ha de carregar les dades quan sigui visible.');
 assert.ok(feature.includes('initForecastVerification')&&api.includes('fetchForecastVerification')&&app.includes('initForecastVerification'));
 for(const token of ['socialCardHtml','socialCardUrl','publishAutomaticSocialDraft','/photos','sendPhoto','uploadBlob','publishThreads','graph.threads.net','threads_publish','THREADS_ACCESS_TOKEN','META_INSTAGRAM_IMAGE_URL'])assert.ok(token==='META_INSTAGRAM_IMAGE_URL'?!worker.includes(token):worker.includes(token),`Automatització V22: comprovació fallida ${token}`);
-for(const token of ['recoverIncompleteDailySocialDraft','cacheEverything:false',"status IN ('approved','partially_published')",'ready=${attempt}-${Date.now()}'])assert.ok(worker.includes(token),`Recuperació social V22.5.2: falta ${token}`);
+for(const token of ['recoverIncompleteDailySocialDraft',"status IN ('approved','partially_published')",'A self-fetch through workers.dev can be treated as a loop'])assert.ok(worker.includes(token),`Recuperació social V22.5.2: falta ${token}`);
 for(const network of ['threads','tiktok','whatsapp','youtube'])assert.ok(config.includes(`${network}:`)&&footer.includes(`['${network}'`),`Enllaç social V22 absent: ${network}`);
 assert.ok(!config.includes("x:")&&!footer.includes("['x'"),'X no s’ha eliminat completament del directori social.');
 assert.ok(sw.includes('/src/features/forecast-verification.js'));
