@@ -1,5 +1,11 @@
 # Changelog
 
+## V22.14.1 — 2026-08-26
+
+- Els dos YouTube Shorts diaris es pugen amb marge com a privats i es programen amb `publishAt` per fer-se públics exactament a les 08:00 i a les 20:30 de Sant Celoni.
+- El flux rebutja una hora invàlida, massa propera o incompatible amb la privacitat privada requerida per YouTube, evitant publicacions imprevistes quan GitHub Actions s'endarrereix.
+- Afegida una prova de canvi horari perquè les franges es mantinguin en hora local tant a l'estiu com a l'hivern.
+
 ## V22.20.0 — Barreres operatives i ús de D1 — En verificació
 
 - Plantilla de configuració i flux manual de GitHub Actions per desplegar i validar únicament l'entorn de proves.

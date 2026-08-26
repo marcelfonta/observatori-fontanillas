@@ -2,9 +2,10 @@ name: YouTube Short · dues actualitzacions diàries
 
 on:
   schedule:
-    # GitHub Actions treballa en UTC. A l'agost, 06:00 UTC = 08:00 a Sant Celoni.
-    - cron: '0 6 * * *'
-    - cron: '30 18 * * *'
+    # GitHub Actions pot iniciar-se amb retard. Pugem el Short amb marge i
+    # YouTube el fa públic exactament a l'hora local programada.
+    - cron: '30 4 * * *'
+    - cron: '0 17 * * *'
   workflow_dispatch:
     inputs:
       privacy:
@@ -29,8 +30,8 @@ jobs:
       YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
       YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-      YOUTUBE_PRIVACY_STATUS: ${{ github.event_name == 'schedule' && 'public' || inputs.privacy || 'private' }}
-      SHORT_SLOT: ${{ github.event.schedule == '30 18 * * *' && 'vespre' || 'mati' }}
+      YOUTUBE_PRIVACY_STATUS: ${{ github.event_name == 'schedule' && 'private' || inputs.privacy || 'private' }}
+      SHORT_SLOT: ${{ github.event.schedule == '0 17 * * *' && 'vespre' || 'mati' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,6 +43,9 @@ jobs:
         run: |
           node scripts/youtube-short.mjs
           node scripts/youtube-music.mjs
+      - name: Programa l'hora pública del Short
+        if: github.event_name == 'schedule'
+        run: node scripts/youtube-publish-at.mjs >> "$GITHUB_ENV"
       - name: Renderitza el Short vertical
         run: |
           for image in build/youtube-short/slide-*.svg; do rsvg-convert -w 1080 -h 1920 "$image" -o "${image%.svg}.png"; done
