@@ -2055,6 +2055,7 @@ async function adminUpdateSocialDraft(request, env, draftId) {
     if(existing.some(channel=>!channels.includes(channel)))return json({error:'No es poden retirar canals del registre publicat.'},409,'no-store',auth.origin);
     if(!channels.some(channel=>!existing.includes(channel)))return json({error:'Selecciona almenys un canal nou.'},409,'no-store',auth.origin);
     await env.DB.prepare('UPDATE social_drafts SET channels = ? WHERE id = ?').bind(JSON.stringify(channels),draftId).run();
+    await invalidateSocialCardCache(draftId, env);
     await refreshSocialDraftPublicationStatus(env,{...current,channels});
     const updated=await findSocialDraft(env,draftId);
     return json({ok:true,action,draft:socialDraftPayload(updated,await socialPublicationsForDraft(env,draftId)),published:true},200,'no-store, private',auth.origin);
@@ -2066,6 +2067,7 @@ async function adminUpdateSocialDraft(request, env, draftId) {
   if (action === 'restore') status = 'review';
   await env.DB.prepare(`UPDATE social_drafts SET title = ?, body = ?, channels = ?, status = ? WHERE id = ?`)
     .bind(title, content, JSON.stringify(channels), status, draftId).run();
+  await invalidateSocialCardCache(draftId, env);
   const updated = await findSocialDraft(env, draftId);
   return json({ ok:true, action, draft:socialDraftPayload(updated, await socialPublicationsForDraft(env, draftId)), published:false }, 200, 'no-store, private', auth.origin);
 }
@@ -2088,7 +2090,10 @@ async function socialCardSignature(draftId, env) {
 async function socialCardUrl(draft, env, format = 'png') {
   const signature = await socialCardSignature(draft.id, env);
   const extension = format === 'jpeg' ? 'jpg' : 'png';
-  return `${publicWorkerBaseUrl(env)}/social-card/${draft.id}.${extension}?sig=${signature}&v=${WORKER_VERSION}`;
+  const source = [draft.id, draft.title, draft.body, draft.channels, draft.status].map(value => String(value || '')).join('\u0000');
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source));
+  const revision = [...new Uint8Array(digest)].slice(0, 6).map(byte => byte.toString(16).padStart(2, '0')).join('');
+  return `${publicWorkerBaseUrl(env)}/social-card/${draft.id}.${extension}?sig=${signature}&v=${WORKER_VERSION}&r=${revision}`;
 }
 
 function publicWorkerBaseUrl(env) {
@@ -2105,6 +2110,26 @@ function publicWorkerBaseUrl(env) {
 const SOCIAL_VIDEO_KEY = /^shorts\/(\d{4}-\d{2}-\d{2})\/(morning|evening)\.mp4$/;
 const SOCIAL_VIDEO_MAX_BYTES = 30 * 1024 * 1024;
 const SOCIAL_VIDEO_RETENTION_MS = 3 * 24 * 60 * 60 * 1000;
+const SOCIAL_CARD_CACHE_PREFIX = 'social-cards/';
+const SOCIAL_CARD_RETENTION_MS = 3 * 24 * 60 * 60 * 1000;
+
+function socialCardCacheKey(draftId, format = 'png') {
+  const id = Number(draftId);
+  if (!Number.isSafeInteger(id) || id < 1) throw new Error('Identificador de targeta social no vàlid.');
+  return `${SOCIAL_CARD_CACHE_PREFIX}${id}.${format === 'jpeg' ? 'jpg' : 'png'}`;
+}
+
+function socialCardContentType(format = 'png') {
+  return format === 'jpeg' ? 'image/jpeg' : 'image/png';
+}
+
+async function invalidateSocialCardCache(draftId, env) {
+  if (!env.SOCIAL_VIDEO_BUCKET) return;
+  await env.SOCIAL_VIDEO_BUCKET.delete([
+    socialCardCacheKey(draftId, 'png'),
+    socialCardCacheKey(draftId, 'jpeg'),
+  ]);
+}
 
 function socialVideoKey(value) {
   const key = String(value || '');
@@ -2179,6 +2204,17 @@ async function cleanupSocialVideos(env, date = new Date()) {
   if (Number(clock.hour) !== 3 || Number(clock.minute) >= STORAGE_INTERVAL_MINUTES) return { skipped:'outside_window' };
   const listing = await env.SOCIAL_VIDEO_BUCKET.list({ prefix:'shorts/', limit:1000 });
   const cutoff = date.getTime() - SOCIAL_VIDEO_RETENTION_MS;
+  const keys = listing.objects.filter(object => new Date(object.uploaded).getTime() < cutoff).map(object => object.key);
+  if (keys.length) await env.SOCIAL_VIDEO_BUCKET.delete(keys);
+  return { scanned:listing.objects.length, deleted:keys.length };
+}
+
+async function cleanupSocialCards(env, date = new Date()) {
+  if (!env.SOCIAL_VIDEO_BUCKET) return { skipped:'binding_missing' };
+  const clock = localClockParts(date);
+  if (Number(clock.hour) !== 3 || Number(clock.minute) >= STORAGE_INTERVAL_MINUTES) return { skipped:'outside_window' };
+  const listing = await env.SOCIAL_VIDEO_BUCKET.list({ prefix:SOCIAL_CARD_CACHE_PREFIX, limit:1000 });
+  const cutoff = date.getTime() - SOCIAL_CARD_RETENTION_MS;
   const keys = listing.objects.filter(object => new Date(object.uploaded).getTime() < cutoff).map(object => object.key);
   if (keys.length) await env.SOCIAL_VIDEO_BUCKET.delete(keys);
   return { scanned:listing.objects.length, deleted:keys.length };
@@ -2329,14 +2365,8 @@ async function enrichedSocialCardDraft(draft, env) {
   return { ...draft, payload:JSON.stringify(data) };
 }
 
-async function socialCard(request, env, draftId, url, format = 'png') {
-  if (!env.BROWSER) return json({ error:'La generació de targetes encara no està configurada.' }, 503);
-  if (!(await ensureSocialDraftSchema(env))) return json({ error:'D1 no configurat.' }, 503);
-  const expected = await socialCardSignature(draftId, env);
-  if (!(await secureTokenMatch(String(url.searchParams.get('sig') || ''), expected))) return json({ error:'Signatura no vàlida.' }, 403);
-  const storedDraft = await findSocialDraft(env, draftId);
-  if (!storedDraft) return json({ error:'Targeta no trobada.' }, 404);
-  const draft = await enrichedSocialCardDraft(storedDraft, env);
+async function renderSocialCard(draft, env, format = 'png') {
+  if (!env.BROWSER) throw Object.assign(new Error('La generació de targetes encara no està configurada.'), { status:503 });
   const jpeg = format === 'jpeg';
   const rendered = await env.BROWSER.quickAction('screenshot', {
     html:socialCardHtml(draft),
@@ -2345,20 +2375,62 @@ async function socialCard(request, env, draftId, url, format = 'png') {
   });
   if (!rendered.ok) {
     const details = cleanText(await rendered.clone().text().catch(() => ''), 500);
-    console.error('Social card rendering error', JSON.stringify({ draftId, status:rendered.status, details }));
-    return json({error:'No s’ha pogut generar la targeta amb dades reals.',details},502,'no-store');
+    console.error('Social card rendering error', JSON.stringify({ draftId:draft.id, status:rendered.status, details }));
+    throw Object.assign(new Error('No s’ha pogut generar la targeta amb dades reals.'), { status:502, details });
   }
-  const headers = new Headers(rendered.headers);
-  headers.set('Content-Type',jpeg ? 'image/jpeg' : 'image/png'); headers.set('Cache-Control','public, max-age=31536000, immutable');
-  headers.set('X-Content-Type-Options','nosniff');
-  headers.set('Access-Control-Allow-Origin','https://meteo.fontanillas.cat');
-  return new Response(rendered.body,{status:rendered.status,headers});
+  return rendered.arrayBuffer();
+}
+
+async function materializeSocialCard(draft, env, format = 'png') {
+  if (!env.SOCIAL_VIDEO_BUCKET) return { cached:false, skipped:'binding_missing' };
+  const key = socialCardCacheKey(draft.id, format);
+  const existing = await env.SOCIAL_VIDEO_BUCKET.get(key);
+  if (existing) return { cached:true, key };
+  const enriched = await enrichedSocialCardDraft(draft, env);
+  const image = await renderSocialCard(enriched, env, format);
+  await env.SOCIAL_VIDEO_BUCKET.put(key, image, {
+    httpMetadata:{ contentType:socialCardContentType(format), cacheControl:'public, max-age=31536000, immutable' },
+    customMetadata:{ draftId:String(draft.id), format, createdAt:new Date().toISOString(), source:'social-card' },
+  });
+  return { cached:false, key };
+}
+
+async function socialCard(request, env, draftId, url, format = 'png') {
+  if (!(await ensureSocialDraftSchema(env))) return json({ error:'D1 no configurat.' }, 503);
+  const expected = await socialCardSignature(draftId, env);
+  if (!(await secureTokenMatch(String(url.searchParams.get('sig') || ''), expected))) return json({ error:'Signatura no vàlida.' }, 403);
+  const storedDraft = await findSocialDraft(env, draftId);
+  if (!storedDraft) return json({ error:'Targeta no trobada.' }, 404);
+  const type = socialCardContentType(format);
+  if (env.SOCIAL_VIDEO_BUCKET) {
+    const cached = await env.SOCIAL_VIDEO_BUCKET.get(socialCardCacheKey(draftId, format));
+    if (cached) {
+      const headers = new Headers();
+      if (typeof cached.writeHttpMetadata === 'function') cached.writeHttpMetadata(headers);
+      headers.set('Content-Type', headers.get('Content-Type') || type);
+      headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+      headers.set('X-Content-Type-Options','nosniff');
+      headers.set('Access-Control-Allow-Origin','https://meteo.fontanillas.cat');
+      if (cached.httpEtag || cached.etag) headers.set('ETag', cached.httpEtag || cached.etag);
+      return new Response(cached.body, { headers });
+    }
+  }
+  try {
+    const image = await renderSocialCard(await enrichedSocialCardDraft(storedDraft, env), env, format);
+    const headers = new Headers();
+    headers.set('Content-Type', type); headers.set('Cache-Control','public, max-age=31536000, immutable');
+    headers.set('X-Content-Type-Options','nosniff');
+    headers.set('Access-Control-Allow-Origin','https://meteo.fontanillas.cat');
+    return new Response(image,{headers});
+  } catch (error) {
+    return json({error:error.message || 'No s’ha pogut generar la targeta amb dades reals.', details:error.details || ''},error.status || 502,'no-store');
+  }
 }
 
 async function ensureSocialCardUrl(draft,env,format='png'){
-  // The card is rendered on the same public Worker when Meta fetches the URL.
-  // A self-fetch through workers.dev can be treated as a loop and return a
-  // misleading 404 even though the public route itself is healthy.
+  // Meta must receive a stable image response. Rendering before returning the
+  // public URL avoids its first fetch racing the Browser screenshot route.
+  await materializeSocialCard(draft, env, format);
   return socialCardUrl(draft,env,format);
 }
 
@@ -3122,6 +3194,7 @@ export default {
       observedJob('preflight',runDailyIntegrationPreflight(env)),
       observedJob('database-maintenance',runDatabaseMaintenance(env)),
       observedJob('social-video-cleanup',cleanupSocialVideos(env)),
+      observedJob('social-card-cleanup',cleanupSocialCards(env)),
       observedJob('youtube-shorts-fallback',dispatchYoutubeShortFallback(env)),
     ];
     ctx.waitUntil(Promise.allSettled(jobs).then(async results => {
