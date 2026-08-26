@@ -2258,22 +2258,10 @@ async function socialCard(request, env, draftId, url, format = 'png') {
 }
 
 async function ensureSocialCardUrl(draft,env,format='png'){
-  // This runs inside the active Worker, so its code is already the deployed
-  // version. Fetching /version through workers.dev from the same Worker can
-  // be rejected as a loop even though the public endpoint is healthy.
-  const imageUrl=await socialCardUrl(draft,env,format);
-  let lastError='resposta buida';
-  for(let attempt=0;attempt<6;attempt+=1){
-    // The draft can take a moment to become visible through the public Worker.
-    // Never cache that transient 404: it would otherwise poison the card URL for a day.
-    const readinessUrl=`${imageUrl}&ready=${attempt}-${Date.now()}`;
-    const response=await fetch(readinessUrl,{headers:{Accept:'image/*','Cache-Control':'no-cache'},cf:{cacheEverything:false}}).catch(error=>{lastError=error.message;return null;});
-    const type=String(response?.headers.get('Content-Type')||'').toLowerCase();
-    if(response?.ok&&type.startsWith('image/'))return imageUrl;
-    if(response)lastError=`HTTP ${response.status} (${type||'sense tipus'})`;
-    await new Promise(resolve=>setTimeout(resolve,750*(attempt+1)));
-  }
-  throw Object.assign(new Error(`La targeta social no està preparada: ${lastError}.`),{status:502});
+  // The card is rendered on the same public Worker when Meta fetches the URL.
+  // A self-fetch through workers.dev can be treated as a loop and return a
+  // misleading 404 even though the public route itself is healthy.
+  return socialCardUrl(draft,env,format);
 }
 
 function metaGraphBase(env) {

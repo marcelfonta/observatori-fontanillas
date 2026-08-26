@@ -1,5 +1,10 @@
 # Changelog
 
+## Correcció urgent de la targeta social — 2026-08-26
+
+- Eliminada la comprovació interna que feia el Worker contra la seva pròpia URL pública abans d’enviar la targeta a Meta: Cloudflare la podia tractar com un bucle i respondre 404.
+- Facebook, Instagram i Threads reben directament la URL signada de la targeta, que Meta descarrega des de fora del Worker.
+
 ## Vídeos socials temporals — Preparació segura
 
 - Creat un bucket R2 privat europeu per als vídeos temporals de Shorts, sense domini ni accés públic.
