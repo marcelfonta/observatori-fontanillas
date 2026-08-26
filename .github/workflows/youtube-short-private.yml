@@ -46,6 +46,8 @@ jobs:
       YOUTUBE_PRIVACY_STATUS: ${{ github.event_name == 'schedule' && 'private' || inputs.privacy || 'private' }}
       SHORT_SLOT: ${{ github.event_name == 'schedule' && (github.event.schedule == '47 16 * * *' && 'vespre' || 'mati') || inputs.slot || 'mati' }}
       SHOULD_SCHEDULE_PUBLICATION: ${{ github.event_name == 'schedule' || inputs.schedule_publication }}
+      YOUTUBE_SHORT_SHOULD_RUN: 'true'
+      YOUTUBE_SHORT_COORDINATION_ACTIVE: 'false'
       SOCIAL_VIDEO_UPLOAD_URL: ${{ secrets.SOCIAL_VIDEO_UPLOAD_URL }}
       SOCIAL_VIDEO_UPLOAD_TOKEN: ${{ secrets.SOCIAL_VIDEO_UPLOAD_TOKEN }}
     steps:
@@ -53,29 +55,57 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Coordina una sola execució per franja
+        if: env.SOCIAL_VIDEO_UPLOAD_URL != '' && env.SOCIAL_VIDEO_UPLOAD_TOKEN != ''
+        run: |
+          set -euo pipefail
+          case "$SHORT_SLOT" in
+            mati|vespre) ;;
+            *) echo "Franja de Short no vàlida" >&2; exit 1 ;;
+          esac
+          local_date="$(TZ=Europe/Madrid date +%F)"
+          control_url="${SOCIAL_VIDEO_UPLOAD_URL%/admin/social-video-upload}/admin/youtube-short-runs/$local_date/$SHORT_SLOT"
+          if curl --fail --silent --show-error --retry 2 --request POST \
+            --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data "{\"action\":\"start\",\"source\":\"github-${GITHUB_EVENT_NAME}\"}" \
+            --output /tmp/youtube-short-run.json "$control_url"; then
+            should_run="$(node -e "const value=JSON.parse(require('node:fs').readFileSync(process.argv[1],'utf8')); process.stdout.write(value.shouldRun ? 'true' : 'false')" /tmp/youtube-short-run.json)"
+            echo "YOUTUBE_SHORT_SHOULD_RUN=$should_run" >> "$GITHUB_ENV"
+            echo "YOUTUBE_SHORT_COORDINATION_URL=$control_url" >> "$GITHUB_ENV"
+            echo "YOUTUBE_SHORT_COORDINATION_ACTIVE=true" >> "$GITHUB_ENV"
+          else
+            echo "La coordinació amb el Worker encara no està activa; s'executa el flux normal." >&2
+            echo "YOUTUBE_SHORT_SHOULD_RUN=true" >> "$GITHUB_ENV"
+            echo "YOUTUBE_SHORT_COORDINATION_ACTIVE=false" >> "$GITHUB_ENV"
+          fi
       - name: Instal·la el renderitzador
+        if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
         run: sudo apt-get update && sudo apt-get install -y ffmpeg librsvg2-bin
       - name: Genera les pantalles amb dades reals
+        if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
         run: |
           node scripts/youtube-short.mjs
           node scripts/youtube-music.mjs
       - name: Programa l'hora pública del Short
-        if: env.SHOULD_SCHEDULE_PUBLICATION == 'true'
+        if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.SHOULD_SCHEDULE_PUBLICATION == 'true'
         run: node scripts/youtube-publish-at.mjs >> "$GITHUB_ENV"
       - name: Renderitza el Short vertical
+        if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
         run: |
           for image in build/youtube-short/slide-*.svg; do rsvg-convert -w 1080 -h 1920 "$image" -o "${image%.svg}.png"; done
           printf "file 'slide-1.png'\nduration 5\nfile 'slide-2.png'\nduration 5\nfile 'slide-3.png'\nduration 5\nfile 'slide-4.png'\nduration 5\nfile 'slide-5.png'\nduration 5\nfile 'slide-5.png'\n" > build/youtube-short/slides.txt
           ffmpeg -y -f concat -safe 0 -i build/youtube-short/slides.txt -i build/youtube-short/music.wav -vf "scale=1080:1920,format=yuv420p" -r 30 -c:v libx264 -c:a aac -b:a 160k -shortest -pix_fmt yuv420p -movflags +faststart -t 25 build/youtube-short/short.mp4
           ffprobe -v error -show_entries format=duration,size -of json build/youtube-short/short.mp4
       - name: Conserva una previsualització
+        if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: meteo-fontanillas-short-preview
           path: build/youtube-short/short.mp4
           retention-days: 7
       - name: Desa una còpia privada per a una Story futura
-        if: env.SOCIAL_VIDEO_UPLOAD_URL != '' && env.SOCIAL_VIDEO_UPLOAD_TOKEN != ''
+        if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.SOCIAL_VIDEO_UPLOAD_URL != '' && env.SOCIAL_VIDEO_UPLOAD_TOKEN != ''
         continue-on-error: true
         run: |
           set -euo pipefail
@@ -93,4 +123,14 @@ jobs:
             --data-binary @build/youtube-short/short.mp4 \
             "$SOCIAL_VIDEO_UPLOAD_URL/shorts/$local_date/$video_slot.mp4"
       - name: Puja el vídeo a YouTube
+        if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
         run: node scripts/youtube-upload.mjs
+      - name: Confirma la franja completada
+        if: success() && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.YOUTUBE_SHORT_COORDINATION_ACTIVE == 'true'
+        continue-on-error: true
+        run: |
+          curl --fail --silent --show-error --retry 2 --request POST \
+            --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data "{\"action\":\"complete\",\"source\":\"github-${GITHUB_EVENT_NAME}\"}" \
+            "$YOUTUBE_SHORT_COORDINATION_URL"

@@ -14,7 +14,8 @@
     "TELEGRAM_CHANNEL_ID": "@meteofontanillas",
     "CONTACT_FROM": "Observatori Fontanillas <formulari@fontanillas.cat>",
     "ONESIGNAL_APP_ID": "REPLACE_WITH_ONESIGNAL_APP_ID",
-    "PUBLIC_WORKER_URL": "https://fonta-meteo.marcelfonta.workers.dev"
+    "PUBLIC_WORKER_URL": "https://fonta-meteo.marcelfonta.workers.dev",
+    "GITHUB_SHORTS_REPOSITORY": "marcelfonta/observatori-fontanillas"
   },
   "observability": {
     "enabled": true,
