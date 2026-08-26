@@ -1,5 +1,10 @@
 # Changelog
 
+## Millores d’anàlisi i consulta local — 2026-08-26
+
+- El Centre de Dades compara les últimes 24 hores amb les 24 anteriors, separant temperatura mitjana i pluja observada.
+- «El temps arreu» permet desar fins a sis municipis en aquest navegador; aquesta preferència no s’envia al Worker.
+
 ## Correcció urgent de la targeta social — 2026-08-26
 
 - Eliminada la comprovació interna que feia el Worker contra la seva pròpia URL pública abans d’enviar la targeta a Meta: Cloudflare la podia tractar com un bucle i respondre 404.

@@ -118,6 +118,21 @@ function renderPeriod(idPrefix, items) {
   set(`${idPrefix}-rain`, summary.samples ? `Mitjana · ${fmt(summary.rain)} mm · ${summary.samples} mostres` : 'Període encara no disponible');
 }
 
+function renderLast24HoursComparison() {
+  const end = Date.now();
+  const current24 = archive.filter(item => item.t >= end - DAY && item.t <= end);
+  const previous24 = archive.filter(item => item.t >= end - 2 * DAY && item.t < end - DAY);
+  const currentTemperature = mean(values(current24, 'temperature'));
+  const previousTemperature = mean(values(previous24, 'temperature'));
+  const currentRain = rainTotal(current24);
+  const previousRain = rainTotal(previous24);
+  const temperatureDelta = currentTemperature === null || previousTemperature === null ? null : currentTemperature - previousTemperature;
+  set('data-summary-temp-24h', currentTemperature === null ? '—' : `${fmt(currentTemperature)} °C`);
+  set('data-summary-temp-24h-note', temperatureDelta === null ? 'Calen 48 h de dades comparables' : Math.abs(temperatureDelta) < .1 ? 'Pràcticament igual que les 24 h anteriors' : `${fmt(Math.abs(temperatureDelta))} °C ${temperatureDelta > 0 ? 'més càlida' : 'més fresca'} que les 24 h anteriors`);
+  set('data-summary-rain-24h', `${fmt(currentRain)} mm`);
+  set('data-summary-rain-24h-note', previous24.length ? `${fmt(Math.abs(currentRain - previousRain))} mm ${currentRain >= previousRain ? 'més' : 'menys'} que les 24 h anteriors` : 'Calen 48 h de dades comparables');
+}
+
 function renderEphemeris() {
   const now = new Date();
   const todayKey = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -175,6 +190,7 @@ export function renderDataCenter(history = [], latest = null) {
   set('data-summary-temp-deviation', temperatures.length ? `Desviació estàndard ${fmt(deviation(temperatures))} °C` : 'Desviació no disponible');
   set('data-summary-rain', fmt(rainTotal(items)));
   set('data-summary-gust', fmt(gusts.length ? Math.max(...gusts) : null));
+  renderLast24HoursComparison();
   set('data-center-period-status', items.length ? `${activeDays === 365 ? 'Últim any' : `Últims ${activeDays} dies`} · del ${new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(first)} al ${new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(last)}` : 'No hi ha dades disponibles per a aquest període.');
 
   const now = new Date();
