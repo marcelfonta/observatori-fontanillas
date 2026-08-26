@@ -1,5 +1,6 @@
 const TIME_ZONE = 'Europe/Madrid';
 const SLOT_TIMES = { mati:{ hour:8, minute:0 }, vespre:{ hour:20, minute:30 } };
+const MINIMUM_SCHEDULING_MARGIN_MS = 5 * 60_000;
 
 function partsInTimeZone(date) {
   const values = new Intl.DateTimeFormat('en-CA', {
@@ -28,7 +29,9 @@ export function plannedPublishAt(slot, now = new Date()) {
   // Les franges són després del canvi d'hora habitual; calculem l'offset per a
   // la mateixa hora local per conservar 08:00/20:30 tant a l'estiu com a l'hivern.
   const publishAt = new Date(nominalUtc - offsetAt(new Date(nominalUtc)));
-  if (publishAt.getTime() - now.getTime() < 15 * 60_000) {
+  // GitHub may start a scheduled workflow late. Five minutes still leaves time
+  // for the compact render/upload path while avoiding a publishAt already past.
+  if (publishAt.getTime() - now.getTime() < MINIMUM_SCHEDULING_MARGIN_MS) {
     throw new Error(`No queda marge suficient per programar el Short de ${slot} (${publishAt.toISOString()}).`);
   }
   return publishAt;
