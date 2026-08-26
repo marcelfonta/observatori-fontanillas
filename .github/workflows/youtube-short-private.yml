@@ -32,6 +32,8 @@ jobs:
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
       YOUTUBE_PRIVACY_STATUS: ${{ github.event_name == 'schedule' && 'private' || inputs.privacy || 'private' }}
       SHORT_SLOT: ${{ github.event.schedule == '0 17 * * *' && 'vespre' || 'mati' }}
+      SOCIAL_VIDEO_UPLOAD_URL: ${{ secrets.SOCIAL_VIDEO_UPLOAD_URL }}
+      SOCIAL_VIDEO_UPLOAD_TOKEN: ${{ secrets.SOCIAL_VIDEO_UPLOAD_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -58,5 +60,23 @@ jobs:
           name: meteo-fontanillas-short-preview
           path: build/youtube-short/short.mp4
           retention-days: 7
+      - name: Desa una còpia privada per a una Story futura
+        if: env.SOCIAL_VIDEO_UPLOAD_URL != '' && env.SOCIAL_VIDEO_UPLOAD_TOKEN != ''
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          case "$SHORT_SLOT" in
+            mati) video_slot=morning ;;
+            vespre) video_slot=evening ;;
+            *) echo "Franja de Short no vàlida" >&2; exit 1 ;;
+          esac
+          local_date="$(TZ=Europe/Madrid date +%F)"
+          curl --fail --silent --show-error --retry 3 --retry-all-errors \
+            --request POST \
+            --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
+            --header "Content-Type: video/mp4" \
+            --header "Content-Length: $(wc -c < build/youtube-short/short.mp4 | tr -d ' ')" \
+            --data-binary @build/youtube-short/short.mp4 \
+            "$SOCIAL_VIDEO_UPLOAD_URL/shorts/$local_date/$video_slot.mp4"
       - name: Puja el vídeo a YouTube
         run: node scripts/youtube-upload.mjs
