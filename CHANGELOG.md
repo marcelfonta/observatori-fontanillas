@@ -1,5 +1,12 @@
 # Changelog
 
+## Shorts més tolerants als retards de GitHub — 2026-08-26
+
+- La preparació automàtica dels dos Shorts diaris s'avança a les 02:17 i 14:17 UTC, lluny de l'inici de l'hora i amb més de tres hores de marge abans de les 08:00 i 20:30 locals.
+- L'execució manual permet escollir `mati` o `vespre` i programar la publicació només si encara queda marge: és una recuperació segura si GitHub no ha iniciat un cron.
+- El vídeo continua pujant-se privat a YouTube; la visibilitat pública es conserva a l'hora local prevista.
+- Facebook i Instagram no s'activen encara per als vídeos: queda pendent una prova real de Reels amb els permisos de Meta, sense publicar cap Short accidentalment.
+
 ## Alertes de publicació social — 2026-08-26
 
 - Un error temporal d’un canal queda registrat i es reintenta automàticament, però el correu d’alerta només s’envia si el canal continua fallant després de quatre intents. Així una recuperació correcta no genera una alarma definitiva.
