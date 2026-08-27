@@ -6,8 +6,10 @@ on:
     # YouTube el fa públic exactament a l'hora local programada.
     # Evitem l'inici de l'hora, on GitHub acostuma a endarrerir més els crons,
     # però generem prou a prop de la publicació per conservar dades recents.
-    - cron: '17 4 * * *'
-    - cron: '47 16 * * *'
+    # El flux comença amb més marge perquè GitHub pot retardar els crons
+    # fins a més d'una hora. La publicació continua sent a les 08:00/20:30.
+    - cron: '47 3 * * *'
+    - cron: '47 15 * * *'
   workflow_dispatch:
     inputs:
       slot:
@@ -44,7 +46,7 @@ jobs:
       YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
       YOUTUBE_PRIVACY_STATUS: ${{ github.event_name == 'schedule' && 'private' || inputs.privacy || 'private' }}
-      SHORT_SLOT: ${{ github.event_name == 'schedule' && (github.event.schedule == '47 16 * * *' && 'vespre' || 'mati') || inputs.slot || 'mati' }}
+      SHORT_SLOT: ${{ github.event_name == 'schedule' && (github.event.schedule == '47 15 * * *' && 'vespre' || 'mati') || inputs.slot || 'mati' }}
       SHOULD_SCHEDULE_PUBLICATION: ${{ github.event_name == 'schedule' || inputs.schedule_publication }}
       YOUTUBE_SHORT_SHOULD_RUN: 'true'
       YOUTUBE_SHORT_COORDINATION_ACTIVE: 'false'

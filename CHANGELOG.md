@@ -2,6 +2,8 @@
 
 ## En desenvolupament
 
+- Avançades les dues execucions de YouTube Shorts perquè GitHub Actions tingui més marge davant retards del planificador; es mantenen les publicacions públiques a les 08:00 i les 20:30 i la recuperació alternativa del Worker.
+
 - Els avisos push ja no depenen només de la propagació d’etiquetes d’OneSignal: cada dispositiu subscrit desa de forma verificable les seves preferències de fenomen i intensitat al registre tècnic del portal. Els avisos automàtics prioritzen aquest registre, especialment per a PWA d’iPhone.
 
 - Corregit el flux manual de Reels de Meta: Facebook inicialitza la sessió, transfereix la URL temporal al servidor de pujada i només després finalitza la publicació. Instagram conserva el contenidor pendent i la mateixa prova el reprèn un minut més tard, sense crear duplicats mentre Meta processa el vídeo.
