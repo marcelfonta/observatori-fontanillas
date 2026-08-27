@@ -6,6 +6,7 @@
 
 - [x] Completar l’anàlisi visible amb la comparació de les últimes 24 hores respecte de les 24 anteriors.
 - [x] Afegir accessos locals a municipis favorits sense crear cap perfil ni desar dades al servidor.
+- [ ] Activar la clau `WINDY_WEBCAMS_API_KEY` al Worker i validar webcams properes en tres ciutats de continents diferents; la interfície ja evita vídeo automàtic i no conserva URLs temporals.
 - [ ] Mesurar Core Web Vitals mòbils en producció amb Chrome DevTools o PageSpeed Insights quan la traça estigui disponible.
 
 - [x] Publicar guies de contribució, seguretat, suport i arquitectura.
