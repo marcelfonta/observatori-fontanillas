@@ -2,6 +2,8 @@
 
 ## En desenvolupament
 
+- Preparada una prova manual i única de Reels d’Instagram i Facebook des de l’administració. Reutilitza el MP4 privat del Short mitjançant una URL signada d’una hora, registra el resultat per franja i no activa cap publicació automàtica fins que es validin les dues plataformes.
+
 - «El temps arreu» prepara una cerca de fins a quatre webcams properes per coordenades. Les miniatures es carreguen sota demanda, no reprodueixen vídeo automàticament i no es desen; per activar la cobertura mundial cal afegir el secret de Cloudflare `WINDY_WEBCAMS_API_KEY`.
 
 - La programació dels Shorts admet ara cinc minuts de marge: l’execució real de les 20:24 podia acabar el renderitzat i la pujada, però el llindar anterior de quinze minuts la descartava sense necessitat.

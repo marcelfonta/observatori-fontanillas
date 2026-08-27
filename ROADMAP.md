@@ -25,6 +25,7 @@
 - [x] Afegir els secrets de càrrega a Cloudflare i GitHub després d’integrar i desplegar el Worker amb la vinculació R2.
 - [ ] Fer una prova manual d’una Story d’Instagram amb el compte propi; la publicació automàtica resta desactivada fins que Meta l’accepti.
 - [ ] Determinar amb una prova real si Facebook Page Stories admet el mateix flux abans de prometre aquesta sortida.
+- [ ] Fer una prova manual única del Short com a Reel a Instagram i Facebook des del panell. Només si ambdues publicacions es confirmen, decidir l’activació automàtica per a cada franja.
 
 ## V22.15.0 — Registre remot OneSignal — Verificada
 

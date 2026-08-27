@@ -2215,7 +2215,7 @@ async function socialVideoUrl(key, env, lifetimeSeconds = 1800) {
   return `${publicWorkerBaseUrl(env)}/social-video/${safeKey}?expires=${expires}&sig=${signature}`;
 }
 
-async function serveSocialVideo(_request, env, key, url) {
+async function serveSocialVideo(request, env, key, url) {
   if (!env.SOCIAL_VIDEO_BUCKET) return json({ error:'L’emmagatzematge temporal de vídeo encara no està configurat.' }, 503, 'no-store');
   const safeKey = socialVideoKey(key);
   const expires = Number(url.searchParams.get('expires'));
@@ -2229,10 +2229,14 @@ async function serveSocialVideo(_request, env, key, url) {
   const headers = new Headers();
   if (typeof object.writeHttpMetadata === 'function') object.writeHttpMetadata(headers);
   headers.set('Content-Type', headers.get('Content-Type') || 'video/mp4');
+  // Meta descarrega el vídeo des dels seus propis servidors mentre el processa.
+  // La URL continua sent privada perquè va signada i caduca en una hora.
   headers.set('Cache-Control', 'private, no-store, max-age=0');
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('Content-Disposition', 'inline');
+  if (Number.isFinite(Number(object.size))) headers.set('Content-Length', String(object.size));
   if (object.etag) headers.set('ETag', object.etag);
+  if (request.method === 'HEAD') return new Response(null, { headers });
   return new Response(object.body, { headers });
 }
 
@@ -2589,6 +2593,95 @@ async function publishInstagram(draft, env) {
   });
   if (!published.payload.id) throw Object.assign(new Error('Instagram no ha retornat l’identificador de la publicació.'), { status:502, responseCode:published.responseCode });
   return { remoteId:String(published.payload.id), responseCode:published.responseCode };
+}
+
+const SOCIAL_REEL_SLOT = new Set(['morning','evening']);
+
+function socialReelCaption(localDate, slot) {
+  const period = slot === 'morning' ? 'matí' : 'vespre';
+  return `El temps a Sant Celoni · actualització del ${period} (${localDate}).\n\nDades meteorològiques reals i previsió de Meteo Fontanillas.\nhttps://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #ElTemps #Meteo`;
+}
+
+async function waitForInstagramReel(containerId, accessToken, env) {
+  let lastStatus = '';
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const status = await metaGraphRequest(env, containerId, {
+      accessToken,
+      params:{ fields:'status_code,status' },
+    });
+    const statusCode = String(status.payload.status_code || '').toUpperCase();
+    lastStatus = cleanText(status.payload.status || statusCode, 500);
+    if (statusCode === 'FINISHED') return status;
+    if (statusCode === 'ERROR' || statusCode === 'EXPIRED') {
+      throw Object.assign(new Error(lastStatus || 'Instagram no ha pogut processar el Reel.'), { status:502, responseCode:status.responseCode });
+    }
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  }
+  throw Object.assign(new Error(`Instagram encara processa el Reel (${lastStatus || 'sense estat'}). Torna-ho a provar més tard; no s’ha publicat automàticament.`), { status:409 });
+}
+
+async function publishInstagramReel({ videoUrl, caption }, env) {
+  const assets = await resolveMetaAssets(env);
+  if (!assets.instagramId) throw Object.assign(new Error('No s’ha trobat el compte professional d’Instagram vinculat.'), { status:503 });
+  const created = await metaGraphRequest(env, `${assets.instagramId}/media`, {
+    method:'POST', accessToken:assets.pageToken,
+    params:{ media_type:'REELS', video_url:videoUrl, caption, share_to_feed:true },
+  });
+  if (!created.payload.id) throw Object.assign(new Error('Instagram no ha pogut preparar el Reel.'), { status:502, responseCode:created.responseCode });
+  await waitForInstagramReel(created.payload.id, assets.pageToken, env);
+  const published = await metaGraphRequest(env, `${assets.instagramId}/media_publish`, {
+    method:'POST', accessToken:assets.pageToken, params:{ creation_id:created.payload.id },
+  });
+  if (!published.payload.id) throw Object.assign(new Error('Instagram no ha retornat l’identificador del Reel.'), { status:502, responseCode:published.responseCode });
+  return { remoteId:String(published.payload.id), responseCode:published.responseCode };
+}
+
+async function publishFacebookReel({ videoUrl, caption }, env) {
+  const assets = await resolveMetaAssets(env);
+  if (!assets.pageId) throw Object.assign(new Error('No s’ha identificat la pàgina de Facebook.'), { status:503 });
+  const published = await metaGraphRequest(env, `${assets.pageId}/video_reels`, {
+    method:'POST', accessToken:assets.pageToken,
+    params:{ video_url:videoUrl, description:caption },
+  });
+  const remoteId = published.payload.id || published.payload.video_id || published.payload.post_id;
+  if (!remoteId) throw Object.assign(new Error('Facebook no ha retornat l’identificador del Reel.'), { status:502, responseCode:published.responseCode });
+  return { remoteId:String(remoteId), responseCode:published.responseCode };
+}
+
+function socialReelRunKey(localDate, slot) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(localDate || '')) && SOCIAL_REEL_SLOT.has(slot)
+    ? `social-reels:${localDate}:${slot}` : '';
+}
+
+async function adminSocialReelTest(request, env) {
+  const auth = await authorizeAdminRequest(request, env);
+  if (auth.response) return auth.response;
+  if (!(await ensureOperationsSchema(env))) return json({ error:'La coordinació de Reels no està disponible.' }, 503, 'no-store', auth.origin);
+  if (!env.SOCIAL_VIDEO_BUCKET) return json({ error:'L’emmagatzematge temporal de vídeo no està configurat.' }, 503, 'no-store', auth.origin);
+  const body = await adminJsonBody(request, auth.origin);
+  const slot = cleanText(body.slot, 20).toLowerCase();
+  if (!SOCIAL_REEL_SLOT.has(slot)) return json({ error:'Franja de Reel no vàlida.' }, 400, 'no-store', auth.origin);
+  const localDate = localIsoDate(new Date());
+  const key = `shorts/${localDate}/${slot}.mp4`;
+  const video = await env.SOCIAL_VIDEO_BUCKET.head(key);
+  if (!video) return json({ error:`No hi ha cap Short preparat per al ${slot === 'morning' ? 'matí' : 'vespre'} d’avui.` }, 409, 'no-store', auth.origin);
+  const serviceKey = socialReelRunKey(localDate, slot);
+  const previous = await env.DB.prepare('SELECT status,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
+  if (previous?.status === 'healthy') return json({ error:'Aquesta prova de Reels ja s’ha completat per a aquesta franja. No es duplicarà.' }, 409, 'no-store', auth.origin);
+  const payload = { videoUrl:await socialVideoUrl(key, env, 3600), caption:socialReelCaption(localDate, slot) };
+  const outcomes = [];
+  for (const [channel, publisher] of [['instagram', publishInstagramReel], ['facebook', publishFacebookReel]]) {
+    try {
+      const result = await publisher(payload, env);
+      outcomes.push({ channel, ok:true, remoteId:result.remoteId });
+    } catch (error) {
+      outcomes.push({ channel, ok:false, error:cleanText(error.message, 500), responseCode:error.responseCode || null });
+    }
+  }
+  const failed = outcomes.filter(item => !item.ok);
+  await recordOperationalState(env, serviceKey, failed.length ? 'down' : 'healthy', { localDate, slot, outcomes });
+  if (failed.length) return json({ error:'La prova de Reels ha quedat incompleta.', outcomes, retryable:true }, 502, 'no-store, private', auth.origin);
+  return json({ ok:true, localDate, slot, outcomes }, 200, 'no-store, private', auth.origin);
 }
 
 async function threadsGraphRequest(env, path, { method='GET', params={} } = {}) {
@@ -3194,13 +3287,14 @@ export default {
       const socialCardMatch = url.pathname.match(/^\/social-card\/(\d+)\.(png|jpg)$/);
       if (request.method === "GET" && socialCardMatch) return socialCard(request, env, Number(socialCardMatch[1]), url, socialCardMatch[2] === 'jpg' ? 'jpeg' : 'png');
       const socialVideoMatch = url.pathname.match(/^\/social-video\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
-      if (request.method === 'GET' && socialVideoMatch) return serveSocialVideo(request, env, socialVideoMatch[1], url);
+      if ((request.method === 'GET' || request.method === 'HEAD') && socialVideoMatch) return serveSocialVideo(request, env, socialVideoMatch[1], url);
       const socialVideoUploadMatch = url.pathname.match(/^\/admin\/social-video-upload\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
       if (request.method === 'POST' && socialVideoUploadMatch) return uploadSocialVideo(request, env, socialVideoUploadMatch[1]);
       const youtubeShortRunMatch = url.pathname.match(/^\/admin\/youtube-short-runs\/(\d{4}-\d{2}-\d{2})\/(mati|vespre)$/);
       if (request.method === 'POST' && youtubeShortRunMatch) return youtubeShortRunControl(request, env, youtubeShortRunMatch[1], youtubeShortRunMatch[2]);
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
+      if (request.method === "POST" && url.pathname === "/admin/social-reels/test") return adminSocialReelTest(request, env);
       const socialPublishMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/publish$/);
       if (request.method === "POST" && socialPublishMatch) return adminPublishSocialDraft(request, env, Number(socialPublishMatch[1]));
       const socialWhatsAppMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/prepare-whatsapp$/);
