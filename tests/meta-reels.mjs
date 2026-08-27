@@ -9,6 +9,8 @@ for (const token of [
   'publishInstagramReel', 'publishFacebookReel', 'media_type:\'REELS\'',
   '/video_reels', 'social-reels:', 'adminSocialReelTest',
   '/admin/social-reels/test', 'SOCIAL_REEL_SLOT', 'socialVideoUrl(key, env, 3600)',
+  'uploadFacebookHostedReel', "upload_phase:'start'", "upload_phase:'finish'",
+  'file_url:videoUrl', 'checkInstagramReel', 'reelContainerId', 'previousSocialReelOutcomes',
 ]) assert.ok(worker.includes(token), `Falta la protecció o el flux de Reels: ${token}`);
 
 assert.match(worker, /request\.method === 'HEAD'/, 'La URL temporal ha d’acceptar comprovacions HEAD de Meta.');
