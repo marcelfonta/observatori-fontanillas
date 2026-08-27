@@ -2,6 +2,8 @@
 
 ## En desenvolupament
 
+- Els avisos push ja no depenen només de la propagació d’etiquetes d’OneSignal: cada dispositiu subscrit desa de forma verificable les seves preferències de fenomen i intensitat al registre tècnic del portal. Els avisos automàtics prioritzen aquest registre, especialment per a PWA d’iPhone.
+
 - Corregit el flux manual de Reels de Meta: Facebook inicialitza la sessió, transfereix la URL temporal al servidor de pujada i només després finalitza la publicació. Instagram conserva el contenidor pendent i la mateixa prova el reprèn un minut més tard, sense crear duplicats mentre Meta processa el vídeo.
 
 - Preparada una prova manual i única de Reels d’Instagram i Facebook des de l’administració. Reutilitza el MP4 privat del Short mitjançant una URL signada d’una hora, registra el resultat per franja i no activa cap publicació automàtica fins que es validin les dues plataformes.

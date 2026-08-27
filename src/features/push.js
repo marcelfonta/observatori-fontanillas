@@ -125,13 +125,18 @@ function collectPrefs(){
   if(prefs.all)prefs.levels=levelFields.filter(field=>field.checked).map(field=>field.value);
   return prefs;
 }
-async function syncTags(prefs){
-  if(!OneSignalRef)return;
+async function syncPushPreferences(prefs){
+  if(!OneSignalRef)throw new Error('onesignal-not-ready');
+  const subscriptionId=pushSubscriptionId();
+  if(!subscriptionId)throw new Error('subscription-not-ready');
   const tags=notificationTags(prefs);
   try {
     if(OneSignalRef.User?.addTags) await OneSignalRef.User.addTags(tags);
     else if(OneSignalRef.sendTags) await OneSignalRef.sendTags(tags);
-  } catch(error){ console.warn('No s’han pogut sincronitzar les preferències push.',error); }
+  } catch(error){ console.warn('No s’han pogut sincronitzar les etiquetes de OneSignal.',error); }
+  const response=await fetch(`${CONFIG.apiUrl}/push-preferences`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({subscriptionId,tags})});
+  const payload=await response.json().catch(()=>({}));
+  if(!response.ok||!payload.ok)throw new Error(payload.error||`HTTP ${response.status}`);
 }
 async function optedIn(){ try { return Boolean(OneSignalRef?.User?.PushSubscription?.optedIn); } catch { return false; } }
 function pushSubscriptionId(){
@@ -209,7 +214,7 @@ async function enablePush(){
       if(!subscriptionReady)throw new Error('subscription-not-ready');
     }
     showPushProgress('Desant les teves preferències…');
-    await syncTags(prefs);
+    await syncPushPreferences(prefs);
     closeModal();
     await refresh();
     window.observatoriTrack?.('push_subscribed');
@@ -231,7 +236,7 @@ async function enablePush(){
 }
 async function disablePush(){
   const disabled={...DEFAULT_PREFS,rain:false,wind:false,storm:false,snow:false,temperature:false,all:false};savePrefsLocal(disabled);
-  await syncTags(disabled);
+  try { await syncPushPreferences(disabled); } catch(error){ console.warn('No s’han pogut sincronitzar les preferències desactivades.',error); }
   try { await OneSignalRef?.User?.PushSubscription?.optOut?.(); } catch(error){ console.warn('No s’han pogut desactivar els avisos.',error); }
   closeModal(); await refresh(); window.observatoriTrack?.('push_unsubscribed');
 }
@@ -319,7 +324,7 @@ if(appId){
       sdkReady=true;
       window.clearTimeout(sdkReadyTimer);
       OneSignal.User?.PushSubscription?.addEventListener?.('change',refresh);
-      if(await optedIn())await syncTags(loadPrefs());
+      if(await optedIn())await syncPushPreferences(loadPrefs()).catch(error=>console.warn('No s’han pogut desar les preferències push al portal.',error));
       await refresh();
     } catch(error){
       window.clearTimeout(sdkReadyTimer);
