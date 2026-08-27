@@ -183,6 +183,14 @@ export async function fetchMetNorwayForecast(location) {
   return response.json();
 }
 
+export async function fetchNearbyWebcams(location) {
+  if(!location||!Number.isFinite(Number(location.latitude))||!Number.isFinite(Number(location.longitude)))throw new Error('LOCALITY_NOT_FOUND');
+  const params=new URLSearchParams({lat:String(location.latitude),lon:String(location.longitude)});
+  const response=await request(`${CONFIG.apiUrl}/webcams-nearby?${params}`,{headers:{Accept:'application/json'},cache:'no-store'},15000);
+  if(!response.ok)throw new Error(`Webcams API ${response.status}`);
+  return response.json();
+}
+
 export async function fetchLocalityWeather(query) {
   const name=String(query||'').trim().slice(0,80);
   const candidates=await searchMunicipalities(name);

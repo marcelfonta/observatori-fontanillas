@@ -945,6 +945,63 @@ async function metNorwayForecast(url) {
   },200,"public, max-age=900");
 }
 
+function publicHttpsUrl(value, fallback = null) {
+  try {
+    const url = new URL(String(value || ""));
+    return url.protocol === "https:" ? url.href : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function windyWebcamValue(webcam, paths) {
+  for (const path of paths) {
+    let value = webcam;
+    for (const key of path) value = value?.[key];
+    if (value) return value;
+  }
+  return null;
+}
+
+async function nearbyWebcams(url, env) {
+  const latitude = finite(url.searchParams.get("lat"));
+  const longitude = finite(url.searchParams.get("lon"));
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return json({ error:"Coordenades no vàlides" },400);
+  const provider = { name:"Windy Webcams", url:"https://www.windy.com/webcams" };
+  if (!env.WINDY_WEBCAMS_API_KEY) return json({ ok:true, configured:false, webcams:[], provider },200,"no-store");
+  const lat = Number(latitude.toFixed(4));
+  const lon = Number(longitude.toFixed(4));
+  const radiusKm = 50;
+  const endpoint = `https://api.windy.com/webcams/api/v3/webcams?nearby=${lat},${lon},${radiusKm}&limit=4&include=images,location,urls`;
+  let response;
+  try {
+    response = await fetch(endpoint, { headers:{ Accept:"application/json", "x-windy-api-key":String(env.WINDY_WEBCAMS_API_KEY) } });
+  } catch (error) {
+    console.warn("Consulta de webcams Windy:", error.message);
+    return json({ ok:false, configured:true, webcams:[], provider, error:"Servei de webcams no disponible temporalment" },502,"no-store");
+  }
+  if (!response.ok) {
+    console.warn("Consulta de webcams Windy:", response.status);
+    return json({ ok:false, configured:true, webcams:[], provider, error:"Servei de webcams no disponible temporalment" },502,"no-store");
+  }
+  const payload = await response.json();
+  const rows = Array.isArray(payload?.webcams) ? payload.webcams : Array.isArray(payload?.data) ? payload.data : [];
+  const webcams = rows.slice(0,4).map(webcam => {
+    const preview = publicHttpsUrl(windyWebcamValue(webcam, [["images","current","preview"],["images","current","thumbnail"],["images","current","icon"],["images","preview"]]));
+    const detail = publicHttpsUrl(windyWebcamValue(webcam, [["urls","detail"],["urls","web"],["url"],["webUrl"]]), provider.url);
+    const webcamLatitude = finite(windyWebcamValue(webcam, [["location","latitude"],["latitude"]]));
+    const webcamLongitude = finite(windyWebcamValue(webcam, [["location","longitude"],["longitude"]]));
+    return {
+      title:cleanText(windyWebcamValue(webcam, [["title"],["name"],["location","city"]]) || "Webcam propera",100),
+      location:cleanText([windyWebcamValue(webcam, [["location","city"]]),windyWebcamValue(webcam, [["location","country"]])].filter(Boolean).join(" · "),100),
+      preview,
+      url:detail,
+      distanceKm:Number.isFinite(webcamLatitude) && Number.isFinite(webcamLongitude) ? Number(distanceKm(lat,lon,webcamLatitude,webcamLongitude).toFixed(1)) : null,
+    };
+  }).filter(webcam => webcam.title);
+  return json({ ok:true, configured:true, generatedAt:new Date().toISOString(), radiusKm, webcams, provider },200,"no-store");
+}
+
 async function currentObservation(env) {
   const data = await weatherRequest("/v2/pws/observations/current", {}, env, 120);
   const obs = data.observations?.[0];
@@ -3165,12 +3222,13 @@ export default {
       if (url.pathname === "/alert-history") return alertHistory(url, env);
       if (url.pathname === "/stations") return comparisonStations(url, env);
       if (url.pathname === "/met-forecast") return metNorwayForecast(url);
+      if (url.pathname === "/webcams-nearby") return nearbyWebcams(url, env);
       if (url.pathname === "/forecast-verification") return forecastVerification(url, env);
       if (url.pathname === "/admin/status") return adminStatus(request, env);
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

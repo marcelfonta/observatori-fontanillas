@@ -12,6 +12,7 @@ The Worker returns JSON. Its base URL is configured in `src/core/config.js`. The
 | GET | `/alert-history?page=&pageSize=&q=&year=&month=&level=&source=&phenomenon=` | Paginated, filtered warning archive. |
 | GET | `/stations?period=now&lat=&lon=&name=` | Nearby station comparison payload. |
 | GET | `/met-forecast?lat=&lon=&timezone=` | MET Norway forecast proxy. |
+| GET | `/webcams-nearby?lat=&lon=` | Up to four nearby Windy Webcams, when the Worker has the `WINDY_WEBCAMS_API_KEY` secret. Preview URLs are temporary and are never cached by the portal. |
 | GET | `/forecast-verification?days=7..180` | Forecast-snapshot verification metrics. |
 | GET | `/version` | Worker version, build date and environment name. |
 
