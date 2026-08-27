@@ -91,6 +91,20 @@ const CREATE_ALERT_STATE = `CREATE TABLE IF NOT EXISTS alert_state (
   state_value TEXT,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 )`;
+const CREATE_PUSH_SUBSCRIPTIONS = `CREATE TABLE IF NOT EXISTS push_subscriptions (
+  subscription_id TEXT PRIMARY KEY,
+  alert_rain INTEGER NOT NULL DEFAULT 0,
+  alert_wind INTEGER NOT NULL DEFAULT 0,
+  alert_storm INTEGER NOT NULL DEFAULT 0,
+  alert_snow INTEGER NOT NULL DEFAULT 0,
+  alert_temperature INTEGER NOT NULL DEFAULT 0,
+  alert_level_yellow INTEGER NOT NULL DEFAULT 0,
+  alert_level_orange INTEGER NOT NULL DEFAULT 0,
+  alert_level_red INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`;
+const CREATE_PUSH_SUBSCRIPTIONS_INDEX = `CREATE INDEX IF NOT EXISTS idx_push_subscriptions_preferences
+ON push_subscriptions(alert_rain, alert_wind, alert_storm, alert_snow, alert_temperature, alert_level_yellow, alert_level_orange, alert_level_red)`;
 const CREATE_ADMIN_AUTH_ATTEMPTS = `CREATE TABLE IF NOT EXISTS admin_auth_attempts (
   ip TEXT NOT NULL,
   attempted_at INTEGER NOT NULL
@@ -335,6 +349,8 @@ async function ensureAlertSchema(env) {
     env.DB.prepare(CREATE_ALERT_EVENTS),
     env.DB.prepare(CREATE_ALERT_EVENTS_INDEX),
     env.DB.prepare(CREATE_ALERT_STATE),
+    env.DB.prepare(CREATE_PUSH_SUBSCRIPTIONS),
+    env.DB.prepare(CREATE_PUSH_SUBSCRIPTIONS_INDEX),
   ]);
   alertSchemaReady = true;
   return true;
@@ -558,6 +574,50 @@ function notificationCategory(entry){
 
 function alertPushStateKey(fingerprint){return `push-alert:${fingerprint}`;}
 
+const PUSH_PREFERENCE_KEYS=['alert_rain','alert_wind','alert_storm','alert_snow','alert_temperature','alert_level_yellow','alert_level_orange','alert_level_red'];
+
+function validPushSubscriptionId(value){return /^[A-Za-z0-9_-]{8,128}$/.test(String(value||''));}
+
+function normalizedPushPreferences(input={}){
+  const tags={};
+  for(const key of PUSH_PREFERENCE_KEYS)tags[key]=String(input?.[key]||'0')==='1'?1:0;
+  return tags;
+}
+
+async function savePushPreferences(request,env){
+  const origin=request.headers.get('Origin')||'';
+  if(!ALLOWED_CONTACT_ORIGINS.has(origin))return json({ok:false,error:'Origen no autoritzat'},403,'no-store',origin||'*');
+  const length=Number(request.headers.get('Content-Length')||0);
+  if(length>4096)return json({ok:false,error:'Petició massa gran'},413,'no-store',origin);
+  const body=await request.json().catch(()=>({}));
+  const subscriptionId=cleanText(body.subscriptionId,128);
+  if(!validPushSubscriptionId(subscriptionId))return json({ok:false,error:'Subscripció no vàlida'},400,'no-store',origin);
+  const tags=normalizedPushPreferences(body.tags);
+  if(!(await ensureAlertSchema(env)))return json({ok:false,error:'No s’han pogut desar les preferències ara mateix.'},503,'no-store',origin);
+  await env.DB.prepare(`INSERT INTO push_subscriptions (
+    subscription_id,alert_rain,alert_wind,alert_storm,alert_snow,alert_temperature,
+    alert_level_yellow,alert_level_orange,alert_level_red,updated_at
+  ) VALUES (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
+  ON CONFLICT(subscription_id) DO UPDATE SET
+    alert_rain=excluded.alert_rain,alert_wind=excluded.alert_wind,alert_storm=excluded.alert_storm,
+    alert_snow=excluded.alert_snow,alert_temperature=excluded.alert_temperature,
+    alert_level_yellow=excluded.alert_level_yellow,alert_level_orange=excluded.alert_level_orange,
+    alert_level_red=excluded.alert_level_red,updated_at=CURRENT_TIMESTAMP`)
+    .bind(subscriptionId,tags.alert_rain,tags.alert_wind,tags.alert_storm,tags.alert_snow,tags.alert_temperature,tags.alert_level_yellow,tags.alert_level_orange,tags.alert_level_red).run();
+  return json({ok:true},200,'no-store',origin);
+}
+
+async function registeredPushRecipients(entry,env){
+  if(!env.DB)return [];
+  const category=notificationCategory(entry);
+  const level=['yellow','orange','red'].includes(String(entry.level||'').toLowerCase())?String(entry.level).toLowerCase():'';
+  if(!category||!level)return [];
+  const rows=await env.DB.prepare(`SELECT subscription_id FROM push_subscriptions
+    WHERE alert_${category}=1 AND alert_level_${level}=1
+    ORDER BY updated_at DESC LIMIT 2000`).all();
+  return (rows.results||[]).map(row=>String(row.subscription_id||'')).filter(validPushSubscriptionId);
+}
+
 function oneSignalApiKey(env){
   return String(env.ONESIGNAL_API_KEY || env.ONESIGNAL_REST_API_KEY || '').trim();
 }
@@ -615,15 +675,21 @@ async function sendOneSignalAlert(entry, env){
   const level=entry.levelLabel || entry.level || 'Avís';
   const heading=`${level}: ${entry.phenomenon || 'avís meteorològic'}`;
   const body=String(entry.description || entry.title || 'Consulta el detall oficial.').slice(0,180);
+  const registeredRecipients=await registeredPushRecipients(entry,env).catch(error=>{console.error('Push preferences lookup error',error);return [];});
   // OneSignal avalua els operadors en una llista plana. Exigim sempre el nivell
-  // triat i, quan el fenomen és conegut, també la categoria corresponent.
+  // triat i, quan el fenomen és conegut, també la categoria corresponent. Les
+  // subscripcions desades pel portal es prioritzen: així no depenem de la
+  // propagació asíncrona de les etiquetes de OneSignal en iPhone.
   const filters=[];
   if(category)filters.push({field:'tag',key:`alert_${category}`,relation:'=',value:'1'},{operator:'AND'});
   filters.push({field:'tag',key:`alert_level_${normalizedLevel}`,relation:'=',value:'1'});
+  const targeting=registeredRecipients.length
+    ? {include_subscription_ids:registeredRecipients}
+    : {filters};
   const response=await fetch('https://api.onesignal.com/notifications',{
     method:'POST',
     headers:{'Authorization':`Key ${apiKey}`,'Content-Type':'application/json'},
-    body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',filters,headings:{ca:heading,en:heading},contents:{ca:body,en:body},url:'https://meteo.fontanillas.cat/?page=avisos'})
+    body:JSON.stringify({app_id:env.ONESIGNAL_APP_ID,target_channel:'push',...targeting,headings:{ca:heading,en:heading},contents:{ca:body,en:body},url:'https://meteo.fontanillas.cat/?page=avisos'})
   });
   const payload=await response.json().catch(()=>({}));
   if(!response.ok){
@@ -634,11 +700,11 @@ async function sendOneSignalAlert(entry, env){
   }
   const recipients=Number(payload.recipients)||0;
   if(!oneSignalMessageAccepted(payload)){
-    const result={sent:false,accepted:true,id:payload.id||null,recipients:0,reason:'no_recipients',level:normalizedLevel,category};
+    const result={sent:false,accepted:true,id:payload.id||null,recipients:0,reason:'no_recipients',level:normalizedLevel,category,target:registeredRecipients.length?'registered':'tags'};
     await recordOperationalState(env,'push-alert','down',result).catch(()=>{});
     return result;
   }
-  const result={sent:true,id:payload.id,recipients,deliveryPending:recipients===0,level:normalizedLevel,category};
+  const result={sent:true,id:payload.id,recipients,deliveryPending:recipients===0,level:normalizedLevel,category,target:registeredRecipients.length?'registered':'tags'};
   await recordOperationalState(env,'push-alert','healthy',result).catch(()=>{});
   return result;
 }
@@ -3335,6 +3401,7 @@ export default {
       if (request.method === "POST" && url.pathname === "/contact") return contact(request, env);
       if (request.method === "POST" && url.pathname === "/meteo-ai") return meteoAI(request, env);
       if (request.method === "POST" && url.pathname === "/push-test") return pushTest(request, env);
+      if (request.method === "POST" && url.pathname === "/push-preferences") return savePushPreferences(request, env);
       if (request.method === "GET" && url.pathname === "/oauth/youtube/start") return youtubeOAuthStart(request, env);
       if (request.method === "GET" && url.pathname === "/oauth/youtube/callback") return youtubeOAuthCallback(request, env, url);
       if (request.method === "GET" && url.pathname === "/oauth/tiktok/start") return tiktokOAuthStart(request, env);
@@ -3377,7 +3444,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);
