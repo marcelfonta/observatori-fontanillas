@@ -2602,48 +2602,84 @@ function socialReelCaption(localDate, slot) {
   return `El temps a Sant Celoni · actualització del ${period} (${localDate}).\n\nDades meteorològiques reals i previsió de Meteo Fontanillas.\nhttps://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #ElTemps #Meteo`;
 }
 
-async function waitForInstagramReel(containerId, accessToken, env) {
-  let lastStatus = '';
-  for (let attempt = 0; attempt < 12; attempt += 1) {
-    const status = await metaGraphRequest(env, containerId, {
-      accessToken,
-      params:{ fields:'status_code,status' },
-    });
-    const statusCode = String(status.payload.status_code || '').toUpperCase();
-    lastStatus = cleanText(status.payload.status || statusCode, 500);
-    if (statusCode === 'FINISHED') return status;
-    if (statusCode === 'ERROR' || statusCode === 'EXPIRED') {
-      throw Object.assign(new Error(lastStatus || 'Instagram no ha pogut processar el Reel.'), { status:502, responseCode:status.responseCode });
-    }
-    await new Promise(resolve => setTimeout(resolve, 1500));
+async function checkInstagramReel(containerId, accessToken, env) {
+  const status = await metaGraphRequest(env, containerId, {
+    accessToken,
+    params:{ fields:'status_code,status' },
+  });
+  const statusCode = String(status.payload.status_code || '').toUpperCase();
+  const detail = cleanText(status.payload.status || statusCode, 500);
+  if (statusCode === 'FINISHED') return status;
+  if (statusCode === 'PUBLISHED') return { ...status, alreadyPublished:true };
+  if (statusCode === 'ERROR' || statusCode === 'EXPIRED') {
+    throw Object.assign(new Error(detail || 'Instagram no ha pogut processar el Reel.'), { status:502, responseCode:status.responseCode });
   }
-  throw Object.assign(new Error(`Instagram encara processa el Reel (${lastStatus || 'sense estat'}). Torna-ho a provar més tard; no s’ha publicat automàticament.`), { status:409 });
+  // Meta recommends polling containers at most once per minute. Returning the
+  // pending container lets the explicit manual test resume it later without
+  // creating a duplicate Reel or holding a Worker request open for minutes.
+  throw Object.assign(new Error(`Instagram encara processa el Reel (${detail || 'sense estat'}). Torna a prémer la prova d’aquí a un minut; no es crearà cap Reel duplicat.`), {
+    status:409, reelContainerId:containerId, pending:true, responseCode:status.responseCode,
+  });
 }
 
-async function publishInstagramReel({ videoUrl, caption }, env) {
+async function publishInstagramReel({ videoUrl, caption, containerId='' }, env) {
   const assets = await resolveMetaAssets(env);
   if (!assets.instagramId) throw Object.assign(new Error('No s’ha trobat el compte professional d’Instagram vinculat.'), { status:503 });
-  const created = await metaGraphRequest(env, `${assets.instagramId}/media`, {
-    method:'POST', accessToken:assets.pageToken,
-    params:{ media_type:'REELS', video_url:videoUrl, caption, share_to_feed:true },
-  });
-  if (!created.payload.id) throw Object.assign(new Error('Instagram no ha pogut preparar el Reel.'), { status:502, responseCode:created.responseCode });
-  await waitForInstagramReel(created.payload.id, assets.pageToken, env);
+  let reelContainerId = cleanText(containerId, 100);
+  let createdResponseCode = null;
+  if (!reelContainerId) {
+    const created = await metaGraphRequest(env, `${assets.instagramId}/media`, {
+      method:'POST', accessToken:assets.pageToken,
+      params:{ media_type:'REELS', video_url:videoUrl, caption, share_to_feed:true },
+    });
+    reelContainerId = cleanText(created.payload.id, 100);
+    createdResponseCode = created.responseCode;
+    if (!reelContainerId) throw Object.assign(new Error('Instagram no ha pogut preparar el Reel.'), { status:502, responseCode:created.responseCode });
+  }
+  const state = await checkInstagramReel(reelContainerId, assets.pageToken, env);
+  if (state.alreadyPublished) return { remoteId:reelContainerId, responseCode:state.responseCode, alreadyPublished:true };
   const published = await metaGraphRequest(env, `${assets.instagramId}/media_publish`, {
-    method:'POST', accessToken:assets.pageToken, params:{ creation_id:created.payload.id },
+    method:'POST', accessToken:assets.pageToken, params:{ creation_id:reelContainerId },
   });
   if (!published.payload.id) throw Object.assign(new Error('Instagram no ha retornat l’identificador del Reel.'), { status:502, responseCode:published.responseCode });
-  return { remoteId:String(published.payload.id), responseCode:published.responseCode };
+  return { remoteId:String(published.payload.id), responseCode:published.responseCode || createdResponseCode };
+}
+
+async function uploadFacebookHostedReel(uploadUrl, videoUrl, accessToken) {
+  let target;
+  try { target = new URL(uploadUrl); }
+  catch { throw Object.assign(new Error('Facebook no ha retornat una URL de pujada vàlida.'), { status:502 }); }
+  if (target.protocol !== 'https:' || target.hostname !== 'rupload.facebook.com') {
+    throw Object.assign(new Error('Facebook ha retornat una URL de pujada inesperada.'), { status:502 });
+  }
+  const response = await fetch(target.toString(), {
+    method:'POST',
+    headers:{ Accept:'application/json', Authorization:`OAuth ${accessToken}`, file_url:videoUrl },
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.error || payload.success === false) {
+    const message = cleanText(payload.error?.message || `Facebook no ha pogut pujar el vídeo (${response.status}).`, 500);
+    throw Object.assign(new Error(message), { status:502, responseCode:response.status, metaCode:payload.error?.code || null });
+  }
+  return { payload, responseCode:response.status };
 }
 
 async function publishFacebookReel({ videoUrl, caption }, env) {
   const assets = await resolveMetaAssets(env);
   if (!assets.pageId) throw Object.assign(new Error('No s’ha identificat la pàgina de Facebook.'), { status:503 });
+  const started = await metaGraphRequest(env, `${assets.pageId}/video_reels`, {
+    method:'POST', accessToken:assets.pageToken,
+    params:{ upload_phase:'start' },
+  });
+  const videoId = cleanText(started.payload.video_id, 100);
+  const uploadUrl = cleanText(started.payload.upload_url, 1000);
+  if (!videoId || !uploadUrl) throw Object.assign(new Error('Facebook no ha pogut iniciar la pujada del Reel.'), { status:502, responseCode:started.responseCode });
+  await uploadFacebookHostedReel(uploadUrl, videoUrl, assets.pageToken);
   const published = await metaGraphRequest(env, `${assets.pageId}/video_reels`, {
     method:'POST', accessToken:assets.pageToken,
-    params:{ video_url:videoUrl, description:caption },
+    params:{ upload_phase:'finish', video_id:videoId, video_state:'PUBLISHED', description:caption },
   });
-  const remoteId = published.payload.id || published.payload.video_id || published.payload.post_id;
+  const remoteId = published.payload.id || published.payload.video_id || published.payload.post_id || videoId;
   if (!remoteId) throw Object.assign(new Error('Facebook no ha retornat l’identificador del Reel.'), { status:502, responseCode:published.responseCode });
   return { remoteId:String(remoteId), responseCode:published.responseCode };
 }
@@ -2651,6 +2687,13 @@ async function publishFacebookReel({ videoUrl, caption }, env) {
 function socialReelRunKey(localDate, slot) {
   return /^\d{4}-\d{2}-\d{2}$/.test(String(localDate || '')) && SOCIAL_REEL_SLOT.has(slot)
     ? `social-reels:${localDate}:${slot}` : '';
+}
+
+function previousSocialReelOutcomes(detail) {
+  try {
+    const parsed = typeof detail === 'string' ? JSON.parse(detail) : detail;
+    return Array.isArray(parsed?.outcomes) ? parsed.outcomes : [];
+  } catch { return []; }
 }
 
 async function adminSocialReelTest(request, env) {
@@ -2669,18 +2712,30 @@ async function adminSocialReelTest(request, env) {
   const previous = await env.DB.prepare('SELECT status,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
   if (previous?.status === 'healthy') return json({ error:'Aquesta prova de Reels ja s’ha completat per a aquesta franja. No es duplicarà.' }, 409, 'no-store', auth.origin);
   const payload = { videoUrl:await socialVideoUrl(key, env, 3600), caption:socialReelCaption(localDate, slot) };
+  const previousOutcomes = previousSocialReelOutcomes(previous?.detail);
   const outcomes = [];
   for (const [channel, publisher] of [['instagram', publishInstagramReel], ['facebook', publishFacebookReel]]) {
+    const previousOutcome = previousOutcomes.find(item => item?.channel === channel);
+    if (previousOutcome?.ok && previousOutcome?.remoteId) {
+      outcomes.push({ channel, ok:true, remoteId:previousOutcome.remoteId, reused:true });
+      continue;
+    }
     try {
-      const result = await publisher(payload, env);
+      const result = await publisher(channel === 'instagram'
+        ? { ...payload, containerId:previousOutcome?.reelContainerId || '' }
+        : payload, env);
       outcomes.push({ channel, ok:true, remoteId:result.remoteId });
     } catch (error) {
-      outcomes.push({ channel, ok:false, error:cleanText(error.message, 500), responseCode:error.responseCode || null });
+      outcomes.push({
+        channel, ok:false, pending:Boolean(error.pending), reelContainerId:cleanText(error.reelContainerId, 100) || undefined,
+        error:cleanText(error.message, 500), responseCode:error.responseCode || null,
+      });
     }
   }
   const failed = outcomes.filter(item => !item.ok);
-  await recordOperationalState(env, serviceKey, failed.length ? 'down' : 'healthy', { localDate, slot, outcomes });
-  if (failed.length) return json({ error:'La prova de Reels ha quedat incompleta.', outcomes, retryable:true }, 502, 'no-store, private', auth.origin);
+  const pending = failed.some(item => item.pending);
+  await recordOperationalState(env, serviceKey, failed.length ? (pending && failed.every(item => item.pending) ? 'degraded' : 'down') : 'healthy', { localDate, slot, outcomes });
+  if (failed.length) return json({ error:pending ? 'El Reel encara s’està processant o algun canal ha fallat.' : 'La prova de Reels ha quedat incompleta.', outcomes, retryable:true }, pending ? 202 : 502, 'no-store, private', auth.origin);
   return json({ ok:true, localDate, slot, outcomes }, 200, 'no-store, private', auth.origin);
 }
 
