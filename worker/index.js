@@ -2995,6 +2995,83 @@ async function publishFacebookReel({ videoUrl, caption }, env) {
   return { remoteId:String(remoteId), responseCode:published.responseCode };
 }
 
+async function checkInstagramStory(containerId, accessToken, env) {
+  const status = await metaGraphRequest(env, containerId, {
+    accessToken,
+    params:{ fields:'status_code,status' },
+  });
+  const statusCode = String(status.payload.status_code || '').toUpperCase();
+  const detail = cleanText(status.payload.status || statusCode, 500);
+  if (statusCode === 'FINISHED') return status;
+  if (statusCode === 'PUBLISHED') return { ...status, alreadyPublished:true };
+  if (statusCode === 'ERROR' || statusCode === 'EXPIRED') {
+    throw Object.assign(new Error(detail || 'Instagram no ha pogut processar la Story.'), { status:502, responseCode:status.responseCode });
+  }
+  throw Object.assign(new Error(`Instagram encara processa la Story (${detail || 'sense estat'}). Torna a prémer la prova d’aquí a un minut; no es crearà cap Story duplicada.`), {
+    status:409, storyContainerId:containerId, pending:true, responseCode:status.responseCode,
+  });
+}
+
+async function publishInstagramStory({ videoUrl, containerId='' }, env) {
+  const assets = await resolveMetaAssets(env);
+  if (!assets.instagramId) throw Object.assign(new Error('No s’ha trobat el compte Business d’Instagram vinculat.'), { status:503 });
+  let storyContainerId = cleanText(containerId, 100);
+  let createdResponseCode = null;
+  if (!storyContainerId) {
+    const created = await metaGraphRequest(env, `${assets.instagramId}/media`, {
+      method:'POST', accessToken:assets.pageToken,
+      params:{ media_type:'STORIES', video_url:videoUrl },
+    });
+    storyContainerId = cleanText(created.payload.id, 100);
+    createdResponseCode = created.responseCode;
+    if (!storyContainerId) throw Object.assign(new Error('Instagram no ha pogut preparar la Story.'), { status:502, responseCode:created.responseCode });
+  }
+  const state = await checkInstagramStory(storyContainerId, assets.pageToken, env);
+  if (state.alreadyPublished) return { remoteId:storyContainerId, responseCode:state.responseCode, alreadyPublished:true };
+  const published = await metaGraphRequest(env, `${assets.instagramId}/media_publish`, {
+    method:'POST', accessToken:assets.pageToken, params:{ creation_id:storyContainerId },
+  });
+  if (!published.payload.id) throw Object.assign(new Error('Instagram no ha retornat l’identificador de la Story.'), { status:502, responseCode:published.responseCode });
+  return { remoteId:String(published.payload.id), responseCode:published.responseCode || createdResponseCode };
+}
+
+async function publishFacebookStory({ videoUrl, videoId='', uploadUrl='', stage='' }, env) {
+  const assets = await resolveMetaAssets(env);
+  if (!assets.pageId) throw Object.assign(new Error('No s’ha identificat la pàgina de Facebook.'), { status:503 });
+  let storyVideoId = cleanText(videoId, 100);
+  let storyUploadUrl = cleanText(uploadUrl, 1000);
+  let storyStage = cleanText(stage, 40);
+  try {
+    if (!storyVideoId || !storyUploadUrl) {
+      const started = await metaGraphRequest(env, `${assets.pageId}/video_stories`, {
+        method:'POST', accessToken:assets.pageToken,
+        params:{ upload_phase:'start' },
+      });
+      storyVideoId = cleanText(started.payload.video_id, 100);
+      storyUploadUrl = cleanText(started.payload.upload_url, 1000);
+      storyStage = 'started';
+      if (!storyVideoId || !storyUploadUrl) throw Object.assign(new Error('Facebook no ha pogut iniciar la pujada de la Story.'), { status:502, responseCode:started.responseCode });
+    }
+    if (storyStage !== 'finish_failed') {
+      await uploadFacebookHostedReel(storyUploadUrl, videoUrl, assets.pageToken);
+      storyStage = 'finish_failed';
+    }
+    const published = await metaGraphRequest(env, `${assets.pageId}/video_stories`, {
+      method:'POST', accessToken:assets.pageToken,
+      params:{ upload_phase:'finish', video_id:storyVideoId, video_state:'PUBLISHED' },
+    });
+    const remoteId = published.payload.post_id || published.payload.id || storyVideoId;
+    if (published.payload.success === false || !remoteId) throw Object.assign(new Error('Facebook no ha confirmat la publicació de la Story.'), { status:502, responseCode:published.responseCode });
+    return { remoteId:String(remoteId), responseCode:published.responseCode };
+  } catch (error) {
+    throw Object.assign(error, {
+      facebookStoryVideoId:storyVideoId || undefined,
+      facebookStoryUploadUrl:storyUploadUrl || undefined,
+      facebookStoryStage:storyStage || undefined,
+    });
+  }
+}
+
 function socialReelRunKey(localDate, slot) {
   return /^\d{4}-\d{2}-\d{2}$/.test(String(localDate || '')) && SOCIAL_REEL_SLOT.has(slot)
     ? `social-reels:${localDate}:${slot}` : '';
@@ -3047,6 +3124,63 @@ async function adminSocialReelTest(request, env) {
   const pending = failed.some(item => item.pending);
   await recordOperationalState(env, serviceKey, failed.length ? (pending && failed.every(item => item.pending) ? 'degraded' : 'down') : 'healthy', { localDate, slot, outcomes });
   if (failed.length) return json({ error:pending ? 'El Reel encara s’està processant o algun canal ha fallat.' : 'La prova de Reels ha quedat incompleta.', outcomes, retryable:true }, pending ? 202 : 502, 'no-store, private', auth.origin);
+  return json({ ok:true, localDate, slot, outcomes }, 200, 'no-store, private', auth.origin);
+}
+
+function socialStoryRunKey(localDate, slot) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(localDate || '')) && SOCIAL_REEL_SLOT.has(slot)
+    ? `social-stories:${localDate}:${slot}` : '';
+}
+
+async function adminSocialStoryTest(request, env) {
+  const auth = await authorizeAdminRequest(request, env);
+  if (auth.response) return auth.response;
+  if (!(await ensureOperationsSchema(env))) return json({ error:'La coordinació de Stories no està disponible.' }, 503, 'no-store', auth.origin);
+  if (!env.SOCIAL_VIDEO_BUCKET) return json({ error:'L’emmagatzematge temporal de vídeo no està configurat.' }, 503, 'no-store', auth.origin);
+  const body = await adminJsonBody(request, auth.origin);
+  const slot = cleanText(body.slot, 20).toLowerCase();
+  if (!SOCIAL_REEL_SLOT.has(slot)) return json({ error:'Franja de Story no vàlida.' }, 400, 'no-store', auth.origin);
+  const localDate = localIsoDate(new Date());
+  const key = `shorts/${localDate}/${slot}.mp4`;
+  if (!await env.SOCIAL_VIDEO_BUCKET.head(key)) return json({ error:`No hi ha cap Short preparat per al ${slot === 'morning' ? 'matí' : 'vespre'} d’avui.` }, 409, 'no-store', auth.origin);
+  const serviceKey = socialStoryRunKey(localDate, slot);
+  const previous = await env.DB.prepare('SELECT status,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
+  if (previous?.status === 'healthy') return json({ error:'Aquesta prova de Stories ja s’ha completat per a aquesta franja. No es duplicarà.' }, 409, 'no-store', auth.origin);
+  const payload = { videoUrl:await socialVideoUrl(key, env, 3600) };
+  const previousOutcomes = previousSocialReelOutcomes(previous?.detail);
+  const outcomes = [];
+  for (const [channel, publisher] of [['instagram', publishInstagramStory], ['facebook', publishFacebookStory]]) {
+    const previousOutcome = previousOutcomes.find(item => item?.channel === channel);
+    if (previousOutcome?.ok && previousOutcome?.remoteId) {
+      outcomes.push({ channel, ok:true, remoteId:previousOutcome.remoteId, reused:true });
+      continue;
+    }
+    try {
+      const input = channel === 'instagram'
+        ? { ...payload, containerId:previousOutcome?.storyContainerId || '' }
+        : {
+            ...payload,
+            videoId:previousOutcome?.facebookStoryVideoId || '',
+            uploadUrl:previousOutcome?.facebookStoryUploadUrl || '',
+            stage:previousOutcome?.facebookStoryStage || '',
+          };
+      const result = await publisher(input, env);
+      outcomes.push({ channel, ok:true, remoteId:result.remoteId });
+    } catch (error) {
+      outcomes.push({
+        channel, ok:false, pending:Boolean(error.pending),
+        storyContainerId:cleanText(error.storyContainerId, 100) || undefined,
+        facebookStoryVideoId:cleanText(error.facebookStoryVideoId, 100) || undefined,
+        facebookStoryUploadUrl:cleanText(error.facebookStoryUploadUrl, 1000) || undefined,
+        facebookStoryStage:cleanText(error.facebookStoryStage, 40) || undefined,
+        error:cleanText(error.message, 500), responseCode:error.responseCode || null,
+      });
+    }
+  }
+  const failed = outcomes.filter(item => !item.ok);
+  const pending = failed.some(item => item.pending);
+  await recordOperationalState(env, serviceKey, failed.length ? (pending && failed.every(item => item.pending) ? 'degraded' : 'down') : 'healthy', { localDate, slot, outcomes });
+  if (failed.length) return json({ error:pending ? 'La Story encara s’està processant o algun canal ha fallat.' : 'La prova de Stories ha quedat incompleta.', outcomes, retryable:true }, pending ? 202 : 502, 'no-store, private', auth.origin);
   return json({ ok:true, localDate, slot, outcomes }, 200, 'no-store, private', auth.origin);
 }
 
@@ -3706,6 +3840,7 @@ export default {
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
       if (request.method === "POST" && url.pathname === "/admin/social-reels/test") return adminSocialReelTest(request, env);
+      if (request.method === "POST" && url.pathname === "/admin/social-stories/test") return adminSocialStoryTest(request, env);
       if (request.method === "POST" && url.pathname === "/admin/buffer-tiktok/test") return adminBufferTikTokTest(request, env);
       const socialPublishMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/publish$/);
       if (request.method === "POST" && socialPublishMatch) return adminPublishSocialDraft(request, env, Number(socialPublishMatch[1]));
