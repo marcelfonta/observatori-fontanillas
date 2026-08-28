@@ -2,6 +2,10 @@
 
 ## En desenvolupament
 
+- Preparada una prova manual i protegida de Stories d’Instagram i Facebook amb el mateix vídeo vertical del Reel. Cada franja queda deduplicada i els canals ja publicats no es repeteixen en un reintent parcial.
+- Instagram conserva el contenidor mentre Meta processa el vídeo; Facebook conserva la sessió i la fase de pujada per reprendre una resposta interrompuda sense començar una Story nova.
+- Les Stories continuen desactivades en l’automatització: primer cal confirmar visualment una prova real dels dos canals des del panell.
+
 - La confirmació dels Shorts valida ara l'estat que YouTube retorna en completar la mateixa pujada, sense fer una consulta posterior que exigia permisos de lectura addicionals.
 - Això evita marcar com a fallit —i arriscar un duplicat en reintentar— un vídeo que YouTube ja havia acceptat i programat correctament.
 - La validació final de la pujada comparteix el marge mínim real de cinc minuts amb el planificador, evitant que la recuperació tardana passi el primer control però falli al segon.
