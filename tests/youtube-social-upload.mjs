@@ -24,8 +24,11 @@ assert.match(workflow, /Authorization: Bearer \$SOCIAL_VIDEO_UPLOAD_TOKEN/);
 assert.match(workflow, /Coordina una sola execució per franja/);
 assert.match(workflow, /YOUTUBE_SHORT_COORDINATION_ACTIVE/);
 assert.doesNotMatch(workflow, /instagram.*story|facebook.*story/i);
-assert.match(uploader,/videos\?part=status&id=/);
-assert.match(uploader,/YouTube no confirma el vídeo després de pujar-lo/);
+assert.doesNotMatch(uploader,/videos\?part=status&id=/);
+assert.match(uploader,/const remoteStatus=result\.status/);
+assert.match(uploader,/YouTube ha pujat el vídeo però no n’ha retornat l’estat final/);
 assert.match(uploader,/remoteStatus\.privacyStatus/);
+assert.match(uploader,/MINIMUM_SCHEDULING_MARGIN_MS=5\*60_000/);
+assert.match(uploader,/almenys 5 minuts de marge/);
 
 console.log('Còpia privada del Short per a Stories: correcta');

@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const required=name=>{const value=process.env[name];if(!value)throw new Error(`Falta ${name}`);return value;};
+const MINIMUM_SCHEDULING_MARGIN_MS=5*60_000;
 
 async function main(){
   const clientId=required('YOUTUBE_CLIENT_ID');
@@ -12,7 +13,7 @@ async function main(){
   const publishAt=String(process.env.YOUTUBE_PUBLISH_AT||'').trim();
   if(publishAt){
     const scheduledAt=new Date(publishAt);
-    if(Number.isNaN(scheduledAt.getTime())||scheduledAt.getTime()-Date.now()<15*60_000)throw new Error('YOUTUBE_PUBLISH_AT ha de ser una data ISO vàlida amb almenys 15 minuts de marge.');
+    if(Number.isNaN(scheduledAt.getTime())||scheduledAt.getTime()-Date.now()<MINIMUM_SCHEDULING_MARGIN_MS)throw new Error('YOUTUBE_PUBLISH_AT ha de ser una data ISO vàlida amb almenys 5 minuts de marge.');
     if(privacy!=='private')throw new Error('Un Short programat a YouTube s’ha de pujar inicialment com a privat.');
   }
   const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,client_secret:clientSecret,refresh_token:refreshToken,grant_type:'refresh_token'})});
@@ -29,12 +30,11 @@ async function main(){
   const result=await upload.json().catch(()=>({}));
   if(!upload.ok)throw new Error(`La pujada ha fallat (${upload.status}): ${JSON.stringify(result).slice(0,300)}`);
   if(!result.id)throw new Error('YouTube ha respost a la pujada però no ha retornat cap identificador de vídeo.');
-  const verification=await fetch(`https://www.googleapis.com/youtube/v3/videos?part=status&id=${encodeURIComponent(result.id)}`,{
-    headers:{Authorization:`Bearer ${token.access_token}`},
-  });
-  const verified=await verification.json().catch(()=>({}));
-  const remoteStatus=verified?.items?.[0]?.status;
-  if(!verification.ok||!remoteStatus)throw new Error(`YouTube no confirma el vídeo després de pujar-lo (${verification.status}).`);
+  // videos.insert already returns the requested status part. Reusing it keeps
+  // the OAuth permission limited to youtube.upload; videos.list would require
+  // an additional read scope and can report a false failure after a real upload.
+  const remoteStatus=result.status;
+  if(!remoteStatus)throw new Error('YouTube ha pujat el vídeo però no n’ha retornat l’estat final.');
   if(remoteStatus.privacyStatus!==privacy)throw new Error(`YouTube confirma una privacitat inesperada (${remoteStatus.privacyStatus||'desconeguda'}).`);
   if(publishAt&&new Date(remoteStatus.publishAt||'').getTime()!==new Date(publishAt).getTime())throw new Error(`YouTube no confirma l’hora programada (${remoteStatus.publishAt||'absent'}).`);
   console.log(`Vídeo confirmat a YouTube com a ${privacy}${publishAt?` i programat per a ${publishAt}`:''}. ID: ${result.id}`);
