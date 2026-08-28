@@ -2,6 +2,10 @@
 
 ## En desenvolupament
 
+- Preparada la cua de TikTok mitjançant Buffer: el Short només es traspassa després que YouTube confirmi la seva pujada i conserva l’hora pública de cada franja.
+- El vídeo continua en un bucket R2 privat; Buffer rep una URL opaca i limitada al fitxer temporal, estable mentre dura la cua i eliminada amb la neteja de tres dies.
+- Afegida al panell una prova segura que crea un esborrany a Buffer, sense publicar-lo. La cua automàtica roman desactivada fins que es validi aquesta prova i s’activi explícitament el paràmetre corresponent.
+
 - Cloudflare passa a ser el rellotge principal dels YouTube Shorts i inicia les preparacions a les 07:20 i les 19:45, en hora de Sant Celoni. GitHub conserva una reserva posterior compatible amb l’horari d’estiu i d’hivern.
 - Si GitHub accepta el disparador però no confirma l’inici, Cloudflare el repeteix al cap de vuit minuts sense duplicar el renderitzat.
 - El Worker registra l’estat específic del planificador de Shorts i envia un correu operatiu si falta el token o GitHub rebutja el disparador.

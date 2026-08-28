@@ -2062,6 +2062,7 @@ async function adminSocialSummary(env) {
     telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
     threads:Boolean(env.THREADS_ACCESS_TOKEN),
     tiktok:Boolean(env.TIKTOK_REFRESH_TOKEN && env.TIKTOK_OPEN_ID && env.TIKTOK_CLIENT_KEY && env.TIKTOK_CLIENT_SECRET),
+    bufferTikTok:bufferTikTokConfigured(env),
     youtube:Boolean(env.YOUTUBE_REFRESH_TOKEN && env.YOUTUBE_CLIENT_ID && env.YOUTUBE_CLIENT_SECRET),
     whatsapp:false,
   };
@@ -2275,6 +2276,23 @@ async function socialVideoSignature(key, expires, env) {
   return [...new Uint8Array(signature)].map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
+// Buffer needs a direct URL that stays valid until its scheduled publication.
+// The R2 bucket remains private: only this opaque, per-video HMAC URL can read
+// the temporary object and cleanup still removes it after three days.
+async function bufferVideoSignature(key, env) {
+  const secret = String(env.SOCIAL_VIDEO_SIGNING_SECRET || env.ADMIN_TOKEN || '');
+  if (secret.length < 24) throw Object.assign(new Error('Falta una clau segura per preparar el vídeo per a Buffer.'), { status:503 });
+  const cryptoKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name:'HMAC', hash:'SHA-256' }, false, ['sign']);
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(`buffer-video:${key}`));
+  return [...new Uint8Array(signature)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function bufferVideoUrl(key, env) {
+  const safeKey = socialVideoKey(key);
+  if (!safeKey) throw new Error('La clau del vídeo per a Buffer no és vàlida.');
+  return `${publicWorkerBaseUrl(env)}/buffer-video/${safeKey}?sig=${await bufferVideoSignature(safeKey, env)}`;
+}
+
 async function socialVideoUrl(key, env, lifetimeSeconds = 1800) {
   const safeKey = socialVideoKey(key);
   if (!safeKey) throw new Error('La clau del vídeo social no és vàlida.');
@@ -2300,6 +2318,26 @@ async function serveSocialVideo(request, env, key, url) {
   headers.set('Content-Type', headers.get('Content-Type') || 'video/mp4');
   // Meta descarrega el vídeo des dels seus propis servidors mentre el processa.
   // La URL continua sent privada perquè va signada i caduca en una hora.
+  headers.set('Cache-Control', 'private, no-store, max-age=0');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('Content-Disposition', 'inline');
+  if (Number.isFinite(Number(object.size))) headers.set('Content-Length', String(object.size));
+  if (object.etag) headers.set('ETag', object.etag);
+  if (request.method === 'HEAD') return new Response(null, { headers });
+  return new Response(object.body, { headers });
+}
+
+async function serveBufferVideo(request, env, key, url) {
+  if (!env.SOCIAL_VIDEO_BUCKET) return json({ error:'L’emmagatzematge temporal de vídeo encara no està configurat.' }, 503, 'no-store');
+  const safeKey = socialVideoKey(key);
+  if (!safeKey) return json({ error:'Vídeo temporal no vàlid.' }, 403, 'no-store');
+  const expected = await bufferVideoSignature(safeKey, env);
+  if (!(await secureTokenMatch(String(url.searchParams.get('sig') || ''), expected))) return json({ error:'Signatura de vídeo no vàlida.' }, 403, 'no-store');
+  const object = await env.SOCIAL_VIDEO_BUCKET.get(safeKey);
+  if (!object) return json({ error:'Vídeo temporal no trobat.' }, 404, 'no-store');
+  const headers = new Headers();
+  if (typeof object.writeHttpMetadata === 'function') object.writeHttpMetadata(headers);
+  headers.set('Content-Type', headers.get('Content-Type') || 'video/mp4');
   headers.set('Cache-Control', 'private, no-store, max-age=0');
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('Content-Disposition', 'inline');
@@ -2406,6 +2444,130 @@ async function youtubeShortRunControl(request, env, localDate, slot) {
     return json({ ok:true, completed:true },200,'no-store');
   }
   return json({ error:'Acció de coordinació no vàlida.' },400,'no-store');
+}
+
+const BUFFER_TIKTOK_SLOT_TIMES = { morning:{ hour:8, minute:0 }, evening:{ hour:20, minute:30 } };
+
+function bufferTikTokEnabled(env) {
+  return String(env.BUFFER_TIKTOK_AUTOMATION_ENABLED || '').trim().toLowerCase() === 'true';
+}
+
+function bufferTikTokConfigured(env) {
+  return String(env.BUFFER_API_KEY || '').trim().length >= 24;
+}
+
+function timeZoneOffsetMilliseconds(date) {
+  const value = new Intl.DateTimeFormat('en-US', { timeZone:TIME_ZONE, timeZoneName:'longOffset' })
+    .formatToParts(date).find(part => part.type === 'timeZoneName')?.value || '';
+  const match = value.match(/^GMT([+-])(\d{2}):(\d{2})$/);
+  if (!match) throw new Error(`No s'ha pogut determinar el fus horari de ${TIME_ZONE}.`);
+  const minutes = Number(match[2]) * 60 + Number(match[3]);
+  return (match[1] === '+' ? 1 : -1) * minutes * 60_000;
+}
+
+function bufferTikTokPublishAt(localDate, slot) {
+  const target = BUFFER_TIKTOK_SLOT_TIMES[slot];
+  if (!target || !/^\d{4}-\d{2}-\d{2}$/.test(String(localDate || ''))) throw new Error('Franja de TikTok no vàlida.');
+  const [year, month, day] = localDate.split('-').map(Number);
+  const nominalUtc = Date.UTC(year, month - 1, day, target.hour, target.minute);
+  return new Date(nominalUtc - timeZoneOffsetMilliseconds(new Date(nominalUtc)));
+}
+
+async function bufferGraphql(env, query, variables = {}) {
+  const apiKey = String(env.BUFFER_API_KEY || '').trim();
+  if (apiKey.length < 24) throw Object.assign(new Error('Falta BUFFER_API_KEY.'), { status:503 });
+  const response = await fetch('https://api.buffer.com', {
+    method:'POST',
+    headers:{ Authorization:`Bearer ${apiKey}`, 'Content-Type':'application/json', Accept:'application/json' },
+    body:JSON.stringify({ query, variables }),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.errors?.length) {
+    const message = cleanText(payload.errors?.[0]?.message || `Buffer ha respost ${response.status}.`, 500);
+    throw Object.assign(new Error(message), { status:502, responseCode:response.status });
+  }
+  return payload.data || {};
+}
+
+async function bufferTikTokChannel(env) {
+  const account = await bufferGraphql(env, 'query { account { organizations { id } } }');
+  const organizations = Array.isArray(account.account?.organizations) ? account.account.organizations : [];
+  for (const organization of organizations) {
+    const data = await bufferGraphql(env, `query Channels($organizationId: OrganizationId!) {
+      channels(input: { organizationId: $organizationId }) { id service isQueuePaused }
+    }`, { organizationId:organization.id });
+    const channel = (Array.isArray(data.channels) ? data.channels : []).find(item => String(item.service || '').toLowerCase() === 'tiktok' && !item.isQueuePaused);
+    if (channel?.id) return channel;
+  }
+  throw Object.assign(new Error('Buffer no ha trobat cap canal de TikTok actiu.'), { status:503 });
+}
+
+function bufferTikTokCaption(localDate, slot) {
+  const period = slot === 'morning' ? 'Actualització de matí' : 'Actualització de vespre';
+  return `${period}: dades reals i previsió de ${localDate} des de Meteo Fontanillas, Sant Celoni. #meteo #temps #santceloni #montseny`;
+}
+
+async function createBufferTikTokPost(env, { localDate, slot, draft = false }) {
+  if (!env.SOCIAL_VIDEO_BUCKET) throw Object.assign(new Error('L’emmagatzematge temporal de vídeo no està configurat.'), { status:503 });
+  const key = `shorts/${localDate}/${slot}.mp4`;
+  if (!await env.SOCIAL_VIDEO_BUCKET.head(key)) throw Object.assign(new Error('Encara no hi ha el Short temporal preparat.'), { status:409 });
+  const channel = await bufferTikTokChannel(env);
+  const input = {
+    text:bufferTikTokCaption(localDate, slot),
+    channelId:channel.id,
+    schedulingType:'automatic',
+    mode:'customScheduled',
+    dueAt:bufferTikTokPublishAt(localDate, slot).toISOString(),
+    assets:[{ video:{ url:await bufferVideoUrl(key, env), metadata:{ thumbnailOffset:2000 } } }],
+    ...(draft ? { saveToDraft:true } : {}),
+  };
+  const data = await bufferGraphql(env, `mutation CreatePost($input: CreatePostInput!) {
+    createPost(input: $input) {
+      ... on PostActionSuccess { post { id status dueAt } }
+      ... on MutationError { message }
+    }
+  }`, { input });
+  const result = data.createPost || {};
+  if (result.message || !result.post?.id) throw Object.assign(new Error(cleanText(result.message || 'Buffer no ha creat la publicació.', 500)), { status:502 });
+  return { id:String(result.post.id), status:result.post.status || (draft ? 'draft' : 'scheduled'), dueAt:result.post.dueAt || input.dueAt, draft };
+}
+
+async function bufferTikTokScheduleControl(request, env, localDate, slot) {
+  if (!(await authorizeYoutubeShortRequest(request, env))) return json({ error:'No autoritzat.' },401,'no-store');
+  if (!bufferTikTokEnabled(env)) return json({ ok:true, skipped:'automation_disabled' },200,'no-store');
+  if (!(await ensureOperationsSchema(env))) return json({ error:'La coordinació de TikTok no està disponible.' },503,'no-store');
+  const safeSlot = slot === 'morning' || slot === 'evening' ? slot : '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(localDate) || !safeSlot) return json({ error:'Data o franja de TikTok no vàlida.' },400,'no-store');
+  const serviceKey = `buffer-tiktok:${localDate}:${safeSlot}`;
+  const previous = await env.DB.prepare('SELECT status,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
+  const detail = parseYoutubeShortRunDetail(previous?.detail);
+  if (previous?.status === 'healthy' && detail.remoteId) return json({ ok:true, reused:true, remoteId:detail.remoteId, dueAt:detail.dueAt || null },200,'no-store');
+  try {
+    const result = await createBufferTikTokPost(env, { localDate, slot:safeSlot });
+    await recordOperationalState(env, serviceKey, 'healthy', { localDate, slot:safeSlot, remoteId:result.id, dueAt:result.dueAt, stage:'scheduled' });
+    return json({ ok:true, scheduled:true, ...result },201,'no-store');
+  } catch (error) {
+    await recordOperationalState(env, serviceKey, 'down', { localDate, slot:safeSlot, stage:'schedule_failed', error:cleanText(error.message,500), responseCode:error.responseCode || null }).catch(()=>{});
+    return json({ error:'No s’ha pogut programar el TikTok a Buffer.', detail:cleanText(error.message,500) }, error.status || 502,'no-store');
+  }
+}
+
+async function adminBufferTikTokTest(request, env) {
+  const auth = await authorizeAdminRequest(request, env);
+  if (auth.response) return auth.response;
+  if (!bufferTikTokConfigured(env)) return json({ error:'Falta la clau de Buffer al Worker.' },503,'no-store',auth.origin);
+  const body = await adminJsonBody(request, auth.origin);
+  const slot = cleanText(body.slot,20).toLowerCase();
+  if (slot !== 'morning' && slot !== 'evening') return json({ error:'Franja de prova de TikTok no vàlida.' },400,'no-store',auth.origin);
+  const localDate = localIsoDate(new Date());
+  try {
+    const result = await createBufferTikTokPost(env, { localDate, slot, draft:true });
+    await recordOperationalState(env, 'buffer-tiktok-test', 'healthy', { localDate,slot,remoteId:result.id,stage:'draft_created' }).catch(()=>{});
+    return json({ ok:true, message:'Esborrany creat a Buffer: no es publicarà automàticament.', ...result },201,'no-store, private',auth.origin);
+  } catch (error) {
+    await recordOperationalState(env, 'buffer-tiktok-test', 'down', { localDate,slot,error:cleanText(error.message,500) }).catch(()=>{});
+    return json({ error:'La prova amb Buffer no s’ha pogut completar.', detail:cleanText(error.message,500) },error.status || 502,'no-store, private',auth.origin);
+  }
 }
 
 async function dispatchYoutubeShortFallback(env, date = new Date()) {
@@ -3136,7 +3298,7 @@ async function adminStatus(request, env) {
     quality(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     alerts(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     adminDatabaseSummary(env),
-    adminSocialSummary(env).catch(error => ({ enabled:false, mode:'draft', tokenConfigured:Boolean(env.META_SYSTEM_USER_TOKEN), channelCredentials:{ meta:Boolean(env.META_SYSTEM_USER_TOKEN), facebook:Boolean(env.META_SYSTEM_USER_TOKEN), instagram:Boolean(env.META_SYSTEM_USER_TOKEN), bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD), telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID), threads:Boolean(env.THREADS_ACCESS_TOKEN) }, error:error.message, pendingDrafts:0, recent:[] })),
+    adminSocialSummary(env).catch(error => ({ enabled:false, mode:'draft', tokenConfigured:Boolean(env.META_SYSTEM_USER_TOKEN), channelCredentials:{ meta:Boolean(env.META_SYSTEM_USER_TOKEN), facebook:Boolean(env.META_SYSTEM_USER_TOKEN), instagram:Boolean(env.META_SYSTEM_USER_TOKEN), bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD), telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID), threads:Boolean(env.THREADS_ACCESS_TOKEN), bufferTikTok:bufferTikTokConfigured(env) }, error:error.message, pendingDrafts:0, recent:[] })),
     adminOperationsSummary(env).catch(error => ({ enabled:false, error:error.message })),
   ]);
   return json({
@@ -3161,6 +3323,7 @@ async function adminStatus(request, env) {
       bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
       telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
       threads:Boolean(env.THREADS_ACCESS_TOKEN),
+      bufferTikTok:bufferTikTokConfigured(env),
       youtube:Boolean(env.GITHUB_SHORTS_DISPATCH_TOKEN),
       advancedAI:Boolean(env.AI),
     },
@@ -3453,13 +3616,18 @@ export default {
       if (request.method === "GET" && socialCardMatch) return socialCard(request, env, Number(socialCardMatch[1]), url, socialCardMatch[2] === 'jpg' ? 'jpeg' : 'png');
       const socialVideoMatch = url.pathname.match(/^\/social-video\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
       if ((request.method === 'GET' || request.method === 'HEAD') && socialVideoMatch) return serveSocialVideo(request, env, socialVideoMatch[1], url);
+      const bufferVideoMatch = url.pathname.match(/^\/buffer-video\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
+      if ((request.method === 'GET' || request.method === 'HEAD') && bufferVideoMatch) return serveBufferVideo(request, env, bufferVideoMatch[1], url);
       const socialVideoUploadMatch = url.pathname.match(/^\/admin\/social-video-upload\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
       if (request.method === 'POST' && socialVideoUploadMatch) return uploadSocialVideo(request, env, socialVideoUploadMatch[1]);
       const youtubeShortRunMatch = url.pathname.match(/^\/admin\/youtube-short-runs\/(\d{4}-\d{2}-\d{2})\/(mati|vespre)$/);
       if (request.method === 'POST' && youtubeShortRunMatch) return youtubeShortRunControl(request, env, youtubeShortRunMatch[1], youtubeShortRunMatch[2]);
+      const bufferTikTokScheduleMatch = url.pathname.match(/^\/admin\/buffer-tiktok\/schedule\/(\d{4}-\d{2}-\d{2})\/(morning|evening)$/);
+      if (request.method === 'POST' && bufferTikTokScheduleMatch) return bufferTikTokScheduleControl(request, env, bufferTikTokScheduleMatch[1], bufferTikTokScheduleMatch[2]);
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
       if (request.method === "POST" && url.pathname === "/admin/social-reels/test") return adminSocialReelTest(request, env);
+      if (request.method === "POST" && url.pathname === "/admin/buffer-tiktok/test") return adminBufferTikTokTest(request, env);
       const socialPublishMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/publish$/);
       if (request.method === "POST" && socialPublishMatch) return adminPublishSocialDraft(request, env, Number(socialPublishMatch[1]));
       const socialWhatsAppMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/prepare-whatsapp$/);

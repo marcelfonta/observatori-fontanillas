@@ -6,6 +6,7 @@ const key = 'shorts/2026-08-26/morning.mp4';
 const expires = Math.floor(Date.now() / 1000) + 600;
 const hmacKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name:'HMAC', hash:'SHA-256' }, false, ['sign']);
 const signature = [...new Uint8Array(await crypto.subtle.sign('HMAC', hmacKey, new TextEncoder().encode(`social-video:${key}:${expires}`)))].map(byte => byte.toString(16).padStart(2, '0')).join('');
+const bufferSignature = [...new Uint8Array(await crypto.subtle.sign('HMAC', hmacKey, new TextEncoder().encode(`buffer-video:${key}`)))].map(byte => byte.toString(16).padStart(2, '0')).join('');
 const objects = new Map();
 const bucket = {
   async put(objectKey, body) { objects.set(objectKey, new Uint8Array(await new Response(body).arrayBuffer())); },
@@ -31,5 +32,13 @@ assert.deepEqual([...new Uint8Array(await served.arrayBuffer())], [1,2,3,4]);
 
 const invalid = await worker.fetch(new Request(`https://fonta-meteo.example/social-video/${key}?expires=${expires}&sig=bad`), env, context);
 assert.equal(invalid.status, 403);
+
+const bufferServed = await worker.fetch(new Request(`https://fonta-meteo.example/buffer-video/${key}?sig=${bufferSignature}`), env, context);
+assert.equal(bufferServed.status, 200);
+assert.equal(bufferServed.headers.get('Content-Type'), 'video/mp4');
+assert.deepEqual([...new Uint8Array(await bufferServed.arrayBuffer())], [1,2,3,4]);
+
+const invalidBuffer = await worker.fetch(new Request(`https://fonta-meteo.example/buffer-video/${key}?sig=bad`), env, context);
+assert.equal(invalidBuffer.status, 403);
 
 console.log('Vídeos socials temporals: correcte');
