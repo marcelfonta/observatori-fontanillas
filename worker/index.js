@@ -1250,24 +1250,30 @@ async function forecastVerification(url, env) {
   ];
   const summarize = subset => ({
     samples:subset.length,
+    wetDays:subset.filter(row=>Number(row.observed_rain)>=0.2).length,
+    dryDays:subset.filter(row=>Number(row.observed_rain)<0.2).length,
     temperatureMae:verificationRound(verificationMean(subset.map(row=>row.temperatureAbsoluteError))),
     temperatureBias:verificationRound(verificationMean(subset.map(row=>row.temperatureError))),
     rainAccuracy:verificationRound(verificationMean(subset.map(row=>row.rainCorrect?100:0)),0),
     rainBrier:verificationRound(verificationMean(subset.map(row=>row.rainBrier)),3),
     windMae:verificationRound(verificationMean(subset.map(row=>row.windError))),
   });
-  const summary = summarize(rows);
+  // El resum principal ha de comparar sempre el mateix marge temporal.
+  // Barrejar actualitzacions del mateix dia amb horitzons de fins a set dies
+  // inflaria la mostra i faria que les mètriques fossin difícils de llegir.
+  const primaryRows = rows.filter(row=>Number(row.horizon_day)===1);
+  const summary = summarize(primaryRows);
   const horizons = horizonDefinitions.map(definition => ({ ...definition, ...summarize(rows.filter(row=>Number(row.horizon_day)>=definition.min&&Number(row.horizon_day)<=definition.max)) }));
-  const detail = rows.filter(row=>Number(row.horizon_day)===1).slice(0,14).map(row=>({
+  const detail = primaryRows.slice(0,14).map(row=>({
     date:row.target_date, issuedAt:row.issued_at,
     forecast:{ max:row.temperature_max,min:row.temperature_min,rain:row.precipitation_sum,rainProbability:row.precipitation_probability,gust:row.wind_gust_max,weatherCode:row.weather_code },
     observed:{ max:row.observed_max,min:row.observed_min,rain:verificationRound(Number(row.observed_rain)),gust:row.observed_gust },
   }));
   const firstSnapshot = await env.DB.prepare("SELECT MIN(issued_at) AS firstIssued,COUNT(*) AS total FROM forecast_snapshots").first();
-  const sampleDays=new Set(rows.map(row=>row.target_date)).size;
+  const sampleDays=new Set(primaryRows.map(row=>row.target_date)).size;
   const status = sampleDays >= 7 ? "ready" : "collecting";
   const confidence=sampleDays>=30?{level:'consolidated',label:'Mostra consolidada',note:'30 dies o més verificats'}:sampleDays>=14?{level:'growing',label:'Mostra en creixement',note:'Calen 30 dies per consolidar tendències'}:{level:'preliminary',label:'Resultat preliminar',note:'Menys de 14 dies verificats'};
-  return json({ ok:true,status,requestedDays,generatedAt:new Date().toISOString(),firstIssued:firstSnapshot?.firstIssued||null,storedForecasts:Number(firstSnapshot?.total)||0,sampleDays,confidence,summary,horizons,detail,method:{ provider:"Open-Meteo · best_match",observation:"Observatori Fontanillas · D1",minimumObservedSamples:72,note:"Cada predicció es desa abans del dia verificat; no es reconstrueixen pronòstics passats. L’índex Brier de pluja va de 0 (millor) a 1 (pitjor)." } }, 200, "public, max-age=900");
+  return json({ ok:true,status,requestedDays,generatedAt:new Date().toISOString(),firstIssued:firstSnapshot?.firstIssued||null,storedForecasts:Number(firstSnapshot?.total)||0,sampleDays,totalComparisons:rows.length,summaryScope:"tomorrow",confidence,summary,horizons,detail,method:{ provider:"Open-Meteo · best_match",observation:"Observatori Fontanillas · D1",minimumObservedSamples:72,rainThresholdMillimetres:0.2,rainProbabilityThreshold:40,note:"Els indicadors principals comparen només la previsió de demà guardada el dia anterior. No es reconstrueixen pronòstics passats. L’índex Brier de pluja va de 0 (millor) a 1 (pitjor)." } }, 200, "public, max-age=900");
 }
 
 function socialNumber(value, digits = 1) {

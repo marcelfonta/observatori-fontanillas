@@ -15,6 +15,10 @@ for(const token of ['rainBrier','sampleDays>=30','confidence'])assert.ok(worker.
 assert.ok(push.includes('Enviant una prova real')&&push.includes("e.key!=='Tab'"),'La diagnosi push real o el focus del diàleg no estan protegits.');
 assert.ok(html.includes('Enviar prova real'),'El botó de prova push no és explícit.');
 assert.ok(verification.includes('Probabilitat de pluja')&&verification.includes('Brier'),'Falta la mètrica probabilística de pluja.');
+assert.ok(worker.includes('const primaryRows = rows.filter(row=>Number(row.horizon_day)===1)'),'El resum principal ha de comparar només pronòstics de demà.');
+assert.ok(worker.includes('summaryScope:"tomorrow"')&&worker.includes('wetDays:')&&worker.includes('dryDays:'),'Falta descriure l’abast o la composició de la mostra.');
+assert.ok(verification.includes('pronòstics de demà')&&verification.includes('rainProbabilityThreshold'),'La interfície no explica la mostra comparable o el llindar de pluja.');
+assert.ok(verification.includes('verification-scroll-hint')&&css.includes('.verification-scroll-hint{display:block}'),'Falta orientar el desplaçament de la taula en mòbil.');
 assert.ok(css.includes('repeat(auto-fit,minmax(210px,1fr))'),'Les quatre mètriques no tenen una graella adaptable.');
 assert.ok(alerts.includes('Abast zonal')&&alerts.includes('la intensitat exacta a Sant Celoni pot variar'),'Falta transparència territorial als avisos.');
 assert.ok(ai.includes('currentDetailAnswer')&&ai.includes('sunAnswer'),'La IA no cobreix les consultes senzilles noves.');
