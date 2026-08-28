@@ -18,7 +18,7 @@
 
 ## Vídeos temporals i Stories — Preparació segura
 
-- [ ] Activar i validar el disparador alternatiu Cloudflare → GitHub dels YouTube Shorts amb el secret restringit `GITHUB_SHORTS_DISPATCH_TOKEN` després de desplegar el Worker.
+- [ ] Desplegar i validar el disparador principal Cloudflare → GitHub dels YouTube Shorts a les 07:20 i 19:45, amb correu d’error, confirmació remota de YouTube i reserva estiu/hivern de GitHub.
 
 - [x] Crear un bucket R2 privat a Europa per als vídeos temporals de Shorts, sense domini públic.
 - [x] Preparar càrrega autenticada, URL signada i neteja automàtica de vídeos amb més de tres dies.

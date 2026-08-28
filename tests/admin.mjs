@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import worker from '../worker/index.js';
 import { analyticsServiceState, overallState, performanceRating, serviceState } from '../src/features/admin.js';
+import { readFile } from 'node:fs/promises';
 
 assert.equal(serviceState(true).label,'Configurat');
 assert.equal(serviceState(false).className,'is-muted');
@@ -15,6 +16,9 @@ assert.equal(analyticsServiceState({cloudflareEnabled:true}).label,'Actiu al dom
 assert.equal(analyticsServiceState({cloudflareEnabled:true}).className,'is-ok');
 assert.equal(analyticsServiceState({googleMeasurementId:'G-TEST'}).provider,'google');
 assert.equal(analyticsServiceState().provider,'none');
+const adminHtml=await readFile(new URL('../administracio.html',import.meta.url),'utf8');
+assert.match(adminHtml,/id="admin-youtube-schedule"/);
+assert.match(adminHtml,/id="admin-youtube-operation"/);
 
 const context={waitUntil(){}};
 const unconfigured=await worker.fetch(new Request('https://fonta-meteo.example/admin/status',{headers:{Origin:'https://meteo.fontanillas.cat',Authorization:'Bearer '+('a'.repeat(32))}}),{},context);

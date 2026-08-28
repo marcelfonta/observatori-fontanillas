@@ -28,7 +28,16 @@ async function main(){
   const upload=await fetch(location,{method:'PUT',headers:{'Content-Type':'video/mp4','Content-Length':String(video.byteLength)},body:video});
   const result=await upload.json().catch(()=>({}));
   if(!upload.ok)throw new Error(`La pujada ha fallat (${upload.status}): ${JSON.stringify(result).slice(0,300)}`);
-  console.log(`Vídeo pujat com a ${privacy}${publishAt?` i programat per a ${publishAt}`:''}. ID: ${result.id}`);
+  if(!result.id)throw new Error('YouTube ha respost a la pujada però no ha retornat cap identificador de vídeo.');
+  const verification=await fetch(`https://www.googleapis.com/youtube/v3/videos?part=status&id=${encodeURIComponent(result.id)}`,{
+    headers:{Authorization:`Bearer ${token.access_token}`},
+  });
+  const verified=await verification.json().catch(()=>({}));
+  const remoteStatus=verified?.items?.[0]?.status;
+  if(!verification.ok||!remoteStatus)throw new Error(`YouTube no confirma el vídeo després de pujar-lo (${verification.status}).`);
+  if(remoteStatus.privacyStatus!==privacy)throw new Error(`YouTube confirma una privacitat inesperada (${remoteStatus.privacyStatus||'desconeguda'}).`);
+  if(publishAt&&new Date(remoteStatus.publishAt||'').getTime()!==new Date(publishAt).getTime())throw new Error(`YouTube no confirma l’hora programada (${remoteStatus.publishAt||'absent'}).`);
+  console.log(`Vídeo confirmat a YouTube com a ${privacy}${publishAt?` i programat per a ${publishAt}`:''}. ID: ${result.id}`);
 }
 
 main().catch(error=>{console.error(error);process.exitCode=1;});

@@ -447,14 +447,14 @@ async function adminOperationsSummary(env) {
   if (!(await ensureOperationsSchema(env))) return { enabled:false };
   const result = await env.DB.prepare(`SELECT service_key,status,last_checked_at,last_failure_at,last_success_at,detail
     FROM monitor_state
-    WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight')
+    WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight','youtube-shorts-scheduler')
        OR service_key LIKE 'social-preflight:%'`).all();
   const rows = result?.results || [];
   const states = Object.fromEntries(rows.map(row => [row.service_key, monitorPayload(row)]));
   const preflightRow = rows
     .filter(row => row.service_key === 'social-preflight' || String(row.service_key).startsWith('social-preflight:'))
     .sort((a,b) => String(b.last_checked_at || '').localeCompare(String(a.last_checked_at || '')))[0];
-  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, preflight:monitorPayload(preflightRow) };
+  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, preflight:monitorPayload(preflightRow), youtube:states['youtube-shorts-scheduler'] || null };
 }
 
 async function ensureForecastSchema(env) {
@@ -1315,8 +1315,11 @@ const SOCIAL_SCHEDULE_BLUEPRINT=[
 // configuració addicional.
 const DEFAULT_SOCIAL_AUTO_TIMES='08:00,14:00,20:30';
 const DEFAULT_SOCIAL_PREFLIGHT_TIMES='07:45,13:45,20:15';
-const YOUTUBE_SHORT_FALLBACK_WINDOWS={ mati:{ hour:6, minute:40 }, vespre:{ hour:18, minute:40 } };
-const YOUTUBE_SHORT_FALLBACK_WINDOW_MINUTES=35;
+// Cloudflare és el rellotge principal dels Shorts perquè el cron de GitHub pot
+// retardar-se o no arribar a iniciar-se. Les hores són locals de Sant Celoni.
+const YOUTUBE_SHORT_FALLBACK_WINDOWS={ mati:{ hour:7, minute:20 }, vespre:{ hour:19, minute:45 } };
+const YOUTUBE_SHORT_FALLBACK_WINDOW_MINUTES=20;
+const YOUTUBE_SHORT_DISPATCH_ACK_MS=8*60*1000;
 const YOUTUBE_SHORT_RUN_STALE_MS=20*60*1000;
 
 function socialSchedulePlan(env){
@@ -2390,11 +2393,16 @@ async function youtubeShortRunControl(request, env, localDate, slot) {
     if (previous?.status === 'healthy' && detail.localDate === localDate && detail.slot === slot) {
       return json({ ok:true, shouldRun:false, reason:'already_completed' },200,'no-store');
     }
+    const age=previous?.last_checked_at ? Date.now()-new Date(previous.last_checked_at).getTime() : Infinity;
+    if (previous?.status === 'running' && age >= 0 && age < YOUTUBE_SHORT_RUN_STALE_MS) {
+      return json({ ok:true, shouldRun:false, reason:'already_running' },200,'no-store');
+    }
     await updateYoutubeShortRun(env,key,'running',{ localDate,slot,source,stage:'running' });
     return json({ ok:true, shouldRun:true },200,'no-store');
   }
   if (action === 'complete') {
     await updateYoutubeShortRun(env,key,'healthy',{ localDate,slot,source,stage:'completed' });
+    await recordOperationalState(env,'youtube-shorts-scheduler','healthy',{ localDate,slot,source,stage:'completed' });
     return json({ ok:true, completed:true },200,'no-store');
   }
   return json({ error:'Acció de coordinació no vàlida.' },400,'no-store');
@@ -2407,6 +2415,9 @@ async function dispatchYoutubeShortFallback(env, date = new Date()) {
   const token=String(env.GITHUB_SHORTS_DISPATCH_TOKEN || '');
   const repository=cleanText(env.GITHUB_SHORTS_REPOSITORY || 'marcelfonta/observatori-fontanillas',160);
   if (token.length < 24 || !/^[\w.-]+\/[\w.-]+$/.test(repository)) {
+    const detail={ slot,localDate:localIsoDate(date),stage:'not_configured',error:'Falta el token restringit de GitHub o el repositori no és vàlid.' };
+    await recordOperationalState(env,'youtube-shorts-scheduler','down',detail);
+    await notifyYoutubeShortSchedulerFailure(env,detail);
     return { skipped:'not_configured' };
   }
   const localDate=localIsoDate(date);
@@ -2414,8 +2425,19 @@ async function dispatchYoutubeShortFallback(env, date = new Date()) {
   const previous=await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(key).first();
   const previousDetail=parseYoutubeShortRunDetail(previous?.detail);
   const age=previous?.last_checked_at ? date.getTime()-new Date(previous.last_checked_at).getTime() : Infinity;
-  if (previous?.status === 'healthy' && previousDetail.localDate === localDate && previousDetail.slot === slot) return { skipped:'completed' };
-  if ((previous?.status === 'running' || previous?.status === 'dispatching') && age >= 0 && age < YOUTUBE_SHORT_RUN_STALE_MS) return { skipped:'in_progress' };
+  if (previous?.status === 'healthy' && previousDetail.localDate === localDate && previousDetail.slot === slot) {
+    await recordOperationalState(env,'youtube-shorts-scheduler','healthy',{ localDate,slot,stage:'completed' });
+    return { skipped:'completed' };
+  }
+  if (previous?.status === 'running' && age >= 0 && age < YOUTUBE_SHORT_RUN_STALE_MS) {
+    await recordOperationalState(env,'youtube-shorts-scheduler','healthy',{ localDate,slot,stage:'in_progress' });
+    return { skipped:'in_progress' };
+  }
+  if (previous?.status === 'dispatching' && age >= 0 && age < YOUTUBE_SHORT_DISPATCH_ACK_MS) {
+    await recordOperationalState(env,'youtube-shorts-scheduler','healthy',{ localDate,slot,stage:'awaiting_github' });
+    return { skipped:'awaiting_github' };
+  }
+  const attempt=previousDetail.localDate===localDate && previousDetail.slot===slot ? Math.max(1,Number(previousDetail.attempt)||1)+1 : 1;
   const response=await fetch(`https://api.github.com/repos/${repository}/actions/workflows/youtube-short-private.yml/dispatches`,{
     method:'POST',
     headers:{ Accept:'application/vnd.github+json', Authorization:`Bearer ${token}`, 'Content-Type':'application/json', 'X-GitHub-Api-Version':'2026-03-10', 'User-Agent':'fonta-meteo-worker' },
@@ -2424,10 +2446,14 @@ async function dispatchYoutubeShortFallback(env, date = new Date()) {
   if (!response.ok) {
     const detail=cleanText(await response.text().catch(()=>''),500);
     await updateYoutubeShortRun(env,key,'down',{ localDate,slot,stage:'dispatch_failed',responseCode:response.status,error:detail });
+    const failure={ localDate,slot,stage:'dispatch_failed',responseCode:response.status,error:detail || 'GitHub ha rebutjat el disparador.' };
+    await recordOperationalState(env,'youtube-shorts-scheduler','down',failure);
+    await notifyYoutubeShortSchedulerFailure(env,failure);
     throw Object.assign(new Error(`GitHub no ha acceptat la recuperació del Short (${response.status}).`),{ responseCode:response.status });
   }
-  await updateYoutubeShortRun(env,key,'dispatching',{ localDate,slot,stage:'dispatched',source:'cloudflare-fallback' });
-  return { dispatched:true,slot,localDate };
+  await updateYoutubeShortRun(env,key,'dispatching',{ localDate,slot,stage:'dispatched',source:'cloudflare-primary',attempt });
+  await recordOperationalState(env,'youtube-shorts-scheduler','healthy',{ localDate,slot,stage:'dispatched',source:'cloudflare-primary',attempt });
+  return { dispatched:true,slot,localDate,attempt };
 }
 
 function socialCardHtml(draft) {
@@ -3135,9 +3161,10 @@ async function adminStatus(request, env) {
       bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
       telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
       threads:Boolean(env.THREADS_ACCESS_TOKEN),
+      youtube:Boolean(env.GITHUB_SHORTS_DISPATCH_TOKEN),
       advancedAI:Boolean(env.AI),
     },
-    schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"cada 5 minuts", social:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES), preflight:String(env.SOCIAL_PREFLIGHT_TIME || DEFAULT_SOCIAL_PREFLIGHT_TIMES), timeZone:TIME_ZONE },
+    schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"cada 5 minuts", social:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES), preflight:String(env.SOCIAL_PREFLIGHT_TIME || DEFAULT_SOCIAL_PREFLIGHT_TIMES), youtube:'07:20,19:45', timeZone:TIME_ZONE },
   }, 200, "no-store, private", origin);
 }
 
@@ -3282,6 +3309,22 @@ async function sendOperationalEmail(env, subject, message, kind) {
   });
   if (!response.ok) throw new Error(`Resend monitor ${response.status}: ${await response.text()}`);
   return { sent:true };
+}
+
+async function notifyYoutubeShortSchedulerFailure(env, detail) {
+  if (!(await ensureOperationsSchema(env))) return { sent:false,reason:'no_database' };
+  const previous=await env.DB.prepare("SELECT last_notified_at FROM monitor_state WHERE service_key = 'youtube-shorts-scheduler'").first();
+  const lastNotified=previous?.last_notified_at ? new Date(previous.last_notified_at).getTime() : 0;
+  if (lastNotified && Date.now()-lastNotified < 12*60*60*1000) return { sent:false,reason:'recent_notification' };
+  const when=new Date().toISOString();
+  const result=await sendOperationalEmail(
+    env,
+    '[Observatori] No s’ha pogut preparar el YouTube Short',
+    `El planificador principal no ha pogut iniciar el Short de ${detail.slot || 'franja desconeguda'}.\n\nHora: ${when}\nFase: ${detail.stage || 'desconeguda'}\nResposta: ${detail.responseCode || '—'}\nError: ${cleanText(detail.error || 'Sense detall',500)}\n\nCal revisar el token GITHUB_SHORTS_DISPATCH_TOKEN o GitHub Actions.`,
+    'youtube_short_scheduler_failed',
+  ).catch(error=>({ sent:false,error:cleanText(error.message,300) }));
+  if (result.sent) await env.DB.prepare("UPDATE monitor_state SET last_notified_at = ? WHERE service_key = 'youtube-shorts-scheduler'").bind(when).run();
+  return result;
 }
 
 async function monitorWeatherUnderground(env, capturePromise) {

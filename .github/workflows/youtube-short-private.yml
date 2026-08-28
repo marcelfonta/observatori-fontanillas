@@ -2,14 +2,12 @@ name: YouTube Short · dues actualitzacions diàries
 
 on:
   schedule:
-    # GitHub Actions pot iniciar-se amb retard. Pugem el Short amb marge i
-    # YouTube el fa públic exactament a l'hora local programada.
-    # Evitem l'inici de l'hora, on GitHub acostuma a endarrerir més els crons,
-    # però generem prou a prop de la publicació per conservar dades recents.
-    # El flux comença amb més marge perquè GitHub pot retardar els crons
-    # fins a més d'una hora. La publicació continua sent a les 08:00/20:30.
-    - cron: '47 3 * * *'
-    - cron: '47 15 * * *'
+    # Reserva estiu/hivern, quinze minuts després del disparador principal de
+    # Cloudflare. El primer pas descarta automàticament el cron fora de temporada.
+    - cron: '35 5 * * *'
+    - cron: '35 6 * * *'
+    - cron: '0 18 * * *'
+    - cron: '0 19 * * *'
   workflow_dispatch:
     inputs:
       slot:
@@ -46,7 +44,7 @@ jobs:
       YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
       YOUTUBE_PRIVACY_STATUS: ${{ github.event_name == 'schedule' && 'private' || inputs.privacy || 'private' }}
-      SHORT_SLOT: ${{ github.event_name == 'schedule' && (github.event.schedule == '47 15 * * *' && 'vespre' || 'mati') || inputs.slot || 'mati' }}
+      SHORT_SLOT: ${{ github.event_name == 'schedule' && (startsWith(github.event.schedule, '0 ') && 'vespre' || 'mati') || inputs.slot || 'mati' }}
       SHOULD_SCHEDULE_PUBLICATION: ${{ github.event_name == 'schedule' || inputs.schedule_publication }}
       YOUTUBE_SHORT_SHOULD_RUN: 'true'
       YOUTUBE_SHORT_COORDINATION_ACTIVE: 'false'
@@ -57,8 +55,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Valida la finestra horària de reserva
+        if: github.event_name == 'schedule'
+        run: node scripts/youtube-backup-window.mjs >> "$GITHUB_ENV"
       - name: Coordina una sola execució per franja
-        if: env.SOCIAL_VIDEO_UPLOAD_URL != '' && env.SOCIAL_VIDEO_UPLOAD_TOKEN != ''
+        if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.SOCIAL_VIDEO_UPLOAD_URL != '' && env.SOCIAL_VIDEO_UPLOAD_TOKEN != ''
         run: |
           set -euo pipefail
           case "$SHORT_SLOT" in

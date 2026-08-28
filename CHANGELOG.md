@@ -2,6 +2,12 @@
 
 ## En desenvolupament
 
+- Cloudflare passa a ser el rellotge principal dels YouTube Shorts i inicia les preparacions a les 07:20 i les 19:45, en hora de Sant Celoni. GitHub conserva una reserva posterior compatible amb l’horari d’estiu i d’hivern.
+- Si GitHub accepta el disparador però no confirma l’inici, Cloudflare el repeteix al cap de vuit minuts sense duplicar el renderitzat.
+- El Worker registra l’estat específic del planificador de Shorts i envia un correu operatiu si falta el token o GitHub rebutja el disparador.
+- Després de la pujada, el flux consulta YouTube i només acaba correctament si confirma l’ID, la privacitat i, quan correspon, l’hora pública de les 08:00 o les 20:30.
+- L’administració mostra l’horari de preparació de YouTube i el resultat real del darrer disparador, separat de la simple presència de credencials.
+
 - Avançades les dues execucions de YouTube Shorts perquè GitHub Actions tingui més marge davant retards del planificador; es mantenen les publicacions públiques a les 08:00 i les 20:30 i la recuperació alternativa del Worker.
 
 - Els avisos push ja no depenen només de la propagació d’etiquetes d’OneSignal: cada dispositiu subscrit desa de forma verificable les seves preferències de fenomen i intensitat al registre tècnic del portal. Els avisos automàtics prioritzen aquest registre, especialment per a PWA d’iPhone.
