@@ -2,6 +2,10 @@
 
 ## En desenvolupament
 
+- La confirmació dels Shorts valida ara l'estat que YouTube retorna en completar la mateixa pujada, sense fer una consulta posterior que exigia permisos de lectura addicionals.
+- Això evita marcar com a fallit —i arriscar un duplicat en reintentar— un vídeo que YouTube ja havia acceptat i programat correctament.
+- La validació final de la pujada comparteix el marge mínim real de cinc minuts amb el planificador, evitant que la recuperació tardana passi el primer control però falli al segon.
+
 - «Predicció vs realitat» calcula ara els indicadors principals només amb pronòstics de l’endemà guardats el dia anterior, sense barrejar actualitzacions del mateix dia ni horitzons de fins a set dies.
 - La mostra informa quants casos corresponen a dies plujosos o secs, identifica les fonts i els llindars de pluja, i diferencia explícitament les comparacions secundàries per horitzó.
 - La taula es descriu com a pronòstics de demà verificats i incorpora una indicació de desplaçament lateral en mòbil.
