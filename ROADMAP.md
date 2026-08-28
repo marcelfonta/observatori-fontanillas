@@ -27,9 +27,10 @@
 - [x] Crear un bucket R2 privat a Europa per als vídeos temporals de Shorts, sense domini públic.
 - [x] Preparar càrrega autenticada, URL signada i neteja automàtica de vídeos amb més de tres dies.
 - [x] Afegir els secrets de càrrega a Cloudflare i GitHub després d’integrar i desplegar el Worker amb la vinculació R2.
-- [ ] Executar des del panell la prova manual preparada d’una Story d’Instagram amb el compte propi; la publicació automàtica resta desactivada fins que Meta l’accepti.
-- [ ] Executar des del panell la prova real preparada de Facebook Page Stories i confirmar visualment el resultat abans de prometre aquesta sortida.
-- [ ] Repetir la prova manual única del Short com a Reel a Instagram i Facebook des del panell després de corregir els fluxos de pujada. Si Instagram encara processa el contenidor, la mateixa prova el reprèn al cap d’un minut sense duplicar-lo. Només si ambdues publicacions es confirmen, decidir l’activació automàtica per a cada franja.
+- [x] Executar des del panell la prova manual preparada d’una Story d’Instagram amb el compte propi i confirmar-ne visualment el resultat.
+- [x] Executar des del panell la prova real preparada de Facebook Page Stories i confirmar visualment el resultat.
+- [x] Validar Reels i Stories a Instagram i Facebook, i preparar l’automatització encadenada per a les 08:00 i les 20:30 amb represa i protecció contra duplicats.
+- [ ] Desplegar l’automatització de Meta i confirmar una franja completa sense intervenció manual abans de retirar els botons de recuperació del flux habitual.
 
 ## V22.15.0 — Registre remot OneSignal — Verificada
 
