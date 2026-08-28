@@ -409,12 +409,12 @@ async function recordOperationalState(env, serviceKey, status, detail = null) {
     (service_key,status,consecutive_failures,last_checked_at,last_failure_at,last_success_at,detail)
     VALUES (?,?,?,?,?,?,?)
     ON CONFLICT(service_key) DO UPDATE SET status=excluded.status,
-      consecutive_failures=CASE WHEN excluded.status='healthy' THEN 0 ELSE monitor_state.consecutive_failures+1 END,
+      consecutive_failures=CASE WHEN excluded.status='healthy' THEN 0 WHEN excluded.status='down' THEN monitor_state.consecutive_failures+1 ELSE monitor_state.consecutive_failures END,
       last_checked_at=excluded.last_checked_at,
-      last_failure_at=CASE WHEN excluded.status='healthy' THEN monitor_state.last_failure_at ELSE excluded.last_failure_at END,
+      last_failure_at=CASE WHEN excluded.status='down' THEN excluded.last_failure_at ELSE monitor_state.last_failure_at END,
       last_success_at=CASE WHEN excluded.status='healthy' THEN excluded.last_success_at ELSE monitor_state.last_success_at END,
       detail=excluded.detail`)
-    .bind(serviceKey, status, status === 'healthy' ? 0 : 1, now, status === 'healthy' ? null : now, status === 'healthy' ? now : null, safeDetail).run();
+    .bind(serviceKey, status, status === 'down' ? 1 : 0, now, status === 'down' ? now : null, status === 'healthy' ? now : null, safeDetail).run();
   console.log(JSON.stringify({ event:'operational_state', service:serviceKey, status, at:now }));
   return true;
 }
@@ -447,14 +447,18 @@ async function adminOperationsSummary(env) {
   if (!(await ensureOperationsSchema(env))) return { enabled:false };
   const result = await env.DB.prepare(`SELECT service_key,status,last_checked_at,last_failure_at,last_success_at,detail
     FROM monitor_state
-    WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight','youtube-shorts-scheduler')
-       OR service_key LIKE 'social-preflight:%'`).all();
+    WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight','youtube-shorts-scheduler','buffer-tiktok-diagnostics','buffer-tiktok-test')
+       OR service_key LIKE 'social-preflight:%'
+       OR service_key LIKE 'buffer-tiktok:%'`).all();
   const rows = result?.results || [];
   const states = Object.fromEntries(rows.map(row => [row.service_key, monitorPayload(row)]));
   const preflightRow = rows
     .filter(row => row.service_key === 'social-preflight' || String(row.service_key).startsWith('social-preflight:'))
     .sort((a,b) => String(b.last_checked_at || '').localeCompare(String(a.last_checked_at || '')))[0];
-  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, preflight:monitorPayload(preflightRow), youtube:states['youtube-shorts-scheduler'] || null };
+  const bufferRow = rows
+    .filter(row => String(row.service_key).startsWith('buffer-tiktok:'))
+    .sort((a,b) => String(b.last_checked_at || '').localeCompare(String(a.last_checked_at || '')))[0];
+  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, preflight:monitorPayload(preflightRow), youtube:states['youtube-shorts-scheduler'] || null, bufferTikTok:monitorPayload(bufferRow), bufferTikTokDiagnostics:states['buffer-tiktok-diagnostics'] || null, bufferTikTokTest:states['buffer-tiktok-test'] || null };
 }
 
 async function ensureForecastSchema(env) {
@@ -2080,6 +2084,7 @@ async function adminSocialSummary(env) {
   return {
     enabled:true,
     mode,
+    bufferTikTokAutomationEnabled:bufferTikTokEnabled(env),
     schedule:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES),
     schedulePlan:socialSchedulePlan(env),
     tokenConfigured,
@@ -2497,7 +2502,7 @@ async function bufferTikTokChannel(env) {
       channels(input: { organizationId: $organizationId }) { id service isQueuePaused }
     }`, { organizationId:organization.id });
     const channel = (Array.isArray(data.channels) ? data.channels : []).find(item => String(item.service || '').toLowerCase() === 'tiktok' && !item.isQueuePaused);
-    if (channel?.id) return channel;
+    if (channel?.id) return { ...channel, organizationId:organization.id };
   }
   throw Object.assign(new Error('Buffer no ha trobat cap canal de TikTok actiu.'), { status:503 });
 }
@@ -2512,14 +2517,17 @@ async function createBufferTikTokPost(env, { localDate, slot, draft = false }) {
   const key = `shorts/${localDate}/${slot}.mp4`;
   if (!await env.SOCIAL_VIDEO_BUCKET.head(key)) throw Object.assign(new Error('Encara no hi ha el Short temporal preparat.'), { status:409 });
   const channel = await bufferTikTokChannel(env);
+  const publishAt = bufferTikTokPublishAt(localDate, slot);
+  if (!draft && publishAt.getTime() - Date.now() < 5 * 60_000) {
+    throw Object.assign(new Error('No queda prou marge per programar el TikTok amb seguretat.'), { status:409 });
+  }
   const input = {
     text:bufferTikTokCaption(localDate, slot),
     channelId:channel.id,
     schedulingType:'automatic',
-    mode:'customScheduled',
-    dueAt:bufferTikTokPublishAt(localDate, slot).toISOString(),
+    mode:draft ? 'addToQueue' : 'customScheduled',
     assets:[{ video:{ url:await bufferVideoUrl(key, env), metadata:{ thumbnailOffset:2000 } } }],
-    ...(draft ? { saveToDraft:true } : {}),
+    ...(draft ? { saveToDraft:true } : { dueAt:publishAt.toISOString() }),
   };
   const data = await bufferGraphql(env, `mutation CreatePost($input: CreatePostInput!) {
     createPost(input: $input) {
@@ -2529,7 +2537,19 @@ async function createBufferTikTokPost(env, { localDate, slot, draft = false }) {
   }`, { input });
   const result = data.createPost || {};
   if (result.message || !result.post?.id) throw Object.assign(new Error(cleanText(result.message || 'Buffer no ha creat la publicació.', 500)), { status:502 });
-  return { id:String(result.post.id), status:result.post.status || (draft ? 'draft' : 'scheduled'), dueAt:result.post.dueAt || input.dueAt, draft };
+  return { id:String(result.post.id), status:result.post.status || (draft ? 'draft' : 'scheduled'), dueAt:result.post.dueAt || input.dueAt || null, draft };
+}
+
+async function bufferTikTokDiagnosticsControl(request, env) {
+  if (!(await authorizeYoutubeShortRequest(request, env))) return json({ error:'No autoritzat.' },401,'no-store');
+  try {
+    await bufferTikTokChannel(env);
+    await recordOperationalState(env, 'buffer-tiktok-diagnostics', 'healthy', { stage:'channel_verified', service:'tiktok', queuePaused:false }).catch(()=>{});
+    return json({ ok:true, configured:true, service:'tiktok', queuePaused:false },200,'no-store');
+  } catch (error) {
+    await recordOperationalState(env, 'buffer-tiktok-diagnostics', 'down', { stage:'channel_verification_failed', error:cleanText(error.message,500), responseCode:error.responseCode || null }).catch(()=>{});
+    return json({ error:'La connexió de Buffer amb TikTok no és operativa.', detail:cleanText(error.message,500) },error.status || 502,'no-store');
+  }
 }
 
 async function bufferTikTokScheduleControl(request, env, localDate, slot) {
@@ -2539,15 +2559,21 @@ async function bufferTikTokScheduleControl(request, env, localDate, slot) {
   const safeSlot = slot === 'morning' || slot === 'evening' ? slot : '';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(localDate) || !safeSlot) return json({ error:'Data o franja de TikTok no vàlida.' },400,'no-store');
   const serviceKey = `buffer-tiktok:${localDate}:${safeSlot}`;
-  const previous = await env.DB.prepare('SELECT status,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
+  const previous = await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
   const detail = parseYoutubeShortRunDetail(previous?.detail);
   if (previous?.status === 'healthy' && detail.remoteId) return json({ ok:true, reused:true, remoteId:detail.remoteId, dueAt:detail.dueAt || null },200,'no-store');
+  const runningAge = previous?.last_checked_at ? Date.now() - new Date(previous.last_checked_at).getTime() : Infinity;
+  if (previous?.status === 'running' && runningAge >= 0 && runningAge < 30 * 60_000) {
+    return json({ ok:true, pending:true, reused:true },202,'no-store');
+  }
   try {
+    await recordOperationalState(env, serviceKey, 'running', { localDate, slot:safeSlot, stage:'scheduling' });
     const result = await createBufferTikTokPost(env, { localDate, slot:safeSlot });
     await recordOperationalState(env, serviceKey, 'healthy', { localDate, slot:safeSlot, remoteId:result.id, dueAt:result.dueAt, stage:'scheduled' });
     return json({ ok:true, scheduled:true, ...result },201,'no-store');
   } catch (error) {
     await recordOperationalState(env, serviceKey, 'down', { localDate, slot:safeSlot, stage:'schedule_failed', error:cleanText(error.message,500), responseCode:error.responseCode || null }).catch(()=>{});
+    await notifyBufferTikTokFailure(env, serviceKey, { localDate, slot:safeSlot, error:cleanText(error.message,500), responseCode:error.responseCode || null }).catch(()=>{});
     return json({ error:'No s’ha pogut programar el TikTok a Buffer.', detail:cleanText(error.message,500) }, error.status || 502,'no-store');
   }
 }
@@ -3069,6 +3095,10 @@ async function diagnoseSocialChannel(channel, env) {
       if (!payload.id) throw new Error('Threads no ha retornat el perfil autoritzat.');
       return { channel, ok:true, label:payload.username ? `@${payload.username}` : 'Perfil de Threads identificat', detail:'Token i permisos operatius. No s’ha publicat res.' };
     }
+    if (channel === 'tiktok' && bufferTikTokConfigured(env)) {
+      await bufferTikTokChannel(env);
+      return { channel, ok:true, label:'TikTok connectat a Buffer', detail:`Canal actiu i cua disponible. Automatització ${bufferTikTokEnabled(env)?'activada':'encara desactivada'}. No s’ha publicat res.` };
+    }
     if (channel === 'tiktok') {
       const tokens = await tiktokAccessToken(env);
       const response = await fetch('https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,avatar_url', { headers:{ Authorization:`Bearer ${tokens.accessToken}` } });
@@ -3298,7 +3328,7 @@ async function adminStatus(request, env) {
     quality(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     alerts(env).then(response => response.json()).catch(error => ({ ok:false, status:"unavailable", error:error.message })),
     adminDatabaseSummary(env),
-    adminSocialSummary(env).catch(error => ({ enabled:false, mode:'draft', tokenConfigured:Boolean(env.META_SYSTEM_USER_TOKEN), channelCredentials:{ meta:Boolean(env.META_SYSTEM_USER_TOKEN), facebook:Boolean(env.META_SYSTEM_USER_TOKEN), instagram:Boolean(env.META_SYSTEM_USER_TOKEN), bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD), telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID), threads:Boolean(env.THREADS_ACCESS_TOKEN), bufferTikTok:bufferTikTokConfigured(env) }, error:error.message, pendingDrafts:0, recent:[] })),
+    adminSocialSummary(env).catch(error => ({ enabled:false, mode:'draft', bufferTikTokAutomationEnabled:bufferTikTokEnabled(env), tokenConfigured:Boolean(env.META_SYSTEM_USER_TOKEN), channelCredentials:{ meta:Boolean(env.META_SYSTEM_USER_TOKEN), facebook:Boolean(env.META_SYSTEM_USER_TOKEN), instagram:Boolean(env.META_SYSTEM_USER_TOKEN), bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD), telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID), threads:Boolean(env.THREADS_ACCESS_TOKEN), bufferTikTok:bufferTikTokConfigured(env) }, error:error.message, pendingDrafts:0, recent:[] })),
     adminOperationsSummary(env).catch(error => ({ enabled:false, error:error.message })),
   ]);
   return json({
@@ -3490,6 +3520,22 @@ async function notifyYoutubeShortSchedulerFailure(env, detail) {
   return result;
 }
 
+async function notifyBufferTikTokFailure(env, serviceKey, detail) {
+  if (!(await ensureOperationsSchema(env))) return { sent:false,reason:'no_database' };
+  const previous=await env.DB.prepare('SELECT last_notified_at FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
+  const lastNotified=previous?.last_notified_at ? new Date(previous.last_notified_at).getTime() : 0;
+  if (lastNotified && Date.now()-lastNotified < 12*60*60*1000) return { sent:false,reason:'recent_notification' };
+  const when=new Date().toISOString();
+  const result=await sendOperationalEmail(
+    env,
+    '[Observatori] No s’ha pogut programar el TikTok a Buffer',
+    `Buffer no ha pogut preparar el vídeo de ${detail.slot || 'franja desconeguda'} del ${detail.localDate || 'dia desconegut'}.\n\nHora: ${when}\nResposta: ${detail.responseCode || '—'}\nError: ${cleanText(detail.error || 'Sense detall',500)}\n\nYouTube es controla per separat; cal revisar Buffer abans del següent horari.`,
+    'buffer_tiktok_schedule_failed',
+  ).catch(error=>({ sent:false,error:cleanText(error.message,300) }));
+  if (result.sent) await env.DB.prepare('UPDATE monitor_state SET last_notified_at = ? WHERE service_key = ?').bind(when,serviceKey).run();
+  return result;
+}
+
 async function monitorWeatherUnderground(env, capturePromise) {
   const now = new Date().toISOString();
   let previous = null;
@@ -3624,6 +3670,7 @@ export default {
       if (request.method === 'POST' && youtubeShortRunMatch) return youtubeShortRunControl(request, env, youtubeShortRunMatch[1], youtubeShortRunMatch[2]);
       const bufferTikTokScheduleMatch = url.pathname.match(/^\/admin\/buffer-tiktok\/schedule\/(\d{4}-\d{2}-\d{2})\/(morning|evening)$/);
       if (request.method === 'POST' && bufferTikTokScheduleMatch) return bufferTikTokScheduleControl(request, env, bufferTikTokScheduleMatch[1], bufferTikTokScheduleMatch[2]);
+      if (request.method === 'POST' && url.pathname === '/admin/buffer-tiktok/diagnostics') return bufferTikTokDiagnosticsControl(request, env);
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
       if (request.method === "POST" && url.pathname === "/admin/social-reels/test") return adminSocialReelTest(request, env);

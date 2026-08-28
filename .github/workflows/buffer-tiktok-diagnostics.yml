@@ -1,0 +1,28 @@
+name: Diagnòstic Buffer · TikTok
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-buffer-channel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      SOCIAL_VIDEO_UPLOAD_URL: ${{ secrets.SOCIAL_VIDEO_UPLOAD_URL }}
+      SOCIAL_VIDEO_UPLOAD_TOKEN: ${{ secrets.SOCIAL_VIDEO_UPLOAD_TOKEN }}
+    steps:
+      - name: Comprova secrets de connexió
+        run: |
+          test -n "$SOCIAL_VIDEO_UPLOAD_URL"
+          test -n "$SOCIAL_VIDEO_UPLOAD_TOKEN"
+      - name: Verifica Buffer i el canal TikTok sense publicar
+        run: |
+          set -euo pipefail
+          base_url="${SOCIAL_VIDEO_UPLOAD_URL%/admin/social-video-upload}"
+          curl --fail --silent --show-error --retry 2 --retry-all-errors \
+            --request POST \
+            --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
+            "$base_url/admin/buffer-tiktok/diagnostics"

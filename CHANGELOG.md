@@ -2,6 +2,10 @@
 
 ## En desenvolupament
 
+- Auditoria reforçada de Buffer/TikTok: la comprovació de connexió valida ara el canal real de Buffer sense publicar, i queda disponible també com a flux manual independent de GitHub Actions.
+- Els esborranys de prova ja no inclouen una hora passada; les publicacions reals exigeixen cinc minuts de marge, es registren al panell i envien un correu operatiu si Buffer falla.
+- La còpia temporal del vídeo ha d’haver pujat correctament abans de programar TikTok. Una fallada de Buffer queda visible a GitHub sense impedir que Cloudflare confirmi una pujada de YouTube que sí hagi acabat, evitant reintents i duplicats del Short.
+
 - Preparada la cua de TikTok mitjançant Buffer: el Short només es traspassa després que YouTube confirmi la seva pujada i conserva l’hora pública de cada franja.
 - El vídeo continua en un bucket R2 privat; Buffer rep una URL opaca i limitada al fitxer temporal, estable mentre dura la cua i eliminada amb la neteja de tres dies.
 - Afegida al panell una prova segura que crea un esborrany a Buffer, sense publicar-lo. La cua automàtica roman desactivada fins que es validi aquesta prova i s’activi explícitament el paràmetre corresponent.
