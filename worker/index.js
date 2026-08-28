@@ -447,7 +447,7 @@ async function adminOperationsSummary(env) {
   if (!(await ensureOperationsSchema(env))) return { enabled:false };
   const result = await env.DB.prepare(`SELECT service_key,status,last_checked_at,last_failure_at,last_success_at,detail
     FROM monitor_state
-    WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight','youtube-shorts-scheduler','buffer-tiktok-diagnostics','buffer-tiktok-test')
+    WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight','youtube-shorts-scheduler','buffer-tiktok-diagnostics','buffer-tiktok-test','meta-video-automatic')
        OR service_key LIKE 'social-preflight:%'
        OR service_key LIKE 'buffer-tiktok:%'`).all();
   const rows = result?.results || [];
@@ -458,7 +458,7 @@ async function adminOperationsSummary(env) {
   const bufferRow = rows
     .filter(row => String(row.service_key).startsWith('buffer-tiktok:'))
     .sort((a,b) => String(b.last_checked_at || '').localeCompare(String(a.last_checked_at || '')))[0];
-  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, preflight:monitorPayload(preflightRow), youtube:states['youtube-shorts-scheduler'] || null, bufferTikTok:monitorPayload(bufferRow), bufferTikTokDiagnostics:states['buffer-tiktok-diagnostics'] || null, bufferTikTokTest:states['buffer-tiktok-test'] || null };
+  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, preflight:monitorPayload(preflightRow), youtube:states['youtube-shorts-scheduler'] || null, bufferTikTok:monitorPayload(bufferRow), bufferTikTokDiagnostics:states['buffer-tiktok-diagnostics'] || null, bufferTikTokTest:states['buffer-tiktok-test'] || null, metaVideo:states['meta-video-automatic'] || null };
 }
 
 async function ensureForecastSchema(env) {
@@ -1325,6 +1325,10 @@ const SOCIAL_SCHEDULE_BLUEPRINT=[
 // configuració addicional.
 const DEFAULT_SOCIAL_AUTO_TIMES='08:00,14:00,20:30';
 const DEFAULT_SOCIAL_PREFLIGHT_TIMES='07:45,13:45,20:15';
+const DEFAULT_META_VIDEO_AUTO_TIMES='08:00,20:30';
+const META_VIDEO_SLOT_BY_TIME={ '08:00':'morning', '20:30':'evening' };
+const META_VIDEO_AUTOMATIC_MAX_ATTEMPTS=4;
+const META_VIDEO_AUTOMATIC_WINDOW_MINUTES=90;
 // Cloudflare és el rellotge principal dels Shorts perquè el cron de GitHub pot
 // retardar-se o no arribar a iniciar-se. Les hores són locals de Sant Celoni.
 const YOUTUBE_SHORT_FALLBACK_WINDOWS={ mati:{ hour:7, minute:20 }, vespre:{ hour:19, minute:45 } };
@@ -1355,6 +1359,25 @@ function activeTimeSlot(schedule, date = new Date()) {
 
 function activeSocialSlot(env, date = new Date()) {
   return activeTimeSlot(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES, date);
+}
+
+export function metaVideoAutomationEnabled(env) {
+  return String(env.META_VIDEO_AUTOMATION_ENABLED || '').trim().toLowerCase() === 'true';
+}
+
+export function dueMetaVideoSlots(env, date = new Date()) {
+  const configured = new Set(String(env.META_VIDEO_AUTO_TIMES || DEFAULT_META_VIDEO_AUTO_TIMES)
+    .split(',').map(value=>value.trim()).filter(value=>META_VIDEO_SLOT_BY_TIME[value]));
+  const parts=localClockParts(date);
+  const current=Number(parts.hour)*60+Number(parts.minute);
+  return Object.entries(META_VIDEO_SLOT_BY_TIME)
+    .filter(([time])=>{
+      if(!configured.has(time))return false;
+      const [hour,minute]=time.split(':').map(Number);
+      const scheduled=hour*60+minute;
+      return current>=scheduled && current<scheduled+META_VIDEO_AUTOMATIC_WINDOW_MINUTES;
+    })
+    .map(([,slot])=>slot);
 }
 
 export function youtubeShortFallbackSlot(date = new Date()) {
@@ -3087,20 +3110,35 @@ function previousSocialReelOutcomes(detail) {
 async function adminSocialReelTest(request, env) {
   const auth = await authorizeAdminRequest(request, env);
   if (auth.response) return auth.response;
-  if (!(await ensureOperationsSchema(env))) return json({ error:'La coordinació de Reels no està disponible.' }, 503, 'no-store', auth.origin);
-  if (!env.SOCIAL_VIDEO_BUCKET) return json({ error:'L’emmagatzematge temporal de vídeo no està configurat.' }, 503, 'no-store', auth.origin);
   const body = await adminJsonBody(request, auth.origin);
   const slot = cleanText(body.slot, 20).toLowerCase();
   if (!SOCIAL_REEL_SLOT.has(slot)) return json({ error:'Franja de Reel no vàlida.' }, 400, 'no-store', auth.origin);
   const localDate = localIsoDate(new Date());
+  const result = await publishSocialReelsForSlot(env, localDate, slot, { force:true });
+  if (result.alreadyCompleted) return json({ error:'Aquesta prova de Reels ja s’ha completat per a aquesta franja. No es duplicarà.' }, 409, 'no-store', auth.origin);
+  if (!result.ok) return json({ error:result.error, outcomes:result.outcomes || [], retryable:result.retryable !== false }, result.status || 502, 'no-store, private', auth.origin);
+  return json(result, 200, 'no-store, private', auth.origin);
+}
+
+async function publishSocialReelsForSlot(env, localDate, slot, { force=false } = {}) {
+  if (!(await ensureOperationsSchema(env))) return { ok:false, status:503, error:'La coordinació de Reels no està disponible.', retryable:false };
+  if (!env.SOCIAL_VIDEO_BUCKET) return { ok:false, status:503, error:'L’emmagatzematge temporal de vídeo no està configurat.', retryable:false };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(localDate || '')) || !SOCIAL_REEL_SLOT.has(slot)) return { ok:false, status:400, error:'Data o franja de Reel no vàlida.', retryable:false };
+  const serviceKey = socialReelRunKey(localDate, slot);
+  const previous = await env.DB.prepare('SELECT status,consecutive_failures,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
+  const previousOutcomes = previousSocialReelOutcomes(previous?.detail);
+  if (previous?.status === 'healthy') return { ok:true, localDate, slot, outcomes:previousOutcomes, alreadyCompleted:true, reused:true };
+  if (!force && previous?.status === 'down' && Number(previous.consecutive_failures) >= META_VIDEO_AUTOMATIC_MAX_ATTEMPTS) {
+    return { ok:false, status:502, error:'Els Reels han esgotat els reintents automàtics.', outcomes:previousOutcomes, retryable:false, blocked:true };
+  }
   const key = `shorts/${localDate}/${slot}.mp4`;
   const video = await env.SOCIAL_VIDEO_BUCKET.head(key);
-  if (!video) return json({ error:`No hi ha cap Short preparat per al ${slot === 'morning' ? 'matí' : 'vespre'} d’avui.` }, 409, 'no-store', auth.origin);
-  const serviceKey = socialReelRunKey(localDate, slot);
-  const previous = await env.DB.prepare('SELECT status,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
-  if (previous?.status === 'healthy') return json({ error:'Aquesta prova de Reels ja s’ha completat per a aquesta franja. No es duplicarà.' }, 409, 'no-store', auth.origin);
+  if (!video) {
+    const error=`No hi ha cap Short preparat per al ${slot === 'morning' ? 'matí' : 'vespre'} d’avui.`;
+    await recordOperationalState(env, serviceKey, 'down', { localDate, slot, outcomes:previousOutcomes, error });
+    return { ok:false, status:409, error, outcomes:previousOutcomes, retryable:true };
+  }
   const payload = { videoUrl:await socialVideoUrl(key, env, 3600), caption:socialReelCaption(localDate, slot) };
-  const previousOutcomes = previousSocialReelOutcomes(previous?.detail);
   const outcomes = [];
   for (const [channel, publisher] of [['instagram', publishInstagramReel], ['facebook', publishFacebookReel]]) {
     const previousOutcome = previousOutcomes.find(item => item?.channel === channel);
@@ -3123,8 +3161,8 @@ async function adminSocialReelTest(request, env) {
   const failed = outcomes.filter(item => !item.ok);
   const pending = failed.some(item => item.pending);
   await recordOperationalState(env, serviceKey, failed.length ? (pending && failed.every(item => item.pending) ? 'degraded' : 'down') : 'healthy', { localDate, slot, outcomes });
-  if (failed.length) return json({ error:pending ? 'El Reel encara s’està processant o algun canal ha fallat.' : 'La prova de Reels ha quedat incompleta.', outcomes, retryable:true }, pending ? 202 : 502, 'no-store, private', auth.origin);
-  return json({ ok:true, localDate, slot, outcomes }, 200, 'no-store, private', auth.origin);
+  if (failed.length) return { ok:false, status:pending ? 202 : 502, error:pending ? 'El Reel encara s’està processant o algun canal ha fallat.' : 'La publicació de Reels ha quedat incompleta.', localDate, slot, outcomes, pending, retryable:true };
+  return { ok:true, localDate, slot, outcomes };
 }
 
 function socialStoryRunKey(localDate, slot) {
@@ -3135,19 +3173,34 @@ function socialStoryRunKey(localDate, slot) {
 async function adminSocialStoryTest(request, env) {
   const auth = await authorizeAdminRequest(request, env);
   if (auth.response) return auth.response;
-  if (!(await ensureOperationsSchema(env))) return json({ error:'La coordinació de Stories no està disponible.' }, 503, 'no-store', auth.origin);
-  if (!env.SOCIAL_VIDEO_BUCKET) return json({ error:'L’emmagatzematge temporal de vídeo no està configurat.' }, 503, 'no-store', auth.origin);
   const body = await adminJsonBody(request, auth.origin);
   const slot = cleanText(body.slot, 20).toLowerCase();
   if (!SOCIAL_REEL_SLOT.has(slot)) return json({ error:'Franja de Story no vàlida.' }, 400, 'no-store', auth.origin);
   const localDate = localIsoDate(new Date());
-  const key = `shorts/${localDate}/${slot}.mp4`;
-  if (!await env.SOCIAL_VIDEO_BUCKET.head(key)) return json({ error:`No hi ha cap Short preparat per al ${slot === 'morning' ? 'matí' : 'vespre'} d’avui.` }, 409, 'no-store', auth.origin);
+  const result = await publishSocialStoriesForSlot(env, localDate, slot, { force:true });
+  if (result.alreadyCompleted) return json({ error:'Aquesta prova de Stories ja s’ha completat per a aquesta franja. No es duplicarà.' }, 409, 'no-store', auth.origin);
+  if (!result.ok) return json({ error:result.error, outcomes:result.outcomes || [], retryable:result.retryable !== false }, result.status || 502, 'no-store, private', auth.origin);
+  return json(result, 200, 'no-store, private', auth.origin);
+}
+
+async function publishSocialStoriesForSlot(env, localDate, slot, { force=false } = {}) {
+  if (!(await ensureOperationsSchema(env))) return { ok:false, status:503, error:'La coordinació de Stories no està disponible.', retryable:false };
+  if (!env.SOCIAL_VIDEO_BUCKET) return { ok:false, status:503, error:'L’emmagatzematge temporal de vídeo no està configurat.', retryable:false };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(localDate || '')) || !SOCIAL_REEL_SLOT.has(slot)) return { ok:false, status:400, error:'Data o franja de Story no vàlida.', retryable:false };
   const serviceKey = socialStoryRunKey(localDate, slot);
-  const previous = await env.DB.prepare('SELECT status,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
-  if (previous?.status === 'healthy') return json({ error:'Aquesta prova de Stories ja s’ha completat per a aquesta franja. No es duplicarà.' }, 409, 'no-store', auth.origin);
-  const payload = { videoUrl:await socialVideoUrl(key, env, 3600) };
+  const previous = await env.DB.prepare('SELECT status,consecutive_failures,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
   const previousOutcomes = previousSocialReelOutcomes(previous?.detail);
+  if (previous?.status === 'healthy') return { ok:true, localDate, slot, outcomes:previousOutcomes, alreadyCompleted:true, reused:true };
+  if (!force && previous?.status === 'down' && Number(previous.consecutive_failures) >= META_VIDEO_AUTOMATIC_MAX_ATTEMPTS) {
+    return { ok:false, status:502, error:'Les Stories han esgotat els reintents automàtics.', outcomes:previousOutcomes, retryable:false, blocked:true };
+  }
+  const key = `shorts/${localDate}/${slot}.mp4`;
+  if (!await env.SOCIAL_VIDEO_BUCKET.head(key)) {
+    const error=`No hi ha cap Short preparat per al ${slot === 'morning' ? 'matí' : 'vespre'} d’avui.`;
+    await recordOperationalState(env, serviceKey, 'down', { localDate, slot, outcomes:previousOutcomes, error });
+    return { ok:false, status:409, error, outcomes:previousOutcomes, retryable:true };
+  }
+  const payload = { videoUrl:await socialVideoUrl(key, env, 3600) };
   const outcomes = [];
   for (const [channel, publisher] of [['instagram', publishInstagramStory], ['facebook', publishFacebookStory]]) {
     const previousOutcome = previousOutcomes.find(item => item?.channel === channel);
@@ -3180,8 +3233,46 @@ async function adminSocialStoryTest(request, env) {
   const failed = outcomes.filter(item => !item.ok);
   const pending = failed.some(item => item.pending);
   await recordOperationalState(env, serviceKey, failed.length ? (pending && failed.every(item => item.pending) ? 'degraded' : 'down') : 'healthy', { localDate, slot, outcomes });
-  if (failed.length) return json({ error:pending ? 'La Story encara s’està processant o algun canal ha fallat.' : 'La prova de Stories ha quedat incompleta.', outcomes, retryable:true }, pending ? 202 : 502, 'no-store, private', auth.origin);
-  return json({ ok:true, localDate, slot, outcomes }, 200, 'no-store, private', auth.origin);
+  if (failed.length) return { ok:false, status:pending ? 202 : 502, error:pending ? 'La Story encara s’està processant o algun canal ha fallat.' : 'La publicació de Stories ha quedat incompleta.', localDate, slot, outcomes, pending, retryable:true };
+  return { ok:true, localDate, slot, outcomes };
+}
+
+async function runAutomaticMetaVideos(env, date = new Date()) {
+  if (!metaVideoAutomationEnabled(env)) return { processed:false, reason:'automation_disabled' };
+  if (!(await ensureOperationsSchema(env))) return { processed:false, reason:'storage_disabled' };
+  const localDate=localIsoDate(date);
+  const slots=dueMetaVideoSlots(env,date);
+  if(!slots.length)return { processed:false, reason:'before_first_slot' };
+  const results=[];
+  for(const slot of slots){
+    const reels=await publishSocialReelsForSlot(env,localDate,slot);
+    if(!reels.ok){results.push({slot,stage:'reels',...reels});continue;}
+    const stories=await publishSocialStoriesForSlot(env,localDate,slot);
+    results.push({slot,stage:stories.ok?'completed':'stories',reels,stories,ok:stories.ok,pending:Boolean(stories.pending),blocked:Boolean(stories.blocked),error:stories.error || null});
+  }
+  const failed=results.filter(item=>item.ok===false);
+  const pending=failed.some(item=>item.pending);
+  const status=failed.length?(pending&&failed.every(item=>item.pending)?'degraded':'down'):'healthy';
+  await recordOperationalState(env,'meta-video-automatic',status,{ localDate,slots,results });
+  for(const item of failed.filter(result=>result.blocked))await notifyMetaVideoBlocked(env,localDate,item);
+  return { processed:true,ok:failed.length===0,localDate,slots,results };
+}
+
+async function notifyMetaVideoBlocked(env, localDate, result) {
+  const stage=result.stage==='stories'?'stories':'reels';
+  const serviceKey=stage==='stories'?socialStoryRunKey(localDate,result.slot):socialReelRunKey(localDate,result.slot);
+  if(!serviceKey)return { sent:false,reason:'invalid_key' };
+  const previous=await env.DB.prepare('SELECT last_notified_at FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
+  if(previous?.last_notified_at)return { sent:false,reason:'already_notified' };
+  const when=new Date().toISOString();
+  const sent=await sendOperationalEmail(
+    env,
+    `[Observatori] Automatització de ${stage === 'stories' ? 'Stories' : 'Reels'} aturada`,
+    `La publicació automàtica de ${stage === 'stories' ? 'Stories' : 'Reels'} de la franja ${result.slot || 'desconeguda'} del ${localDate} ha esgotat ${META_VIDEO_AUTOMATIC_MAX_ATTEMPTS} intents.\n\nHora: ${when}\nError: ${cleanText(result.error || 'Sense detall',500)}\n\nEls canals ja completats no es duplicaran en una recuperació manual.`,
+    `meta_${stage}_automatic_failed`,
+  ).catch(error=>({ sent:false,error:cleanText(error.message,300) }));
+  if(sent.sent)await env.DB.prepare('UPDATE monitor_state SET last_notified_at = ? WHERE service_key = ?').bind(when,serviceKey).run();
+  return sent;
 }
 
 async function threadsGraphRequest(env, path, { method='GET', params={} } = {}) {
@@ -3522,7 +3613,7 @@ async function adminStatus(request, env) {
       youtube:Boolean(env.GITHUB_SHORTS_DISPATCH_TOKEN),
       advancedAI:Boolean(env.AI),
     },
-    schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"cada 5 minuts", social:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES), preflight:String(env.SOCIAL_PREFLIGHT_TIME || DEFAULT_SOCIAL_PREFLIGHT_TIMES), youtube:'07:20,19:45', timeZone:TIME_ZONE },
+    schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"cada 5 minuts", social:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES), preflight:String(env.SOCIAL_PREFLIGHT_TIME || DEFAULT_SOCIAL_PREFLIGHT_TIMES), youtube:'07:20,19:45', metaVideo:String(env.META_VIDEO_AUTO_TIMES || DEFAULT_META_VIDEO_AUTO_TIMES), metaVideoEnabled:metaVideoAutomationEnabled(env), timeZone:TIME_ZONE },
   }, 200, "no-store, private", origin);
 }
 
@@ -3889,6 +3980,7 @@ export default {
       observedJob('observation',capture),
       observedJob('forecast',captureForecastSnapshot(env)),
       observedJob('social',social),
+      observedJob('meta-video',runAutomaticMetaVideos(env)),
       observedJob('alerts',checkAlertsAndNotify(env)),
       observedJob('preflight',runDailyIntegrationPreflight(env)),
       observedJob('database-maintenance',runDatabaseMaintenance(env)),

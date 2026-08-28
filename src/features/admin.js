@@ -94,6 +94,7 @@ function renderOperations(operations={},schedule={}){
   const social=operations.social;
   const push=operations.push;
   const youtube=operations.youtube;
+  const metaVideo=operations.metaVideo;
   const bufferTikTok=operations.bufferTikTok;
   const bufferDiagnostics=operations.bufferTikTokDiagnostics;
   text('admin-scheduler-last',formatDate(scheduler?.checkedAt));
@@ -104,6 +105,7 @@ function renderOperations(operations={},schedule={}){
   text('admin-push-recipients',push?.detail?.sent?formatNumber(push.detail.recipients):push?.detail?.reason==='not_configured'?'No configurat':'—');
   text('admin-youtube-schedule',`${schedule.youtube||'07:20,19:45'} · ${schedule.timeZone||'Europe/Madrid'}`);
   text('admin-youtube-operation',youtube?.checkedAt?`${youtube.status==='healthy'?'Correcte':'Error'} · ${formatDate(youtube.checkedAt)}`:'Pendent del primer disparador');
+  text('admin-meta-video-operation',metaVideo?.checkedAt?`${metaVideo.status==='healthy'?'Completada':metaVideo.status==='degraded'?'Processant':'Error'} · ${formatDate(metaVideo.checkedAt)}`:schedule.metaVideoEnabled?`Activada · ${schedule.metaVideo||'08:00,20:30'}`:'Automatització desactivada');
   text('admin-buffer-diagnostics',bufferDiagnostics?.checkedAt?`${bufferDiagnostics.status==='healthy'?'Correcta':'Error'} · ${formatDate(bufferDiagnostics.checkedAt)}`:'Pendent de comprovació');
   text('admin-buffer-operation',bufferTikTok?.checkedAt?`${bufferTikTok.status==='healthy'?'Programat':bufferTikTok.status==='running'?'En curs':'Error'} · ${formatDate(bufferTikTok.checkedAt)}`:'Automatització encara desactivada');
   const healthy=scheduler?.status==='healthy';

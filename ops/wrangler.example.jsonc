@@ -7,6 +7,8 @@
   "workers_dev": false,
   "vars": {
     "ENVIRONMENT": "local",
+    "META_VIDEO_AUTOMATION_ENABLED": "false",
+    "META_VIDEO_AUTO_TIMES": "08:00,20:30",
     "SOCIAL_AUTOMATION_ENABLED": "false",
     "SOCIAL_AUTO_TIMES": "08:00,14:00,20:30",
     "SOCIAL_PREFLIGHT_TIME": "07:45,13:45,20:15",
@@ -40,6 +42,8 @@
       "workers_dev": true,
       "vars": {
         "ENVIRONMENT": "staging",
+        "META_VIDEO_AUTOMATION_ENABLED": "false",
+        "META_VIDEO_AUTO_TIMES": "08:00,20:30",
         "SOCIAL_AUTOMATION_ENABLED": "false",
         "SOCIAL_PREFLIGHT_TIME": "07:45,13:45,20:15"
       },

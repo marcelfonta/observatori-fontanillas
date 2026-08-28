@@ -2,9 +2,13 @@
 
 ## En desenvolupament
 
+- Preparada l’automatització dels vídeos de Meta a les 08:00 i les 20:30: primer publica i confirma els Reels d’Instagram i Facebook, i només després inicia les Stories dels dos canals.
+- Els contenidors d’Instagram pendents es reprenen al següent cicle de cinc minuts; Facebook i qualsevol canal ja completat es reutilitzen sense duplicar publicacions.
+- Els errors definitius queden limitats a quatre intents automàtics, es registren al panell i generen un únic correu operatiu. La prova manual continua disponible com a recuperació controlada.
+
 - Preparada una prova manual i protegida de Stories d’Instagram i Facebook amb el mateix vídeo vertical del Reel. Cada franja queda deduplicada i els canals ja publicats no es repeteixen en un reintent parcial.
 - Instagram conserva el contenidor mentre Meta processa el vídeo; Facebook conserva la sessió i la fase de pujada per reprendre una resposta interrompuda sense començar una Story nova.
-- Les Stories continuen desactivades en l’automatització: primer cal confirmar visualment una prova real dels dos canals des del panell.
+- La prova visual d’Instagram i Facebook s’ha completat correctament i permet activar el flux automàtic encadenat després dels Reels.
 
 - La confirmació dels Shorts valida ara l'estat que YouTube retorna en completar la mateixa pujada, sense fer una consulta posterior que exigia permisos de lectura addicionals.
 - Això evita marcar com a fallit —i arriscar un duplicat en reintentar— un vídeo que YouTube ja havia acceptat i programat correctament.
