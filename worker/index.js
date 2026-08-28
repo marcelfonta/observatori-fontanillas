@@ -2596,6 +2596,31 @@ async function adminBufferTikTokTest(request, env) {
   }
 }
 
+async function youtubeShortDispatchDiagnosticsControl(request, env) {
+  if (!(await authorizeYoutubeShortRequest(request, env))) return json({ error:'No autoritzat.' },401,'no-store');
+  const token=String(env.GITHUB_SHORTS_DISPATCH_TOKEN || '');
+  const repository=cleanText(env.GITHUB_SHORTS_REPOSITORY || 'marcelfonta/observatori-fontanillas',160);
+  if (token.length < 24 || !/^[\w.-]+\/[\w.-]+$/.test(repository)) {
+    await recordOperationalState(env,'youtube-shorts-dispatch-diagnostics','down',{ stage:'not_configured' }).catch(()=>{});
+    return json({ error:'El disparador de YouTube no està configurat.' },503,'no-store');
+  }
+  const response=await fetch(`https://api.github.com/repos/${repository}/actions/workflows/youtube-short-private.yml/dispatches`,{
+    method:'POST',
+    headers:{ Accept:'application/vnd.github+json', Authorization:`Bearer ${token}`, 'Content-Type':'application/json', 'X-GitHub-Api-Version':'2026-03-10', 'User-Agent':'fonta-meteo-worker' },
+    // Aquesta branca no existeix deliberadament: GitHub valida abans el permís
+    // Actions: Write i respon 422 sense iniciar cap workflow.
+    body:JSON.stringify({ ref:'refs/heads/__fonta_youtube_dispatch_permission_check__', inputs:{ slot:'mati',privacy:'private',schedule_publication:'false' } }),
+  });
+  const detail=cleanText(await response.text().catch(()=>''),500);
+  if (response.status === 422) {
+    await recordOperationalState(env,'youtube-shorts-dispatch-diagnostics','healthy',{ stage:'permission_verified',responseCode:response.status }).catch(()=>{});
+    return json({ ok:true, permission:'verified', workflowStarted:false },200,'no-store');
+  }
+  const failure={ stage:'permission_rejected',responseCode:response.status,error:detail || 'GitHub ha rebutjat la comprovació.' };
+  await recordOperationalState(env,'youtube-shorts-dispatch-diagnostics','down',failure).catch(()=>{});
+  return json({ error:'GitHub no ha validat el permís per iniciar YouTube.', detail:failure.error, responseCode:response.status },502,'no-store');
+}
+
 async function dispatchYoutubeShortFallback(env, date = new Date()) {
   const slot=youtubeShortFallbackSlot(date);
   if (!slot) return { skipped:'outside_window' };
@@ -3671,6 +3696,7 @@ export default {
       const bufferTikTokScheduleMatch = url.pathname.match(/^\/admin\/buffer-tiktok\/schedule\/(\d{4}-\d{2}-\d{2})\/(morning|evening)$/);
       if (request.method === 'POST' && bufferTikTokScheduleMatch) return bufferTikTokScheduleControl(request, env, bufferTikTokScheduleMatch[1], bufferTikTokScheduleMatch[2]);
       if (request.method === 'POST' && url.pathname === '/admin/buffer-tiktok/diagnostics') return bufferTikTokDiagnosticsControl(request, env);
+      if (request.method === 'POST' && url.pathname === '/admin/youtube-short/diagnostics') return youtubeShortDispatchDiagnosticsControl(request, env);
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
       if (request.method === "POST" && url.pathname === "/admin/social-reels/test") return adminSocialReelTest(request, env);
