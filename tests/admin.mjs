@@ -19,6 +19,8 @@ assert.equal(analyticsServiceState().provider,'none');
 const adminHtml=await readFile(new URL('../administracio.html',import.meta.url),'utf8');
 assert.match(adminHtml,/id="admin-youtube-schedule"/);
 assert.match(adminHtml,/id="admin-youtube-operation"/);
+assert.match(adminHtml,/id="admin-buffer-diagnostics"/);
+assert.match(adminHtml,/id="admin-buffer-operation"/);
 
 const context={waitUntil(){}};
 const unconfigured=await worker.fetch(new Request('https://fonta-meteo.example/admin/status',{headers:{Origin:'https://meteo.fontanillas.cat',Authorization:'Bearer '+('a'.repeat(32))}}),{},context);

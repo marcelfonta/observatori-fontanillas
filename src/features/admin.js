@@ -79,7 +79,7 @@ function renderSocialQueue(social={}){
   text('admin-social-bluesky',social.channelCredentials?.bluesky?'Configurada':'No configurada');
   text('admin-social-telegram',social.channelCredentials?.telegram?'Configurada':'No configurada');
   text('admin-social-threads',social.channelCredentials?.threads?'Configurada':'No configurada');
-  text('admin-social-tiktok',social.channelCredentials?.bufferTikTok?'Clau preparada · publicació pendent d’aprovació':'Pendent de configurar Buffer');
+  text('admin-social-tiktok',social.channelCredentials?.bufferTikTok?(social.bufferTikTokAutomationEnabled?'Clau preparada · automatització activa':'Clau preparada · automatització apagada'):'Pendent de configurar Buffer');
   text('admin-social-drafts',formatNumber(social.pendingDrafts??0));
   text('admin-social-approved',formatNumber(social.approved??0));
   text('admin-social-published',formatNumber(social.published??0));
@@ -94,6 +94,8 @@ function renderOperations(operations={},schedule={}){
   const social=operations.social;
   const push=operations.push;
   const youtube=operations.youtube;
+  const bufferTikTok=operations.bufferTikTok;
+  const bufferDiagnostics=operations.bufferTikTokDiagnostics;
   text('admin-scheduler-last',formatDate(scheduler?.checkedAt));
   text('admin-scheduler-state',scheduler?scheduler.status==='healthy'?`Correcte · ${scheduler.detail?.jobs??0} processos`:`Error · ${scheduler.detail?.failed??1} processos`:'Pendent de la primera execució V22.5');
   text('admin-social-schedule',`${schedule.social||'08:00'} · ${schedule.timeZone||'Europe/Madrid'}`);
@@ -102,6 +104,8 @@ function renderOperations(operations={},schedule={}){
   text('admin-push-recipients',push?.detail?.sent?formatNumber(push.detail.recipients):push?.detail?.reason==='not_configured'?'No configurat':'—');
   text('admin-youtube-schedule',`${schedule.youtube||'07:20,19:45'} · ${schedule.timeZone||'Europe/Madrid'}`);
   text('admin-youtube-operation',youtube?.checkedAt?`${youtube.status==='healthy'?'Correcte':'Error'} · ${formatDate(youtube.checkedAt)}`:'Pendent del primer disparador');
+  text('admin-buffer-diagnostics',bufferDiagnostics?.checkedAt?`${bufferDiagnostics.status==='healthy'?'Correcta':'Error'} · ${formatDate(bufferDiagnostics.checkedAt)}`:'Pendent de comprovació');
+  text('admin-buffer-operation',bufferTikTok?.checkedAt?`${bufferTikTok.status==='healthy'?'Programat':bufferTikTok.status==='running'?'En curs':'Error'} · ${formatDate(bufferTikTok.checkedAt)}`:'Automatització encara desactivada');
   const healthy=scheduler?.status==='healthy';
   setPill('admin-operations-pill',healthy?'Programador operatiu':scheduler?'Cal revisar':'Esperant execució',healthy?'is-ok':'is-warning');
 }

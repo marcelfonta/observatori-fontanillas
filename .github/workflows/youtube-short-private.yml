@@ -108,6 +108,7 @@ jobs:
           path: build/youtube-short/short.mp4
           retention-days: 7
       - name: Desa una còpia privada per a una Story futura
+        id: social_video_upload
         if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.SOCIAL_VIDEO_UPLOAD_URL != '' && env.SOCIAL_VIDEO_UPLOAD_TOKEN != ''
         continue-on-error: true
         run: |
@@ -126,11 +127,11 @@ jobs:
             --data-binary @build/youtube-short/short.mp4 \
             "$SOCIAL_VIDEO_UPLOAD_URL/shorts/$local_date/$video_slot.mp4"
       - name: Puja el vídeo a YouTube
+        id: youtube_upload
         if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
         run: node scripts/youtube-upload.mjs
       - name: Deixa el TikTok preparat a Buffer
-        if: success() && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.SOCIAL_VIDEO_UPLOAD_URL != '' && env.SOCIAL_VIDEO_UPLOAD_TOKEN != ''
-        continue-on-error: true
+        if: steps.youtube_upload.outcome == 'success' && steps.social_video_upload.outcome == 'success' && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.SOCIAL_VIDEO_UPLOAD_URL != '' && env.SOCIAL_VIDEO_UPLOAD_TOKEN != ''
         run: |
           set -euo pipefail
           case "$SHORT_SLOT" in
@@ -145,7 +146,7 @@ jobs:
             --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
             "$base_url/admin/buffer-tiktok/schedule/$local_date/$video_slot"
       - name: Confirma la franja completada
-        if: success() && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.YOUTUBE_SHORT_COORDINATION_ACTIVE == 'true'
+        if: always() && steps.youtube_upload.outcome == 'success' && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.YOUTUBE_SHORT_COORDINATION_ACTIVE == 'true'
         continue-on-error: true
         run: |
           curl --fail --silent --show-error --retry 2 --request POST \
