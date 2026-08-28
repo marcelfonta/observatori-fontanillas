@@ -18,6 +18,8 @@
 
 ## Vídeos temporals i Stories — Preparació segura
 
+- [ ] Validar l’esborrany d’un TikTok a Buffer amb cada franja. Després, activar `BUFFER_TIKTOK_AUTOMATION_ENABLED=true` al Worker perquè la cua programi els dos vídeos diaris sense afectar YouTube.
+
 - [ ] Desplegar i validar el disparador principal Cloudflare → GitHub dels YouTube Shorts a les 07:20 i 19:45, amb correu d’error, confirmació remota de YouTube i reserva estiu/hivern de GitHub.
 
 - [x] Crear un bucket R2 privat a Europa per als vídeos temporals de Shorts, sense domini públic.
