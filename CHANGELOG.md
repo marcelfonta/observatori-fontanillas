@@ -2,6 +2,10 @@
 
 ## En desenvolupament
 
+- «Predicció vs realitat» calcula ara els indicadors principals només amb pronòstics de l’endemà guardats el dia anterior, sense barrejar actualitzacions del mateix dia ni horitzons de fins a set dies.
+- La mostra informa quants casos corresponen a dies plujosos o secs, identifica les fonts i els llindars de pluja, i diferencia explícitament les comparacions secundàries per horitzó.
+- La taula es descriu com a pronòstics de demà verificats i incorpora una indicació de desplaçament lateral en mòbil.
+
 - Afegida una comprovació segura del permís `Actions: Write` del token que connecta Cloudflare amb GitHub: usa una referència deliberadament inexistent i, per tant, no inicia cap workflow ni crea cap vídeo.
 - El diagnòstic manual d’automatitzacions valida ara tant el canal TikTok de Buffer com el disparador principal de YouTube.
 
