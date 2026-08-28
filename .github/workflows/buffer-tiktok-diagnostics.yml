@@ -1,4 +1,4 @@
-name: Diagnòstic Buffer · TikTok
+name: Diagnòstic automatitzacions externes
 
 on:
   workflow_dispatch:
@@ -26,3 +26,11 @@ jobs:
             --request POST \
             --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
             "$base_url/admin/buffer-tiktok/diagnostics"
+      - name: Verifica el permís del disparador de YouTube sense iniciar cap vídeo
+        run: |
+          set -euo pipefail
+          base_url="${SOCIAL_VIDEO_UPLOAD_URL%/admin/social-video-upload}"
+          curl --fail --silent --show-error --retry 2 --retry-all-errors \
+            --request POST \
+            --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
+            "$base_url/admin/youtube-short/diagnostics"

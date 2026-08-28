@@ -18,6 +18,8 @@
 
 ## Vídeos temporals i Stories — Preparació segura
 
+- [ ] Validar a producció el diagnòstic segur del disparador Cloudflare → GitHub abans de la franja de YouTube del vespre.
+
 - [ ] Executar el diagnòstic remot de Buffer/TikTok i validar un esborrany de cada franja. Després, activar `BUFFER_TIKTOK_AUTOMATION_ENABLED=true` al Worker perquè la cua programi els dos vídeos diaris sense afectar YouTube.
 
 - [ ] Desplegar i validar el disparador principal Cloudflare → GitHub dels YouTube Shorts a les 07:20 i 19:45, amb correu d’error, confirmació remota de YouTube i reserva estiu/hivern de GitHub.

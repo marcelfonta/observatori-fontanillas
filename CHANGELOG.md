@@ -2,6 +2,9 @@
 
 ## En desenvolupament
 
+- Afegida una comprovació segura del permís `Actions: Write` del token que connecta Cloudflare amb GitHub: usa una referència deliberadament inexistent i, per tant, no inicia cap workflow ni crea cap vídeo.
+- El diagnòstic manual d’automatitzacions valida ara tant el canal TikTok de Buffer com el disparador principal de YouTube.
+
 - Auditoria reforçada de Buffer/TikTok: la comprovació de connexió valida ara el canal real de Buffer sense publicar, i queda disponible també com a flux manual independent de GitHub Actions.
 - Els esborranys de prova ja no inclouen una hora passada; les publicacions reals exigeixen cinc minuts de marge, es registren al panell i envien un correu operatiu si Buffer falla.
 - La còpia temporal del vídeo ha d’haver pujat correctament abans de programar TikTok. Una fallada de Buffer queda visible a GitHub sense impedir que Cloudflare confirmi una pujada de YouTube que sí hagi acabat, evitant reintents i duplicats del Short.
