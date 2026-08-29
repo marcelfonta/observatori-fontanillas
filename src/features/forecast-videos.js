@@ -10,10 +10,10 @@ const SOURCES={
   },
   aemet:{
     label:'AEMET',
-    title:'Vídeo de predicció estatal',
-    description:'Darrera predicció audiovisual publicada per l’Agència Estatal de Meteorologia.',
-    embedUrl:'https://www.aemet.es/es/eltiempo/widgets/video',
-    sourceUrl:'https://www.aemet.es/es/videos'
+    title:'Canal audiovisual oficial d’AEMET',
+    description:'Vídeos meteorològics recents de l’Agència Estatal de Meteorologia, en un reproductor net.',
+    embedUrl:'https://www.youtube-nocookie.com/embed/videoseries?list=UUd-ceYPisAtCmmoZa26I-5g&rel=0',
+    sourceUrl:'https://www.youtube.com/c/AEMETAgenciaEstatal/videos'
   }
 };
 
@@ -39,9 +39,10 @@ function renderSource(sourceKey,source){
 }
 
 function connectButtons(sources){
-  document.querySelectorAll('[data-video-source]').forEach(button=>{
-    button.setAttribute('aria-pressed','false');
-    button.addEventListener('click',()=>renderSource(button.dataset.videoSource,sources[button.dataset.videoSource]));
+  document.querySelectorAll('[data-video-source]').forEach(control=>{
+    control.setAttribute('aria-pressed','false');
+    if(control.tagName==='A')return;
+    control.addEventListener('click',()=>renderSource(control.dataset.videoSource,sources[control.dataset.videoSource]));
   });
 }
 
@@ -60,8 +61,9 @@ export async function initForecastVideos(){
         embedUrl:payload.threeCat.embedUrl,
         sourceUrl:payload.threeCat.sourceUrl
       };
-      const button=document.getElementById('forecast-video-3cat');
-      button.hidden=false;
+      const link=document.getElementById('forecast-video-3cat');
+      link.hidden=false;
+      link.href=sources['3cat'].sourceUrl;
       document.getElementById('forecast-video-3cat-title').textContent=sources['3cat'].title;
       document.getElementById('forecast-video-3cat-date').textContent=sources['3cat'].description;
       status.textContent='Fonts preparades. 3Cat mostra el darrer vídeo meteorològic localitzat avui o ahir.';
