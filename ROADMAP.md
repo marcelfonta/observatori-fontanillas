@@ -2,6 +2,8 @@
 
 ## Manteniment obert — En curs
 
+- [x] Recuperar l’accés visible a AEMET i fer inequívoca la selecció i càrrega dels reproductors de Meteocat i 3Cat.
+
 - [x] Completar la vista audiovisual amb una guia curta de fonts mundials fiables, diferenciant serveis oficials, models i comparadors.
 - [x] Fer més accionable la biblioteca educativa amb recursos actualitzats i reptes pràctics per tema.
 

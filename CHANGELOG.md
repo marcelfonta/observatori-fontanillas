@@ -2,6 +2,9 @@
 
 ## En desenvolupament
 
+- AEMET torna a ser visible a la predicció audiovisual com a accés oficial, sense presentar-lo erròniament com un vídeo diari.
+- Les targetes de Meteocat i 3Cat creen un reproductor nou a cada selecció, mostren una càrrega inequívoca i porten l’usuari fins al vídeo.
+
 - Afegida sota la predicció audiovisual una guia de sis fonts mundials diferenciades per funció: previsió oficial de l’OMM, previsions globals de Yr i Met Office, mapes d’ECMWF i comparadors Windy i meteoblue.
 - La guia explica que cap model és universalment millor i prioritza sempre el servei meteorològic oficial del territori per a avisos i decisions de seguretat.
 - La biblioteca educativa incorpora recursos actuals del Met Office i UCAR, i tres reptes pràctics que filtren directament materials de núvols, predicció o dades.
