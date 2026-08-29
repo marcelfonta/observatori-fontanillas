@@ -39,7 +39,7 @@
     <link rel="manifest" href="site.webmanifest" />
     <script>
       (() => {
-        const pages = new Set(['inici','meteo-ia','estacio','prediccio','verificacio','cel','avisos','radar','webcams','centre-dades','medi-ambient','aprendre','contacte']);
+        const pages = new Set(['inici','meteo-ia','estacio','prediccio','videos','verificacio','cel','avisos','radar','webcams','centre-dades','medi-ambient','aprendre','contacte']);
         const requested = new URLSearchParams(location.search).get('page') || 'inici';
         document.documentElement.dataset.portalPage = pages.has(requested) ? requested : 'inici';
       })();
@@ -49,6 +49,7 @@
       html[data-portal-page="meteo-ia"] [data-portal-page]:not([data-portal-page~="meteo-ia"]),
       html[data-portal-page="estacio"] [data-portal-page]:not([data-portal-page~="estacio"]),
       html[data-portal-page="prediccio"] [data-portal-page]:not([data-portal-page~="prediccio"]),
+      html[data-portal-page="videos"] [data-portal-page]:not([data-portal-page~="videos"]),
       html[data-portal-page="verificacio"] [data-portal-page]:not([data-portal-page~="verificacio"]),
       html[data-portal-page="cel"] [data-portal-page]:not([data-portal-page~="cel"]),
       html[data-portal-page="avisos"] [data-portal-page]:not([data-portal-page~="avisos"]),
@@ -65,11 +66,11 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=22.14.0" />
-    <link rel="stylesheet" href="css/portal.css?v=22.14.0" />
+    <link rel="stylesheet" href="css/portal.css?v=22.14.0-video-forecast" />
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="src/features/push.js?v=22.14.0"></script>
     <script type="module" src="src/features/pwa.js?v=22.14.0"></script>
-    <script type="module" src="src/app.js?v=22.14.0"></script>
+    <script type="module" src="src/app.js?v=22.14.0-video-forecast"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":"ca"},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/","inLanguage":"ca","measurementTechnique":"Estació meteorològica automàtica","creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -124,6 +125,7 @@
       <section class="portal-view-header panel" aria-labelledby="station-page-title" data-portal-page="estacio"><div><p class="eyebrow">Estació Fontanillas</p><h1 id="station-page-title">L’estació, sensor a sensor.</h1><p>Lectures actuals, valors calculats i resum del dia des de Sant Celoni.</p></div><span class="tag">Cada 5 minuts</span></section>
       <section class="portal-view-header panel" aria-labelledby="meteo-ai-page-title" data-portal-page="meteo-ia"><div><p class="eyebrow">Meteo IA · dades verificades</p><h1 id="meteo-ai-page-title">Pregunta al temps, amb les fonts a la vista.</h1><p>Respostes construïdes amb l’estació, la predicció i els avisos disponibles; sense inventar lectures.</p></div><span class="tag">Consulta guiada</span></section>
       <section class="portal-view-header panel" aria-labelledby="forecast-page-title" data-portal-page="prediccio"><div><p class="eyebrow">Predicció</p><h1 id="forecast-page-title">La previsió, ordenada per horitzons.</h1><p>Properes hores, dies i models de confiança per entendre què pot canviar.</p></div><span class="tag">Sant Celoni</span></section>
+      <section class="portal-view-header panel" aria-labelledby="video-forecast-page-title" data-portal-page="videos"><div><p class="eyebrow">Previsió audiovisual</p><h1 id="video-forecast-page-title">El temps, explicat en vídeo.</h1><p>Les darreres previsions audiovisuals de fonts oficials i fiables, reunides sense reproducció automàtica.</p></div><span class="tag">Meteocat · AEMET · 3Cat</span></section>
       <section class="portal-view-header panel" aria-labelledby="verification-page-title" data-portal-page="verificacio"><div><p class="eyebrow">Verificació transparent</p><h1 id="verification-page-title">Predicció vs realitat.</h1><p>Mesurem amb dades reals fins a quin punt encerta la previsió meteorològica.</p></div><span class="tag">Dades pròpies</span></section>
       <section class="portal-view-header panel" aria-labelledby="alerts-page-title" data-portal-page="avisos"><div><p class="eyebrow">Vigilància oficial</p><h1 id="alerts-page-title">Avisos que poden afectar Sant Celoni.</h1><p>Seguiment del Vallès Oriental i del Prelitoral de Barcelona amb fonts oficials.</p></div><span class="tag">Meteocat · AEMET</span></section>
       <section class="portal-view-header panel" aria-labelledby="sky-page-title" data-portal-page="cel"><div><p class="eyebrow">Astronomia</p><h1 id="sky-page-title">El cel, de dia i de nit.</h1><p>Sol, Lluna, fases, estacions i esdeveniments visibles des de Catalunya.</p></div><span class="tag">Hora local</span></section>
@@ -496,6 +498,28 @@
           <p class="long-range-note"><span>i</span> A partir de la segona setmana la incertesa augmenta molt. Aquesta vista serveix per detectar una tendència més càlida, freda, seca o humida; cal tornar a la previsió de 7 dies abans de prendre decisions.</p>
         </section>
         <p class="forecast-disclaimer">La predicció descriu un escenari de model per a Sant Celoni, no una certesa. L’observació real de l’estació és la referència del temps que està fent.</p>
+      </section>
+
+      <section class="forecast-videos section-block" id="forecast-videos" aria-labelledby="forecast-videos-title" data-portal-page="videos">
+        <div class="forecast-videos__intro panel">
+          <div><p class="eyebrow">Fonts oficials seleccionades</p><h2 id="forecast-videos-title">Tria qui t’explica la previsió</h2><p>Meteocat i AEMET ofereixen la visió institucional; 3Cat hi afegeix una explicació televisiva de Catalunya. El vídeo només es connecta amb el proveïdor quan prems «Veure».</p></div>
+          <span class="forecast-videos__privacy">Sense reproducció automàtica</span>
+        </div>
+        <div class="forecast-videos__layout">
+          <nav class="forecast-video-sources panel" aria-label="Fonts de predicció en vídeo" id="forecast-video-sources">
+            <button type="button" data-video-source="meteocat"><span>Meteocat</span><strong>Predicció general de Catalunya</strong><small>Servei Meteorològic de Catalunya · actualització diària</small></button>
+            <button type="button" data-video-source="aemet"><span>AEMET</span><strong>Vídeo de predicció estatal</strong><small>Agència Estatal de Meteorologia · canal oficial</small></button>
+            <button type="button" data-video-source="3cat" id="forecast-video-3cat" hidden><span>3Cat</span><strong id="forecast-video-3cat-title">Darrera explicació del temps</strong><small id="forecast-video-3cat-date">Actualització recent</small></button>
+          </nav>
+          <article class="forecast-video-player panel" id="forecast-video-player">
+            <div class="forecast-video-player__empty" id="forecast-video-empty">
+              <span aria-hidden="true">▶</span><h3>Escull una font per començar</h3><p>No carreguem vídeos ni galetes de tercers fins que ho demanis.</p>
+            </div>
+            <div class="forecast-video-player__frame" id="forecast-video-frame-shell" hidden><iframe id="forecast-video-frame" title="Predicció meteorològica en vídeo" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+            <footer id="forecast-video-meta" hidden><div><span id="forecast-video-source-label">Font oficial</span><strong id="forecast-video-title">Predicció en vídeo</strong><small id="forecast-video-description"></small></div><a id="forecast-video-source-link" href="#" target="_blank" rel="noreferrer">Obrir a la font ↗</a></footer>
+          </article>
+        </div>
+        <p class="forecast-videos__note" id="forecast-videos-status" role="status" aria-live="polite">Preparant les fonts oficials…</p>
       </section>
 
       <section class="forecast-verification panel section-block" id="forecast-verification" aria-labelledby="forecast-verification-title" data-portal-page="verificacio">

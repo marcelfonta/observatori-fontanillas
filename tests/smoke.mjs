@@ -41,7 +41,7 @@ for(const metric of ['temperature','humidity','pressure','wind','rain'])if(!comp
 const comparisonFeature=await readFile(resolve(root,'src/features/stations-comparison.js'),'utf8');
 for(const feature of ['ensureLeaflet','renderMap','historySeries','compare-variable-chart'])if(!comparisonFeature.includes(feature))throw new Error(`Comparativa: falta la funció ${feature}.`);
 if(!html.includes('data-portal-page="cel"')||html.match(/id="cel-nocturn"[^>]*data-mobile-advanced/))throw new Error('La pàgina del cel no és independent o pot quedar oculta en mòbil.');
-if((html.match(/class="portal-view-header panel"/g)||[]).length!==12)throw new Error('Les dotze subpàgines principals no comparteixen capçalera.');
+if((html.match(/class="portal-view-header panel"/g)||[]).length!==13)throw new Error('Les tretze subpàgines principals no comparteixen capçalera.');
 if(!html.includes('data-history-limit="5"')||!html.includes('historial-avisos.html'))throw new Error('La vista principal no limita l’historial o no enllaça amb l’arxiu complet.');
 for(const viewer of ['fire','drought','jellyfish'])if(!html.includes(`data-environment-viewer="${viewer}"`))throw new Error(`Medi Ambient: falta el visor ${viewer}.`);
 if(!html.includes('https://meduseo.com/es/')||!html.includes('https://www.medusapp.net/mapa/mapa-portada.php'))throw new Error('Medi Ambient: falten MedusApp o Meduseo.');

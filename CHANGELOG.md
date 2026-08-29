@@ -2,6 +2,10 @@
 
 ## En desenvolupament
 
+- Afegida una secció de predicció en vídeo amb Meteocat, AEMET i el darrer vídeo meteorològic disponible de 3Cat.
+- Els reproductors externs només es carreguen quan l’usuari escull una font, evitant reproducció automàtica i connexions innecessàries amb tercers.
+- La descoberta de 3Cat queda limitada, memoritzada i tolerant a errors: si la seva pàgina canvia o no hi ha vídeo recent, Meteocat i AEMET continuen disponibles.
+
 - Si una execució de YouTube falla després d'haver reservat la franja, GitHub ho comunica al Worker i Cloudflare la torna a intentar dins de la finestra segura, sense duplicar un Short ja completat.
 - La recuperació de YouTube s'allarga fins als últims cinc minuts útils abans de publicar; els errors o cancel·lacions que deixin una execució penjada també poden recuperar-se quan expira el bloqueig temporal.
 - TikTok ja no depèn d'una única crida de GitHub a Buffer: el programador de cinc minuts detecta el MP4 preparat i reintenta la programació pendent, reutilitzant l'identificador existent si Buffer ja l'havia acceptat.

@@ -97,6 +97,12 @@ export async function fetchForecastVerification(days = 45) {
   return response.json();
 }
 
+export async function fetchForecastVideos(){
+  const response=await request(`${CONFIG.apiUrl}/forecast-videos`,{headers:{Accept:'application/json'},cache:'no-store'},12000);
+  if(!response.ok)throw new Error(`Forecast videos API ${response.status}`);
+  return response.json();
+}
+
 export async function fetchStationHistory(days = 31, resolution = 'auto') {
   const response = await request(`${CONFIG.apiUrl}/history?days=${days}&resolution=${resolution}`, { headers: { Accept: 'application/json' }, cache: 'no-store' },18000);
   if (!response.ok) throw new Error(`History API ${response.status}`);

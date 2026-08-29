@@ -17,6 +17,8 @@ const TIKTOK_OAUTH_REDIRECT_URI = "https://fonta-meteo.marcelfonta.workers.dev/o
 const TIKTOK_OAUTH_SCOPE = "user.info.basic,video.upload";
 const AEMET_PRELITORAL_FEED = "https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAZ690803_RSS.xml";
 const AEMET_PRELITORAL_PAGE = "https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&w=hoy";
+const THREECAT_SEARCH_URL = "https://www.3cat.cat/cercador/";
+const FORECAST_VIDEO_HTML_LIMIT = 900_000;
 const COMPARISON_STATIONS = [
   { id: "fontanillas", name: "Fontanillas", municipality: "Sant Celoni", source: "Weather Underground", stationId: "ISANTC198", latitude: 41.6906, longitude: 2.4890 },
   { id: "alvar", name: "Alvar · Montseny", municipality: "Sant Celoni", source: "Weather Underground", stationId: "ICATALUN213", latitude: 41.69, longitude: 2.49 },
@@ -1013,6 +1015,79 @@ async function metNorwayForecast(url) {
     current:{time:first.time,temperature:optional(instant.air_temperature),humidity:optional(instant.relative_humidity),windSpeedKmh:Number.isFinite(optional(instant.wind_speed))?optional(instant.wind_speed)*3.6:null,symbolCode:first?.data?.next_1_hours?.summary?.symbol_code||""},
     days:[...days.values()].slice(0,7).map(({symbolHour,...day})=>({...day,precipitation:Number(day.precipitation.toFixed(1))})),
   },200,"public, max-age=900");
+}
+
+async function boundedResponseText(response,maxBytes=FORECAST_VIDEO_HTML_LIMIT){
+  const declared=Number(response.headers.get('Content-Length'));
+  if(Number.isFinite(declared)&&declared>maxBytes)throw new Error('Resposta de 3Cat massa gran');
+  if(!response.body)return '';
+  const reader=response.body.getReader();
+  const decoder=new TextDecoder();
+  let received=0;let text='';
+  try{
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      received+=value.byteLength;
+      if(received>maxBytes)throw new Error('Resposta de 3Cat massa gran');
+      text+=decoder.decode(value,{stream:true});
+    }
+    return text+decoder.decode();
+  }finally{
+    if(received>maxBytes)await reader.cancel().catch(()=>{});
+  }
+}
+
+function localDateParts(date){
+  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:TIME_ZONE,day:'2-digit',month:'2-digit',year:'numeric'}).formatToParts(date);
+  return Object.fromEntries(parts.filter(part=>part.type!=='literal').map(part=>[part.type,part.value]));
+}
+
+function threeCatVideoFromHtml(html,parts){
+  const dateKey=`${parts.day}${parts.month}${parts.year}`;
+  const matches=[...String(html).matchAll(/href="(\/3cat\/(el-temps-[^"?#]+)\/video\/(\d+)\/)"/gi)];
+  const match=matches.find(item=>item[2].includes(dateKey));
+  if(!match)return null;
+  const slug=match[2];const id=match[3];
+  const kind=slug.includes('vespre')?'vespre':slug.includes('mati')?'matí':slug.includes('tarda')?'tarda':'darrera edició';
+  return {
+    id,
+    title:`El temps · ${kind}`,
+    publishedLabel:`el ${parts.day}/${parts.month}/${parts.year}`,
+    sourceUrl:`https://www.3cat.cat${match[1]}`,
+    embedUrl:`https://www.3cat.cat/3cat/video/${id}/embed/`
+  };
+}
+
+async function latestThreeCatForecastVideo(){
+  for(const ageDays of [0,1]){
+    const date=new Date(Date.now()-ageDays*86400000);
+    const parts=localDateParts(date);
+    const query=`El temps ${parts.day}/${parts.month}/${parts.year}`;
+    const searchUrl=new URL(THREECAT_SEARCH_URL);searchUrl.searchParams.set('text',query);
+    const response=await fetch(searchUrl,{headers:{Accept:'text/html','User-Agent':`MeteoFontanillas/${WORKER_VERSION} (forecast video index)`},signal:AbortSignal.timeout(8000)});
+    if(!response.ok)continue;
+    const video=threeCatVideoFromHtml(await boundedResponseText(response),parts);
+    if(video)return video;
+  }
+  return null;
+}
+
+async function forecastVideos(request,ctx){
+  const cache=caches.default;
+  const cacheKey=new Request(new URL('/forecast-videos',request.url).toString(),{method:'GET'});
+  const cached=await cache.match(cacheKey);
+  if(cached)return cached;
+  let threeCat=null;
+  try{threeCat=await latestThreeCatForecastVideo();}
+  catch(error){console.warn('3Cat forecast discovery unavailable',cleanText(error.message,200));}
+  const response=json({
+    updatedAt:new Date().toISOString(),
+    sources:['meteocat','aemet',...(threeCat?['3cat']:[])],
+    threeCat
+  },200,'public, max-age=900, s-maxage=1800, stale-while-revalidate=86400');
+  ctx.waitUntil(cache.put(cacheKey,response.clone()));
+  return response;
 }
 
 function publicHttpsUrl(value, fallback = null) {
@@ -4006,12 +4081,13 @@ export default {
       if (url.pathname === "/stations") return comparisonStations(url, env);
       if (url.pathname === "/met-forecast") return metNorwayForecast(url);
       if (url.pathname === "/webcams-nearby") return nearbyWebcams(url, env);
+      if (url.pathname === "/forecast-videos") return forecastVideos(request, ctx);
       if (url.pathname === "/forecast-verification") return forecastVerification(url, env);
       if (url.pathname === "/admin/status") return adminStatus(request, env);
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

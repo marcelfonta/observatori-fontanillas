@@ -8,7 +8,7 @@ const all = (await readdir(resolve(root, 'tests')))
   .filter(name => name.endsWith('.mjs'))
   .sort((a, b) => a.localeCompare(b, undefined, { numeric:true }));
 const selected = quick
-  ? all.filter(name => ['smoke.mjs', 'admin.mjs', 'v22-2.mjs', 'v22-12.mjs'].includes(name))
+  ? all.filter(name => ['smoke.mjs', 'admin.mjs', 'forecast-videos.mjs', 'v22-2.mjs', 'v22-12.mjs'].includes(name))
   : all;
 
 for (const file of selected) {
