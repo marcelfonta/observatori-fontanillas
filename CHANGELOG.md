@@ -1,5 +1,12 @@
 # Changelog
 
+## V22.21.0 — X automatitzat amb Buffer — 2026-08-29
+
+- X publica automàticament el vídeo del matí a les 07:00, la targeta meteorològica a les 14:00 i el vídeo del vespre a les 20:30, cadascun amb text específic i límit segur de 280 caràcters.
+- El Worker conserva l’identificador de Buffer, comprova l’estat real després de l’hora prevista i evita crear una segona publicació si la primera ja està programada o enviada.
+- Les franges es recuperen cada cinc minuts durant un màxim de 90 minuts, amb fins a quatre intents i un únic correu només si tots fallen.
+- L’administració mostra la connexió d’X, el darrer estat operatiu i l’inclou en la comprovació segura de xarxes sense publicar res.
+
 ## Correcció de fonts audiovisuals — 2026-08-29
 
 - 3Cat passa a ser un accés extern directe a «El temps» de 3CatInfo, com AEMET, perquè el seu reproductor incrustat no completa la càrrega de manera fiable.
@@ -159,7 +166,7 @@
 - Afegides guies d'arquitectura, desplegament, API, fonts de dades, desenvolupament i Meteo IA.
 - Afegides normes de contribució, conducta, seguretat, suport, llicència MIT i plantilles d'incidències.
 
-## V22.14.0 — 2026-08-25
+## V22.15.0 — 2026-08-25
 
 - D1 deixa de persistir lectures en cada visita pública; les captures programades de cinc minuts són el camí normal de l’historial.
 - La persistència d’una observació és idempotent i el resum de magatzem es conserva cinc minuts a memòria per reduir lectures.

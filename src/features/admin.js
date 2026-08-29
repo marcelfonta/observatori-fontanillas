@@ -13,7 +13,7 @@ let socialDrafts=[];
 const SOCIAL_PAGE_SIZE=6;
 let socialOffset=0;
 let socialHasMore=false;
-let socialCredentials={meta:false,facebook:false,instagram:false,bluesky:false,telegram:false,threads:false,tiktok:false};
+let socialCredentials={meta:false,facebook:false,instagram:false,bluesky:false,telegram:false,threads:false,tiktok:false,bufferX:false};
 let socialEditorDirty=false;
 const element=id=>document.getElementById(id);
 const text=(id,value)=>{const node=element(id);if(node)node.textContent=value ?? '—';};
@@ -80,6 +80,7 @@ function renderSocialQueue(social={}){
   text('admin-social-telegram',social.channelCredentials?.telegram?'Configurada':'No configurada');
   text('admin-social-threads',social.channelCredentials?.threads?'Configurada':'No configurada');
   text('admin-social-tiktok',social.channelCredentials?.bufferTikTok?(social.bufferTikTokAutomationEnabled?'Clau preparada · automatització activa':'Clau preparada · automatització apagada'):'Pendent de configurar Buffer');
+  text('admin-social-x',social.channelCredentials?.bufferX?(social.bufferXAutomationEnabled?'Clau preparada · automatització activa':'Clau preparada · automatització apagada'):'Pendent de configurar Buffer');
   text('admin-social-drafts',formatNumber(social.pendingDrafts??0));
   text('admin-social-approved',formatNumber(social.approved??0));
   text('admin-social-published',formatNumber(social.published??0));
@@ -96,6 +97,7 @@ function renderOperations(operations={},schedule={}){
   const youtube=operations.youtube;
   const metaVideo=operations.metaVideo;
   const bufferTikTok=operations.bufferTikTok;
+  const bufferX=operations.bufferX;
   const bufferDiagnostics=operations.bufferTikTokDiagnostics;
   text('admin-scheduler-last',formatDate(scheduler?.checkedAt));
   text('admin-scheduler-state',scheduler?scheduler.status==='healthy'?`Correcte · ${scheduler.detail?.jobs??0} processos`:`Error · ${scheduler.detail?.failed??1} processos`:'Pendent de la primera execució V22.5');
@@ -108,13 +110,14 @@ function renderOperations(operations={},schedule={}){
   text('admin-meta-video-operation',metaVideo?.checkedAt?`${metaVideo.status==='healthy'?'Completada':metaVideo.status==='degraded'?'Processant':'Error'} · ${formatDate(metaVideo.checkedAt)}`:schedule.metaVideoEnabled?`Activada · ${schedule.metaVideo||'07:00,20:30'}`:'Automatització desactivada');
   text('admin-buffer-diagnostics',bufferDiagnostics?.checkedAt?`${bufferDiagnostics.status==='healthy'?'Correcta':'Error'} · ${formatDate(bufferDiagnostics.checkedAt)}`:'Pendent de comprovació');
   text('admin-buffer-operation',bufferTikTok?.checkedAt?`${bufferTikTok.status==='healthy'?'Programat':bufferTikTok.status==='running'?'En curs':'Error'} · ${formatDate(bufferTikTok.checkedAt)}`:'Automatització encara desactivada');
+  text('admin-buffer-x-operation',bufferX?.checkedAt?`${bufferX.status==='healthy'?(bufferX.detail?.stage==='sent'?'Publicat':'Programat'):bufferX.status==='running'?'En curs':'Error'} · ${formatDate(bufferX.checkedAt)}`:'Pendent de la primera publicació');
   const healthy=scheduler?.status==='healthy';
   setPill('admin-operations-pill',healthy?'Programador operatiu':scheduler?'Cal revisar':'Esperant execució',healthy?'is-ok':'is-warning');
 }
 
 const SOCIAL_LABELS={draft:'Esborrany',review:'En revisió',approved:'Aprovat',partially_published:'Publicat parcialment',published:'Publicat',discarded:'Descartat'};
 const CHANNEL_LABELS={facebook:'Facebook',instagram:'Instagram',bluesky:'Bluesky',telegram:'Telegram',threads:'Threads'};
-const DIAGNOSTIC_CHANNEL_LABELS={...CHANNEL_LABELS,tiktok:'TikTok'};
+const DIAGNOSTIC_CHANNEL_LABELS={...CHANNEL_LABELS,tiktok:'TikTok',x:'X'};
 function socialFeedback(message,state='ok'){
   const node=element('admin-social-feedback');if(!node)return;
   node.hidden=!message;node.textContent=message||'';node.className=`admin-social-feedback is-${state}`;
@@ -133,10 +136,10 @@ function renderSocialDiagnostics(results=[]){
 }
 async function runSocialDiagnostics(){
   const button=element('admin-social-diagnose');if(!button)return;
-  button.disabled=true;button.textContent='Comprovant…';socialFeedback('Comprovant les sis connexions sense publicar res…','warning');
-  try{const payload=await adminApi('/admin/social-diagnostics',{method:'POST',body:{channel:'all'}});renderSocialDiagnostics(payload.results||[]);const failed=(payload.results||[]).filter(item=>!item.ok).length;socialFeedback(failed?`${failed} connexió o connexions necessiten revisió.`:'Les sis xarxes estan connectades. Ja pots fer publicacions de prova controlades.',failed?'error':'ok');}
+  button.disabled=true;button.textContent='Comprovant…';socialFeedback('Comprovant les set connexions sense publicar res…','warning');
+  try{const payload=await adminApi('/admin/social-diagnostics',{method:'POST',body:{channel:'all'}});renderSocialDiagnostics(payload.results||[]);const failed=(payload.results||[]).filter(item=>!item.ok).length;socialFeedback(failed?`${failed} connexió o connexions necessiten revisió.`:'Les set xarxes estan connectades i operatives.',failed?'error':'ok');}
   catch(error){renderSocialDiagnostics([]);socialFeedback(`No s’ha pogut completar el diagnòstic: ${error.message}`,'error');recordIncident('Diagnòstic social',error.message);}
-  finally{button.disabled=false;button.textContent='Comprovar les 6 connexions';}
+  finally{button.disabled=false;button.textContent='Comprovar les 7 connexions';}
 }
 async function runSocialReelTest(slot){
   const button=element(slot==='morning'?'admin-social-reels-morning':'admin-social-reels-evening');if(!button)return;
@@ -296,7 +299,7 @@ async function renderDashboard(payload,requestLatency){
   const analytics=renderIntegrations(payload.integrations);
   renderSocialQueue(payload.social);
   renderOperations(payload.operations,payload.schedule);
-  latestDiagnostic={...payload,client:{webVersion:'22.14.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
+  latestDiagnostic={...payload,client:{webVersion:'22.21.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
   const overall=overallState(payload);text('admin-overall-status',overall.label);text('admin-last-update',`Actualitzat ${formatDate(payload.generatedAt)} · ${requestLatency} ms`);
   setCard('worker',payload.ok?'is-ok':'is-error',payload.ok?'Operatiu':'Error',`V${payload.worker?.version||'—'} · ${payload.latencyMs??'—'} ms`);
   const stationOk=Boolean(payload.station?.ok);setCard('station',stationOk?'is-ok':'is-warning',stationOk?'Al dia':'Cal revisar',payload.station?.ageMinutes===null?'Antiguitat desconeguda':`${payload.station.ageMinutes} min d’antiguitat`);
