@@ -154,3 +154,12 @@ jobs:
             --header "Content-Type: application/json" \
             --data "{\"action\":\"complete\",\"source\":\"github-${GITHUB_EVENT_NAME}\"}" \
             "$YOUTUBE_SHORT_COORDINATION_URL"
+      - name: Allibera la franja fallida perquè Cloudflare la reintenti
+        if: always() && steps.youtube_upload.outcome != 'success' && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.YOUTUBE_SHORT_COORDINATION_ACTIVE == 'true'
+        continue-on-error: true
+        run: |
+          curl --fail --silent --show-error --retry 2 --request POST \
+            --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data "{\"action\":\"fail\",\"source\":\"github-${GITHUB_EVENT_NAME}\",\"stage\":\"github-workflow\",\"error\":\"La preparació o la pujada del Short no s'ha completat.\"}" \
+            "$YOUTUBE_SHORT_COORDINATION_URL"

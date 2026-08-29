@@ -1332,7 +1332,7 @@ const META_VIDEO_AUTOMATIC_WINDOW_MINUTES=90;
 // Cloudflare és el rellotge principal dels Shorts perquè el cron de GitHub pot
 // retardar-se o no arribar a iniciar-se. Les hores són locals de Sant Celoni.
 const YOUTUBE_SHORT_FALLBACK_WINDOWS={ mati:{ hour:6, minute:20 }, vespre:{ hour:19, minute:45 } };
-const YOUTUBE_SHORT_FALLBACK_WINDOW_MINUTES=20;
+const YOUTUBE_SHORT_FALLBACK_WINDOW_MINUTES=35;
 const YOUTUBE_SHORT_DISPATCH_ACK_MS=8*60*1000;
 const YOUTUBE_SHORT_RUN_STALE_MS=20*60*1000;
 
@@ -2484,10 +2484,23 @@ async function youtubeShortRunControl(request, env, localDate, slot) {
     await recordOperationalState(env,'youtube-shorts-scheduler','healthy',{ localDate,slot,source,stage:'completed' });
     return json({ ok:true, completed:true },200,'no-store');
   }
+  if (action === 'fail') {
+    const failure={
+      localDate,slot,source,
+      stage:cleanText(body.stage,80) || 'github-workflow',
+      responseCode:Number.isFinite(Number(body.responseCode)) ? Number(body.responseCode) : null,
+      error:cleanText(body.error || 'GitHub Actions no ha completat la preparació o la pujada del Short.',500),
+    };
+    await updateYoutubeShortRun(env,key,'down',failure);
+    await recordOperationalState(env,'youtube-shorts-scheduler','down',failure);
+    await notifyYoutubeShortSchedulerFailure(env,failure);
+    return json({ ok:true, failed:true },200,'no-store');
+  }
   return json({ error:'Acció de coordinació no vàlida.' },400,'no-store');
 }
 
 const BUFFER_TIKTOK_SLOT_TIMES = { morning:{ hour:7, minute:0 }, evening:{ hour:20, minute:30 } };
+const BUFFER_TIKTOK_RECOVERY_STARTS = { morning:{ hour:6, minute:20 }, evening:{ hour:19, minute:45 } };
 
 function bufferTikTokEnabled(env) {
   return String(env.BUFFER_TIKTOK_AUTOMATION_ENABLED || '').trim().toLowerCase() === 'true';
@@ -2590,28 +2603,59 @@ async function bufferTikTokDiagnosticsControl(request, env) {
 
 async function bufferTikTokScheduleControl(request, env, localDate, slot) {
   if (!(await authorizeYoutubeShortRequest(request, env))) return json({ error:'No autoritzat.' },401,'no-store');
-  if (!bufferTikTokEnabled(env)) return json({ ok:true, skipped:'automation_disabled' },200,'no-store');
-  if (!(await ensureOperationsSchema(env))) return json({ error:'La coordinació de TikTok no està disponible.' },503,'no-store');
+  try {
+    const result=await scheduleBufferTikTokSlot(env,localDate,slot);
+    return json(result,result.scheduled?201:result.pending?202:200,'no-store');
+  } catch (error) {
+    return json({ error:'No s’ha pogut programar el TikTok a Buffer.', detail:cleanText(error.message,500) }, error.status || 502,'no-store');
+  }
+}
+
+async function scheduleBufferTikTokSlot(env, localDate, slot) {
+  if (!bufferTikTokEnabled(env)) return { ok:true, skipped:'automation_disabled' };
+  if (!(await ensureOperationsSchema(env))) throw Object.assign(new Error('La coordinació de TikTok no està disponible.'),{status:503});
   const safeSlot = slot === 'morning' || slot === 'evening' ? slot : '';
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(localDate) || !safeSlot) return json({ error:'Data o franja de TikTok no vàlida.' },400,'no-store');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(localDate) || !safeSlot) throw Object.assign(new Error('Data o franja de TikTok no vàlida.'),{status:400});
   const serviceKey = `buffer-tiktok:${localDate}:${safeSlot}`;
   const previous = await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
   const detail = parseYoutubeShortRunDetail(previous?.detail);
-  if (previous?.status === 'healthy' && detail.remoteId) return json({ ok:true, reused:true, remoteId:detail.remoteId, dueAt:detail.dueAt || null },200,'no-store');
+  if (previous?.status === 'healthy' && detail.remoteId) return { ok:true, reused:true, remoteId:detail.remoteId, dueAt:detail.dueAt || null };
   const runningAge = previous?.last_checked_at ? Date.now() - new Date(previous.last_checked_at).getTime() : Infinity;
   if (previous?.status === 'running' && runningAge >= 0 && runningAge < 30 * 60_000) {
-    return json({ ok:true, pending:true, reused:true },202,'no-store');
+    return { ok:true, pending:true, reused:true };
   }
   try {
     await recordOperationalState(env, serviceKey, 'running', { localDate, slot:safeSlot, stage:'scheduling' });
     const result = await createBufferTikTokPost(env, { localDate, slot:safeSlot });
     await recordOperationalState(env, serviceKey, 'healthy', { localDate, slot:safeSlot, remoteId:result.id, dueAt:result.dueAt, stage:'scheduled' });
-    return json({ ok:true, scheduled:true, ...result },201,'no-store');
+    return { ok:true, scheduled:true, ...result };
   } catch (error) {
     await recordOperationalState(env, serviceKey, 'down', { localDate, slot:safeSlot, stage:'schedule_failed', error:cleanText(error.message,500), responseCode:error.responseCode || null }).catch(()=>{});
     await notifyBufferTikTokFailure(env, serviceKey, { localDate, slot:safeSlot, error:cleanText(error.message,500), responseCode:error.responseCode || null }).catch(()=>{});
-    return json({ error:'No s’ha pogut programar el TikTok a Buffer.', detail:cleanText(error.message,500) }, error.status || 502,'no-store');
+    throw error;
   }
+}
+
+export function bufferTikTokRecoverySlot(date = new Date()) {
+  const parts=localClockParts(date);
+  const current=Number(parts.hour)*60+Number(parts.minute);
+  return Object.entries(BUFFER_TIKTOK_RECOVERY_STARTS).find(([slot,start])=>{
+    const target=BUFFER_TIKTOK_SLOT_TIMES[slot];
+    const startMinutes=start.hour*60+start.minute;
+    const latestMinutes=target.hour*60+target.minute-5;
+    return current>=startMinutes && current<latestMinutes;
+  })?.[0] || null;
+}
+
+async function recoverBufferTikTokSchedule(env, date = new Date()) {
+  if (!bufferTikTokEnabled(env)) return { skipped:'automation_disabled' };
+  const slot=bufferTikTokRecoverySlot(date);
+  if (!slot) return { skipped:'outside_window' };
+  if (!env.SOCIAL_VIDEO_BUCKET) return { skipped:'binding_missing' };
+  const localDate=localIsoDate(date);
+  const key=`shorts/${localDate}/${slot}.mp4`;
+  if (!await env.SOCIAL_VIDEO_BUCKET.head(key)) return { skipped:'video_not_ready' };
+  return scheduleBufferTikTokSlot(env,localDate,slot);
 }
 
 async function adminBufferTikTokTest(request, env) {
@@ -3994,6 +4038,7 @@ export default {
       observedJob('social-video-cleanup',cleanupSocialVideos(env)),
       observedJob('social-card-cleanup',cleanupSocialCards(env)),
       observedJob('youtube-shorts-fallback',dispatchYoutubeShortFallback(env)),
+      observedJob('buffer-tiktok-recovery',recoverBufferTikTokSchedule(env)),
     ];
     ctx.waitUntil(Promise.allSettled(jobs).then(async results => {
       const rejected=results.filter(item=>item.status==='rejected');
