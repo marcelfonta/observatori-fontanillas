@@ -11,6 +11,9 @@ assert.match(page,/data-video-source="meteocat"/);
 assert.doesNotMatch(page,/data-video-source="aemet"/);
 assert.match(page,/<button type="button" data-video-source="3cat"[^>]+hidden/);
 assert.match(page,/AEMET continua disponible als apartats de previsió i avisos/);
+for(const source of ['worldweather.wmo.int','www.yr.no','weather.metoffice.gov.uk\\/world','charts.ecmwf.int','www.windy.com','www.meteoblue.com'])assert.match(page,new RegExp(source),`Falta la font mundial ${source}.`);
+assert.match(page,/Cap model és sempre el millor a tot arreu/);
+assert.match(page,/Per avisos i decisions de seguretat, consulta sempre el servei meteorològic oficial/);
 assert.doesNotMatch(page,/id="forecast-video-frame"[^>]+src=/,'El reproductor extern no s’ha de carregar abans del clic.');
 assert.match(router,/'videos'/);
 assert.match(shell,/\['videos','Predicció en vídeo'/);
@@ -27,6 +30,7 @@ assert.match(worker,/ctx\.waitUntil\(cache\.put/);
 assert.match(worker,/url\.pathname === "\/forecast-videos"/);
 assert.doesNotMatch(worker,/sources:\['meteocat','aemet'/);
 assert.match(style,/\.forecast-videos__layout/);
+assert.match(style,/\.global-forecast-directory__grid/);
 assert.match(serviceWorker,/src\/features\/forecast-videos\.js/);
 assert.match(privacy,/Els vídeos de Meteocat i 3Cat només es connecten/);
 

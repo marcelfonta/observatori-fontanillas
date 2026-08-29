@@ -125,7 +125,7 @@
       <section class="portal-view-header panel" aria-labelledby="station-page-title" data-portal-page="estacio"><div><p class="eyebrow">Estació Fontanillas</p><h1 id="station-page-title">L’estació, sensor a sensor.</h1><p>Lectures actuals, valors calculats i resum del dia des de Sant Celoni.</p></div><span class="tag">Cada 5 minuts</span></section>
       <section class="portal-view-header panel" aria-labelledby="meteo-ai-page-title" data-portal-page="meteo-ia"><div><p class="eyebrow">Meteo IA · dades verificades</p><h1 id="meteo-ai-page-title">Pregunta al temps, amb les fonts a la vista.</h1><p>Respostes construïdes amb l’estació, la predicció i els avisos disponibles; sense inventar lectures.</p></div><span class="tag">Consulta guiada</span></section>
       <section class="portal-view-header panel" aria-labelledby="forecast-page-title" data-portal-page="prediccio"><div><p class="eyebrow">Predicció</p><h1 id="forecast-page-title">La previsió, ordenada per horitzons.</h1><p>Properes hores, dies i models de confiança per entendre què pot canviar.</p></div><span class="tag">Sant Celoni</span></section>
-      <section class="portal-view-header panel" aria-labelledby="video-forecast-page-title" data-portal-page="videos"><div><p class="eyebrow">Previsió audiovisual</p><h1 id="video-forecast-page-title">El temps, explicat en vídeo.</h1><p>Les darreres previsions audiovisuals de fonts oficials i fiables, reunides sense reproducció automàtica.</p></div><span class="tag">Meteocat · AEMET · 3Cat</span></section>
+      <section class="portal-view-header panel" aria-labelledby="video-forecast-page-title" data-portal-page="videos"><div><p class="eyebrow">Previsió audiovisual</p><h1 id="video-forecast-page-title">El temps, explicat en vídeo.</h1><p>Les darreres previsions audiovisuals de fonts oficials i fiables, reunides sense reproducció automàtica.</p></div><span class="tag">Meteocat · 3Cat</span></section>
       <section class="portal-view-header panel" aria-labelledby="verification-page-title" data-portal-page="verificacio"><div><p class="eyebrow">Verificació transparent</p><h1 id="verification-page-title">Predicció vs realitat.</h1><p>Mesurem amb dades reals fins a quin punt encerta la previsió meteorològica.</p></div><span class="tag">Dades pròpies</span></section>
       <section class="portal-view-header panel" aria-labelledby="alerts-page-title" data-portal-page="avisos"><div><p class="eyebrow">Vigilància oficial</p><h1 id="alerts-page-title">Avisos que poden afectar Sant Celoni.</h1><p>Seguiment del Vallès Oriental i del Prelitoral de Barcelona amb fonts oficials.</p></div><span class="tag">Meteocat · AEMET</span></section>
       <section class="portal-view-header panel" aria-labelledby="sky-page-title" data-portal-page="cel"><div><p class="eyebrow">Astronomia</p><h1 id="sky-page-title">El cel, de dia i de nit.</h1><p>Sol, Lluna, fases, estacions i esdeveniments visibles des de Catalunya.</p></div><span class="tag">Hora local</span></section>
@@ -520,6 +520,18 @@
         </div>
         <p class="forecast-videos__note">AEMET continua disponible als apartats de previsió i avisos. El seu canal audiovisual no publica una predicció diària, per això no es barreja aquí amb els vídeos vigents.</p>
         <p class="forecast-videos__note" id="forecast-videos-status" role="status" aria-live="polite">Preparant les fonts oficials…</p>
+        <section class="global-forecast-directory panel" aria-labelledby="global-forecast-directory-title">
+          <header><div><p class="eyebrow">Previsió arreu del món</p><h2 id="global-forecast-directory-title">Sis fonts bones, amb funcions diferents.</h2><p>Cap model és sempre el millor a tot arreu. Comença per la font oficial del país i utilitza els models i comparadors per entendre la incertesa.</p></div><span class="tag">Enllaços verificats</span></header>
+          <div class="global-forecast-directory__grid">
+            <a href="https://worldweather.wmo.int/en/home.html" target="_blank" rel="noopener noreferrer"><span>Oficial · OMM</span><b>World Weather Information Service</b><small>Prediccions publicades pels serveis meteorològics nacionals de cada país.</small><em>Millor punt de partida ↗</em></a>
+            <a href="https://www.yr.no/en" target="_blank" rel="noopener noreferrer"><span>Global · MET Norway</span><b>Yr</b><small>Previsió clara per a qualsevol coordenada, actualitzada diverses vegades al dia.</small><em>Cercar un lloc ↗</em></a>
+            <a href="https://weather.metoffice.gov.uk/world" target="_blank" rel="noopener noreferrer"><span>Global · Met Office</span><b>World forecasts</b><small>Previsió de set dies i evolució cada tres hores per milers de localitzacions.</small><em>Consultar el món ↗</em></a>
+            <a href="https://charts.ecmwf.int/" target="_blank" rel="noopener noreferrer"><span>Model · ECMWF</span><b>OpenCharts</b><small>Mapes globals, ensembles i dispersió per interpretar escenaris i confiança.</small><em>Explorar els models ↗</em></a>
+            <a href="https://www.windy.com/" target="_blank" rel="noopener noreferrer"><span>Comparador visual</span><b>Windy</b><small>Mapes animats per contrastar ECMWF, GFS i ICON sobre la mateixa zona.</small><em>Comparar mapes ↗</em></a>
+            <a href="https://www.meteoblue.com/en/weather/week/index" target="_blank" rel="noopener noreferrer"><span>Multimodel</span><b>meteoblue</b><small>Previsió local global, predictibilitat i comparació de models en un sol lloc.</small><em>Veure la previsió ↗</em></a>
+          </div>
+          <p class="global-forecast-directory__note"><span>i</span> Per avisos i decisions de seguretat, consulta sempre el servei meteorològic oficial del territori. Els comparadors ajuden a veure discrepàncies, però no substitueixen un avís oficial.</p>
+        </section>
       </section>
 
       <section class="forecast-verification panel section-block" id="forecast-verification" aria-labelledby="forecast-verification-title" data-portal-page="verificacio">
@@ -679,6 +691,14 @@
           <button type="button" data-learning-path="docents"><span aria-hidden="true">🧭</span><b>Docents</b><small>Activitats per portar a l’aula</small></button>
         </nav>
         <section class="learning-local panel" aria-labelledby="learning-local-title"><div><p class="eyebrow">Laboratori Fontanillas</p><h3 id="learning-local-title">Aprèn amb el temps que tens davant.</h3><p>Observa una variable real, compara-la amb la predicció i explica què ha canviat. La meteorologia s’entén millor quan les dades tenen lloc i hora.</p></div><div><a href="./?page=estacio">Llegir els sensors →</a><a href="./?page=radar">Interpretar el radar →</a><a href="./?page=centre-dades">Analitzar l’històric →</a><a href="./?page=avisos">Entendre els avisos →</a></div></section>
+        <section class="learning-challenges" aria-labelledby="learning-challenges-title">
+          <header><p class="eyebrow">Reptes pràctics</p><h3 id="learning-challenges-title">Aprèn fent, en menys de mitja hora.</h3></header>
+          <div>
+            <button type="button" data-learning-topic="nuvols"><span aria-hidden="true">☁️</span><b>Identifica els núvols</b><small>Mira el cel, compara formes i troba el nom correcte.</small><em>Veure recursos de núvols →</em></button>
+            <button type="button" data-learning-topic="prediccio"><span aria-hidden="true">🗺️</span><b>Llegeix una predicció</b><small>Relaciona fronts, pressió, vent i probabilitat de pluja.</small><em>Entendre els models →</em></button>
+            <button type="button" data-learning-topic="dades"><span aria-hidden="true">📊</span><b>Investiga amb dades</b><small>Formula una pregunta i contrasta-la amb una sèrie real.</small><em>Obrir recursos de dades →</em></button>
+          </div>
+        </section>
         <section class="learning-library panel" aria-labelledby="learning-library-title">
           <header><div><p class="eyebrow">Recursos seleccionats</p><h3 id="learning-library-title">Explora per nivell i tema.</h3><p>Cada fitxa indica idioma, format i entitat responsable abans d’obrir l’enllaç.</p></div><strong id="learning-result-count" aria-live="polite">Preparant recursos…</strong></header>
           <div class="learning-filters" aria-label="Filtres de recursos">
