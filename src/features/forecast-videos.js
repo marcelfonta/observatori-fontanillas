@@ -21,23 +21,39 @@ function renderSource(sourceKey,source){
     button.classList.toggle('is-active',active);
     button.setAttribute('aria-pressed',String(active));
   });
-  frame.title=`${source.label}: ${source.title}`;
   const status=document.getElementById('forecast-videos-status');
   if(status)status.textContent=`Carregant el reproductor de ${source.label}…`;
-  frame.onload=()=>{if(status)status.textContent=`Reproductor de ${source.label} preparat. Prem ▶ per començar.`;};
-  frame.src=source.embedUrl;
+  shell.classList.add('is-loading');
+  const loading=document.getElementById('forecast-video-loading');
+  if(loading)loading.textContent=`Carregant el vídeo de ${source.label}…`;
+  const nextFrame=frame.cloneNode(false);
+  nextFrame.title=`${source.label}: ${source.title}`;
+  nextFrame.addEventListener('load',()=>{
+    if(document.getElementById('forecast-video-frame')!==nextFrame)return;
+    shell.classList.remove('is-loading');
+    if(status)status.textContent=`Reproductor de ${source.label} preparat. Ara prem el botó ▶ gran del vídeo.`;
+  });
+  nextFrame.src=source.embedUrl;
+  frame.replaceWith(nextFrame);
   empty.hidden=true;shell.hidden=false;meta.hidden=false;
   document.getElementById('forecast-video-source-label').textContent=`Font: ${source.label}`;
   document.getElementById('forecast-video-title').textContent=source.title;
   document.getElementById('forecast-video-description').textContent=source.description;
   const link=document.getElementById('forecast-video-source-link');
   link.href=source.sourceUrl;link.textContent=`Obrir a ${source.label} ↗`;
+  document.getElementById('forecast-video-player')?.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function connectButtons(sources){
-  document.querySelectorAll('[data-video-source]').forEach(control=>{
-    control.setAttribute('aria-pressed','false');
-    control.addEventListener('click',()=>renderSource(control.dataset.videoSource,sources[control.dataset.videoSource]));
+  const controls=document.getElementById('forecast-video-sources');
+  if(!controls||controls.dataset.connected==='true')return;
+  controls.dataset.connected='true';
+  document.querySelectorAll('[data-video-source]').forEach(control=>control.setAttribute('aria-pressed','false'));
+  controls.addEventListener('click',event=>{
+    const control=event.target.closest('[data-video-source]');
+    if(!control||!controls.contains(control))return;
+    const source=sources[control.dataset.videoSource];
+    if(source)renderSource(control.dataset.videoSource,source);
   });
 }
 
@@ -46,6 +62,7 @@ export async function initForecastVideos(){
   if(!root)return;
   const sources={...SOURCES};
   const status=document.getElementById('forecast-videos-status');
+  connectButtons(sources);
   try{
     const payload=await fetchForecastVideos();
     if(payload?.threeCat?.embedUrl){
@@ -68,5 +85,4 @@ export async function initForecastVideos(){
     console.warn('No s’ha pogut comprovar el darrer vídeo de 3Cat.',error);
     status.textContent='Meteocat està disponible. 3Cat no respon ara mateix.';
   }
-  connectButtons(sources);
 }
