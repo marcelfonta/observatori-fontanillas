@@ -2,6 +2,10 @@
 
 ## En desenvolupament
 
+- Afegida sota la predicció audiovisual una guia de sis fonts mundials diferenciades per funció: previsió oficial de l’OMM, previsions globals de Yr i Met Office, mapes d’ECMWF i comparadors Windy i meteoblue.
+- La guia explica que cap model és universalment millor i prioritza sempre el servei meteorològic oficial del territori per a avisos i decisions de seguretat.
+- La biblioteca educativa incorpora recursos actuals del Met Office i UCAR, i tres reptes pràctics que filtren directament materials de núvols, predicció o dades.
+
 - Afegida una secció de predicció en vídeo amb Meteocat i el darrer vídeo meteorològic disponible de 3Cat, tots dos reproduïbles dins la web.
 - AEMET es manté als apartats oficials de previsió i avisos, però es retira del visor audiovisual perquè el seu canal no publica una predicció diària i podia mostrar contingut no relacionat.
 - Els reproductors externs només es carreguen quan l’usuari escull una font, evitant reproducció automàtica i connexions innecessàries amb tercers.

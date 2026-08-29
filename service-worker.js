@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v22-14-0-video-forecast-accurate';
+const CACHE = 'observatori-fontanillas-v22-14-0-global-forecast-learning';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [

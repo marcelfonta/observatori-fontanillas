@@ -2,6 +2,9 @@
 
 ## Manteniment obert — En curs
 
+- [x] Completar la vista audiovisual amb una guia curta de fonts mundials fiables, diferenciant serveis oficials, models i comparadors.
+- [x] Fer més accionable la biblioteca educativa amb recursos actualitzats i reptes pràctics per tema.
+
 - [x] Reunir la predicció audiovisual vigent de Meteocat i 3Cat en una vista pròpia, amb càrrega sota demanda i degradació segura; AEMET es manté a previsió i avisos perquè el seu canal no publica predicció diària.
 - [ ] Validar en producció els tres reproductors en iPhone, Android i ordinador després d’integrar el canvi.
 

@@ -30,5 +30,6 @@ export function initLearning(){
   [search,level,topic].forEach(control=>control?.addEventListener(control===search?'input':'change',render));
   document.getElementById('learning-reset')?.addEventListener('click',()=>{if(search)search.value='';if(level)level.value='all';if(topic)topic.value='all';render();search?.focus();});
   document.querySelectorAll('[data-learning-path]').forEach(button=>button.addEventListener('click',()=>{if(level)level.value=button.dataset.learningPath;if(topic)topic.value='all';if(search)search.value='';render();document.getElementById('learning-library-title')?.scrollIntoView({behavior:'smooth',block:'start'});}));
+  document.querySelectorAll('[data-learning-topic]').forEach(button=>button.addEventListener('click',()=>{if(level)level.value='all';if(topic)topic.value=button.dataset.learningTopic;if(search)search.value='';render();document.getElementById('learning-library-title')?.scrollIntoView({behavior:'smooth',block:'start'});}));
   render();
 }
