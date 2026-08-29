@@ -13,7 +13,6 @@ assert.ok(app.includes("initWhenVisible('#forecast-verification'")&&app.includes
 assert.ok(feature.includes('initForecastVerification')&&api.includes('fetchForecastVerification')&&app.includes('initForecastVerification'));
 for(const token of ['socialCardHtml','socialCardUrl','publishAutomaticSocialDraft','/photos','sendPhoto','uploadBlob','publishThreads','graph.threads.net','threads_publish','THREADS_ACCESS_TOKEN','META_INSTAGRAM_IMAGE_URL'])assert.ok(token==='META_INSTAGRAM_IMAGE_URL'?!worker.includes(token):worker.includes(token),`Automatització V22: comprovació fallida ${token}`);
 for(const token of ['recoverIncompleteDailySocialDraft',"status IN ('approved','partially_published')",'Meta must receive a stable image response'])assert.ok(worker.includes(token),`Recuperació social V22.5.2: falta ${token}`);
-for(const network of ['threads','tiktok','whatsapp','youtube'])assert.ok(config.includes(`${network}:`)&&footer.includes(`['${network}'`),`Enllaç social V22 absent: ${network}`);
-assert.ok(!config.includes("x:")&&!footer.includes("['x'"),'X no s’ha eliminat completament del directori social.');
+for(const network of ['threads','x','tiktok','whatsapp','youtube'])assert.ok(config.includes(`${network}:`)&&footer.includes(`['${network}'`),`Enllaç social V22 absent: ${network}`);
 assert.ok(sw.includes('/src/features/forecast-verification.js'));
 console.log('Test V22: verificació real, targetes dinàmiques i xarxes correctes');

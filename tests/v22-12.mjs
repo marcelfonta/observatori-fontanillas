@@ -7,8 +7,8 @@ const worker = await readFile(resolve(root, 'worker/index.js'), 'utf8');
 const schema = await readFile(resolve(root, 'worker/schema.sql'), 'utf8');
 const project = JSON.parse(await readFile(resolve(root, 'project.json'), 'utf8'));
 
-assert.equal(project.version, '22.21.0');
-assert.match(worker, /WORKER_VERSION = "22\.21\.0"/);
+assert.equal(project.version, '22.22.0');
+assert.match(worker, /WORKER_VERSION = "22\.22\.0"/);
 assert.match(worker, /publicWorkerBaseUrl/);
 assert.match(worker, /Meta must receive a stable image response/);
 assert.match(worker, /materializeSocialCard/);
@@ -25,4 +25,4 @@ assert.match(worker, /El canal no té les credencials necessàries configurades 
 assert.match(worker, /oneSignalConfigurationMessage/);
 assert.match(schema, /idx_contact_rate_limit_ip_time/);
 assert.match(schema, /idx_ai_rate_limit_ip_time/);
-console.log('Test V22.21.0: protecció D1 i diagnòstic operatiu');
+console.log('Test V22.22.0: protecció D1 i diagnòstic operatiu');

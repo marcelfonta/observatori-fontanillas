@@ -1,5 +1,12 @@
 # Changelog
 
+## V22.22.0 — X torna a la navegació social — 2026-08-29
+
+- Recuperat l’accés a `@meteo_fonta` amb la icona oficial d’X a les agrupacions socials d’escriptori, el peu i el menú complet de mòbil.
+- La capçalera en mòbils petits mostra directament Instagram, TikTok i YouTube; X, Facebook, Threads i la resta queden disponibles al desplegable per evitar saturar-la.
+- Afegit el perfil d’X a les dades estructurades de l’organització perquè els cercadors el puguin associar correctament amb Meteo Fontanillas.
+- Afegides proves de regressió per protegir l’enllaç, la icona, la disposició mòbil i el SEO.
+
 ## V22.21.0 — X automatitzat amb Buffer — 2026-08-29
 
 - X publica automàticament el vídeo del matí a les 07:00, la targeta meteorològica a les 14:00 i el vídeo del vespre a les 20:30, cadascun amb text específic i límit segur de 280 caràcters.

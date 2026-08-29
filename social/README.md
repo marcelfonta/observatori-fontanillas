@@ -1,8 +1,8 @@
-# Xarxes socials — automatització segura V22.21.0
+# Xarxes socials — automatització segura V22.22.0
 
 X utilitza el perfil connectat a Buffer i la mateixa `BUFFER_API_KEY` privada del Worker. Publica vídeo a les 07:00, la targeta meteorològica de les 14:00 i vídeo a les 20:30. Cada franja desa l’identificador remot a D1, consulta el resultat després de l’hora prevista, evita duplicats i fa fins a quatre intents dins d’una finestra de 90 minuts. El correu operatiu només s’envia si la publicació continua fallant després de tots els intents.
 
-Facebook i Instagram estan connectats al portafolis de Meta. Bluesky i Telegram també tenen les seves credencials privades al Worker. El portal només enllaça els quatre perfils públics i no carrega cap SDK social.
+Facebook i Instagram estan connectats al portafolis de Meta. Bluesky i Telegram també tenen les seves credencials privades al Worker. El portal enllaça els perfils públics configurats, inclòs X, i no carrega cap SDK social.
 
 La publicació automàtica no està activa. El Worker crea esborranys a `social_drafts` i el panell protegit permet editar-los, aprovar-los o descartar-los. Només un contingut aprovat es pot enviar manualment a Facebook, Instagram, Bluesky o Telegram, amb un botó i una confirmació independents per canal.
 
