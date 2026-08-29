@@ -3,8 +3,8 @@ import { readFile } from 'node:fs/promises';
 import workerRuntime, { youtubeShortFallbackSlot } from '../worker/index.js';
 
 assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:20:00.000Z')),'mati');
-assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:39:59.000Z')),'mati');
-assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:40:00.000Z')),null);
+assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:54:59.000Z')),'mati');
+assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:55:00.000Z')),null);
 assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T17:45:00.000Z')),'vespre');
 assert.equal(youtubeShortFallbackSlot(new Date('2026-12-10T18:45:00.000Z')),'vespre');
 
@@ -24,6 +24,9 @@ assert.match(worker,/skipped:'awaiting_github'/);
 assert.match(workflow,/Coordina una sola execució per franja/);
 assert.match(workflow,/YOUTUBE_SHORT_SHOULD_RUN/);
 assert.match(workflow,/Confirma la franja completada/);
+assert.match(workflow,/Allibera la franja fallida perquè Cloudflare la reintenti/);
+assert.ok(workflow.includes('\\"action\\":\\"fail\\"'));
+assert.match(worker,/if \(action === 'fail'\)/);
 
 const token='t'.repeat(32);
 const env={ SOCIAL_VIDEO_UPLOAD_TOKEN:token, GITHUB_SHORTS_DISPATCH_TOKEN:'g'.repeat(40) };

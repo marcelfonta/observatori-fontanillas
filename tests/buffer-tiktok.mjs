@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import workerRuntime from '../worker/index.js';
+import workerRuntime, { bufferTikTokRecoverySlot } from '../worker/index.js';
 
 const worker = await readFile(new URL('../worker/index.js', import.meta.url), 'utf8');
 const workflow = await readFile(new URL('../.github/workflows/youtube-short-private.yml', import.meta.url), 'utf8');
@@ -22,6 +22,15 @@ assert.doesNotMatch(workflow, /name: Deixa el TikTok preparat a Buffer[\s\S]{0,2
 assert.match(admin, /Prova segura de TikTok amb Buffer/);
 assert.match(admin, /id="admin-buffer-diagnostics"/);
 assert.match(worker, /bufferTikTokAutomationEnabled:bufferTikTokEnabled/);
+assert.match(worker, /recoverBufferTikTokSchedule/);
+assert.match(worker, /observedJob\('buffer-tiktok-recovery'/);
+
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:20:00.000Z')),'morning');
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:54:59.000Z')),'morning');
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:55:00.000Z')),null);
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T17:45:00.000Z')),'evening');
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T18:24:59.000Z')),'evening');
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T18:25:00.000Z')),null);
 
 const token='t'.repeat(32);
 const env={

@@ -2,6 +2,10 @@
 
 ## En desenvolupament
 
+- Si una execució de YouTube falla després d'haver reservat la franja, GitHub ho comunica al Worker i Cloudflare la torna a intentar dins de la finestra segura, sense duplicar un Short ja completat.
+- La recuperació de YouTube s'allarga fins als últims cinc minuts útils abans de publicar; els errors o cancel·lacions que deixin una execució penjada també poden recuperar-se quan expira el bloqueig temporal.
+- TikTok ja no depèn d'una única crida de GitHub a Buffer: el programador de cinc minuts detecta el MP4 preparat i reintenta la programació pendent, reutilitzant l'identificador existent si Buffer ja l'havia acceptat.
+
 - La franja matinal de totes les xarxes passa a les 07:00; el Short es prepara a les 06:20 i la comprovació preventiva social queda a les 06:45.
 - Facebook i Instagram deixen de duplicar la targeta meteorològica amb el vídeo: al matí i al vespre publiquen només Reel + Story, mentre que al migdia conserven la imatge.
 - Bluesky, Telegram i Threads mantenen les tres publicacions d’imatge diàries; YouTube i TikTok mantenen els dos vídeos, amb el del matí a les 07:00.
