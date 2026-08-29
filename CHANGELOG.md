@@ -2,6 +2,9 @@
 
 ## En desenvolupament
 
+- AEMET deixa d'incrustar una pàgina web sencera i mostra el canal audiovisual oficial en un reproductor de YouTube sense galetes.
+- El darrer vídeo de 3Cat passa a ser un enllaç directe i visible, evitant els casos en què el reproductor incrustat no responia.
+
 - Afegida una secció de predicció en vídeo amb Meteocat, AEMET i el darrer vídeo meteorològic disponible de 3Cat.
 - Els reproductors externs només es carreguen quan l’usuari escull una font, evitant reproducció automàtica i connexions innecessàries amb tercers.
 - La descoberta de 3Cat queda limitada, memoritzada i tolerant a errors: si la seva pàgina canvia o no hi ha vídeo recent, Meteocat i AEMET continuen disponibles.
