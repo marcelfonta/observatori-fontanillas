@@ -1,5 +1,3 @@
-import { fetchForecastVideos } from '../services/weather-api.js';
-
 const SOURCES={
   meteocat:{
     label:'Meteocat',
@@ -57,32 +55,8 @@ function connectButtons(sources){
   });
 }
 
-export async function initForecastVideos(){
+export function initForecastVideos(){
   const root=document.getElementById('forecast-videos');
   if(!root)return;
-  const sources={...SOURCES};
-  const status=document.getElementById('forecast-videos-status');
-  connectButtons(sources);
-  try{
-    const payload=await fetchForecastVideos();
-    if(payload?.threeCat?.embedUrl){
-      sources['3cat']={
-        label:'3Cat',
-        title:payload.threeCat.title||'Darrera explicació del temps',
-        description:payload.threeCat.publishedLabel?`Publicat ${payload.threeCat.publishedLabel}.`:'Darrera previsió meteorològica disponible a 3Cat.',
-        embedUrl:payload.threeCat.embedUrl,
-        sourceUrl:payload.threeCat.sourceUrl
-      };
-      const button=document.getElementById('forecast-video-3cat');
-      button.hidden=false;
-      document.getElementById('forecast-video-3cat-title').textContent=sources['3cat'].title;
-      document.getElementById('forecast-video-3cat-date').textContent=sources['3cat'].description;
-      status.textContent='Fonts preparades. Meteocat i 3Cat es reprodueixen dins la web.';
-    }else{
-      status.textContent='Meteocat està disponible. 3Cat apareixerà quan es localitzi una previsió recent.';
-    }
-  }catch(error){
-    console.warn('No s’ha pogut comprovar el darrer vídeo de 3Cat.',error);
-    status.textContent='Meteocat està disponible. 3Cat no respon ara mateix.';
-  }
+  connectButtons(SOURCES);
 }

@@ -2,13 +2,15 @@
 
 ## Manteniment obert — En curs
 
-- [x] Recuperar l’accés visible a AEMET i fer inequívoca la selecció i càrrega dels reproductors de Meteocat i 3Cat.
+- [x] Substituir el reproductor inestable de 3Cat per un accés extern oficial, mantenint només Meteocat com a vídeo integrat sota demanda.
+
+- [x] Recuperar l’accés visible a AEMET i fer inequívoca la selecció de Meteocat i dels accessos externs d’AEMET i 3Cat.
 
 - [x] Completar la vista audiovisual amb una guia curta de fonts mundials fiables, diferenciant serveis oficials, models i comparadors.
 - [x] Fer més accionable la biblioteca educativa amb recursos actualitzats i reptes pràctics per tema.
 
-- [x] Reunir la predicció audiovisual vigent de Meteocat i 3Cat en una vista pròpia, amb càrrega sota demanda i degradació segura; AEMET es manté a previsió i avisos perquè el seu canal no publica predicció diària.
-- [ ] Validar en producció els tres reproductors en iPhone, Android i ordinador després d’integrar el canvi.
+- [x] Reunir la predicció audiovisual en una vista pròpia: Meteocat amb càrrega sota demanda i AEMET i 3Cat com a consultes externes oficials fiables.
+- [ ] Validar en producció el reproductor de Meteocat i els accessos externs en iPhone, Android i ordinador després d’integrar el canvi.
 
 - [x] Fer manejable el registre editorial de l’administració amb paginació i detalls plegables, sense perdre publicacions antigues.
 
