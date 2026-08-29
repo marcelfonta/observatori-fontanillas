@@ -8,8 +8,8 @@ const [project,worker,push,verification,alerts,ai,html,css,serviceWorker,roadmap
   read('project.json'),read('worker/index.js'),read('src/features/push.js'),read('src/features/forecast-verification.js'),read('src/modules/avisos.js'),read('src/features/meteo-ai.js'),read('index.html'),read('css/style.css'),read('service-worker.js'),read('ROADMAP.md')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.22.0');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-22-0'));
+assert.equal(JSON.parse(project).version,'22.22.1');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-22-1'));
 for(const token of ['async function pushTest','include_subscription_ids','url.pathname === "/push-test"'])assert.ok(worker.includes(token),`Prova push real: falta ${token}`);
 for(const token of ['rainBrier','sampleDays>=30','confidence'])assert.ok(worker.includes(token),`Verificació madura: falta ${token}`);
 assert.ok(push.includes('Enviant una prova real')&&push.includes("e.key!=='Tab'"),'La diagnosi push real o el focus del diàleg no estan protegits.');

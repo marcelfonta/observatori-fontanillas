@@ -1,5 +1,11 @@
 # Changelog
 
+## V22.22.1 — Desplegable social mòbil complet — 2026-08-29
+
+- Corregida una regla antiga que amagava, també dins del desplegable, les xarxes situades després de la quarta opció.
+- El menú mòbil torna a oferir les nou xarxes configurades, mentre la capçalera conserva només Instagram, TikTok i YouTube com a accessos directes.
+- Afegida una prova de regressió que diferencia les icones directes dels enllaços interiors del desplegable.
+
 ## V22.22.0 — X torna a la navegació social — 2026-08-29
 
 - Recuperat l’accés a `@meteo_fonta` amb la icona oficial d’X a les agrupacions socials d’escriptori, el peu i el menú complet de mòbil.
