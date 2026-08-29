@@ -1,8 +1,8 @@
 import { mountPortalShell } from './portal-shell.js';
 import { updateSeoMetadata } from './seo.js';
 
-const PAGES=new Set(['inici','meteo-ia','estacio','prediccio','verificacio','cel','avisos','radar','webcams','centre-dades','medi-ambient','aprendre','contacte']);
-const LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams', 'centre-dades':'Centre de Dades','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',contacte:'Contacte'};
+const PAGES=new Set(['inici','meteo-ia','estacio','prediccio','videos','verificacio','cel','avisos','radar','webcams','centre-dades','medi-ambient','aprendre','contacte']);
+const LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',videos:'Predicció en vídeo',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams', 'centre-dades':'Centre de Dades','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',contacte:'Contacte'};
 
 export function initPortal(){
   const requested=new URLSearchParams(location.search).get('page')||'inici';
