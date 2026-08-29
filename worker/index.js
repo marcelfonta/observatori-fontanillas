@@ -1307,7 +1307,7 @@ function socialHashtags(kind='daily_observation'){
     : '#MeteoFontanillas #SantCeloni #BaixMontseny #Montseny #ElTemps #MeteoCatalunya';
 }
 
-function socialSlotProfile(slot='08:00'){
+function socialSlotProfile(slot='07:00'){
   const hour=Number(String(slot).slice(0,2));
   if(hour>=19)return {period:'vespre',eyebrow:'Balanç del dia',greeting:'Bona nit',lead:'Tanquem el dia amb les dades reals de l’Observatori',forecastLead:'Demà'};
   if(hour>=12)return {period:'migdia',eyebrow:'Actualització del migdia',greeting:'Bon dia',lead:'Actualització de les dades reals de l’Observatori',forecastLead:'La resta del dia'};
@@ -1315,7 +1315,7 @@ function socialSlotProfile(slot='08:00'){
 }
 
 const SOCIAL_SCHEDULE_BLUEPRINT=[
-  {time:'08:00',period:'mati',label:'Bon dia i previsió',purpose:'Dades reals, previsió d’avui i avanç de demà'},
+  {time:'07:00',period:'mati',label:'Bon dia i previsió',purpose:'Dades reals, previsió d’avui i avanç de demà'},
   {time:'14:00',period:'migdia',label:'Actualització del migdia',purpose:'Evolució observada i canvis per a la resta del dia'},
   {time:'20:30',period:'vespre',label:'Balanç del dia',purpose:'Resum del dia i previsió de l’endemà'},
 ];
@@ -1323,15 +1323,15 @@ const SOCIAL_SCHEDULE_BLUEPRINT=[
 // Horaris operatius per defecte. Es poden ajustar des de les variables del
 // Worker sense publicar una nova versió, però el portal ja queda útil sense
 // configuració addicional.
-const DEFAULT_SOCIAL_AUTO_TIMES='08:00,14:00,20:30';
-const DEFAULT_SOCIAL_PREFLIGHT_TIMES='07:45,13:45,20:15';
-const DEFAULT_META_VIDEO_AUTO_TIMES='08:00,20:30';
-const META_VIDEO_SLOT_BY_TIME={ '08:00':'morning', '20:30':'evening' };
+const DEFAULT_SOCIAL_AUTO_TIMES='07:00,14:00,20:30';
+const DEFAULT_SOCIAL_PREFLIGHT_TIMES='06:45,13:45,20:15';
+const DEFAULT_META_VIDEO_AUTO_TIMES='07:00,20:30';
+const META_VIDEO_SLOT_BY_TIME={ '07:00':'morning', '20:30':'evening' };
 const META_VIDEO_AUTOMATIC_MAX_ATTEMPTS=4;
 const META_VIDEO_AUTOMATIC_WINDOW_MINUTES=90;
 // Cloudflare és el rellotge principal dels Shorts perquè el cron de GitHub pot
 // retardar-se o no arribar a iniciar-se. Les hores són locals de Sant Celoni.
-const YOUTUBE_SHORT_FALLBACK_WINDOWS={ mati:{ hour:7, minute:20 }, vespre:{ hour:19, minute:45 } };
+const YOUTUBE_SHORT_FALLBACK_WINDOWS={ mati:{ hour:6, minute:20 }, vespre:{ hour:19, minute:45 } };
 const YOUTUBE_SHORT_FALLBACK_WINDOW_MINUTES=20;
 const YOUTUBE_SHORT_DISPATCH_ACK_MS=8*60*1000;
 const YOUTUBE_SHORT_RUN_STALE_MS=20*60*1000;
@@ -1397,6 +1397,13 @@ function socialAutomationEnabled(env) {
   return String(env.SOCIAL_AUTOMATION_ENABLED || 'true').toLowerCase() !== 'false';
 }
 
+export function dailySocialChannelsForSlot(slot) {
+  const channels=['facebook','instagram','bluesky','telegram','threads'];
+  return socialSlotProfile(slot).period === 'migdia'
+    ? channels
+    : channels.filter(channel=>channel !== 'facebook' && channel !== 'instagram');
+}
+
 async function createDailySocialDraft(observation, env, slot = null) {
   if (!(await ensureSocialDraftSchema(env)) || !observation || !slot) return { created:false, reason:slot?'storage_disabled':'outside_schedule' };
   const localDate = String(observation.updated || '').slice(0, 10) || new Intl.DateTimeFormat('en-CA', { timeZone:TIME_ZONE }).format(new Date());
@@ -1421,7 +1428,7 @@ async function createDailySocialDraft(observation, env, slot = null) {
   const result = await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
     (dedupe_key, kind, status, channels, title, body, source_url, payload)
     VALUES (?, 'daily_observation', ?, ?, ?, ?, ?, ?)`)
-    .bind(`daily:${localDate}:${slot}`, initialStatus, JSON.stringify(['facebook','instagram','bluesky','telegram','threads']), title, body, 'https://meteo.fontanillas.cat/', payload).run();
+    .bind(`daily:${localDate}:${slot}`, initialStatus, JSON.stringify(dailySocialChannelsForSlot(slot)), title, body, 'https://meteo.fontanillas.cat/', payload).run();
   const created = Boolean(result?.meta?.changes);
   const draft = await env.DB.prepare("SELECT * FROM social_drafts WHERE dedupe_key = ?").bind(`daily:${localDate}:${slot}`).first();
   return { created, localDate, slot, draft };
@@ -2480,7 +2487,7 @@ async function youtubeShortRunControl(request, env, localDate, slot) {
   return json({ error:'Acció de coordinació no vàlida.' },400,'no-store');
 }
 
-const BUFFER_TIKTOK_SLOT_TIMES = { morning:{ hour:8, minute:0 }, evening:{ hour:20, minute:30 } };
+const BUFFER_TIKTOK_SLOT_TIMES = { morning:{ hour:7, minute:0 }, evening:{ hour:20, minute:30 } };
 
 function bufferTikTokEnabled(env) {
   return String(env.BUFFER_TIKTOK_AUTOMATION_ENABLED || '').trim().toLowerCase() === 'true';
@@ -3613,7 +3620,7 @@ async function adminStatus(request, env) {
       youtube:Boolean(env.GITHUB_SHORTS_DISPATCH_TOKEN),
       advancedAI:Boolean(env.AI),
     },
-    schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"cada 5 minuts", social:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES), preflight:String(env.SOCIAL_PREFLIGHT_TIME || DEFAULT_SOCIAL_PREFLIGHT_TIMES), youtube:'07:20,19:45', metaVideo:String(env.META_VIDEO_AUTO_TIMES || DEFAULT_META_VIDEO_AUTO_TIMES), metaVideoEnabled:metaVideoAutomationEnabled(env), timeZone:TIME_ZONE },
+    schedule:{ observationMinutes:STORAGE_INTERVAL_MINUTES, alerts:"cada 5 minuts", social:String(env.SOCIAL_AUTO_TIMES || DEFAULT_SOCIAL_AUTO_TIMES), preflight:String(env.SOCIAL_PREFLIGHT_TIME || DEFAULT_SOCIAL_PREFLIGHT_TIMES), youtube:'06:20,19:45', metaVideo:String(env.META_VIDEO_AUTO_TIMES || DEFAULT_META_VIDEO_AUTO_TIMES), metaVideoEnabled:metaVideoAutomationEnabled(env), timeZone:TIME_ZONE },
   }, 200, "no-store, private", origin);
 }
 

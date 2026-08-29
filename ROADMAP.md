@@ -22,14 +22,15 @@
 
 - [ ] Executar el diagnòstic remot de Buffer/TikTok i validar un esborrany de cada franja. Després, activar `BUFFER_TIKTOK_AUTOMATION_ENABLED=true` al Worker perquè la cua programi els dos vídeos diaris sense afectar YouTube.
 
-- [ ] Desplegar i validar el disparador principal Cloudflare → GitHub dels YouTube Shorts a les 07:20 i 19:45, amb correu d’error, confirmació remota de YouTube i reserva estiu/hivern de GitHub.
+- [ ] Desplegar i validar el disparador principal Cloudflare → GitHub dels YouTube Shorts a les 06:20 i 19:45, amb correu d’error, confirmació remota de YouTube i reserva estiu/hivern de GitHub.
 
 - [x] Crear un bucket R2 privat a Europa per als vídeos temporals de Shorts, sense domini públic.
 - [x] Preparar càrrega autenticada, URL signada i neteja automàtica de vídeos amb més de tres dies.
 - [x] Afegir els secrets de càrrega a Cloudflare i GitHub després d’integrar i desplegar el Worker amb la vinculació R2.
 - [x] Executar des del panell la prova manual preparada d’una Story d’Instagram amb el compte propi i confirmar-ne visualment el resultat.
 - [x] Executar des del panell la prova real preparada de Facebook Page Stories i confirmar visualment el resultat.
-- [x] Validar Reels i Stories a Instagram i Facebook, i preparar l’automatització encadenada per a les 08:00 i les 20:30 amb represa i protecció contra duplicats.
+- [x] Validar Reels i Stories a Instagram i Facebook, i preparar l’automatització encadenada per a les 07:00 i les 20:30 amb represa i protecció contra duplicats.
+- [x] Reservar la imatge meteorològica de Facebook i Instagram només per al migdia; matí i vespre queden coberts pel Reel i la Story.
 - [ ] Desplegar l’automatització de Meta i confirmar una franja completa sense intervenció manual abans de retirar els botons de recuperació del flux habitual.
 
 ## V22.15.0 — Registre remot OneSignal — Verificada
@@ -56,7 +57,7 @@
 - [ ] Integrar la PR i desplegar el Worker V22.14.
 - [ ] Configurar el secret real `ONESIGNAL_API_KEY` amb l’App API key correcta.
 - [ ] Fer una prova real de OneSignal des de mòbil i ordinador.
-- [ ] Confirmar les franges socials de les 08:00, 14:00 i 20:30 després del desplegament.
+- [ ] Confirmar les franges socials de les 07:00, 14:00 i 20:30 després del desplegament.
 - [ ] Revisar el consum diari de files llegides i escrites a D1 durant la primera setmana de setembre.
 
 ## V22.13.0 — Fiabilitat operativa i auditoria — Preparada per revisar
@@ -71,7 +72,7 @@
 - [ ] Integrar la PR i desplegar el Worker V22.13.
 - [ ] Configurar o verificar `ONESIGNAL_API_KEY` real a Cloudflare.
 - [ ] Enviar una prova push real des de mòbil i portàtil.
-- [ ] Confirmar una publicació automàtica de les 08:00 amb Facebook, Instagram i Threads després del desplegament.
+- [ ] Confirmar una publicació automàtica de les 07:00 a les xarxes previstes després del desplegament.
 - [ ] Monitorar D1 després de l’1 de setembre de 2026 per confirmar que els índexs i la neteja programada redueixen l’ús.
 
 ## V22.8.0 — Visors mòbils, abast dels avisos i accessibilitat — Preparada per revisar
@@ -126,7 +127,7 @@
 - [x] Oferir una alternativa fiable al visor de meduses en pantalles petites.
 - [x] Explicar que els avisos oficials són zonals i no necessàriament municipals.
 - [x] Diferenciar TikTok connectat de TikTok aprovat per publicar automàticament.
-- [ ] Confirmar a les 07:45 i les 08:00 una comprovació i una publicació completament automàtiques.
+- [ ] Confirmar a les 06:45 i les 07:00 una comprovació i una publicació completament automàtiques.
 - [ ] Afegir les franges de les 14:00 i les 21:30 només després d'aquesta validació.
 - [ ] Implementar TikTok Direct Post quan l'aplicació i l'abast `video.publish` constin com a aprovats.
 
@@ -154,7 +155,7 @@
 ### Validacions externes que continuen pendents
 
 - Confirmar una notificació OneSignal real en cada dispositiu desitjat.
-- Observar una execució automàtica completa de les 07:45 i les 08:00 després del desplegament.
+- Observar una execució automàtica completa de les 06:45 i les 07:00 després del desplegament.
 - Completar TikTok només quan la plataforma aprovi l’accés de publicació.
 - Activar nous horaris socials únicament després d’aprovar una vista prèvia per canal.
 
@@ -169,9 +170,9 @@
 
 ### Activació de les tres franges diàries
 
-- [x] Codi preparat per a les franges `08:00`, `14:00` i `20:30`, amb textos diferents de matí, migdia i vespre.
-- [x] Comprovació preventiva abans de cada franja: `07:45`, `13:45` i `20:15`.
-- [ ] Aplicar a producció `SOCIAL_AUTO_TIMES=08:00,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=07:45,13:45,20:15` en desplegar el Worker V22.13.
+- [x] Codi preparat per a les franges `07:00`, `14:00` i `20:30`, amb textos diferents de matí, migdia i vespre.
+- [x] Comprovació preventiva abans de cada franja: `06:45`, `13:45` i `20:15`.
+- [ ] Aplicar a producció `SOCIAL_AUTO_TIMES=07:00,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:45,13:45,20:15` en desplegar el Worker.
 - [ ] Confirmar una execució automàtica real de cada franja als cinc canals actius.
 - [ ] Confirmar recepció d’un avís real de prova en Android/iPhone i escriptori.
 
@@ -181,7 +182,7 @@
 - [x] Comprovar les sis connexions socials abans de l’horari automàtic sense publicar res.
 - [x] Avisar per correu si una connexió social no està preparada.
 - [x] Mostrar el resultat preventiu al panell d’administració.
-- [ ] Confirmar una execució real de les 07:45 i una publicació real de les 08:00 després del desplegament.
+- [ ] Confirmar una execució real de les 06:45 i una publicació real de les 07:00 després del desplegament.
 - [ ] Completar TikTok quan la plataforma aprovi l’accés de publicació.
 
 ## V22.1.0 — Rendiment, comprensió i resiliència — En verificació
@@ -385,7 +386,7 @@ Centre de notícies meteorològiques, calendari, API pública, widgets, recursos
 - Les estacions reals es busquen primer a 20 km i, si la cobertura és escassa, el radi s’amplia progressivament a 50, 100 o 200 km.
 - La interfície mostra sempre el radi i la distància; una estació llunyana mai es presenta com si fos local.
 - «Qualsevol lloc» passa al primer bloc del menú lateral i a la barra inferior mòbil.
-- Es deixa preparada l’estructura de 08:00, 14:00 i 20:30 per a matí, migdia i balanç del dia. Només les hores presents a `SOCIAL_AUTO_TIMES` publiquen; el valor recomanat i predeterminat és `08:00,14:00,20:30`.
+- Es deixa preparada l’estructura de 07:00, 14:00 i 20:30 per a matí, migdia i balanç del dia. Només les hores presents a `SOCIAL_AUTO_TIMES` publiquen; el valor recomanat i predeterminat és `07:00,14:00,20:30`.
 
 ## V22.10.0 — El temps arreu i fonts independents
 

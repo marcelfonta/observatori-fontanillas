@@ -8,9 +8,9 @@
   "vars": {
     "ENVIRONMENT": "staging",
     "META_VIDEO_AUTOMATION_ENABLED": "false",
-    "META_VIDEO_AUTO_TIMES": "08:00,20:30",
+    "META_VIDEO_AUTO_TIMES": "07:00,20:30",
     "SOCIAL_AUTOMATION_ENABLED": "false",
-    "SOCIAL_PREFLIGHT_TIME": "07:45"
+    "SOCIAL_PREFLIGHT_TIME": "06:45"
   },
   "d1_databases": [{
     "binding": "DB",

@@ -2,7 +2,11 @@
 
 ## En desenvolupament
 
-- Preparada l’automatització dels vídeos de Meta a les 08:00 i les 20:30: primer publica i confirma els Reels d’Instagram i Facebook, i només després inicia les Stories dels dos canals.
+- La franja matinal de totes les xarxes passa a les 07:00; el Short es prepara a les 06:20 i la comprovació preventiva social queda a les 06:45.
+- Facebook i Instagram deixen de duplicar la targeta meteorològica amb el vídeo: al matí i al vespre publiquen només Reel + Story, mentre que al migdia conserven la imatge.
+- Bluesky, Telegram i Threads mantenen les tres publicacions d’imatge diàries; YouTube i TikTok mantenen els dos vídeos, amb el del matí a les 07:00.
+
+- Preparada l’automatització dels vídeos de Meta a les 07:00 i les 20:30: primer publica i confirma els Reels d’Instagram i Facebook, i només després inicia les Stories dels dos canals.
 - Els contenidors d’Instagram pendents es reprenen al següent cicle de cinc minuts; Facebook i qualsevol canal ja completat es reutilitzen sense duplicar publicacions.
 - Els errors definitius queden limitats a quatre intents automàtics, es registren al panell i generen un únic correu operatiu. La prova manual continua disponible com a recuperació controlada.
 
@@ -29,13 +33,13 @@
 - El vídeo continua en un bucket R2 privat; Buffer rep una URL opaca i limitada al fitxer temporal, estable mentre dura la cua i eliminada amb la neteja de tres dies.
 - Afegida al panell una prova segura que crea un esborrany a Buffer, sense publicar-lo. La cua automàtica roman desactivada fins que es validi aquesta prova i s’activi explícitament el paràmetre corresponent.
 
-- Cloudflare passa a ser el rellotge principal dels YouTube Shorts i inicia les preparacions a les 07:20 i les 19:45, en hora de Sant Celoni. GitHub conserva una reserva posterior compatible amb l’horari d’estiu i d’hivern.
+- Cloudflare passa a ser el rellotge principal dels YouTube Shorts i inicia les preparacions a les 06:20 i les 19:45, en hora de Sant Celoni. GitHub conserva una reserva posterior compatible amb l’horari d’estiu i d’hivern.
 - Si GitHub accepta el disparador però no confirma l’inici, Cloudflare el repeteix al cap de vuit minuts sense duplicar el renderitzat.
 - El Worker registra l’estat específic del planificador de Shorts i envia un correu operatiu si falta el token o GitHub rebutja el disparador.
-- Després de la pujada, el flux consulta YouTube i només acaba correctament si confirma l’ID, la privacitat i, quan correspon, l’hora pública de les 08:00 o les 20:30.
+- Després de la pujada, el flux consulta YouTube i només acaba correctament si confirma l’ID, la privacitat i, quan correspon, l’hora pública de les 07:00 o les 20:30.
 - L’administració mostra l’horari de preparació de YouTube i el resultat real del darrer disparador, separat de la simple presència de credencials.
 
-- Avançades les dues execucions de YouTube Shorts perquè GitHub Actions tingui més marge davant retards del planificador; es mantenen les publicacions públiques a les 08:00 i les 20:30 i la recuperació alternativa del Worker.
+- Avançades les dues execucions de YouTube Shorts perquè GitHub Actions tingui més marge davant retards del planificador; les publicacions públiques queden a les 07:00 i les 20:30 i es manté la recuperació alternativa del Worker.
 
 - Els avisos push ja no depenen només de la propagació d’etiquetes d’OneSignal: cada dispositiu subscrit desa de forma verificable les seves preferències de fenomen i intensitat al registre tècnic del portal. Els avisos automàtics prioritzen aquest registre, especialment per a PWA d’iPhone.
 

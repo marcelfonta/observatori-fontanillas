@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { dueMetaVideoSlots, metaVideoAutomationEnabled } from '../worker/index.js';
+import { dailySocialChannelsForSlot, dueMetaVideoSlots, metaVideoAutomationEnabled } from '../worker/index.js';
 
 const worker = await readFile(new URL('../worker/index.js', import.meta.url), 'utf8');
 const admin = await readFile(new URL('../src/features/admin.js', import.meta.url), 'utf8');
@@ -32,11 +32,14 @@ assert.match(exampleConfig, /"META_VIDEO_AUTOMATION_ENABLED": "false"/, 'La conf
 
 assert.equal(metaVideoAutomationEnabled({ META_VIDEO_AUTOMATION_ENABLED:'true' }), true);
 assert.equal(metaVideoAutomationEnabled({ META_VIDEO_AUTOMATION_ENABLED:'false' }), false);
-assert.deepEqual(dueMetaVideoSlots({}, new Date('2026-08-29T05:59:00Z')), [], 'Abans de les 08:00 locals no s’ha de publicar cap vídeo de Meta.');
-assert.deepEqual(dueMetaVideoSlots({}, new Date('2026-08-29T06:00:00Z')), ['morning'], 'A les 08:00 locals ha de quedar disponible la franja del matí.');
+assert.deepEqual(dueMetaVideoSlots({}, new Date('2026-08-29T04:59:00Z')), [], 'Abans de les 07:00 locals no s’ha de publicar cap vídeo de Meta.');
+assert.deepEqual(dueMetaVideoSlots({}, new Date('2026-08-29T05:00:00Z')), ['morning'], 'A les 07:00 locals ha de quedar disponible la franja del matí.');
 assert.deepEqual(dueMetaVideoSlots({}, new Date('2026-08-29T18:30:00Z')), ['evening'], 'A les 20:30 locals ha de quedar disponible només la franja vigent del vespre.');
 assert.deepEqual(dueMetaVideoSlots({}, new Date('2026-08-29T19:31:00Z')), ['evening'], 'La franja del matí no s’ha de recuperar moltes hores tard.');
 assert.deepEqual(dueMetaVideoSlots({}, new Date('2026-08-29T20:01:00Z')), [], 'Cap franja no s’ha de publicar quan la finestra segura ja ha passat.');
 assert.deepEqual(dueMetaVideoSlots({ META_VIDEO_AUTO_TIMES:'20:30' }, new Date('2026-08-29T18:30:00Z')), ['evening'], 'La configuració ha de poder desactivar una franja concreta.');
+assert.deepEqual(dailySocialChannelsForSlot('07:00'), ['bluesky','telegram','threads'], 'Facebook i Instagram no han de duplicar el Reel del matí amb una imatge.');
+assert.deepEqual(dailySocialChannelsForSlot('14:00'), ['facebook','instagram','bluesky','telegram','threads'], 'La imatge del migdia ha d’arribar a les cinc xarxes.');
+assert.deepEqual(dailySocialChannelsForSlot('20:30'), ['bluesky','telegram','threads'], 'Facebook i Instagram no han de duplicar el Reel del vespre amb una imatge.');
 
 console.log('Flux de Reels i Stories automàtic, ordenat i protegit: correcte');
