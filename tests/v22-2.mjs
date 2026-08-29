@@ -10,8 +10,8 @@ const [worker,push,adminPage,adminFeature,serviceWorker,project]=await Promise.a
   read('src/features/admin.js'),read('service-worker.js'),read('project.json')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.22.0');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-22-0'));
+assert.equal(JSON.parse(project).version,'22.22.1');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-22-1'));
 assert.ok(push.includes('const INVITE_DELAY_MS = 10000;'),'La invitació push ha d’esperar deu segons.');
 assert.ok(push.includes("document.visibilityState==='visible'"),'La invitació no ha d’obrir-se sobre una pestanya amagada.');
 assert.ok(worker.includes('runDailyIntegrationPreflight'),'Falta la comprovació preventiva diària.');

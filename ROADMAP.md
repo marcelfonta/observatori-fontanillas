@@ -3,6 +3,7 @@
 ## Manteniment obert — En curs
 
 - [x] Recuperar la icona i l’enllaç d’X a la navegació social, mantenint Instagram, TikTok i YouTube com a accessos directes en mòbil i la resta al desplegable.
+- [x] Corregir el selector responsive perquè el desplegable mòbil mostri totes les xarxes configurades.
 
 - [x] Connectar X a Buffer i preparar tres publicacions diàries pròpies: vídeo a les 07:00, imatge a les 14:00 i vídeo a les 20:30.
 - [x] Afegir deduplicació, comprovació de lliurament, fins a quatre reintents i correu només després de la fallada definitiva d’X.
