@@ -2,7 +2,7 @@
 
 ## Manteniment obert — En curs
 
-- [x] Reunir la predicció audiovisual oficial de Meteocat, AEMET i 3Cat en una vista pròpia, amb càrrega sota demanda i degradació segura.
+- [x] Reunir la predicció audiovisual vigent de Meteocat i 3Cat en una vista pròpia, amb càrrega sota demanda i degradació segura; AEMET es manté a previsió i avisos perquè el seu canal no publica predicció diària.
 - [ ] Validar en producció els tres reproductors en iPhone, Android i ordinador després d’integrar el canvi.
 
 - [x] Fer manejable el registre editorial de l’administració amb paginació i detalls plegables, sense perdre publicacions antigues.

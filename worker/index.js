@@ -1083,7 +1083,7 @@ async function forecastVideos(request,ctx){
   catch(error){console.warn('3Cat forecast discovery unavailable',cleanText(error.message,200));}
   const response=json({
     updatedAt:new Date().toISOString(),
-    sources:['meteocat','aemet',...(threeCat?['3cat']:[])],
+    sources:['meteocat',...(threeCat?['3cat']:[])],
     threeCat
   },200,'public, max-age=900, s-maxage=1800, stale-while-revalidate=86400');
   ctx.waitUntil(cache.put(cacheKey,response.clone()));
