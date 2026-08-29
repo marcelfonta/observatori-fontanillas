@@ -1,4 +1,4 @@
-# Xarxes socials — automatització segura V22.22.1
+# Xarxes socials — automatització segura V22.22.2
 
 X utilitza el perfil connectat a Buffer i la mateixa `BUFFER_API_KEY` privada del Worker. Publica vídeo a les 07:00, la targeta meteorològica de les 14:00 i vídeo a les 20:30. Cada franja desa l’identificador remot a D1, consulta el resultat després de l’hora prevista, evita duplicats i fa fins a quatre intents dins d’una finestra de 90 minuts. El correu operatiu només s’envia si la publicació continua fallant després de tots els intents.
 

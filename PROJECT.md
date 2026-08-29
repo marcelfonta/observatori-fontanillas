@@ -73,11 +73,11 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.22.1
+## Estat V22.22.2
 
-- Branca de treball: `feature/social-x-link`.
-- Versio codi: V22.22.1.
-- Produccio queda pendent d’integrar la PR i desplegar la V22.22.1.
-- X torna a formar part dels accessos socials públics; en mòbil, Instagram, TikTok i YouTube queden visibles i la resta de xarxes es mantenen al desplegable.
+- Branca de treball: `feature/social-network-order`.
+- Versio codi: V22.22.2.
+- Produccio queda pendent d’integrar la PR i desplegar la V22.22.2.
+- Els accessos socials segueixen la prioritat Instagram, YouTube, TikTok, Facebook, X, WhatsApp, Threads, Telegram i Bluesky; en mòbil, Instagram, TikTok i YouTube queden visibles i la resta es mantenen al desplegable.
 - Configuració de producció prevista: `SOCIAL_AUTO_TIMES=07:00,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:45,13:45,20:15`.
 - Accio externa pendent per avisos: revisar `ONESIGNAL_API_KEY` a Cloudflare i confirmar que pertany a la mateixa app que el `oneSignalAppId` public.

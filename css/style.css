@@ -447,7 +447,7 @@ body{font-size:var(--type-body)}
   body[data-page="inici"] .metrics-grid:not(.is-expanded) :is(#metric-card-pressure,#metric-card-rain-rate,#metric-card-solar,#metric-card-uv,#metric-card-apparent,#metric-card-humidex){display:none}
   .verification-collecting{grid-template-columns:1fr}
 }
-@media(max-width:590px){.header-social>.social-link{display:none}.header-social>.social-link--instagram,.header-social>.social-link--tiktok,.header-social>.social-link--youtube{display:inline-grid!important}.header-social-more{display:block}}
+@media(max-width:590px){.header-social>.social-link{display:none}.header-social>.social-link--instagram,.header-social>.social-link--tiktok,.header-social>.social-link--youtube{display:inline-grid!important}.header-social>.social-link--instagram{order:1}.header-social>.social-link--tiktok{order:2}.header-social>.social-link--youtube{order:3}.header-social-more{display:block;order:4}}
 .push-device-diagnostic{margin:1rem 0;padding:1rem;border:1px solid var(--line);border-radius:18px;background:rgba(5,28,22,.52)}
 .push-device-diagnostic>strong{display:block;margin-bottom:.55rem}.push-device-diagnostic ul{display:grid;gap:.35rem;margin:0 0 .55rem;padding:0;list-style:none}.push-device-diagnostic li{display:flex;justify-content:space-between;gap:1rem}.push-device-diagnostic li span,.push-device-diagnostic small{color:var(--muted)}.push-device-diagnostic li b{text-align:right}
 
