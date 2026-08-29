@@ -2,12 +2,10 @@
 
 ## En desenvolupament
 
-- AEMET deixa d'incrustar una pàgina web sencera i mostra el canal audiovisual oficial en un reproductor de YouTube sense galetes.
-- El darrer vídeo de 3Cat passa a ser un enllaç directe i visible, evitant els casos en què el reproductor incrustat no responia.
-
-- Afegida una secció de predicció en vídeo amb Meteocat, AEMET i el darrer vídeo meteorològic disponible de 3Cat.
+- Afegida una secció de predicció en vídeo amb Meteocat i el darrer vídeo meteorològic disponible de 3Cat, tots dos reproduïbles dins la web.
+- AEMET es manté als apartats oficials de previsió i avisos, però es retira del visor audiovisual perquè el seu canal no publica una predicció diària i podia mostrar contingut no relacionat.
 - Els reproductors externs només es carreguen quan l’usuari escull una font, evitant reproducció automàtica i connexions innecessàries amb tercers.
-- La descoberta de 3Cat queda limitada, memoritzada i tolerant a errors: si la seva pàgina canvia o no hi ha vídeo recent, Meteocat i AEMET continuen disponibles.
+- La descoberta de 3Cat queda limitada, memoritzada i tolerant a errors: si la seva pàgina canvia o no hi ha vídeo recent, Meteocat continua disponible.
 
 - Si una execució de YouTube falla després d'haver reservat la franja, GitHub ho comunica al Worker i Cloudflare la torna a intentar dins de la finestra segura, sense duplicar un Short ja completat.
 - La recuperació de YouTube s'allarga fins als últims cinc minuts útils abans de publicar; els errors o cancel·lacions que deixin una execució penjada també poden recuperar-se quan expira el bloqueig temporal.

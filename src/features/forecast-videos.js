@@ -7,13 +7,6 @@ const SOURCES={
     description:'Vídeo diari del Servei Meteorològic de Catalunya.',
     embedUrl:'https://www.youtube-nocookie.com/embed/videoseries?list=PLOWaA1TFs5he_kR01X0A23zkhrB7eJwMD&rel=0',
     sourceUrl:'https://www.meteo.cat/wpweb/prediccio/audiovisuals-de-prediccio/'
-  },
-  aemet:{
-    label:'AEMET',
-    title:'Canal audiovisual oficial d’AEMET',
-    description:'Vídeos meteorològics recents de l’Agència Estatal de Meteorologia, en un reproductor net.',
-    embedUrl:'https://www.youtube-nocookie.com/embed/videoseries?list=UUd-ceYPisAtCmmoZa26I-5g&rel=0',
-    sourceUrl:'https://www.youtube.com/c/AEMETAgenciaEstatal/videos'
   }
 };
 
@@ -29,6 +22,9 @@ function renderSource(sourceKey,source){
     button.setAttribute('aria-pressed',String(active));
   });
   frame.title=`${source.label}: ${source.title}`;
+  const status=document.getElementById('forecast-videos-status');
+  if(status)status.textContent=`Carregant el reproductor de ${source.label}…`;
+  frame.onload=()=>{if(status)status.textContent=`Reproductor de ${source.label} preparat. Prem ▶ per començar.`;};
   frame.src=source.embedUrl;
   empty.hidden=true;shell.hidden=false;meta.hidden=false;
   document.getElementById('forecast-video-source-label').textContent=`Font: ${source.label}`;
@@ -41,7 +37,6 @@ function renderSource(sourceKey,source){
 function connectButtons(sources){
   document.querySelectorAll('[data-video-source]').forEach(control=>{
     control.setAttribute('aria-pressed','false');
-    if(control.tagName==='A')return;
     control.addEventListener('click',()=>renderSource(control.dataset.videoSource,sources[control.dataset.videoSource]));
   });
 }
@@ -61,18 +56,17 @@ export async function initForecastVideos(){
         embedUrl:payload.threeCat.embedUrl,
         sourceUrl:payload.threeCat.sourceUrl
       };
-      const link=document.getElementById('forecast-video-3cat');
-      link.hidden=false;
-      link.href=sources['3cat'].sourceUrl;
+      const button=document.getElementById('forecast-video-3cat');
+      button.hidden=false;
       document.getElementById('forecast-video-3cat-title').textContent=sources['3cat'].title;
       document.getElementById('forecast-video-3cat-date').textContent=sources['3cat'].description;
-      status.textContent='Fonts preparades. 3Cat mostra el darrer vídeo meteorològic localitzat avui o ahir.';
+      status.textContent='Fonts preparades. Meteocat i 3Cat es reprodueixen dins la web.';
     }else{
-      status.textContent='Meteocat i AEMET estan disponibles. 3Cat apareixerà quan es localitzi una previsió recent.';
+      status.textContent='Meteocat està disponible. 3Cat apareixerà quan es localitzi una previsió recent.';
     }
   }catch(error){
     console.warn('No s’ha pogut comprovar el darrer vídeo de 3Cat.',error);
-    status.textContent='Meteocat i AEMET estan disponibles. 3Cat no respon ara mateix.';
+    status.textContent='Meteocat està disponible. 3Cat no respon ara mateix.';
   }
   connectButtons(sources);
 }
