@@ -12,7 +12,7 @@ const ICONS={
   youtube:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="4"/><path class="is-fill" d="m10 9 5 3-5 3Z"/></svg>'
 };
 
-const NETWORKS=[['instagram','Instagram'],['facebook','Facebook'],['threads','Threads'],['x','X'],['bluesky','Bluesky'],['telegram','Telegram'],['tiktok','TikTok'],['whatsapp','WhatsApp'],['youtube','YouTube']];
+const NETWORKS=[['instagram','Instagram'],['youtube','YouTube'],['tiktok','TikTok'],['facebook','Facebook'],['x','X'],['whatsapp','WhatsApp'],['threads','Threads'],['telegram','Telegram'],['bluesky','Bluesky']];
 
 function socialLink(key,label,variant){
   const href=CONFIG.social?.[key];

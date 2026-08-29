@@ -1,5 +1,11 @@
 # Changelog
 
+## V22.22.2 — Xarxes ordenades per prioritat — 2026-08-29
+
+- Reordenats els accessos socials d’escriptori, peu i desplegable mòbil segons l’ús actual del projecte i la popularitat: Instagram, YouTube, TikTok, Facebook, X, WhatsApp, Threads, Telegram i Bluesky.
+- Mantinguts Instagram, TikTok i YouTube com els tres accessos directes de la capçalera en mòbils petits.
+- Afegida una prova de regressió que protegeix l’ordre acordat de les nou xarxes.
+
 ## V22.22.1 — Desplegable social mòbil complet — 2026-08-29
 
 - Corregida una regla antiga que amagava, també dins del desplegable, les xarxes situades després de la quarta opció.
