@@ -145,6 +145,22 @@ jobs:
             --request POST \
             --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
             "$base_url/admin/buffer-tiktok/schedule/$local_date/$video_slot"
+      - name: Deixa el vídeo d’X preparat a Buffer
+        if: steps.social_video_upload.outcome == 'success' && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.SOCIAL_VIDEO_UPLOAD_URL != '' && env.SOCIAL_VIDEO_UPLOAD_TOKEN != ''
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          case "$SHORT_SLOT" in
+            mati) video_slot=morning ;;
+            vespre) video_slot=evening ;;
+            *) echo "Franja de Short no vàlida" >&2; exit 1 ;;
+          esac
+          local_date="$(TZ=Europe/Madrid date +%F)"
+          base_url="${SOCIAL_VIDEO_UPLOAD_URL%/admin/social-video-upload}"
+          curl --fail --silent --show-error --retry 2 --retry-all-errors \
+            --request POST \
+            --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
+            "$base_url/admin/buffer-x/schedule/$local_date/$video_slot"
       - name: Confirma la franja completada
         if: always() && steps.youtube_upload.outcome == 'success' && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.YOUTUBE_SHORT_COORDINATION_ACTIVE == 'true'
         continue-on-error: true

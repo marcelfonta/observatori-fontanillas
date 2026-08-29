@@ -2,6 +2,10 @@
 
 ## Manteniment obert — En curs
 
+- [x] Connectar X a Buffer i preparar tres publicacions diàries pròpies: vídeo a les 07:00, imatge a les 14:00 i vídeo a les 20:30.
+- [x] Afegir deduplicació, comprovació de lliurament, fins a quatre reintents i correu només després de la fallada definitiva d’X.
+- [ ] Integrar, desplegar i confirmar visualment una seqüència completa d’X sense intervenció manual.
+
 - [x] Substituir el reproductor inestable de 3Cat per un accés extern oficial, mantenint només Meteocat com a vídeo integrat sota demanda.
 
 - [x] Recuperar l’accés visible a AEMET i fer inequívoca la selecció de Meteocat i dels accessos externs d’AEMET i 3Cat.

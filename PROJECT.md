@@ -45,6 +45,7 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - Si produccio va per darrere del repositori, la publicacio pot fallar amb targeta no preparada. Des de V22.13 el codi ho detecta amb un missatge explicit de versio.
 - Si es demana un canal sense credencials, es registra com a error explicit i reintentable; no es considera una publicacio feta ni es descarta silenciosament.
 - TikTok queda diferenciat entre compte connectat i direct post aprovat per la plataforma.
+- X publica mitjançant el canal connectat a Buffer: vídeo a les 07:00, targeta a les 14:00 i vídeo a les 20:30, amb estat remot, deduplicació i reintents al Worker.
 - YouTube Shorts va per GitHub Actions, no pel mateix boto de publicacio social.
 
 ### D1 i limits
@@ -72,10 +73,10 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.14
+## Estat V22.21
 
-- Branca de treball: `fix/v22-13-reliability-audit`.
-- Versio codi: V22.14.0.
-- Produccio observada durant la revisio: V22.13.0; cal desplegar el Worker V22.14.
+- Branca de treball: `feature/x-buffer-automation`.
+- Versio codi: V22.21.0.
+- Produccio queda pendent d’integrar la PR i desplegar el Worker V22.21.
 - Configuració de producció prevista: `SOCIAL_AUTO_TIMES=07:00,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:45,13:45,20:15`.
 - Accio externa pendent per avisos: revisar `ONESIGNAL_API_KEY` a Cloudflare i confirmar que pertany a la mateixa app que el `oneSignalAppId` public.

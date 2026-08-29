@@ -1,4 +1,6 @@
-# Xarxes socials — mode segur V21.2.0
+# Xarxes socials — automatització segura V22.21.0
+
+X utilitza el perfil connectat a Buffer i la mateixa `BUFFER_API_KEY` privada del Worker. Publica vídeo a les 07:00, la targeta meteorològica de les 14:00 i vídeo a les 20:30. Cada franja desa l’identificador remot a D1, consulta el resultat després de l’hora prevista, evita duplicats i fa fins a quatre intents dins d’una finestra de 90 minuts. El correu operatiu només s’envia si la publicació continua fallant després de tots els intents.
 
 Facebook i Instagram estan connectats al portafolis de Meta. Bluesky i Telegram també tenen les seves credencials privades al Worker. El portal només enllaça els quatre perfils públics i no carrega cap SDK social.
 
@@ -32,7 +34,7 @@ La publicació automàtica no està activa. El Worker crea esborranys a `social_
 - Aprovar i publicar són accions diferents; cada enviament demana confirmació i queda registrat, també si falla.
 - Un contingut publicat és immutable al panell. Per corregir-lo, cal preparar un esborrany nou.
 - Facebook i Instagram només es publiquen manualment des del panell protegit i amb confirmació explícita.
-- X queda fora del projecte.
+- X no forma part de la cua manual d’imatges: té un flux automàtic propi a Buffer per poder alternar vídeo, imatge i vídeo.
 
 ## Secrets de Cloudflare
 
@@ -44,5 +46,7 @@ La publicació automàtica no està activa. El Worker crea esborranys a `social_
 - `BLUESKY_APP_PASSWORD`: contrasenya d’aplicació, mai la contrasenya principal.
 - `TELEGRAM_BOT_TOKEN`: token privat creat amb BotFather.
 - `TELEGRAM_CHANNEL_ID`: identificador públic del canal, per exemple `@meteofontanillas`.
+- `BUFFER_API_KEY`: clau privada de Buffer compartida pels canals de TikTok i X.
+- `BUFFER_X_AUTOMATION_ENABLED`: `true` activa explícitament X; si encara no existeix, hereta temporalment l’estat de `BUFFER_TIKTOK_AUTOMATION_ENABLED` per mantenir compatibilitat amb producció.
 
 Que una credencial aparegui en verd només confirma que existeix al Worker. La comprovació de connexions valida també l’accés real sense publicar. Cap canal s’envia fins que un esborrany ha estat aprovat, es prem el seu botó i s’accepta la confirmació.
