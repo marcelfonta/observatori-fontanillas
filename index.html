@@ -502,14 +502,14 @@
 
       <section class="forecast-videos section-block" id="forecast-videos" aria-labelledby="forecast-videos-title" data-portal-page="videos">
         <div class="forecast-videos__intro panel">
-          <div><p class="eyebrow">Fonts oficials seleccionades</p><h2 id="forecast-videos-title">Tria qui t’explica la previsió</h2><p>Meteocat i 3Cat es reprodueixen dins la web. AEMET es manté com a consulta oficial estatal, encara que no publiqui un vídeo diari de predicció.</p></div>
+          <div><p class="eyebrow">Fonts oficials seleccionades</p><h2 id="forecast-videos-title">Tria qui t’explica la previsió</h2><p>Meteocat es reprodueix dins la web. AEMET i 3Cat s’obren als seus espais oficials per evitar reproductors inestables.</p></div>
           <span class="forecast-videos__privacy">Sense reproducció automàtica</span>
         </div>
         <div class="forecast-videos__layout">
           <nav class="forecast-video-sources panel" aria-label="Fonts de predicció en vídeo" id="forecast-video-sources">
             <button type="button" data-video-source="meteocat"><span>Meteocat</span><strong>Predicció general de Catalunya</strong><small>Servei Meteorològic de Catalunya · actualització diària</small></button>
             <a class="forecast-video-source--external" href="https://www.aemet.es/es/eltiempo/prediccion" target="_blank" rel="noopener noreferrer"><span>AEMET · accés oficial</span><strong>Predicció estatal i per comunitats</strong><small>No té un vídeo diari estable · obrir la predicció oficial ↗</small></a>
-            <button type="button" data-video-source="3cat" id="forecast-video-3cat" hidden><span>3Cat</span><strong id="forecast-video-3cat-title">Darrera explicació del temps</strong><small id="forecast-video-3cat-date">Actualització recent</small></button>
+            <a class="forecast-video-source--external" href="https://www.3cat.cat/3catinfo/el-temps/" target="_blank" rel="noopener noreferrer"><span>3Cat · accés oficial</span><strong>El temps a 3CatInfo</strong><small>Previsió, vídeos i notícies meteorològiques ↗</small></a>
           </nav>
           <article class="forecast-video-player panel" id="forecast-video-player">
             <div class="forecast-video-player__empty" id="forecast-video-empty">
@@ -519,8 +519,8 @@
             <footer id="forecast-video-meta" hidden><div><span id="forecast-video-source-label">Font oficial</span><strong id="forecast-video-title">Predicció en vídeo</strong><small id="forecast-video-description"></small></div><a id="forecast-video-source-link" href="#" target="_blank" rel="noreferrer">Obrir a la font ↗</a></footer>
           </article>
         </div>
-        <p class="forecast-videos__note">En seleccionar Meteocat o 3Cat, espera que aparegui el reproductor i prem el botó ▶ del vídeo. AEMET obre la seva predicció oficial en una pestanya nova perquè no disposa d’un vídeo diari estable.</p>
-        <p class="forecast-videos__note" id="forecast-videos-status" role="status" aria-live="polite">Preparant les fonts oficials…</p>
+        <p class="forecast-videos__note">Selecciona Meteocat per veure el vídeo dins la web. AEMET i 3Cat obren la seva informació oficial en una pestanya nova.</p>
+        <p class="forecast-videos__note" id="forecast-videos-status" role="status" aria-live="polite">Meteocat està preparat. AEMET i 3Cat són accessos externs oficials.</p>
         <section class="global-forecast-directory panel" aria-labelledby="global-forecast-directory-title">
           <header><div><p class="eyebrow">Previsió arreu del món</p><h2 id="global-forecast-directory-title">Sis fonts bones, amb funcions diferents.</h2><p>Cap model és sempre el millor a tot arreu. Comença per la font oficial del país i utilitza els models i comparadors per entendre la incertesa.</p></div><span class="tag">Enllaços verificats</span></header>
           <div class="global-forecast-directory__grid">

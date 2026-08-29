@@ -1,5 +1,10 @@
 # Changelog
 
+## Correcció de fonts audiovisuals — 2026-08-29
+
+- 3Cat passa a ser un accés extern directe a «El temps» de 3CatInfo, com AEMET, perquè el seu reproductor incrustat no completa la càrrega de manera fiable.
+- La vista deixa de consultar i preparar el reproductor de 3Cat, reduint JavaScript, peticions i possibles bloquejos; Meteocat continua disponible sota demanda dins la web.
+
 ## En desenvolupament
 
 - AEMET torna a ser visible a la predicció audiovisual com a accés oficial, sense presentar-lo erròniament com un vídeo diari.
