@@ -73,7 +73,7 @@ function renderIntegrations(integrations={}){const analytics=analyticsServiceSta
 
 function renderSocialQueue(social={}){
   const automatic=social.mode==='automatic';
-  text('admin-social-mode',automatic?`Automàtic · ${social.schedule||'08:00'}`:'Revisió manual');
+  text('admin-social-mode',automatic?`Automàtic · ${social.schedule||'07:00'}`:'Revisió manual');
   text('admin-social-facebook',social.channelCredentials?.facebook?'Configurada':'No configurada');
   text('admin-social-instagram',social.channelCredentials?.instagram?'Configurada':'No configurada');
   text('admin-social-bluesky',social.channelCredentials?.bluesky?'Configurada':'No configurada');
@@ -99,13 +99,13 @@ function renderOperations(operations={},schedule={}){
   const bufferDiagnostics=operations.bufferTikTokDiagnostics;
   text('admin-scheduler-last',formatDate(scheduler?.checkedAt));
   text('admin-scheduler-state',scheduler?scheduler.status==='healthy'?`Correcte · ${scheduler.detail?.jobs??0} processos`:`Error · ${scheduler.detail?.failed??1} processos`:'Pendent de la primera execució V22.5');
-  text('admin-social-schedule',`${schedule.social||'08:00'} · ${schedule.timeZone||'Europe/Madrid'}`);
+  text('admin-social-schedule',`${schedule.social||'07:00'} · ${schedule.timeZone||'Europe/Madrid'}`);
   text('admin-social-operation',social?.checkedAt?`${social.status==='healthy'?'Correcta':'Incompleta'} · ${formatDate(social.checkedAt)}`:'Encara no registrada');
   text('admin-push-operation',push?.checkedAt?`${push.status==='healthy'?'Enviat':'Error'} · ${formatDate(push.checkedAt)}`:'Encara no s’ha enviat cap avís');
   text('admin-push-recipients',push?.detail?.sent?formatNumber(push.detail.recipients):push?.detail?.reason==='not_configured'?'No configurat':'—');
-  text('admin-youtube-schedule',`${schedule.youtube||'07:20,19:45'} · ${schedule.timeZone||'Europe/Madrid'}`);
+  text('admin-youtube-schedule',`${schedule.youtube||'06:20,19:45'} · ${schedule.timeZone||'Europe/Madrid'}`);
   text('admin-youtube-operation',youtube?.checkedAt?`${youtube.status==='healthy'?'Correcte':'Error'} · ${formatDate(youtube.checkedAt)}`:'Pendent del primer disparador');
-  text('admin-meta-video-operation',metaVideo?.checkedAt?`${metaVideo.status==='healthy'?'Completada':metaVideo.status==='degraded'?'Processant':'Error'} · ${formatDate(metaVideo.checkedAt)}`:schedule.metaVideoEnabled?`Activada · ${schedule.metaVideo||'08:00,20:30'}`:'Automatització desactivada');
+  text('admin-meta-video-operation',metaVideo?.checkedAt?`${metaVideo.status==='healthy'?'Completada':metaVideo.status==='degraded'?'Processant':'Error'} · ${formatDate(metaVideo.checkedAt)}`:schedule.metaVideoEnabled?`Activada · ${schedule.metaVideo||'07:00,20:30'}`:'Automatització desactivada');
   text('admin-buffer-diagnostics',bufferDiagnostics?.checkedAt?`${bufferDiagnostics.status==='healthy'?'Correcta':'Error'} · ${formatDate(bufferDiagnostics.checkedAt)}`:'Pendent de comprovació');
   text('admin-buffer-operation',bufferTikTok?.checkedAt?`${bufferTikTok.status==='healthy'?'Programat':bufferTikTok.status==='running'?'En curs':'Error'} · ${formatDate(bufferTikTok.checkedAt)}`:'Automatització encara desactivada');
   const healthy=scheduler?.status==='healthy';

@@ -4,8 +4,8 @@ on:
   schedule:
     # Reserva estiu/hivern, quinze minuts després del disparador principal de
     # Cloudflare. El primer pas descarta automàticament el cron fora de temporada.
+    - cron: '35 4 * * *'
     - cron: '35 5 * * *'
-    - cron: '35 6 * * *'
     - cron: '0 18 * * *'
     - cron: '0 19 * * *'
   workflow_dispatch:

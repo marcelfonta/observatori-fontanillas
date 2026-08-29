@@ -77,5 +77,5 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - Branca de treball: `fix/v22-13-reliability-audit`.
 - Versio codi: V22.14.0.
 - Produccio observada durant la revisio: V22.13.0; cal desplegar el Worker V22.14.
-- Configuració de producció prevista: `SOCIAL_AUTO_TIMES=08:00,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=07:45,13:45,20:15`.
+- Configuració de producció prevista: `SOCIAL_AUTO_TIMES=07:00,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:45,13:45,20:15`.
 - Accio externa pendent per avisos: revisar `ONESIGNAL_API_KEY` a Cloudflare i confirmar que pertany a la mateixa app que el `oneSignalAppId` public.

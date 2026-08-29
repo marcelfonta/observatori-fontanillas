@@ -5,8 +5,8 @@ const workflow = await readFile(new URL('../.github/workflows/youtube-short-priv
 const uploader = await readFile(new URL('../scripts/youtube-upload.mjs', import.meta.url), 'utf8');
 assert.match(workflow, /SOCIAL_VIDEO_UPLOAD_URL/);
 assert.match(workflow, /SOCIAL_VIDEO_UPLOAD_TOKEN/);
+assert.match(workflow, /cron: '35 4 \* \* \*'/);
 assert.match(workflow, /cron: '35 5 \* \* \*'/);
-assert.match(workflow, /cron: '35 6 \* \* \*'/);
 assert.match(workflow, /cron: '0 18 \* \* \*'/);
 assert.match(workflow, /cron: '0 19 \* \* \*'/);
 assert.match(workflow, /Valida la finestra horària de reserva/);

@@ -1,5 +1,5 @@
 const TIME_ZONE='Europe/Madrid';
-const PREPARATION_MINUTES={ mati:7*60+20, vespre:19*60+45 };
+const PREPARATION_MINUTES={ mati:6*60+20, vespre:19*60+45 };
 const BACKUP_DELAY_MINUTES=10;
 const BACKUP_WINDOW_MINUTES=20;
 

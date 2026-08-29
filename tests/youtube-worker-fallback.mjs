@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import workerRuntime, { youtubeShortFallbackSlot } from '../worker/index.js';
 
-assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T05:20:00.000Z')),'mati');
-assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T05:39:59.000Z')),'mati');
-assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T05:40:00.000Z')),null);
+assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:20:00.000Z')),'mati');
+assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:39:59.000Z')),'mati');
+assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:40:00.000Z')),null);
 assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T17:45:00.000Z')),'vespre');
 assert.equal(youtubeShortFallbackSlot(new Date('2026-12-10T18:45:00.000Z')),'vespre');
 

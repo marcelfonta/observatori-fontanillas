@@ -1,5 +1,5 @@
 const TIME_ZONE = 'Europe/Madrid';
-const SLOT_TIMES = { mati:{ hour:8, minute:0 }, vespre:{ hour:20, minute:30 } };
+const SLOT_TIMES = { mati:{ hour:7, minute:0 }, vespre:{ hour:20, minute:30 } };
 const MINIMUM_SCHEDULING_MARGIN_MS = 5 * 60_000;
 
 function partsInTimeZone(date) {
@@ -27,7 +27,7 @@ export function plannedPublishAt(slot, now = new Date()) {
   const { year, month, day } = partsInTimeZone(now);
   const nominalUtc = Date.UTC(year, month - 1, day, target.hour, target.minute);
   // Les franges són després del canvi d'hora habitual; calculem l'offset per a
-  // la mateixa hora local per conservar 08:00/20:30 tant a l'estiu com a l'hivern.
+  // la mateixa hora local per conservar 07:00/20:30 tant a l'estiu com a l'hivern.
   const publishAt = new Date(nominalUtc - offsetAt(new Date(nominalUtc)));
   // GitHub may start a scheduled workflow late. Five minutes still leaves time
   // for the compact render/upload path while avoiding a publishAt already past.
