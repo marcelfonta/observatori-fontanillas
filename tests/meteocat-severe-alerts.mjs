@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { meteocatDangerLevel, parseMeteocatSmpEpisodes } from '../worker/index.js';
+import { CATALONIA_COUNTY_PATHS } from '../worker/catalonia-counties.js';
+import { meteocatCountyWarningsByDay, meteocatDangerLevel, parseMeteocatSmpEpisodes, socialCardHtml } from '../worker/index.js';
 
 assert.equal(meteocatDangerLevel(2).key,'yellow');
 assert.equal(meteocatDangerLevel(3).key,'orange');
@@ -30,8 +31,17 @@ assert.equal(parsed[0].municipality,'Sant Celoni');
 assert.equal(parsed[0].level,'orange');
 assert.equal(parsed[0].distribution,'LOCAL');
 assert.deepEqual(parsed[0].periods,['30/08 14:00–30/08 20:00 h']);
+assert.deepEqual(parsed[0].countyWarnings,[
+  {countyId:13,level:'red',rank:4},
+  {countyId:41,level:'orange',rank:3},
+]);
 assert.match(parsed[0].description,/Intensitat > 20 mm \/ 30 minuts/);
 assert.match(parsed[0].description,/local/);
+
+const warningMap=meteocatCountyWarningsByDay([warning(41,2),warning(13,5)]);
+assert.equal(warningMap['2026-08-30'].length,2);
+assert.equal(CATALONIA_COUNTY_PATHS.length,43,'El mapa ha de contenir totes les comarques oficials de l’ICGC.');
+assert.equal(CATALONIA_COUNTY_PATHS.find(county=>county.id===41)?.name,'Vallès Oriental');
 
 const yellow=parseMeteocatSmpEpisodes([warning(41,2)]);
 assert.equal(yellow.length,1,'Els avisos grocs vigents del Vallès Oriental també s’han de publicar.');
@@ -40,10 +50,24 @@ assert.equal(yellow[0].level,'yellow');
 const red=parseMeteocatSmpEpisodes([warning(41,5)]);
 assert.equal(red[0].level,'red');
 
+const card=socialCardHtml({kind:'official_alert',body:'',payload:JSON.stringify({
+  source:'Meteocat',level:'yellow',levelLabel:'GROC',phenomenon:'Intensitat de pluja',
+  scopeName:'Vallès Oriental',description:yellow[0].description,countyWarnings:parsed[0].countyWarnings,
+})});
+assert.match(card,/METEOCAT/);
+assert.match(card,/Vallès Oriental/);
+assert.match(card,/2 comarques amb avís/);
+assert.match(card,/Contorn blanc: Vallès Oriental/);
+assert.doesNotMatch(card,/AEMET/);
+assert.doesNotMatch(card,/Prelitoral de Barcelona/);
+
 const worker=await readFile(new URL('../worker/index.js',import.meta.url),'utf8');
 assert.match(worker,/recoverIncompleteOfficialAlertDraft/);
 assert.match(worker,/SOCIAL_AUTOMATIC_MAX_ATTEMPTS/);
 assert.match(worker,/official-alert-social-recovery/);
 assert.match(worker,/level==='orange'\?'TARONJA':'GROC'/);
+assert.match(worker,/AVÍS OFICIAL METEOCAT/);
+assert.match(worker,/Dades: Meteocat · mapa comarcal: ICGC/);
+assert.match(worker,/if\(entry\.source!=='Meteocat'\)return \{created:false,reason:'meteocat_only'\}/);
 
-console.log('Avisos Meteocat: filtre comarcal, nivells oficials i precisió territorial correctes');
+console.log('Avisos Meteocat: mapa de Catalunya, detall local i font exclusiva correctes');

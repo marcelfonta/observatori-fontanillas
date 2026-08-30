@@ -1,5 +1,7 @@
+import { CATALONIA_COUNTY_PATHS } from './catalonia-counties.js';
+
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.25.1";
+const WORKER_VERSION = "22.26.0";
 const WORKER_BUILT = "2026-08-30";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -775,12 +777,6 @@ async function checkAlertsAndNotify(env){
       notificationId:result.id||null,
     }).catch(error=>console.error('Alert push state error',error));
   }
-  for(const entry of fresh){
-    if(['orange','red'].includes(String(entry.level||'').toLowerCase())){
-      const social=await createOfficialAlertSocialDraft(entry,env);
-      await publishAutomaticSocialDraft(social,env);
-    }
-  }
   return fresh.length;
 }
 
@@ -796,6 +792,33 @@ export function meteocatDangerLevel(perill) {
   if(value>=3)return {key:'orange',label:'Taronja',rank:3};
   if(value>=1)return {key:'yellow',label:'Groc',rank:2};
   return {key:'none',label:'Sense avís',rank:1};
+}
+
+export function meteocatCountyWarningsByDay(episodes) {
+  const days=new Map();
+  for(const episode of Array.isArray(episodes)?episodes:[]){
+    if(String(episode?.estat?.nom||'').toLowerCase()!=='obert')continue;
+    for(const warning of Array.isArray(episode?.avisos)?episode.avisos:[]){
+      const warningState=String(warning?.estat||'').toLowerCase();
+      if(warningState&&!['vigent','ampliat'].includes(warningState))continue;
+      for(const evolution of Array.isArray(warning?.evolucions)?warning.evolucions:[]){
+        const day=String(evolution?.dia||warning?.dataInici||'').slice(0,10);
+        if(!day)continue;
+        const counties=days.get(day)||new Map();
+        for(const period of Array.isArray(evolution?.periodes)?evolution.periodes:[]){
+          for(const impact of Array.isArray(period?.afectacions)?period.afectacions:[]){
+            const countyId=Number(impact?.idComarca);
+            const danger=meteocatDangerLevel(impact?.perill);
+            if(!Number.isInteger(countyId)||danger.rank<2)continue;
+            const previous=counties.get(countyId);
+            if(!previous||danger.rank>previous.rank)counties.set(countyId,{countyId,level:danger.key,rank:danger.rank});
+          }
+        }
+        days.set(day,counties);
+      }
+    }
+  }
+  return Object.fromEntries([...days].map(([day,counties])=>[day,[...counties.values()].sort((a,b)=>a.countyId-b.countyId)]));
 }
 
 function meteocatPeriodLabel(day, period) {
@@ -815,6 +838,7 @@ function meteocatPeriodLabel(day, period) {
 
 export function parseMeteocatSmpEpisodes(episodes) {
   const normalized=new Map();
+  const countyWarningsByDay=meteocatCountyWarningsByDay(episodes);
   for(const episode of Array.isArray(episodes)?episodes:[]){
     if(String(episode?.estat?.nom||'').toLowerCase()!=='obert')continue;
     const phenomenon=cleanText(episode?.meteor?.nom||'Fenomen meteorològic',100);
@@ -854,7 +878,8 @@ export function parseMeteocatSmpEpisodes(episodes) {
           description,phenomenon,level:highest.level,levelLabel:highest.levelLabel,rank:highest.danger,
           published:warning?.dataEmisio||null,starts:warning?.dataInici||null,expires:warning?.dataFi||null,
           active:true,scopeKind:'comarca',scopeName:METEOCAT_VALLES_ORIENTAL_NAME,
-          municipality:'Sant Celoni',distribution:distribution||null,periods,semanticKey,
+          municipality:'Sant Celoni',distribution:distribution||null,periods,
+          countyWarnings:countyWarningsByDay[day]||[],semanticKey,
         });
       }
     }
@@ -1542,7 +1567,7 @@ async function socialForecast(){
 
 function socialHashtags(kind='daily_observation'){
   return kind==='official_alert'
-    ? '#MeteoFontanillas #SantCeloni #BaixMontseny #AvisMeteorologic #AEMET #ProteccioCivil'
+    ? '#MeteoFontanillas #SantCeloni #VallesOriental #AvisMeteorologic #Meteocat #ProteccioCivil'
     : '#MeteoFontanillas #SantCeloni #BaixMontseny #Montseny #ElTemps #MeteoCatalunya';
 }
 
@@ -1674,20 +1699,16 @@ async function createDailySocialDraft(observation, env, slot = null) {
 }
 
 async function createOfficialAlertSocialDraft(entry,env){
+  if(entry.source!=='Meteocat')return {created:false,reason:'meteocat_only'};
   if(!(await ensureSocialDraftSchema(env)))return {created:false,reason:'storage_disabled'};
   const level=String(entry.level||'').toLowerCase();
   const levelLabel=level==='red'?'VERMELL':level==='orange'?'TARONJA':'GROC';
-  const isMeteocat=entry.source==='Meteocat';
-  const area=isMeteocat?`${entry.scopeName||METEOCAT_VALLES_ORIENTAL_NAME}, la comarca on es troba Sant Celoni`:'Prelitoral de Barcelona, que inclou Sant Celoni';
-  const precision=isMeteocat
-    ? `L’avís és comarcal i no implica necessàriament afectació a tot Sant Celoni${entry.distribution?`; distribució prevista: ${String(entry.distribution).toLowerCase()}`:''}.`
-    : 'L’avís no implica necessàriament afectació a tot el municipi.';
-  const title=isMeteocat
-    ? `Avís ${levelLabel} · ${entry.phenomenon||'meteorologia'} · ${entry.scopeName||METEOCAT_VALLES_ORIENTAL_NAME} (Sant Celoni)`
-    : `Avís ${levelLabel} · ${entry.phenomenon||'meteorologia'} · Sant Celoni`;
-  const body=`⚠️ Avís oficial ${levelLabel} de ${entry.source||'AEMET'} per ${entry.phenomenon||'fenomen meteorològic'} al ${area}. ${precision} ${cleanText(entry.description||entry.title,820)} Consulta sempre el detall oficial i segueix les indicacions de Protecció Civil.\n\n${socialHashtags('official_alert')}`;
-  const payload=JSON.stringify({source:entry.source||'AEMET',level,levelLabel,phenomenon:entry.phenomenon||null,description:entry.description||entry.title||null,starts:entry.starts||entry.published||null,expires:entry.expires||null,scopeKind:entry.scopeKind||null,scopeName:entry.scopeName||null,municipality:entry.municipality||null,distribution:entry.distribution||null,periods:entry.periods||[]});
-  const sourceUrl=entry.sourceUrl||entry.link||AEMET_PRELITORAL_PAGE;
+  const area=`${entry.scopeName||METEOCAT_VALLES_ORIENTAL_NAME}, la comarca on es troba Sant Celoni`;
+  const precision=`L’avís és comarcal i no implica necessàriament afectació a tot el municipi de Sant Celoni${entry.distribution?`; distribució prevista: ${String(entry.distribution).toLowerCase()}`:''}.`;
+  const title=`Avís ${levelLabel} · ${entry.phenomenon||'meteorologia'} · ${entry.scopeName||METEOCAT_VALLES_ORIENTAL_NAME} (Sant Celoni)`;
+  const body=`⚠️ Avís oficial ${levelLabel} de Meteocat per ${entry.phenomenon||'fenomen meteorològic'} al ${area}. ${precision} ${cleanText(entry.description||entry.title,820)} Consulta sempre el detall oficial i segueix les indicacions de Protecció Civil.\n\n${socialHashtags('official_alert')}`;
+  const payload=JSON.stringify({source:'Meteocat',level,levelLabel,phenomenon:entry.phenomenon||null,description:entry.description||entry.title||null,starts:entry.starts||entry.published||null,expires:entry.expires||null,scopeKind:entry.scopeKind||null,scopeName:entry.scopeName||null,municipality:entry.municipality||null,distribution:entry.distribution||null,periods:entry.periods||[],countyWarnings:entry.countyWarnings||[]});
+  const sourceUrl=entry.sourceUrl||METEOCAT_ALERTS_PAGE;
   const result=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts (dedupe_key,kind,status,channels,title,body,source_url,payload) VALUES (?,'official_alert','approved',?,?,?,?,?)`)
     .bind(`alert:${entry.fingerprint}`,JSON.stringify(['facebook','instagram','bluesky','telegram','threads']),title,body,sourceUrl,payload).run();
   const draft=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key = ?').bind(`alert:${entry.fingerprint}`).first();
@@ -3203,7 +3224,30 @@ async function dispatchYoutubeShortFallback(env, date = new Date()) {
   return { dispatched:true,slot,localDate,attempt };
 }
 
-function socialCardHtml(draft) {
+function officialAlertColor(level){
+  return level==='red'?'#ff625f':level==='orange'?'#ff9f43':'#ffd45a';
+}
+
+function meteocatCountyAlertMapSvg(warnings){
+  const levels=new Map();
+  for(const warning of Array.isArray(warnings)?warnings:[]){
+    const countyId=Number(warning?.countyId);
+    const level=['yellow','orange','red'].includes(warning?.level)?warning.level:null;
+    const rank=Number(warning?.rank)||0;
+    if(!Number.isInteger(countyId)||!level)continue;
+    const previous=levels.get(countyId);
+    if(!previous||rank>previous.rank)levels.set(countyId,{level,rank});
+  }
+  const paths=CATALONIA_COUNTY_PATHS.map(county=>{
+    const warning=levels.get(county.id);
+    const focus=county.id===METEOCAT_VALLES_ORIENTAL_ID;
+    const fill=warning?officialAlertColor(warning.level):'#173c31';
+    return `<path d="${county.path}" fill="${fill}" stroke="${focus?'#f8fff9':'#55796b'}" stroke-width="${focus?'4':'1.2'}" vector-effect="non-scaling-stroke"><title>${escapeHtml(county.name)}${warning?` · ${escapeHtml(warning.level)}`:''}</title></path>`;
+  }).join('');
+  return `<div class="map-panel"><svg class="county-map" viewBox="0 0 500 420" role="img" aria-label="Mapa de Catalunya amb el nivell màxim d'avís per comarca">${paths}</svg><div class="map-meta"><span>CATALUNYA</span><b>${levels.size} ${levels.size===1?'comarca amb avís':'comarques amb avís'}</b><small>Nivell màxim vigent per comarca</small><div class="legend"><i class="yellow"></i>Groc<i class="orange"></i>Taronja<i class="red"></i>Vermell</div><em>Contorn blanc: Vallès Oriental</em></div></div>`;
+}
+
+export function socialCardHtml(draft) {
   let data = {};
   try { data = JSON.parse(draft.payload || '{}'); } catch {}
   const display = (value, suffix = '', digits = 1) => finite(value) === null ? '—' : `${Number(value).toFixed(digits).replace('.',',')}${suffix}`;
@@ -3219,8 +3263,8 @@ function socialCardHtml(draft) {
   const forecast=Array.isArray(data.forecast)?data.forecast:[];
   const today=forecast[0]||{};const tomorrow=forecast[1]||{};const afterTomorrow=forecast[2]||{};
   const isAlert=draft.kind==='official_alert';
-  const alertColor=data.level==='red'?'#ef5350':'#ffad42';
-  const main=isAlert?`<p class="eyebrow" style="color:${alertColor}">AVÍS OFICIAL · ${escapeHtml(data.levelLabel||'')}</p><h1>Avís per ${escapeHtml(data.phenomenon||'fenomen meteorològic')}</h1><p class="stamp">Àrea del Prelitoral de Barcelona · Sant Celoni</p><section class="alert" style="border-color:${alertColor}"><b style="color:${alertColor}">${escapeHtml(data.levelLabel||'AVÍS')}</b><p>${escapeHtml(cleanText(data.description||draft.body,700))}</p></section><p class="advice">Consulta el detall oficial i segueix les indicacions de Protecció Civil.</p>`:`<div class="headline"><div><p class="eyebrow">${escapeHtml(data.eyebrow||'El temps ara')}</p><h1>Dades reals i previsió per entendre el dia.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p></div>${finite(today.weatherCode)!==null?`<div class="forecast-symbol">${socialWeatherGlyphSvg(today.weatherCode)}<b>${escapeHtml(today.condition||socialWeatherLabel(today.weatherCode))}</b><span>Predicció d’avui</span></div>`:''}</div>
+  const alertColor=officialAlertColor(data.level);
+  const main=isAlert?`<p class="eyebrow alert-eyebrow" style="color:${alertColor}">AVÍS OFICIAL METEOCAT · ${escapeHtml(data.levelLabel||'')}</p><h1 class="alert-title">${escapeHtml(data.phenomenon||'Fenomen meteorològic')}</h1><p class="stamp">Catalunya · detall del Vallès Oriental i Sant Celoni</p>${meteocatCountyAlertMapSvg(data.countyWarnings)}<section class="alert local-alert" style="border-color:${alertColor}"><div><small>DETALL PER A SANT CELONI</small><b style="color:${alertColor}">${escapeHtml(data.levelLabel||'AVÍS')} AL VALLÈS ORIENTAL</b></div><p>${escapeHtml(cleanText(data.description||draft.body,460))}</p></section><p class="advice">És un avís comarcal: consulta Meteocat i segueix les indicacions de Protecció Civil.</p>`:`<div class="headline"><div><p class="eyebrow">${escapeHtml(data.eyebrow||'El temps ara')}</p><h1>Dades reals i previsió per entendre el dia.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p></div>${finite(today.weatherCode)!==null?`<div class="forecast-symbol">${socialWeatherGlyphSvg(today.weatherCode)}<b>${escapeHtml(today.condition||socialWeatherLabel(today.weatherCode))}</b><span>Predicció d’avui</span></div>`:''}</div>
     <section class="hero"><div><small>Temperatura</small><div class="temp">${escapeHtml(temperature)}</div></div><div class="feels">Sensació tèrmica<b>${escapeHtml(feeling)}</b></div></section>
     <section class="grid"><div class="metric"><span>Humitat</span><b>${escapeHtml(humidity)}</b></div><div class="metric"><span>Vent · ratxa</span><b>${escapeHtml(wind)} · ${escapeHtml(gust)}</b></div></section>
     ${forecast.length?`<section class="forecast"><div><span>AVUI · ${escapeHtml(today.condition||'')}</span><b>${escapeHtml(display(today.max,'°',0))} / ${escapeHtml(display(today.min,'°',0))}</b><small>${escapeHtml(display(today.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(today.gust,' km/h',0))}</small></div><div><span>DEMÀ · ${escapeHtml(tomorrow.condition||'')}</span><b>${escapeHtml(display(tomorrow.max,'°',0))} / ${escapeHtml(display(tomorrow.min,'°',0))}</b><small>${escapeHtml(display(tomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(tomorrow.gust,' km/h',0))}</small></div><div><span>DEMÀ PASSAT · ${escapeHtml(afterTomorrow.condition||'')}</span><b>${escapeHtml(display(afterTomorrow.max,'°',0))} / ${escapeHtml(display(afterTomorrow.min,'°',0))}</b><small>${escapeHtml(display(afterTomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(afterTomorrow.gust,' km/h',0))}</small></div></section>`:`<section class="grid"><div class="metric"><span>Pressió</span><b>${escapeHtml(pressure)}</b></div><div class="metric"><span>Pluja acumulada avui</span><b>${escapeHtml(rain)}</b></div></section>`}`;
@@ -3228,12 +3272,12 @@ function socialCardHtml(draft) {
     *{box-sizing:border-box}html,body{margin:0;width:1080px;height:1350px;overflow:hidden;font-family:Arial,sans-serif;background:#061713;color:#f5faf7}
     body{padding:64px;background:radial-gradient(circle at 84% 10%,#286d55 0,rgba(40,109,85,.18) 28%,transparent 44%),linear-gradient(145deg,#061713,#0b241c 62%,#102e24)}
     .top{display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:20px}.mark{width:92px;height:92px;border-radius:22px;object-fit:cover;border:2px solid rgba(255,255,255,.5)}.brand b{font-size:38px}.brand span{display:block;color:#a9beb5;font-size:21px;margin-top:5px}.live{padding:15px 22px;border:1px solid #5e8d79;border-radius:999px;color:#b9f0ce;font-weight:800;letter-spacing:2px;font-size:18px}
-    .headline{display:grid;grid-template-columns:minmax(0,1fr) 205px;gap:30px;align-items:end}.eyebrow{margin:78px 0 20px;color:#8fe0ad;font-weight:800;letter-spacing:4px;font-size:22px;text-transform:uppercase}h1{margin:0;font-size:64px;line-height:1.02;letter-spacing:-3px;max-width:760px}.stamp{margin-top:22px;color:#b2c5bc;font-size:24px}.forecast-symbol{align-self:end;padding:18px 16px 16px;border-radius:30px;border:1px solid #477764;background:rgba(7,31,24,.86);text-align:center}.forecast-symbol svg{display:block;width:150px;height:150px;margin:-15px auto -8px}.forecast-symbol b,.forecast-symbol span{display:block}.forecast-symbol b{font-size:21px;color:#f5faf7}.forecast-symbol span{font-size:15px;color:#8fe0ad;margin-top:6px;text-transform:uppercase;letter-spacing:1px}.hero{margin-top:44px;display:flex;align-items:flex-end;justify-content:space-between;padding:42px;border-radius:34px;border:1px solid #416d5b;background:rgba(12,43,33,.84)}.hero small{display:block;color:#9db5aa;font-size:23px;margin-bottom:12px}.temp{font-size:138px;line-height:.86;font-weight:900;letter-spacing:-8px}.feels{text-align:right;font-size:28px;color:#cfe0d8}.feels b{display:block;color:#fff;font-size:42px;margin-top:10px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.metric{padding:25px 30px;border-radius:25px;border:1px solid #315c4b;background:rgba(5,28,22,.74)}.metric span{display:block;color:#a8beb4;font-size:21px;margin-bottom:9px}.metric b{font-size:34px}.forecast{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}.forecast div{padding:22px 20px;border-radius:25px;border:1px solid #477764;background:rgba(7,31,24,.92)}.forecast span,.forecast small{display:block;color:#91d8ad;font-size:16px;line-height:1.25}.forecast b{display:block;font-size:31px;margin:11px 0}.alert{margin-top:70px;padding:45px;border:2px solid;border-radius:34px;background:rgba(5,28,22,.82)}.alert b{font-size:56px}.alert p{font-size:34px;line-height:1.32}.advice{font-size:29px;line-height:1.35;color:#d7e5de;margin-top:36px}.footer{position:absolute;left:64px;right:64px;bottom:58px;display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid #315c4b;color:#aec3b9;font-size:21px}.footer strong{color:#8fe0ad}
+    .headline{display:grid;grid-template-columns:minmax(0,1fr) 205px;gap:30px;align-items:end}.eyebrow{margin:78px 0 20px;color:#8fe0ad;font-weight:800;letter-spacing:4px;font-size:22px;text-transform:uppercase}.alert-eyebrow{margin-top:38px;margin-bottom:12px}h1{margin:0;font-size:64px;line-height:1.02;letter-spacing:-3px;max-width:760px}.alert-title{font-size:54px}.stamp{margin-top:16px;color:#b2c5bc;font-size:22px}.forecast-symbol{align-self:end;padding:18px 16px 16px;border-radius:30px;border:1px solid #477764;background:rgba(7,31,24,.86);text-align:center}.forecast-symbol svg{display:block;width:150px;height:150px;margin:-15px auto -8px}.forecast-symbol b,.forecast-symbol span{display:block}.forecast-symbol b{font-size:21px;color:#f5faf7}.forecast-symbol span{font-size:15px;color:#8fe0ad;margin-top:6px;text-transform:uppercase;letter-spacing:1px}.hero{margin-top:44px;display:flex;align-items:flex-end;justify-content:space-between;padding:42px;border-radius:34px;border:1px solid #416d5b;background:rgba(12,43,33,.84)}.hero small{display:block;color:#9db5aa;font-size:23px;margin-bottom:12px}.temp{font-size:138px;line-height:.86;font-weight:900;letter-spacing:-8px}.feels{text-align:right;font-size:28px;color:#cfe0d8}.feels b{display:block;color:#fff;font-size:42px;margin-top:10px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.metric{padding:25px 30px;border-radius:25px;border:1px solid #315c4b;background:rgba(5,28,22,.74)}.metric span{display:block;color:#a8beb4;font-size:21px;margin-bottom:9px}.metric b{font-size:34px}.forecast{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}.forecast div{padding:22px 20px;border-radius:25px;border:1px solid #477764;background:rgba(7,31,24,.92)}.forecast span,.forecast small{display:block;color:#91d8ad;font-size:16px;line-height:1.25}.forecast b{display:block;font-size:31px;margin:11px 0}.map-panel{margin-top:22px;padding:18px 26px;border:1px solid #416d5b;border-radius:30px;background:rgba(5,28,22,.82);display:grid;grid-template-columns:600px 1fr;gap:22px;align-items:center}.county-map{display:block;width:600px;height:410px}.map-meta>span{color:#8fe0ad;font-size:18px;font-weight:800;letter-spacing:3px}.map-meta>b,.map-meta>small,.map-meta>em{display:block}.map-meta>b{font-size:31px;line-height:1.08;margin:12px 0}.map-meta>small{color:#a8beb4;font-size:18px;line-height:1.3}.map-meta>em{color:#dbe9e2;font-size:16px;font-style:normal;margin-top:18px}.legend{display:grid;grid-template-columns:16px 1fr;gap:8px 9px;align-items:center;margin-top:22px;color:#dbe9e2;font-size:17px}.legend i{width:14px;height:14px;border-radius:50%}.legend .yellow{background:#ffd45a}.legend .orange{background:#ff9f43}.legend .red{background:#ff625f}.alert{border:2px solid;border-radius:28px;background:rgba(5,28,22,.88)}.local-alert{margin-top:20px;padding:25px 30px}.local-alert small{display:block;color:#a8beb4;font-size:16px;letter-spacing:2px;margin-bottom:7px}.local-alert b{font-size:31px}.local-alert p{font-size:23px;line-height:1.28;margin:16px 0 0}.advice{font-size:21px;line-height:1.3;color:#d7e5de;margin-top:18px}.footer{position:absolute;left:64px;right:64px;bottom:44px;display:flex;justify-content:space-between;align-items:center;padding-top:19px;border-top:1px solid #315c4b;color:#aec3b9;font-size:19px}.footer strong{color:#8fe0ad}
   </style></head><body>
-    <div class="top"><div class="brand"><img class="mark" src="https://meteo.fontanillas.cat/assets/icons/icon-512.png" alt=""><div><b>Meteo Fontanillas</b><span>Observatori meteorològic · Sant Celoni</span></div></div><div class="live">${isAlert?'AEMET':'DADA REAL'}</div></div>
+    <div class="top"><div class="brand"><img class="mark" src="https://meteo.fontanillas.cat/assets/icons/icon-512.png" alt=""><div><b>Meteo Fontanillas</b><span>Observatori meteorològic · Sant Celoni</span></div></div><div class="live">${isAlert?'METEOCAT':'DADA REAL'}</div></div>
     ${main}
-    <div class="footer"><span>${isAlert?'Font oficial: AEMET':'Fonts: estació Fontanillas · Open-Meteo'}</span><strong>meteo.fontanillas.cat</strong></div>
+    <div class="footer"><span>${isAlert?'Dades: Meteocat · mapa comarcal: ICGC':'Fonts: estació Fontanillas · Open-Meteo'}</span><strong>meteo.fontanillas.cat</strong></div>
   </body></html>`;
 }
 
@@ -4049,6 +4093,9 @@ async function recoverIncompleteOfficialAlertDraft(env) {
       AND created_at <= datetime('now','-2 minutes')
     ORDER BY id DESC LIMIT 1`).first();
   if(!draft)return null;
+  let payload={};
+  try{payload=JSON.parse(draft.payload||'{}');}catch{}
+  if(payload.source!=='Meteocat')return null;
   const publications=await socialPublicationsForDraft(env,draft.id);
   const published=new Set(publications.filter(item=>item.status==='published').map(item=>item.channel));
   const attempts=new Map();

@@ -7,8 +7,8 @@ const [html,css,dom,navigation,app,project,serviceWorker,roadmap]=await Promise.
   readFile('service-worker.js','utf8'), readFile('ROADMAP.md','utf8')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.25.1');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-25-1-xarxes'));
+assert.equal(JSON.parse(project).version,'22.26.0');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-26-0-xarxes'));
 assert.ok(html.includes('is-placeholder is-placeholder--value')&&css.includes('@keyframes placeholder-shimmer'));
 assert.ok(dom.includes("classList.remove('is-placeholder')")&&dom.includes("removeAttribute('aria-busy')"));
 assert.ok(html.includes('iframe data-src="https://static-m.meteo.cat/ginys/mapaAvisos'));
