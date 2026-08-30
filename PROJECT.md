@@ -73,11 +73,12 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.23.1
+## Estat V22.24.0
 
-- Branca de treball: `fix/social-weather-icon-balance`.
-- Versio codi: V22.23.1.
-- Produccio queda pendent d’integrar la PR i desplegar la V22.23.1.
+- Branca de treball: `feature/publicacio-directori-xarxes`.
+- Versio codi: V22.24.0.
+- Produccio queda pendent d’integrar la PR i desplegar la V22.24.0.
+- `xarxes.html` reuneix els nou perfils oficials en una destinació única i clicable; la creativitat vertical associada es pot publicar a qualsevol xarxa.
 - Els Shorts i Reels utilitzen la predicció real per escollir icona, color, titular, dades destacades i consell pràctic; la pantalla d’observació no mostra cap símbol de previsió.
 - Els vídeos incorporen moviment subtil i transicions, i els textos de Meta, TikTok i X resumeixen el fenomen i les temperatures de la franja corresponent.
 - La targeta del migdia mostra una icona pròpia de la predicció d’avui.

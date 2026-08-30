@@ -2,6 +2,8 @@
 
 ## Manteniment obert — En curs
 
+- [x] Crear una publicació de presentació de les nou xarxes i una pàgina oficial única amb tots els enllaços clicables.
+
 - [x] Ordenar les nou xarxes segons l’ús del projecte i la popularitat, mantenint Instagram, TikTok i YouTube com a accessos directes en mòbil.
 - [x] Recuperar la icona i l’enllaç d’X a la navegació social, mantenint Instagram, TikTok i YouTube com a accessos directes en mòbil i la resta al desplegable.
 - [x] Corregir el selector responsive perquè el desplegable mòbil mostri totes les xarxes configurades.

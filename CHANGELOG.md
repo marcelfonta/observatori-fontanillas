@@ -1,5 +1,11 @@
 # Changelog
 
+## V22.24.0 — Directori social i publicació de presentació — 2026-08-30
+
+- Nova pàgina pública `xarxes.html` amb els nou canals oficials i enllaços directes, pensada també com a destinació única des d’Instagram.
+- Nova creativitat vertical de 1080 × 1350 px amb la identitat de l’Observatori, les nou xarxes i una crida clara al directori.
+- Directori incorporat al sitemap i a la memòria cau de la PWA.
+
 ## V22.23.1 — Símbols meteorològics equilibrats — 2026-08-30
 
 - Normalitzats tots els símbols dins un marc quadrat de 360 × 360 per evitar que el sol sembli petit o que els núvols quedin massa amples i baixos.
