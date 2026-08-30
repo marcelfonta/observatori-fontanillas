@@ -73,11 +73,11 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.23.0
+## Estat V22.23.1
 
-- Branca de treball: `feature/social-publications-v23`.
-- Versio codi: V22.23.0.
-- Produccio queda pendent d’integrar la PR i desplegar la V22.23.0.
+- Branca de treball: `fix/social-weather-icon-balance`.
+- Versio codi: V22.23.1.
+- Produccio queda pendent d’integrar la PR i desplegar la V22.23.1.
 - Els Shorts i Reels utilitzen la predicció real per escollir icona, color, titular, dades destacades i consell pràctic; la pantalla d’observació no mostra cap símbol de previsió.
 - Els vídeos incorporen moviment subtil i transicions, i els textos de Meta, TikTok i X resumeixen el fenomen i les temperatures de la franja corresponent.
 - La targeta del migdia mostra una icona pròpia de la predicció d’avui.

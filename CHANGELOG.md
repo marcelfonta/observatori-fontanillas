@@ -1,5 +1,11 @@
 # Changelog
 
+## V22.23.1 — Símbols meteorològics equilibrats — 2026-08-30
+
+- Normalitzats tots els símbols dins un marc quadrat de 360 × 360 per evitar que el sol sembli petit o que els núvols quedin massa amples i baixos.
+- Unificats centre, escala, proporció i cantonades del marc en les pantalles principals, la tendència de tres dies i la targeta del migdia.
+- Afegides proves per protegir el quadrat i la proporció dels fenòmens meteorològics.
+
 ## V22.23.0 — Publicacions meteorològiques dinàmiques — 2026-08-30
 
 - Eliminat el núvol fix dels Shorts i Reels: cada predicció mostra ara un símbol vectorial propi per cel serè, núvols, boira, pluja, neu, ruixats o tempesta.
