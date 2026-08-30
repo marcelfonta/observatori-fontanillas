@@ -9,8 +9,8 @@ const [worker,schema,adminPage,adminFeature,portalCss,serviceWorker,project]=awa
   read('worker/index.js'),read('worker/schema.sql'),read('administracio.html'),read('src/features/admin.js'),read('css/portal.css'),read('service-worker.js'),read('project.json')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.26.0','La versió web del projecte no és V22.26.0.');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-26-0-xarxes'),'La memòria cau PWA no és V22.26.0.');
+assert.equal(JSON.parse(project).version,'22.27.0','La versió web del projecte no és V22.27.0.');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-27-0-xarxes'),'La memòria cau PWA no és V22.27.0.');
 assert.ok(worker.includes('socialCardHtml')&&worker.includes("env.BROWSER.quickAction('screenshot'"),'Falta la targeta social dinàmica amb dades reals.');
 
 for(const source of [worker,schema]){

@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const OUTPUT=resolve(ROOT,'build/youtube-short/music.wav');
 const RATE=44100;
-const DURATION=25;
+const DURATION=30;
 
 const midi=note=>440*Math.pow(2,(note-69)/12);
 const clamp=value=>Math.max(-1,Math.min(1,value));

@@ -1,6 +1,6 @@
-# Xarxes socials — automatització segura V22.26.0
+# Xarxes socials — automatització segura V22.27.0
 
-Els vídeos del matí i del vespre utilitzen símbols WMO, colors, titulars i consells que canvien amb la predicció real. La pantalla de l’estació identifica explícitament les dades observades i no hi afegeix cap icona predictiva. Les descripcions de Meta, TikTok i X també resumeixen el fenomen, la màxima, la mínima i la probabilitat de pluja. La targeta del migdia incorpora el símbol de la previsió d’avui.
+Els vídeos del matí i del vespre utilitzen símbols WMO, colors, titulars i consells que canvien amb la predicció real. La pantalla de l’estació identifica explícitament les dades observades i no hi afegeix cap icona predictiva. Una sisena escena anima quatre hores de pluja prevista al nord-est de Catalunya amb AROME France HD, límits comarcals de l'ICGC i Sant Celoni remarcat; Open-Meteo Best Match i una vista puntual segura eviten que una incidència del mapa bloquegi el vídeo. Les descripcions de Meta, TikTok i X també resumeixen el fenomen, la màxima, la mínima i la probabilitat de pluja. La targeta del migdia incorpora el símbol de la previsió d’avui.
 
 X utilitza el perfil connectat a Buffer i la mateixa `BUFFER_API_KEY` privada del Worker. Publica vídeo a les 07:00, la targeta meteorològica de les 14:00 i vídeo a les 20:30. Cada franja desa l’identificador remot a D1, consulta el resultat després de l’hora prevista, evita duplicats i fa fins a quatre intents dins d’una finestra de 90 minuts. El correu operatiu només s’envia si la publicació continua fallant després de tots els intents.
 

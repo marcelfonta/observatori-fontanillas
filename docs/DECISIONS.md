@@ -29,3 +29,9 @@ Wrangler s'instal·la al projecte i els entorns es declaren explícitament. No e
 **Estat:** acceptada, 2026-08-22.
 
 Ollama és el servidor local principal perquè facilita gestionar models i integrar agents. Llamafile pot servir per proves portables d'un model concret, però no serà el centre del flux.
+
+## ADR-006 — AROME HD per a l'evolució territorial de pluja a curt termini
+
+**Estat:** acceptada, 2026-08-30.
+
+Els vídeos del matí i del vespre utilitzen AROME France HD per representar quatre franges de precipitació sobre el nord-est de Catalunya. La resolució espacial no s'ha de presentar com una certesa local: la peça indica sempre que és una estimació orientativa del model. Si AROME falla, s'utilitza Open-Meteo Best Match i, si tampoc hi ha graella, una reserva exclusivament puntual per a Sant Celoni; mai no s'extrapola una dada puntual com si fos un mapa territorial.

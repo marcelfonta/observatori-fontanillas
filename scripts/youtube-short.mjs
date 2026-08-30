@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fetchRainEvolution, rainEvolutionFooter, rainMapContent } from './youtube-rain-map.mjs';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const OUTPUT=resolve(ROOT,'build/youtube-short');
@@ -70,7 +71,7 @@ function multilineText(value,{x=76,y=440,maxChars=22,maxLines=2,fontSize=76,line
 
 function baseSvg({title,kicker,content,footer,logoData,weatherCode=null,slideIndex=1}){
   const theme=weatherTheme(weatherCode);const hasGlyph=weatherCode!==null&&weatherCode!==undefined&&weatherCode!==''&&Number.isFinite(Number(weatherCode));const titleWidth=hasGlyph?17:24;
-  const progress=Array.from({length:5},(_,index)=>`<rect x="${76+index*188}" y="1684" width="164" height="8" rx="4" fill="${index<slideIndex?theme.accent:'#365f50'}"/>`).join('');
+  const progress=Array.from({length:6},(_,index)=>`<rect x="${76+index*154}" y="1684" width="136" height="8" rx="4" fill="${index<slideIndex?theme.accent:'#365f50'}"/>`).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
   <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#061510"/><stop offset=".54" stop-color="#123e31"/><stop offset="1" stop-color="${theme.deep}"/></linearGradient><radialGradient id="glow"><stop stop-color="${theme.accent}" stop-opacity=".28"/><stop offset="1" stop-color="${theme.accent}" stop-opacity="0"/></radialGradient></defs>
   <rect width="1080" height="1920" fill="url(#bg)"/><circle cx="920" cy="250" r="520" fill="url(#glow)"/><circle cx="80" cy="1660" r="420" fill="url(#glow)" opacity=".42"/>
@@ -122,7 +123,7 @@ async function getJson(url){
 async function main(){
   await mkdir(OUTPUT,{recursive:true});
   const slot=process.env.SHORT_SLOT==='vespre'?'vespre':'mati';
-  const params=new URLSearchParams({latitude:String(LATITUDE),longitude:String(LONGITUDE),timezone:'Europe/Madrid',forecast_days:'6',daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_gusts_10m_max'});
+  const params=new URLSearchParams({latitude:String(LATITUDE),longitude:String(LONGITUDE),timezone:'Europe/Madrid',forecast_days:'6',hourly:'precipitation',daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_gusts_10m_max'});
   const [current,forecast,logo]=await Promise.all([getJson(API),getJson(`${FORECAST}?${params}`),readFile(resolve(ROOT,'assets/icons/icon-512.png'))]);
   if(current.degraded)throw new Error('La font principal està degradada; no es genera el Short.');
   const logoData=logo.toString('base64');const daily=forecast.daily;
@@ -139,13 +140,16 @@ async function main(){
   const trendStart=slot==='vespre'?2:1;
   const rows=days.slice(trendStart,trendStart+3).map((day,index)=>{const y=650+index*280;const dayAccent=weatherTheme(day.weatherCode).accent;return `<rect x="76" y="${y}" width="928" height="238" rx="38" fill="#071712" fill-opacity=".68" stroke="${dayAccent}" stroke-opacity=".4"/>${weatherGlyph(day.weatherCode,178,y+106,.25)}<text x="315" y="${y+70}" fill="${dayAccent}" font-family="DejaVu Sans" font-size="27" font-weight="800">${esc(dateLabel(day.date).toUpperCase())}</text><text x="315" y="${y+132}" fill="#f7fcf9" font-family="DejaVu Sans" font-size="38" font-weight="750">${esc(day.condition)}</text><text x="950" y="${y+103}" text-anchor="end" fill="#f7fcf9" font-family="DejaVu Sans" font-size="58" font-weight="850">${esc(number(day.max))}°</text><text x="950" y="${y+164}" text-anchor="end" fill="${dayAccent}" font-family="DejaVu Sans" font-size="27">${esc(number(day.rainProbability))}% pluja</text>`;}).join('');
   slides.push(baseSvg({title:'Tendència dels pròxims dies',kicker:'D’un cop d’ull',weatherCode:mainDay.weatherCode,slideIndex:5,logoData,content:rows,footer:'Predicció actualitzada i més detall a la web'}));
+  const rainEvolution=await fetchRainEvolution({slot,targetDate:mainDay.date,hourlyFallback:forecast.hourly});
+  const rainFrames=rainEvolution.frames.map((_,index)=>baseSvg({title:'Evolució de la pluja',kicker:slot==='vespre'?'Previsió de demà':'Previsió d’avui',weatherCode:61,slideIndex:6,logoData,content:rainMapContent(rainEvolution,index),footer:rainEvolutionFooter(rainEvolution)}));
   await Promise.all(slides.map((svg,index)=>writeFile(resolve(OUTPUT,`slide-${index+1}.svg`),svg)));
+  await Promise.all(rainFrames.map((svg,index)=>writeFile(resolve(OUTPUT,`rain-frame-${index+1}.svg`),svg)));
   const date=new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'long',timeZone:'Europe/Madrid'}).format(now);
   const title=slot==='vespre'?`Demà a Sant Celoni: ${mainDay.condition.toLowerCase()} · ${date} #Shorts`:`Avui a Sant Celoni: ${mainDay.condition.toLowerCase()} · ${date} #Shorts`;
   const period=slot==='vespre'?'demà':'avui';
   const description=`Previsió per ${period}: ${mainDay.condition.toLowerCase()}, màxima ${number(mainDay.max)}°, mínima ${number(mainDay.min)}° i ${number(mainDay.rainProbability)}% de probabilitat de pluja. Dades reals de l’Observatori Meteo Fontanillas, Sant Celoni.`;
   await writeFile(resolve(OUTPUT,'metadata.json'),JSON.stringify({title,description:`${description}\n\nConsulta totes les dades: https://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #ElTemps #Meteo #Shorts`,tags:['Meteo Fontanillas','Sant Celoni','meteorologia','el temps','Shorts']},null,2));
-  console.log(`Generades ${slides.length} pantalles ${slot} · ${mainDay.condition} · ${number(mainDay.max)}°/${number(mainDay.min)}°`);
+  console.log(`Generades ${slides.length} pantalles i ${rainFrames.length} fotogrames de pluja ${slot} · ${mainDay.condition} · ${number(mainDay.max)}°/${number(mainDay.min)}° · ${rainEvolution.source}`);
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href)main().catch(error=>{console.error(error);process.exitCode=1;});

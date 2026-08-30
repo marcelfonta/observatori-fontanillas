@@ -1,5 +1,12 @@
 # Changelog
 
+## V22.27.0 — Evolució territorial de la pluja als vídeos — 2026-08-30
+
+- Els Shorts, Reels i vídeos de TikTok i X incorporen una sisena escena animada amb quatre franges horàries de precipitació sobre el nord-est de Catalunya i Sant Celoni remarcat.
+- La font principal és AROME France HD, amb una graella de 64 punts, límits comarcals oficials de l'ICGC, escala en mm/h i textos que separen clarament estimació del model i observació real.
+- Si AROME no respon, el generador prova Open-Meteo Best Match i, com a darrera reserva, mostra l'evolució puntual de Sant Celoni sense inventar una distribució territorial.
+- El vídeo passa de 25 a 30 segons, conserva les cinc pantalles existents i amplia la música original, el muntatge i les proves per cobrir els quatre fotogrames nous.
+
 ## V22.26.0 — Mapa comarcal dels avisos de Meteocat — 2026-08-30
 
 - Les publicacions d'avisos incorporen un mapa de Catalunya amb totes les comarques afectades i el nivell màxim vigent de cadascuna, construït amb dades SMP de Meteocat i límits oficials de l'ICGC.
