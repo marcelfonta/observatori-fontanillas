@@ -12,6 +12,7 @@
     "BUFFER_TIKTOK_AUTOMATION_ENABLED": "false",
     "BUFFER_X_AUTOMATION_ENABLED": "false",
     "SOCIAL_AUTOMATION_ENABLED": "false",
+    "METEOCAT_SEVERE_SOCIAL_ENABLED": "false",
     "SOCIAL_AUTO_TIMES": "07:00,14:00,20:30",
     "SOCIAL_PREFLIGHT_TIME": "06:45,13:45,20:15",
     "BLUESKY_HANDLE": "meteofontanillas.bsky.social",
@@ -49,6 +50,7 @@
         "BUFFER_TIKTOK_AUTOMATION_ENABLED": "false",
         "BUFFER_X_AUTOMATION_ENABLED": "false",
         "SOCIAL_AUTOMATION_ENABLED": "false",
+        "METEOCAT_SEVERE_SOCIAL_ENABLED": "false",
         "SOCIAL_PREFLIGHT_TIME": "06:45,13:45,20:15"
       },
       "d1_databases": [
