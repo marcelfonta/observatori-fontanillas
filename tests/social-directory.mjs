@@ -40,4 +40,4 @@ const png = await readFile(resolve(root, 'assets/social/publicacio-xarxes-v22-24
 assert.equal(png.readUInt32BE(16), 1080);
 assert.equal(png.readUInt32BE(20), 1350);
 
-console.log('Test V22.25.1: directori i creativitat de les nou xarxes');
+console.log('Test V22.26.0: directori i creativitat de les nou xarxes');

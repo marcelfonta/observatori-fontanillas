@@ -1,5 +1,11 @@
 # Changelog
 
+## V22.26.0 — Mapa comarcal dels avisos de Meteocat — 2026-08-30
+
+- Les publicacions d'avisos incorporen un mapa de Catalunya amb totes les comarques afectades i el nivell màxim vigent de cadascuna, construït amb dades SMP de Meteocat i límits oficials de l'ICGC.
+- El Vallès Oriental queda remarcat i el text inferior explica de manera específica l'abast comarcal per a Sant Celoni, sense afirmar una afectació uniforme a tot el municipi.
+- La capçalera, els textos, les etiquetes i el peu identifiquen exclusivament Meteocat; els avisos d'AEMET continuen disponibles per al web i les notificacions, però no generen publicacions socials automàtiques.
+
 ## V22.25.1 — Avisos grocs de Meteocat — 2026-08-30
 
 - L'automatització incorpora també els avisos grocs vigents del Vallès Oriental, mantenint el filtre comarcal, les franges en hora local i la deduplicació.

@@ -1,4 +1,4 @@
-# Xarxes socials — automatització segura V22.25.1
+# Xarxes socials — automatització segura V22.26.0
 
 Els vídeos del matí i del vespre utilitzen símbols WMO, colors, titulars i consells que canvien amb la predicció real. La pantalla de l’estació identifica explícitament les dades observades i no hi afegeix cap icona predictiva. Les descripcions de Meta, TikTok i X també resumeixen el fenomen, la màxima, la mínima i la probabilitat de pluja. La targeta del migdia incorpora el símbol de la previsió d’avui.
 
@@ -30,7 +30,9 @@ La publicació automàtica no està activa. El Worker crea esborranys a `social_
 
 - Cap dada sense hora i font.
 - Els avisos grocs, taronja i vermells de Meteocat es poden publicar automàticament quan l’API oficial identifica el Vallès Oriental (codi 41). El text ha d’explicar sempre que l’abast és comarcal i que no implica afectació a tot Sant Celoni.
-- L’automatització ignora avisos d’altres comarques, esborranys i repeticions del mateix fenomen, nivell, dia i franges.
+- Cada targeta d'avís mostra el nivell màxim vigent de totes les comarques de Catalunya sobre límits oficials de l'ICGC, remarca el Vallès Oriental i identifica Meteocat com a única font de la publicació social.
+- Els avisos d'AEMET es mantenen al web i al sistema de notificacions, però no creen ni recuperen publicacions socials automàtiques.
+- L’automatització només crea la publicació si hi ha avís al Vallès Oriental; les altres comarques s'utilitzen exclusivament per completar el mapa de context. També ignora esborranys i repeticions del mateix fenomen, nivell, dia i franges.
 - Text alternatiu descriptiu a totes les imatges.
 - Enllaços amb UTM: `utm_source`, `utm_medium=social`, `utm_campaign` i `utm_content`.
 - Mai desar tokens de xarxes dins del frontend o del repositori; només secrets del Worker.
