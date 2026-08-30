@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { buildSlideSvg, weatherGlyph, weatherLabel, weatherTheme } from '../scripts/youtube-short.mjs';
+import { projectRainPoint, rainColor, rainEvolutionFooter, rainFrameHours, rainMapContent, rainMapGrid } from '../scripts/youtube-rain-map.mjs';
 import { sampleAt } from '../scripts/youtube-music.mjs';
 
 assert.equal(weatherLabel(0),'Cel serè');
@@ -27,6 +28,7 @@ assert.match(svg,/METEO FONTANILLAS/);
 assert.match(svg,/meteo\.fontanillas\.cat/);
 assert.match(svg,/24°/);
 assert.match(svg,/<title>Pluja<\/title>/);
+assert.equal((svg.match(/y="1684"/g)||[]).length,6);
 const observation=buildSlideSvg({title:'Dades reals',kicker:'Observació',content:'<text>19°</text>',footer:'Estació',weatherCode:null});
 assert.doesNotMatch(observation,/<title>/);
 const trend=buildSlideSvg({title:'Tendència dels pròxims dies',kicker:'D’un cop d’ull',content:'',footer:'Web',weatherCode:0});
@@ -35,11 +37,39 @@ assert.match(trend,/>pròxims dies<\/text>/);
 assert.doesNotMatch(trend,/pròxims…/);
 const generator=await readFile(new URL('../scripts/youtube-short.mjs',import.meta.url),'utf8');
 assert.doesNotMatch(generator,/\$\{weatherGlyph\(3,/);
+assert.match(generator,/fetchRainEvolution/);
+assert.match(generator,/rain-frame-/);
+assert.deepEqual(rainFrameHours('mati'),[9,13,17,21]);
+assert.deepEqual(rainFrameHours('vespre'),[6,12,18,23]);
+assert.equal(rainMapGrid().length,64);
+assert.equal(rainMapGrid()[0].name,'Sant Celoni');
+assert.equal(rainColor(0).opacity,0);
+assert.equal(rainColor(6).color,'#ffad42');
+const projectedStation=projectRainPoint(rainMapGrid()[0]);
+assert.ok(projectedStation.x>300&&projectedStation.x<420);
+assert.ok(projectedStation.y>150&&projectedStation.y<260);
+const rainPoints=rainMapGrid();
+const rainEvolution={
+  points:rainPoints,
+  frames:[9,13,17,21].map((hour,index)=>({time:`2026-08-30T${String(hour).padStart(2,'0')}:00`,values:rainPoints.map((_,pointIndex)=>pointIndex===0?index*.4:(pointIndex+index)%7===0?2.4:0)})),
+  source:'AROME France HD',sourceDetail:'model d’alta resolució · 1,5 km',spatial:true,
+};
+const rainSvg=rainMapContent(rainEvolution,2);
+assert.match(rainSvg,/SANT CELONI/);
+assert.match(rainSvg,/17:00 h/);
+assert.match(rainSvg,/nord-est de Catalunya/);
+assert.match(rainSvg,/feGaussianBlur/);
+assert.match(rainSvg,/#d6cf45/);
+assert.equal(rainEvolutionFooter(rainEvolution),'AROME HD via Open-Meteo · 1,5 km · orientatiu');
 const workflow=await readFile(new URL('../.github/workflows/youtube-short-private.yml',import.meta.url),'utf8');
 assert.match(workflow,/xfade=transition=fade/);
 assert.match(workflow,/zoompan=/);
+assert.match(workflow,/rain-frame-4\.png/);
+assert.match(workflow,/-map 9:a/);
+assert.match(workflow,/-t 30 build\/youtube-short\/short\.mp4/);
 assert.equal(sampleAt(0),0);
 assert.ok(Math.abs(sampleAt(1.25))<=1);
 assert.ok(Math.abs(sampleAt(12.5))>0.001);
+assert.ok(Math.abs(sampleAt(28.5))>0.001);
 
 console.log('Test del generador de Shorts: correcte');

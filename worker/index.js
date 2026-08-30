@@ -1,7 +1,7 @@
 import { CATALONIA_COUNTY_PATHS } from './catalonia-counties.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.26.0";
+const WORKER_VERSION = "22.27.0";
 const WORKER_BUILT = "2026-08-30";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
