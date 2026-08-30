@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v22-22-2-video-links';
+const CACHE = 'observatori-fontanillas-v22-23-0-social-quality';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [

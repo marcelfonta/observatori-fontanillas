@@ -73,11 +73,13 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.22.2
+## Estat V22.23.0
 
-- Branca de treball: `feature/social-network-order`.
-- Versio codi: V22.22.2.
-- Produccio queda pendent d’integrar la PR i desplegar la V22.22.2.
-- Els accessos socials segueixen la prioritat Instagram, YouTube, TikTok, Facebook, X, WhatsApp, Threads, Telegram i Bluesky; en mòbil, Instagram, TikTok i YouTube queden visibles i la resta es mantenen al desplegable.
+- Branca de treball: `feature/social-publications-v23`.
+- Versio codi: V22.23.0.
+- Produccio queda pendent d’integrar la PR i desplegar la V22.23.0.
+- Els Shorts i Reels utilitzen la predicció real per escollir icona, color, titular, dades destacades i consell pràctic; la pantalla d’observació no mostra cap símbol de previsió.
+- Els vídeos incorporen moviment subtil i transicions, i els textos de Meta, TikTok i X resumeixen el fenomen i les temperatures de la franja corresponent.
+- La targeta del migdia mostra una icona pròpia de la predicció d’avui.
 - Configuració de producció prevista: `SOCIAL_AUTO_TIMES=07:00,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:45,13:45,20:15`.
 - Accio externa pendent per avisos: revisar `ONESIGNAL_API_KEY` a Cloudflare i confirmar que pertany a la mateixa app que el `oneSignalAppId` public.
