@@ -1,5 +1,11 @@
 # Changelog
 
+## V22.25.1 — Avisos grocs de Meteocat — 2026-08-30
+
+- L'automatització incorpora també els avisos grocs vigents del Vallès Oriental, mantenint el filtre comarcal, les franges en hora local i la deduplicació.
+- Les targetes i els textos diferencien explícitament GROC, TARONJA i VERMELL; cap avís groc es pot presentar erròniament com a taronja.
+- El paràmetre passa a dir-se `METEOCAT_ALERT_SOCIAL_ENABLED`; el nom anterior es manté com a compatibilitat perquè cap entorn quedi desactivat durant la transició.
+
 ## V22.25.0 — Avisos severs de Meteocat — 2026-08-30
 
 - El Worker consulta l'API oficial de Situacions Meteorològiques de Perill per avui i els dos dies següents, amb memòria cau de quinze minuts.

@@ -1,4 +1,4 @@
-# Xarxes socials — automatització segura V22.25.0
+# Xarxes socials — automatització segura V22.25.1
 
 Els vídeos del matí i del vespre utilitzen símbols WMO, colors, titulars i consells que canvien amb la predicció real. La pantalla de l’estació identifica explícitament les dades observades i no hi afegeix cap icona predictiva. Les descripcions de Meta, TikTok i X també resumeixen el fenomen, la màxima, la mínima i la probabilitat de pluja. La targeta del migdia incorpora el símbol de la previsió d’avui.
 
@@ -29,8 +29,8 @@ La publicació automàtica no està activa. El Worker crea esborranys a `social_
 ## Regles
 
 - Cap dada sense hora i font.
-- Els avisos taronja i vermell de Meteocat es poden publicar automàticament quan l’API oficial identifica el Vallès Oriental (codi 41). El text ha d’explicar sempre que l’abast és comarcal i que no implica afectació a tot Sant Celoni.
-- L’automatització ignora nivells grocs, avisos d’altres comarques, esborranys i repeticions del mateix fenomen, nivell, dia i franges.
+- Els avisos grocs, taronja i vermells de Meteocat es poden publicar automàticament quan l’API oficial identifica el Vallès Oriental (codi 41). El text ha d’explicar sempre que l’abast és comarcal i que no implica afectació a tot Sant Celoni.
+- L’automatització ignora avisos d’altres comarques, esborranys i repeticions del mateix fenomen, nivell, dia i franges.
 - Text alternatiu descriptiu a totes les imatges.
 - Enllaços amb UTM: `utm_source`, `utm_medium=social`, `utm_campaign` i `utm_content`.
 - Mai desar tokens de xarxes dins del frontend o del repositori; només secrets del Worker.
@@ -52,6 +52,6 @@ La publicació automàtica no està activa. El Worker crea esborranys a `social_
 - `BUFFER_API_KEY`: clau privada de Buffer compartida pels canals de TikTok i X.
 - `BUFFER_X_AUTOMATION_ENABLED`: `true` activa explícitament X; si encara no existeix, hereta temporalment l’estat de `BUFFER_TIKTOK_AUTOMATION_ENABLED` per mantenir compatibilitat amb producció.
 - `METEOCAT_API_KEY`: clau privada gratuïta de l’API oficial de Meteocat; s’envia només des del Worker amb la capçalera `x-api-key`.
-- `METEOCAT_SEVERE_SOCIAL_ENABLED`: `true` activa la consulta dels tres dies d’avisos i la publicació deduplicada dels nivells taronja i vermell del Vallès Oriental.
+- `METEOCAT_ALERT_SOCIAL_ENABLED`: `true` activa la consulta dels tres dies d’avisos i la publicació deduplicada dels nivells groc, taronja i vermell del Vallès Oriental. L’antic nom `METEOCAT_SEVERE_SOCIAL_ENABLED` es conserva temporalment com a compatibilitat.
 
 Que una credencial aparegui en verd només confirma que existeix al Worker. La comprovació de connexions valida també l’accés real sense publicar. Cap canal s’envia fins que un esborrany ha estat aprovat, es prem el seu botó i s’accepta la confirmació.
