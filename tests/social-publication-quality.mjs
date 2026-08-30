@@ -7,6 +7,7 @@ assert.match(worker,/function socialWeatherEmoji\(code\)/);
 assert.match(worker,/function socialForecastSummary\(day, slot\)/);
 assert.match(worker,/socialForecastFocus\(forecast,slot\)/);
 assert.match(worker,/function socialWeatherGlyphSvg\(code\)/);
+assert.match(worker,/viewBox="-180 -180 360 360" preserveAspectRatio="xMidYMid meet"/);
 assert.match(worker,/class="forecast-symbol"/);
 assert.match(worker,/Predicció d’avui/);
 assert.match(worker,/async function socialReelCaption/);

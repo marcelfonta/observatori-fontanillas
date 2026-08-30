@@ -46,14 +46,15 @@ export function weatherTheme(code){
 
 export function weatherGlyph(code,x=790,y=510,scale=1){
   const theme=weatherTheme(code);const {kind,accent}=theme;
-  const sun=(kind==='clear'||kind==='partly')?`<g fill="${accent}"><circle cx="20" cy="5" r="46"/><g stroke="${accent}" stroke-width="12" stroke-linecap="round"><path d="M20-76v-25M20 86v25M-62 5h-25M102 5h25M-38-53l-18-18M78 63l18 18M78-53l18-18M-38 63l-18 18"/></g></g>`:'';
-  const cloud=kind!=='clear'?'<path d="M-31 85c-35 0-63-24-63-55 0-29 24-52 55-54 13-41 52-68 97-68 55 0 99 40 104 92 33 5 58 31 58 62 0 36-30 64-69 64H-31z" fill="#f1f8f5" stroke="#9bc6b5" stroke-width="8"/>':'';
-  const rain=(kind==='drizzle'||kind==='rain'||kind==='storm')?`<g stroke="#66c7e8" stroke-width="12" stroke-linecap="round"><path d="M-23 158l-15 31M48 158l-15 31M119 158l-15 31"/>${kind==='rain'||kind==='storm'?'<path d="M12 213l-15 31M83 213l-15 31"/>':''}</g>`:'';
-  const snow=kind==='snow'?'<g fill="#d8f4ff"><circle cx="-20" cy="178" r="10"/><circle cx="50" cy="215" r="10"/><circle cx="118" cy="178" r="10"/><path d="M-20 148v60M-50 178h60M50 185v60M20 215h60M118 148v60M88 178h60" stroke="#d8f4ff" stroke-width="7"/></g>':'';
-  const fog=kind==='fog'?'<g stroke="#c8d4cf" stroke-width="12" stroke-linecap="round"><path d="M-55 164h190M-25 205h210M-65 246H95"/></g>':'';
-  const storm=kind==='storm'?'<path d="M58 131h49l-32 52h31l-69 84 19-65H17z" fill="#ffd166" stroke="#7b5b22" stroke-width="4"/>':'';
-  const unknown=kind==='variable'?'<text x="55" y="70" text-anchor="middle" fill="#8ee7ba" font-family="DejaVu Sans" font-size="120" font-weight="800">?</text>':'';
-  return `<g transform="translate(${x} ${y}) scale(${scale})"><title>${esc(weatherLabel(code))}</title><circle cx="55" cy="62" r="190" fill="${accent}" opacity=".08"/>${sun}${cloud}${rain}${snow}${fog}${storm}${unknown}</g>`;
+  const clearSun=kind==='clear'?`<circle r="52" fill="${accent}"/><g stroke="${accent}" stroke-width="13" stroke-linecap="round"><path d="M0-94v-24M0 94v24M-94 0h-24M94 0h24M-67-67l-17-17M67 67l17 17M67-67l17-17M-67 67l-17 17"/></g>`:'';
+  const partialSun=kind==='partly'?`<circle cx="-55" cy="-45" r="38" fill="${accent}"/><g stroke="${accent}" stroke-width="9" stroke-linecap="round"><path d="M-55-105v-16M-55 15v16M-115-45h-16M5-45h16M-98-88l-12-12M-12-2L0 10M-12-88L0-100M-98-2l-12 12"/></g>`:'';
+  const cloud=kind!=='clear'?'<path d="M-84 60c-25 0-45-18-45-41 0-22 18-40 41-42 10-32 40-53 75-53 45 0 81 33 85 76 27 4 48 25 48 51 0 29-25 52-57 52H-84z" fill="#f1f8f5" stroke="#9bc6b5" stroke-width="9"/>':'';
+  const rain=(kind==='drizzle'||kind==='rain'||kind==='storm')?`<g stroke="#66c7e8" stroke-width="11" stroke-linecap="round"><path d="M-65 119l-12 25M0 119l-12 25M65 119l-12 25"/>${kind==='rain'||kind==='storm'?'<path d="M-32 158l-12 25M33 158l-12 25"/>':''}</g>`:'';
+  const snow=kind==='snow'?'<g fill="#d8f4ff"><circle cx="-62" cy="137" r="9"/><circle cy="166" r="9"/><circle cx="62" cy="137" r="9"/></g>':'';
+  const fog=kind==='fog'?'<g stroke="#c8d4cf" stroke-width="11" stroke-linecap="round"><path d="M-92 124H74M-64 158H98"/></g>':'';
+  const storm=kind==='storm'?'<path d="M8 96h42l-25 38h25l-52 45 15-35h-34z" fill="#ffd166" stroke="#7b5b22" stroke-width="4"/>':'';
+  const unknown=kind==='variable'?'<text y="42" text-anchor="middle" fill="#8ee7ba" font-family="DejaVu Sans" font-size="130" font-weight="800">?</text>':'';
+  return `<g transform="translate(${x} ${y}) scale(${scale})"><title>${esc(weatherLabel(code))}</title><rect x="-180" y="-180" width="360" height="360" rx="78" fill="${accent}" fill-opacity=".09" stroke="${accent}" stroke-opacity=".14" stroke-width="3"/>${clearSun}${partialSun}${cloud}${rain}${snow}${fog}${storm}${unknown}</g>`;
 }
 
 function wrapText(value,maxChars=22,maxLines=2){

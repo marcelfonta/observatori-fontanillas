@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.23.0";
+const WORKER_VERSION = "22.23.1";
 const WORKER_BUILT = "2026-08-30";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -1400,13 +1400,13 @@ function socialForecastSummary(day, slot){
 
 function socialWeatherGlyphSvg(code){
   const value=Number(code);const clear=value===0;const partly=value<=2;const fog=value===45||value===48;const rain=(value>=51&&value<=67)||(value>=80&&value<=82)||value>=95;const snow=(value>=71&&value<=77)||(value>=85&&value<=86);const storm=value>=95;
-  const sun=(clear||partly)?'<circle cx="58" cy="49" r="25" fill="#ffd166"/><g stroke="#ffd166" stroke-width="6" stroke-linecap="round"><path d="M58 10v-8M58 96v-8M19 49h-8M105 49h-8M30 21l-6-6M92 83l-6-6M86 21l6-6M24 83l6-6"/></g>':'';
-  const cloud=clear?'':'<path d="M28 89c-16 0-28-11-28-25 0-13 11-24 25-25 6-19 24-31 45-31 25 0 45 18 47 42 16 2 27 14 27 29 0 16-14 29-31 29H28z" fill="#f2f8f5" stroke="#8cbba8" stroke-width="4"/>';
-  const drops=rain?'<g stroke="#67cae9" stroke-width="7" stroke-linecap="round"><path d="M38 123l-8 17M72 123l-8 17M106 123l-8 17"/></g>':'';
-  const flakes=snow?'<g fill="#d8f4ff"><circle cx="40" cy="132" r="5"/><circle cx="75" cy="145" r="5"/><circle cx="109" cy="132" r="5"/></g>':'';
-  const mist=fog?'<g stroke="#c8d4cf" stroke-width="6" stroke-linecap="round"><path d="M17 118h105M31 139h108"/></g>':'';
-  const bolt=storm?'<path d="M72 105h24l-16 25h15l-34 39 9-30H51z" fill="#ffd166"/>':'';
-  return `<svg viewBox="-8 -8 168 178" role="img" aria-label="${escapeHtml(socialWeatherLabel(code))}">${sun}${cloud}${drops}${flakes}${mist}${bolt}</svg>`;
+  const sun=clear?'<circle r="52" fill="#ffd166"/><g stroke="#ffd166" stroke-width="13" stroke-linecap="round"><path d="M0-94v-24M0 94v24M-94 0h-24M94 0h24M-67-67l-17-17M67 67l17 17M67-67l17-17M-67 67l-17 17"/></g>':partly?'<circle cx="-55" cy="-45" r="38" fill="#ffd166"/>':'';
+  const cloud=clear?'':'<path d="M-84 60c-25 0-45-18-45-41 0-22 18-40 41-42 10-32 40-53 75-53 45 0 81 33 85 76 27 4 48 25 48 51 0 29-25 52-57 52H-84z" fill="#f2f8f5" stroke="#8cbba8" stroke-width="9"/>';
+  const drops=rain?'<g stroke="#67cae9" stroke-width="11" stroke-linecap="round"><path d="M-65 119l-12 25M0 119l-12 25M65 119l-12 25"/></g>':'';
+  const flakes=snow?'<g fill="#d8f4ff"><circle cx="-62" cy="137" r="9"/><circle cy="166" r="9"/><circle cx="62" cy="137" r="9"/></g>':'';
+  const mist=fog?'<g stroke="#c8d4cf" stroke-width="11" stroke-linecap="round"><path d="M-92 124H74M-64 158H98"/></g>':'';
+  const bolt=storm?'<path d="M8 96h42l-25 38h25l-52 45 15-35h-34z" fill="#ffd166"/>':'';
+  return `<svg viewBox="-180 -180 360 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${escapeHtml(socialWeatherLabel(code))}">${sun}${cloud}${drops}${flakes}${mist}${bolt}</svg>`;
 }
 
 async function socialForecast(){

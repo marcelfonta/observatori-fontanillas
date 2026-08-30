@@ -16,6 +16,11 @@ assert.equal(weatherTheme(95).kind,'storm');
 assert.doesNotMatch(weatherGlyph(0),/fill="#f1f8f5"/);
 assert.match(weatherGlyph(61),/stroke="#66c7e8"/);
 assert.match(weatherGlyph(95),/fill="#ffd166"/);
+for(const code of [0,2,3,45,61,71,80,95]){
+  const glyph=weatherGlyph(code);
+  assert.match(glyph,/<rect x="-180" y="-180" width="360" height="360"/);
+  assert.match(glyph,/transform="translate\(790 510\) scale\(1\)"/);
+}
 const svg=buildSlideSvg({title:'Prova',kicker:'Avui',content:'<text>24°</text>',footer:'Dades reals',weatherCode:61});
 assert.match(svg,/width="1080" height="1920"/);
 assert.match(svg,/METEO FONTANILLAS/);
