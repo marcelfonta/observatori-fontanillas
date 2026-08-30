@@ -1,8 +1,8 @@
-const CACHE = 'observatori-fontanillas-v22-23-1-balanced-icons';
+const CACHE = 'observatori-fontanillas-v22-24-0-xarxes';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
-  '/', '/index.html', '/metodologia.html', '/comparativa.html', '/municipis.html', '/historial-avisos.html', '/privacitat.html', '/condicions.html', '/site.webmanifest',
+  '/', '/index.html', '/metodologia.html', '/comparativa.html', '/municipis.html', '/historial-avisos.html', '/privacitat.html', '/condicions.html', '/xarxes.html', '/site.webmanifest',
   '/css/variables.css', '/css/layout.css', '/css/style.css', '/css/portal.css',
   '/src/app.js', '/src/core/config.js', '/src/core/dom.js', '/src/core/notification-preferences.js', '/src/data/meteorological-ephemerides.js', '/src/data/learning-resources.js', '/src/services/weather-api.js',
   '/src/features/analytics.js', '/src/features/push.js', '/src/features/pwa.js', '/src/features/share.js',
@@ -17,7 +17,7 @@ const APP_SHELL = [
   '/assets/icons/icon-512.png', '/assets/icons/icon-maskable-192.png', '/assets/icons/icon-maskable-512.png',
   '/assets/icons/apple-touch-icon.png', '/assets/icons/apple-touch-icon-v21.png', '/assets/logos/observatori-symbol.svg', '/assets/logos/observatori-lockup.svg',
   '/assets/images/observatori-fontanillas-social-v12-2.png', '/assets/images/observatori-fontanillas-avatar-v21.png',
-  '/assets/images/observatori-fontanillas-social.jpg'
+  '/assets/images/observatori-fontanillas-social.jpg', '/assets/social/publicacio-xarxes-v22-24.png'
 ];
 
 self.addEventListener('install', event => {

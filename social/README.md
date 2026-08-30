@@ -1,4 +1,4 @@
-# Xarxes socials — automatització segura V22.23.1
+# Xarxes socials — automatització segura V22.24.0
 
 Els vídeos del matí i del vespre utilitzen símbols WMO, colors, titulars i consells que canvien amb la predicció real. La pantalla de l’estació identifica explícitament les dades observades i no hi afegeix cap icona predictiva. Les descripcions de Meta, TikTok i X també resumeixen el fenomen, la màxima, la mínima i la probabilitat de pluja. La targeta del migdia incorpora el símbol de la previsió d’avui.
 

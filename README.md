@@ -1,6 +1,6 @@
-# Observatori Meteorològic Fontanillas — V22.23.1
+# Observatori Meteorològic Fontanillas — V22.24.0
 
-Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V22.23.1 equilibra els símbols meteorològics dins un marc quadrat comú perquè sol, núvols, pluja, neu, boira i tempesta mantinguin la mateixa proporció i alineació.
+Portal meteorològic multipàgina de Sant Celoni i el Baix Montseny. La V22.24.0 afegeix un directori públic amb els nou canals oficials i una creativitat vertical preparada per presentar-los a les xarxes.
 
 ### Predicció vs realitat
 
@@ -29,11 +29,12 @@ La V22 desa snapshots de previsió a D1 amb data d’emissió, data vàlida, hor
 - Nou avatar rodó de marca, clar i lluminós, preparat per al portal i els perfils socials.
 - Identitat «Fontanillas · Sant Celoni» fixada al capdamunt del menú; la capçalera pública queda alliberada de la marca i prioritza l’estat «En directe», l’hora i els accessos socials.
 - Pol·len desglossat per espècie amb nivell, color, barra i una explicació prudent del risc orientatiu.
+- Directori `xarxes.html` amb Instagram, YouTube, TikTok, Facebook, X, WhatsApp, Threads, Telegram i Bluesky enllaçats des d’una única adreça.
 
 ## Estructura activa
 
 - `index.html`: portal i vistes principals.
-- `comparativa.html` i `metodologia.html`: pàgines especialitzades amb la mateixa navegació.
+- `comparativa.html`, `metodologia.html` i `xarxes.html`: pàgines especialitzades i directori oficial de canals.
 - `css/`: sistema visual i shell del portal.
 - `src/core/` i `src/services/`: configuració, utilitats i únic accés a l’API.
 - `src/modules/`: mòduls meteorològics reutilitzables.
@@ -57,7 +58,7 @@ Cloudflare Pages continua servint el projecte com a web estàtica. No hi ha pas 
 
 El codi actiu és `worker/index.js`. Conserva la vinculació D1 `DB`, secrets, crons i contractes existents. En publicar V21.2.0 també s’ha de desplegar aquest Worker i aplicar `worker/schema.sql`, que manté `social_drafts` i afegeix el registre `social_publications`. Les credencials `META_SYSTEM_USER_TOKEN`, `BLUESKY_HANDLE`, `BLUESKY_APP_PASSWORD`, `TELEGRAM_BOT_TOKEN` i `TELEGRAM_CHANNEL_ID` es mantenen només a Cloudflare; el Worker no en retorna mai els valors.
 
-La V22.23.1 publica a les 07:00, 14:00 i 20:30. Facebook i Instagram fan Reel + Story al matí i al vespre i imatge al migdia; X fa vídeo, imatge i vídeo a través de Buffer; Bluesky, Telegram i Threads mantenen les tres targetes. TikTok i YouTube conserven els dos vídeos diaris. Els vídeos i les targetes mostren el símbol corresponent a la predicció, normalitzat dins un quadrat de proporcions comunes, mentre les observacions reals es presenten sense confondre-les amb una previsió.
+La V22.24.0 publica a les 07:00, 14:00 i 20:30. Facebook i Instagram fan Reel + Story al matí i al vespre i imatge al migdia; X fa vídeo, imatge i vídeo a través de Buffer; Bluesky, Telegram i Threads mantenen les tres targetes. TikTok i YouTube conserven els dos vídeos diaris. Els vídeos i les targetes mostren el símbol corresponent a la predicció, normalitzat dins un quadrat de proporcions comunes, mentre les observacions reals es presenten sense confondre-les amb una previsió.
 
 Per a Meta es poden definir opcionalment `META_FACEBOOK_PAGE_ID`, `META_FACEBOOK_PAGE_NAME`, `META_INSTAGRAM_ACCOUNT_ID`, `META_GRAPH_VERSION` i `META_INSTAGRAM_IMAGE_URL`. Si no s’indiquen els identificadors, el Worker intenta resoldre la pàgina i el compte professional a partir del token del sistema. La imatge predeterminada d’Instagram és `assets/images/observatori-fontanillas-social.jpg`.
 
