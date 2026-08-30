@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.24.0";
+const WORKER_VERSION = "22.25.0";
 const WORKER_BUILT = "2026-08-30";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -17,6 +17,10 @@ const TIKTOK_OAUTH_REDIRECT_URI = "https://fonta-meteo.marcelfonta.workers.dev/o
 const TIKTOK_OAUTH_SCOPE = "user.info.basic,video.upload";
 const AEMET_PRELITORAL_FEED = "https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAZ690803_RSS.xml";
 const AEMET_PRELITORAL_PAGE = "https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&w=hoy";
+const METEOCAT_SMP_ENDPOINT = "https://api.meteo.cat/pronostic/v2/smp/episodis-oberts";
+const METEOCAT_ALERTS_PAGE = "https://www.meteo.cat/prediccio/general";
+const METEOCAT_VALLES_ORIENTAL_ID = 41;
+const METEOCAT_VALLES_ORIENTAL_NAME = "Vallès Oriental";
 const THREECAT_SEARCH_URL = "https://www.3cat.cat/cercador/";
 const FORECAST_VIDEO_HTML_LIMIT = 900_000;
 const COMPARISON_STATIONS = [
@@ -497,7 +501,7 @@ async function recordAlertEvents(payload, env) {
       const result=await env.DB.prepare(`INSERT OR IGNORE INTO alert_events
         (fingerprint,source,level,phenomenon,title,description,started_at,expires_at)
         VALUES (?,?,?,?,?,?,?,?)`)
-        .bind(fingerprint,'AEMET',entry.level||'unknown',entry.phenomenon||null,entry.title||null,entry.description||null,entry.published||new Date().toISOString(),entry.expires||null).run();
+        .bind(fingerprint,entry.source||payload.source?.name||'AEMET',entry.level||'unknown',entry.phenomenon||null,entry.title||null,entry.description||null,entry.published||new Date().toISOString(),entry.expires||null).run();
       if(result?.meta?.changes) inserted.push({...entry,fingerprint});
     } catch(error){ console.error('Alert history insert error',error); }
   }
@@ -778,6 +782,123 @@ async function checkAlertsAndNotify(env){
     }
   }
   return fresh.length;
+}
+
+function meteocatSevereSocialEnabled(env) {
+  return String(env.METEOCAT_SEVERE_SOCIAL_ENABLED || '').trim().toLowerCase() === 'true';
+}
+
+export function meteocatDangerLevel(perill) {
+  const value=Number(perill);
+  if(value>=5)return {key:'red',label:'Vermell',rank:4};
+  if(value>=3)return {key:'orange',label:'Taronja',rank:3};
+  if(value>=1)return {key:'yellow',label:'Groc',rank:2};
+  return {key:'none',label:'Sense avís',rank:1};
+}
+
+function meteocatPeriodLabel(day, period) {
+  const date=String(day||'').slice(0,10);
+  const match=String(period||'').match(/^(\d{2})-(\d{2})$/);
+  if(!date||!match)return [date,String(period||'')].filter(Boolean).join(' ');
+  const [year,month,dateDay]=date.split('-').map(Number);
+  const startHour=Number(match[1]);
+  const rawEndHour=Number(match[2]);
+  const endHour=rawEndHour===0?24:rawEndHour;
+  const formatter=new Intl.DateTimeFormat('ca-ES',{timeZone:TIME_ZONE,day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+  const label=value=>formatter.format(value).replace(',', '');
+  const start=new Date(Date.UTC(year,month-1,dateDay,startHour));
+  const end=new Date(Date.UTC(year,month-1,dateDay,endHour));
+  return `${label(start)}–${label(end)} h`;
+}
+
+export function parseMeteocatSmpEpisodes(episodes) {
+  const normalized=new Map();
+  for(const episode of Array.isArray(episodes)?episodes:[]){
+    if(String(episode?.estat?.nom||'').toLowerCase()!=='obert')continue;
+    const phenomenon=cleanText(episode?.meteor?.nom||'Fenomen meteorològic',100);
+    for(const warning of Array.isArray(episode?.avisos)?episode.avisos:[]){
+      const warningState=String(warning?.estat||'').toLowerCase();
+      if(warningState && !['vigent','ampliat'].includes(warningState))continue;
+      for(const evolution of Array.isArray(warning?.evolucions)?warning.evolucions:[]){
+        const affected=[];
+        for(const period of Array.isArray(evolution?.periodes)?evolution.periodes:[]){
+          for(const impact of Array.isArray(period?.afectacions)?period.afectacions:[]){
+            if(Number(impact?.idComarca)!==METEOCAT_VALLES_ORIENTAL_ID)continue;
+            const danger=meteocatDangerLevel(impact?.perill);
+            if(danger.rank<3)continue;
+            affected.push({
+              period:meteocatPeriodLabel(evolution?.dia||impact?.dia,period?.nom),
+              danger:Number(impact?.perill),level:danger.key,levelLabel:danger.label,
+              threshold:cleanText(impact?.llindar||'',180),auxiliary:Boolean(impact?.auxiliar),
+            });
+          }
+        }
+        if(!affected.length)continue;
+        const highest=affected.sort((a,b)=>b.danger-a.danger)[0];
+        const periods=[...new Set(affected.map(item=>item.period).filter(Boolean))].sort();
+        const thresholds=[...new Set(affected.map(item=>item.threshold).filter(Boolean))];
+        const distribution=cleanText(evolution?.distribucioGeografica||'',30).toUpperCase();
+        const comment=cleanText(evolution?.comentari||'',500);
+        const day=String(evolution?.dia||warning?.dataInici||'').slice(0,10);
+        const semanticKey=[phenomenon,day,highest.level,highest.danger,periods.join(','),thresholds.join(',')].join('|');
+        const description=[
+          thresholds.length?`Llindar: ${thresholds.join(' / ')}.`:'',
+          periods.length?`Franges: ${periods.join(', ')}.`:'',
+          distribution?`Distribució prevista: ${distribution.toLowerCase()}.`:'',comment,
+        ].filter(Boolean).join(' ');
+        normalized.set(semanticKey,{
+          source:'Meteocat',sourceUrl:METEOCAT_ALERTS_PAGE,
+          title:`Avís ${highest.levelLabel} de ${phenomenon} al ${METEOCAT_VALLES_ORIENTAL_NAME}`,
+          description,phenomenon,level:highest.level,levelLabel:highest.levelLabel,rank:highest.danger,
+          published:warning?.dataEmisio||null,starts:warning?.dataInici||null,expires:warning?.dataFi||null,
+          active:true,scopeKind:'comarca',scopeName:METEOCAT_VALLES_ORIENTAL_NAME,
+          municipality:'Sant Celoni',distribution:distribution||null,periods,semanticKey,
+        });
+      }
+    }
+  }
+  return [...normalized.values()].sort((a,b)=>b.rank-a.rank||String(a.starts||'').localeCompare(String(b.starts||'')));
+}
+
+function localIsoDates(count=3,date=new Date()) {
+  const local=new Intl.DateTimeFormat('en-CA',{timeZone:TIME_ZONE,year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
+  const [year,month,day]=local.split('-').map(Number);
+  return Array.from({length:count},(_,offset)=>new Date(Date.UTC(year,month-1,day+offset)).toISOString().slice(0,10));
+}
+
+async function fetchMeteocatSevereAlerts(env) {
+  const apiKey=String(env.METEOCAT_API_KEY||'').trim();
+  if(!apiKey)return {ok:false,skipped:'api_key_missing',alerts:[]};
+  const results=await Promise.allSettled(localIsoDates().map(async date=>{
+    const response=await fetch(`${METEOCAT_SMP_ENDPOINT}?data=${date}Z`,{
+      headers:{Accept:'application/json','x-api-key':apiKey},cf:{cacheEverything:true,cacheTtl:900},
+    });
+    if(!response.ok)throw new Error(`Meteocat SMP ${response.status}`);
+    const payload=await response.json();
+    if(!Array.isArray(payload))throw new Error('Resposta SMP de Meteocat no reconeguda');
+    return payload;
+  }));
+  const successful=results.filter(item=>item.status==='fulfilled');
+  if(!successful.length)throw results[0]?.reason||new Error('Meteocat SMP no disponible');
+  const alerts=parseMeteocatSmpEpisodes(successful.flatMap(item=>item.value));
+  return {ok:true,source:{name:'Meteocat',area:METEOCAT_VALLES_ORIENTAL_NAME,url:METEOCAT_ALERTS_PAGE},alerts,
+    maxLevel:alerts[0]?.level||'none',partial:successful.length!==results.length};
+}
+
+async function checkMeteocatAlertsAndPublish(env) {
+  if(!meteocatSevereSocialEnabled(env))return {skipped:'automation_disabled'};
+  const payload=await fetchMeteocatSevereAlerts(env);
+  if(!payload.ok)return payload;
+  const fresh=await recordAlertEvents(payload,env);
+  const outcomes=[];
+  for(const entry of fresh){
+    const social=await createOfficialAlertSocialDraft(entry,env);
+    outcomes.push(await publishAutomaticSocialDraft(social,env));
+  }
+  await recordOperationalState(env,'meteocat-severe-social','healthy',{
+    checkedAt:new Date().toISOString(),active:payload.alerts.length,newAlerts:fresh.length,partial:payload.partial,
+  }).catch(()=>{});
+  return {active:payload.alerts.length,published:fresh.length,outcomes};
 }
 
 async function weatherRequest(path, params, env, cacheTtl) {
@@ -1554,11 +1675,19 @@ async function createOfficialAlertSocialDraft(entry,env){
   if(!(await ensureSocialDraftSchema(env)))return {created:false,reason:'storage_disabled'};
   const level=String(entry.level||'').toLowerCase();
   const levelLabel=level==='red'?'VERMELL':'TARONJA';
-  const title=`Avís ${levelLabel} a Sant Celoni · ${entry.phenomenon||'meteorologia'}`;
-  const body=`⚠️ Avís oficial ${levelLabel} per ${entry.phenomenon||'fenomen meteorològic'} a la zona del Prelitoral de Barcelona, que inclou Sant Celoni. L’avís no implica necessàriament afectació a tot el municipi. ${cleanText(entry.description||entry.title,820)} Consulta sempre el detall oficial i segueix les indicacions de Protecció Civil.\n\n${socialHashtags('official_alert')}`;
-  const payload=JSON.stringify({level,levelLabel,phenomenon:entry.phenomenon||null,description:entry.description||entry.title||null,starts:entry.published||null,expires:entry.expires||null});
+  const isMeteocat=entry.source==='Meteocat';
+  const area=isMeteocat?`${entry.scopeName||METEOCAT_VALLES_ORIENTAL_NAME}, la comarca on es troba Sant Celoni`:'Prelitoral de Barcelona, que inclou Sant Celoni';
+  const precision=isMeteocat
+    ? `L’avís és comarcal i no implica necessàriament afectació a tot Sant Celoni${entry.distribution?`; distribució prevista: ${String(entry.distribution).toLowerCase()}`:''}.`
+    : 'L’avís no implica necessàriament afectació a tot el municipi.';
+  const title=isMeteocat
+    ? `Avís ${levelLabel} · ${entry.phenomenon||'meteorologia'} · ${entry.scopeName||METEOCAT_VALLES_ORIENTAL_NAME} (Sant Celoni)`
+    : `Avís ${levelLabel} · ${entry.phenomenon||'meteorologia'} · Sant Celoni`;
+  const body=`⚠️ Avís oficial ${levelLabel} de ${entry.source||'AEMET'} per ${entry.phenomenon||'fenomen meteorològic'} al ${area}. ${precision} ${cleanText(entry.description||entry.title,820)} Consulta sempre el detall oficial i segueix les indicacions de Protecció Civil.\n\n${socialHashtags('official_alert')}`;
+  const payload=JSON.stringify({source:entry.source||'AEMET',level,levelLabel,phenomenon:entry.phenomenon||null,description:entry.description||entry.title||null,starts:entry.starts||entry.published||null,expires:entry.expires||null,scopeKind:entry.scopeKind||null,scopeName:entry.scopeName||null,municipality:entry.municipality||null,distribution:entry.distribution||null,periods:entry.periods||[]});
+  const sourceUrl=entry.sourceUrl||entry.link||AEMET_PRELITORAL_PAGE;
   const result=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts (dedupe_key,kind,status,channels,title,body,source_url,payload) VALUES (?,'official_alert','approved',?,?,?,?,?)`)
-    .bind(`alert:${entry.fingerprint}`,JSON.stringify(['facebook','instagram','bluesky','telegram','threads']),title,body,AEMET_PRELITORAL_PAGE,payload).run();
+    .bind(`alert:${entry.fingerprint}`,JSON.stringify(['facebook','instagram','bluesky','telegram','threads']),title,body,sourceUrl,payload).run();
   const draft=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key = ?').bind(`alert:${entry.fingerprint}`).first();
   return {created:Boolean(result?.meta?.changes),localDate:String(entry.published||'').slice(0,10),draft};
 }
@@ -3910,6 +4039,24 @@ async function recoverIncompleteDailySocialDraft(env, date = new Date()) {
   return { created:false, recovered:true, localDate, slot:'recovery', retryChannels, draft };
 }
 
+async function recoverIncompleteOfficialAlertDraft(env) {
+  if (!socialAutomationEnabled(env) || !(await ensureSocialDraftSchema(env))) return null;
+  const draft=await env.DB.prepare(`SELECT * FROM social_drafts
+    WHERE kind = 'official_alert' AND status IN ('approved','partially_published')
+      AND created_at >= datetime('now','-4 days')
+      AND created_at <= datetime('now','-2 minutes')
+    ORDER BY id DESC LIMIT 1`).first();
+  if(!draft)return null;
+  const publications=await socialPublicationsForDraft(env,draft.id);
+  const published=new Set(publications.filter(item=>item.status==='published').map(item=>item.channel));
+  const attempts=new Map();
+  for(const item of publications)attempts.set(item.channel,(attempts.get(item.channel)||0)+1);
+  const retryChannels=parseSocialChannels(draft.channels)
+    .filter(channel=>!published.has(channel)&&(attempts.get(channel)||0)<SOCIAL_AUTOMATIC_MAX_ATTEMPTS);
+  if(!retryChannels.length)return null;
+  return {created:false,recovered:true,localDate:String(draft.created_at||'').slice(0,10),slot:'official-alert-recovery',retryChannels,draft};
+}
+
 async function adminPublishSocialDraft(request, env, draftId) {
   const auth = await authorizeAdminRequest(request, env);
   if (auth.response) return auth.response;
@@ -4359,13 +4506,20 @@ export default {
       return slot ? createDailySocialDraft(result.observation,env,slot) : recoverIncompleteDailySocialDraft(env);
     })
       .then(result => publishAutomaticSocialDraft(result, env));
+    const aemetAlerts=checkAlertsAndNotify(env);
+    const meteocatAlerts=checkMeteocatAlertsAndPublish(env);
+    const officialAlertRecovery=Promise.allSettled([aemetAlerts,meteocatAlerts])
+      .then(()=>recoverIncompleteOfficialAlertDraft(env))
+      .then(result=>publishAutomaticSocialDraft(result,env));
     const observedJob=(label,promise)=>promise.catch(error=>{console.error(JSON.stringify({event:'scheduled_job_failed',job:label,error:cleanText(error.message,500)}));throw error;});
     const jobs = [
       observedJob('observation',capture),
       observedJob('forecast',captureForecastSnapshot(env)),
       observedJob('social',social),
       observedJob('meta-video',runAutomaticMetaVideos(env)),
-      observedJob('alerts',checkAlertsAndNotify(env)),
+      observedJob('alerts',aemetAlerts),
+      observedJob('meteocat-severe-social',meteocatAlerts),
+      observedJob('official-alert-social-recovery',officialAlertRecovery),
       observedJob('preflight',runDailyIntegrationPreflight(env)),
       observedJob('database-maintenance',runDatabaseMaintenance(env)),
       observedJob('social-video-cleanup',cleanupSocialVideos(env)),

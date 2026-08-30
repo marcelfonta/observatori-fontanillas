@@ -2,6 +2,9 @@
 
 ## Manteniment obert — En curs
 
+- [x] Preparar publicacions automàtiques per avisos taronja i vermell de Meteocat que afectin el Vallès Oriental, amb Sant Celoni identificat com a municipi de la comarca i sense exagerar l'abast local.
+- [ ] Desar `METEOCAT_API_KEY` com a secret de Cloudflare, desplegar i verificar el primer cicle sense avisos abans d'activar una publicació real.
+
 - [x] Crear una publicació de presentació de les nou xarxes i una pàgina oficial única amb tots els enllaços clicables.
 
 - [x] Ordenar les nou xarxes segons l’ús del projecte i la popularitat, mantenint Instagram, TikTok i YouTube com a accessos directes en mòbil.

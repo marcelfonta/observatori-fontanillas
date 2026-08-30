@@ -1,5 +1,13 @@
 # Changelog
 
+## V22.25.0 — Avisos severs de Meteocat — 2026-08-30
+
+- El Worker consulta l'API oficial de Situacions Meteorològiques de Perill per avui i els dos dies següents, amb memòria cau de quinze minuts.
+- Només prepara i publica avisos vigents taronja o vermell del Vallès Oriental (codi oficial 41); ignora grocs, altres comarques i esborranys.
+- El text identifica Sant Celoni com a municipi de la comarca, manté la distribució local/extensa/general i les franges oficials de sis hores, i evita afirmar una afectació municipal que Meteocat no concreti.
+- Cada combinació de fenomen, nivell, dia, llindar i franges queda deduplicada a D1. La funció roman inactiva si falta el secret `METEOCAT_API_KEY`.
+- Si un canal falla, el Worker recupera només els canals pendents al cicle següent, amb un màxim de quatre intents i sense repetir els que ja han publicat.
+
 ## V22.24.0 — Directori social i publicació de presentació — 2026-08-30
 
 - Nova pàgina pública `xarxes.html` amb els nou canals oficials i enllaços directes, pensada també com a destinació única des d’Instagram.
