@@ -1,5 +1,5 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.25.0";
+const WORKER_VERSION = "22.25.1";
 const WORKER_BUILT = "2026-08-30";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -784,8 +784,10 @@ async function checkAlertsAndNotify(env){
   return fresh.length;
 }
 
-function meteocatSevereSocialEnabled(env) {
-  return String(env.METEOCAT_SEVERE_SOCIAL_ENABLED || '').trim().toLowerCase() === 'true';
+function meteocatAlertSocialEnabled(env) {
+  const configured=String(env.METEOCAT_ALERT_SOCIAL_ENABLED || '').trim().toLowerCase();
+  if(configured)return configured==='true';
+  return String(env.METEOCAT_SEVERE_SOCIAL_ENABLED || '').trim().toLowerCase()==='true';
 }
 
 export function meteocatDangerLevel(perill) {
@@ -825,7 +827,7 @@ export function parseMeteocatSmpEpisodes(episodes) {
           for(const impact of Array.isArray(period?.afectacions)?period.afectacions:[]){
             if(Number(impact?.idComarca)!==METEOCAT_VALLES_ORIENTAL_ID)continue;
             const danger=meteocatDangerLevel(impact?.perill);
-            if(danger.rank<3)continue;
+            if(danger.rank<2)continue;
             affected.push({
               period:meteocatPeriodLabel(evolution?.dia||impact?.dia,period?.nom),
               danger:Number(impact?.perill),level:danger.key,levelLabel:danger.label,
@@ -866,7 +868,7 @@ function localIsoDates(count=3,date=new Date()) {
   return Array.from({length:count},(_,offset)=>new Date(Date.UTC(year,month-1,day+offset)).toISOString().slice(0,10));
 }
 
-async function fetchMeteocatSevereAlerts(env) {
+async function fetchMeteocatAlerts(env) {
   const apiKey=String(env.METEOCAT_API_KEY||'').trim();
   if(!apiKey)return {ok:false,skipped:'api_key_missing',alerts:[]};
   const results=await Promise.allSettled(localIsoDates().map(async date=>{
@@ -886,8 +888,8 @@ async function fetchMeteocatSevereAlerts(env) {
 }
 
 async function checkMeteocatAlertsAndPublish(env) {
-  if(!meteocatSevereSocialEnabled(env))return {skipped:'automation_disabled'};
-  const payload=await fetchMeteocatSevereAlerts(env);
+  if(!meteocatAlertSocialEnabled(env))return {skipped:'automation_disabled'};
+  const payload=await fetchMeteocatAlerts(env);
   if(!payload.ok)return payload;
   const fresh=await recordAlertEvents(payload,env);
   const outcomes=[];
@@ -895,7 +897,7 @@ async function checkMeteocatAlertsAndPublish(env) {
     const social=await createOfficialAlertSocialDraft(entry,env);
     outcomes.push(await publishAutomaticSocialDraft(social,env));
   }
-  await recordOperationalState(env,'meteocat-severe-social','healthy',{
+  await recordOperationalState(env,'meteocat-alert-social','healthy',{
     checkedAt:new Date().toISOString(),active:payload.alerts.length,newAlerts:fresh.length,partial:payload.partial,
   }).catch(()=>{});
   return {active:payload.alerts.length,published:fresh.length,outcomes};
@@ -1674,7 +1676,7 @@ async function createDailySocialDraft(observation, env, slot = null) {
 async function createOfficialAlertSocialDraft(entry,env){
   if(!(await ensureSocialDraftSchema(env)))return {created:false,reason:'storage_disabled'};
   const level=String(entry.level||'').toLowerCase();
-  const levelLabel=level==='red'?'VERMELL':'TARONJA';
+  const levelLabel=level==='red'?'VERMELL':level==='orange'?'TARONJA':'GROC';
   const isMeteocat=entry.source==='Meteocat';
   const area=isMeteocat?`${entry.scopeName||METEOCAT_VALLES_ORIENTAL_NAME}, la comarca on es troba Sant Celoni`:'Prelitoral de Barcelona, que inclou Sant Celoni';
   const precision=isMeteocat
@@ -4518,7 +4520,7 @@ export default {
       observedJob('social',social),
       observedJob('meta-video',runAutomaticMetaVideos(env)),
       observedJob('alerts',aemetAlerts),
-      observedJob('meteocat-severe-social',meteocatAlerts),
+      observedJob('meteocat-alert-social',meteocatAlerts),
       observedJob('official-alert-social-recovery',officialAlertRecovery),
       observedJob('preflight',runDailyIntegrationPreflight(env)),
       observedJob('database-maintenance',runDatabaseMaintenance(env)),

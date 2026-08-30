@@ -20,7 +20,6 @@ const warning=(idComarca,perill,estat='Vigent')=>({
 const parsed=parseMeteocatSmpEpisodes([
   warning(41,4),
   warning(13,6),
-  warning(41,2),
   warning(41,6,'Esborrany'),
 ]);
 
@@ -34,6 +33,10 @@ assert.deepEqual(parsed[0].periods,['30/08 14:00–30/08 20:00 h']);
 assert.match(parsed[0].description,/Intensitat > 20 mm \/ 30 minuts/);
 assert.match(parsed[0].description,/local/);
 
+const yellow=parseMeteocatSmpEpisodes([warning(41,2)]);
+assert.equal(yellow.length,1,'Els avisos grocs vigents del Vallès Oriental també s’han de publicar.');
+assert.equal(yellow[0].level,'yellow');
+
 const red=parseMeteocatSmpEpisodes([warning(41,5)]);
 assert.equal(red[0].level,'red');
 
@@ -41,5 +44,6 @@ const worker=await readFile(new URL('../worker/index.js',import.meta.url),'utf8'
 assert.match(worker,/recoverIncompleteOfficialAlertDraft/);
 assert.match(worker,/SOCIAL_AUTOMATIC_MAX_ATTEMPTS/);
 assert.match(worker,/official-alert-social-recovery/);
+assert.match(worker,/level==='orange'\?'TARONJA':'GROC'/);
 
-console.log('Avisos Meteocat: filtre comarcal, nivell sever i precisió territorial correctes');
+console.log('Avisos Meteocat: filtre comarcal, nivells oficials i precisió territorial correctes');
