@@ -1,5 +1,14 @@
 # Changelog
 
+## V22.23.0 — Publicacions meteorològiques dinàmiques — 2026-08-30
+
+- Eliminat el núvol fix dels Shorts i Reels: cada predicció mostra ara un símbol vectorial propi per cel serè, núvols, boira, pluja, neu, ruixats o tempesta.
+- Separades visualment les dades observades de la predicció; la pantalla «Ara mateix» no mostra cap símbol de temps futur.
+- Redissenyades les cinc pantalles amb jerarquia, colors per fenomen, consells útils, tendència de tres dies i textos protegits contra solapaments.
+- Afegits moviment subtil i transicions suaus al vídeo de 25 segons, verificats amb una renderització completa local.
+- Adaptats els textos de Facebook, Instagram, TikTok i X a la previsió real de la franja, mantenint els límits de cada plataforma.
+- Afegit el símbol de la predicció d’avui a la targeta del migdia i proves de regressió per protegir la nova qualitat visual.
+
 ## V22.22.2 — Xarxes ordenades per prioritat — 2026-08-29
 
 - Reordenats els accessos socials d’escriptori, peu i desplegable mòbil segons l’ús actual del projecte i la popularitat: Instagram, YouTube, TikTok, Facebook, X, WhatsApp, Threads, Telegram i Bluesky.

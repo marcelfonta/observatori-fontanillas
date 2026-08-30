@@ -1,6 +1,6 @@
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.22.2";
-const WORKER_BUILT = "2026-08-29";
+const WORKER_VERSION = "22.23.0";
+const WORKER_BUILT = "2026-08-30";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
@@ -1372,6 +1372,43 @@ function socialWeatherLabel(code){
   return 'temps variable';
 }
 
+function socialWeatherEmoji(code){
+  const value=Number(code);
+  if(value===0)return '☀️';
+  if(value<=2)return '🌤️';
+  if(value===3)return '☁️';
+  if(value<=48)return '🌫️';
+  if(value<=67)return '🌧️';
+  if(value<=77)return '🌨️';
+  if(value<=86)return '🌦️';
+  if(value>=95)return '⛈️';
+  return '🌡️';
+}
+
+function socialForecastFocus(forecast, slot){
+  if(!Array.isArray(forecast))return null;
+  return forecast[slot==='evening'?1:0]||null;
+}
+
+function socialForecastSummary(day, slot){
+  if(!day)return '';
+  const when=slot==='evening'?'Demà':'Avui';
+  const temperatures=finite(day.max)===null?'':finite(day.min)===null?` · màx. ${socialNumber(day.max,0)}°`:` · ${socialNumber(day.max,0)}°/${socialNumber(day.min,0)}°`;
+  const rain=finite(day.rainProbability)===null?'':` · ${socialNumber(day.rainProbability,0)}% pluja`;
+  return `${socialWeatherEmoji(day.weatherCode)} ${when}: ${day.condition||socialWeatherLabel(day.weatherCode)}${temperatures}${rain}`;
+}
+
+function socialWeatherGlyphSvg(code){
+  const value=Number(code);const clear=value===0;const partly=value<=2;const fog=value===45||value===48;const rain=(value>=51&&value<=67)||(value>=80&&value<=82)||value>=95;const snow=(value>=71&&value<=77)||(value>=85&&value<=86);const storm=value>=95;
+  const sun=(clear||partly)?'<circle cx="58" cy="49" r="25" fill="#ffd166"/><g stroke="#ffd166" stroke-width="6" stroke-linecap="round"><path d="M58 10v-8M58 96v-8M19 49h-8M105 49h-8M30 21l-6-6M92 83l-6-6M86 21l6-6M24 83l6-6"/></g>':'';
+  const cloud=clear?'':'<path d="M28 89c-16 0-28-11-28-25 0-13 11-24 25-25 6-19 24-31 45-31 25 0 45 18 47 42 16 2 27 14 27 29 0 16-14 29-31 29H28z" fill="#f2f8f5" stroke="#8cbba8" stroke-width="4"/>';
+  const drops=rain?'<g stroke="#67cae9" stroke-width="7" stroke-linecap="round"><path d="M38 123l-8 17M72 123l-8 17M106 123l-8 17"/></g>':'';
+  const flakes=snow?'<g fill="#d8f4ff"><circle cx="40" cy="132" r="5"/><circle cx="75" cy="145" r="5"/><circle cx="109" cy="132" r="5"/></g>':'';
+  const mist=fog?'<g stroke="#c8d4cf" stroke-width="6" stroke-linecap="round"><path d="M17 118h105M31 139h108"/></g>':'';
+  const bolt=storm?'<path d="M72 105h24l-16 25h15l-34 39 9-30H51z" fill="#ffd166"/>':'';
+  return `<svg viewBox="-8 -8 168 178" role="img" aria-label="${escapeHtml(socialWeatherLabel(code))}">${sun}${cloud}${drops}${flakes}${mist}${bolt}</svg>`;
+}
+
 async function socialForecast(){
   const params=new URLSearchParams({latitude:String(STATION_LATITUDE),longitude:String(STATION_LONGITUDE),timezone:TIME_ZONE,forecast_days:'4',daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max'});
   const response=await fetch(`https://api.open-meteo.com/v1/forecast?${params}`,{headers:{Accept:'application/json'},cf:{cacheEverything:true,cacheTtl:900}});
@@ -2661,9 +2698,10 @@ async function bufferXChannel(env) {
   return bufferChannel(env, 'twitter', 'X');
 }
 
-function bufferTikTokCaption(localDate, slot) {
-  const period = slot === 'morning' ? 'Actualització de matí' : 'Actualització de vespre';
-  return `${period}: dades reals i previsió de ${localDate} des de Meteo Fontanillas, Sant Celoni. #meteo #temps #santceloni #montseny`;
+function bufferTikTokCaption(localDate, slot, day = null) {
+  const forecast=socialForecastSummary(day,slot);
+  const fallback=slot==='morning'?'El temps d’avui':'La previsió de demà';
+  return truncateBufferText(`${forecast||fallback} · Sant Celoni. Dades reals i previsió. #meteo #SantCeloni #Montseny`,150);
 }
 
 async function createBufferTikTokPost(env, { localDate, slot, draft = false }) {
@@ -2675,8 +2713,9 @@ async function createBufferTikTokPost(env, { localDate, slot, draft = false }) {
   if (!draft && publishAt.getTime() - Date.now() < 5 * 60_000) {
     throw Object.assign(new Error('No queda prou marge per programar el TikTok amb seguretat.'), { status:409 });
   }
+  const forecast=await socialForecast().catch(()=>[]);
   const input = {
-    text:bufferTikTokCaption(localDate, slot),
+    text:bufferTikTokCaption(localDate, slot, socialForecastFocus(forecast,slot)),
     channelId:channel.id,
     schedulingType:'automatic',
     mode:draft ? 'addToQueue' : 'customScheduled',
@@ -2776,15 +2815,13 @@ function truncateBufferText(value, maxLength = 280) {
   return graphemes.length <= maxLength ? graphemes.join('') : `${graphemes.slice(0, Math.max(1, maxLength - 1)).join('')}…`;
 }
 
-function bufferXCaption(localDate, slot, draft = null) {
+function bufferXCaption(localDate, slot, draft = null, day = null) {
   if (slot === 'midday' && draft) {
     const body = cleanText(draft.body, 3900).split(/\n\s*\n/)[0].replace(/\s+/g, ' ').trim();
     return truncateBufferText(`Actualització del migdia a Sant Celoni · ${localDate}\n\n${body}\n\n#MeteoFontanillas #SantCeloni`, 280);
   }
-  const intro = slot === 'morning'
-    ? `Bon dia! El temps d’avui a Sant Celoni · ${localDate}. Dades reals i previsió del dia en vídeo.`
-    : `Balanç meteorològic del dia i previsió de demà a Sant Celoni · ${localDate}.`;
-  return truncateBufferText(`${intro}\n\nTotes les dades: https://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #Montseny`, 280);
+  const intro=socialForecastSummary(day,slot)||(slot==='morning'?'Bon dia! El temps d’avui a Sant Celoni.':'Balanç del dia i previsió de demà a Sant Celoni.');
+  return truncateBufferText(`${intro}\n\n🎥 Dades reals, evolució i previsió completa al vídeo.\nhttps://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #Montseny`, 280);
 }
 
 async function bufferPostState(env, postId) {
@@ -2820,8 +2857,9 @@ async function createBufferXPost(env, { localDate, slot, draft = null }) {
     assets = [{ video:{ url:await bufferVideoUrl(key, env) } }];
   }
   const shareNow = delay <= 0;
+  const forecast=slot==='midday'?[]:await socialForecast().catch(()=>[]);
   const input = {
-    text:bufferXCaption(localDate, slot, draft),
+    text:bufferXCaption(localDate, slot, draft, socialForecastFocus(forecast,slot)),
     channelId:channel.id,
     schedulingType:'automatic',
     mode:shareNow ? 'shareNow' : 'customScheduled',
@@ -3051,7 +3089,7 @@ function socialCardHtml(draft) {
   const today=forecast[0]||{};const tomorrow=forecast[1]||{};const afterTomorrow=forecast[2]||{};
   const isAlert=draft.kind==='official_alert';
   const alertColor=data.level==='red'?'#ef5350':'#ffad42';
-  const main=isAlert?`<p class="eyebrow" style="color:${alertColor}">AVÍS OFICIAL · ${escapeHtml(data.levelLabel||'')}</p><h1>Avís per ${escapeHtml(data.phenomenon||'fenomen meteorològic')}</h1><p class="stamp">Àrea del Prelitoral de Barcelona · Sant Celoni</p><section class="alert" style="border-color:${alertColor}"><b style="color:${alertColor}">${escapeHtml(data.levelLabel||'AVÍS')}</b><p>${escapeHtml(cleanText(data.description||draft.body,700))}</p></section><p class="advice">Consulta el detall oficial i segueix les indicacions de Protecció Civil.</p>`:`<p class="eyebrow">${escapeHtml(data.eyebrow||'El temps ara')}</p><h1>Dades reals i previsió per entendre el dia.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p>
+  const main=isAlert?`<p class="eyebrow" style="color:${alertColor}">AVÍS OFICIAL · ${escapeHtml(data.levelLabel||'')}</p><h1>Avís per ${escapeHtml(data.phenomenon||'fenomen meteorològic')}</h1><p class="stamp">Àrea del Prelitoral de Barcelona · Sant Celoni</p><section class="alert" style="border-color:${alertColor}"><b style="color:${alertColor}">${escapeHtml(data.levelLabel||'AVÍS')}</b><p>${escapeHtml(cleanText(data.description||draft.body,700))}</p></section><p class="advice">Consulta el detall oficial i segueix les indicacions de Protecció Civil.</p>`:`<div class="headline"><div><p class="eyebrow">${escapeHtml(data.eyebrow||'El temps ara')}</p><h1>Dades reals i previsió per entendre el dia.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p></div>${finite(today.weatherCode)!==null?`<div class="forecast-symbol">${socialWeatherGlyphSvg(today.weatherCode)}<b>${escapeHtml(today.condition||socialWeatherLabel(today.weatherCode))}</b><span>Predicció d’avui</span></div>`:''}</div>
     <section class="hero"><div><small>Temperatura</small><div class="temp">${escapeHtml(temperature)}</div></div><div class="feels">Sensació tèrmica<b>${escapeHtml(feeling)}</b></div></section>
     <section class="grid"><div class="metric"><span>Humitat</span><b>${escapeHtml(humidity)}</b></div><div class="metric"><span>Vent · ratxa</span><b>${escapeHtml(wind)} · ${escapeHtml(gust)}</b></div></section>
     ${forecast.length?`<section class="forecast"><div><span>AVUI · ${escapeHtml(today.condition||'')}</span><b>${escapeHtml(display(today.max,'°',0))} / ${escapeHtml(display(today.min,'°',0))}</b><small>${escapeHtml(display(today.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(today.gust,' km/h',0))}</small></div><div><span>DEMÀ · ${escapeHtml(tomorrow.condition||'')}</span><b>${escapeHtml(display(tomorrow.max,'°',0))} / ${escapeHtml(display(tomorrow.min,'°',0))}</b><small>${escapeHtml(display(tomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(tomorrow.gust,' km/h',0))}</small></div><div><span>DEMÀ PASSAT · ${escapeHtml(afterTomorrow.condition||'')}</span><b>${escapeHtml(display(afterTomorrow.max,'°',0))} / ${escapeHtml(display(afterTomorrow.min,'°',0))}</b><small>${escapeHtml(display(afterTomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(afterTomorrow.gust,' km/h',0))}</small></div></section>`:`<section class="grid"><div class="metric"><span>Pressió</span><b>${escapeHtml(pressure)}</b></div><div class="metric"><span>Pluja acumulada avui</span><b>${escapeHtml(rain)}</b></div></section>`}`;
@@ -3059,7 +3097,7 @@ function socialCardHtml(draft) {
     *{box-sizing:border-box}html,body{margin:0;width:1080px;height:1350px;overflow:hidden;font-family:Arial,sans-serif;background:#061713;color:#f5faf7}
     body{padding:64px;background:radial-gradient(circle at 84% 10%,#286d55 0,rgba(40,109,85,.18) 28%,transparent 44%),linear-gradient(145deg,#061713,#0b241c 62%,#102e24)}
     .top{display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:20px}.mark{width:92px;height:92px;border-radius:22px;object-fit:cover;border:2px solid rgba(255,255,255,.5)}.brand b{font-size:38px}.brand span{display:block;color:#a9beb5;font-size:21px;margin-top:5px}.live{padding:15px 22px;border:1px solid #5e8d79;border-radius:999px;color:#b9f0ce;font-weight:800;letter-spacing:2px;font-size:18px}
-    .eyebrow{margin:94px 0 20px;color:#8fe0ad;font-weight:800;letter-spacing:4px;font-size:22px;text-transform:uppercase}h1{margin:0;font-size:70px;line-height:1.02;letter-spacing:-3px;max-width:850px}.stamp{margin-top:22px;color:#b2c5bc;font-size:26px}.hero{margin-top:62px;display:flex;align-items:flex-end;justify-content:space-between;padding:42px;border-radius:34px;border:1px solid #416d5b;background:rgba(12,43,33,.84)}.hero small{display:block;color:#9db5aa;font-size:23px;margin-bottom:12px}.temp{font-size:138px;line-height:.86;font-weight:900;letter-spacing:-8px}.feels{text-align:right;font-size:28px;color:#cfe0d8}.feels b{display:block;color:#fff;font-size:42px;margin-top:10px}
+    .headline{display:grid;grid-template-columns:minmax(0,1fr) 205px;gap:30px;align-items:end}.eyebrow{margin:78px 0 20px;color:#8fe0ad;font-weight:800;letter-spacing:4px;font-size:22px;text-transform:uppercase}h1{margin:0;font-size:64px;line-height:1.02;letter-spacing:-3px;max-width:760px}.stamp{margin-top:22px;color:#b2c5bc;font-size:24px}.forecast-symbol{align-self:end;padding:18px 16px 16px;border-radius:30px;border:1px solid #477764;background:rgba(7,31,24,.86);text-align:center}.forecast-symbol svg{display:block;width:150px;height:150px;margin:-15px auto -8px}.forecast-symbol b,.forecast-symbol span{display:block}.forecast-symbol b{font-size:21px;color:#f5faf7}.forecast-symbol span{font-size:15px;color:#8fe0ad;margin-top:6px;text-transform:uppercase;letter-spacing:1px}.hero{margin-top:44px;display:flex;align-items:flex-end;justify-content:space-between;padding:42px;border-radius:34px;border:1px solid #416d5b;background:rgba(12,43,33,.84)}.hero small{display:block;color:#9db5aa;font-size:23px;margin-bottom:12px}.temp{font-size:138px;line-height:.86;font-weight:900;letter-spacing:-8px}.feels{text-align:right;font-size:28px;color:#cfe0d8}.feels b{display:block;color:#fff;font-size:42px;margin-top:10px}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.metric{padding:25px 30px;border-radius:25px;border:1px solid #315c4b;background:rgba(5,28,22,.74)}.metric span{display:block;color:#a8beb4;font-size:21px;margin-bottom:9px}.metric b{font-size:34px}.forecast{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}.forecast div{padding:22px 20px;border-radius:25px;border:1px solid #477764;background:rgba(7,31,24,.92)}.forecast span,.forecast small{display:block;color:#91d8ad;font-size:16px;line-height:1.25}.forecast b{display:block;font-size:31px;margin:11px 0}.alert{margin-top:70px;padding:45px;border:2px solid;border-radius:34px;background:rgba(5,28,22,.82)}.alert b{font-size:56px}.alert p{font-size:34px;line-height:1.32}.advice{font-size:29px;line-height:1.35;color:#d7e5de;margin-top:36px}.footer{position:absolute;left:64px;right:64px;bottom:58px;display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid #315c4b;color:#aec3b9;font-size:21px}.footer strong{color:#8fe0ad}
   </style></head><body>
     <div class="top"><div class="brand"><img class="mark" src="https://meteo.fontanillas.cat/assets/icons/icon-512.png" alt=""><div><b>Meteo Fontanillas</b><span>Observatori meteorològic · Sant Celoni</span></div></div><div class="live">${isAlert?'AEMET':'DADA REAL'}</div></div>
@@ -3267,9 +3305,11 @@ async function publishInstagram(draft, env) {
 
 const SOCIAL_REEL_SLOT = new Set(['morning','evening']);
 
-function socialReelCaption(localDate, slot) {
-  const period = slot === 'morning' ? 'matí' : 'vespre';
-  return `El temps a Sant Celoni · actualització del ${period} (${localDate}).\n\nDades meteorològiques reals i previsió de Meteo Fontanillas.\nhttps://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #ElTemps #Meteo`;
+async function socialReelCaption(localDate, slot) {
+  const forecast=await socialForecast().catch(()=>[]);
+  const summary=socialForecastSummary(socialForecastFocus(forecast,slot),slot);
+  const fallback=slot==='morning'?'El temps d’avui a Sant Celoni.':'Balanç d’avui i previsió de demà a Sant Celoni.';
+  return `${summary||fallback}\n\n🎥 Mira les dades reals, l’evolució i la previsió completa.\n📍 Observatori Meteo Fontanillas · Sant Celoni\n🔗 https://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #BaixMontseny #ElTemps #MeteoCatalunya`;
 }
 
 async function checkInstagramReel(containerId, accessToken, env) {
@@ -3474,7 +3514,7 @@ async function publishSocialReelsForSlot(env, localDate, slot, { force=false } =
     await recordOperationalState(env, serviceKey, 'down', { localDate, slot, outcomes:previousOutcomes, error });
     return { ok:false, status:409, error, outcomes:previousOutcomes, retryable:true };
   }
-  const payload = { videoUrl:await socialVideoUrl(key, env, 3600), caption:socialReelCaption(localDate, slot) };
+  const payload = { videoUrl:await socialVideoUrl(key, env, 3600), caption:await socialReelCaption(localDate, slot) };
   const outcomes = [];
   for (const [channel, publisher] of [['instagram', publishInstagramReel], ['facebook', publishFacebookReel]]) {
     const previousOutcome = previousOutcomes.find(item => item?.channel === channel);

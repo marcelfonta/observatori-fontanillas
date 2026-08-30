@@ -64,7 +64,7 @@ global.fetch=originalFetch;
 assert.equal(authorized.status,200);
 assert.match(authorized.headers.get('Cache-Control'),/no-store/);
 const adminPayload=await authorized.json();
-assert.equal(adminPayload.worker.version,'22.22.2');
+assert.equal(adminPayload.worker.version,'22.23.0');
 assert.equal(adminPayload.station.ok,true);
 assert.equal(adminPayload.database.observations,1200);
 assert.equal(adminPayload.database.totalRows,1205);
