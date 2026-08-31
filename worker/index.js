@@ -8,6 +8,8 @@ const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
 const SOCIAL_AUTOMATIC_MAX_ATTEMPTS = 4;
+const X_WEIGHTED_MAX_LENGTH = 280;
+const X_WEIGHTED_SAFE_LENGTH = 275;
 const PERIODIC_SOCIAL_DEFAULT_TIME = '12:00';
 const PERIODIC_SOCIAL_KINDS = new Set(['weekly_summary','monthly_summary','seasonal_summary','annual_summary']);
 const STATION_EVENT_MAX_PER_DAY = 2;
@@ -2783,6 +2785,26 @@ async function socialPublicationsForDraft(env, draftId) {
   return result?.results || [];
 }
 
+function socialRetryAttemptCount(publications,channel) {
+  return publications.filter(item=>item.channel===channel && !(
+    channel==='x'
+    && Number(item.response_code)!==422
+    && isBufferXLengthError(item.error)
+  )).length;
+}
+
+function socialChannelCanRetry(publications,channel) {
+  const latest=publications.find(item=>item.channel===channel);
+  if(latest?.status==='failed' && Number(latest.response_code)===422)return false;
+  return socialRetryAttemptCount(publications,channel)<SOCIAL_AUTOMATIC_MAX_ATTEMPTS;
+}
+
+function pendingSocialRetryChannels(draft,publications) {
+  const published=new Set(publications.filter(item=>item.status==='published').map(item=>item.channel));
+  return parseSocialChannels(draft.channels)
+    .filter(channel=>!published.has(channel)&&socialChannelCanRetry(publications,channel));
+}
+
 async function adminSocialDrafts(request, env, url) {
   const auth = await authorizeAdminRequest(request, env);
   if (auth.response) return auth.response;
@@ -3300,6 +3322,78 @@ function truncateBufferText(value, maxLength = 280) {
   return graphemes.length <= maxLength ? graphemes.join('') : `${graphemes.slice(0, Math.max(1, maxLength - 1)).join('')}…`;
 }
 
+function xCodePointWeight(codePoint) {
+  return codePoint <= 0x10ff
+    || (codePoint >= 0x2000 && codePoint <= 0x200d)
+    || (codePoint >= 0x2010 && codePoint <= 0x201f)
+    || (codePoint >= 0x2032 && codePoint <= 0x2037)
+    ? 1 : 2;
+}
+
+function xTextTokens(value) {
+  const text=String(value||'').normalize('NFC');
+  const urls=/https?:\/\/[^\s]+/giu;
+  const segments=[];
+  let cursor=0;
+  for(const match of text.matchAll(urls)){
+    const index=Number(match.index)||0;
+    if(index>cursor)segments.push({value:text.slice(cursor,index),url:false});
+    segments.push({value:match[0],url:true});
+    cursor=index+match[0].length;
+  }
+  if(cursor<text.length)segments.push({value:text.slice(cursor),url:false});
+  const segmenter=new Intl.Segmenter('ca',{granularity:'grapheme'});
+  return segments.flatMap(segment=>segment.url
+    ? [{value:segment.value,weight:23}]
+    : [...segmenter.segment(segment.value)].map(({segment:grapheme})=>({
+      value:grapheme,
+      weight:/\p{Extended_Pictographic}/u.test(grapheme)
+        ? 2
+        : [...grapheme].reduce((total,character)=>total+xCodePointWeight(character.codePointAt(0)),0),
+    })));
+}
+
+export function xWeightedLength(value) {
+  return xTextTokens(value).reduce((total,token)=>total+token.weight,0);
+}
+
+export function truncateBufferXText(value, maxLength = X_WEIGHTED_SAFE_LENGTH) {
+  const normalized=String(value||'').trim().normalize('NFC');
+  if(xWeightedLength(normalized)<=maxLength)return normalized;
+  const ellipsis='…';
+  const limit=Math.max(1,Math.min(X_WEIGHTED_MAX_LENGTH,Number(maxLength)||X_WEIGHTED_SAFE_LENGTH));
+  const selected=[];
+  let weight=0;
+  for(const token of xTextTokens(normalized)){
+    if(weight+token.weight+1>limit)break;
+    selected.push(token.value);
+    weight+=token.weight;
+  }
+  return `${selected.join('').trimEnd()}${ellipsis}`;
+}
+
+function bufferXSpecialCaption(draft) {
+  const source=cleanText(draft.source_url,500);
+  const suffix=source?`\n\n${source}`:'';
+  const prefix=[cleanText(draft.title,180),cleanText(draft.body,3900)].filter(Boolean).join('\n\n');
+  const prefixLimit=Math.max(1,X_WEIGHTED_SAFE_LENGTH-xWeightedLength(suffix));
+  return `${truncateBufferXText(prefix,prefixLimit)}${suffix}`;
+}
+
+function isBufferXLengthError(value) {
+  return /(?:cannot exceed|m[aà]xim(?:a)?).{0,20}280|invalid post.{0,80}(?:twitter|\bx\b)/iu.test(String(value||''));
+}
+
+function bufferXMutationError(message,fallback) {
+  const detail=cleanText(message||fallback,500);
+  const permanent=isBufferXLengthError(detail);
+  return Object.assign(new Error(detail),{
+    status:permanent?422:502,
+    responseCode:permanent?422:null,
+    retryable:!permanent,
+  });
+}
+
 function bufferXCaption(localDate, slot, draft = null, day = null) {
   if (slot === 'midday' && draft) {
     const body = cleanText(draft.body, 3900).split(/\n\s*\n/)[0].replace(/\s+/g, ' ').trim();
@@ -3359,7 +3453,7 @@ async function createBufferXPost(env, { localDate, slot, draft = null }) {
   }`, { input });
   const result = data.createPost || {};
   if (result.message || !result.post?.id || result.post.status === 'error') {
-    throw Object.assign(new Error(cleanText(result.message || 'Buffer no ha creat la publicació d’X.', 500)), { status:502 });
+    throw bufferXMutationError(result.message,'Buffer no ha creat la publicació d’X.');
   }
   return {
     id:String(result.post.id), status:result.post.status || (shareNow ? 'sending' : 'scheduled'),
@@ -3372,7 +3466,7 @@ async function publishBufferXImage(draft, env) {
   if(!bufferXConfigured(env))throw Object.assign(new Error('Falta la connexió d’X a Buffer.'),{status:503});
   const channel=await bufferXChannel(env);
   const input={
-    text:truncateBufferText(socialPostText(draft,280),280),
+    text:bufferXSpecialCaption(draft),
     channelId:channel.id,
     schedulingType:'automatic',
     mode:'shareNow',
@@ -3386,7 +3480,7 @@ async function publishBufferXImage(draft, env) {
   }`,{input});
   const result=data.createPost||{};
   if(result.message||!result.post?.id||result.post.status==='error'){
-    throw Object.assign(new Error(cleanText(result.message||'Buffer no ha creat la publicació especial d’X.',500)),{status:502});
+    throw bufferXMutationError(result.message,'Buffer no ha creat la publicació especial d’X.');
   }
   return {remoteId:String(result.post.id),responseCode:200,externalLink:result.post.externalLink||null};
 }
@@ -4461,14 +4555,13 @@ async function publishAutomaticSocialDraft(result, env) {
       outcomes.push({ channel, ok:true });
     } catch (error) {
       await recordSocialPublication(env, draft.id, channel, 'failed', { error:cleanText(error.message,500), responseCode:error.responseCode||null });
-      outcomes.push({ channel, ok:false, error:cleanText(error.message,500) });
+      outcomes.push({ channel, ok:false, error:cleanText(error.message,500), retryable:error.retryable!==false });
     }
   }
   await refreshSocialDraftPublicationStatus(env, draft);
   const failed = outcomes.filter(item=>!item.ok);
   const definitiveFailures = failed.filter(item=>{
-    const previousAttempts=previous.filter(publication=>publication.channel===item.channel).length;
-    return previousAttempts + 1 >= SOCIAL_AUTOMATIC_MAX_ATTEMPTS;
+    return item.retryable===false || socialRetryAttemptCount(previous,item.channel)+1>=SOCIAL_AUTOMATIC_MAX_ATTEMPTS;
   });
   await recordOperationalState(env,'social-automatic',failed.length?'down':'healthy',{
     draftId:draft.id, localDate:result.localDate || null, slot:result.slot || null,
@@ -4476,9 +4569,13 @@ async function publishAutomaticSocialDraft(result, env) {
     failed:failed.map(item=>({channel:item.channel,error:item.error})), skipped:requested.length===0,
   }).catch(()=>{});
   // A provider pot fallar puntualment. El planificador reintenta cada cinc minuts;
-  // avisem per correu només quan s'han esgotat tots els intents, per no convertir
-  // una recuperació automàtica correcta en una alarma aparentment definitiva.
-  if (definitiveFailures.length) await sendOperationalEmail(env, '[Observatori] Publicació automàtica incompleta', `No s’ha pogut publicar l’informe de ${result.localDate || 'avui'} després de ${SOCIAL_AUTOMATIC_MAX_ATTEMPTS} intents a: ${definitiveFailures.map(item=>item.channel).join(', ')}.\n\n${definitiveFailures.map(item=>`${item.channel}: ${item.error}`).join('\n')}`, 'social_publish_failed').catch(error=>console.error('Social notification error',error));
+  // avisem en esgotar els intents, o immediatament si el proveïdor confirma que
+  // l'error és definitiu i repetir exactament la mateixa petició no el resoldrà.
+  if (definitiveFailures.length) {
+    const exhausted=definitiveFailures.every(item=>item.retryable!==false);
+    const reason=exhausted?`després de ${SOCIAL_AUTOMATIC_MAX_ATTEMPTS} intents`:'per un error definitiu del proveïdor';
+    await sendOperationalEmail(env, '[Observatori] Publicació automàtica incompleta', `No s’ha pogut publicar l’informe de ${result.localDate || 'avui'} ${reason} a: ${definitiveFailures.map(item=>item.channel).join(', ')}.\n\n${definitiveFailures.map(item=>`${item.channel}: ${item.error}`).join('\n')}`, 'social_publish_failed').catch(error=>console.error('Social notification error',error));
+  }
   return { published:outcomes.some(item=>item.ok), outcomes };
 }
 
@@ -4490,13 +4587,7 @@ async function recoverIncompleteDailySocialDraft(env, date = new Date()) {
     ORDER BY id DESC LIMIT 1`).bind(`daily:${localDate}:%`).first();
   if (!draft) return null;
   const publications = await socialPublicationsForDraft(env, draft.id);
-  const published = new Set(publications.filter(item=>item.status==='published').map(item=>item.channel));
-  const pending = parseSocialChannels(draft.channels).filter(channel=>!published.has(channel));
-  if (!pending.length) return null;
-  // Avoid retry storms for persistent provider errors while allowing transient card failures to recover.
-  const attempts = new Map();
-  for (const item of publications) attempts.set(item.channel,(attempts.get(item.channel)||0)+1);
-  const retryChannels=pending.filter(channel=>(attempts.get(channel)||0)<SOCIAL_AUTOMATIC_MAX_ATTEMPTS);
+  const retryChannels=pendingSocialRetryChannels(draft,publications);
   if (!retryChannels.length) return null;
   return { created:false, recovered:true, localDate, slot:'recovery', retryChannels, draft };
 }
@@ -4513,11 +4604,7 @@ async function recoverIncompleteOfficialAlertDraft(env) {
   try{payload=JSON.parse(draft.payload||'{}');}catch{}
   if(payload.source!=='Meteocat')return null;
   const publications=await socialPublicationsForDraft(env,draft.id);
-  const published=new Set(publications.filter(item=>item.status==='published').map(item=>item.channel));
-  const attempts=new Map();
-  for(const item of publications)attempts.set(item.channel,(attempts.get(item.channel)||0)+1);
-  const retryChannels=parseSocialChannels(draft.channels)
-    .filter(channel=>!published.has(channel)&&(attempts.get(channel)||0)<SOCIAL_AUTOMATIC_MAX_ATTEMPTS);
+  const retryChannels=pendingSocialRetryChannels(draft,publications);
   if(!retryChannels.length)return null;
   return {created:false,recovered:true,localDate:String(draft.created_at||'').slice(0,10),slot:'official-alert-recovery',retryChannels,draft};
 }
@@ -4532,11 +4619,7 @@ async function recoverIncompleteSpecialSocialDraft(env) {
     ORDER BY id ASC LIMIT 1`).first();
   if(!draft)return null;
   const publications=await socialPublicationsForDraft(env,draft.id);
-  const published=new Set(publications.filter(item=>item.status==='published').map(item=>item.channel));
-  const attempts=new Map();
-  for(const item of publications)attempts.set(item.channel,(attempts.get(item.channel)||0)+1);
-  const retryChannels=parseSocialChannels(draft.channels)
-    .filter(channel=>!published.has(channel)&&(attempts.get(channel)||0)<SOCIAL_AUTOMATIC_MAX_ATTEMPTS);
+  const retryChannels=pendingSocialRetryChannels(draft,publications);
   if(!retryChannels.length)return null;
   return {created:false,recovered:true,localDate:String(draft.created_at||'').slice(0,10),slot:'special-recovery',retryChannels,draft};
 }
