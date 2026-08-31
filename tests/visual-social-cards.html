@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ca">
+<head><meta charset="utf-8"><title>Previsualització de targetes socials</title></head>
+<body>
+<script type="module">
+  import { socialCardHtml } from '../worker/index.js';
+
+  const samples = {
+    monthly: {
+      kind:'monthly_summary',
+      payload:JSON.stringify({
+        eyebrow:'El mes meteorològic', reportTitle:'El mes en xifres a Sant Celoni',
+        range:{start:'2026-08-01',end:'2026-08-31'},
+        stats:{observedDays:31,temperatureMax:36.2,temperatureMin:12.1,temperatureMean:24.3,rainTotal:18.4,windGustMax:51.2,uvMax:9.1,coverage:96},
+        verification:{samples:20,temperatureMae:1.4,rainAccuracy:85},
+        drought:{hydrological:'NORMALITAT',unit:'Embassament Ter-Llobregat'},
+      }),
+    },
+    weekly: {
+      kind:'weekly_summary',
+      payload:JSON.stringify({
+        eyebrow:'La setmana en perspectiva', reportTitle:'Set dies de dades, resumits amb context',
+        range:{start:'2026-08-24',end:'2026-08-30'},
+        stats:{observedDays:7,temperatureMax:35.2,temperatureMin:15.8,temperatureMean:25.1,rainTotal:6.8,windGustMax:44.1,uvMax:8.7,coverage:98},
+        verification:{samples:7,temperatureMae:1.2,rainAccuracy:86},
+        forecast:[
+          {max:31,condition:'Cel serè',rainProbability:5},{max:29,condition:'Núvols i clarianes',rainProbability:20},
+          {max:27,condition:'Ruixats',rainProbability:65},{max:28,condition:'Variable',rainProbability:35},
+        ],
+      }),
+    },
+    drought: {
+      kind:'environmental_event',
+      payload:JSON.stringify({
+        eventType:'drought_state',eyebrow:'ESTAT DE SEQUERA · ACA',eventTitle:'Canvi oficial a la unitat de Sant Celoni',
+        value:'NORMALITAT',unit:'',advice:'Estat hidrològic oficial publicat per l’Agència Catalana de l’Aigua.',
+        localDate:'2026-08-31',observationUpdated:'2026-08-31 12:00',sourceNote:'Agència Catalana de l’Aigua',
+      }),
+    },
+    event: {
+      kind:'station_event',
+      payload:JSON.stringify({
+        eventType:'strong_gust',eyebrow:'RATXA DESTACADA',eventTitle:'El vent ha superat el llindar de ratxa forta',
+        value:74,unit:' km/h',advice:'Allunya’t d’elements inestables i consulta els avisos oficials.',
+        localDate:'2026-08-31',observationUpdated:'2026-08-31 12:00',sourceNote:'Observatori Fontanillas',
+      }),
+    },
+  };
+  const key = new URLSearchParams(location.search).get('sample') || 'monthly';
+  document.open();
+  document.write(socialCardHtml(samples[key] || samples.monthly));
+  document.close();
+</script>
+</body>
+</html>

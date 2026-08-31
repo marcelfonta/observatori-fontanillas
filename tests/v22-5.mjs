@@ -10,8 +10,8 @@ const [project,worker,admin,adminHtml,serviceWorker,roadmap]=await Promise.all([
   readFile(new URL('../ROADMAP.md',import.meta.url),'utf8')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.27.0');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-27-0-xarxes'));
+assert.equal(JSON.parse(project).version,'22.28.0');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-28-0-xarxes'));
 assert.ok(worker.includes('recordOperationalState')&&worker.includes('adminOperationsSummary'));
 assert.ok(worker.includes("'scheduler'")&&worker.includes("'push-alert'")&&worker.includes("'social-automatic'"));
 assert.ok(worker.includes('Promise.allSettled(jobs)'));

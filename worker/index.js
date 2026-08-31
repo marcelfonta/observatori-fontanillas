@@ -1,12 +1,17 @@
 import { CATALONIA_COUNTY_PATHS } from './catalonia-counties.js';
+import { METEOROLOGICAL_EPHEMERIDES } from '../src/data/meteorological-ephemerides.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.27.0";
-const WORKER_BUILT = "2026-08-30";
+const WORKER_VERSION = "22.28.0";
+const WORKER_BUILT = "2026-08-31";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
 const SOCIAL_AUTOMATIC_MAX_ATTEMPTS = 4;
+const PERIODIC_SOCIAL_DEFAULT_TIME = '12:00';
+const PERIODIC_SOCIAL_KINDS = new Set(['weekly_summary','monthly_summary','seasonal_summary','annual_summary']);
+const STATION_EVENT_MAX_PER_DAY = 2;
+const ACA_DROUGHT_DATASET_URL = 'https://analisi.transparenciacatalunya.cat/resource/i5n8-43cw.json';
 const runtimeStateCache = new Map();
 const STATION_LATITUDE = 41.6906;
 const STATION_LONGITUDE = 2.4890;
@@ -455,8 +460,9 @@ async function adminOperationsSummary(env) {
   if (!(await ensureOperationsSchema(env))) return { enabled:false };
   const result = await env.DB.prepare(`SELECT service_key,status,last_checked_at,last_failure_at,last_success_at,detail
     FROM monitor_state
-    WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight','youtube-shorts-scheduler','buffer-tiktok-diagnostics','buffer-tiktok-test','meta-video-automatic')
+    WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight','social-periodic','youtube-shorts-scheduler','buffer-tiktok-diagnostics','buffer-tiktok-test','meta-video-automatic')
        OR service_key LIKE 'social-preflight:%'
+       OR service_key LIKE 'environment:%'
        OR service_key LIKE 'buffer-tiktok:%'
        OR service_key LIKE 'buffer-x:%'`).all();
   const rows = result?.results || [];
@@ -470,7 +476,10 @@ async function adminOperationsSummary(env) {
   const bufferXRow = rows
     .filter(row => String(row.service_key).startsWith('buffer-x:'))
     .sort((a,b) => String(b.last_checked_at || '').localeCompare(String(a.last_checked_at || '')))[0];
-  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, preflight:monitorPayload(preflightRow), youtube:states['youtube-shorts-scheduler'] || null, bufferTikTok:monitorPayload(bufferRow), bufferTikTokDiagnostics:states['buffer-tiktok-diagnostics'] || null, bufferTikTokTest:states['buffer-tiktok-test'] || null, bufferX:monitorPayload(bufferXRow), metaVideo:states['meta-video-automatic'] || null };
+  const environmental = Object.fromEntries(rows
+    .filter(row => String(row.service_key).startsWith('environment:'))
+    .map(row => [row.service_key.slice('environment:'.length), monitorPayload(row)]));
+  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, periodicSocial:states['social-periodic'] || null, environmental, preflight:monitorPayload(preflightRow), youtube:states['youtube-shorts-scheduler'] || null, bufferTikTok:monitorPayload(bufferRow), bufferTikTokDiagnostics:states['buffer-tiktok-diagnostics'] || null, bufferTikTokTest:states['buffer-tiktok-test'] || null, bufferX:monitorPayload(bufferXRow), metaVideo:states['meta-video-automatic'] || null };
 }
 
 async function ensureForecastSchema(env) {
@@ -1568,7 +1577,331 @@ async function socialForecast(){
 function socialHashtags(kind='daily_observation'){
   return kind==='official_alert'
     ? '#MeteoFontanillas #SantCeloni #VallesOriental #AvisMeteorologic #Meteocat #ProteccioCivil'
+    : PERIODIC_SOCIAL_KINDS.has(kind)
+      ? '#MeteoFontanillas #SantCeloni #BaixMontseny #ResumMeteo #Climatologia'
+      : ['station_event','environmental_event','meteorological_ephemeris'].includes(kind)
+        ? '#MeteoFontanillas #SantCeloni #BaixMontseny #ObservacioMeteo'
     : '#MeteoFontanillas #SantCeloni #BaixMontseny #Montseny #ElTemps #MeteoCatalunya';
+}
+
+function isoDateAtNoon(value) {
+  return new Date(`${value}T12:00:00Z`);
+}
+
+function shiftIsoDate(value, days) {
+  const date=isoDateAtNoon(value);
+  date.setUTCDate(date.getUTCDate()+days);
+  return date.toISOString().slice(0,10);
+}
+
+function daysInIsoRange(start, end) {
+  return Math.round((isoDateAtNoon(end)-isoDateAtNoon(start))/86400000)+1;
+}
+
+function previousMonthRange(localDate) {
+  const [year,month]=localDate.split('-').map(Number);
+  const end=new Date(Date.UTC(year,month-1,0,12));
+  const start=new Date(Date.UTC(end.getUTCFullYear(),end.getUTCMonth(),1,12));
+  return {start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
+}
+
+export function periodicSocialKindForDate(date = new Date()) {
+  const localDate=localIsoDate(date);
+  const [,month,day]=localDate.split('-').map(Number);
+  if(month===1&&day===4)return 'annual_summary';
+  if([3,6,9,12].includes(month)&&day===3)return 'seasonal_summary';
+  if(day===2)return 'monthly_summary';
+  return isoDateAtNoon(localDate).getUTCDay()===1?'weekly_summary':null;
+}
+
+function periodicSocialRange(kind, localDate) {
+  if(kind==='weekly_summary')return {start:shiftIsoDate(localDate,-7),end:shiftIsoDate(localDate,-1)};
+  if(kind==='monthly_summary')return previousMonthRange(localDate);
+  if(kind==='seasonal_summary'){
+    const month=Number(localDate.slice(5,7));
+    const endMonth=month-1;
+    const year=Number(localDate.slice(0,4));
+    const end=new Date(Date.UTC(year,endMonth,0,12));
+    const start=new Date(Date.UTC(end.getUTCFullYear(),end.getUTCMonth()-2,1,12));
+    return {start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
+  }
+  const year=Number(localDate.slice(0,4))-1;
+  return {start:`${year}-01-01`,end:`${year}-12-31`};
+}
+
+function periodicSocialEnabled(env) {
+  return String(env.SOCIAL_PERIODIC_ENABLED||'').trim().toLowerCase()==='true';
+}
+
+function stationEventSocialEnabled(env) {
+  return String(env.SOCIAL_EVENT_POSTS_ENABLED||'').trim().toLowerCase()==='true';
+}
+
+function environmentalSocialEnabled(env) {
+  return String(env.SOCIAL_ENVIRONMENTAL_ENABLED||'').trim().toLowerCase()==='true';
+}
+
+async function periodObservationSummary(env, start, end) {
+  if(!(await ensureSchema(env)))return null;
+  const row=await env.DB.prepare(`SELECT COUNT(*) AS samples,COUNT(DISTINCT local_date) AS observed_days,
+    MAX(temperature) AS temperature_max,MIN(temperature) AS temperature_min,AVG(temperature) AS temperature_mean,
+    SUM(COALESCE(rain_delta,0)) AS rain_total,MAX(wind_gust) AS wind_gust_max,
+    MAX(rain_rate) AS rain_rate_max,MAX(uv) AS uv_max
+    FROM observations WHERE local_date >= ? AND local_date <= ?`).bind(start,end).first();
+  const expectedDays=daysInIsoRange(start,end);
+  const observedDays=Number(row?.observed_days)||0;
+  const samples=Number(row?.samples)||0;
+  if(observedDays<Math.ceil(expectedDays*.6)||samples<expectedDays*72)return null;
+  return {
+    start,end,expectedDays,observedDays,samples,coverage:Math.min(100,Math.round(samples/(expectedDays*288)*100)),
+    temperatureMax:finite(row.temperature_max),temperatureMin:finite(row.temperature_min),temperatureMean:finite(row.temperature_mean),
+    rainTotal:finite(row.rain_total),windGustMax:finite(row.wind_gust_max),rainRateMax:finite(row.rain_rate_max),uvMax:finite(row.uv_max),
+  };
+}
+
+async function periodVerificationSummary(env, start, end) {
+  if(!(await ensureForecastSchema(env))||!(await ensureSchema(env)))return null;
+  const result=await env.DB.prepare(`WITH daily_observed AS (
+      SELECT local_date AS target_date,MAX(temperature) AS observed_max,MIN(temperature) AS observed_min,
+        SUM(COALESCE(rain_delta,0)) AS observed_rain,COUNT(*) AS observed_samples
+      FROM observations WHERE local_date >= ? AND local_date <= ? GROUP BY local_date
+    ), ranked AS (
+      SELECT f.*,ROW_NUMBER() OVER (PARTITION BY f.target_date ORDER BY f.issued_epoch DESC) AS position
+      FROM forecast_snapshots f WHERE f.horizon_day=1 AND f.target_date >= ? AND f.target_date <= ?
+    )
+    SELECT r.temperature_max,r.temperature_min,r.precipitation_probability,r.precipitation_sum,
+      o.observed_max,o.observed_min,o.observed_rain
+    FROM ranked r JOIN daily_observed o ON o.target_date=r.target_date
+    WHERE r.position=1 AND o.observed_samples>=72`).bind(start,end,start,end).all();
+  const rows=result?.results||[];
+  if(rows.length<3)return null;
+  const temperatureErrors=rows.flatMap(row=>[
+    Math.abs(Number(row.temperature_max)-Number(row.observed_max)),
+    Math.abs(Number(row.temperature_min)-Number(row.observed_min)),
+  ]).filter(Number.isFinite);
+  const rainHits=rows.map(row=>(Number(row.precipitation_probability)>=40||Number(row.precipitation_sum)>=.2)===(Number(row.observed_rain)>=.2));
+  return {
+    samples:rows.length,
+    temperatureMae:verificationRound(verificationMean(temperatureErrors)),
+    rainAccuracy:verificationRound(verificationMean(rainHits.map(value=>value?100:0)),0),
+  };
+}
+
+function periodicSocialLabels(kind) {
+  if(kind==='weekly_summary')return {eyebrow:'La setmana en perspectiva',title:'Set dies de dades, resumits amb context',period:'setmanal'};
+  if(kind==='monthly_summary')return {eyebrow:'El mes meteorològic',title:'El mes en xifres a Sant Celoni',period:'mensual'};
+  if(kind==='seasonal_summary')return {eyebrow:'Balanç de la temporada',title:'Tres mesos de temps al Baix Montseny',period:'estacional'};
+  return {eyebrow:'L’any meteorològic',title:'Dotze mesos de dades de l’Observatori',period:'anual'};
+}
+
+async function acaDroughtStatus() {
+  const params=new URLSearchParams({
+    '$select':'data_canvi_estat_sequera,codi_unitat_explotaci,unitat_explotaci,estat_sequera_hidrol_gic,estat_sequera_pluviom_tric,codi_municipi,municipi',
+    '$where':'upper(municipi)="SANT CELONI"','$order':'data_canvi_estat_sequera DESC','$limit':'1',
+  });
+  const response=await fetch(`${ACA_DROUGHT_DATASET_URL}?${params}`,{headers:{Accept:'application/json'},cf:{cacheEverything:true,cacheTtl:21600}});
+  if(!response.ok)throw new Error(`ACA sequera ${response.status}`);
+  const row=(await response.json())?.[0];
+  if(!row)return null;
+  return {
+    changedAt:cleanText(row.data_canvi_estat_sequera,32),unitCode:cleanText(row.codi_unitat_explotaci,20),
+    unit:cleanText(row.unitat_explotaci,160),hydrological:cleanText(row.estat_sequera_hidrol_gic,80),
+    pluviometric:cleanText(row.estat_sequera_pluviom_tric,80),municipality:'Sant Celoni',source:'Agència Catalana de l’Aigua',
+  };
+}
+
+async function seasonalOutlook() {
+  const params=new URLSearchParams({latitude:String(STATION_LATITUDE),longitude:String(STATION_LONGITUDE),
+    monthly:'temperature_2m_anomaly,precipitation_anomaly',models:'ecmwf_seasonal_ensemble_mean_seamless',forecast_days:'120'});
+  const response=await fetch(`https://seasonal-api.open-meteo.com/v1/seasonal?${params}`,{headers:{Accept:'application/json'},cf:{cacheEverything:true,cacheTtl:21600}});
+  if(!response.ok)throw new Error(`Open-Meteo seasonal ${response.status}`);
+  const monthly=(await response.json()).monthly||{};
+  const currentMonth=localIsoDate(new Date()).slice(0,7);
+  const items=(monthly.time||[]).map((time,index)=>({
+    month:String(time).slice(0,7),temperatureAnomaly:finite(monthly.temperature_2m_anomaly?.[index]),
+    precipitationAnomaly:finite(monthly.precipitation_anomaly?.[index]),
+  })).filter(item=>item.month>=currentMonth&&item.temperatureAnomaly!==null).slice(0,3);
+  if(!items.length)return null;
+  return {items,model:'ECMWF Seasonal Seamless · mitjana del conjunt',resolutionKm:36,
+    caveat:'Tendència d’àrea i probabilística: no és una previsió local ni determina el temps d’un dia concret.'};
+}
+
+async function createPeriodicSocialDraft(env, date = new Date()) {
+  const kind=periodicSocialKindForDate(date);
+  const slot=activeTimeSlot(env.SOCIAL_PERIODIC_TIME||PERIODIC_SOCIAL_DEFAULT_TIME,date);
+  if(!periodicSocialEnabled(env)||!kind||!slot)return {created:false,reason:'outside_schedule'};
+  if(!(await ensureSocialDraftSchema(env)))return {created:false,reason:'storage_disabled'};
+  const localDate=localIsoDate(date);
+  const range=periodicSocialRange(kind,localDate);
+  const stats=await periodObservationSummary(env,range.start,range.end);
+  if(!stats){
+    await recordOperationalState(env,'social-periodic','degraded',{kind,range,reason:'insufficient_coverage'}).catch(()=>{});
+    return {created:false,reason:'insufficient_coverage'};
+  }
+  const [verification,forecast,drought,outlook]=await Promise.all([
+    periodVerificationSummary(env,range.start,range.end).catch(()=>null),
+    kind==='weekly_summary'?socialForecast().catch(()=>[]):Promise.resolve([]),
+    kind==='monthly_summary'?acaDroughtStatus().catch(()=>null):Promise.resolve(null),
+    kind==='seasonal_summary'?seasonalOutlook().catch(()=>null):Promise.resolve(null),
+  ]);
+  const labels=periodicSocialLabels(kind);
+  const temperature=`${socialNumber(stats.temperatureMax,1)}° / ${socialNumber(stats.temperatureMin,1)}°`;
+  const droughtText=drought?` Segons l’ACA, Sant Celoni consta en ${drought.hydrological.toLowerCase()} hidrològica (${drought.unit}).`:'';
+  const outlookText=outlook?` La tendència estacional del conjunt ECMWF apunta, per als tres mesos següents, a anomalies tèrmiques de ${outlook.items.map(item=>`${item.month}: ${socialNumber(item.temperatureAnomaly,1)}°`).join(', ')}. És orientativa, d’àrea i no permet predir dies concrets.`:'';
+  const body=`📊 ${labels.eyebrow} a Sant Celoni (${range.start}–${range.end}). Temperatures màxima i mínima: ${temperature}; mitjana: ${socialNumber(stats.temperatureMean,1)}°. Pluja acumulada: ${socialNumber(stats.rainTotal,1)} mm. Ratxa màxima: ${socialNumber(stats.windGustMax,1)} km/h.${verification?` La previsió de l’endemà ha tingut un error mitjà de ${socialNumber(verification.temperatureMae,1)}° i un ${socialNumber(verification.rainAccuracy,0)}% d’encert en pluja sobre ${verification.samples} dies.`:''}${droughtText}${outlookText} Dades de l’arxiu propi de l’Observatori; no són una normal climàtica oficial.\n\n${socialHashtags(kind)}`;
+  const payload=JSON.stringify({kind,period:labels.period,eyebrow:labels.eyebrow,reportTitle:labels.title,localDate,range,stats,verification,forecast,drought,outlook,sourceNote:'Arxiu propi de l’Observatori Fontanillas'});
+  const dedupeKey=`periodic:${kind}:${range.start}:${range.end}`;
+  const channels=['facebook','instagram','bluesky','telegram','threads','x'];
+  const result=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
+    (dedupe_key,kind,status,channels,title,body,source_url,payload)
+    VALUES (?,?, 'approved',?,?,?,?,?)`).bind(dedupeKey,kind,JSON.stringify(channels),`${labels.eyebrow} · ${range.end}`,body,'https://meteo.fontanillas.cat/?page=centre-dades',payload).run();
+  const draft=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key = ?').bind(dedupeKey).first();
+  await recordOperationalState(env,'social-periodic','healthy',{kind,range,draftId:draft?.id||null}).catch(()=>{});
+  return {created:Boolean(result?.meta?.changes),localDate,slot,draft};
+}
+
+export function stationEventCandidates(observation, context = {}) {
+  const candidates=[];
+  const add=(condition,type,rank,eyebrow,title,value,unit,advice,cooldown='daily')=>{
+    if(condition)candidates.push({type,rank,eyebrow,title,value,unit,advice,cooldown});
+  };
+  const temperature=finite(observation?.temperature);
+  const gust=finite(observation?.windGust);
+  const rainRate=finite(observation?.rainRate);
+  const rainToday=finite(observation?.rainToday);
+  const uv=finite(observation?.uv);
+  const previousTemperature=finite(context.previousTemperature);
+  add(rainRate!==null&&rainRate>=30,'intense_rain',75,'PLUJA MOLT INTENSA','La intensitat de pluja destaca a l’estació',rainRate,'mm/h','Segueix el radar i els avisos oficials.');
+  add(gust!==null&&gust>=70,'strong_gust',70,'RATXA DESTACADA','El vent ha superat el llindar de ratxa forta',gust,'km/h','Allunya’t d’elements inestables i consulta els avisos oficials.');
+  add(rainToday!==null&&rainToday>=50,'heavy_daily_rain',65,'DIA MOLT PLUJÓS','L’acumulació diària ja és destacada',rainToday,'mm','Consulta l’evolució i les indicacions oficials.');
+  add(temperature!==null&&temperature>=35,'high_temperature',60,'CALOR MARCADA','L’estació arriba a una temperatura molt elevada',temperature,'°C','Hidrata’t i evita l’esforç a les hores centrals.');
+  add(temperature!==null&&temperature<=0,'frost',60,'GLAÇADA','La temperatura ha baixat fins als 0 °C o menys',temperature,'°C','Precaució amb superfícies lliscants i plantes sensibles.');
+  add(previousTemperature!==null&&temperature!==null&&Math.abs(temperature-previousTemperature)>=8,'temperature_change',50,'CANVI BRUSC','La temperatura ha variat clarament en 24 hores',Math.abs(temperature-previousTemperature),'°C','Observació local: comprova la previsió per a les hores següents.');
+  add(uv!==null&&uv>=8,'very_high_uv',35,'UV MOLT ALT','La radiació ultraviolada requereix màxima protecció',uv,'','Evita l’exposició central i protegeix pell i ulls.','weekly');
+  return candidates.sort((a,b)=>b.rank-a.rank);
+}
+
+async function localRecordCandidates(observation, env) {
+  if(!env.DB)return [];
+  const coverage=await env.DB.prepare('SELECT COUNT(DISTINCT local_date) AS days FROM observations').first();
+  const archiveDays=Number(coverage?.days)||0;
+  if(archiveDays<90)return [];
+  const cutoff=(Number(observation?.epoch)||Math.floor(Date.now()/1000))-900;
+  const previous=await env.DB.prepare(`SELECT MAX(temperature) AS temperature_max,MIN(temperature) AS temperature_min,
+    MAX(wind_gust) AS wind_gust_max,MAX(rain_rate) AS rain_rate_max
+    FROM observations WHERE observed_epoch < ?`).bind(cutoff).first();
+  const candidates=[];
+  const compare=(type,rank,eyebrow,title,value,record,mode,unit)=>{
+    if(value===null||record===null)return;
+    const broken=mode==='max'?value>=record+.2:value<=record-.2;
+    if(broken)candidates.push({type,rank,eyebrow,title,value,unit,advice:`Nou extrem dins els ${archiveDays} dies disponibles de l’arxiu local; no és un rècord climàtic oficial.`,cooldown:'daily',archiveDays,previousRecord:record});
+  };
+  compare('local_temperature_high',90,'NOU EXTREM LOCAL','Temperatura més alta de l’arxiu disponible',finite(observation.temperature),finite(previous?.temperature_max),'max','°C');
+  compare('local_temperature_low',90,'NOU EXTREM LOCAL','Temperatura més baixa de l’arxiu disponible',finite(observation.temperature),finite(previous?.temperature_min),'min','°C');
+  compare('local_wind_gust',90,'NOU EXTREM LOCAL','Ratxa més forta de l’arxiu disponible',finite(observation.windGust),finite(previous?.wind_gust_max),'max','km/h');
+  compare('local_rain_rate',90,'NOU EXTREM LOCAL','Intensitat de pluja més alta de l’arxiu disponible',finite(observation.rainRate),finite(previous?.rain_rate_max),'max','mm/h');
+  return candidates;
+}
+
+async function createStationEventSocialDraft(observation, env, date = new Date()) {
+  if(!stationEventSocialEnabled(env)||!observation||!(await ensureSocialDraftSchema(env)))return {created:false,reason:'disabled'};
+  const localDate=String(observation.updated||'').slice(0,10)||localIsoDate(date);
+  const epoch=Number(observation.epoch)||Math.floor(date.getTime()/1000);
+  const previous=await env.DB.prepare('SELECT temperature FROM observations WHERE observed_epoch <= ? ORDER BY observed_epoch DESC LIMIT 1').bind(epoch-23*3600).first();
+  const candidates=[...await localRecordCandidates(observation,env),...stationEventCandidates(observation,{previousTemperature:previous?.temperature})].sort((a,b)=>b.rank-a.rank);
+  if(!candidates.length)return {created:false,reason:'no_event'};
+  const existingResult=await env.DB.prepare(`SELECT id,payload FROM social_drafts WHERE kind='station_event' AND dedupe_key LIKE ?`).bind(`event:${localDate}:%`).all();
+  const existing=existingResult?.results||[];
+  if(existing.length>=STATION_EVENT_MAX_PER_DAY)return {created:false,reason:'daily_limit'};
+  const recentWeeklyResult=await env.DB.prepare(`SELECT payload FROM social_drafts
+    WHERE kind='station_event' AND created_at >= datetime('now','-7 days')`).all();
+  const recentWeeklyTypes=new Set((recentWeeklyResult?.results||[]).map(row=>{try{return JSON.parse(row.payload||'{}').eventType||'';}catch{return '';}}));
+  const existingRanks=existing.map(row=>{try{return Number(JSON.parse(row.payload||'{}').rank)||0;}catch{return 0;}});
+  const minimumRank=existingRanks.length?Math.max(...existingRanks)+15:0;
+  const event=candidates.find(item=>item.rank>=minimumRank
+    &&!(item.cooldown==='weekly'&&recentWeeklyTypes.has(item.type))
+    &&!existing.some(row=>{try{return JSON.parse(row.payload||'{}').eventType===item.type;}catch{return false;}}));
+  if(!event)return {created:false,reason:'not_more_relevant'};
+  const dedupeKey=`event:${localDate}:${event.type}`;
+  const observedAt=cleanText(observation.updated,32);
+  const body=`${event.eyebrow==='GLAÇADA'?'❄️':'📍'} ${event.title}: ${socialNumber(event.value,1)}${event.unit}. Lectura real de l’Observatori Fontanillas a les ${observedAt.slice(11,16)}. ${event.advice} Aquesta observació local no substitueix cap avís oficial.\n\n${socialHashtags('station_event')}`;
+  const payload=JSON.stringify({eventType:event.type,rank:event.rank,eyebrow:event.eyebrow,eventTitle:event.title,value:event.value,unit:event.unit,advice:event.advice,archiveDays:event.archiveDays||null,previousRecord:event.previousRecord||null,localDate,observationUpdated:observedAt});
+  const result=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
+    (dedupe_key,kind,status,channels,title,body,source_url,payload)
+    VALUES (?,'station_event','approved',?,?,?,?,?)`).bind(dedupeKey,JSON.stringify(['facebook','instagram','bluesky','telegram','threads','x']),`${event.eyebrow} · Sant Celoni`,body,'https://meteo.fontanillas.cat/?page=estacio',payload).run();
+  const draft=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key = ?').bind(dedupeKey).first();
+  return {created:Boolean(result?.meta?.changes),localDate,slot:'event',draft};
+}
+
+async function createSpecialSocialDraft(env,{dedupeKey,kind='environmental_event',title,body,sourceUrl,payload,localDate,slot='special'}){
+  if(!(await ensureSocialDraftSchema(env)))return {created:false,reason:'storage_disabled'};
+  const result=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
+    (dedupe_key,kind,status,channels,title,body,source_url,payload)
+    VALUES (?,?,'approved',?,?,?,?,?)`).bind(dedupeKey,kind,JSON.stringify(['facebook','instagram','bluesky','telegram','threads','x']),title,body,sourceUrl,JSON.stringify(payload)).run();
+  const draft=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key = ?').bind(dedupeKey).first();
+  return {created:Boolean(result?.meta?.changes),localDate,slot,draft};
+}
+
+async function createDroughtStateChangeDraft(env,date=new Date()){
+  if(!environmentalSocialEnabled(env)||!activeTimeSlot(env.SOCIAL_ENVIRONMENTAL_TIME||PERIODIC_SOCIAL_DEFAULT_TIME,date))return null;
+  const status=await acaDroughtStatus();
+  if(!status||!(await ensureOperationsSchema(env)))return null;
+  const serviceKey='environment:drought:sant-celoni';
+  const previous=await env.DB.prepare('SELECT detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
+  let previousStatus=null;
+  try{previousStatus=JSON.parse(previous?.detail||'null');}catch{}
+  await recordOperationalState(env,serviceKey,'healthy',status);
+  if(!previousStatus?.hydrological||previousStatus.hydrological===status.hydrological)return null;
+  const localDate=localIsoDate(date);
+  const title=`Canvi de l’estat de sequera a Sant Celoni · ${status.hydrological}`;
+  const body=`💧 L’Agència Catalana de l’Aigua ha actualitzat l’estat hidrològic de Sant Celoni: passa de ${previousStatus.hydrological} a ${status.hydrological} a la unitat ${status.unit}. Consulta les mesures i restriccions vigents a la font oficial de l’ACA.\n\n#MeteoFontanillas #SantCeloni #Sequera #ACA #Aigua`;
+  return createSpecialSocialDraft(env,{dedupeKey:`environment:drought:${status.changedAt}:${status.hydrological}`,title,body,
+    sourceUrl:'https://aplicacions.aca.gencat.cat/visseq/estat-actual?em=1&lg=ca',localDate,payload:{
+      eventType:'drought_state_change',rank:80,eyebrow:'CANVI OFICIAL DE SEQUERA',eventTitle:'Nou estat hidrològic per a Sant Celoni',
+      value:status.hydrological,unit:'',advice:`Estat anterior: ${previousStatus.hydrological}. Consulta les mesures vigents a l’ACA.`,
+      localDate,observationUpdated:status.changedAt,sourceNote:'Agència Catalana de l’Aigua',status,previousStatus:previousStatus.hydrological,
+    }});
+}
+
+async function createDustForecastDraft(env,date=new Date()){
+  const threshold=finite(env.SOCIAL_DUST_THRESHOLD_UG_M3);
+  if(!environmentalSocialEnabled(env)||threshold===null||threshold<=0||!activeTimeSlot(env.SOCIAL_ENVIRONMENTAL_TIME||PERIODIC_SOCIAL_DEFAULT_TIME,date))return null;
+  const params=new URLSearchParams({latitude:String(STATION_LATITUDE),longitude:String(STATION_LONGITUDE),timezone:TIME_ZONE,
+    hourly:'dust,european_aqi',forecast_hours:'48',domains:'cams_europe'});
+  const response=await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?${params}`,{headers:{Accept:'application/json'},cf:{cacheEverything:true,cacheTtl:10800}});
+  if(!response.ok)throw new Error(`CAMS pols ${response.status}`);
+  const hourly=(await response.json()).hourly||{};
+  const values=(hourly.dust||[]).map(finite);
+  let startIndex=-1;
+  for(let index=0;index<=values.length-3;index+=1){
+    if(values.slice(index,index+3).every(value=>value!==null&&value>=threshold)){startIndex=index;break;}
+  }
+  if(startIndex<0)return null;
+  const maxDust=Math.max(...values.filter(value=>value!==null));
+  const maxAqi=Math.max(...(hourly.european_aqi||[]).map(finite).filter(value=>value!==null),0);
+  const begins=cleanText(hourly.time?.[startIndex],32);
+  const localDate=localIsoDate(date);
+  const body=`🟠 Possible augment de pols sahariana prop de Sant Celoni a partir de ${begins.replace('T',' ')}. El model CAMS estima un màxim proper a ${socialNumber(maxDust,0)} µg/m³ en les pròximes 48 hores. És una estimació de model a uns 11 km, no una mesura de l’estació ni un avís oficial. Consulta la qualitat de l’aire i les recomanacions oficials si tens sensibilitat respiratòria.\n\n#MeteoFontanillas #SantCeloni #PolsSahariana #QualitatAire #CAMS`;
+  return createSpecialSocialDraft(env,{dedupeKey:`environment:dust:${begins.slice(0,13)}`,title:'Possible episodi de pols sahariana · Sant Celoni',body,
+    sourceUrl:'https://meteo.fontanillas.cat/?page=medi-ambient',localDate,payload:{eventType:'saharan_dust_forecast',rank:55,
+      eyebrow:'POLS SAHARIANA · MODEL CAMS',eventTitle:'Possible augment de pols prop de Sant Celoni',value:maxDust,unit:' µg/m³',
+      advice:`Estimació CAMS a uns 11 km. Llindar editorial configurat: ${socialNumber(threshold,0)} µg/m³; AQI europeu màxim previst: ${socialNumber(maxAqi,0)}.`,
+      localDate,observationUpdated:begins,sourceNote:'CAMS ENSEMBLE via Open-Meteo',model:'CAMS Europe',resolutionKm:11,
+    }});
+}
+
+async function createMeteorologicalEphemerisDraft(env,date=new Date()){
+  if(String(env.SOCIAL_EPHEMERIDES_ENABLED||'').trim().toLowerCase()!=='true'
+    ||!activeTimeSlot(env.SOCIAL_EDUCATIONAL_TIME||'17:00',date))return null;
+  const localDate=localIsoDate(date);
+  const key=localDate.slice(5);
+  const item=METEOROLOGICAL_EPHEMERIDES.find(entry=>entry.date===key);
+  if(!item)return null;
+  const body=`📚 Tal dia com avui, l’any ${item.year}: ${item.title}. ${item.summary} Font: ${item.source}. És una efemèride documentada, no una dada de l’estació actual.\n\n#MeteoFontanillas #Meteorologia #Efemerides #Catalunya #AprendreMeteo`;
+  return createSpecialSocialDraft(env,{dedupeKey:`ephemeris:${localDate}:${item.year}`,kind:'meteorological_ephemeris',title:`Tal dia com avui · ${item.title}`,body,
+    sourceUrl:item.url,localDate,slot:'educational',payload:{eventType:'meteorological_ephemeris',rank:20,eyebrow:'TAL DIA COM AVUI',
+      eventTitle:item.title,value:item.year,unit:'',advice:item.summary,localDate,observationUpdated:`${localDate} 17:00`,sourceNote:item.source,scope:item.scope,
+    }});
 }
 
 function socialSlotProfile(slot='07:00'){
@@ -1710,7 +2043,7 @@ async function createOfficialAlertSocialDraft(entry,env){
   const payload=JSON.stringify({source:'Meteocat',level,levelLabel,phenomenon:entry.phenomenon||null,description:entry.description||entry.title||null,starts:entry.starts||entry.published||null,expires:entry.expires||null,scopeKind:entry.scopeKind||null,scopeName:entry.scopeName||null,municipality:entry.municipality||null,distribution:entry.distribution||null,periods:entry.periods||[],countyWarnings:entry.countyWarnings||[]});
   const sourceUrl=entry.sourceUrl||METEOCAT_ALERTS_PAGE;
   const result=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts (dedupe_key,kind,status,channels,title,body,source_url,payload) VALUES (?,'official_alert','approved',?,?,?,?,?)`)
-    .bind(`alert:${entry.fingerprint}`,JSON.stringify(['facebook','instagram','bluesky','telegram','threads']),title,body,sourceUrl,payload).run();
+    .bind(`alert:${entry.fingerprint}`,JSON.stringify(['facebook','instagram','bluesky','telegram','threads','x']),title,body,sourceUrl,payload).run();
   const draft=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key = ?').bind(`alert:${entry.fingerprint}`).first();
   return {created:Boolean(result?.meta?.changes),localDate:String(entry.published||'').slice(0,10),draft};
 }
@@ -2404,7 +2737,7 @@ async function adminSocialSummary(env) {
   };
 }
 
-const SOCIAL_CHANNELS = new Set(['facebook','instagram','bluesky','telegram','threads']);
+const SOCIAL_CHANNELS = new Set(['facebook','instagram','bluesky','telegram','threads','x']);
 const SOCIAL_DIAGNOSTIC_CHANNELS = new Set([...SOCIAL_CHANNELS, 'tiktok', 'x']);
 const SOCIAL_STATUSES = new Set(['draft','review','approved','partially_published','published','discarded']);
 
@@ -3035,6 +3368,29 @@ async function createBufferXPost(env, { localDate, slot, draft = null }) {
   };
 }
 
+async function publishBufferXImage(draft, env) {
+  if(!bufferXConfigured(env))throw Object.assign(new Error('Falta la connexió d’X a Buffer.'),{status:503});
+  const channel=await bufferXChannel(env);
+  const input={
+    text:truncateBufferText(socialPostText(draft,280),280),
+    channelId:channel.id,
+    schedulingType:'automatic',
+    mode:'shareNow',
+    assets:[{image:{url:await ensureSocialCardUrl(draft,env)}}],
+  };
+  const data=await bufferGraphql(env,`mutation CreatePost($input: CreatePostInput!) {
+    createPost(input: $input) {
+      ... on PostActionSuccess { post { id status dueAt sentAt externalLink } }
+      ... on MutationError { message }
+    }
+  }`,{input});
+  const result=data.createPost||{};
+  if(result.message||!result.post?.id||result.post.status==='error'){
+    throw Object.assign(new Error(cleanText(result.message||'Buffer no ha creat la publicació especial d’X.',500)),{status:502});
+  }
+  return {remoteId:String(result.post.id),responseCode:200,externalLink:result.post.externalLink||null};
+}
+
 async function notifyBufferXFailure(env, serviceKey, detail) {
   if (!(await ensureOperationsSchema(env))) return { sent:false,reason:'no_database' };
   const previous=await env.DB.prepare('SELECT last_notified_at FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
@@ -3247,6 +3603,63 @@ function meteocatCountyAlertMapSvg(warnings){
   return `<div class="map-panel"><svg class="county-map" viewBox="0 0 500 420" role="img" aria-label="Mapa de Catalunya amb el nivell màxim d'avís per comarca">${paths}</svg><div class="map-meta"><span>CATALUNYA</span><b>${levels.size} ${levels.size===1?'comarca amb avís':'comarques amb avís'}</b><small>Nivell màxim vigent per comarca</small><div class="legend"><i class="yellow"></i>Groc<i class="orange"></i>Taronja<i class="red"></i>Vermell</div><em>Contorn blanc: Vallès Oriental</em></div></div>`;
 }
 
+function reportMetric(value, suffix='', digits=1) {
+  return finite(value)===null?'—':`${Number(value).toFixed(digits).replace('.',',')}${suffix}`;
+}
+
+function periodicSocialCardMarkup(data) {
+  const stats=data.stats||{};
+  const verification=data.verification||null;
+  const forecast=Array.isArray(data.forecast)?data.forecast:[];
+  const range=data.range||{};
+  const drought=data.drought||null;
+  const outlook=data.outlook||null;
+  const forecastRow=forecast.slice(0,4).map((day,index)=>`<div><span>${index===0?'AVUI':index===1?'DEMÀ':`+${index} DIES`}</span><b>${escapeHtml(reportMetric(day.max,'°',0))}</b><small>${escapeHtml(day.condition||socialWeatherLabel(day.weatherCode))}<br>${escapeHtml(reportMetric(day.rainProbability,'% pluja',0))}</small></div>`).join('');
+  const outlookRow=Array.isArray(outlook?.items)?outlook.items.map(item=>`<div><span>${escapeHtml(item.month)}</span><b>${escapeHtml(reportMetric(item.temperatureAnomaly,'°',1))}</b><small>anomalia tèrmica<br>${escapeHtml(reportMetric(item.precipitationAnomaly,' mm pluja',1))}</small></div>`).join(''):'';
+  return `<p class="eyebrow">${escapeHtml(data.eyebrow||'Resum meteorològic')}</p>
+    <h1 class="report-title">${escapeHtml(data.reportTitle||'El període en xifres')}</h1>
+    <p class="stamp">${escapeHtml(range.start||'')} — ${escapeHtml(range.end||'')} · ${escapeHtml(String(stats.observedDays||0))} dies amb dades</p>
+    <section class="report-hero"><div><small>MÀXIMA / MÍNIMA</small><b>${escapeHtml(reportMetric(stats.temperatureMax,'°',1))} <em>/</em> ${escapeHtml(reportMetric(stats.temperatureMin,'°',1))}</b></div><div><small>TEMPERATURA MITJANA</small><strong>${escapeHtml(reportMetric(stats.temperatureMean,'°',1))}</strong></div></section>
+    <section class="report-grid"><div><span>Pluja acumulada</span><b>${escapeHtml(reportMetric(stats.rainTotal,' mm',1))}</b></div><div><span>Ratxa màxima</span><b>${escapeHtml(reportMetric(stats.windGustMax,' km/h',1))}</b></div><div><span>UV màxim</span><b>${escapeHtml(reportMetric(stats.uvMax,'',1))}</b></div><div><span>Cobertura de mostres</span><b>${escapeHtml(reportMetric(stats.coverage,'%',0))}</b></div></section>
+    ${verification?`<section class="verification"><div><small>PREVISIÓ DE L’ENDEMÀ · ${escapeHtml(String(verification.samples))} DIES</small><b>Error tèrmic mitjà ${escapeHtml(reportMetric(verification.temperatureMae,'°',1))}</b></div><strong>${escapeHtml(reportMetric(verification.rainAccuracy,'% encert pluja',0))}</strong></section>`:''}
+    ${drought?`<section class="verification"><div><small>SEQUERA · ACA</small><b>${escapeHtml(drought.hydrological||'—')}</b></div><strong>${escapeHtml(drought.unit||'Sant Celoni')}</strong></section>`:''}
+    ${forecastRow?`<section class="mini-forecast">${forecastRow}</section>`:''}
+    ${outlookRow?`<section class="mini-forecast outlook-row">${outlookRow}</section><p class="outlook-note">ECMWF Seasonal · mitjana del conjunt a uns 36 km. Tendència d’àrea, no previsió local diària.</p>`:''}
+    <p class="method-note">Arxiu propi de l’Observatori · no és una normal climàtica oficial.</p>`;
+}
+
+function stationEventCardMarkup(data) {
+  const isRecord=String(data.eventType||'').startsWith('local_');
+  const isDrought=data.eventType==='drought_state_change';
+  const isDust=data.eventType==='saharan_dust_forecast';
+  const isEphemeris=data.eventType==='meteorological_ephemeris';
+  const accent=isRecord?'#ffd166':'#8fe0ad';
+  const eventValue=finite(data.value)===null?cleanText(data.value,80):reportMetric(data.value,data.unit||'',1);
+  const compactValue=String(eventValue||'').length>9;
+  const time=String(data.observationUpdated||'').slice(11,16);
+  const stamp=isEphemeris
+    ? `${data.localDate||''} · efemèride documentada`
+    : isDrought
+      ? `${data.localDate||''} · actualització oficial de l’ACA`
+      : isDust
+        ? `Inici modelitzat: ${String(data.observationUpdated||'').replace('T',' ')}`
+        : `Sant Celoni · lectura real de les ${time||'—'}`;
+  const methodNote=isEphemeris
+    ? 'Efemèride documentada: no descriu la situació meteorològica actual.'
+    : isDrought
+      ? 'Estat oficial de l’ACA: consulta sempre les mesures vigents a la font original.'
+      : isDust
+        ? 'Previsió modelitzada CAMS: no és una mesura de l’estació ni un avís oficial.'
+        : 'És una observació local, no un avís oficial. Meteocat i Protecció Civil prevalen sempre.';
+  return `<p class="eyebrow" style="color:${accent}">${escapeHtml(data.eyebrow||'OBSERVACIÓ DESTACADA')}</p>
+    <h1 class="event-title">${escapeHtml(data.eventTitle||'Condició meteorològica destacada')}</h1>
+    <p class="stamp">${escapeHtml(stamp)}</p>
+    <section class="event-value" style="border-color:${accent}"><b class="${compactValue?'is-text':''}">${escapeHtml(eventValue||'—')}</b><span>${isRecord?`Arxiu local disponible · ${escapeHtml(String(data.archiveDays||''))} dies`:escapeHtml(data.sourceNote||'Estació Fontanillas')}</span></section>
+    ${finite(data.previousRecord)!==null?`<p class="previous-record">Valor anterior de l’arxiu: <b>${escapeHtml(reportMetric(data.previousRecord,data.unit||'',1))}</b></p>`:''}
+    <section class="event-advice"><small>COM INTERPRETAR-HO</small><p>${escapeHtml(data.advice||'Consulta l’evolució i les fonts oficials.')}</p></section>
+    <p class="method-note">${escapeHtml(methodNote)}</p>`;
+}
+
 export function socialCardHtml(draft) {
   let data = {};
   try { data = JSON.parse(draft.payload || '{}'); } catch {}
@@ -3263,8 +3676,10 @@ export function socialCardHtml(draft) {
   const forecast=Array.isArray(data.forecast)?data.forecast:[];
   const today=forecast[0]||{};const tomorrow=forecast[1]||{};const afterTomorrow=forecast[2]||{};
   const isAlert=draft.kind==='official_alert';
+  const isPeriodic=PERIODIC_SOCIAL_KINDS.has(draft.kind);
+  const isStationEvent=['station_event','environmental_event','meteorological_ephemeris'].includes(draft.kind);
   const alertColor=officialAlertColor(data.level);
-  const main=isAlert?`<p class="eyebrow alert-eyebrow" style="color:${alertColor}">AVÍS OFICIAL METEOCAT · ${escapeHtml(data.levelLabel||'')}</p><h1 class="alert-title">${escapeHtml(data.phenomenon||'Fenomen meteorològic')}</h1><p class="stamp">Catalunya · detall del Vallès Oriental i Sant Celoni</p>${meteocatCountyAlertMapSvg(data.countyWarnings)}<section class="alert local-alert" style="border-color:${alertColor}"><div><small>DETALL PER A SANT CELONI</small><b style="color:${alertColor}">${escapeHtml(data.levelLabel||'AVÍS')} AL VALLÈS ORIENTAL</b></div><p>${escapeHtml(cleanText(data.description||draft.body,460))}</p></section><p class="advice">És un avís comarcal: consulta Meteocat i segueix les indicacions de Protecció Civil.</p>`:`<div class="headline"><div><p class="eyebrow">${escapeHtml(data.eyebrow||'El temps ara')}</p><h1>Dades reals i previsió per entendre el dia.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p></div>${finite(today.weatherCode)!==null?`<div class="forecast-symbol">${socialWeatherGlyphSvg(today.weatherCode)}<b>${escapeHtml(today.condition||socialWeatherLabel(today.weatherCode))}</b><span>Predicció d’avui</span></div>`:''}</div>
+  const main=isAlert?`<p class="eyebrow alert-eyebrow" style="color:${alertColor}">AVÍS OFICIAL METEOCAT · ${escapeHtml(data.levelLabel||'')}</p><h1 class="alert-title">${escapeHtml(data.phenomenon||'Fenomen meteorològic')}</h1><p class="stamp">Catalunya · detall del Vallès Oriental i Sant Celoni</p>${meteocatCountyAlertMapSvg(data.countyWarnings)}<section class="alert local-alert" style="border-color:${alertColor}"><div><small>DETALL PER A SANT CELONI</small><b style="color:${alertColor}">${escapeHtml(data.levelLabel||'AVÍS')} AL VALLÈS ORIENTAL</b></div><p>${escapeHtml(cleanText(data.description||draft.body,460))}</p></section><p class="advice">És un avís comarcal: consulta Meteocat i segueix les indicacions de Protecció Civil.</p>`:isPeriodic?periodicSocialCardMarkup(data):isStationEvent?stationEventCardMarkup(data):`<div class="headline"><div><p class="eyebrow">${escapeHtml(data.eyebrow||'El temps ara')}</p><h1>Dades reals i previsió per entendre el dia.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p></div>${finite(today.weatherCode)!==null?`<div class="forecast-symbol">${socialWeatherGlyphSvg(today.weatherCode)}<b>${escapeHtml(today.condition||socialWeatherLabel(today.weatherCode))}</b><span>Predicció d’avui</span></div>`:''}</div>
     <section class="hero"><div><small>Temperatura</small><div class="temp">${escapeHtml(temperature)}</div></div><div class="feels">Sensació tèrmica<b>${escapeHtml(feeling)}</b></div></section>
     <section class="grid"><div class="metric"><span>Humitat</span><b>${escapeHtml(humidity)}</b></div><div class="metric"><span>Vent · ratxa</span><b>${escapeHtml(wind)} · ${escapeHtml(gust)}</b></div></section>
     ${forecast.length?`<section class="forecast"><div><span>AVUI · ${escapeHtml(today.condition||'')}</span><b>${escapeHtml(display(today.max,'°',0))} / ${escapeHtml(display(today.min,'°',0))}</b><small>${escapeHtml(display(today.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(today.gust,' km/h',0))}</small></div><div><span>DEMÀ · ${escapeHtml(tomorrow.condition||'')}</span><b>${escapeHtml(display(tomorrow.max,'°',0))} / ${escapeHtml(display(tomorrow.min,'°',0))}</b><small>${escapeHtml(display(tomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(tomorrow.gust,' km/h',0))}</small></div><div><span>DEMÀ PASSAT · ${escapeHtml(afterTomorrow.condition||'')}</span><b>${escapeHtml(display(afterTomorrow.max,'°',0))} / ${escapeHtml(display(afterTomorrow.min,'°',0))}</b><small>${escapeHtml(display(afterTomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(afterTomorrow.gust,' km/h',0))}</small></div></section>`:`<section class="grid"><div class="metric"><span>Pressió</span><b>${escapeHtml(pressure)}</b></div><div class="metric"><span>Pluja acumulada avui</span><b>${escapeHtml(rain)}</b></div></section>`}`;
@@ -3273,11 +3688,11 @@ export function socialCardHtml(draft) {
     body{padding:64px;background:radial-gradient(circle at 84% 10%,#286d55 0,rgba(40,109,85,.18) 28%,transparent 44%),linear-gradient(145deg,#061713,#0b241c 62%,#102e24)}
     .top{display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:20px}.mark{width:92px;height:92px;border-radius:22px;object-fit:cover;border:2px solid rgba(255,255,255,.5)}.brand b{font-size:38px}.brand span{display:block;color:#a9beb5;font-size:21px;margin-top:5px}.live{padding:15px 22px;border:1px solid #5e8d79;border-radius:999px;color:#b9f0ce;font-weight:800;letter-spacing:2px;font-size:18px}
     .headline{display:grid;grid-template-columns:minmax(0,1fr) 205px;gap:30px;align-items:end}.eyebrow{margin:78px 0 20px;color:#8fe0ad;font-weight:800;letter-spacing:4px;font-size:22px;text-transform:uppercase}.alert-eyebrow{margin-top:38px;margin-bottom:12px}h1{margin:0;font-size:64px;line-height:1.02;letter-spacing:-3px;max-width:760px}.alert-title{font-size:54px}.stamp{margin-top:16px;color:#b2c5bc;font-size:22px}.forecast-symbol{align-self:end;padding:18px 16px 16px;border-radius:30px;border:1px solid #477764;background:rgba(7,31,24,.86);text-align:center}.forecast-symbol svg{display:block;width:150px;height:150px;margin:-15px auto -8px}.forecast-symbol b,.forecast-symbol span{display:block}.forecast-symbol b{font-size:21px;color:#f5faf7}.forecast-symbol span{font-size:15px;color:#8fe0ad;margin-top:6px;text-transform:uppercase;letter-spacing:1px}.hero{margin-top:44px;display:flex;align-items:flex-end;justify-content:space-between;padding:42px;border-radius:34px;border:1px solid #416d5b;background:rgba(12,43,33,.84)}.hero small{display:block;color:#9db5aa;font-size:23px;margin-bottom:12px}.temp{font-size:138px;line-height:.86;font-weight:900;letter-spacing:-8px}.feels{text-align:right;font-size:28px;color:#cfe0d8}.feels b{display:block;color:#fff;font-size:42px;margin-top:10px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.metric{padding:25px 30px;border-radius:25px;border:1px solid #315c4b;background:rgba(5,28,22,.74)}.metric span{display:block;color:#a8beb4;font-size:21px;margin-bottom:9px}.metric b{font-size:34px}.forecast{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}.forecast div{padding:22px 20px;border-radius:25px;border:1px solid #477764;background:rgba(7,31,24,.92)}.forecast span,.forecast small{display:block;color:#91d8ad;font-size:16px;line-height:1.25}.forecast b{display:block;font-size:31px;margin:11px 0}.map-panel{margin-top:22px;padding:18px 26px;border:1px solid #416d5b;border-radius:30px;background:rgba(5,28,22,.82);display:grid;grid-template-columns:600px 1fr;gap:22px;align-items:center}.county-map{display:block;width:600px;height:410px}.map-meta>span{color:#8fe0ad;font-size:18px;font-weight:800;letter-spacing:3px}.map-meta>b,.map-meta>small,.map-meta>em{display:block}.map-meta>b{font-size:31px;line-height:1.08;margin:12px 0}.map-meta>small{color:#a8beb4;font-size:18px;line-height:1.3}.map-meta>em{color:#dbe9e2;font-size:16px;font-style:normal;margin-top:18px}.legend{display:grid;grid-template-columns:16px 1fr;gap:8px 9px;align-items:center;margin-top:22px;color:#dbe9e2;font-size:17px}.legend i{width:14px;height:14px;border-radius:50%}.legend .yellow{background:#ffd45a}.legend .orange{background:#ff9f43}.legend .red{background:#ff625f}.alert{border:2px solid;border-radius:28px;background:rgba(5,28,22,.88)}.local-alert{margin-top:20px;padding:25px 30px}.local-alert small{display:block;color:#a8beb4;font-size:16px;letter-spacing:2px;margin-bottom:7px}.local-alert b{font-size:31px}.local-alert p{font-size:23px;line-height:1.28;margin:16px 0 0}.advice{font-size:21px;line-height:1.3;color:#d7e5de;margin-top:18px}.footer{position:absolute;left:64px;right:64px;bottom:44px;display:flex;justify-content:space-between;align-items:center;padding-top:19px;border-top:1px solid #315c4b;color:#aec3b9;font-size:19px}.footer strong{color:#8fe0ad}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.metric{padding:25px 30px;border-radius:25px;border:1px solid #315c4b;background:rgba(5,28,22,.74)}.metric span{display:block;color:#a8beb4;font-size:21px;margin-bottom:9px}.metric b{font-size:34px}.forecast{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}.forecast div{padding:22px 20px;border-radius:25px;border:1px solid #477764;background:rgba(7,31,24,.92)}.forecast span,.forecast small{display:block;color:#91d8ad;font-size:16px;line-height:1.25}.forecast b{display:block;font-size:31px;margin:11px 0}.report-title{max-width:900px}.report-hero{margin-top:42px;padding:34px 38px;border:1px solid #477764;border-radius:30px;background:rgba(7,31,24,.86);display:flex;justify-content:space-between;align-items:end}.report-hero small,.event-advice small{display:block;color:#8fe0ad;font-size:17px;font-weight:800;letter-spacing:2px}.report-hero b{display:block;font-size:62px;margin-top:10px}.report-hero em{color:#6f9284;font-style:normal}.report-hero strong{display:block;font-size:45px;margin-top:10px;text-align:right}.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}.report-grid div{padding:25px 28px;border:1px solid #315c4b;border-radius:24px;background:rgba(5,28,22,.7)}.report-grid span{display:block;color:#a8beb4;font-size:19px;margin-bottom:8px}.report-grid b{font-size:32px}.verification{margin-top:20px;padding:24px 28px;border:1px solid #6d8050;border-radius:24px;background:rgba(67,76,33,.25);display:flex;justify-content:space-between;align-items:center}.verification small{display:block;color:#ffd166;font-weight:800;letter-spacing:1px}.verification b{display:block;font-size:25px;margin-top:8px}.verification strong{max-width:50%;font-size:25px;line-height:1.15;text-align:right;color:#ffd166}.mini-forecast{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}.mini-forecast div{padding:17px;border:1px solid #315c4b;border-radius:19px}.mini-forecast span,.mini-forecast small{display:block;color:#a8beb4;font-size:14px;line-height:1.35}.mini-forecast b{display:block;font-size:28px;margin:7px 0}.outlook-row{grid-template-columns:repeat(3,1fr)}.outlook-note{color:#ffd166;font-size:16px;line-height:1.3;margin:12px 0}.method-note{color:#a8beb4;font-size:18px;line-height:1.35;margin-top:22px}.event-title{max-width:900px}.event-value{margin-top:70px;padding:55px 42px;border:2px solid;border-radius:38px;text-align:center;background:rgba(7,31,24,.86)}.event-value b{display:block;font-size:150px;letter-spacing:-7px}.event-value b.is-text{font-size:72px;line-height:1.05;letter-spacing:-2px;overflow-wrap:anywhere}.event-value span{display:block;color:#b8cbc2;font-size:22px;margin-top:10px}.previous-record{text-align:center;font-size:24px;color:#c7d8d0}.event-advice{margin-top:35px;padding:32px;border:1px solid #477764;border-radius:28px}.event-advice p{font-size:29px;line-height:1.35;margin:14px 0 0}.map-panel{margin-top:22px;padding:18px 26px;border:1px solid #416d5b;border-radius:30px;background:rgba(5,28,22,.82);display:grid;grid-template-columns:600px 1fr;gap:22px;align-items:center}.county-map{display:block;width:600px;height:410px}.map-meta>span{color:#8fe0ad;font-size:18px;font-weight:800;letter-spacing:3px}.map-meta>b,.map-meta>small,.map-meta>em{display:block}.map-meta>b{font-size:31px;line-height:1.08;margin:12px 0}.map-meta>small{color:#a8beb4;font-size:18px;line-height:1.3}.map-meta>em{color:#dbe9e2;font-size:16px;font-style:normal;margin-top:18px}.legend{display:grid;grid-template-columns:16px 1fr;gap:8px 9px;align-items:center;margin-top:22px;color:#dbe9e2;font-size:17px}.legend i{width:14px;height:14px;border-radius:50%}.legend .yellow{background:#ffd45a}.legend .orange{background:#ff9f43}.legend .red{background:#ff625f}.alert{border:2px solid;border-radius:28px;background:rgba(5,28,22,.88)}.local-alert{margin-top:20px;padding:25px 30px}.local-alert small{display:block;color:#a8beb4;font-size:16px;letter-spacing:2px;margin-bottom:7px}.local-alert b{font-size:31px}.local-alert p{font-size:23px;line-height:1.28;margin:16px 0 0}.advice{font-size:21px;line-height:1.3;color:#d7e5de;margin-top:18px}.footer{position:absolute;left:64px;right:64px;bottom:44px;display:flex;justify-content:space-between;align-items:center;padding-top:19px;border-top:1px solid #315c4b;color:#aec3b9;font-size:19px}.footer strong{color:#8fe0ad}
   </style></head><body>
-    <div class="top"><div class="brand"><img class="mark" src="https://meteo.fontanillas.cat/assets/icons/icon-512.png" alt=""><div><b>Meteo Fontanillas</b><span>Observatori meteorològic · Sant Celoni</span></div></div><div class="live">${isAlert?'METEOCAT':'DADA REAL'}</div></div>
+    <div class="top"><div class="brand"><img class="mark" src="https://meteo.fontanillas.cat/assets/icons/icon-512.png" alt=""><div><b>Meteo Fontanillas</b><span>Observatori meteorològic · Sant Celoni</span></div></div><div class="live">${isAlert?'METEOCAT':isPeriodic?'RESUM':isStationEvent?'OBSERVACIÓ':'DADA REAL'}</div></div>
     ${main}
-    <div class="footer"><span>${isAlert?'Dades: Meteocat · mapa comarcal: ICGC':'Fonts: estació Fontanillas · Open-Meteo'}</span><strong>meteo.fontanillas.cat</strong></div>
+    <div class="footer"><span>${isAlert?'Dades: Meteocat · mapa comarcal: ICGC':isPeriodic?'Dades: arxiu propi de l’Observatori':isStationEvent?`Font: ${escapeHtml(data.sourceNote||'Observatori Fontanillas')}`:'Fonts: estació Fontanillas · Open-Meteo'}</span><strong>meteo.fontanillas.cat</strong></div>
   </body></html>`;
 }
 
@@ -3985,7 +4400,7 @@ async function publishBluesky(draft, env) {
     });
     const uploaded = await uploadResponse.json().catch(() => ({}));
     if (!uploadResponse.ok || !uploaded.blob) throw Object.assign(new Error(uploaded.message || 'Bluesky no ha pogut rebre la imatge.'), { status:502, responseCode:uploadResponse.status });
-    imageEmbed = { '$type':'app.bsky.embed.images', images:[{ alt:'Dades meteorològiques reals de l’Observatori Fontanillas', image:uploaded.blob }] };
+    imageEmbed = { '$type':'app.bsky.embed.images', images:[{ alt:cleanText(draft.title||'Publicació meteorològica de l’Observatori Fontanillas',300), image:uploaded.blob }] };
   } else {
     const details = cleanText(await imageResponse.text().catch(() => ''), 500);
     console.error('Bluesky card fallback', JSON.stringify({ draftId:draft.id, status:imageResponse.status, details }));
@@ -4024,8 +4439,9 @@ async function publishAutomaticSocialDraft(result, env) {
     bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
     telegram:Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID),
     threads:Boolean(env.THREADS_ACCESS_TOKEN),
+    x:bufferXConfigured(env),
   };
-  const publishers = { facebook:publishFacebook, instagram:publishInstagram, telegram:publishTelegram, bluesky:publishBluesky, threads:publishThreads };
+  const publishers = { facebook:publishFacebook, instagram:publishInstagram, telegram:publishTelegram, bluesky:publishBluesky, threads:publishThreads, x:publishBufferXImage };
   const previous = await socialPublicationsForDraft(env, draft.id);
   const completed = new Set(previous.filter(item=>item.status==='published').map(item=>item.channel));
   const retryChannels = Array.isArray(result?.retryChannels) ? new Set(result.retryChannels) : null;
@@ -4106,6 +4522,25 @@ async function recoverIncompleteOfficialAlertDraft(env) {
   return {created:false,recovered:true,localDate:String(draft.created_at||'').slice(0,10),slot:'official-alert-recovery',retryChannels,draft};
 }
 
+async function recoverIncompleteSpecialSocialDraft(env) {
+  if(!socialAutomationEnabled(env)||!(await ensureSocialDraftSchema(env)))return null;
+  const draft=await env.DB.prepare(`SELECT * FROM social_drafts
+    WHERE kind IN ('weekly_summary','monthly_summary','seasonal_summary','annual_summary','station_event','environmental_event','meteorological_ephemeris')
+      AND status IN ('approved','partially_published')
+      AND created_at >= datetime('now','-14 days')
+      AND created_at <= datetime('now','-2 minutes')
+    ORDER BY id ASC LIMIT 1`).first();
+  if(!draft)return null;
+  const publications=await socialPublicationsForDraft(env,draft.id);
+  const published=new Set(publications.filter(item=>item.status==='published').map(item=>item.channel));
+  const attempts=new Map();
+  for(const item of publications)attempts.set(item.channel,(attempts.get(item.channel)||0)+1);
+  const retryChannels=parseSocialChannels(draft.channels)
+    .filter(channel=>!published.has(channel)&&(attempts.get(channel)||0)<SOCIAL_AUTOMATIC_MAX_ATTEMPTS);
+  if(!retryChannels.length)return null;
+  return {created:false,recovered:true,localDate:String(draft.created_at||'').slice(0,10),slot:'special-recovery',retryChannels,draft};
+}
+
 async function adminPublishSocialDraft(request, env, draftId) {
   const auth = await authorizeAdminRequest(request, env);
   if (auth.response) return auth.response;
@@ -4122,7 +4557,7 @@ async function adminPublishSocialDraft(request, env, draftId) {
     return json({ error:'Aquest contingut ja s’ha publicat en aquest canal i no es tornarà a enviar.' }, 409, 'no-store', auth.origin);
   }
   try {
-    const publishers = { facebook:publishFacebook, instagram:publishInstagram, telegram:publishTelegram, bluesky:publishBluesky, threads:publishThreads };
+    const publishers = { facebook:publishFacebook, instagram:publishInstagram, telegram:publishTelegram, bluesky:publishBluesky, threads:publishThreads, x:publishBufferXImage };
     const details = await publishers[channel](draft, env);
     await recordSocialPublication(env, draftId, channel, 'published', details);
     const status = await refreshSocialDraftPublicationStatus(env, draft);
@@ -4555,6 +4990,21 @@ export default {
       return slot ? createDailySocialDraft(result.observation,env,slot) : recoverIncompleteDailySocialDraft(env);
     })
       .then(result => publishAutomaticSocialDraft(result, env));
+    const periodicSocial=createPeriodicSocialDraft(env).then(result=>publishAutomaticSocialDraft(result,env));
+    const stationEventSocial=capture
+      .then(result=>createStationEventSocialDraft(result.observation,env))
+      .then(result=>publishAutomaticSocialDraft(result,env));
+    const environmentalSocial=Promise.allSettled([createDroughtStateChangeDraft(env),createDustForecastDraft(env)])
+      .then(async results=>{
+        const published=await Promise.all(results.filter(result=>result.status==='fulfilled').map(result=>publishAutomaticSocialDraft(result.value,env)));
+        const failed=results.filter(result=>result.status==='rejected');
+        if(failed.length)throw new AggregateError(failed.map(result=>result.reason),'Ha fallat una comprovació ambiental social.');
+        return published;
+      });
+    const ephemerisSocial=createMeteorologicalEphemerisDraft(env).then(result=>publishAutomaticSocialDraft(result,env));
+    const specialSocialRecovery=Promise.allSettled([periodicSocial,stationEventSocial,environmentalSocial,ephemerisSocial])
+      .then(()=>recoverIncompleteSpecialSocialDraft(env))
+      .then(result=>publishAutomaticSocialDraft(result,env));
     const aemetAlerts=checkAlertsAndNotify(env);
     const meteocatAlerts=checkMeteocatAlertsAndPublish(env);
     const officialAlertRecovery=Promise.allSettled([aemetAlerts,meteocatAlerts])
@@ -4565,6 +5015,11 @@ export default {
       observedJob('observation',capture),
       observedJob('forecast',captureForecastSnapshot(env)),
       observedJob('social',social),
+      observedJob('social-periodic',periodicSocial),
+      observedJob('social-station-event',stationEventSocial),
+      observedJob('social-environmental',environmentalSocial),
+      observedJob('social-ephemeris',ephemerisSocial),
+      observedJob('social-special-recovery',specialSocialRecovery),
       observedJob('meta-video',runAutomaticMetaVideos(env)),
       observedJob('alerts',aemetAlerts),
       observedJob('meteocat-alert-social',meteocatAlerts),

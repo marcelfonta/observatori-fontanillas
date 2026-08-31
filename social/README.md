@@ -1,4 +1,17 @@
-# Xarxes socials — automatització segura V22.27.0
+# Xarxes socials — automatització segura V22.28.0
+
+## Publicacions de ritme lent i episodis puntuals
+
+La V22.28 prepara quatre famílies noves, totes desactivades per defecte:
+
+- `SOCIAL_PERIODIC_ENABLED=true`: resum setmanal cada dilluns, mensual el dia 2, estacional els dies 3 de març, juny, setembre i desembre, i anual el 4 de gener. L’hora comuna és `SOCIAL_PERIODIC_TIME`, per defecte `12:00`.
+- `SOCIAL_EVENT_POSTS_ENABLED=true`: episodis destacats de l’estació i nous extrems de l’arxiu local. Com a màxim publica dos episodis al dia i el segon ha de ser clarament més rellevant.
+- `SOCIAL_ENVIRONMENTAL_ENABLED=true`: comprova a `SOCIAL_ENVIRONMENTAL_TIME` l’estat de sequera de l’ACA i la previsió de pols CAMS. La pols només es pot activar després d’acordar `SOCIAL_DUST_THRESHOLD_UG_M3`; el valor `0` la manté desactivada.
+- `SOCIAL_EPHEMERIDES_ENABLED=true`: publica a `SOCIAL_EDUCATIONAL_TIME`, per defecte `17:00`, només les efemèrides exactes i verificades de la biblioteca del portal.
+
+Els resums exigeixen almenys un 60% dels dies i 72 mostres diàries; indiquen que l’arxiu propi no és una normal climàtica oficial. Els rècords locals necessiten 90 dies d’arxiu i mai s’anomenen rècords climàtics. La sequera només publica canvis posteriors a la primera lectura de referència. La pols es presenta com una previsió modelitzada CAMS d’uns 11 km i no com una observació de l’estació ni un avís sanitari.
+
+Cada esborrany es deduplica a D1, es publica canal per canal i es recupera fins a quatre vegades sense repetir els canals completats. Els estats `social-periodic` i `environment:*` formen part del diagnòstic d’administració.
 
 Els vídeos del matí i del vespre utilitzen símbols WMO, colors, titulars i consells que canvien amb la predicció real. La pantalla de l’estació identifica explícitament les dades observades i no hi afegeix cap icona predictiva. Una sisena escena anima quatre hores de pluja prevista al nord-est de Catalunya amb AROME France HD, límits comarcals de l'ICGC i Sant Celoni remarcat; Open-Meteo Best Match i una vista puntual segura eviten que una incidència del mapa bloquegi el vídeo. Les descripcions de Meta, TikTok i X també resumeixen el fenomen, la màxima, la mínima i la probabilitat de pluja. La targeta del migdia incorpora el símbol de la previsió d’avui.
 
