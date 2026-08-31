@@ -2,7 +2,7 @@ import { CATALONIA_COUNTY_PATHS } from './catalonia-counties.js';
 import { METEOROLOGICAL_EPHEMERIDES } from '../src/data/meteorological-ephemerides.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.0";
+const WORKER_VERSION = "22.29.1";
 const WORKER_BUILT = "2026-08-31";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;

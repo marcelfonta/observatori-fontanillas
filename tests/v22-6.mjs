@@ -8,8 +8,8 @@ const [project,worker,push,verification,alerts,ai,html,css,serviceWorker,roadmap
   read('project.json'),read('worker/index.js'),read('src/features/push.js'),read('src/features/forecast-verification.js'),read('src/modules/avisos.js'),read('src/features/meteo-ai.js'),read('index.html'),read('css/style.css'),read('service-worker.js'),read('ROADMAP.md')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.29.0');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-29-0-xarxes'));
+assert.equal(JSON.parse(project).version,'22.29.1');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-29-1-xarxes'));
 for(const token of ['async function pushTest','include_subscription_ids','url.pathname === "/push-test"'])assert.ok(worker.includes(token),`Prova push real: falta ${token}`);
 for(const token of ['rainBrier','sampleDays>=30','confidence'])assert.ok(worker.includes(token),`Verificació madura: falta ${token}`);
 assert.ok(push.includes('Enviant una prova real')&&push.includes("e.key!=='Tab'"),'La diagnosi push real o el focus del diàleg no estan protegits.');
@@ -19,6 +19,7 @@ assert.ok(worker.includes('const primaryRows = rows.filter(row=>Number(row.horiz
 assert.ok(worker.includes('summaryScope:"tomorrow"')&&worker.includes('wetDays:')&&worker.includes('dryDays:'),'Falta descriure l’abast o la composició de la mostra.');
 assert.ok(verification.includes('pronòstics de demà')&&verification.includes('rainProbabilityThreshold'),'La interfície no explica la mostra comparable o el llindar de pluja.');
 assert.ok(verification.includes('verification-scroll-hint')&&css.includes('.verification-scroll-hint{display:block}'),'Falta orientar el desplaçament de la taula en mòbil.');
+assert.ok(css.includes('.verification-orbit.is-ready :is(strong,span){color:#052c22')&&css.includes('max-width:100px'),'El cercle de verificació ha de mantenir un contrast alt i una amplada de lectura suficient.');
 assert.ok(css.includes('repeat(auto-fit,minmax(210px,1fr))'),'Les quatre mètriques no tenen una graella adaptable.');
 assert.ok(alerts.includes('Abast zonal')&&alerts.includes('la intensitat exacta a Sant Celoni pot variar'),'Falta transparència territorial als avisos.');
 assert.ok(ai.includes('currentDetailAnswer')&&ai.includes('sunAnswer'),'La IA no cobreix les consultes senzilles noves.');

@@ -1,5 +1,9 @@
 # Changelog
 
+## V22.29.1 — Contrast del cercle de verificació — 2026-08-31
+
+- El recompte i el text del cercle de predicció vs realitat utilitzen colors d’alt contrast, més pes i més amplada útil tant mentre es recullen dades com quan la mostra ja està disponible.
+
 ## V22.29.0 — Context temporal i quota oficial de Meteocat — 2026-08-31
 
 - Totes les escenes dels vídeos del matí i del vespre mostren l’edició i la data completa de generació dins la zona segura de la imatge.

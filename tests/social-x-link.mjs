@@ -18,4 +18,4 @@ assert.ok(style.includes('.social-link--instagram,.header-social>.social-link--t
 assert.ok(style.includes('.social-link--instagram{order:1}') && style.includes('.social-link--tiktok{order:2}') && style.includes('.social-link--youtube{order:3}'), 'Els accessos directes mòbils no segueixen l’ordre Instagram, TikTok i YouTube.');
 assert.ok(index.includes('"https://x.com/meteo_fonta"') && seo.includes("'https://x.com/meteo_fonta'"), 'Falta X a les dades estructurades SEO.');
 
-console.log('Test V22.29.0: X visible i capçalera social mòbil ordenada');
+console.log('Test V22.29.1: X visible i capçalera social mòbil ordenada');
