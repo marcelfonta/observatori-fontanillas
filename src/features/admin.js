@@ -108,6 +108,8 @@ function renderOperations(operations={},schedule={}){
   text('admin-youtube-schedule',`${schedule.youtube||'06:20,19:45'} · ${schedule.timeZone||'Europe/Madrid'}`);
   text('admin-youtube-operation',youtube?.checkedAt?`${youtube.status==='healthy'?'Correcte':'Error'} · ${formatDate(youtube.checkedAt)}`:'Pendent del primer disparador');
   text('admin-meta-video-operation',metaVideo?.checkedAt?`${metaVideo.status==='healthy'?'Completada':metaVideo.status==='degraded'?'Processant':'Error'} · ${formatDate(metaVideo.checkedAt)}`:schedule.metaVideoEnabled?`Activada · ${schedule.metaVideo||'07:00,20:30'}`:'Automatització desactivada');
+  const meteocat=operations.meteocat;const quota=meteocat?.quota;
+  text('admin-meteocat-operation',quota?`${quota.registeredByWorker}/${quota.monthlyLimit} consultes registrades · màxim planificat ${quota.plannedMaximum} · ${meteocat.lastPoll?.checkedAt?formatDate(meteocat.lastPoll.checkedAt):'pendent'}`:'Pendent de dades de quota');
   text('admin-buffer-diagnostics',bufferDiagnostics?.checkedAt?`${bufferDiagnostics.status==='healthy'?'Correcta':'Error'} · ${formatDate(bufferDiagnostics.checkedAt)}`:'Pendent de comprovació');
   text('admin-buffer-operation',bufferTikTok?.checkedAt?`${bufferTikTok.status==='healthy'?'Programat':bufferTikTok.status==='running'?'En curs':'Error'} · ${formatDate(bufferTikTok.checkedAt)}`:'Automatització encara desactivada');
   text('admin-buffer-x-operation',bufferX?.checkedAt?`${bufferX.status==='healthy'?(bufferX.detail?.stage==='sent'?'Publicat':'Programat'):bufferX.status==='running'?'En curs':'Error'} · ${formatDate(bufferX.checkedAt)}`:'Pendent de la primera publicació');
@@ -299,7 +301,7 @@ async function renderDashboard(payload,requestLatency){
   const analytics=renderIntegrations(payload.integrations);
   renderSocialQueue(payload.social);
   renderOperations(payload.operations,payload.schedule);
-  latestDiagnostic={...payload,client:{webVersion:'22.28.1',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
+  latestDiagnostic={...payload,client:{webVersion:'22.29.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
   const overall=overallState(payload);text('admin-overall-status',overall.label);text('admin-last-update',`Actualitzat ${formatDate(payload.generatedAt)} · ${requestLatency} ms`);
   setCard('worker',payload.ok?'is-ok':'is-error',payload.ok?'Operatiu':'Error',`V${payload.worker?.version||'—'} · ${payload.latencyMs??'—'} ms`);
   const stationOk=Boolean(payload.station?.ok);setCard('station',stationOk?'is-ok':'is-warning',stationOk?'Al dia':'Cal revisar',payload.station?.ageMinutes===null?'Antiguitat desconeguda':`${payload.station.ageMinutes} min d’antiguitat`);

@@ -45,3 +45,10 @@ Els vídeos del matí i del vespre utilitzen AROME France HD per representar qua
 - Es reutilitza la cua social existent, amb deduplicació D1 i recuperació de canals pendents, per evitar una segona arquitectura de publicació.
 
 **Activació de producció, 2026-08-31:** s’activen els resums periòdics a les 12:00, els episodis locals, els canvis ambientals a les 12:00 i les efemèrides a les 17:00. El llindar editorial de pols CAMS queda fixat en 50 µg/m³ durant almenys tres hores consecutives. Els avisos socials de Meteocat continuen pendents de rebre i configurar la clau oficial de l’API.
+
+# ADR — Pressupost mensual de consultes Meteocat (2026-08-31)
+
+- El pla oficial permet 100 consultes mensuals de predicció; el cron general de cinc minuts no pot consultar directament l’API SMP.
+- Es fan tres consultes diàries persistents: 06:30 per al dia actual, 12:30 per a l’endemà i 18:30 novament per al dia actual. En un mes de 31 dies el màxim és 93, i se’n reserven set per a comprovacions excepcionals.
+- D1 reclama cada franja abans de consultar. Una execució repetida o fallida no torna a consumir quota dins la mateixa franja.
+- El recompte visible a l’administració és el registrat pel Worker, no substitueix el comptador oficial de Meteocat i no inclou consultes manuals alienes al Worker.

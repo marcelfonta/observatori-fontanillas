@@ -1,4 +1,4 @@
-# Xarxes socials — automatització segura V22.28.1
+# Xarxes socials — automatització segura V22.29.0
 
 ## Publicacions de ritme lent i episodis puntuals
 
@@ -12,6 +12,8 @@ La V22.28 prepara quatre famílies noves, totes desactivades per defecte:
 Els resums exigeixen almenys un 60% dels dies i 72 mostres diàries; indiquen que l’arxiu propi no és una normal climàtica oficial. Els rècords locals necessiten 90 dies d’arxiu i mai s’anomenen rècords climàtics. La sequera només publica canvis posteriors a la primera lectura de referència. La pols es presenta com una previsió modelitzada CAMS d’uns 11 km i no com una observació de l’estació ni un avís sanitari.
 
 Cada esborrany es deduplica a D1, es publica canal per canal i es recupera fins a quatre vegades sense repetir els canals completats. Els estats `social-periodic` i `environment:*` formen part del diagnòstic d’administració.
+
+Els avisos oficials de Meteocat consulten SMP només a les 06:30 i 18:30 per al dia actual i a les 12:30 per a l’endemà. Cada franja queda reclamada a D1 abans de la petició: el màxim és de 93 consultes en un mes de 31 dies, amb set consultes de marge respecte del pla oficial de 100. El panell mostra el recompte intern; el comptador de Meteocat continua sent l’autoritat sobre el consum real.
 
 Els vídeos del matí i del vespre utilitzen símbols WMO, colors, titulars i consells que canvien amb la predicció real. Totes les escenes mostren la data de l'edició i la data concreta de la previsió; la pantalla de l'estació hi afegeix l'hora de lectura i identifica explícitament les dades observades sense cap icona predictiva. Una sisena escena anima quatre hores de pluja prevista al nord-est de Catalunya amb AROME France HD, límits comarcals de l'ICGC i Sant Celoni remarcat; Open-Meteo Best Match i una vista puntual segura eviten que una incidència del mapa bloquegi el vídeo. Les descripcions de Meta, TikTok i X també resumeixen el fenomen, la màxima, la mínima i la probabilitat de pluja. La targeta del migdia incorpora el símbol de la previsió d’avui.
 
