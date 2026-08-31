@@ -73,11 +73,11 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.28.1
+## Estat V22.29.0
 
-- Branca de treball: `fix/buffer-x-public-media`.
-- Versio codi: V22.28.1.
-- Produccio queda pendent d’integrar la PR i desplegar la V22.28.1; la correcció fa verificables les imatges d’X i evita duplicats remots fallits.
+- Branca de treball: `fix/meteocat-quota-guard`.
+- Versio codi: V22.29.0.
+- Produccio queda pendent d’integrar i desplegar la V22.29.0 amb el secret de Meteocat ja desat en una versió remota pendent.
 - El Worker prepara resums setmanals, mensuals, estacionals i anuals amb cobertura mínima, context de predicció i targetes socials pròpies.
 - Els episodis destacats de l’estació, els extrems de l’arxiu local, la sequera de l’ACA, la pols modelitzada per CAMS i les efemèrides disposen de deduplicació, límits i interruptors independents.
 - Les publicacions d'avisos són exclusives de Meteocat i incorporen el mapa comarcal complet de Catalunya, amb el Vallès Oriental remarcat i un text prudent per a Sant Celoni.
@@ -87,4 +87,4 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - Els vídeos duren 30 segons, incorporen moviment subtil i transicions, i els textos de Meta, TikTok i X resumeixen el fenomen i les temperatures de la franja corresponent.
 - La targeta del migdia mostra una icona pròpia de la predicció d’avui.
 - Configuració de producció prevista: `SOCIAL_AUTO_TIMES=07:00,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:45,13:45,20:15`.
-- Accio externa pendent per avisos socials: rebre la clau sol·licitada a Meteocat i desar-la com a secret `METEOCAT_API_KEY` a Cloudflare abans d'activar l'automatització.
+- Els avisos socials de Meteocat tenen un pressupost persistent de tres consultes al dia —màxim 93 al mes— per respectar el pla de 100 consultes de predicció. La primera activació real queda pendent del desplegament conjunt del codi i el secret `METEOCAT_API_KEY`.

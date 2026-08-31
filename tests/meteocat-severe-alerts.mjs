@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { CATALONIA_COUNTY_PATHS } from '../worker/catalonia-counties.js';
-import { meteocatCountyWarningsByDay, meteocatDangerLevel, parseMeteocatSmpEpisodes, socialCardHtml } from '../worker/index.js';
+import { meteocatAlertPollPlan, meteocatCountyWarningsByDay, meteocatDangerLevel, parseMeteocatSmpEpisodes, socialCardHtml } from '../worker/index.js';
+
+assert.deepEqual(meteocatAlertPollPlan(new Date('2026-08-31T04:30:00Z')),{time:'06:30',localDate:'2026-08-31',targetDate:'2026-08-31',targetOffset:0});
+assert.deepEqual(meteocatAlertPollPlan(new Date('2026-08-31T10:30:00Z')),{time:'12:30',localDate:'2026-08-31',targetDate:'2026-09-01',targetOffset:1});
+assert.deepEqual(meteocatAlertPollPlan(new Date('2026-08-31T10:55:00Z')),{time:'12:30',localDate:'2026-08-31',targetDate:'2026-09-01',targetOffset:1});
+assert.deepEqual(meteocatAlertPollPlan(new Date('2026-08-31T16:30:00Z')),{time:'18:30',localDate:'2026-08-31',targetDate:'2026-08-31',targetOffset:0});
+assert.equal(meteocatAlertPollPlan(new Date('2026-08-31T10:29:59Z')),null);
+assert.equal(meteocatAlertPollPlan(new Date('2026-08-31T11:00:00Z')),null);
 
 assert.equal(meteocatDangerLevel(2).key,'yellow');
 assert.equal(meteocatDangerLevel(3).key,'orange');
@@ -69,5 +76,8 @@ assert.match(worker,/level==='orange'\?'TARONJA':'GROC'/);
 assert.match(worker,/AVÍS OFICIAL METEOCAT/);
 assert.match(worker,/Dades: Meteocat · mapa comarcal: ICGC/);
 assert.match(worker,/if\(entry\.source!=='Meteocat'\)return \{created:false,reason:'meteocat_only'\}/);
+assert.match(worker,/METEOCAT_MONTHLY_PREDICTION_LIMIT = 100/);
+assert.match(worker,/plannedMaximum:31\*METEOCAT_ALERT_POLL_SLOTS\.length/);
+assert.doesNotMatch(worker,/Promise\.allSettled\(localIsoDates\(\)\.map/);
 
 console.log('Avisos Meteocat: mapa de Catalunya, detall local i font exclusiva correctes');

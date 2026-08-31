@@ -2,7 +2,7 @@ import { CATALONIA_COUNTY_PATHS } from './catalonia-counties.js';
 import { METEOROLOGICAL_EPHEMERIDES } from '../src/data/meteorological-ephemerides.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.28.1";
+const WORKER_VERSION = "22.29.0";
 const WORKER_BUILT = "2026-08-31";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -33,6 +33,13 @@ const METEOCAT_SMP_ENDPOINT = "https://api.meteo.cat/pronostic/v2/smp/episodis-o
 const METEOCAT_ALERTS_PAGE = "https://www.meteo.cat/prediccio/general";
 const METEOCAT_VALLES_ORIENTAL_ID = 41;
 const METEOCAT_VALLES_ORIENTAL_NAME = "Vallès Oriental";
+const METEOCAT_MONTHLY_PREDICTION_LIMIT = 100;
+const METEOCAT_ALERT_POLL_WINDOW_MINUTES = 30;
+const METEOCAT_ALERT_POLL_SLOTS = [
+  { time:'06:30', targetOffset:0 },
+  { time:'12:30', targetOffset:1 },
+  { time:'18:30', targetOffset:0 },
+];
 const THREECAT_SEARCH_URL = "https://www.3cat.cat/cercador/";
 const FORECAST_VIDEO_HTML_LIMIT = 900_000;
 const COMPARISON_STATIONS = [
@@ -463,9 +470,12 @@ function monitorPayload(row) {
 
 async function adminOperationsSummary(env) {
   if (!(await ensureOperationsSchema(env))) return { enabled:false };
+  const monthPrefix=localIsoDate().slice(0,7);
   const result = await env.DB.prepare(`SELECT service_key,status,last_checked_at,last_failure_at,last_success_at,detail
     FROM monitor_state
     WHERE service_key IN ('scheduler','push-alert','social-automatic','social-preflight','social-periodic','youtube-shorts-scheduler','buffer-tiktok-diagnostics','buffer-tiktok-test','meta-video-automatic')
+       OR service_key = 'meteocat-alert-social'
+       OR service_key LIKE 'meteocat-alert-poll:%'
        OR service_key LIKE 'social-preflight:%'
        OR service_key LIKE 'environment:%'
        OR service_key LIKE 'buffer-tiktok:%'
@@ -484,7 +494,14 @@ async function adminOperationsSummary(env) {
   const environmental = Object.fromEntries(rows
     .filter(row => String(row.service_key).startsWith('environment:'))
     .map(row => [row.service_key.slice('environment:'.length), monitorPayload(row)]));
-  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, periodicSocial:states['social-periodic'] || null, environmental, preflight:monitorPayload(preflightRow), youtube:states['youtube-shorts-scheduler'] || null, bufferTikTok:monitorPayload(bufferRow), bufferTikTokDiagnostics:states['buffer-tiktok-diagnostics'] || null, bufferTikTokTest:states['buffer-tiktok-test'] || null, bufferX:monitorPayload(bufferXRow), metaVideo:states['meta-video-automatic'] || null };
+  const meteocatPollRow=rows
+    .filter(row=>String(row.service_key).startsWith('meteocat-alert-poll:'))
+    .sort((a,b)=>String(b.last_checked_at||'').localeCompare(String(a.last_checked_at||'')))[0];
+  const meteocatUsage=await env.DB.prepare("SELECT COUNT(*) AS total FROM monitor_state WHERE service_key LIKE ?")
+    .bind(`meteocat-alert-poll:${monthPrefix}-%`).first();
+  return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, periodicSocial:states['social-periodic'] || null, environmental, preflight:monitorPayload(preflightRow), youtube:states['youtube-shorts-scheduler'] || null, bufferTikTok:monitorPayload(bufferRow), bufferTikTokDiagnostics:states['buffer-tiktok-diagnostics'] || null, bufferTikTokTest:states['buffer-tiktok-test'] || null, bufferX:monitorPayload(bufferXRow), metaVideo:states['meta-video-automatic'] || null,
+    meteocat:{state:states['meteocat-alert-social']||null,lastPoll:monitorPayload(meteocatPollRow),quota:{monthlyLimit:METEOCAT_MONTHLY_PREDICTION_LIMIT,plannedMaximum:31*METEOCAT_ALERT_POLL_SLOTS.length,registeredByWorker:Number(meteocatUsage?.total)||0}},
+  };
 }
 
 async function ensureForecastSchema(env) {
@@ -907,39 +924,72 @@ function localIsoDates(count=3,date=new Date()) {
   return Array.from({length:count},(_,offset)=>new Date(Date.UTC(year,month-1,day+offset)).toISOString().slice(0,10));
 }
 
-async function fetchMeteocatAlerts(env) {
-  const apiKey=String(env.METEOCAT_API_KEY||'').trim();
-  if(!apiKey)return {ok:false,skipped:'api_key_missing',alerts:[]};
-  const results=await Promise.allSettled(localIsoDates().map(async date=>{
-    const response=await fetch(`${METEOCAT_SMP_ENDPOINT}?data=${date}Z`,{
-      headers:{Accept:'application/json','x-api-key':apiKey},cf:{cacheEverything:true,cacheTtl:900},
-    });
-    if(!response.ok)throw new Error(`Meteocat SMP ${response.status}`);
-    const payload=await response.json();
-    if(!Array.isArray(payload))throw new Error('Resposta SMP de Meteocat no reconeguda');
-    return payload;
-  }));
-  const successful=results.filter(item=>item.status==='fulfilled');
-  if(!successful.length)throw results[0]?.reason||new Error('Meteocat SMP no disponible');
-  const alerts=parseMeteocatSmpEpisodes(successful.flatMap(item=>item.value));
-  return {ok:true,source:{name:'Meteocat',area:METEOCAT_VALLES_ORIENTAL_NAME,url:METEOCAT_ALERTS_PAGE},alerts,
-    maxLevel:alerts[0]?.level||'none',partial:successful.length!==results.length};
+export function meteocatAlertPollPlan(date=new Date()) {
+  const parts=localClockParts(date);
+  const current=Number(parts.hour)*60+Number(parts.minute);
+  const slot=METEOCAT_ALERT_POLL_SLOTS.find(item=>{
+    const [hour,minute]=item.time.split(':').map(Number);
+    const scheduled=hour*60+minute;
+    return current>=scheduled&&current<scheduled+METEOCAT_ALERT_POLL_WINDOW_MINUTES;
+  });
+  if(!slot)return null;
+  const localDate=localIsoDate(date);
+  const targetDate=localIsoDates(slot.targetOffset+1,date)[slot.targetOffset];
+  return {time:slot.time,localDate,targetDate,targetOffset:slot.targetOffset};
 }
 
-async function checkMeteocatAlertsAndPublish(env) {
+async function claimMeteocatAlertPoll(env,plan) {
+  if(!(await ensureOperationsSchema(env)))return null;
+  const serviceKey=`meteocat-alert-poll:${plan.localDate}:${plan.time}`;
+  const now=new Date().toISOString();
+  const result=await env.DB.prepare(`INSERT OR IGNORE INTO monitor_state
+    (service_key,status,consecutive_failures,last_checked_at,detail) VALUES (?,'running',0,?,?)`)
+    .bind(serviceKey,now,JSON.stringify({targetDate:plan.targetDate,time:plan.time})).run();
+  return Number(result?.meta?.changes)>0?serviceKey:null;
+}
+
+async function fetchMeteocatAlerts(env,targetDate) {
+  const apiKey=String(env.METEOCAT_API_KEY||'').trim();
+  if(!apiKey)return {ok:false,skipped:'api_key_missing',alerts:[]};
+  const response=await fetch(`${METEOCAT_SMP_ENDPOINT}?data=${targetDate}Z`,{
+    headers:{Accept:'application/json','x-api-key':apiKey},cf:{cacheEverything:false},
+  });
+  if(!response.ok)throw Object.assign(new Error(`Meteocat SMP ${response.status}`),{responseCode:response.status});
+  const episodes=await response.json();
+  if(!Array.isArray(episodes))throw new Error('Resposta SMP de Meteocat no reconeguda');
+  const alerts=parseMeteocatSmpEpisodes(episodes);
+  return {ok:true,source:{name:'Meteocat',area:METEOCAT_VALLES_ORIENTAL_NAME,url:METEOCAT_ALERTS_PAGE},alerts,
+    maxLevel:alerts[0]?.level||'none',targetDate};
+}
+
+async function checkMeteocatAlertsAndPublish(env,date=new Date()) {
   if(!meteocatAlertSocialEnabled(env))return {skipped:'automation_disabled'};
-  const payload=await fetchMeteocatAlerts(env);
-  if(!payload.ok)return payload;
-  const fresh=await recordAlertEvents(payload,env);
-  const outcomes=[];
-  for(const entry of fresh){
-    const social=await createOfficialAlertSocialDraft(entry,env);
-    outcomes.push(await publishAutomaticSocialDraft(social,env));
+  const plan=meteocatAlertPollPlan(date);
+  if(!plan)return {skipped:'outside_quota_safe_schedule'};
+  const serviceKey=await claimMeteocatAlertPoll(env,plan);
+  if(!serviceKey)return {skipped:'already_polled',time:plan.time,targetDate:plan.targetDate};
+  try{
+    const payload=await fetchMeteocatAlerts(env,plan.targetDate);
+    if(!payload.ok){
+      await recordOperationalState(env,serviceKey,'down',{...plan,skipped:payload.skipped}).catch(()=>{});
+      return payload;
+    }
+    const fresh=await recordAlertEvents(payload,env);
+    const outcomes=[];
+    for(const entry of fresh){
+      const social=await createOfficialAlertSocialDraft(entry,env);
+      outcomes.push(await publishAutomaticSocialDraft(social,env));
+    }
+    await recordOperationalState(env,serviceKey,'healthy',{...plan,active:payload.alerts.length,newAlerts:fresh.length}).catch(()=>{});
+    await recordOperationalState(env,'meteocat-alert-social','healthy',{
+      checkedAt:new Date().toISOString(),active:payload.alerts.length,newAlerts:fresh.length,targetDate:plan.targetDate,time:plan.time,
+    }).catch(()=>{});
+    return {active:payload.alerts.length,published:fresh.length,outcomes,targetDate:plan.targetDate,time:plan.time};
+  }catch(error){
+    await recordOperationalState(env,serviceKey,'down',{...plan,error:cleanText(error.message,500),responseCode:error.responseCode||null}).catch(()=>{});
+    await recordOperationalState(env,'meteocat-alert-social','down',{...plan,error:cleanText(error.message,500),responseCode:error.responseCode||null}).catch(()=>{});
+    throw error;
   }
-  await recordOperationalState(env,'meteocat-alert-social','healthy',{
-    checkedAt:new Date().toISOString(),active:payload.alerts.length,newAlerts:fresh.length,partial:payload.partial,
-  }).catch(()=>{});
-  return {active:payload.alerts.length,published:fresh.length,outcomes};
 }
 
 async function weatherRequest(path, params, env, cacheTtl) {

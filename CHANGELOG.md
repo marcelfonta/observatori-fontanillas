@@ -1,10 +1,13 @@
 # Changelog
 
-## En preparació — Context temporal visible als vídeos — 2026-08-31
+## V22.29.0 — Context temporal i quota oficial de Meteocat — 2026-08-31
 
 - Totes les escenes dels vídeos del matí i del vespre mostren l’edició i la data completa de generació dins la zona segura de la imatge.
 - Les etiquetes relatives «avui», «demà» i «demà passat» incorporen també el dia de la setmana, el dia del mes i el mes de la predicció.
 - L’escena d’observació conserva la data i afegeix explícitament l’hora de lectura; els títols i la descripció de YouTube identifiquen també la data prevista.
+- Les consultes d’avisos SMP de Meteocat queden limitades persistentment a les 06:30, 12:30 i 18:30: dues consultes del dia actual i una de l’endemà, amb un màxim planificat de 93 sobre les 100 mensuals disponibles.
+- Cada franja es reclama una sola vegada a D1, fins i tot si el cron es repeteix o el Worker canvia d’instància; una fallada no provoca reintents que gastin més quota.
+- L’administració mostra les consultes registrades pel Worker, el límit mensual i el màxim planificat sense exposar l’API Key.
 
 ## V22.28.1 — Imatges públiques i reintents segurs d’X — 2026-08-31
 

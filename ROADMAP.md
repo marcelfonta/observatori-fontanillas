@@ -11,7 +11,9 @@
 
 - [x] Preparar publicacions automàtiques per avisos grocs, taronja i vermells de Meteocat que afectin el Vallès Oriental, amb Sant Celoni identificat com a municipi de la comarca i sense exagerar l'abast local.
 - [x] Incorporar a cada publicació un mapa de Catalunya amb tots els avisos comarcals vigents i un detall específic del Vallès Oriental i Sant Celoni, identificant Meteocat com a única font social.
-- [ ] Desar `METEOCAT_API_KEY` com a secret de Cloudflare, desplegar i verificar el primer cicle sense avisos abans d'activar una publicació real.
+- [x] Desar `METEOCAT_API_KEY` com a secret de Cloudflare sense exposar-ne el valor.
+- [x] Limitar persistentment les consultes SMP a un màxim planificat de 93 al mes i fer-ne visible el recompte al panell administratiu.
+- [ ] Desplegar conjuntament el secret i la protecció de quota, i verificar el primer cicle sense avisos abans de donar l’activació per tancada.
 
 - [x] Crear una publicació de presentació de les nou xarxes i una pàgina oficial única amb tots els enllaços clicables.
 
