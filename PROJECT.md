@@ -73,11 +73,13 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.27.0
+## Estat V22.28.0
 
-- Branca de treball: `feature/evolucio-pluja-arome-shorts`.
-- Versio codi: V22.27.0.
-- Produccio queda pendent d’integrar la PR i desplegar la V22.27.0.
+- Branca de treball: `feature/publicacions-periodiques-i-puntuals`.
+- Versio codi: V22.28.0.
+- Produccio queda pendent d’integrar la PR i desplegar la V22.28.0; les automatitzacions noves continuen desactivades fins a una activació humana gradual.
+- El Worker prepara resums setmanals, mensuals, estacionals i anuals amb cobertura mínima, context de predicció i targetes socials pròpies.
+- Els episodis destacats de l’estació, els extrems de l’arxiu local, la sequera de l’ACA, la pols modelitzada per CAMS i les efemèrides disposen de deduplicació, límits i interruptors independents.
 - Les publicacions d'avisos són exclusives de Meteocat i incorporen el mapa comarcal complet de Catalunya, amb el Vallès Oriental remarcat i un text prudent per a Sant Celoni.
 - `xarxes.html` reuneix els nou perfils oficials en una destinació única i clicable; la creativitat vertical associada es pot publicar a qualsevol xarxa.
 - Els Shorts i Reels utilitzen la predicció real per escollir icona, color, titular, dades destacades i consell pràctic; la pantalla d’observació no mostra cap símbol de previsió.

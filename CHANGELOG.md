@@ -1,5 +1,14 @@
 # Changelog
 
+## V22.28.0 — Publicacions periòdiques i episodis destacats — 2026-08-31
+
+- Preparats resums setmanals, mensuals, estacionals i anuals amb cobertura mínima de dades, extrems, pluja, vent, UV i verificació de la previsió de l’endemà.
+- Afegits episodis puntuals de pluja intensa, vent, calor, glaçada, UV, canvis bruscos i nous extrems de l’arxiu local, amb límits diaris, períodes de descans i textos que no els confonen amb avisos oficials.
+- Integrats l’estat oficial de sequera de l’ACA, la previsió de pols del servei CAMS Europe i la tendència estacional ECMWF, sempre amb font, resolució i limitacions visibles.
+- Afegides efemèrides meteorològiques verificades procedents de la biblioteca existent del portal.
+- Cada família disposa d’un interruptor independent, deduplicació a D1, fins a quatre intents per canal i estat operatiu consultable des de l’administració. Totes les funcions noves queden desactivades per defecte.
+- Incorporades targetes verticals pròpies i proves de calendari, llindars, prudència editorial i regressió del Worker.
+
 ## V22.27.0 — Evolució territorial de la pluja als vídeos — 2026-08-30
 
 - Els Shorts, Reels i vídeos de TikTok i X incorporen una sisena escena animada amb quatre franges horàries de precipitació sobre el nord-est de Catalunya i Sant Celoni remarcat.

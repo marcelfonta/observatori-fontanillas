@@ -2,6 +2,11 @@
 
 ## Manteniment obert — En curs
 
+- [x] Preparar resums setmanals, mensuals, estacionals i anuals amb dades pròpies, cobertura mínima i verificació de la previsió.
+- [x] Preparar publicacions puntuals per episodis destacats i extrems de l’arxiu local, amb límits de freqüència i sense presentar-los com a avisos oficials.
+- [x] Preparar canvis oficials de sequera de l’ACA, episodis de pols modelitzada per CAMS i efemèrides verificades, amb fonts i limitacions explícites.
+- [ ] Validar visualment una mostra de cada família, acordar el llindar editorial de pols i activar els interruptors nous de manera gradual.
+
 - [x] Afegir als vídeos diaris una escena animada amb l'evolució horària de la pluja al nord-est de Catalunya, AROME HD com a font principal, Sant Celoni remarcat i degradació segura sense bloquejar la publicació.
 
 - [x] Preparar publicacions automàtiques per avisos grocs, taronja i vermells de Meteocat que afectin el Vallès Oriental, amb Sant Celoni identificat com a municipi de la comarca i sense exagerar l'abast local.
