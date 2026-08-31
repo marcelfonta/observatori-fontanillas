@@ -74,7 +74,7 @@ function multilineText(value,{x=76,y=440,maxChars=22,maxLines=2,fontSize=76,line
 }
 
 function baseSvg({title,kicker,content,footer,logoData,weatherCode=null,slideIndex=1,edition=''}){
-  const theme=weatherTheme(weatherCode);const hasGlyph=weatherCode!==null&&weatherCode!==undefined&&weatherCode!==''&&Number.isFinite(Number(weatherCode));const titleWidth=hasGlyph?17:24;
+  const theme=weatherTheme(weatherCode);const hasGlyph=weatherCode!==null&&weatherCode!==undefined&&weatherCode!==''&&Number.isFinite(Number(weatherCode));const titleWidth=hasGlyph?17:18;
   const progress=Array.from({length:6},(_,index)=>`<rect x="${76+index*154}" y="1684" width="136" height="8" rx="4" fill="${index<slideIndex?theme.accent:'#365f50'}"/>`).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
   <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#061510"/><stop offset=".54" stop-color="#123e31"/><stop offset="1" stop-color="${theme.deep}"/></linearGradient><radialGradient id="glow"><stop stop-color="${theme.accent}" stop-opacity=".28"/><stop offset="1" stop-color="${theme.accent}" stop-opacity="0"/></radialGradient></defs>

@@ -1,5 +1,11 @@
 # Changelog
 
+## V22.29.2 — Vídeos socials nítids i titulars dins la zona segura — 2026-08-31
+
+- Els titulars sense símbol meteorològic utilitzen un límit més conservador i «Ara mateix, dades reals» queda en dues línies completes dins del format vertical.
+- Les pantalles es rasteritzen internament a 2160 × 3840 abans de reduir el vídeo final a 1080 × 1920, millorant vores, logotip i tipografia.
+- El MP4 final passa d’un bitrate variable baix a H.264 High a 5 Mb/s constants, color BT.709 i fotogrames clau regulars perquè Stories, Reels, TikTok i YouTube disposin d’un original més resistent a la recompressió.
+
 ## V22.29.1 — Contrast del cercle de verificació — 2026-08-31
 
 - El recompte i el text del cercle de predicció vs realitat utilitzen colors d’alt contrast, més pes i més amplada útil tant mentre es recullen dades com quan la mostra ja està disponible.
