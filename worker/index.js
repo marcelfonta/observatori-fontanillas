@@ -2,7 +2,7 @@ import { CATALONIA_COUNTY_PATHS } from './catalonia-counties.js';
 import { METEOROLOGICAL_EPHEMERIDES } from '../src/data/meteorological-ephemerides.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.28.0";
+const WORKER_VERSION = "22.28.1";
 const WORKER_BUILT = "2026-08-31";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -3432,7 +3432,9 @@ async function createBufferXPost(env, { localDate, slot, draft = null }) {
     const socialDraft = draft || await bufferXMiddayDraft(env, localDate);
     if (!socialDraft) throw Object.assign(new Error('La targeta meteorològica del migdia encara no està preparada.'), { status:409, pending:true });
     draft = socialDraft;
-    assets = [{ image:{ url:await socialCardUrl(socialDraft, env) } }];
+    // Buffer comprova la URL abans d'acceptar la imatge. Materialitzar-la a R2
+    // evita que aquesta comprovació depengui d'una captura generada al moment.
+    assets = [{ image:{ url:await ensureSocialCardUrl(socialDraft, env) } }];
   } else {
     if (!env.SOCIAL_VIDEO_BUCKET) throw Object.assign(new Error('L’emmagatzematge temporal de vídeo no està configurat.'), { status:503 });
     const key = `shorts/${localDate}/${slot}.mp4`;
@@ -3451,13 +3453,21 @@ async function createBufferXPost(env, { localDate, slot, draft = null }) {
   };
   const data = await bufferGraphql(env, `mutation CreatePost($input: CreatePostInput!) {
     createPost(input: $input) {
+      __typename
       ... on PostActionSuccess { post { id status dueAt sentAt externalLink } }
       ... on MutationError { message }
     }
   }`, { input });
   const result = data.createPost || {};
-  if (result.message || !result.post?.id || result.post.status === 'error') {
+  if (result.message || !result.post?.id) {
     throw bufferXMutationError(result.message,'Buffer no ha creat la publicació d’X.');
+  }
+  if (result.post.status === 'error') {
+    const error=bufferXMutationError(result.message,'Buffer ha creat la publicació d’X però l’ha marcada amb error.');
+    error.remoteId=String(result.post.id);
+    error.remoteStatus='error';
+    error.retryable=false;
+    throw error;
   }
   return {
     id:String(result.post.id), status:result.post.status || (shareNow ? 'sending' : 'scheduled'),
@@ -3550,9 +3560,17 @@ async function scheduleBufferXSlot(env, localDate, slot) {
       }).catch(()=>{});
       return { ok:true,pending:true,reason:cleanText(error.message,300) };
     }
-    const failure={ localDate,slot:safeSlot,attempts,stage:'publish_failed',error:cleanText(error.message,500),responseCode:error.responseCode || null };
+    // Si Buffer ja ha creat una entrada, no en creem una altra automàticament:
+    // conservar l'identificador evita omplir la cua amb duplicats fallits.
+    const remoteId=cleanText(error.remoteId,120) || null;
+    const finalAttempts=remoteId ? BUFFER_X_MAX_ATTEMPTS : attempts;
+    const failure={
+      localDate,slot:safeSlot,attempts:finalAttempts,stage:remoteId?'remote_delivery_failed':'publish_failed',
+      error:cleanText(error.message,500),responseCode:error.responseCode || null,
+      remoteId,remoteStatus:cleanText(error.remoteStatus,40) || null,
+    };
     await recordOperationalState(env, serviceKey, 'down', failure).catch(()=>{});
-    if (attempts >= BUFFER_X_MAX_ATTEMPTS) await notifyBufferXFailure(env, serviceKey, failure).catch(()=>{});
+    if (finalAttempts >= BUFFER_X_MAX_ATTEMPTS) await notifyBufferXFailure(env, serviceKey, failure).catch(()=>{});
     throw error;
   }
 }
@@ -3870,9 +3888,9 @@ async function socialCard(request, env, draftId, url, format = 'png') {
       headers.set('Content-Type', headers.get('Content-Type') || type);
       headers.set('Cache-Control', 'public, max-age=31536000, immutable');
       headers.set('X-Content-Type-Options','nosniff');
-      headers.set('Access-Control-Allow-Origin','https://meteo.fontanillas.cat');
+      headers.set('Access-Control-Allow-Origin','*');
       if (cached.httpEtag || cached.etag) headers.set('ETag', cached.httpEtag || cached.etag);
-      return new Response(cached.body, { headers });
+      return new Response(request.method === 'HEAD' ? null : cached.body, { headers });
     }
   }
   try {
@@ -3880,8 +3898,8 @@ async function socialCard(request, env, draftId, url, format = 'png') {
     const headers = new Headers();
     headers.set('Content-Type', type); headers.set('Cache-Control','public, max-age=31536000, immutable');
     headers.set('X-Content-Type-Options','nosniff');
-    headers.set('Access-Control-Allow-Origin','https://meteo.fontanillas.cat');
-    return new Response(image,{headers});
+    headers.set('Access-Control-Allow-Origin','*');
+    return new Response(request.method === 'HEAD' ? null : image,{headers});
   } catch (error) {
     return json({error:error.message || 'No s’ha pogut generar la targeta amb dades reals.', details:error.details || ''},error.status || 502,'no-store');
   }
@@ -5017,7 +5035,7 @@ export default {
       if (request.method === "GET" && url.pathname === "/oauth/tiktok/start") return tiktokOAuthStart(request, env);
       if (request.method === "GET" && url.pathname === "/oauth/tiktok/callback") return tiktokOAuthCallback(request, env, url);
       const socialCardMatch = url.pathname.match(/^\/social-card\/(\d+)\.(png|jpg)$/);
-      if (request.method === "GET" && socialCardMatch) return socialCard(request, env, Number(socialCardMatch[1]), url, socialCardMatch[2] === 'jpg' ? 'jpeg' : 'png');
+      if ((request.method === 'GET' || request.method === 'HEAD') && socialCardMatch) return socialCard(request, env, Number(socialCardMatch[1]), url, socialCardMatch[2] === 'jpg' ? 'jpeg' : 'png');
       const socialVideoMatch = url.pathname.match(/^\/social-video\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
       if ((request.method === 'GET' || request.method === 'HEAD') && socialVideoMatch) return serveSocialVideo(request, env, socialVideoMatch[1], url);
       const bufferVideoMatch = url.pathname.match(/^\/buffer-video\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
