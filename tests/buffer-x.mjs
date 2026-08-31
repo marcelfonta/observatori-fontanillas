@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { bufferXRecoverySlot } from '../worker/index.js';
+import { bufferXRecoverySlot, truncateBufferXText, xWeightedLength } from '../worker/index.js';
 
 const worker = await readFile(new URL('../worker/index.js', import.meta.url), 'utf8');
 const workflow = await readFile(new URL('../.github/workflows/youtube-short-private.yml', import.meta.url), 'utf8');
@@ -15,6 +15,8 @@ assert.match(worker, /remote\?\.status === 'sent'/);
 assert.match(worker, /attempts >= BUFFER_X_MAX_ATTEMPTS/);
 assert.match(worker, /assets = \[\{ video:\{ url:await bufferVideoUrl\(key, env\) \} \}\]/);
 assert.doesNotMatch(worker, /assets = \[\{ video:\{ url:await bufferVideoUrl\(key, env\), metadata/);
+assert.match(worker, /text:bufferXSpecialCaption\(draft\)/);
+assert.match(worker, /pendingSocialRetryChannels\(draft,publications\)/);
 assert.match(workflow, /Deixa el vídeo d’X preparat a Buffer/);
 assert.match(workflow, /admin\/buffer-x\/schedule/);
 assert.match(admin, /id="admin-social-x"/);
@@ -30,5 +32,13 @@ assert.equal(bufferXRecoverySlot(new Date('2026-08-29T13:29:59.000Z')), 'midday'
 assert.equal(bufferXRecoverySlot(new Date('2026-08-29T17:45:00.000Z')), 'evening');
 assert.equal(bufferXRecoverySlot(new Date('2026-08-29T19:59:59.000Z')), 'evening');
 assert.equal(bufferXRecoverySlot(new Date('2026-08-29T20:00:00.000Z')), null);
+
+// X aplica longitud ponderada: els enllaços valen 23 i un emoji complet val 2.
+assert.equal(xWeightedLength('café'), 4);
+assert.equal(xWeightedLength('Hola 👋 https://example.com/una-ruta-molt-llarga'), 31);
+assert.equal(xWeightedLength('👨‍👩‍👧‍👦'), 2);
+const shortened=truncateBufferXText(`${'Bon dia! '.repeat(40)}https://meteo.fontanillas.cat/`);
+assert.ok(xWeightedLength(shortened)<=275);
+assert.ok(shortened.endsWith('…'));
 
 console.log('Automatització X amb Buffer: correcta');
