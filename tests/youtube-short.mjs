@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { buildSlideSvg, weatherGlyph, weatherLabel, weatherTheme } from '../scripts/youtube-short.mjs';
+import { buildSlideSvg, datedKicker, editionLabel, shortDateLabel, weatherGlyph, weatherLabel, weatherTheme } from '../scripts/youtube-short.mjs';
 import { projectRainPoint, rainColor, rainEvolutionFooter, rainFrameHours, rainMapContent, rainMapGrid } from '../scripts/youtube-rain-map.mjs';
 import { sampleAt } from '../scripts/youtube-music.mjs';
 
@@ -22,12 +22,19 @@ for(const code of [0,2,3,45,61,71,80,95]){
   assert.match(glyph,/<rect x="-180" y="-180" width="360" height="360"/);
   assert.match(glyph,/transform="translate\(790 510\) scale\(1\)"/);
 }
-const svg=buildSlideSvg({title:'Prova',kicker:'Avui',content:'<text>24°</text>',footer:'Dades reals',weatherCode:61});
+assert.equal(shortDateLabel('2026-09-01'),'DT 1 DE SETEMBRE');
+assert.equal(datedKicker('Demà','2026-09-01'),'Demà · DT 1 DE SETEMBRE');
+assert.equal(editionLabel('mati',new Date('2026-08-31T05:00:00.000Z')),'EDICIÓ MATÍ · 31 D’AGOST DEL 2026');
+assert.equal(editionLabel('vespre',new Date('2026-08-31T18:30:00.000Z')),'EDICIÓ VESPRE · 31 D’AGOST DEL 2026');
+const svg=buildSlideSvg({title:'Prova',kicker:'Avui · DL 31 D’AGOST',edition:'EDICIÓ MATÍ · 31 D’AGOST DEL 2026',content:'<text>24°</text>',footer:'Dades reals',weatherCode:61});
 assert.match(svg,/width="1080" height="1920"/);
 assert.match(svg,/METEO FONTANILLAS/);
 assert.match(svg,/meteo\.fontanillas\.cat/);
 assert.match(svg,/24°/);
 assert.match(svg,/<title>Pluja<\/title>/);
+assert.match(svg,/EDICIÓ MATÍ · 31 D’AGOST DEL 2026/);
+assert.match(svg,/AVUI · DL 31 D’AGOST/);
+assert.match(svg,/y="390"/);
 assert.equal((svg.match(/y="1684"/g)||[]).length,6);
 const observation=buildSlideSvg({title:'Dades reals',kicker:'Observació',content:'<text>19°</text>',footer:'Estació',weatherCode:null});
 assert.doesNotMatch(observation,/<title>/);
@@ -39,6 +46,8 @@ const generator=await readFile(new URL('../scripts/youtube-short.mjs',import.met
 assert.doesNotMatch(generator,/\$\{weatherGlyph\(3,/);
 assert.match(generator,/fetchRainEvolution/);
 assert.match(generator,/rain-frame-/);
+assert.match(generator,/LECTURA DE LES \$\{esc\(time\)\} H/);
+assert.match(generator,/targetDate=dateLabel\(mainDay\.date\)/);
 assert.deepEqual(rainFrameHours('mati'),[9,13,17,21]);
 assert.deepEqual(rainFrameHours('vespre'),[6,12,18,23]);
 assert.equal(rainMapGrid().length,64);

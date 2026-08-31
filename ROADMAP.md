@@ -50,6 +50,8 @@
 
 ## Vídeos temporals i Stories — Preparació segura
 
+- [x] Fer que totes les escenes dels vídeos de matí i vespre conservin la data de l’edició, la data prevista i, en les observacions, l’hora de lectura perquè els vídeos antics no perdin context.
+
 - [ ] Validar a producció el diagnòstic segur del disparador Cloudflare → GitHub abans de la franja de YouTube del vespre.
 
 - [ ] Executar el diagnòstic remot de Buffer/TikTok i validar un esborrany de cada franja. Després, activar `BUFFER_TIKTOK_AUTOMATION_ENABLED=true` al Worker perquè la cua programi els dos vídeos diaris sense afectar YouTube.
