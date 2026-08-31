@@ -13,6 +13,10 @@ const LONGITUDE=2.4890;
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;' }[char]));
 const number=(value,digits=0)=>Number.isFinite(Number(value))?Number(value).toLocaleString('ca-ES',{maximumFractionDigits:digits,minimumFractionDigits:digits}):'—';
 const dateLabel=value=>new Intl.DateTimeFormat('ca-ES',{weekday:'long',day:'numeric',month:'long',timeZone:'Europe/Madrid'}).format(new Date(`${value}T12:00:00+02:00`));
+const dateAtNoon=value=>value instanceof Date?value:new Date(`${value}T12:00:00+02:00`);
+export const shortDateLabel=value=>new Intl.DateTimeFormat('ca-ES',{weekday:'short',day:'numeric',month:'long',timeZone:'Europe/Madrid'}).format(dateAtNoon(value)).replaceAll('.','').replace(',','').toUpperCase();
+export const editionLabel=(slot,value=new Date())=>`EDICIÓ ${slot==='vespre'?'VESPRE':'MATÍ'} · ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Madrid'}).format(value).toUpperCase()}`;
+export const datedKicker=(label,value)=>`${label} · ${shortDateLabel(value)}`;
 const sentence=value=>value?`${value.charAt(0).toUpperCase()}${value.slice(1)}`:'Temps variable';
 
 export function weatherLabel(code){
@@ -69,7 +73,7 @@ function multilineText(value,{x=76,y=440,maxChars=22,maxLines=2,fontSize=76,line
   return wrapText(value,maxChars,maxLines).map((line,index)=>`<text x="${x}" y="${y+index*lineHeight}" text-anchor="${anchor}" fill="${fill}" font-family="DejaVu Sans" font-size="${fontSize}" font-weight="${weight}">${esc(line)}</text>`).join('');
 }
 
-function baseSvg({title,kicker,content,footer,logoData,weatherCode=null,slideIndex=1}){
+function baseSvg({title,kicker,content,footer,logoData,weatherCode=null,slideIndex=1,edition=''}){
   const theme=weatherTheme(weatherCode);const hasGlyph=weatherCode!==null&&weatherCode!==undefined&&weatherCode!==''&&Number.isFinite(Number(weatherCode));const titleWidth=hasGlyph?17:24;
   const progress=Array.from({length:6},(_,index)=>`<rect x="${76+index*154}" y="1684" width="136" height="8" rx="4" fill="${index<slideIndex?theme.accent:'#365f50'}"/>`).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
@@ -78,10 +82,11 @@ function baseSvg({title,kicker,content,footer,logoData,weatherCode=null,slideInd
   <image href="data:image/png;base64,${logoData}" x="74" y="72" width="126" height="126"/>
   <text x="224" y="124" fill="#f5fbf8" font-family="DejaVu Sans" font-size="42" font-weight="700">METEO FONTANILLAS</text>
   <text x="224" y="170" fill="${theme.accent}" font-family="DejaVu Sans" font-size="25" letter-spacing="3">OBSERVATORI · SANT CELONI</text>
-  <rect x="76" y="272" width="${Math.min(530,Math.max(250,String(kicker).length*22))}" height="62" rx="31" fill="${theme.accent}" fill-opacity=".13" stroke="${theme.accent}" stroke-opacity=".55"/>
-  <text x="108" y="313" fill="${theme.accent}" font-family="DejaVu Sans" font-size="25" font-weight="800" letter-spacing="3">${esc(kicker).toUpperCase()}</text>
-  ${multilineText(title,{x:76,y:440,maxChars:titleWidth,maxLines:2,fontSize:76,lineHeight:88})}
-  ${hasGlyph?weatherGlyph(weatherCode,850,420,.42):''}
+  <rect x="76" y="272" width="${Math.min(760,Math.max(250,String(kicker).length*18))}" height="62" rx="31" fill="${theme.accent}" fill-opacity=".13" stroke="${theme.accent}" stroke-opacity=".55"/>
+  <text x="108" y="313" fill="${theme.accent}" font-family="DejaVu Sans" font-size="24" font-weight="800" letter-spacing="2">${esc(kicker).toUpperCase()}</text>
+  ${edition?`<text x="76" y="390" fill="#d5e5dd" font-family="DejaVu Sans" font-size="24" font-weight="700" letter-spacing="1.2">${esc(edition)}</text>`:''}
+  ${multilineText(title,{x:76,y:490,maxChars:titleWidth,maxLines:2,fontSize:76,lineHeight:88})}
+  ${hasGlyph?weatherGlyph(weatherCode,850,470,.42):''}
   ${content}
   ${progress}
   <line x1="76" y1="1740" x2="1004" y2="1740" stroke="${theme.accent}" stroke-opacity=".38"/>
@@ -112,7 +117,7 @@ function forecastDetail(day,y=760){
   return `${metricCard(76,y,'Màxima / mínima',`${number(day.max)}° / ${number(day.min)}°`,'',accent)}${metricCard(566,y,'Probabilitat de pluja',number(day.rainProbability),'%',accent)}${metricCard(76,y+252,'Ratxa màxima',number(day.gust),'km/h',accent)}<rect x="566" y="${y+252}" width="438" height="230" rx="34" fill="${accent}" fill-opacity=".13" stroke="${accent}" stroke-opacity=".5"/>${multilineText(forecastAdvice(day),{x:604,y:y+318,maxChars:24,maxLines:3,fontSize:29,lineHeight:39,fill:'#f7fcf9',weight:650})}`;
 }
 
-export function buildSlideSvg({title,kicker,content,footer,logoData='test',weatherCode=null,slideIndex=1}){return baseSvg({title,kicker,content,footer,logoData,weatherCode,slideIndex});}
+export function buildSlideSvg({title,kicker,content,footer,logoData='test',weatherCode=null,slideIndex=1,edition=''}){return baseSvg({title,kicker,content,footer,logoData,weatherCode,slideIndex,edition});}
 
 async function getJson(url){
   const response=await fetch(url,{headers:{Accept:'application/json'}});
@@ -131,23 +136,24 @@ async function main(){
   const days=daily.time.map((_,index)=>forecastDay(daily,index));
   const mainIndex=slot==='vespre'?1:0;const secondaryIndex=slot==='vespre'?2:1;const mainDay=days[mainIndex];const secondaryDay=days[secondaryIndex];
   const now=new Date();const time=new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(now);
+  const edition=editionLabel(slot,now);
   const accent=weatherTheme(mainDay.weatherCode).accent;
   const slides=[];
-  slides.push(baseSvg({title:sentence(mainDay.condition),kicker:slot==='vespre'?'Demà a Sant Celoni':'Avui a Sant Celoni',weatherCode:mainDay.weatherCode,slideIndex:1,logoData,content:`<text x="76" y="720" fill="#b8cdc3" font-family="DejaVu Sans" font-size="31">PREVISIÓ PRINCIPAL</text><text x="76" y="850" fill="#f7fcf9" font-family="DejaVu Sans" font-size="120" font-weight="850">${esc(number(mainDay.max))}° <tspan fill="${accent}" font-size="64">/ ${esc(number(mainDay.min))}°</tspan></text><rect x="76" y="955" width="928" height="210" rx="38" fill="#071712" fill-opacity=".68" stroke="${accent}" stroke-opacity=".42"/>${multilineText(forecastAdvice(mainDay),{x:124,y:1030,maxChars:36,maxLines:3,fontSize:38,lineHeight:51,fill:'#f7fcf9',weight:650})}<text x="76" y="1295" fill="#b8cdc3" font-family="DejaVu Sans" font-size="34">Pluja ${esc(number(mainDay.rainProbability))}% · ratxa ${esc(number(mainDay.gust))} km/h</text>`,footer:'Predicció Open-Meteo · actualització automàtica'}));
-  slides.push(baseSvg({title:'Ara mateix, dades reals',kicker:'Observació de l’estació',slideIndex:2,logoData,content:`<text x="76" y="650" fill="${accent}" font-family="DejaVu Sans" font-size="31" font-weight="700">LECTURA DE LES ${esc(time)}</text>${metricCard(76,720,'Temperatura',number(current.temperature,1),'°')}${metricCard(566,720,'Sensació',number(current.feelsLike,1),'°')}${metricCard(76,972,'Humitat',number(current.humidity),'%')}${metricCard(566,972,'Vent',number(current.windSpeed,1),'km/h')}<text x="76" y="1328" fill="#b8cdc3" font-family="DejaVu Sans" font-size="34">Pluja avui: ${esc(number(current.rainToday,1))} mm · pressió: ${esc(number(current.pressure,0))} hPa</text>`,footer:'Observació real · Estació Meteo Fontanillas'}));
-  slides.push(baseSvg({title:'Les claus de la previsió',kicker:slot==='vespre'?'Demà':'Avui',weatherCode:mainDay.weatherCode,slideIndex:3,logoData,content:forecastDetail(mainDay,720),footer:`${dateLabel(mainDay.date)} · predicció orientativa`}));
-  slides.push(baseSvg({title:sentence(secondaryDay.condition),kicker:slot==='vespre'?'Demà passat':'Avanç de demà',weatherCode:secondaryDay.weatherCode,slideIndex:4,logoData,content:forecastDetail(secondaryDay,720),footer:`${dateLabel(secondaryDay.date)} · segueix-ne l’evolució`}));
+  slides.push(baseSvg({title:sentence(mainDay.condition),kicker:datedKicker(slot==='vespre'?'Demà':'Avui',mainDay.date),edition,weatherCode:mainDay.weatherCode,slideIndex:1,logoData,content:`<text x="76" y="720" fill="#b8cdc3" font-family="DejaVu Sans" font-size="31">PREVISIÓ PRINCIPAL</text><text x="76" y="850" fill="#f7fcf9" font-family="DejaVu Sans" font-size="120" font-weight="850">${esc(number(mainDay.max))}° <tspan fill="${accent}" font-size="64">/ ${esc(number(mainDay.min))}°</tspan></text><rect x="76" y="955" width="928" height="210" rx="38" fill="#071712" fill-opacity=".68" stroke="${accent}" stroke-opacity=".42"/>${multilineText(forecastAdvice(mainDay),{x:124,y:1030,maxChars:36,maxLines:3,fontSize:38,lineHeight:51,fill:'#f7fcf9',weight:650})}<text x="76" y="1295" fill="#b8cdc3" font-family="DejaVu Sans" font-size="34">Pluja ${esc(number(mainDay.rainProbability))}% · ratxa ${esc(number(mainDay.gust))} km/h</text>`,footer:'Predicció Open-Meteo · actualització automàtica'}));
+  slides.push(baseSvg({title:'Ara mateix, dades reals',kicker:datedKicker('Observació',now),edition,slideIndex:2,logoData,content:`<text x="76" y="650" fill="${accent}" font-family="DejaVu Sans" font-size="31" font-weight="700">LECTURA DE LES ${esc(time)} H</text>${metricCard(76,720,'Temperatura',number(current.temperature,1),'°')}${metricCard(566,720,'Sensació',number(current.feelsLike,1),'°')}${metricCard(76,972,'Humitat',number(current.humidity),'%')}${metricCard(566,972,'Vent',number(current.windSpeed,1),'km/h')}<text x="76" y="1328" fill="#b8cdc3" font-family="DejaVu Sans" font-size="34">Pluja avui: ${esc(number(current.rainToday,1))} mm · pressió: ${esc(number(current.pressure,0))} hPa</text>`,footer:'Observació real · Estació Meteo Fontanillas'}));
+  slides.push(baseSvg({title:'Les claus de la previsió',kicker:datedKicker(slot==='vespre'?'Demà':'Avui',mainDay.date),edition,weatherCode:mainDay.weatherCode,slideIndex:3,logoData,content:forecastDetail(mainDay,720),footer:`${dateLabel(mainDay.date)} · predicció orientativa`}));
+  slides.push(baseSvg({title:sentence(secondaryDay.condition),kicker:datedKicker(slot==='vespre'?'Demà passat':'Demà',secondaryDay.date),edition,weatherCode:secondaryDay.weatherCode,slideIndex:4,logoData,content:forecastDetail(secondaryDay,720),footer:`${dateLabel(secondaryDay.date)} · segueix-ne l’evolució`}));
   const trendStart=slot==='vespre'?2:1;
   const rows=days.slice(trendStart,trendStart+3).map((day,index)=>{const y=650+index*280;const dayAccent=weatherTheme(day.weatherCode).accent;return `<rect x="76" y="${y}" width="928" height="238" rx="38" fill="#071712" fill-opacity=".68" stroke="${dayAccent}" stroke-opacity=".4"/>${weatherGlyph(day.weatherCode,178,y+106,.25)}<text x="315" y="${y+70}" fill="${dayAccent}" font-family="DejaVu Sans" font-size="27" font-weight="800">${esc(dateLabel(day.date).toUpperCase())}</text><text x="315" y="${y+132}" fill="#f7fcf9" font-family="DejaVu Sans" font-size="38" font-weight="750">${esc(day.condition)}</text><text x="950" y="${y+103}" text-anchor="end" fill="#f7fcf9" font-family="DejaVu Sans" font-size="58" font-weight="850">${esc(number(day.max))}°</text><text x="950" y="${y+164}" text-anchor="end" fill="${dayAccent}" font-family="DejaVu Sans" font-size="27">${esc(number(day.rainProbability))}% pluja</text>`;}).join('');
-  slides.push(baseSvg({title:'Tendència dels pròxims dies',kicker:'D’un cop d’ull',weatherCode:mainDay.weatherCode,slideIndex:5,logoData,content:rows,footer:'Predicció actualitzada i més detall a la web'}));
+  slides.push(baseSvg({title:'Tendència dels pròxims dies',kicker:`3 dies · des de ${shortDateLabel(days[trendStart].date)}`,edition,weatherCode:mainDay.weatherCode,slideIndex:5,logoData,content:rows,footer:'Predicció actualitzada i més detall a la web'}));
   const rainEvolution=await fetchRainEvolution({slot,targetDate:mainDay.date,hourlyFallback:forecast.hourly});
-  const rainFrames=rainEvolution.frames.map((_,index)=>baseSvg({title:'Evolució de la pluja',kicker:slot==='vespre'?'Previsió de demà':'Previsió d’avui',weatherCode:61,slideIndex:6,logoData,content:rainMapContent(rainEvolution,index),footer:rainEvolutionFooter(rainEvolution)}));
+  const rainFrames=rainEvolution.frames.map((_,index)=>baseSvg({title:'Evolució de la pluja',kicker:datedKicker(slot==='vespre'?'Demà':'Avui',mainDay.date),edition,weatherCode:61,slideIndex:6,logoData,content:rainMapContent(rainEvolution,index),footer:rainEvolutionFooter(rainEvolution)}));
   await Promise.all(slides.map((svg,index)=>writeFile(resolve(OUTPUT,`slide-${index+1}.svg`),svg)));
   await Promise.all(rainFrames.map((svg,index)=>writeFile(resolve(OUTPUT,`rain-frame-${index+1}.svg`),svg)));
-  const date=new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'long',timeZone:'Europe/Madrid'}).format(now);
-  const title=slot==='vespre'?`Demà a Sant Celoni: ${mainDay.condition.toLowerCase()} · ${date} #Shorts`:`Avui a Sant Celoni: ${mainDay.condition.toLowerCase()} · ${date} #Shorts`;
+  const targetDate=dateLabel(mainDay.date);
+  const title=slot==='vespre'?`Demà a Sant Celoni: ${mainDay.condition.toLowerCase()} · ${targetDate} #Shorts`:`Avui a Sant Celoni: ${mainDay.condition.toLowerCase()} · ${targetDate} #Shorts`;
   const period=slot==='vespre'?'demà':'avui';
-  const description=`Previsió per ${period}: ${mainDay.condition.toLowerCase()}, màxima ${number(mainDay.max)}°, mínima ${number(mainDay.min)}° i ${number(mainDay.rainProbability)}% de probabilitat de pluja. Dades reals de l’Observatori Meteo Fontanillas, Sant Celoni.`;
+  const description=`Previsió per ${period}, ${targetDate}: ${mainDay.condition.toLowerCase()}, màxima ${number(mainDay.max)}°, mínima ${number(mainDay.min)}° i ${number(mainDay.rainProbability)}% de probabilitat de pluja. Edició ${slot==='vespre'?'del vespre':'del matí'} generada el ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Madrid'}).format(now)} amb dades reals de l’Observatori Meteo Fontanillas, Sant Celoni.`;
   await writeFile(resolve(OUTPUT,'metadata.json'),JSON.stringify({title,description:`${description}\n\nConsulta totes les dades: https://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #ElTemps #Meteo #Shorts`,tags:['Meteo Fontanillas','Sant Celoni','meteorologia','el temps','Shorts']},null,2));
   console.log(`Generades ${slides.length} pantalles i ${rainFrames.length} fotogrames de pluja ${slot} · ${mainDay.condition} · ${number(mainDay.max)}°/${number(mainDay.min)}° · ${rainEvolution.source}`);
 }

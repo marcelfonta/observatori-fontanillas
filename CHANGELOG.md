@@ -1,5 +1,11 @@
 # Changelog
 
+## En preparació — Context temporal visible als vídeos — 2026-08-31
+
+- Totes les escenes dels vídeos del matí i del vespre mostren l’edició i la data completa de generació dins la zona segura de la imatge.
+- Les etiquetes relatives «avui», «demà» i «demà passat» incorporen també el dia de la setmana, el dia del mes i el mes de la predicció.
+- L’escena d’observació conserva la data i afegeix explícitament l’hora de lectura; els títols i la descripció de YouTube identifiquen també la data prevista.
+
 ## V22.28.1 — Imatges públiques i reintents segurs d’X — 2026-08-31
 
 - Les targetes socials accepten `GET` i `HEAD`, de manera que Buffer pot validar-les com a imatges públiques abans de publicar-les a X.
