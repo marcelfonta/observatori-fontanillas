@@ -9,7 +9,10 @@ const STORAGE_INTERVAL_MINUTES = 5;
 const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
 const SOCIAL_AUTOMATIC_MAX_ATTEMPTS = 4;
 const X_WEIGHTED_MAX_LENGTH = 280;
-const X_WEIGHTED_SAFE_LENGTH = 275;
+// Buffer pot reservar espai addicional en lliurar una imatge a X. Mantenim
+// 40 unitats de marge sobre el límit oficial perquè el text i el mitjà arribin
+// junts sense que el lliurament asíncron acabi en estat d'error.
+const X_WEIGHTED_SAFE_LENGTH = 240;
 const PERIODIC_SOCIAL_DEFAULT_TIME = '12:00';
 const PERIODIC_SOCIAL_KINDS = new Set(['weekly_summary','monthly_summary','seasonal_summary','annual_summary']);
 const STATION_EVENT_MAX_PER_DAY = 2;
@@ -3361,11 +3364,12 @@ export function truncateBufferXText(value, maxLength = X_WEIGHTED_SAFE_LENGTH) {
   const normalized=String(value||'').trim().normalize('NFC');
   if(xWeightedLength(normalized)<=maxLength)return normalized;
   const ellipsis='…';
+  const ellipsisWeight=xWeightedLength(ellipsis);
   const limit=Math.max(1,Math.min(X_WEIGHTED_MAX_LENGTH,Number(maxLength)||X_WEIGHTED_SAFE_LENGTH));
   const selected=[];
   let weight=0;
   for(const token of xTextTokens(normalized)){
-    if(weight+token.weight+1>limit)break;
+    if(weight+token.weight+ellipsisWeight>limit)break;
     selected.push(token.value);
     weight+=token.weight;
   }
@@ -3397,10 +3401,10 @@ function bufferXMutationError(message,fallback) {
 function bufferXCaption(localDate, slot, draft = null, day = null) {
   if (slot === 'midday' && draft) {
     const body = cleanText(draft.body, 3900).split(/\n\s*\n/)[0].replace(/\s+/g, ' ').trim();
-    return truncateBufferText(`Actualització del migdia a Sant Celoni · ${localDate}\n\n${body}\n\n#MeteoFontanillas #SantCeloni`, 280);
+    return truncateBufferXText(`Actualització del migdia a Sant Celoni · ${localDate}\n\n${body}\n\n#MeteoFontanillas #SantCeloni`);
   }
   const intro=socialForecastSummary(day,slot)||(slot==='morning'?'Bon dia! El temps d’avui a Sant Celoni.':'Balanç del dia i previsió de demà a Sant Celoni.');
-  return truncateBufferText(`${intro}\n\n🎥 Dades reals, evolució i previsió completa al vídeo.\nhttps://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #Montseny`, 280);
+  return truncateBufferXText(`${intro}\n\n🎥 Dades reals, evolució i previsió completa al vídeo.\nhttps://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #Montseny`);
 }
 
 async function bufferPostState(env, postId) {
@@ -3527,6 +3531,9 @@ async function scheduleBufferXSlot(env, localDate, slot) {
   }
   const runningAge = previous?.last_checked_at ? Date.now() - new Date(previous.last_checked_at).getTime() : Infinity;
   if (previous?.status === 'running' && detail.stage !== 'waiting_target' && runningAge >= 0 && runningAge < 10 * 60_000) return { ok:true,pending:true,reused:true };
+  if (previous?.status === 'down' && (Number(detail.attempts)||0) >= BUFFER_X_MAX_ATTEMPTS) {
+    return { ok:false,skipped:'max_attempts',attempts:Number(detail.attempts)||0 };
+  }
   const attempts=(Number(detail.attempts)||0)+1;
   try {
     await recordOperationalState(env, serviceKey, 'running', { localDate,slot:safeSlot,attempts,stage:'publishing' });

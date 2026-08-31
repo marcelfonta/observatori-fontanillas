@@ -17,6 +17,7 @@ assert.match(worker, /assets = \[\{ video:\{ url:await bufferVideoUrl\(key, env\
 assert.doesNotMatch(worker, /assets = \[\{ video:\{ url:await bufferVideoUrl\(key, env\), metadata/);
 assert.match(worker, /text:bufferXSpecialCaption\(draft\)/);
 assert.match(worker, /pendingSocialRetryChannels\(draft,publications\)/);
+assert.match(worker, /skipped:'max_attempts'/);
 assert.match(workflow, /Deixa el vídeo d’X preparat a Buffer/);
 assert.match(workflow, /admin\/buffer-x\/schedule/);
 assert.match(admin, /id="admin-social-x"/);
@@ -38,7 +39,7 @@ assert.equal(xWeightedLength('café'), 4);
 assert.equal(xWeightedLength('Hola 👋 https://example.com/una-ruta-molt-llarga'), 31);
 assert.equal(xWeightedLength('👨‍👩‍👧‍👦'), 2);
 const shortened=truncateBufferXText(`${'Bon dia! '.repeat(40)}https://meteo.fontanillas.cat/`);
-assert.ok(xWeightedLength(shortened)<=275);
+assert.ok(xWeightedLength(shortened)<=240);
 assert.ok(shortened.endsWith('…'));
 
 console.log('Automatització X amb Buffer: correcta');
