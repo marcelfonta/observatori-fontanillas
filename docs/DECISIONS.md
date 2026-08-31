@@ -43,3 +43,5 @@ Els vídeos del matí i del vespre utilitzen AROME France HD per representar qua
 - Les dades externes escollides són l’ACA per a sequera, CAMS Europe per a pols i ECMWF Seasonal per a tendència estacional. Cada targeta explicita la font, escala i limitació principal.
 - La pols queda bloquejada mentre `SOCIAL_DUST_THRESHOLD_UG_M3` sigui `0`; el llindar editorial s’ha d’acordar abans d’activar-la.
 - Es reutilitza la cua social existent, amb deduplicació D1 i recuperació de canals pendents, per evitar una segona arquitectura de publicació.
+
+**Activació de producció, 2026-08-31:** s’activen els resums periòdics a les 12:00, els episodis locals, els canvis ambientals a les 12:00 i les efemèrides a les 17:00. El llindar editorial de pols CAMS queda fixat en 50 µg/m³ durant almenys tres hores consecutives. Els avisos socials de Meteocat continuen pendents de rebre i configurar la clau oficial de l’API.
