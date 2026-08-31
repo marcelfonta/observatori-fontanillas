@@ -65,7 +65,7 @@ if(!portalShell.includes("['aprendre','Aprendre'")||!html.includes('data-portal-
 const methodology=await readFile(resolve(root,'metodologia.html'),'utf8');
 if(!methodology.includes('portal-view-header portal-view-header--static'))throw new Error('Metodologia no té la capçalera compartida.');
 const backend=await readFile(resolve(root,'worker/index.js'),'utf8');
-if(!backend.includes('/v3/location/near')||!backend.includes('discoverComparisonStations')||!backend.includes('WORKER_VERSION = "22.28.0"'))throw new Error('El Worker no amplia les estacions properes de forma compatible o no és V22.28.0.');
+if(!backend.includes('/v3/location/near')||!backend.includes('discoverComparisonStations')||!backend.includes('WORKER_VERSION = "22.28.1"'))throw new Error('El Worker no amplia les estacions properes de forma compatible o no és V22.28.1.');
 if(!comparison.includes('Com canvia el temps al Baix Montseny?'))throw new Error('El títol del comparador no s’ha aclarit.');
 const manifest=JSON.parse(await readFile(resolve(root,'site.webmanifest'),'utf8'));
 if(manifest.short_name!=='Observatori')throw new Error('El nom curt de la PWA no segueix la guia de marca.');
@@ -110,5 +110,5 @@ for(const capability of ['alertHistoryParams','alertHistoryWhere','pagination','
 for(const capability of ['alert_level_${normalizedLevel}','?page=avisos','INSERT OR IGNORE INTO alert_events'])if(!backend.includes(capability))throw new Error(`Notificacions V18: falta ${capability}.`);
 if(worker.includes("APP_SHELL = [\n  '/administracio.html'")||!worker.includes("url.pathname.startsWith('/admin/')")||!worker.includes("url.pathname === '/administracio.html'"))throw new Error('La PWA desa la pàgina o les respostes administratives quan no ho hauria de fer.');
 const robots=await readFile(resolve(root,'robots.txt'),'utf8');const sitemapText=await readFile(resolve(root,'sitemap.xml'),'utf8');if(!robots.includes('Disallow: /administracio.html')||sitemapText.includes('administracio.html'))throw new Error('Administració no està correctament exclosa dels cercadors.');
-const project=JSON.parse(await readFile(resolve(root,'project.json'),'utf8'));if(project.version!=='22.28.0')throw new Error('La versió web del projecte no és V22.28.0.');
+const project=JSON.parse(await readFile(resolve(root,'project.json'),'utf8'));if(project.version!=='22.28.1')throw new Error('La versió web del projecte no és V22.28.1.');
 console.log('Smoke test V21: correcte');

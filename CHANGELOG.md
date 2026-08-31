@@ -1,5 +1,12 @@
 # Changelog
 
+## V22.28.1 — Imatges públiques i reintents segurs d’X — 2026-08-31
+
+- Les targetes socials accepten `GET` i `HEAD`, de manera que Buffer pot validar-les com a imatges públiques abans de publicar-les a X.
+- La publicació del migdia materialitza primer el PNG a R2 i reutilitza la mateixa URL estable durant tot el procés.
+- Si Buffer crea una entrada però la marca amb error, el Worker conserva l’identificador remot i atura els reintents que abans omplien la cua amb duplicats.
+- La diagnosi conserva el tipus de resposta, l’identificador remot i l’estat retornat per facilitar la recuperació sense afectar la resta de xarxes.
+
 ## V22.28.0 — Publicacions periòdiques i episodis destacats — 2026-08-31
 
 - Preparats resums setmanals, mensuals, estacionals i anuals amb cobertura mínima de dades, extrems, pluja, vent, UV i verificació de la previsió de l’endemà.
