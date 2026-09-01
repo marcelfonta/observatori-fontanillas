@@ -1,5 +1,13 @@
 # Changelog
 
+## V22.30.0 — Idiomes i cerca municipal global — 2026-09-01
+
+- La capçalera incorpora una cerca de municipis basada en el mateix geocodificador d’«El temps arreu», amb suggeriments, navegació per teclat i selecció directa de la localitat.
+- En seleccionar un resultat s’obre «El temps arreu» amb el municipi i les coordenades a l’URL, i la previsió corresponent es carrega automàticament.
+- Nou selector propi de català, castellà i anglès, sense serveis externs de traducció, amb preferència desada només al navegador.
+- La navegació, la capçalera, les presentacions principals i la cerca adapten els textos a l’idioma triat; les xifres i dates municipals utilitzen també la configuració regional corresponent.
+- La cerca es mostra completa en escriptori i es converteix en un control compacte que s’expandeix a pantalla completa en mòbil, sense desplaçar les xarxes socials ni el menú.
+
 ## V22.29.2 — Vídeos socials nítids i titulars dins la zona segura — 2026-08-31
 
 - Els titulars sense símbol meteorològic utilitzen un límit més conservador i «Ara mateix, dades reals» queda en dues línies completes dins del format vertical.

@@ -1,10 +1,11 @@
 import { fetchLocalityForecast, fetchMetNorwayForecast, fetchNearbyStations, fetchNearbyWebcams, searchMunicipalities } from '../services/weather-api.js';
+import { getLanguage, getLocale } from '../core/i18n.js';
 
 const $=selector=>document.querySelector(selector);
 const escapeHtml=value=>String(value??'').replace(/[&<>"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]));
-const number=(value,digits=0)=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))?new Intl.NumberFormat('ca-ES',{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(Number(value)):'—';
-const date=value=>new Intl.DateTimeFormat('ca-ES',{weekday:'short',day:'numeric',month:'short'}).format(new Date(`${value}T12:00:00`));
-const time=value=>{const local=String(value||'').match(/[T ](\d{2}:\d{2})/);if(local)return local[1];const parsed=new Date(value);return value&&!Number.isNaN(parsed.getTime())?new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit'}).format(parsed):'—';};
+const number=(value,digits=0)=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))?new Intl.NumberFormat(getLocale(),{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(Number(value)):'—';
+const date=value=>new Intl.DateTimeFormat(getLocale(),{weekday:'short',day:'numeric',month:'short'}).format(new Date(`${value}T12:00:00`));
+const time=value=>{const local=String(value||'').match(/[T ](\d{2}:\d{2})/);if(local)return local[1];const parsed=new Date(value);return value&&!Number.isNaN(parsed.getTime())?new Intl.DateTimeFormat(getLocale(),{hour:'2-digit',minute:'2-digit'}).format(parsed):'—';};
 const weatherLabel=code=>({0:'Cel serè',1:'Poc ennuvolat',2:'Núvols i clarianes',3:'Cobert',45:'Boira',48:'Boira gebradora',51:'Plugim feble',53:'Plugim',55:'Plugim intens',61:'Pluja feble',63:'Pluja',65:'Pluja intensa',71:'Neu feble',73:'Neu',75:'Neu intensa',80:'Ruixats febles',81:'Ruixats',82:'Ruixats intensos',95:'Tempesta',96:'Tempesta amb calamarsa',99:'Tempesta forta amb calamarsa'})[Number(code)]||'Temps variable';
 const metLabel=value=>{const code=String(value||'').replace(/_(day|night|polartwilight)$/,'');if(code.includes('thunder'))return 'Tempesta';if(code.includes('snow')||code.includes('sleet'))return 'Neu o aiguaneu';if(code.includes('rain')||code.includes('drizzle'))return 'Pluja';if(code.includes('fog'))return 'Boira';if(code.includes('cloudy'))return code.includes('partly')?'Núvols i clarianes':'Cobert';if(code.includes('clearsky'))return 'Cel serè';if(code.includes('fair'))return 'Poc ennuvolat';return 'Temps variable';};
 const weatherKind=code=>{const value=Number(code);if(value===0)return'clear';if(value<=2)return'partly';if(value===3)return'cloudy';if(value===45||value===48)return'fog';if((value>=51&&value<=65)||(value>=80&&value<=82))return'rain';if(value>=71&&value<=77)return'snow';if(value>=95)return'storm';return'partly';};
@@ -45,7 +46,7 @@ async function suggest(){
   if(query.length<2){renderSuggestions([]);status.textContent='Escriu com a mínim dues lletres.';return;}
   status.textContent='Buscant municipis…';
   try{
-    const items=await searchMunicipalities(query);
+    const items=await searchMunicipalities(query,getLanguage());
     renderSuggestions(items);
     status.textContent=items.length?'Selecciona el municipi correcte.':'No hem trobat cap coincidència.';
   }catch(error){renderSuggestions([]);status.textContent='No s’ha pogut completar la cerca. Torna-ho a provar.';}

@@ -73,11 +73,13 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.29.2
+## Estat V22.30.0
 
-- Branca de treball: `fix/qualitat-i-titols-videos-socials`.
-- Versio codi: V22.29.2.
-- La V22.29.1 està desplegada i operativa; la V22.29.2 queda pendent d’integrar i desplegar amb titulars dins la zona segura i més qualitat d’exportació per a vídeos socials.
+- Branca de treball: `feature/idiomes-i-cerca-municipi`.
+- Versio codi: V22.30.0.
+- La V22.29.2 està desplegada i operativa; la V22.30.0 queda pendent d’integrar i desplegar amb selector local català/castellà/anglès i cerca municipal directa a la capçalera.
+- La capçalera reutilitza el geocodificador d’«El temps arreu» i envia la localitat escollida amb coordenades perquè la previsió s’obri ja carregada.
+- La preferència d’idioma es desa només al navegador i les traduccions pròpies eviten enviar el contingut a tercers.
 - El Worker prepara resums setmanals, mensuals, estacionals i anuals amb cobertura mínima, context de predicció i targetes socials pròpies.
 - Els episodis destacats de l’estació, els extrems de l’arxiu local, la sequera de l’ACA, la pols modelitzada per CAMS i les efemèrides disposen de deduplicació, límits i interruptors independents.
 - Les publicacions d'avisos són exclusives de Meteocat i incorporen el mapa comarcal complet de Catalunya, amb el Vallès Oriental remarcat i un text prudent per a Sant Celoni.
