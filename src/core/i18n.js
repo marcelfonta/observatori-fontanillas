@@ -40,13 +40,91 @@ const PHRASES={
   'Actualitzat':{es:'Actualizado',en:'Updated'},
   'ara mateix':{es:'ahora mismo',en:'just now'},
   'Webcam · ara':{es:'Webcam · ahora',en:'Webcam · now'},
+  'Observació en directe':{es:'Observación en directo',en:'Live observation'},
+  'Carregant observació…':{es:'Cargando observación…',en:'Loading observation…'},
+  'Analitzant l’ambient':{es:'Analizando el ambiente',en:'Analysing conditions'},
+  'Esperant les dades de l’estació per generar una lectura contextual.':{es:'Esperando los datos de la estación para generar una lectura contextual.',en:'Waiting for station data to generate a contextual reading.'},
+  'Ambient confortable':{es:'Ambiente confortable',en:'Comfortable conditions'},
+  'Pluja activa':{es:'Lluvia activa',en:'Active rain'},
+  'Vent destacable':{es:'Viento destacado',en:'Notable wind'},
+  'Ambient humit':{es:'Ambiente húmedo',en:'Humid conditions'},
+  'Calor marcada':{es:'Calor destacable',en:'Notable heat'},
+  'Temperatura alta; la sensació tèrmica és el valor clau ara mateix.':{es:'Temperatura alta; la sensación térmica es el valor clave ahora mismo.',en:'High temperature; the feels-like value is the key reading right now.'},
+  'Pluja a l’observatori':{es:'Lluvia en el observatorio',en:'Rain at the observatory'},
   'Vent moderat':{es:'Viento moderado',en:'Moderate wind'},
   'Condicions suaus i sense fenòmens destacables a l’estació.':{es:'Condiciones suaves y sin fenómenos destacables en la estación.',en:'Mild conditions with no significant weather at the station.'},
   'Confort tèrmic':{es:'Confort térmico',en:'Thermal comfort'},
   'Avisos oficials':{es:'Avisos oficiales',en:'Official alerts'},
+  'Sense avisos oficials actius':{es:'Sin avisos oficiales activos',en:'No active official alerts'},
+  'Sense avisos actius':{es:'Sin avisos activos',en:'No active alerts'},
+  'Comprovant la situació':{es:'Comprobando la situación',en:'Checking conditions'},
+  'Darrera comprovació oficial actualitzada':{es:'Última comprobación oficial actualizada',en:'Latest official check updated'},
+  'Consultar →':{es:'Consultar →',en:'View →'},
   'Veure fonts →':{es:'Ver fuentes →',en:'View sources →'},
   'Cada 5 minuts':{es:'Cada 5 minutos',en:'Every 5 minutes'},
   'Lectura ràpida':{es:'Lectura rápida',en:'Quick view'},
+  'Temperatura':{es:'Temperatura',en:'Temperature'},
+  'Sensació':{es:'Sensación',en:'Feels like'},
+  'Humitat':{es:'Humedad',en:'Humidity'},
+  'Punt de rosada':{es:'Punto de rocío',en:'Dew point'},
+  'Vent':{es:'Viento',en:'Wind'},
+  'Ratxa':{es:'Racha',en:'Gust'},
+  'Pressió':{es:'Presión',en:'Pressure'},
+  'Pluja avui':{es:'Lluvia hoy',en:'Rain today'},
+  'Intensitat de pluja':{es:'Intensidad de lluvia',en:'Rain intensity'},
+  'Radiació solar':{es:'Radiación solar',en:'Solar radiation'},
+  'Índex UV':{es:'Índice UV',en:'UV index'},
+  'Sensació tèrmica':{es:'Sensación térmica',en:'Feels-like temperature'},
+  'Temperatura de xafogor':{es:'Temperatura de bochorno',en:'Humidex temperature'},
+  'Sensor':{es:'Sensor',en:'Sensor'},
+  'Acumulada':{es:'Acumulada',en:'Accumulated'},
+  'Risc solar':{es:'Riesgo solar',en:'Solar risk'},
+  'Combinada':{es:'Combinada',en:'Combined'},
+  'Interpretant':{es:'Interpretando',en:'Interpreting'},
+  'Recollint':{es:'Recopilando',en:'Collecting'},
+  'Tendència pendent':{es:'Tendencia pendiente',en:'Trend pending'},
+  'Lectura pendent':{es:'Lectura pendiente',en:'Reading pending'},
+  'Sense lectura':{es:'Sin lectura',en:'No reading'},
+  'Sense precipitació':{es:'Sin precipitación',en:'No precipitation'},
+  'No disponible':{es:'No disponible',en:'Unavailable'},
+  'Màx.':{es:'Máx.',en:'Max.'},
+  'Mín.':{es:'Mín.',en:'Min.'},
+  'Des de les 00:00':{es:'Desde las 00:00',en:'Since 00:00'},
+  'Pressió alta':{es:'Presión alta',en:'High pressure'},
+  'Pressió baixa':{es:'Presión baja',en:'Low pressure'},
+  'Pressió normal':{es:'Presión normal',en:'Normal pressure'},
+  'Rang habitual':{es:'Rango habitual',en:'Typical range'},
+  'Rang confortable':{es:'Rango confortable',en:'Comfortable range'},
+  'Confortable':{es:'Confortable',en:'Comfortable'},
+  'Baix':{es:'Bajo',en:'Low'},
+  'Moderat':{es:'Moderado',en:'Moderate'},
+  'Alt':{es:'Alto',en:'High'},
+  'estable':{es:'estable',en:'stable'},
+  'Fred intens':{es:'Frío intenso',en:'Intense cold'},
+  'Ambient fresc':{es:'Ambiente fresco',en:'Cool conditions'},
+  'Calor moderada':{es:'Calor moderado',en:'Moderate heat'},
+  'Calor alta':{es:'Calor intenso',en:'High heat'},
+  'Calor extrema':{es:'Calor extremo',en:'Extreme heat'},
+  'Aire sec':{es:'Aire seco',en:'Dry air'},
+  'Humitat molt alta':{es:'Humedad muy alta',en:'Very high humidity'},
+  'Sense acumulació':{es:'Sin acumulación',en:'No accumulation'},
+  'Acumulació baixa':{es:'Acumulación baja',en:'Low accumulation'},
+  'Acumulació moderada':{es:'Acumulación moderada',en:'Moderate accumulation'},
+  'Acumulació alta':{es:'Acumulación alta',en:'High accumulation'},
+  'Acumulació molt alta':{es:'Acumulación muy alta',en:'Very high accumulation'},
+  'Pluja feble':{es:'Lluvia débil',en:'Light rain'},
+  'Pluja moderada':{es:'Lluvia moderada',en:'Moderate rain'},
+  'Pluja intensa':{es:'Lluvia intensa',en:'Heavy rain'},
+  'Pluja torrencial':{es:'Lluvia torrencial',en:'Torrential rain'},
+  'Radiació feble':{es:'Radiación débil',en:'Low radiation'},
+  'Radiació moderada':{es:'Radiación moderada',en:'Moderate radiation'},
+  'Radiació alta':{es:'Radiación alta',en:'High radiation'},
+  'Radiació molt alta':{es:'Radiación muy alta',en:'Very high radiation'},
+  'Sensació fresca':{es:'Sensación fresca',en:'Cool feel'},
+  'Calor perceptible':{es:'Calor perceptible',en:'Noticeable heat'},
+  'Calor intensa':{es:'Calor intenso',en:'Intense heat'},
+  'Estrès tèrmic':{es:'Estrés térmico',en:'Heat stress'},
+  'Precipitació activa':{es:'Precipitación activa',en:'Active precipitation'},
   'L’estació, sensor a sensor.':{es:'La estación, sensor a sensor.',en:'The station, sensor by sensor.'},
   'Lectures actuals, valors calculats i resum del dia des de Sant Celoni.':{es:'Lecturas actuales, valores calculados y resumen del día desde Sant Celoni.',en:'Current readings, calculated values and today’s summary from Sant Celoni.'},
   'La previsió, ordenada per horitzons.':{es:'La predicción, ordenada por horizontes.',en:'The forecast, organised by time horizon.'},
@@ -90,6 +168,41 @@ const PHRASES={
   'Busca una localitat i contrasta dues previsions independents amb les lectures reals d’estacions properes, sempre amb les fonts separades.':{es:'Busca una localidad y contrasta dos pronósticos independientes con lecturas reales de estaciones cercanas, siempre con las fuentes separadas.',en:'Search for a place and compare two independent forecasts with real readings from nearby stations, always keeping sources separate.'}
 };
 
+const DYNAMIC_REPLACEMENTS={
+  es:[
+    [/^Comprovat a les\s+/,'Comprobado a las '],
+    [/^Actualitzat a les\s+/,'Actualizado a las '],
+    [/^Vigent fins a les\s+/,'Vigente hasta las '],
+    [/^Vigent fins al\s+/,'Vigente hasta el '],
+    [/^Posta de sol a les\s+/,'Puesta de sol a las '],
+    [/^Ara plou a ([\d,.]+) mm\/h\. Cal seguir-ne l’evolució\.$/,'Ahora llueve a $1 mm/h. Conviene seguir su evolución.'],
+    [/^El vent bufa a ([\d,.]+) km\/h, amb ratxes de ([\d,.]+) km\/h\.$/,'El viento sopla a $1 km/h, con rachas de $2 km/h.'],
+    [/^Humitat elevada del ([\d,.]+)% i punt de rosada a ([\d,.]+) °C\.$/,'Humedad elevada del $1% y punto de rocío a $2 °C.'],
+    [/^Fa (\d+) h$/,'Hace $1 h'],
+    [/^fa (\d+) min$/,'hace $1 min'],
+    [/(^|\s)a les (\d{1,2}:\d{2})/g,'$1a las $2'],
+    [/^(\d+) punts històrics reals disponibles$/,'$1 puntos históricos reales disponibles'],
+    [/^(\d+) hores amb pluja$/,'$1 horas con lluvia'],
+    [/^(\d+) hora amb pluja$/,'$1 hora con lluvia']
+  ],
+  en:[
+    [/^Comprovat a les\s+/,'Checked at '],
+    [/^Actualitzat a les\s+/,'Updated at '],
+    [/^Vigent fins a les\s+/,'Valid until '],
+    [/^Vigent fins al\s+/,'Valid until '],
+    [/^Posta de sol a les\s+/,'Sunset at '],
+    [/^Ara plou a ([\d,.]+) mm\/h\. Cal seguir-ne l’evolució\.$/,'It is raining at $1 mm/h. Keep monitoring its evolution.'],
+    [/^El vent bufa a ([\d,.]+) km\/h, amb ratxes de ([\d,.]+) km\/h\.$/,'Wind is blowing at $1 km/h, with gusts of $2 km/h.'],
+    [/^Humitat elevada del ([\d,.]+)% i punt de rosada a ([\d,.]+) °C\.$/,'Humidity is $1%, with a dew point of $2 °C.'],
+    [/^Fa (\d+) h$/,'$1 h ago'],
+    [/^fa (\d+) min$/,'$1 min ago'],
+    [/(^|\s)a les (\d{1,2}:\d{2})/g,'$1at $2'],
+    [/^(\d+) punts històrics reals disponibles$/,'$1 real historical points available'],
+    [/^(\d+) hores amb pluja$/,'$1 rainy hours'],
+    [/^(\d+) hora amb pluja$/,'$1 rainy hour']
+  ]
+};
+
 const TEXT_SOURCES=new WeakMap();
 let language='ca';
 let observer;
@@ -101,7 +214,12 @@ function safeStoredLanguage(){
 
 export function getLanguage(){return language;}
 export function getLocale(){return language==='es'?'es-ES':language==='en'?'en-GB':'ca-ES';}
-export function t(source){return language==='ca'?source:(PHRASES[source]?.[language]||source);}
+export function t(source){
+  if(language==='ca'||typeof source!=='string')return source;
+  const exact=PHRASES[source]?.[language];
+  if(exact)return exact;
+  return (DYNAMIC_REPLACEMENTS[language]||[]).reduce((value,[pattern,replacement])=>value.replace(pattern,replacement),source);
+}
 
 function translateTextNode(node){
   if(!node?.parentElement||['SCRIPT','STYLE','NOSCRIPT','CODE','PRE'].includes(node.parentElement.tagName))return;
@@ -143,6 +261,7 @@ export function setLanguage(nextLanguage,{persist=true}={}){
   translateDocument();
   languageChangeInProgress=false;
   document.dispatchEvent(new CustomEvent('observatori:language-change',{detail:{language,locale:getLocale()}}));
+  queueMicrotask(()=>translateDocument());
 }
 
 export function initLanguage(){
