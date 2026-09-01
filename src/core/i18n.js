@@ -1,7 +1,9 @@
-const STORAGE_KEY='fontanillas-language-v1';
-const SUPPORTED_LANGUAGES=['ca','es','en'];
+import { FRENCH_PHRASES } from './i18n-fr.js';
 
-const PHRASES={
+const STORAGE_KEY='fontanillas-language-v1';
+export const SUPPORTED_LANGUAGES=['ca','es','en','fr'];
+
+export const PHRASES={
   'En directe':{es:'En directo',en:'Live'},
   'Consulta oberta':{es:'Consulta abierta',en:'Open search'},
   'Consulta ràpida':{es:'Consulta rápida',en:'Quick view'},
@@ -29,6 +31,12 @@ const PHRASES={
   'Aprendre meteorologia':{es:'Aprender meteorología',en:'Learn meteorology'},
   'Contacte':{es:'Contacto',en:'Contact'},
   'Metodologia':{es:'Metodología',en:'Methodology'},
+  'Col·laboracions':{es:'Colaboraciones',en:'Collaborations'},
+  'Saltar al contingut principal':{es:'Saltar al contenido principal',en:'Skip to main content'},
+  'Principis de col·laboració':{es:'Principios de colaboración',en:'Collaboration principles'},
+  'Material i tecnologia':{es:'Material y tecnología',en:'Equipment and technology'},
+  'Procés clar':{es:'Proceso claro',en:'Clear process'},
+  'Transparència':{es:'Transparencia',en:'Transparency'},
   'Previsió i risc':{es:'Predicción y riesgo',en:'Forecast and risk'},
   'Explora':{es:'Explora',en:'Explore'},
   'Dades i projecte':{es:'Datos y proyecto',en:'Data and project'},
@@ -165,7 +173,49 @@ const PHRASES={
   'Tornar amunt ↑':{es:'Volver arriba ↑',en:'Back to top ↑'},
   'Fonts visibles':{es:'Fuentes visibles',en:'Visible sources'},
   'Previsions i estacions arreu del món':{es:'Predicciones y estaciones de todo el mundo',en:'Forecasts and stations worldwide'},
-  'Busca una localitat i contrasta dues previsions independents amb les lectures reals d’estacions properes, sempre amb les fonts separades.':{es:'Busca una localidad y contrasta dos pronósticos independientes con lecturas reales de estaciones cercanas, siempre con las fuentes separadas.',en:'Search for a place and compare two independent forecasts with real readings from nearby stations, always keeping sources separate.'}
+  'Busca una localitat i contrasta dues previsions independents amb les lectures reals d’estacions properes, sempre amb les fonts separades.':{es:'Busca una localidad y contrasta dos pronósticos independientes con lecturas reales de estaciones cercanas, siempre con las fuentes separadas.',en:'Search for a place and compare two independent forecasts with real readings from nearby stations, always keeping sources separate.'},
+  'Projecte obert a col·laboracions responsables':{es:'Proyecto abierto a colaboraciones responsables',en:'A project open to responsible collaborations'},
+  'Col·laboracions que milloren l’observació local':{es:'Colaboraciones que mejoran la observación local',en:'Collaborations that improve local observation'},
+  'Busquem equipament cedit o en préstec, accés tècnic i aliances de divulgació per mesurar millor el temps del Baix Montseny.':{es:'Buscamos equipamiento cedido o en préstamo, acceso técnico y alianzas de divulgación para medir mejor el tiempo del Baix Montseny.',en:'We are looking for donated or loaned equipment, technical access and outreach partnerships to improve weather observation in the Baix Montseny.'},
+  'Proposta transparent':{es:'Propuesta transparente',en:'A transparent proposal'},
+  'No demanem una opinió positiva ni cedim el control editorial. Qualsevol material rebut s’identifica de manera visible i les conclusions es publiquen amb independència.':{es:'No pedimos una opinión positiva ni cedemos el control editorial. Cualquier material recibido se identifica de forma visible y las conclusiones se publican con independencia.',en:'We do not ask for a positive review or give up editorial control. Any equipment received is clearly disclosed and conclusions are published independently.'},
+  'Què aporta l’Observatori':{es:'Qué aporta el Observatorio',en:'What the Observatory offers'},
+  'Prova de camp real':{es:'Prueba de campo real',en:'Real-world field testing'},
+  'Instal·lació i seguiment en un entorn local amb dades contínues i condicions mediterrànies.':{es:'Instalación y seguimiento en un entorno local con datos continuos y condiciones mediterráneas.',en:'Installation and monitoring in a local setting with continuous data and Mediterranean conditions.'},
+  'Integració tècnica':{es:'Integración técnica',en:'Technical integration'},
+  'Connexió amb la web, documentació del procés i, quan sigui possible, ús responsable de l’API.':{es:'Conexión con la web, documentación del proceso y, cuando sea posible, uso responsable de la API.',en:'Website integration, documented implementation and responsible API use whenever possible.'},
+  'Divulgació útil':{es:'Divulgación útil',en:'Useful outreach'},
+  'Cas pràctic públic, contingut educatiu i comunicació a les xarxes del projecte sense promeses d’abast.':{es:'Caso práctico público, contenido educativo y comunicación en las redes del proyecto sin promesas de alcance.',en:'A public case study, educational content and communication through the project’s social channels without reach guarantees.'},
+  'Què busquem':{es:'Qué buscamos',en:'What we are looking for'},
+  'Estacions i sensors':{es:'Estaciones y sensores',en:'Stations and sensors'},
+  'Pluja, vent, qualitat de l’aire, sòl, radiació o detecció de llamps, sempre que siguin compatibles amb un projecte local.':{es:'Lluvia, viento, calidad del aire, suelo, radiación o detección de rayos, siempre que sean compatibles con un proyecto local.',en:'Rain, wind, air quality, soil, radiation or lightning sensors that are suitable for a local project.'},
+  'Accés i suport tècnic':{es:'Acceso y soporte técnico',en:'Technical access and support'},
+  'Documentació, API o orientació per integrar les dades sense exposar credencials ni alterar el producte.':{es:'Documentación, API u orientación para integrar los datos sin exponer credenciales ni alterar el producto.',en:'Documentation, API access or guidance to integrate data without exposing credentials or altering the product.'},
+  'Material, no finançament':{es:'Material, no financiación',en:'Equipment, not funding'},
+  'La proposta inicial és una cessió o un préstec de material. No és necessari aportar diners.':{es:'La propuesta inicial es una cesión o un préstamo de material. No es necesario aportar dinero.',en:'The initial proposal is an equipment donation or loan. Financial support is not required.'},
+  'Xarxes i difusió':{es:'Redes y difusión',en:'Social channels and outreach'},
+  'Una col·laboració amb continuïtat':{es:'Una colaboración con continuidad',en:'An ongoing collaboration'},
+  'Canals del projecte':{es:'Canales del proyecto',en:'Project channels'},
+  'Instagram, Facebook, TikTok, YouTube i X, amb accés a la resta de comunitats des del directori oficial de xarxes.':{es:'Instagram, Facebook, TikTok, YouTube y X, con acceso al resto de comunidades desde el directorio oficial de redes.',en:'Instagram, Facebook, TikTok, YouTube and X, with access to the other communities from the official social directory.'},
+  'Publicacions periòdiques':{es:'Publicaciones periódicas',en:'Periodic posts'},
+  'Presentació inicial, actualitzacions pactades durant la col·laboració i una peça final amb resultats, sense saturar l’audiència.':{es:'Presentación inicial, actualizaciones acordadas durante la colaboración y una pieza final con resultados, sin saturar a la audiencia.',en:'An initial announcement, agreed updates during the collaboration and a final results piece, without overwhelming the audience.'},
+  'Patrocini identificat':{es:'Patrocinio identificado',en:'Clearly identified sponsorship'},
+  'Cada publicació indicarà de manera clara si hi ha material cedit, préstec o patrocini, d’acord amb les normes de cada xarxa.':{es:'Cada publicación indicará claramente si existe material cedido, préstamo o patrocinio, de acuerdo con las normas de cada red.',en:'Every post will clearly state whether equipment was donated, loaned or sponsored, in accordance with each platform’s rules.'},
+  'Com funciona':{es:'Cómo funciona',en:'How it works'},
+  'Proposta':{es:'Propuesta',en:'Proposal'},
+  'Definim l’equipament, l’objectiu i les condicions de transparència.':{es:'Definimos el equipamiento, el objetivo y las condiciones de transparencia.',en:'We define the equipment, objective and transparency terms.'},
+  'Compatibilitat':{es:'Compatibilidad',en:'Compatibility'},
+  'Revisem instal·lació, connectivitat, llicències de dades i manteniment.':{es:'Revisamos instalación, conectividad, licencias de datos y mantenimiento.',en:'We review installation, connectivity, data licensing and maintenance.'},
+  'Prova i publicació':{es:'Prueba y publicación',en:'Testing and publication'},
+  'Instal·lem, validem i publiquem el procés i els resultats amb atribució clara.':{es:'Instalamos, validamos y publicamos el proceso y los resultados con una atribución clara.',en:'We install, validate and publish the process and results with clear attribution.'},
+  'Situació actual':{es:'Situación actual',en:'Current status'},
+  'Actualment no hi ha cap patrocini comercial actiu. Les futures col·laboracions es declararan en aquesta pàgina.':{es:'Actualmente no hay ningún patrocinio comercial activo. Las futuras colaboraciones se declararán en esta página.',en:'There is currently no active commercial sponsorship. Future collaborations will be disclosed on this page.'},
+  'Vols proposar una col·laboració?':{es:'¿Quieres proponer una colaboración?',en:'Would you like to propose a collaboration?'},
+  'Explica’ns quin material o accés tècnic proposes i quin objectiu voldries validar.':{es:'Explícanos qué material o acceso técnico propones y qué objetivo te gustaría validar.',en:'Tell us what equipment or technical access you propose and what objective you would like to validate.'},
+  'Contactar amb l’Observatori →':{es:'Contactar con el Observatorio →',en:'Contact the Observatory →'},
+  'Independència editorial':{es:'Independencia editorial',en:'Editorial independence'},
+  'Atribució visible':{es:'Atribución visible',en:'Visible attribution'},
+  'Dades verificables':{es:'Datos verificables',en:'Verifiable data'}
 };
 
 const DYNAMIC_REPLACEMENTS={
@@ -200,6 +250,22 @@ const DYNAMIC_REPLACEMENTS={
     [/^(\d+) punts històrics reals disponibles$/,'$1 real historical points available'],
     [/^(\d+) hores amb pluja$/,'$1 rainy hours'],
     [/^(\d+) hora amb pluja$/,'$1 rainy hour']
+  ],
+  fr:[
+    [/^Comprovat a les\s+/,'Vérifié à '],
+    [/^Actualitzat a les\s+/,'Mis à jour à '],
+    [/^Vigent fins a les\s+/,'Valable jusqu’à '],
+    [/^Vigent fins al\s+/,'Valable jusqu’au '],
+    [/^Posta de sol a les\s+/,'Coucher du soleil à '],
+    [/^Ara plou a ([\d,.]+) mm\/h\. Cal seguir-ne l’evolució\.$/,'Il pleut actuellement à $1 mm/h. Son évolution doit être surveillée.'],
+    [/^El vent bufa a ([\d,.]+) km\/h, amb ratxes de ([\d,.]+) km\/h\.$/,'Le vent souffle à $1 km/h, avec des rafales à $2 km/h.'],
+    [/^Humitat elevada del ([\d,.]+)% i punt de rosada a ([\d,.]+) °C\.$/,'Humidité élevée de $1 %, avec un point de rosée à $2 °C.'],
+    [/^Fa (\d+) h$/,'Il y a $1 h'],
+    [/^fa (\d+) min$/,'il y a $1 min'],
+    [/(^|\s)a les (\d{1,2}:\d{2})/g,'$1à $2'],
+    [/^(\d+) punts històrics reals disponibles$/,'$1 points historiques réels disponibles'],
+    [/^(\d+) hores amb pluja$/,'$1 heures de pluie'],
+    [/^(\d+) hora amb pluja$/,'$1 heure de pluie']
   ]
 };
 
@@ -213,12 +279,24 @@ function safeStoredLanguage(){
 }
 
 export function getLanguage(){return language;}
-export function getLocale(){return language==='es'?'es-ES':language==='en'?'en-GB':'ca-ES';}
+export function getLocale(){return language==='es'?'es-ES':language==='en'?'en-GB':language==='fr'?'fr-FR':'ca-ES';}
 export function t(source){
   if(language==='ca'||typeof source!=='string')return source;
-  const exact=PHRASES[source]?.[language];
+  const exact=language==='fr'?FRENCH_PHRASES[source]:PHRASES[source]?.[language];
   if(exact)return exact;
   return (DYNAMIC_REPLACEMENTS[language]||[]).reduce((value,[pattern,replacement])=>value.replace(pattern,replacement),source);
+}
+
+export function getTranslationCoverage(){
+  const keys=Object.keys(PHRASES);
+  return {
+    total:keys.length,
+    missing:{
+      es:keys.filter(key=>!PHRASES[key]?.es),
+      en:keys.filter(key=>!PHRASES[key]?.en),
+      fr:keys.filter(key=>!FRENCH_PHRASES[key])
+    }
+  };
 }
 
 function translateTextNode(node){

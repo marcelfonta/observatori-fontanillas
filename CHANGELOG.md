@@ -1,5 +1,15 @@
 # Changelog
 
+## V22.31.0 — Francès i col·laboracions tècniques — 2026-09-01
+
+- Afegit el francès al selector d’idioma, als textos meteorològics dinàmics i a la configuració regional de dates i xifres.
+- Auditoria automàtica del catàleg: cap frase registrada queda sense versió en castellà, anglès o francès.
+- Nova pàgina pública de col·laboracions amb atribució visible, independència editorial i estat dels patrocinis declarat.
+- Preparats dossiers professionals en castellà i anglès, en format editable i PDF, per proposar cessió o préstec de material.
+- Preparats sis correus personalitzats per Bresser Iberia, Ecowitt, WeatherFlow–Tempest, Ambient Weather, Davis Instruments i Netatmo.
+- La proposta inclou Instagram, Facebook, TikTok, YouTube i X, amb presentació inicial, actualitzacions periòdiques pactades i una peça final, sempre identificades com a col·laboració.
+- La nova pàgina i el catàleg francès formen part de la PWA i del mapa del web.
+
 ## V22.30.1 — Traducció dinàmica i capçalera mòbil compacta — 2026-09-01
 
 - Els textos que s’actualitzen quan arriben les dades meteorològiques conserven l’idioma triat, inclosos la lectura ràpida, l’estat dels avisos, les mètriques principals i les hores dels extrems.

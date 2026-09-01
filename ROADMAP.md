@@ -2,6 +2,11 @@
 
 ## Manteniment obert — En curs
 
+- [x] Afegir francès al selector, completar el catàleg de traduccions i validar automàticament català, castellà, anglès i francès.
+- [x] Crear una pàgina pública de col·laboracions amb atribució visible, independència editorial i estat dels patrocinis declarat.
+- [x] Preparar dossiers en castellà i anglès i correus adaptats a sis fabricants d’estacions meteorològiques.
+- [ ] Integrar i desplegar la V22.31.0, comprovar els quatre idiomes en producció i iniciar els contactes de forma gradual.
+
 - [x] Preparar resums setmanals, mensuals, estacionals i anuals amb dades pròpies, cobertura mínima i verificació de la previsió.
 - [x] Preparar publicacions puntuals per episodis destacats i extrems de l’arxiu local, amb límits de freqüència i sense presentar-los com a avisos oficials.
 - [x] Preparar canvis oficials de sequera de l’ACA, episodis de pols modelitzada per CAMS i efemèrides verificades, amb fonts i limitacions explícites.

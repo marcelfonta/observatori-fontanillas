@@ -21,6 +21,35 @@ html[data-portal-page] .site-header {
   backdrop-filter: blur(18px);
 }
 
+/* Col·laboracions: una pàgina pública de patrocini discret i transparent. */
+.collaboration-page{padding-bottom:5rem}
+.collaboration-hero{align-items:flex-end}
+.collaboration-hero>div:first-child{max-width:850px}
+.collaboration-hero h1{max-width:18ch}
+.collaboration-principles{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.55rem;max-width:360px}
+.collaboration-principles span,.collaboration-status__badge{padding:.55rem .8rem;border:1px solid color-mix(in srgb,var(--green) 48%,transparent);border-radius:999px;color:var(--green);font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:color-mix(in srgb,var(--green) 8%,transparent)}
+.collaboration-callout{display:grid;grid-template-columns:auto 1fr;gap:1.2rem;align-items:start;margin:1.4rem 0;padding:1.5rem}
+.collaboration-callout__mark{display:grid;place-items:center;width:3rem;height:3rem;border-radius:50%;background:var(--green);color:#072019;font-size:1.35rem;font-weight:900}
+.collaboration-callout h2,.collaboration-status h2{margin:.15rem 0 .45rem}
+.collaboration-callout p:last-child,.collaboration-status p:last-child{max-width:82ch;margin-bottom:0}
+.collaboration-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.collaboration-grid .panel{position:relative;min-height:230px;padding:1.45rem;overflow:hidden}
+.collaboration-grid h3{max-width:16ch;margin:.35rem 0 .8rem;font-size:1.2rem}
+.collaboration-grid p{margin:0;color:var(--muted);line-height:1.65}
+.collaboration-number{display:block;color:var(--green);font:800 .78rem/1 Manrope,sans-serif;letter-spacing:.14em}
+.collaboration-grid--seek .panel{min-height:205px;border-style:dashed}
+.collaboration-process{padding:1.6rem}
+.collaboration-process ol{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin:0;padding:0;list-style:none}
+.collaboration-process li{display:grid;grid-template-columns:auto 1fr;gap:.8rem;align-items:start;padding:1rem;border-top:1px solid var(--border)}
+.collaboration-process li>span{display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green);font-weight:800}
+.collaboration-process h3{margin:.2rem 0 .45rem}.collaboration-process p{margin:0;color:var(--muted);line-height:1.55}
+.collaboration-status,.collaboration-cta{display:flex;justify-content:space-between;align-items:center;gap:2rem;margin-top:1.4rem;padding:1.6rem}
+.collaboration-status>div,.collaboration-cta>div{max-width:760px}
+.collaboration-cta{margin-bottom:2rem;background:linear-gradient(135deg,color-mix(in srgb,var(--green) 15%,var(--panel-bg)),var(--panel-bg))}
+.collaboration-cta .btn-back{flex:0 0 auto}
+@media(max-width:900px){.collaboration-grid,.collaboration-process ol{grid-template-columns:1fr}.collaboration-grid .panel,.collaboration-grid--seek .panel{min-height:0}.collaboration-status,.collaboration-cta{align-items:flex-start;flex-direction:column}.collaboration-principles{justify-content:flex-start;max-width:none}}
+@media(max-width:600px){.collaboration-callout{grid-template-columns:1fr}.collaboration-hero h1{font-size:clamp(2rem,11vw,3.2rem)}.collaboration-principles span{font-size:.68rem}.collaboration-cta .btn-back{width:100%;justify-content:center;text-align:center}}
+
 .has-portal-shell .site-header .nav { display: none; }
 .has-portal-shell > .mobile-nav, .has-portal-shell > .mobile-more { display: none !important; }
 .portal-menu-button { display: none; }

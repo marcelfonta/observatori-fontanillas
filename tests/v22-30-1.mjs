@@ -6,8 +6,8 @@ const [i18n,dom,station,style,project,serviceWorker]=await Promise.all([
   read('src/core/i18n.js'),read('src/core/dom.js'),read('src/modules/estacio.js'),read('css/style.css'),read('project.json'),read('service-worker.js')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.30.1');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-30-1-traduccio-mobil'));
+assert.equal(JSON.parse(project).version,'22.31.0');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-0-frances-colaboracions'));
 assert.ok(i18n.includes("'Sense avisos oficials actius':{es:'Sin avisos oficiales activos',en:'No active official alerts'}"));
 assert.ok(i18n.includes("'Lectura ràpida':{es:'Lectura rápida',en:'Quick view'}"));
 assert.ok(i18n.includes('DYNAMIC_REPLACEMENTS')&&i18n.includes('Comprovat a les'));
@@ -30,4 +30,4 @@ translations.setLanguage('en',{persist:false});
 assert.equal(translations.t('Observació en directe'),'Live observation');
 assert.equal(translations.t('fa 8 min'),'8 min ago');
 
-console.log('Test V22.30.1: traducció dinàmica i capçalera mòbil compacta');
+console.log('Test V22.31.0: traducció dinàmica i capçalera mòbil compacta');

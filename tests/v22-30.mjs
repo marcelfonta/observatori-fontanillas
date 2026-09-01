@@ -13,7 +13,7 @@ assert.match(headerTools,/municipis\.html/,'La cerca superior ha de portar a El 
 assert.match(headerTools,/searchParams\.set\('lat'/,'La navegació ha de conservar la latitud seleccionada');
 assert.match(headerTools,/searchParams\.set\('lon'/,'La navegació ha de conservar la longitud seleccionada');
 assert.match(headerTools,/ArrowDown/,'Els suggeriments han de ser navegables amb teclat');
-assert.match(i18n,/\['ca','es','en'\]/,'El selector ha d’oferir català, castellà i anglès');
+assert.match(i18n,/\['ca','es','en','fr'\]/,'El selector ha d’oferir català, castellà, anglès i francès');
 assert.match(i18n,/localStorage\.setItem\(STORAGE_KEY/,'La llengua triada s’ha de recordar al navegador');
 assert.match(weatherApi,/searchMunicipalities\(query,language='ca'\)/,'La geocodificació ha d’acceptar la llengua activa');
 assert.match(portalCss,/@media \(max-width: 780px\)[\s\S]*\.header-place-search:focus-within/,'La cerca ha de tenir un mode mòbil específic');
