@@ -155,10 +155,11 @@ export async function fetchAdvancedMeteoAI(question, context) {
 
 const normalizePlace=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 
-export async function searchMunicipalities(query) {
+export async function searchMunicipalities(query,language='ca') {
   const name=String(query||'').trim().slice(0,80);
   if(name.length<2)throw new Error('LOCALITY_REQUIRED');
-  const geocoding=new URLSearchParams({name,count:'10',language:'ca',format:'json'});
+  const geocodingLanguage=['ca','es','en'].includes(language)?language:'ca';
+  const geocoding=new URLSearchParams({name,count:'10',language:geocodingLanguage,format:'json'});
   const locationResponse=await request(`https://geocoding-api.open-meteo.com/v1/search?${geocoding}`,{headers:{Accept:'application/json'},cache:'no-store'},12000);
   if(!locationResponse.ok)throw new Error(`Geocoding API ${locationResponse.status}`);
   const candidates=((await locationResponse.json())?.results||[]).filter(item=>Number.isFinite(item.latitude)&&Number.isFinite(item.longitude));

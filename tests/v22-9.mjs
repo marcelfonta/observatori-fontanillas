@@ -6,8 +6,8 @@ const [page,feature,weather,portal,worker,style,project,serviceWorker,sitemap,ro
   read('municipis.html'),read('src/features/municipality-explorer.js'),read('src/services/weather-api.js'),read('src/features/portal-shell.js'),read('worker/index.js'),read('css/portal.css'),read('project.json'),read('service-worker.js'),read('sitemap.xml'),read('ROADMAP.md')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.29.2');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-29-2-xarxes')&&serviceWorker.includes("'/municipis.html'")&&serviceWorker.includes("'/src/features/municipality-explorer.js'"));
+assert.equal(JSON.parse(project).version,'22.30.0');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-30-0-idiomes-cerca')&&serviceWorker.includes("'/municipis.html'")&&serviceWorker.includes("'/src/features/municipality-explorer.js'"));
 assert.ok(page.includes('data-portal-static="municipis"')&&page.includes('municipality-search-form')&&page.includes('Fonts diferents, papers diferents'));
 assert.ok(page.includes('municipality-favorites')&&feature.includes('fontanillas-municipality-favorites-v1')&&feature.includes('toggleFavorite'),'Falten els municipis desats localment.');
 assert.ok(feature.includes("const isFavorite=savedFavorites().some")&&feature.includes("isFavorite?'★ Desat':'☆ Desar municipi'"),'L’estat inicial d’un municipi desat no és coherent.');

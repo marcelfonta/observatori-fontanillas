@@ -1,8 +1,12 @@
 import { mountPortalShell } from './portal-shell.js';
 import { initMeteoAIWidget } from './meteo-ai.js';
 import { initFooterSocial } from './footer-social.js';
+import { initLanguage } from '../core/i18n.js';
+import { initHeaderTools } from './header-tools.js';
+initLanguage();
 mountPortalShell(document.body.dataset.portalStatic||'');
 initMeteoAIWidget();
+initHeaderTools();
 initFooterSocial();
 const clock=document.querySelector('.site-header time');
 const updateClock=()=>{if(clock)clock.textContent=new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Europe/Madrid'}).format(new Date());};

@@ -6,8 +6,8 @@ const [html,environment,alerts,portal,style,project,serviceWorker,roadmap]=await
   read('index.html'),read('src/features/environment.js'),read('src/modules/avisos.js'),read('css/portal.css'),read('css/style.css'),read('project.json'),read('service-worker.js'),read('ROADMAP.md')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.29.2');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-29-2-xarxes'));
+assert.equal(JSON.parse(project).version,'22.30.0');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-30-0-idiomes-cerca'));
 assert.ok(html.includes('role="tabpanel"')&&html.includes('aria-controls="environment-panel-jellyfish"'));
 assert.ok(html.includes('environment-viewer-mobile-launch__icon')&&html.includes('millor control tàctil'));
 assert.ok(html.includes('id="environment-aqi" class="is-placeholder" aria-busy="true"'));

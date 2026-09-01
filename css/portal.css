@@ -25,6 +25,24 @@ html[data-portal-page] .site-header {
 .has-portal-shell > .mobile-nav, .has-portal-shell > .mobile-more { display: none !important; }
 .portal-menu-button { display: none; }
 .header-context { margin: 0; color: var(--muted); font-size: 12px; }
+.header-tools { display: flex; min-width: 0; align-items: center; gap: 8px; margin-left: auto; }
+.header-place-search { position: relative; display: flex; width: clamp(210px, 23vw, 360px); height: 40px; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid rgba(137,214,163,.24); border-radius: 999px; background: rgba(8,25,20,.82); transition: border-color .18s ease, box-shadow .18s ease, width .18s ease; }
+.header-place-search:focus-within { border-color: rgba(137,214,163,.68); box-shadow: 0 0 0 3px rgba(137,214,163,.09); }
+.header-place-search.is-loading::after { position: absolute; right: 11px; width: 12px; height: 12px; border: 2px solid rgba(137,214,163,.2); border-top-color: var(--green); border-radius: 50%; content: ''; animation: header-search-spin .7s linear infinite; }
+.header-place-search > span { flex: none; color: var(--green); font-size: 21px; line-height: 1; transform: rotate(-18deg); }
+.header-place-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); font: 650 12px/1 var(--font-body); }
+.header-place-search input::placeholder { color: rgba(180,202,192,.72); }
+.header-place-suggestions { position: absolute; z-index: 110; top: calc(100% + 9px); right: 0; left: 0; max-height: min(390px,55vh); overflow-y: auto; border: 1px solid rgba(137,214,163,.38); border-radius: 15px; background: #0b211a; box-shadow: 0 24px 58px rgba(0,0,0,.66); }
+.header-place-suggestions button { display: flex; width: 100%; min-height: 54px; align-items: flex-start; flex-direction: column; justify-content: center; gap: 2px; padding: 9px 14px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--text); text-align: left; cursor: pointer; }
+.header-place-suggestions button:last-child { border-bottom: 0; }
+.header-place-suggestions button:hover,.header-place-suggestions button:focus-visible,.header-place-suggestions button[aria-selected="true"] { outline: 0; background: #16372b; }
+.header-place-suggestions b { font-size: 12px; }
+.header-place-suggestions small { color: var(--muted); font-size: 9px; }
+.header-language { display: flex; height: 40px; flex: none; align-items: center; gap: 3px; padding: 0 7px 0 9px; border: 1px solid rgba(137,214,163,.24); border-radius: 999px; background: rgba(8,25,20,.82); color: var(--green); }
+.header-language > span:first-child { font-size: 15px; }
+.header-language select { border: 0; outline: 0; background: transparent; color: var(--text); font: 800 10px var(--font-body); cursor: pointer; }
+.header-language option { background: #0b211a; color: var(--text); }
+@keyframes header-search-spin { to { transform: rotate(360deg); } }
 
 .portal-sidebar {
   position: fixed;
@@ -524,6 +542,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .portal-backdrop { position: fixed; z-index: 55; inset: 0; display: block; border: 0; background: rgba(0, 0, 0, .58); }
   .portal-backdrop[hidden] { display: none; }
   .header-context { display: none; }
+  .header-place-search { width: clamp(180px,28vw,280px); }
   .station-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .meteo-ai-layout { grid-template-columns: minmax(230px,.65fr) minmax(0,1.35fr); }
   .meteo-ai-suggestions { grid-template-columns: 1fr; }
@@ -531,6 +550,15 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
 
 @media (max-width: 780px) {
   body.has-portal-shell { padding-bottom: 88px; }
+  .header-tools { position: relative; flex: none; margin-left: auto; }
+  .header-place-search { width: 40px; padding: 0; justify-content: center; cursor: text; }
+  .header-place-search > span { position: relative; z-index: 1; }
+  .header-place-search input { position: absolute; inset: 0; opacity: 0; cursor: text; }
+  .header-place-search:focus-within { position: fixed; z-index: 120; top: 8px; right: 10px; left: 58px; width: auto; height: 58px; justify-content: flex-start; padding: 0 16px; border-radius: 16px; background: #0b211a; box-shadow: 0 20px 60px rgba(0,0,0,.72); }
+  .header-place-search:focus-within input { position: static; opacity: 1; }
+  .header-place-search:focus-within .header-place-suggestions { top: calc(100% + 7px); }
+  .header-language { height: 40px; padding-inline: 7px; }
+  .header-language > span:first-child { display: none; }
   .portal-mobile-nav { position: fixed; z-index: 72; right: 10px; bottom: max(9px,env(safe-area-inset-bottom)); left: 10px; display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 2px; padding: 5px; border: 1px solid rgba(137,214,163,.28); border-radius: 19px; background: rgba(6,20,16,.95); box-shadow: 0 16px 48px rgba(0,0,0,.48); backdrop-filter: blur(18px); }
   .portal-mobile-nav :is(a,button) { display: grid; min-width: 0; min-height: 54px; place-items: center; align-content: center; gap: 4px; padding: 5px 2px; border: 0; border-radius: 14px; background: transparent; color: var(--muted); font: inherit; text-decoration: none; cursor: pointer; }
   .portal-mobile-nav :is(a,button).is-active,.portal-mobile-nav :is(a,button):focus-visible { background: rgba(137,214,163,.13); color: var(--text); outline: none; }
@@ -591,6 +619,8 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
 
 @media (max-width: 510px) {
   .has-portal-shell .site-header { padding-inline: 10px; }
+  .header-language { width: 40px; justify-content: center; padding: 0; }
+  .header-language select { width: 32px; text-align: center; }
   .learning-intro { align-items: flex-start; flex-direction: column; }
   .learning-trust { max-width: none; }
   .learning-paths,.learning-resource-grid,.learning-filters,.learning-challenges > div,.global-forecast-directory__grid { grid-template-columns: 1fr; }
