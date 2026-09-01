@@ -1,5 +1,6 @@
 import { format, cardinal, setText, clamp, isNumber } from '../core/dom.js';
 import { calculateThermalIndices } from './confort.js';
+import { getLocale } from '../core/i18n.js';
 
 function interpret(data) {
   const t = Number(data.temperature), h = Number(data.humidity), wind = Number(data.windSpeed), rain = Number(data.rainRate);
@@ -21,7 +22,7 @@ function renderTrend(id, current, previous, suffix = '') {
 function extremeTime(value) {
   const date = new Date(value);
   return Number.isFinite(date.getTime())
-    ? new Intl.DateTimeFormat('ca-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }).format(date)
+    ? `${getLocale()==='es-ES'?'a las':getLocale()==='en-GB'?'at':'a les'} ${new Intl.DateTimeFormat(getLocale(), { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }).format(date)}`
     : '—';
 }
 

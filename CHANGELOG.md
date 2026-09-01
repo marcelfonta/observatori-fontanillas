@@ -1,5 +1,12 @@
 # Changelog
 
+## V22.30.1 — Traducció dinàmica i capçalera mòbil compacta — 2026-09-01
+
+- Els textos que s’actualitzen quan arriben les dades meteorològiques conserven l’idioma triat, inclosos la lectura ràpida, l’estat dels avisos, les mètriques principals i les hores dels extrems.
+- Els nombres, les hores i els punts cardinals utilitzen també la configuració regional de català, castellà o anglès.
+- En mòbil, la pastilla d’estat mostra només el punt animat i l’hora; s’elimina «En directe» per guanyar espai a la capçalera.
+- El prefix horari de màxima i mínima deixa de generar-se amb CSS i passa a ser text localitzat, evitant fragments fixos en català.
+
 ## V22.30.0 — Idiomes i cerca municipal global — 2026-09-01
 
 - La capçalera incorpora una cerca de municipis basada en el mateix geocodificador d’«El temps arreu», amb suggeriments, navegació per teclat i selecció directa de la localitat.
