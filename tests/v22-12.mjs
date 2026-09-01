@@ -7,7 +7,7 @@ const worker = await readFile(resolve(root, 'worker/index.js'), 'utf8');
 const schema = await readFile(resolve(root, 'worker/schema.sql'), 'utf8');
 const project = JSON.parse(await readFile(resolve(root, 'project.json'), 'utf8'));
 
-assert.equal(project.version, '22.30.1');
+assert.equal(project.version, '22.31.0');
 assert.match(worker, /WORKER_VERSION = "22\.29\.2"/);
 assert.match(worker, /publicWorkerBaseUrl/);
 assert.match(worker, /Meta must receive a stable image response/);

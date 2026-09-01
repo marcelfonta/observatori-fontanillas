@@ -6,8 +6,8 @@ const [page,feature,weather,portal,worker,style,project,serviceWorker]=await Pro
   read('municipis.html'),read('src/features/municipality-explorer.js'),read('src/services/weather-api.js'),read('src/features/portal-shell.js'),read('worker/index.js'),read('css/style.css'),read('project.json'),read('service-worker.js')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.30.1');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-30-1-traduccio-mobil'));
+assert.equal(JSON.parse(project).version,'22.31.0');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-0-frances-colaboracions'));
 assert.ok(page.includes('El temps arreu')&&page.includes('MET Norway / Yr')&&page.includes('Meteoblue')&&page.includes('eltiempo.es'));
 assert.ok(portal.includes("['municipis','El temps arreu','./municipis.html']")&&portal.includes("['municipis','Arreu']"));
 assert.ok(feature.includes('fetchMetNorwayForecast')&&feature.includes('fetchNearbyWebcams')&&feature.includes('renderComparisons')&&feature.includes('renderWebcams')&&feature.includes('www.meteoblue.com/en/weather/search'));

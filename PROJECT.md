@@ -73,11 +73,15 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.30.1
+## Estat V22.31.0
 
-- Branca de treball: `fix/traduccio-dinamica-capcalera-mobil`.
-- Versio codi: V22.30.1.
-- La V22.30.0 està desplegada i operativa; la V22.30.1 queda pendent d’integrar i desplegar amb la traducció dels textos meteorològics dinàmics i una capçalera mòbil més compacta.
+- Branca de treball: `feature/frances-colaboracions-patrocini`.
+- Versio codi: V22.31.0.
+- La V22.30.1 està desplegada i operativa; la V22.31.0 queda pendent d’integrar i desplegar amb francès, pàgina de col·laboracions i material comercial transparent.
+- El selector ofereix català, castellà, anglès i francès. Una prova automàtica impedeix publicar un catàleg amb frases registrades sense traducció.
+- `colaboracions.html` explica què ofereix i què demana el projecte, declara que no hi ha patrocinis actius i preserva la independència editorial.
+- Els dossiers en castellà i anglès i sis correus adaptats permeten proposar material cedit o en préstec sense inventar audiències ni prometre opinions positives.
+- La contrapartida social preveu una presentació inicial, actualitzacions periòdiques pactades i una peça final a Instagram, Facebook, TikTok, YouTube i X, sempre amb identificació visible del patrocini o cessió.
 - La capçalera reutilitza el geocodificador d’«El temps arreu» i envia la localitat escollida amb coordenades perquè la previsió s’obri ja carregada.
 - La preferència d’idioma es desa només al navegador i les traduccions pròpies eviten enviar el contingut a tercers.
 - El Worker prepara resums setmanals, mensuals, estacionals i anuals amb cobertura mínima, context de predicció i targetes socials pròpies.

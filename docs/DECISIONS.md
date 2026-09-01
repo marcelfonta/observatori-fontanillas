@@ -52,3 +52,11 @@ Els vídeos del matí i del vespre utilitzen AROME France HD per representar qua
 - Es fan tres consultes diàries persistents: 06:30 per al dia actual, 12:30 per a l’endemà i 18:30 novament per al dia actual. En un mes de 31 dies el màxim és 93, i se’n reserven set per a comprovacions excepcionals.
 - D1 reclama cada franja abans de consultar. Una execució repetida o fallida no torna a consumir quota dins la mateixa franja.
 - El recompte visible a l’administració és el registrat pel Worker, no substitueix el comptador oficial de Meteocat i no inclou consultes manuals alienes al Worker.
+
+# ADR — Col·laboracions tècniques transparents (2026-09-01)
+
+- La primera proposta a fabricants demana material cedit o en préstec i suport tècnic, no una aportació econòmica.
+- Qualsevol cessió, préstec o accés especial es declara de manera visible a la pàgina o contingut corresponent.
+- La marca no controla el text, les dades ni les conclusions, i no se li promet una ressenya positiva ni xifres d’audiència no acreditades.
+- Abans d’integrar un producte es revisen compatibilitat, manteniment, propietat de les dades, llicències, atribució i condicions de retorn.
+- La pàgina pública de col·laboracions manté l’estat actualitzat, inclosa l’absència de patrocinis comercials actius.
