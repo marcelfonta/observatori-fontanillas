@@ -29,7 +29,12 @@ export function initHeaderTools(){
   let activeIndex=-1;
 
   select.value=getLanguage();
-  select.addEventListener('change',()=>setLanguage(select.value));
+  select.addEventListener('change',()=>{
+    setLanguage(select.value);
+    const url=new URL(window.location.href);
+    url.searchParams.set('lang',select.value);
+    window.history.replaceState({},'',url);
+  });
   document.addEventListener('observatori:language-change',()=>{select.value=getLanguage();});
 
   const close=()=>{suggestions.hidden=true;activeIndex=-1;input.setAttribute('aria-expanded','false');};
@@ -46,6 +51,7 @@ export function initHeaderTools(){
     url.searchParams.set('municipi',place.name);
     url.searchParams.set('lat',place.latitude);
     url.searchParams.set('lon',place.longitude);
+    url.searchParams.set('lang',getLanguage());
     window.location.assign(url.href);
   };
   const render=items=>{

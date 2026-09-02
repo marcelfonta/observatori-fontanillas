@@ -60,6 +60,26 @@ function renderForecast(location,weather,selectedLocation=location){
   return `<section class="municipality-summary panel"><header><div><p class="eyebrow">Previsió del model · coordenades del municipi</p><h2>${escapeHtml(location.name)}</h2><p>${escapeHtml([location.admin2||location.admin1,location.country].filter(Boolean).join(' · '))}</p></div><div class="municipality-summary__actions"><button type="button" class="municipality-favorite-toggle" data-favorite-toggle aria-pressed="${isFavorite}">${isFavorite?'★ Desat':'☆ Desar municipi'}</button><span class="tag">No és una estació</span></div></header><div class="municipality-now"><div><small>Temperatura estimada ara</small><div class="municipality-now-reading">${weatherIcon(weatherKind(current.weather_code),currentLabel)}<strong>${number(current.temperature_2m,1)} °C</strong></div><span>${escapeHtml(currentLabel)}</span></div><dl><div><dt>Sensació</dt><dd>${number(current.apparent_temperature,1)} °C</dd></div><div><dt>Humitat</dt><dd>${number(current.relative_humidity_2m)}%</dd></div><div><dt>Vent</dt><dd>${number(current.wind_speed_10m,1)} km/h</dd></div><div><dt>Pluja</dt><dd>${number(current.precipitation,1)} mm</dd></div></dl></div><div class="municipality-days">${days}</div><p class="municipality-source">Font: Open-Meteo. Valors calculats pel model per a les coordenades seleccionades; no són mesures d’una estació.</p></section>`;
 }
 
+function updateMunicipalitySeo(location){
+  const place=String(location?.name||'').trim();
+  if(!place)return;
+  const title=`El temps a ${place} · previsió i observacions | Meteo Fontanillas`;
+  const description=`Previsió del temps a ${place}: temperatures, pluja, vent i observacions d’estacions properes, amb fonts separades.`;
+  document.title=title;
+  document.querySelector('meta[name="description"]')?.setAttribute('content',description);
+  document.querySelector('meta[property="og:title"]')?.setAttribute('content',title);
+  document.querySelector('meta[property="og:description"]')?.setAttribute('content',description);
+  const canonical=new URL('./municipis.html',window.location.href);
+  canonical.searchParams.set('municipi',place);
+  canonical.searchParams.set('lat',String(location.latitude));
+  canonical.searchParams.set('lon',String(location.longitude));
+  canonical.searchParams.set('lang',getLanguage());
+  document.querySelector('link[rel="canonical"]')?.setAttribute('href',canonical.href);
+  let data=document.getElementById('municipality-jsonld');
+  if(!data){data=document.createElement('script');data.type='application/ld+json';data.id='municipality-jsonld';document.head.append(data);}
+  data.textContent=JSON.stringify({ '@context':'https://schema.org','@type':'Place',name:place,geo:{'@type':'GeoCoordinates',latitude:Number(location.latitude),longitude:Number(location.longitude)},description });
+}
+
 function renderStations(payload,location){
   const stations=payload?.stations||[];
   const radius=Number(payload?.searchRadiusKm)||200;
@@ -92,9 +112,10 @@ function renderWebcams(payload,location){
 }
 
 async function selectPlace(location,{updateUrl=true}={}){
+  updateMunicipalitySeo(location);
   input.value=location.name;suggestions.hidden=true;result.hidden=false;result.innerHTML='<div class="panel municipality-loading"><strong>Preparant la consulta…</strong><span>Separem les previsions de les observacions reals.</span></div>';
   status.textContent=`Consultant ${placeLabel(location)}…`;
-  if(updateUrl){const url=new URL(window.location.href);url.search='';url.searchParams.set('municipi',location.name);url.searchParams.set('lat',location.latitude);url.searchParams.set('lon',location.longitude);history.replaceState({},'',url);}
+  if(updateUrl){const url=new URL(window.location.href);url.search='';url.searchParams.set('municipi',location.name);url.searchParams.set('lat',location.latitude);url.searchParams.set('lon',location.longitude);url.searchParams.set('lang',getLanguage());history.replaceState({},'',url);}
   try{
     const [forecast,stations,met,webcams]=await Promise.allSettled([fetchLocalityForecast(location),fetchNearbyStations('now',location),fetchMetNorwayForecast(location),fetchNearbyWebcams(location)]);
     if(forecast.status==='rejected')throw forecast.reason;
@@ -111,6 +132,10 @@ suggestions?.addEventListener('click',event=>{const button=event.target.closest(
 result?.addEventListener('click',event=>{const favorite=event.target.closest('[data-favorite-toggle]');if(favorite){const url=new URL(window.location.href);const added=toggleFavorite({name:url.searchParams.get('municipi')||input.value,latitude:Number(url.searchParams.get('lat')),longitude:Number(url.searchParams.get('lon'))});favorite.setAttribute('aria-pressed',String(added));favorite.textContent=added?'★ Desat':'☆ Desar municipi';return;}const tab=event.target.closest('[data-forecast-tab]');if(!tab)return;const tabs=tab.closest('[data-source-tabs]');tabs.querySelectorAll('[data-forecast-tab]').forEach(button=>{const active=button===tab;button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});tabs.querySelectorAll('[data-source-panel]').forEach(panel=>{panel.hidden=panel.dataset.sourcePanel!==tab.dataset.forecastTab;});});
 result?.addEventListener('keydown',event=>{const tab=event.target.closest('[data-forecast-tab]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;const buttons=[...tab.closest('[role="tablist"]').querySelectorAll('[data-forecast-tab]')];let index=buttons.indexOf(tab);if(event.key==='Home')index=0;else if(event.key==='End')index=buttons.length-1;else index=(index+(event.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length;event.preventDefault();buttons[index].focus();buttons[index].click();});
 document.addEventListener('click',event=>{if(!event.target.closest('.municipality-search'))suggestions.hidden=true;});
+document.addEventListener('observatori:language-change',()=>{
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('municipi')){params.set('lang',getLanguage());history.replaceState({},'',`${window.location.pathname}?${params.toString()}`);updateMunicipalitySeo({name:params.get('municipi'),latitude:Number(params.get('lat')),longitude:Number(params.get('lon'))});}
+});
 favoritesList?.addEventListener('click',event=>{const place=savedFavorites()[Number(event.target.closest('[data-favorite-index]')?.dataset.favoriteIndex)];if(place)selectPlace(place);});
 renderFavorites();
 

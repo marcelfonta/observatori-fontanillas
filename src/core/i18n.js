@@ -33,6 +33,20 @@ export const PHRASES={
   'Metodologia':{es:'Metodología',en:'Methodology'},
   'Col·laboracions':{es:'Colaboraciones',en:'Collaborations'},
   'Saltar al contingut principal':{es:'Saltar al contenido principal',en:'Skip to main content'},
+  'Resum setmanal':{es:'Resumen semanal',en:'Weekly summary'},
+  'Què passarà aquesta setmana?':{es:'¿Qué pasará esta semana?',en:'What will happen this week?'},
+  'Una lectura visual dels pròxims set dies a Sant Celoni.':{es:'Una lectura visual de los próximos siete días en Sant Celoni.',en:'A visual look at the next seven days in Sant Celoni.'},
+  'Preparant el resum setmanal…':{es:'Preparando el resumen semanal…',en:'Preparing the weekly summary…'},
+  'Font: Open‑Meteo · predicció de model, no avís oficial.':{es:'Fuente: Open‑Meteo · predicción de modelo, no aviso oficial.',en:'Source: Open‑Meteo · model forecast, not an official alert.'},
+  'Setmana marcada per la pluja':{es:'Semana marcada por la lluvia',en:'Rainy week ahead'},
+  'Calor com a protagonista':{es:'El calor será protagonista',en:'Heat takes centre stage'},
+  'Ruixats possibles en l’horitzó':{es:'Posibles chubascos en el horizonte',en:'Showers possible on the horizon'},
+  'Escenari majoritàriament estable':{es:'Escenario mayoritariamente estable',en:'Mostly stable conditions'},
+  'Els models acumulen prop de':{es:'Los modelos acumulan cerca de',en:'Models accumulate around'},
+  'Les màximes poden enfilar-se fins als':{es:'Las máximas pueden subir hasta los',en:'Highs could rise to'},
+  'La probabilitat màxima de pluja arriba al':{es:'La probabilidad máxima de lluvia llega al',en:'Maximum rain probability reaches'},
+  'Pocs canvis bruscos, amb ratxes màximes de fins a':{es:'Pocos cambios bruscos, con rachas máximas de hasta',en:'Few abrupt changes, with peak gusts up to'},
+  'dies':{es:'días',en:'days'},
   'Principis de col·laboració':{es:'Principios de colaboración',en:'Collaboration principles'},
   'Material i tecnologia':{es:'Material y tecnología',en:'Equipment and technology'},
   'Procés clar':{es:'Proceso claro',en:'Clear process'},
@@ -344,7 +358,8 @@ export function setLanguage(nextLanguage,{persist=true}={}){
 
 export function initLanguage(){
   const stored=safeStoredLanguage();
-  language=SUPPORTED_LANGUAGES.includes(stored)?stored:'ca';
+  const requested=new URLSearchParams(window.location.search).get('lang')?.toLowerCase();
+  language=SUPPORTED_LANGUAGES.includes(requested)?requested:SUPPORTED_LANGUAGES.includes(stored)?stored:'ca';
   document.documentElement.lang=language;
   translateDocument();
   observer?.disconnect();

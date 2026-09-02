@@ -214,4 +214,19 @@ export const FRENCH_PHRASES={
   'Independència editorial':'Indépendance éditoriale',
   'Atribució visible':'Attribution visible',
   'Dades verificables':'Données vérifiables'
+  ,'Resum setmanal':'Résumé hebdomadaire'
+  ,'Què passarà aquesta setmana ?':'Que se passera-t-il cette semaine ?'
+  ,'Què passarà aquesta setmana?':'Que se passera-t-il cette semaine ?'
+  ,'Una lectura visual dels pròxims set dies a Sant Celoni.':'Un aperçu visuel des sept prochains jours à Sant Celoni.'
+  ,'Preparant el resum setmanal…':'Préparation du résumé hebdomadaire…'
+  ,'Font: Open‑Meteo · predicció de model, no avís oficial.':'Source : Open‑Meteo · prévision de modèle, pas une alerte officielle.'
+  ,'Setmana marcada per la pluja':'Semaine pluvieuse en perspective'
+  ,'Calor com a protagonista':'La chaleur au premier plan'
+  ,'Ruixats possibles en l’horitzó':'Averses possibles à l’horizon'
+  ,'Escenari majoritàriament estable':'Situation globalement stable'
+  ,'Els models acumulen prop de':'Les modèles cumulent près de'
+  ,'Les màximes poden enfilar-se fins als':'Les maximales pourraient atteindre'
+  ,'La probabilitat màxima de pluja arriba al':'La probabilité maximale de pluie atteint'
+  ,'Pocs canvis bruscos, amb ratxes màximes de fins a':'Peu de changements brusques, avec des rafales jusqu’à'
+  ,'dies':'jours'
 };
