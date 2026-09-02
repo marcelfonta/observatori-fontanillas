@@ -1,4 +1,5 @@
 import { format, setText } from '../core/dom.js';
+import { getLanguage, getLocale, t } from '../core/i18n.js';
 import { initWhenVisible } from './navigation.js';
 
 const codes = {
@@ -19,6 +20,8 @@ const hours = seconds => (Number(seconds)||0)/3600;
 let modelPayload = null;
 let modelDayIndex = 1;
 let sourceHorizon = 'hourly';
+let weeklyDaily = null;
+let weeklyLanguageListenerBound = false;
 
 function weather(code) { return codes[code] || ['◌','Variable']; }
 
@@ -107,6 +110,30 @@ function renderDaily(daily) {
   }).join('');
 }
 
+function renderWeeklyBrief(daily){
+  const host=document.getElementById('weekly-brief-grid');
+  if(!host||!daily?.time?.length)return;
+  weeklyDaily=daily;
+  if(!weeklyLanguageListenerBound){
+    document.addEventListener('observatori:language-change',()=>weeklyDaily&&renderWeeklyBrief(weeklyDaily));
+    weeklyLanguageListenerBound=true;
+  }
+  const days=daily.time.slice(0,7);
+  const rain=sum(daily.precipitation_sum?.slice(0,7)||[]);
+  const hottest=max(daily.temperature_2m_max?.slice(0,7)||[]);
+  const gust=max(daily.wind_gusts_10m_max?.slice(0,7)||[]);
+  const wet=max(daily.precipitation_probability_max?.slice(0,7)||[]);
+  const headline=rain>=25?t('Setmana marcada per la pluja'):hottest>=33?t('Calor com a protagonista'):wet>=65?t('Ruixats possibles en l’horitzó'):t('Escenari majoritàriament estable');
+  const copy=rain>=25?`${t('Els models acumulen prop de')} ${format(rain,1)} mm.`:hottest>=33?`${t('Les màximes poden enfilar-se fins als')} ${format(hottest,0)} °C.`:wet>=65?`${t('La probabilitat màxima de pluja arriba al')} ${format(wet,0)}%.`:`${t('Pocs canvis bruscos, amb ratxes màximes de fins a')} ${format(gust,0)} km/h.`;
+  const language=getLanguage();
+  const rainLabel={ca:'pluja',es:'lluvia',en:'rain',fr:'pluie'}[language]||'pluja';
+  const status=document.getElementById('weekly-brief-status');
+  if(status)status.textContent=`${days.length} ${t('dies')} · ${t('Actualitzat').toLowerCase()}`;
+  const copyNode=document.getElementById('weekly-brief-copy');
+  if(copyNode)copyNode.textContent=`${headline}. ${copy}`;
+  host.innerHTML=days.slice(0,5).map((value,index)=>{const [symbol,label]=weather(daily.weather_code?.[index]);return `<article><time datetime="${value}">${new Intl.DateTimeFormat(getLocale(),{weekday:'short',day:'numeric',month:'short'}).format(new Date(value))}</time><span aria-hidden="true">${symbol}</span><strong>${label}</strong><b>${format(daily.temperature_2m_max?.[index],0)}° / ${format(daily.temperature_2m_min?.[index],0)}°</b><small>${format(daily.precipitation_probability_max?.[index],0)}% ${rainLabel}</small></article>`;}).join('');
+}
+
 export function renderForecast(data) {
   const strip=document.getElementById('forecast-strip'); if(!strip||!data?.hourly) return;
   const now=Date.now(); let start=data.hourly.time.findIndex(time=>new Date(time).getTime()>=now-1800000); if(start<0) start=0;
@@ -115,7 +142,7 @@ export function renderForecast(data) {
     const time=new Date(data.hourly.time[index]); const [symbol,label]=weather(data.hourly.weather_code[index]); const rain=Number(data.hourly.precipitation_probability[index])||0;
     return `<article class="forecast-item ${position===0?'is-now':''}"><div class="forecast-item__time"><span>${timelineLabel(time,position)}</span>${position===0?'<i></i>':''}</div><div class="forecast-item__condition"><span class="forecast-symbol" aria-hidden="true">${symbol}</span><b>${label}</b></div><div class="forecast-item__temp">${format(data.hourly.temperature_2m[index],0)}°</div><div class="forecast-item__meta"><span><b>${format(rain,0)}%</b> pluja</span><span>${format(data.hourly.wind_speed_10m[index],0)} km/h</span></div><div class="forecast-mini-rain"><span style="width:${Math.min(100,rain)}%"></span></div></article>`;
   }).join('');
-  renderOverview(data); renderDaily(data.daily);
+  renderOverview(data); renderDaily(data.daily); renderWeeklyBrief(data.daily);
   setText('forecast-status',`Actualitzat · ${new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit'}).format(new Date())}`);
 }
 

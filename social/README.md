@@ -2,6 +2,8 @@
 
 ## Publicacions de ritme lent i episodis puntuals
 
+El resum setmanal es prepara cada dilluns a `SOCIAL_PERIODIC_TIME` (12:00 per defecte), amb una targeta pròpia i un text que resumeix la setmana anterior. La publicació només s’envia quan `SOCIAL_PERIODIC_ENABLED=true`; si la variable no està activa, queda sense executar-se i no genera cap enviament accidental. Utilitza els mateixos canals socials periòdics configurats al Worker i manté la deduplicació a D1.
+
 La V22.28 prepara quatre famílies noves, totes desactivades per defecte:
 
 - `SOCIAL_PERIODIC_ENABLED=true`: resum setmanal cada dilluns, mensual el dia 2, estacional els dies 3 de març, juny, setembre i desembre, i anual el 4 de gener. L’hora comuna és `SOCIAL_PERIODIC_TIME`, per defecte `12:00`.

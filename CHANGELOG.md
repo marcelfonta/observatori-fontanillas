@@ -1,5 +1,12 @@
 # Changelog
 
+## Propera versió — Municipis, resum setmanal i SEO multilingüe — 2026-09-02
+
+- Afegit a la portada un resum visual dels pròxims set dies, amb màximes, mínimes, probabilitat de pluja, ratxes i una lectura editorial separada de qualsevol avís oficial.
+- La publicació social setmanal queda documentada com a família periòdica dels dilluns, amb deduplicació, cobertura mínima i distribució independent pels canals socials configurats.
+- Les pàgines de municipis generen títol, descripció, canonical i dades estructurades específiques quan se selecciona una localitat, incloent-hi l’idioma triat.
+- Afegides alternatives `hreflang` i entrades de sitemap per a català, castellà, anglès i francès a les pàgines públiques principals.
+
 ## V22.31.0 — Francès i col·laboracions tècniques — 2026-09-01
 
 - Afegit el francès al selector d’idioma, als textos meteorològics dinàmics i a la configuració regional de dates i xifres.
