@@ -86,14 +86,17 @@ jobs:
         if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
         run: sudo apt-get update && sudo apt-get install -y ffmpeg librsvg2-bin
       - name: Genera les pantalles amb dades reals
+        id: generate
         if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
         run: |
           node scripts/youtube-short.mjs
           node scripts/youtube-music.mjs
       - name: Programa l'hora pública del Short
+        id: schedule
         if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.SHOULD_SCHEDULE_PUBLICATION == 'true'
         run: node scripts/youtube-publish-at.mjs >> "$GITHUB_ENV"
       - name: Renderitza el Short vertical
+        id: render
         if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
         run: |
           for image in build/youtube-short/slide-*.svg; do rsvg-convert -w 2160 -h 3840 "$image" -o "${image%.svg}.png"; done
@@ -175,8 +178,24 @@ jobs:
         if: always() && steps.youtube_upload.outcome != 'success' && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.YOUTUBE_SHORT_COORDINATION_ACTIVE == 'true'
         continue-on-error: true
         run: |
+          if [ "${{ steps.generate.outcome }}" = "failure" ]; then
+            failure_stage="forecast-api"
+            failure_message="No s’han pogut obtenir les dades meteorològiques per generar el vídeo."
+          elif [ "${{ steps.schedule.outcome }}" = "failure" ]; then
+            failure_stage="publication-time"
+            failure_message="No s’ha pogut calcular l’hora pública del vídeo."
+          elif [ "${{ steps.render.outcome }}" = "failure" ]; then
+            failure_stage="video-render"
+            failure_message="No s’ha pogut renderitzar el vídeo vertical."
+          elif [ "${{ steps.youtube_upload.outcome }}" = "failure" ]; then
+            failure_stage="youtube-upload"
+            failure_message="YouTube ha rebutjat o no ha completat la pujada del vídeo."
+          else
+            failure_stage="github-workflow"
+            failure_message="La preparació del Short no s’ha completat."
+          fi
           curl --fail --silent --show-error --retry 2 --request POST \
             --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
             --header "Content-Type: application/json" \
-            --data "{\"action\":\"fail\",\"source\":\"github-${GITHUB_EVENT_NAME}\",\"stage\":\"github-workflow\",\"error\":\"La preparació o la pujada del Short no s'ha completat.\"}" \
+            --data "{\"action\":\"fail\",\"source\":\"github-${GITHUB_EVENT_NAME}\",\"stage\":\"${failure_stage}\",\"error\":\"${failure_message}\"}" \
             "$YOUTUBE_SHORT_COORDINATION_URL"
