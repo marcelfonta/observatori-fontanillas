@@ -1,5 +1,9 @@
 # Changelog
 
+## Propera versió — Mapes mensuals Meteocat — 2026-09-03
+
+- Afegits a la secció de predicció els mapes oficials del Meteocat d’anomalia mensual de temperatura i precipitació, amb autoria, enllaç al portal i avís de limitacions.
+
 ## Propera versió — Municipis, resum setmanal i SEO multilingüe — 2026-09-02
 
 - Afegit a la portada un resum visual dels pròxims set dies, amb màximes, mínimes, probabilitat de pluja, ratxes i una lectura editorial separada de qualsevol avís oficial.
