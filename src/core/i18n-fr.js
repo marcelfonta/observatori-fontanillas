@@ -213,7 +213,17 @@ export const FRENCH_PHRASES={
   'Contactar amb l’Observatori →':'Contacter l’Observatoire →',
   'Independència editorial':'Indépendance éditoriale',
   'Atribució visible':'Attribution visible',
-  'Dades verificables':'Données vérifiables'
+  'Dades verificables':'Données vérifiables',
+  'Veure els mesos següents':'Voir les mois suivants',
+  'Amagar els mesos següents':'Masquer les mois suivants',
+  'Mes següent':'Mois suivant',
+  'D’aquí dos mesos':'Dans deux mois',
+  'D’aquí tres mesos':'Dans trois mois',
+  'Predicció mensual oficial':'Prévisions mensuelles officielles',
+  'Tendència estacional del Meteocat':'Tendance saisonnière de Meteocat',
+  'Mapes d’anomalia per al mes actual, elaborats amb el sistema europeu SEAS5.':'Cartes d’anomalies du mois en cours, produites avec le système européen SEAS5.',
+  'Anomalia de temperatura':'Anomalie de température',
+  'Anomalia de precipitació':'Anomalie de précipitations'
   ,'Resum setmanal':'Résumé hebdomadaire'
   ,'Què passarà aquesta setmana ?':'Que se passera-t-il cette semaine ?'
   ,'Què passarà aquesta setmana?':'Que se passera-t-il cette semaine ?'

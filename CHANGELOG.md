@@ -3,6 +3,7 @@
 ## Propera versió — Mapes mensuals Meteocat — 2026-09-03
 
 - Afegits a la secció de predicció els mapes oficials del Meteocat d’anomalia mensual de temperatura i precipitació, amb autoria, enllaç al portal i avís de limitacions.
+- La predicció mensual mostra el mes actual per defecte i permet desplegar els tres horitzons següents amb un control «+», també traduït als quatre idiomes.
 
 ## Propera versió — Municipis, resum setmanal i SEO multilingüe — 2026-09-02
 
