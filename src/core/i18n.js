@@ -229,7 +229,17 @@ export const PHRASES={
   'Contactar amb l’Observatori →':{es:'Contactar con el Observatorio →',en:'Contact the Observatory →'},
   'Independència editorial':{es:'Independencia editorial',en:'Editorial independence'},
   'Atribució visible':{es:'Atribución visible',en:'Visible attribution'},
-  'Dades verificables':{es:'Datos verificables',en:'Verifiable data'}
+  'Dades verificables':{es:'Datos verificables',en:'Verifiable data'},
+  'Veure els mesos següents':{es:'Ver los meses siguientes',en:'View following months'},
+  'Amagar els mesos següents':{es:'Ocultar los meses siguientes',en:'Hide following months'},
+  'Mes següent':{es:'Mes siguiente',en:'Following month'},
+  'D’aquí dos mesos':{es:'Dentro de dos meses',en:'In two months'},
+  'D’aquí tres mesos':{es:'Dentro de tres meses',en:'In three months'},
+  'Predicció mensual oficial':{es:'Predicción mensual oficial',en:'Official monthly forecast'},
+  'Tendència estacional del Meteocat':{es:'Tendencia estacional del Meteocat',en:'Meteocat seasonal outlook'},
+  'Mapes d’anomalia per al mes actual, elaborats amb el sistema europeu SEAS5.':{es:'Mapas de anomalía del mes actual, elaborados con el sistema europeo SEAS5.',en:'Anomaly maps for the current month, produced with the European SEAS5 system.'},
+  'Anomalia de temperatura':{es:'Anomalía de temperatura',en:'Temperature anomaly'},
+  'Anomalia de precipitació':{es:'Anomalía de precipitación',en:'Precipitation anomaly'}
 };
 
 const DYNAMIC_REPLACEMENTS={

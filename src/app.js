@@ -32,6 +32,7 @@ import { initHomeDensity } from './features/home-density.js';
 import { initForecastVideos } from './features/forecast-videos.js';
 import { getLocale, initLanguage } from './core/i18n.js';
 import { initHeaderTools } from './features/header-tools.js';
+import { initSeasonalOutlook } from './features/seasonal-outlook.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -150,6 +151,7 @@ document.addEventListener('observatori:data-period-change',event=>{
 initLanguage();
 initPortal();
 initHeaderTools();
+initSeasonalOutlook();
 if(document.body.dataset.page==='inici')initWhenVisible('.metrics-grid',enableCharts,'0px 0px');
 if(document.body.dataset.page==='estacio')initWhenVisible('#calculats',enableCharts,'0px 0px');
 if(document.body.dataset.page==='centre-dades')initWhenVisible('#tendencies',enableCharts,'200px 0px');
