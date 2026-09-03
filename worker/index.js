@@ -4935,11 +4935,19 @@ async function notifyYoutubeShortSchedulerFailure(env, detail) {
   const previous=await env.DB.prepare("SELECT last_notified_at FROM monitor_state WHERE service_key = 'youtube-shorts-scheduler'").first();
   const lastNotified=previous?.last_notified_at ? new Date(previous.last_notified_at).getTime() : 0;
   if (lastNotified && Date.now()-lastNotified < 12*60*60*1000) return { sent:false,reason:'recent_notification' };
+  const explanation={
+    'forecast-api':'Causa probable: l’API meteorològica no ha respost correctament. Es reintentarà automàticament.',
+    'publication-time':'Causa probable: no s’ha pogut calcular la finestra de publicació.',
+    'video-render':'Causa probable: ha fallat el renderitzat del vídeo o d’una de les seves imatges.',
+    'youtube-upload':'Causa probable: YouTube no ha acceptat la pujada o les credencials del canal requereixen revisió.',
+    'github-dispatch':'Causa probable: el token o el disparador de GitHub Actions requereixen revisió.',
+    'github-workflow':'Causa: el flux de GitHub Actions no ha completat totes les fases.'
+  }[detail.stage] || 'Causa: revisa el detall de la fase indicada i el registre de GitHub Actions.';
   const when=new Date().toISOString();
   const result=await sendOperationalEmail(
     env,
     '[Observatori] No s’ha pogut preparar el YouTube Short',
-    `El planificador principal no ha pogut iniciar el Short de ${detail.slot || 'franja desconeguda'}.\n\nHora: ${when}\nFase: ${detail.stage || 'desconeguda'}\nResposta: ${detail.responseCode || '—'}\nError: ${cleanText(detail.error || 'Sense detall',500)}\n\nCal revisar el token GITHUB_SHORTS_DISPATCH_TOKEN o GitHub Actions.`,
+    `El planificador principal no ha pogut completar el Short de ${detail.slot || 'franja desconeguda'}.\n\nHora: ${when}\nFase: ${detail.stage || 'desconeguda'}\nResposta: ${detail.responseCode || '—'}\nError: ${cleanText(detail.error || 'Sense detall',500)}\n${explanation}`,
     'youtube_short_scheduler_failed',
   ).catch(error=>({ sent:false,error:cleanText(error.message,300) }));
   if (result.sent) await env.DB.prepare("UPDATE monitor_state SET last_notified_at = ? WHERE service_key = 'youtube-shorts-scheduler'").bind(when).run();
