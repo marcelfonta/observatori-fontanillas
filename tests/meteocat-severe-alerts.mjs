@@ -65,6 +65,7 @@ assert.match(card,/METEOCAT/);
 assert.match(card,/Vallès Oriental/);
 assert.match(card,/2 comarques amb avís/);
 assert.match(card,/Contorn blanc: Vallès Oriental/);
+assert.match(card,/viewBox="0 20 500 380" preserveAspectRatio="xMidYMid meet"/);
 assert.doesNotMatch(card,/AEMET/);
 assert.doesNotMatch(card,/Prelitoral de Barcelona/);
 

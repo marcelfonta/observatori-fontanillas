@@ -1010,7 +1010,7 @@ async function weatherRequest(path, params, env, cacheTtl) {
     error.status = response.status;
     throw error;
   }
-  return response.json();
+  return parseWeatherJson(response, `Weather Underground ${path}`);
 }
 
 async function weatherRequestForStation(path, stationId, params, env, cacheTtl) {
@@ -1027,7 +1027,19 @@ async function weatherRequestForStation(path, stationId, params, env, cacheTtl) 
     cf: { cacheEverything: true, cacheTtl },
   });
   if (!response.ok) throw new Error(`Weather Underground ${stationId} ha respost ${response.status}`);
-  return response.json();
+  return parseWeatherJson(response, `Weather Underground ${stationId} ${path}`);
+}
+
+async function parseWeatherJson(response, context) {
+  const body = await response.text();
+  if (!body.trim()) {
+    throw new Error(`${context} ha retornat una resposta buida (${response.status})`);
+  }
+  try {
+    return JSON.parse(body);
+  } catch {
+    throw new Error(`${context} ha retornat JSON incomplet o invàlid (${response.status})`);
+  }
 }
 
 function distanceKm(lat1, lon1, lat2, lon2) {
@@ -2406,8 +2418,8 @@ async function quality(env) {
     console.error("Quality D1 cache lookup error", error);
   }
   if (!observation) {
-    observation = await currentObservation(env);
-    dataSource = "api";
+    observation = await resilientCurrentObservation(env);
+    dataSource = observation.source === "d1-emergency" ? "d1-emergency" : "api";
   }
   const updated = new Date(observation.updatedUtc || observation.updated);
   const ageMinutes = Number.isNaN(updated.getTime()) ? null : Math.max(0, Math.round((Date.now() - updated.getTime()) / 60000));
@@ -2431,8 +2443,8 @@ async function quality(env) {
   const expected = samples && recent?.firstEpoch ? Math.max(1, Math.min(288, Math.floor((Date.now() / 1000 - recent.firstEpoch) / (STORAGE_INTERVAL_MINUTES * 60)) + 1)) : 0;
   const availability = expected ? Math.min(100, samples / expected * 100) : 0;
   const sensorPercent = key => samples ? Math.min(100, Number(recent?.[key] || 0) / samples * 100) : 0;
-  const stale = ageMinutes !== null && ageMinutes >= 30;
-  const degraded = missingFields.length > 0 || (storage.enabled && samples > 6 && availability < 75);
+  const stale = observation.stale === true || (ageMinutes !== null && ageMinutes >= 30);
+  const degraded = observation.degraded === true || missingFields.length > 0 || (storage.enabled && samples > 6 && availability < 75);
   return json({
     ok:!stale && missingFields.length === 0,
     status:stale ? "stale" : degraded ? "degraded" : "healthy",
@@ -3769,7 +3781,7 @@ function meteocatCountyAlertMapSvg(warnings){
     const fill=warning?officialAlertColor(warning.level):'#173c31';
     return `<path d="${county.path}" fill="${fill}" stroke="${focus?'#f8fff9':'#55796b'}" stroke-width="${focus?'4':'1.2'}" vector-effect="non-scaling-stroke"><title>${escapeHtml(county.name)}${warning?` · ${escapeHtml(warning.level)}`:''}</title></path>`;
   }).join('');
-  return `<div class="map-panel"><svg class="county-map" viewBox="0 0 500 420" role="img" aria-label="Mapa de Catalunya amb el nivell màxim d'avís per comarca">${paths}</svg><div class="map-meta"><span>CATALUNYA</span><b>${levels.size} ${levels.size===1?'comarca amb avís':'comarques amb avís'}</b><small>Nivell màxim vigent per comarca</small><div class="legend"><i class="yellow"></i>Groc<i class="orange"></i>Taronja<i class="red"></i>Vermell</div><em>Contorn blanc: Vallès Oriental</em></div></div>`;
+  return `<div class="map-panel"><svg class="county-map" viewBox="0 20 500 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa de Catalunya amb el nivell màxim d'avís per comarca">${paths}</svg><div class="map-meta"><span>CATALUNYA</span><b>${levels.size} ${levels.size===1?'comarca amb avís':'comarques amb avís'}</b><small>Nivell màxim vigent per comarca</small><div class="legend"><i class="yellow"></i>Groc<i class="orange"></i>Taronja<i class="red"></i>Vermell</div><em>Contorn blanc: Vallès Oriental</em></div></div>`;
 }
 
 function reportMetric(value, suffix='', digits=1) {
