@@ -2,6 +2,11 @@
 
 ## Manteniment obert — En curs
 
+- [x] Separar la previsió operativa de la tendència a llarg termini sense eliminar contingut, amb navegació creuada i fonts identificades.
+- [x] Reforçar a la portada la vigència i el fenomen dels avisos, clarificar els índexs tèrmics i afegir accessos a municipis i preferències.
+- [x] Prioritzar les xarxes principals a la capçalera i agrupar la resta sota un únic accés «Segueix-nos».
+- [ ] Integrar i desplegar el paquet de portada i llarg termini, i verificar-lo en producció en escriptori i mòbil.
+
 - [x] Afegir francès al selector, completar el catàleg de traduccions i validar automàticament català, castellà, anglès i francès.
 - [x] Crear una pàgina pública de col·laboracions amb atribució visible, independència editorial i estat dels patrocinis declarat.
 - [x] Preparar dossiers en castellà i anglès i correus adaptats a sis fabricants d’estacions meteorològiques.

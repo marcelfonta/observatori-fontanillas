@@ -1,5 +1,14 @@
 # Changelog
 
+## Propera versió — Portada, risc i llarg termini — 2026-09-05
+
+- La predicció de sis setmanes i els mapes mensuals del Meteocat passen a una pàgina pròpia de llarg termini, amb enllaços d’anada i tornada des de la previsió operativa; no s’elimina cap contingut.
+- La portada dona més pes als avisos oficials i hi mostra fenomen i vigència, a més del nivell, evitant resums meteorològics que puguin confondre estabilitat amb absència de risc.
+- Afegida una entrada directa per desar municipis i configurar notificacions, mantenint aquestes preferències només al navegador de l’usuari.
+- Clarificada la diferència entre temperatura, sensació tèrmica i Humidex, que ara es presenta correctament com a índex complementari de xafogor.
+- La capçalera prioritza Instagram, YouTube i TikTok i agrupa la resta de canals sota «Segueix-nos».
+- Els textos nous disposen de versions en català, castellà, anglès i francès, i la nova vista incorpora metadades pròpies.
+
 ## Propera versió — Mapes mensuals Meteocat — 2026-09-03
 
 - Afegits a la secció de predicció els mapes oficials del Meteocat d’anomalia mensual de temperatura i precipitació, amb autoria, enllaç al portal i avís de limitacions.

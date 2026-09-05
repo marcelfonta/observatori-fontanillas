@@ -49,7 +49,7 @@ function periodSummary(label,rainChance,gust) {
   if(rainChance>=70)return `${label} amb pluja probable`;
   if(rainChance>=40)return `${label} amb possibilitat de ruixats`;
   if(gust>=50)return `${label} amb vent destacat`;
-  return `${label} amb temps tranquil`;
+  return `${label} amb poca precipitació prevista`;
 }
 
 function renderOverview(data) {
@@ -269,6 +269,15 @@ function activateSource(button, focus=false) {
 }
 
 export function initForecastControls() {
+  document.addEventListener('observatori:alerts-updated',event=>{
+    const context=document.getElementById('forecast-risk-context');
+    if(!context)return;
+    const active=Number(event.detail?.active)>0;
+    context.classList.toggle('has-active-alert',active);
+    context.textContent=t(active
+      ? 'Aquesta és una predicció de model. Hi ha avisos oficials actius: consulta’n el fenomen, l’abast i la vigència abans de prendre decisions.'
+      : 'Una lectura ràpida del que queda d’avui i de com canviarà el temps després.');
+  });
   const strip=document.getElementById('forecast-strip');
   document.getElementById('forecast-prev')?.addEventListener('click',()=>strip?.scrollBy({left:-520,behavior:'smooth'}));
   document.getElementById('forecast-next')?.addEventListener('click',()=>strip?.scrollBy({left:520,behavior:'smooth'}));

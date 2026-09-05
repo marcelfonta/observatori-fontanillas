@@ -28,12 +28,13 @@ function socialLink(key,label,variant){
 function mountSocialGroup(container,className,variant){
   if(!container||container.querySelector(`.${className}`))return;
   const group=document.createElement('nav');group.className=className;group.setAttribute('aria-label','Xarxes socials de Meteo Fontanillas');
-  NETWORKS.forEach(([key,label])=>{const link=socialLink(key,label,variant);if(link)group.append(link);});
+  const direct=variant==='header'?NETWORKS.filter(([key])=>['instagram','youtube','tiktok'].includes(key)):NETWORKS;
+  direct.forEach(([key,label])=>{const link=socialLink(key,label,variant);if(link)group.append(link);});
   if(variant==='header'&&group.children.length){
     const more=document.createElement('details');more.className='header-social-more';
-    const summary=document.createElement('summary');summary.setAttribute('aria-label','Veure totes les xarxes socials');summary.title='Totes les xarxes';summary.innerHTML='<span aria-hidden="true">＋</span><span class="sr-only">Totes les xarxes</span>';
+    const summary=document.createElement('summary');summary.setAttribute('aria-label','Veure totes les xarxes socials');summary.title='Segueix-nos';summary.innerHTML='<span aria-hidden="true">＋</span><b>Segueix-nos</b>';
     const panel=document.createElement('div');panel.className='header-social-more__panel';
-    NETWORKS.forEach(([key,label])=>{const link=socialLink(key,label,'more');if(link)panel.append(link);});
+    NETWORKS.filter(([key])=>!['instagram','youtube','tiktok'].includes(key)).forEach(([key,label])=>{const link=socialLink(key,label,'more');if(link)panel.append(link);});
     more.append(summary,panel);group.append(more);
   }
   if(group.children.length)container.append(group);
