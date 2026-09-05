@@ -102,6 +102,7 @@ function renderAlertShortcuts(payload) {
   });
   setText('quick-alert-kicker',level==='clear'?'Vigilància oficial':'Avisos oficials');
   setText('quick-alert-title',title); setText('quick-alert-action',action);
+  setText('quick-alert-meta',copy);
   setText('mobile-alert-title',title); setText('mobile-alert-copy',copy);
 }
 

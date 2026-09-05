@@ -239,7 +239,39 @@ export const PHRASES={
   'Tendència estacional del Meteocat':{es:'Tendencia estacional del Meteocat',en:'Meteocat seasonal outlook'},
   'Mapes d’anomalia per al mes actual, elaborats amb el sistema europeu SEAS5.':{es:'Mapas de anomalía del mes actual, elaborados con el sistema europeo SEAS5.',en:'Anomaly maps for the current month, produced with the European SEAS5 system.'},
   'Anomalia de temperatura':{es:'Anomalía de temperatura',en:'Temperature anomaly'},
-  'Anomalia de precipitació':{es:'Anomalía de precipitación',en:'Precipitation anomaly'}
+  'Anomalia de precipitació':{es:'Anomalía de precipitación',en:'Precipitation anomaly'},
+  'Llarg termini':{es:'Largo plazo',en:'Long range'},
+  'Predicció a llarg termini':{es:'Predicción a largo plazo',en:'Long-range forecast'},
+  'Tendències de setmanes i mesos.':{es:'Tendencias de semanas y meses.',en:'Trends over weeks and months.'},
+  'Una lectura probabilística per detectar patrons, sense confondre’ls amb una previsió diària ni amb un avís oficial.':{es:'Una lectura probabilística para detectar patrones, sin confundirlos con una predicción diaria ni con un aviso oficial.',en:'A probabilistic view of patterns, clearly separated from daily forecasts and official alerts.'},
+  'Consultant fenomen, territori i vigència':{es:'Consultando fenómeno, territorio y vigencia',en:'Checking phenomenon, area and validity'},
+  'Índex de xafogor':{es:'Índice de bochorno',en:'Humidex'},
+  'índex':{es:'índice',en:'index'},
+  'Indicador complementari de calor i humitat':{es:'Indicador complementario de calor y humedad',en:'Complementary heat and humidity index'},
+  'El teu temps':{es:'Tu tiempo',en:'Your weather'},
+  'Desa un municipi i rep només els avisos que t’interessen.':{es:'Guarda un municipio y recibe solo los avisos que te interesan.',en:'Save a town and receive only the alerts you care about.'},
+  'Els municipis preferits es guarden només en aquest navegador. Les notificacions són opcionals i es poden canviar quan vulguis.':{es:'Los municipios favoritos se guardan solo en este navegador. Las notificaciones son opcionales y se pueden cambiar cuando quieras.',en:'Favourite towns are stored only in this browser. Notifications are optional and can be changed at any time.'},
+  'Escollir municipi →':{es:'Elegir municipio →',en:'Choose town →'},
+  'Configurar avisos →':{es:'Configurar avisos →',en:'Configure alerts →'},
+  'Lectura tèrmica':{es:'Lectura térmica',en:'Thermal reading'},
+  'Quina temperatura he de mirar?':{es:'¿Qué temperatura debo mirar?',en:'Which temperature should I use?'},
+  'Més enllà de set dies':{es:'Más allá de siete días',en:'Beyond seven days'},
+  'Consulta la predicció a llarg termini':{es:'Consulta la predicción a largo plazo',en:'View the long-range forecast'},
+  'Sis setmanes d’ECMWF i mapes mensuals oficials del Meteocat, amb la incertesa explicada.':{es:'Seis semanas de ECMWF y mapas mensuales oficiales del Meteocat, con la incertidumbre explicada.',en:'Six ECMWF weeks and official Meteocat monthly maps, with uncertainty clearly explained.'},
+  'Obrir tendències →':{es:'Abrir tendencias →',en:'Open trends →'},
+  '← Tornar a la previsió de les pròximes hores i dies':{es:'← Volver a la predicción de las próximas horas y días',en:'← Back to the forecast for the next hours and days'},
+  'Decisions del dia a dia':{es:'Decisiones del día a día',en:'Day-to-day decisions'},
+  'Torna a la previsió operativa':{es:'Vuelve a la predicción operativa',en:'Return to the operational forecast'},
+  'Consulta les pròximes 48 hores, els set dies i la comparació de models abans de prendre decisions.':{es:'Consulta las próximas 48 horas, los siete días y la comparación de modelos antes de tomar decisiones.',en:'Check the next 48 hours, seven days and model comparison before making decisions.'},
+  'Veure curt termini →':{es:'Ver corto plazo →',en:'View short range →'},
+  'Segueix-nos':{es:'Síguenos',en:'Follow us'}
+  ,'La temperatura':{es:'La temperatura',en:'Temperature'}
+  ,'és la mesura del sensor.':{es:'es la medida del sensor.',en:'is the sensor reading.'}
+  ,'La sensació tèrmica':{es:'La sensación térmica',en:'Feels-like temperature'}
+  ,'és la referència principal per entendre com es percep combinant humitat i vent.':{es:'es la referencia principal para entender cómo se percibe combinando humedad y viento.',en:'is the main reference for how conditions feel when humidity and wind are combined.'}
+  ,'L’Humidex':{es:'El Humidex',en:'Humidex'}
+  ,'és un índex complementari de xafogor i no s’expressa com una temperatura real.':{es:'es un índice complementario de bochorno y no se expresa como una temperatura real.',en:'is a complementary humidity-and-heat index, not an actual temperature.'}
+  ,'Aquesta és una predicció de model. Hi ha avisos oficials actius: consulta’n el fenomen, l’abast i la vigència abans de prendre decisions.':{es:'Esta es una predicción de modelo. Hay avisos oficiales activos: consulta el fenómeno, el ámbito y la vigencia antes de tomar decisiones.',en:'This is a model forecast. Official alerts are active: check the phenomenon, area and validity before making decisions.'}
 };
 
 const DYNAMIC_REPLACEMENTS={
