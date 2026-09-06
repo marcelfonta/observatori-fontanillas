@@ -1,5 +1,10 @@
 # Changelog
 
+## Correcció — Màxima i mínima del dia — 2026-09-06
+
+- La lectura en directe participa sempre en el càlcul de la màxima i la mínima diàries, encara que l’històric remot arribi amb retard.
+- La portada i el resum del dia ja no poden mostrar una màxima inferior a la temperatura actual ni una mínima superior, i associen l’hora correcta a l’extrem.
+
 ## Propera versió — Portada, risc i llarg termini — 2026-09-05
 
 - La predicció de sis setmanes i els mapes mensuals del Meteocat passen a una pàgina pròpia de llarg termini, amb enllaços d’anada i tornada des de la previsió operativa; no s’elimina cap contingut.
