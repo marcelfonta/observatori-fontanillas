@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v22-31-0-frances-colaboracions-extrems-v2';
+const CACHE = 'observatori-fontanillas-v22-31-0-frances-colaboracions-extrems-v3';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
@@ -77,6 +77,10 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(networkFirst(event.request, API_CACHE));
+    return;
+  }
   if (url.pathname === '/administracio.html' || url.pathname === '/src/features/admin.js') {
     event.respondWith(fetch(event.request, { cache:'no-store' }));
     return;

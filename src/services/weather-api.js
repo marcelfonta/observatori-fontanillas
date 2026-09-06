@@ -105,7 +105,7 @@ export async function fetchForecastVideos(){
 
 export async function fetchStationHistory(days = 31, resolution = 'auto') {
   const freshness = Math.floor(Date.now() / 300000);
-  const response = await request(`${CONFIG.apiUrl}/history?days=${days}&resolution=${resolution}&fresh=${freshness}`, { headers: { Accept: 'application/json' }, cache: 'no-store' },18000);
+  const response = await request(`/api/history?days=${days}&resolution=${resolution}&fresh=${freshness}`, { headers: { Accept: 'application/json' }, cache: 'no-store' },18000);
   if (!response.ok) throw new Error(`History API ${response.status}`);
   return response.json();
 }

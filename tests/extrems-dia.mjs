@@ -48,6 +48,31 @@ assert.equal(remoteCatchesUp.stats.maxTemperature, 37.8, 'Quan l’històric rem
 assert.equal(remoteCatchesUp.stats.minTemperature, 19.5, 'Quan l’històric remot es posa al dia, també ha de prevaldre el mínim real inferior.');
 
 const apiSource = await readFile(new URL('../src/services/weather-api.js', import.meta.url), 'utf8');
-assert.match(apiSource, /history\?days=\$\{days\}&resolution=\$\{resolution\}&fresh=\$\{freshness\}/, 'La consulta d’històric ha d’evitar còpies antigues del navegador.');
+assert.match(apiSource, /`\/api\/history\?days=\$\{days\}&resolution=\$\{resolution\}&fresh=\$\{freshness\}`/, 'La consulta d’històric ha de passar pel mateix domini i evitar còpies antigues del navegador.');
+
+const { onRequestGet } = await import('../functions/api/history.js');
+let requestedUpstream = '';
+const originalFetch = globalThis.fetch;
+globalThis.fetch = async url => {
+  requestedUpstream = String(url);
+  return new Response(JSON.stringify({ source:'history-test', observations:[] }), {
+    status:200,
+    headers:{ 'Content-Type':'application/json', 'Set-Cookie':'private=value' }
+  });
+};
+try {
+  const proxied = await onRequestGet({
+    request:new Request('https://meteo.fontanillas.cat/api/history?days=45&resolution=hourly&fresh=12345&unexpected=secret')
+  });
+  assert.equal(requestedUpstream, 'https://fonta-meteo.marcelfonta.workers.dev/history?days=45&resolution=hourly&fresh=12345', 'El proxy només ha de reenviar paràmetres controlats.');
+  assert.equal(proxied.status, 200, 'El proxy ha de conservar l’estat de la resposta de l’històric.');
+  assert.equal(proxied.headers.get('cache-control'), 'no-store', 'L’històric del mateix domini no s’ha de servir des d’una memòria intermèdia HTTP.');
+  assert.equal(proxied.headers.get('set-cookie'), null, 'El proxy no ha de reenviar galetes del Worker.');
+} finally {
+  globalThis.fetch = originalFetch;
+}
+
+const serviceWorkerSource = await readFile(new URL('../service-worker.js', import.meta.url), 'utf8');
+assert.match(serviceWorkerSource, /url\.pathname\.startsWith\('\/api\/'\)/, 'La PWA ha de tractar el proxy meteorològic com una API i no com un fitxer estàtic.');
 
 console.log('Extrems del dia: la lectura en directe participa en la màxima i la mínima');
