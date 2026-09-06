@@ -4,6 +4,8 @@
 
 - La lectura en directe participa sempre en el càlcul de la màxima i la mínima diàries, encara que l’històric remot arribi amb retard.
 - La portada i el resum del dia ja no poden mostrar una màxima inferior a la temperatura actual ni una mínima superior, i associen l’hora correcta a l’extrem.
+- Els extrems vistos pel navegador es conserven durant el dia i es combinen amb l’arxiu remot; una baixada posterior de temperatura ja no pot esborrar la màxima anterior.
+- Les consultes de l’històric incorporen una renovació controlada i la PWA estrena una memòria cau nova per evitar respostes antigues després del desplegament.
 
 ## Propera versió — Portada, risc i llarg termini — 2026-09-05
 

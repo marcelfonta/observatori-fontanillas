@@ -67,7 +67,7 @@ function accumulatedRain(items) {
   },0);
 }
 
-export function summarizeRemoteHistory(data, history) {
+export function summarizeRemoteHistory(data, history, localStats = {}) {
   const currentTime = new Date(String(data.updated).replace(' ', 'T')).getTime() || Date.now();
   const dayKey = String(data.updated).slice(0, 10);
   const today = history.filter(item => String(item.time).startsWith(dayKey));
@@ -75,7 +75,12 @@ export function summarizeRemoteHistory(data, history) {
   const currentObservation = data.temperature !== null && data.temperature !== '' && Number.isFinite(currentTemperature)
     ? { t:currentTime, time:data.updated, temperature:currentTemperature, source:data.source || 'current' }
     : null;
-  const todayWithCurrent = currentObservation ? [...today, currentObservation] : today;
+  const localHigh = Number(localStats.maxTemperature);
+  const localLow = Number(localStats.minTemperature);
+  const localObservations = [];
+  if (Number.isFinite(localHigh)) localObservations.push({ t:Number(localStats.maxTemperatureTime) || currentTime, temperatureMax:localHigh, source:'browser-history' });
+  if (Number.isFinite(localLow)) localObservations.push({ t:Number(localStats.minTemperatureTime) || currentTime, temperatureMin:localLow, source:'browser-history' });
+  const todayWithCurrent = [...today, ...localObservations, ...(currentObservation ? [currentObservation] : [])];
   const recent24h = history.filter(item => item.t >= currentTime - 86400000);
   const compare = closest(history.filter(item => item.t < currentTime - 3600000), currentTime - 10800000) || history[0] || null;
   const high = temperatureExtreme(todayWithCurrent, 'max');
