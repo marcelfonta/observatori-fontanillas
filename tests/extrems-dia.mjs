@@ -52,9 +52,11 @@ assert.match(apiSource, /`\/api\/history\?days=\$\{days\}&resolution=\$\{resolut
 
 const { onRequestGet } = await import('../functions/api/history.js');
 let requestedUpstream = '';
+let requestedOptions = null;
 const originalFetch = globalThis.fetch;
-globalThis.fetch = async url => {
+globalThis.fetch = async (url, options) => {
   requestedUpstream = String(url);
+  requestedOptions = options;
   return new Response(JSON.stringify({ source:'history-test', observations:[] }), {
     status:200,
     headers:{ 'Content-Type':'application/json', 'Set-Cookie':'private=value' }
@@ -65,6 +67,7 @@ try {
     request:new Request('https://meteo.fontanillas.cat/api/history?days=45&resolution=hourly&fresh=12345&unexpected=secret')
   });
   assert.equal(requestedUpstream, 'https://fonta-meteo.marcelfonta.workers.dev/history?days=45&resolution=hourly&fresh=12345', 'El proxy només ha de reenviar paràmetres controlats.');
+  assert.equal(requestedOptions.headers.Origin, 'https://meteo.fontanillas.cat', 'El proxy ha de conservar l’origen públic perquè el Worker inclogui l’històric complet de D1.');
   assert.equal(proxied.status, 200, 'El proxy ha de conservar l’estat de la resposta de l’històric.');
   assert.equal(proxied.headers.get('cache-control'), 'no-store', 'L’històric del mateix domini no s’ha de servir des d’una memòria intermèdia HTTP.');
   assert.equal(proxied.headers.get('set-cookie'), null, 'El proxy no ha de reenviar galetes del Worker.');

@@ -18,7 +18,10 @@ export async function onRequestGet({ request }) {
 
   try {
     const response = await fetch(upstream, {
-      headers: { Accept: 'application/json' },
+      headers: {
+        Accept: 'application/json',
+        Origin: incoming.origin
+      },
       cache: 'no-store'
     });
     return new Response(response.body, {
