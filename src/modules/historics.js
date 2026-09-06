@@ -40,6 +40,21 @@ export function normalizeRemoteHistory(payload) {
 
 function numeric(items, key) { return items.map(item => Number(item[key])).filter(Number.isFinite); }
 function extreme(items, key, mode) { return items.filter(item => Number.isFinite(Number(item[key]))).reduce((best,item) => !best || (mode === 'max' ? Number(item[key]) > Number(best[key]) : Number(item[key]) < Number(best[key])) ? item : best, null); }
+function temperatureExtreme(items, mode) {
+  const aggregateKey = mode === 'max' ? 'temperatureMax' : 'temperatureMin';
+  const value = item => {
+    const aggregate = Number(item?.[aggregateKey]);
+    if (item?.[aggregateKey] !== null && item?.[aggregateKey] !== '' && Number.isFinite(aggregate)) return aggregate;
+    const temperature = Number(item?.temperature);
+    return item?.temperature !== null && item?.temperature !== '' && Number.isFinite(temperature) ? temperature : NaN;
+  };
+  return items.reduce((best, item) => {
+    const candidate = value(item);
+    if (!Number.isFinite(candidate)) return best;
+    if (!best) return item;
+    return mode === 'max' ? (candidate > value(best) ? item : best) : (candidate < value(best) ? item : best);
+  }, null);
+}
 function closest(items, target) { return items.reduce((best,item) => Math.abs(item.t-target) < Math.abs((best?.t ?? 0)-target) ? item : best, null); }
 function accumulatedRain(items) {
   const increments=items.map(item=>Number(item.rainIncrement)).filter(Number.isFinite);
@@ -56,10 +71,15 @@ export function summarizeRemoteHistory(data, history) {
   const currentTime = new Date(String(data.updated).replace(' ', 'T')).getTime() || Date.now();
   const dayKey = String(data.updated).slice(0, 10);
   const today = history.filter(item => String(item.time).startsWith(dayKey));
+  const currentTemperature = Number(data.temperature);
+  const currentObservation = data.temperature !== null && data.temperature !== '' && Number.isFinite(currentTemperature)
+    ? { t:currentTime, time:data.updated, temperature:currentTemperature, source:data.source || 'current' }
+    : null;
+  const todayWithCurrent = currentObservation ? [...today, currentObservation] : today;
   const recent24h = history.filter(item => item.t >= currentTime - 86400000);
   const compare = closest(history.filter(item => item.t < currentTime - 3600000), currentTime - 10800000) || history[0] || null;
-  const high = extreme(today, 'temperatureMax', 'max') || extreme(today, 'temperature', 'max');
-  const low = extreme(today, 'temperatureMin', 'min') || extreme(today, 'temperature', 'min');
+  const high = temperatureExtreme(todayWithCurrent, 'max');
+  const low = temperatureExtreme(todayWithCurrent, 'min');
   const gust = extreme(today, 'windGust', 'max');
   const rain24h = accumulatedRain(recent24h);
   const todayTotals = numeric(today, 'rainTotal');
@@ -69,9 +89,9 @@ export function summarizeRemoteHistory(data, history) {
     history,
     previous: compare,
     stats: {
-      maxTemperature: high ? Number(high.temperatureMax ?? high.temperature) : Number(data.temperature),
+      maxTemperature: high ? Number(high.temperatureMax ?? high.temperature) : currentTemperature,
       maxTemperatureTime: high?.t ?? currentTime,
-      minTemperature: low ? Number(low.temperatureMin ?? low.temperature) : Number(data.temperature),
+      minTemperature: low ? Number(low.temperatureMin ?? low.temperature) : currentTemperature,
       minTemperatureTime: low?.t ?? currentTime
     },
     summary: {
