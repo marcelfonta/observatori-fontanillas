@@ -110,14 +110,15 @@ async function load(){
   const label=document.getElementById('connection-label');
   try {
     latest=await fetchCurrentWeather();
+    const localContext=recordReading(latest);
     let context;
     try {
       await loadHistory();
-      context=summarizeRemoteHistory(latest,latestHistory);
+      context=summarizeRemoteHistory(latest,latestHistory,localContext.stats);
       renderSummary(context.summary,latestHistory.length);
     } catch(historyError) {
       console.warn('Històric remot no disponible.',historyError);
-      context=recordReading(latest);
+      context=localContext;
       latestHistory=context.history;
       renderSummaryFallback();
     }
