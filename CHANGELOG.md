@@ -4,6 +4,7 @@
 
 - L’històric de l’estació es consulta des del mateix domini del portal, evitant que bloquejadors de contingut impedeixin recuperar les màximes i mínimes reals i forcin l’ús de dades antigues.
 - El proxy conserva l’origen autoritzat del portal perquè el Worker combini també les lectures recents de D1, en lloc de retornar només l’arxiu parcial de Weather Underground.
+- El Worker compartit de OneSignal referencia una versió explícita de la PWA, de manera que els navegadors instal·len la correcció immediatament i deixen d’executar el lector d’històric anterior.
 - La lectura en directe participa sempre en el càlcul de la màxima i la mínima diàries, encara que l’històric remot arribi amb retard.
 - La portada i el resum del dia ja no poden mostrar una màxima inferior a la temperatura actual ni una mínima superior, i associen l’hora correcta a l’extrem.
 - Els extrems vistos pel navegador es conserven durant el dia i es combinen amb l’arxiu remot; una baixada posterior de temperatura ja no pot esborrar la màxima anterior.
