@@ -2434,9 +2434,22 @@ async function stationRecords(request,env,ctx) {
         MAX(temperature) AS temperature_high, MIN(temperature) AS temperature_low,
         MAX(wind_gust) AS wind_gust, MAX(rain_rate) AS rain_rate,
         MAX(pressure) AS pressure_high, MIN(pressure) AS pressure_low,
-        MAX(humidity) AS humidity_high, MIN(humidity) AS humidity_low,
+        MAX(CASE WHEN base.humidity BETWEEN 10 AND 100 AND EXISTS (
+          SELECT 1 FROM observations neighbour
+          WHERE neighbour.observed_epoch BETWEEN base.observed_epoch - 600 AND base.observed_epoch + 600
+            AND neighbour.observed_epoch <> base.observed_epoch
+            AND neighbour.humidity IS NOT NULL
+            AND ABS(neighbour.humidity - base.humidity) <= 5
+        ) THEN base.humidity END) AS humidity_high,
+        MIN(CASE WHEN base.humidity BETWEEN 10 AND 100 AND EXISTS (
+          SELECT 1 FROM observations neighbour
+          WHERE neighbour.observed_epoch BETWEEN base.observed_epoch - 600 AND base.observed_epoch + 600
+            AND neighbour.observed_epoch <> base.observed_epoch
+            AND neighbour.humidity IS NOT NULL
+            AND ABS(neighbour.humidity - base.humidity) <= 5
+        ) THEN base.humidity END) AS humidity_low,
         MAX(solar_radiation) AS solar_high, MAX(uv) AS uv_high
-      FROM observations
+      FROM observations base
     ), occurrences AS (
       SELECT
         MIN(CASE WHEN o.temperature=e.temperature_high THEN o.observed_epoch END) AS temperature_high_at,

@@ -7,6 +7,7 @@
 - El resum d’Estació presenta els sis rècords principals i el Centre de Dades conserva la taula completa de temperatura, vent, pluja, pressió, humitat, radiació i UV.
 - La portada incorpora un accés directe als rècords i totes les vistes indiquen des de quina data hi ha arxiu, sense confondre aquests valors amb rècords climàtics oficials.
 - El Worker calcula els extrems amb consultes agregades i conserva el resultat durant una hora a memòria i a la memòria cau de Cloudflare; no envia tot l’històric al navegador ni repeteix el càlcul a cada visita.
+- Les màximes i mínimes d’humitat exigeixen un rang local plausible i una lectura veïna coherent: així una errada puntual o un bloc invàlid del sensor no es converteix en un rècord permanent, sense esborrar dades de l’arxiu.
 - Els textos i les dates s’adapten al català, castellà, anglès i francès, i la PWA estrena una memòria cau pròpia.
 
 ## Propera versió — Centre de Dades per apartats — 2026-09-07

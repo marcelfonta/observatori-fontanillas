@@ -30,6 +30,9 @@ for(const id of ['station-records-main','station-records-complete','station-reco
 assert.match(html,/href="\.\/\?page=centre-dades#records"/,'La portada i Estació han d’enllaçar la taula completa.');
 assert.match(worker,/WITH extremes AS/);
 assert.match(worker,/GROUP BY local_date ORDER BY value DESC/);
+assert.match(worker,/neighbour\.observed_epoch BETWEEN base\.observed_epoch - 600 AND base\.observed_epoch \+ 600/,'Els rècords d’humitat han de descartar lectures aïllades sense corroboració temporal.');
+assert.match(worker,/ABS\(neighbour\.humidity - base\.humidity\) <= 5/,'La corroboració d’humitat ha d’exigir una lectura veïna coherent.');
+assert.equal((worker.match(/base\.humidity BETWEEN 10 AND 100/g) || []).length,2,'Els dos extrems d’humitat han d’ignorar valors fora del rang local plausible.');
 assert.match(worker,/url\.pathname === "\/records"/);
 assert.match(worker,/caches\.default/,'El resum s’ha de conservar a la memòria cau de Cloudflare per protegir les lectures D1.');
 assert.match(app,/initStationRecords\(fetchStationRecords\)/);
