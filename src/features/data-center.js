@@ -1,12 +1,14 @@
 import { ephemerisDateLabel, meteorologicalEphemeridesForDate } from '../data/meteorological-ephemerides.js';
 import { fetchAlertHistory } from '../services/weather-api.js';
+import { getLanguage, getLocale } from '../core/i18n.js';
 
 const DAY = 86400000;
-const locale = 'ca-ES';
+const DATA_TABS = ['summary', 'charts', 'rain', 'episodes', 'quality'];
 
 let archive = [];
 let current = null;
 let activeDays = 30;
+let activeTab = 'summary';
 let alertArchive = [];
 let timelineFilter = 'all';
 
@@ -17,7 +19,7 @@ const number = value => {
 const values = (items, key, fallback) => items.map(item => number(item[key] ?? (fallback ? item[fallback] : null))).filter(value => value !== null);
 const mean = list => list.length ? list.reduce((total, value) => total + value, 0) / list.length : null;
 const deviation = list => { const average = mean(list); return average === null ? null : Math.sqrt(list.reduce((total, value) => total + (value - average) ** 2, 0) / list.length); };
-const fmt = (value, digits = 1) => value === null || !Number.isFinite(value) ? '—' : new Intl.NumberFormat(locale, { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(value);
+const fmt = (value, digits = 1) => value === null || !Number.isFinite(value) ? '—' : new Intl.NumberFormat(getLocale(), { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(value);
 const set = (id, value) => { const node = document.getElementById(id); if (node) node.textContent = value; };
 const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, character => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' })[character]);
 const dateKey = value => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid' }).format(new Date(value));
@@ -46,6 +48,36 @@ function dailyRain(items) {
   const observedToday = number(current?.rainToday);
   if (observedToday !== null) totals.set(today, Math.max(totals.get(today) || 0, observedToday));
   return totals;
+}
+
+export function calendarCoverage(items = []) {
+  const valid = items.filter(item => Number.isFinite(Number(item.t))).sort((a, b) => a.t - b.t);
+  if (!valid.length) return { observedDays: 0, spanDays: 0, first: null, last: null };
+  const observedDays = new Set(valid.map(item => dateKey(item.t))).size;
+  const first = valid[0].t;
+  const last = valid.at(-1).t;
+  return { observedDays, spanDays: Math.max(1, Math.round((last - first) / DAY) + 1), first, last };
+}
+
+function annualCoverageLabel(coverage) {
+  if (!coverage.observedDays) return ({ es: 'Sin cobertura disponible este año', en: 'No coverage available this year', fr: 'Aucune couverture disponible cette année' })[getLanguage()] || 'Sense cobertura disponible aquest any';
+  const start = new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short' }).format(coverage.first);
+  return ({
+    es: `Cobertura: ${coverage.spanDays} días de periodo · ${coverage.observedDays} con datos desde el ${start}`,
+    en: `Coverage: ${coverage.spanDays}-day span · ${coverage.observedDays} days with data since ${start}`,
+    fr: `Couverture : période de ${coverage.spanDays} jours · ${coverage.observedDays} jours avec données depuis le ${start}`
+  })[getLanguage()] || `Cobertura: ${coverage.spanDays} dies de període · ${coverage.observedDays} amb dades des del ${start}`;
+}
+
+function archiveCoverageLabel(coverage) {
+  if (!coverage.observedDays) return ({ es: 'Las estadísticas se activarán cuando el archivo disponga de cobertura.', en: 'Statistics will become available once the archive has coverage.', fr: 'Les statistiques seront disponibles lorsque les archives disposeront d’une couverture.' })[getLanguage()] || 'Les estadístiques s’activaran quan l’arxiu disposi de cobertura.';
+  const first = new Intl.DateTimeFormat(getLocale(), { dateStyle: 'medium' }).format(coverage.first);
+  const last = new Intl.DateTimeFormat(getLocale(), { dateStyle: 'medium' }).format(coverage.last);
+  return ({
+    es: `Cálculo realizado con ${coverage.observedDays} días observados entre el ${first} y el ${last}. «Más de» indica que no hay un episodio anterior en el archivo.`,
+    en: `Calculated from ${coverage.observedDays} observed days between ${first} and ${last}. “More than” means that no earlier event exists in the archive.`,
+    fr: `Calcul effectué sur ${coverage.observedDays} jours observés entre le ${first} et le ${last}. « Plus de » signifie qu’aucun épisode antérieur ne figure dans les archives.`
+  })[getLanguage()] || `Càlcul fet amb ${coverage.observedDays} dies observats entre el ${first} i el ${last}. «Més de» indica que no hi ha cap episodi anterior dins de l’arxiu.`;
 }
 
 function recentEpisodeRain(items) {
@@ -88,6 +120,8 @@ function renderRainDashboard() {
   const month = today.slice(0, 7); const year = today.slice(0, 4);
   const totalFor = prefix => [...totals].filter(([key]) => key.startsWith(prefix)).reduce((sum, [, value]) => sum + value, 0);
   const recent24h = archive.filter(item => item.t >= Date.now() - DAY);
+  const yearItems = archive.filter(item => dateKey(item.t).startsWith(year));
+  const yearCoverage = calendarCoverage(yearItems);
   const yearDays = [...totals].filter(([key]) => key.startsWith(year));
   const wettest = yearDays.sort((a, b) => b[1] - a[1])[0];
   set('data-rain-now', `${fmt(number(current?.rainRate))} mm/h`);
@@ -97,14 +131,14 @@ function renderRainDashboard() {
   set('data-rain-yesterday', `${fmt(totals.get(yesterday) ?? 0)} mm`);
   set('data-rain-month', `${fmt(totalFor(month))} mm`);
   set('data-rain-year', `${fmt(totalFor(year))} mm`);
+  set('data-rain-year-coverage', annualCoverageLabel(yearCoverage));
   set('data-rain-wet-days', String(yearDays.filter(([, value]) => value >= .1).length));
   set('data-rain-dry-days', dryLabel(daysSinceThreshold(totals, .1)));
   set('data-rain-since-1', dryLabel(daysSinceThreshold(totals, 1)));
   set('data-rain-since-10', dryLabel(daysSinceThreshold(totals, 10)));
   set('data-rain-since-20', dryLabel(daysSinceThreshold(totals, 20)));
-  set('data-rain-wettest', wettest && wettest[1] > 0 ? `${fmt(wettest[1])} mm · ${new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(`${wettest[0]}T12:00:00`))}` : 'Encara cap dia plujós');
-  const coverage = archive.length ? Math.max(1, Math.round((Date.now() - archive[0].t) / DAY)) : 0;
-  set('data-rain-coverage', coverage ? `Càlcul fet amb ${coverage} dies de cobertura disponible. «Més de» indica que no hi ha cap episodi anterior dins de l’arxiu.` : 'Les estadístiques s’activaran quan l’arxiu disposi de cobertura.');
+  set('data-rain-wettest', wettest && wettest[1] > 0 ? `${fmt(wettest[1])} mm · ${new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short' }).format(new Date(`${wettest[0]}T12:00:00`))}` : 'Encara cap dia plujós');
+  set('data-rain-coverage', archiveCoverageLabel(calendarCoverage(archive)));
 }
 
 function periodSummary(items) {
@@ -166,7 +200,7 @@ export function buildWeatherTimeline(history=[],alerts=[]){
 
 function renderWeatherTimeline(){
   const host=document.getElementById('data-weather-timeline');if(!host)return;const periodItems=selected();const all=buildWeatherTimeline(periodItems,alertArchive);const filtered=(timelineFilter==='all'?all:all.filter(item=>item.type===timelineFilter)).slice(0,10);
-  host.innerHTML=filtered.length?filtered.map(item=>`<article class="is-${escapeHtml(item.type)}"><time datetime="${new Date(item.timestamp).toISOString()}">${new Intl.DateTimeFormat(locale,{day:'numeric',month:'short',year:'numeric'}).format(item.timestamp)}</time><i></i><div><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p><a href="${escapeHtml(item.href)}">${escapeHtml(item.source)} →</a></div></article>`).join(''):'<div class="weather-timeline__empty">No hi ha episodis d’aquest tipus dins del període disponible.</div>';
+  host.innerHTML=filtered.length?filtered.map(item=>`<article class="is-${escapeHtml(item.type)}"><time datetime="${new Date(item.timestamp).toISOString()}">${new Intl.DateTimeFormat(getLocale(),{day:'numeric',month:'short',year:'numeric'}).format(item.timestamp)}</time><i></i><div><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p><a href="${escapeHtml(item.href)}">${escapeHtml(item.source)} →</a></div></article>`).join(''):'<div class="weather-timeline__empty">No hi ha episodis d’aquest tipus dins del període disponible.</div>';
   const coverage=periodItems.length?Math.max(1,Math.round((periodItems.at(-1).t-periodItems[0].t)/DAY)+1):0;set('data-weather-timeline-status',`${all.length} fites trobades · ${coverage?`${coverage} dies de cobertura disponible`:'sense cobertura local'}`);
 }
 
@@ -184,14 +218,14 @@ export function renderDataCenter(history = [], latest = null) {
   const last = items.at(-1)?.t;
   const coverageDays = first && last ? Math.max(1, Math.round((last - first) / DAY) + 1) : 0;
   const samples = items.reduce((total, item) => total + (number(item.samples) ?? 1), 0);
-  set('data-summary-samples', new Intl.NumberFormat(locale).format(samples));
+  set('data-summary-samples', new Intl.NumberFormat(getLocale()).format(samples));
   set('data-summary-coverage', coverageDays ? `${coverageDays} dies amb dades dins del període` : 'Sense cobertura disponible');
   set('data-summary-temp-mean', fmt(mean(temperatures)));
   set('data-summary-temp-deviation', temperatures.length ? `Desviació estàndard ${fmt(deviation(temperatures))} °C` : 'Desviació no disponible');
   set('data-summary-rain', fmt(rainTotal(items)));
   set('data-summary-gust', fmt(gusts.length ? Math.max(...gusts) : null));
   renderLast24HoursComparison();
-  set('data-center-period-status', items.length ? `${activeDays === 365 ? 'Últim any' : `Últims ${activeDays} dies`} · del ${new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(first)} al ${new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(last)}` : 'No hi ha dades disponibles per a aquest període.');
+  set('data-center-period-status', items.length ? `${activeDays === 365 ? 'Últim any' : `Últims ${activeDays} dies`} · del ${new Intl.DateTimeFormat(getLocale(), { dateStyle: 'medium' }).format(first)} al ${new Intl.DateTimeFormat(getLocale(), { dateStyle: 'medium' }).format(last)}` : 'No hi ha dades disponibles per a aquest període.');
 
   const now = new Date();
   const today = dateKey(now);
@@ -257,7 +291,7 @@ function exportPdf(rows) {
   const lines = [
     'OBSERVATORI METEOROLOGIC FONTANILLAS',
     `Informe del Centre de Dades - ${activeDays} dies`,
-    `Generat: ${new Date().toLocaleString(locale)}`,
+    `Generat: ${new Date().toLocaleString(getLocale())}`,
     '',
     `Mostres disponibles: ${rows.length}`,
     `Temperatura mitjana: ${fmt(summary.temperature)} C`,
@@ -293,6 +327,40 @@ function runExport(format) {
 }
 
 export function initDataCenter() {
+  const activateTab = (next, { focus = false, syncUrl = true } = {}) => {
+    activeTab = DATA_TABS.includes(next) ? next : 'summary';
+    document.querySelectorAll('[data-data-center-tab]').forEach(button => {
+      const selected = button.dataset.dataCenterTab === activeTab;
+      button.classList.toggle('is-active', selected);
+      button.setAttribute('aria-selected', String(selected));
+      button.tabIndex = selected ? 0 : -1;
+      if (selected && focus) button.focus();
+    });
+    document.querySelectorAll('[data-data-center-panel]').forEach(panel => panel.classList.toggle('is-active', panel.dataset.dataCenterPanel === activeTab));
+    if (syncUrl && document.body.dataset.page === 'centre-dades') {
+      const url = new URL(window.location.href);
+      if (activeTab === 'summary') url.searchParams.delete('tab');
+      else url.searchParams.set('tab', activeTab);
+      window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+    }
+    document.dispatchEvent(new CustomEvent('observatori:data-tab-change', { detail: { tab: activeTab } }));
+  };
+  const tabButtons = [...document.querySelectorAll('[data-data-center-tab]')];
+  tabButtons.forEach((button, index) => {
+    button.addEventListener('click', () => activateTab(button.dataset.dataCenterTab));
+    button.addEventListener('keydown', event => {
+      let target = null;
+      if (event.key === 'ArrowRight') target = (index + 1) % tabButtons.length;
+      if (event.key === 'ArrowLeft') target = (index - 1 + tabButtons.length) % tabButtons.length;
+      if (event.key === 'Home') target = 0;
+      if (event.key === 'End') target = tabButtons.length - 1;
+      if (target === null) return;
+      event.preventDefault();
+      activateTab(tabButtons[target].dataset.dataCenterTab, { focus: true });
+    });
+  });
+  const requestedTab = new URLSearchParams(window.location.search).get('tab');
+  activateTab(requestedTab || activeTab, { syncUrl: false });
   document.querySelectorAll('[data-data-period]').forEach(button => button.addEventListener('click', () => {
     activeDays = Number(button.dataset.dataPeriod) || 30;
     document.querySelectorAll('[data-data-period]').forEach(item => item.classList.toggle('is-active', item === button));
@@ -300,5 +368,6 @@ export function initDataCenter() {
   }));
   document.querySelectorAll('[data-export-format]').forEach(button => button.addEventListener('click', () => runExport(button.dataset.exportFormat)));
   document.querySelectorAll('[data-timeline-filter]').forEach(button=>button.addEventListener('click',()=>{timelineFilter=button.dataset.timelineFilter||'all';document.querySelectorAll('[data-timeline-filter]').forEach(item=>item.classList.toggle('is-active',item===button));renderWeatherTimeline();}));
+  document.addEventListener('observatori:language-change', () => { if (archive.length || current) renderDataCenter(archive, current); });
   loadAlertTimeline();
 }

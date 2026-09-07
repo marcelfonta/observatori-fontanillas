@@ -1,5 +1,14 @@
 # Changelog
 
+## Propera versió — Centre de Dades per apartats — 2026-09-07
+
+- El Centre de Dades s’organitza en cinc pestanyes: Resum, Gràfiques, Pluja, Episodis i Qualitat, conservant tot el contingut existent però evitant una pàgina única excessivament llarga.
+- El selector de període continua governant el resum, les gràfiques, els extrems i les descàrregues encara que aquests continguts estiguin distribuïts entre pestanyes.
+- L’acumulació de pluja anual mostra al mateix lloc l’interval cobert i quants dies contenen dades; ja no es pot interpretar com si representés necessàriament un any complet.
+- La navegació per pestanyes admet teclat, conserva un enllaç compartible i reactiva les gràfiques quan es fan visibles.
+- Els blocs compartits amb la pàgina Estació continuen visibles allí i les pestanyes només reorganitzen el Centre de Dades.
+- Els controls nous disposen de traducció en català, castellà, anglès i francès, i la PWA utilitza una memòria cau nova.
+
 ## Propera versió — Bloc 1 de fiabilitat i lectura — 2026-09-07
 
 - Els avisos queden separats entre vigents ara, previstos per a més tard avui, demà i dies posteriors; el recompte principal ja no barreja avisos futurs amb avisos actius.

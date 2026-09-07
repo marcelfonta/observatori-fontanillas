@@ -149,6 +149,10 @@ document.addEventListener('observatori:data-period-change',event=>{
   const extremeButton=document.querySelector(`[data-extreme-period="${days}"]`);if(extremeButton)extremeButton.click();
   setText('data-evolution-period-label',`Període del Centre de Dades · ${label}`);setText('data-extremes-period-label',`Període del Centre de Dades · ${label}`);
 });
+document.addEventListener('observatori:data-tab-change',event=>{
+  if(event.detail?.tab!=='charts')return;
+  enableCharts().then(()=>requestAnimationFrame(()=>window.dispatchEvent(new Event('resize'))));
+});
 initLanguage();
 initPortal();
 initHeaderTools();

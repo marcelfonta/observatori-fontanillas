@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 const nodes=new Map();
 global.document={getElementById(id){if(!nodes.has(id))nodes.set(id,{textContent:''});return nodes.get(id);}};
-const {buildWeatherTimeline,renderDataCenter}=await import('../src/features/data-center.js');
+const {buildWeatherTimeline,calendarCoverage,renderDataCenter}=await import('../src/features/data-center.js');
 const atNoon=daysAgo=>{const date=new Date();date.setHours(12,0,0,0);date.setDate(date.getDate()-daysAgo);return date.getTime();};
 const history=[
   {t:atNoon(4),temperature:21,rainIncrement:0,windGust:9,samples:24},
@@ -12,12 +12,14 @@ const history=[
   {t:atNoon(0),temperature:24,rainIncrement:.4,windGust:12,samples:12}
 ];
 renderDataCenter(history,{rainRate:1.2,rainToday:.4});
+assert.deepEqual(calendarCoverage(history),{observedDays:5,spanDays:5,first:history[0].t,last:history.at(-1).t});
 assert.equal(nodes.get('data-rain-now').textContent,'1,2 mm/h');
 assert.equal(nodes.get('data-rain-today').textContent,'0,4 mm');
 assert.equal(nodes.get('data-rain-yesterday').textContent,'2,0 mm');
 assert.equal(nodes.get('data-rain-dry-days').textContent,'0');
 assert.equal(nodes.get('data-rain-since-10').textContent,'3');
 assert.match(nodes.get('data-rain-wettest').textContent,/12,0 mm/);
+assert.match(nodes.get('data-rain-year-coverage').textContent,/5 dies de període · 5 amb dades/);
 assert.match(nodes.get('data-ephemeris-copy').textContent,/efemèrides històriques verificades/);
 assert.match(nodes.get('data-ephemeris-list').innerHTML,/Meteocat|OMM/);
 const timeline=buildWeatherTimeline(history,[{started_at:new Date(atNoon(2)).toISOString(),level:'orange',phenomenon:'Vent',source:'AEMET'}]);
