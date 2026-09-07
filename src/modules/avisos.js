@@ -191,14 +191,17 @@ function alertItem(entry,sourceName='AEMET') {
   validity.textContent=`${entry.source||sourceName} · ${validityParts.join(' · ')}`;
   const scope=document.createElement('span');
   scope.className='official-alert-scope';
-  const searchable=`${entry.area||''} ${entry.description||''} ${entry.title||''}`.toLocaleLowerCase('ca-ES');
+  const searchable=`${entry.area||''} ${entry.scopeName||''} ${entry.description||''} ${entry.title||''}`.toLocaleLowerCase('ca-ES');
   const municipal=/sant celoni/.test(searchable);
+  const meteocat=(entry.source||sourceName)==='Meteocat';
   scope.classList.add(municipal?'is-municipal':'is-zonal');
   scope.innerHTML=municipal
     ? '<b>Abast municipal</b><span>Sant Celoni consta explícitament al detall oficial.</span>'
-    : '<b>Abast zonal</b><span>Prelitoral de Barcelona; la intensitat exacta a Sant Celoni pot variar.</span>';
+    : meteocat
+      ? '<b>Abast comarcal</b><span>Vallès Oriental; la intensitat exacta a Sant Celoni pot variar.</span>'
+      : '<b>Abast zonal</b><span>Prelitoral de Barcelona; la intensitat exacta a Sant Celoni pot variar.</span>';
   const link=document.createElement('a');
-  link.href=entry.link || 'https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&w=hoy';
+  link.href=entry.link || (meteocat?'https://www.meteo.cat/prediccio/general':'https://www.aemet.es/es/eltiempo/prediccion/avisos?l=690803&w=hoy');
   link.target='_blank'; link.rel='noreferrer'; link.textContent='Detall oficial ↗';
   body.append(title,copy,validity,scope,link); article.append(level,body);
   return article;
@@ -225,7 +228,8 @@ export function renderAlerts(payload) {
   } else if(visibleAlerts.length){
     setText('alerts-local-title',payload.active?`${payload.active} ${payload.active===1?'avís oficial actiu':'avisos oficials actius'}`:'Ara mateix, sense avisos actius');
     const todayCount=payload.windows?.today?.length||0;const tomorrowCount=payload.windows?.tomorrow?.length||0;
-    setText('alerts-local-copy',`${payload.active?'Hi ha avisos vigents ara mateix.':'Ara mateix no hi ha cap avís vigent.'}${todayCount?` ${todayCount} ${todayCount===1?'comença':'comencen'} més tard avui.`:''}${tomorrowCount?` ${tomorrowCount} ${tomorrowCount===1?'correspon':'corresponen'} a demà.`:''} L’abast és la zona oficial del Prelitoral de Barcelona, que inclou Sant Celoni, i la intensitat exacta al municipi pot variar.`);
+    const laterCount=payload.windows?.later?.length||0;
+    setText('alerts-local-copy',`${payload.active?'Hi ha avisos vigents ara mateix.':'Ara mateix no hi ha cap avís vigent.'}${todayCount?` ${todayCount} ${todayCount===1?'comença':'comencen'} més tard avui.`:''}${tomorrowCount?` ${tomorrowCount} ${tomorrowCount===1?'correspon':'corresponen'} a demà.`:''}${laterCount?` ${laterCount} ${laterCount===1?'correspon':'corresponen'} als dies següents.`:''} Fonts oficials: AEMET per al Prelitoral de Barcelona, que inclou Sant Celoni, i Meteocat per al Vallès Oriental.`);
     setText('alerts-local-status',payload.active?(levelLabels[payload.maxLevel]||'Avís actiu'):'Pròxims avisos');
     const groups=[['Ara',payload.windows?.now],['Avui, més tard',payload.windows?.today],['Demà',payload.windows?.tomorrow],['Més endavant',payload.windows?.later]];
     groups.forEach(([label,entries])=>{
@@ -235,10 +239,10 @@ export function renderAlerts(payload) {
     });
   } else {
     setText('alerts-local-title','Sense avisos oficials actius');
-    setText('alerts-local-copy','AEMET no manté cap avís actiu a la zona oficial del Prelitoral de Barcelona en la darrera comprovació.');
+    setText('alerts-local-copy','AEMET i Meteocat no mantenen cap avís vigent o previst per als períodes consultats en la darrera comprovació.');
     setText('alerts-local-status','Situació sense avisos');
     const empty=document.createElement('div'); empty.className='official-alert-empty is-clear';
-    empty.innerHTML='<strong>Prelitoral de Barcelona · sense avisos</strong><span>Continua disponible el mapa de Meteocat per contrastar el Vallès Oriental.</span>';
+    empty.innerHTML='<strong>Prelitoral de Barcelona i Vallès Oriental · sense avisos</strong><span>Darrera comprovació de les dues fonts oficials disponible.</span>';
     list.append(empty);
   }
   setText('alerts-updated',checkedLabel(payload));
