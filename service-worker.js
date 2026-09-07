@@ -1,4 +1,5 @@
 const CACHE = 'observatori-fontanillas-v22-31-0-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1';
+const CACHE = 'observatori-fontanillas-v22-31-0-frances-colaboracions-extrems-v4-centre-dades-tabs-v1';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
