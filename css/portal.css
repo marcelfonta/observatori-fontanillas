@@ -161,6 +161,9 @@ body[data-page="centre-dades"] [data-data-center-panel].is-active { animation: d
 .data-summary-grid strong { display: block; margin: 16px 0 10px; font: 700 36px/1 var(--font-display); letter-spacing: -.045em; }
 .data-summary-grid strong small { font-size: 14px; letter-spacing: 0; }
 .data-summary-grid article > small { color: var(--muted); line-height: 1.45; }
+.home-records-link{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:16px;margin-top:16px;padding:18px 22px;color:var(--text);text-decoration:none}.home-records-link>span{display:grid;width:42px;height:42px;place-items:center;border-radius:14px;background:rgba(137,214,163,.12);color:var(--green);font-size:20px}.home-records-link b,.home-records-link small{display:block}.home-records-link small{margin-top:4px;color:var(--muted);font-size:11px}.home-records-link>strong,.station-records-summary a{color:var(--green);font-size:11px;text-decoration:none}.home-records-link:hover,.home-records-link:focus-visible{border-color:rgba(137,214,163,.5)}
+.station-records-summary,.station-records-complete{padding:clamp(24px,4vw,38px);scroll-margin-top:100px}.station-records-summary{margin-top:16px}.station-records-summary>header,.station-records-complete>header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}.station-records-summary h2,.station-records-complete h2{margin:5px 0 0;font:700 clamp(23px,3vw,34px)/1.1 var(--font-display);letter-spacing:-.035em}.station-records-complete header p:last-child{margin:8px 0 0;color:var(--muted)}
+.station-records-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}.station-records-grid--main{grid-template-columns:repeat(3,minmax(0,1fr))}.station-record-card{min-width:0;padding:20px;border:1px solid rgba(137,214,163,.18);border-radius:18px;background:rgba(6,27,21,.58)}.station-record-card>span,.station-record-card time,.station-record-card small{display:block}.station-record-card>span{color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase}.station-record-card>strong{display:block;margin:12px 0 9px;font:700 clamp(24px,3vw,34px)/1 var(--font-display);letter-spacing:-.03em;overflow-wrap:anywhere}.station-record-card time{color:var(--text);font-size:11px}.station-record-card small{margin-top:5px;color:var(--green);font-size:10px}.station-records-status{margin:18px 0 0;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:11px;line-height:1.5}.station-records-empty{grid-column:1/-1;margin:0;color:var(--muted)}
 .data-export--period { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 28px; padding: 26px 30px; }
 .data-export--period h2 { margin: 5px 0 8px; font-size: 23px; }.data-export--period p:not(.eyebrow) { max-width: 690px; margin: 0; color: var(--muted); line-height: 1.55; }
 .data-export--period .data-export__actions { justify-content: flex-end; margin-top: 0; }
@@ -618,6 +621,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .data-export--period { grid-template-columns: 1fr; }.data-export--period .data-export__actions { justify-content: flex-start; }
   .data-calendar-heading { align-items: flex-start; flex-direction: column; }
   .data-summary-grid { grid-template-columns: 1fr 1fr; }
+  .station-records-grid,.station-records-grid--main{grid-template-columns:repeat(2,minmax(0,1fr))}
   .data-center-grid { grid-template-columns: 1fr; }
   .weather-timeline > header { flex-direction: column; }
   .weather-timeline__filters { width: 100%; }
@@ -668,6 +672,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .learning-criteria li { grid-template-columns: 1fr; gap: 5px; }
   .global-forecast-directory>header { align-items: flex-start; flex-direction: column; }
   .data-summary-grid, .data-periods__grid { grid-template-columns: 1fr; }
+  .home-records-link{grid-template-columns:38px minmax(0,1fr)}.home-records-link>strong{grid-column:2}.station-records-summary>header,.station-records-complete>header{display:block}.station-records-summary>header>a{display:inline-flex;margin-top:12px}.station-records-grid,.station-records-grid--main{grid-template-columns:1fr}
   .data-center-tabs { top: calc(var(--header-height, 62px) + 6px); display: flex; gap: 6px; margin-inline: -2px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
   .data-center-tabs::-webkit-scrollbar { display: none; }
   .data-center-tabs button { flex: 0 0 auto; min-width: 94px; scroll-snap-align: start; }

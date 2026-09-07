@@ -1,5 +1,14 @@
 # Changelog
 
+## Propera versió — Rècords de tot l’arxiu — 2026-09-07
+
+- Nova secció «Rècords de l’Observatori» calculada sobre tot l’arxiu D1 disponible, independentment del selector d’un any del Centre de Dades.
+- Cada extrem mostra el valor, la data, l’hora i l’antiguitat; el dia més plujós s’identifica explícitament com una acumulació del dia complet.
+- El resum d’Estació presenta els sis rècords principals i el Centre de Dades conserva la taula completa de temperatura, vent, pluja, pressió, humitat, radiació i UV.
+- La portada incorpora un accés directe als rècords i totes les vistes indiquen des de quina data hi ha arxiu, sense confondre aquests valors amb rècords climàtics oficials.
+- El Worker calcula els extrems amb consultes agregades i conserva el resultat durant una hora a memòria i a la memòria cau de Cloudflare; no envia tot l’històric al navegador ni repeteix el càlcul a cada visita.
+- Els textos i les dates s’adapten al català, castellà, anglès i francès, i la PWA estrena una memòria cau pròpia.
+
 ## Propera versió — Centre de Dades per apartats — 2026-09-07
 
 - El Centre de Dades s’organitza en cinc pestanyes: Resum, Gràfiques, Pluja, Episodis i Qualitat, conservant tot el contingut existent però evitant una pàgina única excessivament llarga.

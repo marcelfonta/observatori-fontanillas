@@ -1,3 +1,4 @@
+const CACHE = 'observatori-fontanillas-v22-31-0-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1';
 const CACHE = 'observatori-fontanillas-v22-31-0-frances-colaboracions-extrems-v4-centre-dades-tabs-v1';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
@@ -10,7 +11,7 @@ const APP_SHELL = [
   '/src/features/portal-router.js', '/src/features/portal-shell.js', '/src/features/portal-static.js', '/src/features/header-tools.js', '/src/features/footer-social.js', '/src/features/home-density.js', '/src/features/forecast-verification.js', '/src/features/forecast-videos.js', '/src/features/data-center.js', '/src/features/environment.js', '/src/features/meteo-ai.js', '/src/features/long-range.js', '/src/features/learning.js', '/src/features/seo.js',
   '/src/modules/alert-history.js', '/src/modules/astronomia.js', '/src/modules/avisos.js', '/src/modules/chart-loader.js', '/src/modules/confort.js',
   '/src/modules/contacte.js', '/src/modules/estacio.js', '/src/modules/extrems.js',
-  '/src/modules/grafiques.js', '/src/modules/historics.js', '/src/modules/models.js',
+  '/src/modules/grafiques.js', '/src/modules/historics.js', '/src/modules/models.js', '/src/features/station-records.js',
   '/src/modules/navigation.js', '/src/modules/prediccio.js', '/src/modules/qualitat.js',
   '/src/modules/radar.js', '/src/modules/resum.js', '/src/modules/situacio.js', '/src/modules/webcams.js',
   '/assets/icons/favicon-16.png', '/assets/icons/favicon-32.png', '/assets/icons/icon-192.png',

@@ -17,4 +17,6 @@ export function initPortal(){
   visible.find((section,index)=>index>0&&section.classList.contains('section-block'))?.classList.add('is-page-content-start');
   document.querySelectorAll('[data-page-link]').forEach(link=>{const active=link.dataset.pageLink===page;link.classList.toggle('is-active',active);if(active)link.setAttribute('aria-current','page');});
   const label=document.getElementById('portal-page-label');if(label)label.textContent=LABELS[page]||'';
+  const anchor=location.hash?document.getElementById(decodeURIComponent(location.hash.slice(1))):null;
+  if(anchor)requestAnimationFrame(()=>anchor.scrollIntoView({block:'start'}));
 }

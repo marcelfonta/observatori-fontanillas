@@ -2,6 +2,11 @@
 
 ## Manteniment obert — En curs
 
+- [x] Calcular els rècords absoluts de tot l’arxiu D1 amb valor i moment del primer registre, sense descarregar totes les observacions al navegador.
+- [x] Mostrar sis rècords principals a Estació, la taula completa al Centre de Dades i un accés directe des de la portada.
+- [x] Identificar la cobertura real i deixar clar que són extrems de l’arxiu Fontanillas, no rècords climàtics oficials.
+- [ ] Integrar, desplegar i validar els rècords en escriptori i mòbil.
+
 - [x] Separar els avisos vigents dels previstos, mostrar-ne la vigència i agrupar actualitzacions d’un mateix episodi a l’historial.
 - [x] Contextualitzar la verificació de pluja, explicar el Brier i comparar visualment previsió i observació.
 - [x] Identificar millor les estacions, advertir quan la pressió només és orientativa i ordenar les mesures locals per ús.
