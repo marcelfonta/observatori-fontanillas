@@ -911,6 +911,7 @@ export function parseMeteocatSmpEpisodes(episodes) {
           title:`Avís ${highest.levelLabel} de ${phenomenon} al ${METEOCAT_VALLES_ORIENTAL_NAME}`,
           description,phenomenon,level:highest.level,levelLabel:highest.levelLabel,rank:highest.danger,
           published:warning?.dataEmisio||null,starts:warning?.dataInici||null,expires:warning?.dataFi||null,
+          targetDate:day||null,
           active:true,scopeKind:'comarca',scopeName:METEOCAT_VALLES_ORIENTAL_NAME,
           municipality:'Sant Celoni',distribution:distribution||null,periods,
           countyWarnings:countyWarningsByDay[day]||[],semanticKey,
@@ -2154,16 +2155,37 @@ async function createDailySocialDraft(observation, env, slot = null) {
   return { created, localDate, slot, draft };
 }
 
+export function officialAlertTiming(entry,date=new Date()){
+  const today=localIsoDate(date);
+  const targetDate=String(entry?.targetDate||entry?.starts||entry?.published||today).slice(0,10);
+  const validDate=/^\d{4}-\d{2}-\d{2}$/.test(targetDate)?targetDate:today;
+  const [targetYear,targetMonth,targetDay]=validDate.split('-').map(Number);
+  const [todayYear,todayMonth,todayDay]=today.split('-').map(Number);
+  const offset=Math.round((Date.UTC(targetYear,targetMonth-1,targetDay)-Date.UTC(todayYear,todayMonth-1,todayDay))/86400000);
+  const fullDate=new Intl.DateTimeFormat('ca-ES',{timeZone:TIME_ZONE,weekday:'long',day:'numeric',month:'long'}).format(new Date(Date.UTC(targetYear,targetMonth-1,targetDay,12))).replace(',', '');
+  const longLabel=offset===0?`avui, ${fullDate}`:offset===1?`demà, ${fullDate}`:fullDate;
+  return {targetDate:validDate,offset,isFuture:offset>0,shortLabel:longLabel,longLabel};
+}
+
+export function officialAlertSocialCopy(entry,date=new Date()){
+  const level=String(entry?.level||'').toLowerCase();
+  const levelLabel=level==='red'?'VERMELL':level==='orange'?'TARONJA':'GROC';
+  const area=`${entry?.scopeName||METEOCAT_VALLES_ORIENTAL_NAME}, la comarca on es troba Sant Celoni`;
+  const precision=`L’avís és comarcal i no implica necessàriament afectació a tot el municipi de Sant Celoni${entry?.distribution?`; distribució prevista: ${String(entry.distribution).toLowerCase()}`:''}.`;
+  const timing=officialAlertTiming(entry,date);
+  const title=`Avís ${levelLabel} per ${timing.shortLabel} · ${entry?.phenomenon||'meteorologia'} · ${entry?.scopeName||METEOCAT_VALLES_ORIENTAL_NAME} (Sant Celoni)`;
+  const temporalNote=timing.isFuture
+    ? `És un avís previst per ${timing.longLabel}; no descriu el temps actual.`
+    : `L’avís correspon a ${timing.longLabel}.`;
+  const body=`⚠️ Avís oficial ${levelLabel} de Meteocat per ${entry?.phenomenon||'fenomen meteorològic'} al ${area}. ${temporalNote} ${precision} ${cleanText(entry?.description||entry?.title,820)} Consulta sempre el detall oficial i segueix les indicacions de Protecció Civil.\n\n${socialHashtags('official_alert')}`;
+  return {level,levelLabel,timing,title,body};
+}
+
 async function createOfficialAlertSocialDraft(entry,env){
   if(entry.source!=='Meteocat')return {created:false,reason:'meteocat_only'};
   if(!(await ensureSocialDraftSchema(env)))return {created:false,reason:'storage_disabled'};
-  const level=String(entry.level||'').toLowerCase();
-  const levelLabel=level==='red'?'VERMELL':level==='orange'?'TARONJA':'GROC';
-  const area=`${entry.scopeName||METEOCAT_VALLES_ORIENTAL_NAME}, la comarca on es troba Sant Celoni`;
-  const precision=`L’avís és comarcal i no implica necessàriament afectació a tot el municipi de Sant Celoni${entry.distribution?`; distribució prevista: ${String(entry.distribution).toLowerCase()}`:''}.`;
-  const title=`Avís ${levelLabel} · ${entry.phenomenon||'meteorologia'} · ${entry.scopeName||METEOCAT_VALLES_ORIENTAL_NAME} (Sant Celoni)`;
-  const body=`⚠️ Avís oficial ${levelLabel} de Meteocat per ${entry.phenomenon||'fenomen meteorològic'} al ${area}. ${precision} ${cleanText(entry.description||entry.title,820)} Consulta sempre el detall oficial i segueix les indicacions de Protecció Civil.\n\n${socialHashtags('official_alert')}`;
-  const payload=JSON.stringify({source:'Meteocat',level,levelLabel,phenomenon:entry.phenomenon||null,description:entry.description||entry.title||null,starts:entry.starts||entry.published||null,expires:entry.expires||null,scopeKind:entry.scopeKind||null,scopeName:entry.scopeName||null,municipality:entry.municipality||null,distribution:entry.distribution||null,periods:entry.periods||[],countyWarnings:entry.countyWarnings||[]});
+  const {level,levelLabel,timing,title,body}=officialAlertSocialCopy(entry);
+  const payload=JSON.stringify({source:'Meteocat',level,levelLabel,phenomenon:entry.phenomenon||null,description:entry.description||entry.title||null,targetDate:timing.targetDate,starts:entry.starts||entry.published||null,expires:entry.expires||null,scopeKind:entry.scopeKind||null,scopeName:entry.scopeName||null,municipality:entry.municipality||null,distribution:entry.distribution||null,periods:entry.periods||[],countyWarnings:entry.countyWarnings||[]});
   const sourceUrl=entry.sourceUrl||METEOCAT_ALERTS_PAGE;
   const result=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts (dedupe_key,kind,status,channels,title,body,source_url,payload) VALUES (?,'official_alert','approved',?,?,?,?,?)`)
     .bind(`alert:${entry.fingerprint}`,JSON.stringify(['facebook','instagram','bluesky','telegram','threads','x']),title,body,sourceUrl,payload).run();

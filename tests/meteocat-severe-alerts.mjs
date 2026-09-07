@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { CATALONIA_COUNTY_PATHS } from '../worker/catalonia-counties.js';
-import { meteocatAlertPollPlan, meteocatCountyWarningsByDay, meteocatDangerLevel, parseMeteocatSmpEpisodes, socialCardHtml } from '../worker/index.js';
+import { meteocatAlertPollPlan, meteocatCountyWarningsByDay, meteocatDangerLevel, officialAlertSocialCopy, officialAlertTiming, parseMeteocatSmpEpisodes, socialCardHtml } from '../worker/index.js';
 import { classifyAlertWindows } from '../src/modules/avisos.js';
 
 assert.deepEqual(meteocatAlertPollPlan(new Date('2026-08-31T04:30:00Z')),{time:'06:30',localDate:'2026-08-31',targetDate:'2026-08-31',targetOffset:0});
@@ -44,6 +44,7 @@ assert.equal(parsed[0].scopeName,'Vallès Oriental');
 assert.equal(parsed[0].municipality,'Sant Celoni');
 assert.equal(parsed[0].level,'orange');
 assert.equal(parsed[0].distribution,'LOCAL');
+assert.equal(parsed[0].targetDate,'2026-08-30');
 assert.deepEqual(parsed[0].periods,['30/08 14:00–30/08 20:00 h']);
 assert.deepEqual(parsed[0].countyWarnings,[
   {countyId:13,level:'red',rank:4},
@@ -63,6 +64,21 @@ assert.equal(yellow[0].level,'yellow');
 
 const red=parseMeteocatSmpEpisodes([warning(41,5)]);
 assert.equal(red[0].level,'red');
+
+assert.deepEqual(officialAlertTiming({targetDate:'2026-09-09'},new Date('2026-09-07T10:30:00Z')),{
+  targetDate:'2026-09-09',offset:2,isFuture:true,
+  shortLabel:'dimecres 9 de setembre',longLabel:'dimecres 9 de setembre',
+});
+assert.deepEqual(officialAlertTiming({targetDate:'2026-09-08'},new Date('2026-09-07T10:30:00Z')),{
+  targetDate:'2026-09-08',offset:1,isFuture:true,
+  shortLabel:'demà, dimarts 8 de setembre',longLabel:'demà, dimarts 8 de setembre',
+});
+const futureCopy=officialAlertSocialCopy({
+  level:'yellow',targetDate:'2026-09-09',phenomenon:'Intensitat de pluja en 30 minuts',
+  scopeName:'Vallès Oriental',description:'Franges: 09/09 08:00–09/09 14:00 h.',
+},new Date('2026-09-07T10:30:00Z'));
+assert.match(futureCopy.title,/Avís GROC per dimecres 9 de setembre/);
+assert.match(futureCopy.body,/previst per dimecres 9 de setembre; no descriu el temps actual/);
 
 const card=socialCardHtml({kind:'official_alert',body:'',payload:JSON.stringify({
   source:'Meteocat',level:'yellow',levelLabel:'GROC',phenomenon:'Intensitat de pluja',
@@ -87,6 +103,7 @@ assert.match(worker,/if\(entry\.source!=='Meteocat'\)return \{created:false,reas
 assert.match(worker,/METEOCAT_MONTHLY_PREDICTION_LIMIT = 100/);
 assert.match(worker,/plannedMaximum:31\*METEOCAT_ALERT_POLL_SLOTS\.length/);
 assert.match(worker,/entry\.starts\|\|entry\.published/);
+assert.match(worker,/no descriu el temps actual/);
 assert.match(worker,/source = 'Meteocat' AND \(expires_at IS NULL OR expires_at > \?\)/);
 assert.doesNotMatch(worker,/Promise\.allSettled\(localIsoDates\(\)\.map/);
 
