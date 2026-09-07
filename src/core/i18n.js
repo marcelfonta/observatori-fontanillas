@@ -97,7 +97,29 @@ export const PHRASES={
   'Radiació solar':{es:'Radiación solar',en:'Solar radiation'},
   'Índex UV':{es:'Índice UV',en:'UV index'},
   'Sensació tèrmica':{es:'Sensación térmica',en:'Feels-like temperature'},
+  'Índex de xafogor':{es:'Índice de bochorno',en:'Humidex index'},
   'Temperatura de xafogor':{es:'Temperatura de bochorno',en:'Humidex temperature'},
+  'Temperatura i confort':{es:'Temperatura y confort',en:'Temperature and comfort'},
+  'Com se sent l’ambient?':{es:'¿Cómo se siente el ambiente?',en:'How do conditions feel?'},
+  'Vent i pluja':{es:'Viento y lluvia',en:'Wind and rain'},
+  'Què està passant?':{es:'¿Qué está pasando?',en:'What is happening?'},
+  'Sol i atmosfera':{es:'Sol y atmósfera',en:'Sun and atmosphere'},
+  'Com evoluciona l’aire?':{es:'¿Cómo evoluciona el aire?',en:'How is the air changing?'},
+  'Com llegir-ho?':{es:'¿Cómo leerlo?',en:'How to read this'},
+  'La temperatura i la humitat són mesures del sensor. La sensació tèrmica i l’Humidex són índexs calculats i complementaris.':{es:'La temperatura y la humedad son medidas del sensor. La sensación térmica y el Humidex son índices calculados y complementarios.',en:'Temperature and humidity are sensor measurements. Feels-like temperature and Humidex are complementary calculated indices.'},
+  'La ratxa és el cop de vent més fort. La pluja acumulada és des de mitjanit i la intensitat indica el ritme del moment.':{es:'La racha es el golpe de viento más fuerte. La lluvia acumulada se cuenta desde medianoche y la intensidad indica el ritmo actual.',en:'The gust is the strongest burst of wind. Accumulated rain is counted since midnight, while intensity shows the current rate.'},
+  'La tendència de pressió ajuda a seguir canvis; la radiació i l’UV mesuren aspectes diferents de l’energia solar.':{es:'La tendencia de la presión ayuda a seguir los cambios; la radiación y el UV miden aspectos distintos de la energía solar.',en:'Pressure tendency helps track changes; solar radiation and UV measure different aspects of solar energy.'},
+  'Aquesta nit':{es:'Esta noche',en:'Tonight'},
+  'Analitzant les condicions':{es:'Analizando las condiciones',en:'Analysing conditions'},
+  'Buscant les hores més favorables.':{es:'Buscando las horas más favorables.',en:'Finding the most favourable hours.'},
+  'Nit excel·lent':{es:'Noche excelente',en:'Excellent night'},
+  'Condicions bones':{es:'Buenas condiciones',en:'Good conditions'},
+  'Condicions irregulars':{es:'Condiciones irregulares',en:'Variable conditions'},
+  'Observació difícil':{es:'Observación difícil',en:'Difficult viewing'},
+  'Tornar a Sant Celoni':{es:'Volver a Sant Celoni',en:'Return to Sant Celoni'},
+  'Feble':{es:'Débil',en:'Light'},
+  'Intensa':{es:'Intensa',en:'Heavy'},
+  'Arrossega i amplia el mapa. L’hora destacada correspon exactament a la imatge mostrada.':{es:'Arrastra y amplía el mapa. La hora destacada corresponde exactamente a la imagen mostrada.',en:'Drag and zoom the map. The highlighted time matches the displayed image exactly.'},
   'Sensor':{es:'Sensor',en:'Sensor'},
   'Acumulada':{es:'Acumulada',en:'Accumulated'},
   'Risc solar':{es:'Riesgo solar',en:'Solar risk'},
@@ -290,6 +312,8 @@ const DYNAMIC_REPLACEMENTS={
     [/^(\d+) punts històrics reals disponibles$/,'$1 puntos históricos reales disponibles'],
     [/^(\d+) hores amb pluja$/,'$1 horas con lluvia'],
     [/^(\d+) hora amb pluja$/,'$1 hora con lluvia']
+    ,[/^Millor finestra orientativa: (.+) · ([\d,.]+)% núvols · ([\d,.]+)% pluja$/,'Mejor franja orientativa: $1 · $2% nubes · $3% lluvia']
+    ,[/^([\d,.]+)% de nuvolositat mitjana · ([\d,.]+)% màxim de pluja · Lluna ([\d,.]+)%$/,'$1% de nubosidad media · $2% máximo de lluvia · Luna $3%']
   ],
   en:[
     [/^Comprovat a les\s+/,'Checked at '],
@@ -306,6 +330,8 @@ const DYNAMIC_REPLACEMENTS={
     [/^(\d+) punts històrics reals disponibles$/,'$1 real historical points available'],
     [/^(\d+) hores amb pluja$/,'$1 rainy hours'],
     [/^(\d+) hora amb pluja$/,'$1 rainy hour']
+    ,[/^Millor finestra orientativa: (.+) · ([\d,.]+)% núvols · ([\d,.]+)% pluja$/,'Best indicative window: $1 · $2% cloud · $3% rain']
+    ,[/^([\d,.]+)% de nuvolositat mitjana · ([\d,.]+)% màxim de pluja · Lluna ([\d,.]+)%$/,'$1% average cloud · $2% maximum rain · Moon $3%']
   ],
   fr:[
     [/^Comprovat a les\s+/,'Vérifié à '],
@@ -322,6 +348,8 @@ const DYNAMIC_REPLACEMENTS={
     [/^(\d+) punts històrics reals disponibles$/,'$1 points historiques réels disponibles'],
     [/^(\d+) hores amb pluja$/,'$1 heures de pluie'],
     [/^(\d+) hora amb pluja$/,'$1 heure de pluie']
+    ,[/^Millor finestra orientativa: (.+) · ([\d,.]+)% núvols · ([\d,.]+)% pluja$/,'Meilleur créneau indicatif : $1 · $2 % de nuages · $3 % de pluie']
+    ,[/^([\d,.]+)% de nuvolositat mitjana · ([\d,.]+)% màxim de pluja · Lluna ([\d,.]+)%$/,'$1 % de nébulosité moyenne · $2 % de pluie au maximum · Lune $3 %']
   ]
 };
 

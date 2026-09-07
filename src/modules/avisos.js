@@ -12,6 +12,23 @@ const pluralLevels = {
 const levelRanks = { red:4, orange:3, yellow:2, unknown:0, none:-1 };
 let expiryTimer=null;
 
+function parseAlertDate(value) {
+  if(!value)return null;
+  const parsed=new Date(value);
+  return Number.isNaN(parsed.getTime())?null:parsed;
+}
+
+function alertStart(entry) {
+  const direct=parseAlertDate(entry?.starts || entry?.startsAt || entry?.start || entry?.from);
+  if(direct)return direct;
+  const text=String(entry?.description || '');
+  const match=text.match(/(?:des(?: |\s)*de|a partir de(?: les)?|inici(?:o)?(?:\s+a les)?|\bde)\s+(\d{1,2}):(\d{2})\s+(\d{2})-(\d{2})-(\d{4})(?:[^()]*\(UTC\s*([+-]\d{1,2})\))?/i);
+  if(!match)return null;
+  const offset=Number(match[6]||0);
+  const parsed=new Date(Date.UTC(Number(match[5]),Number(match[4])-1,Number(match[3]),Number(match[1])-offset,Number(match[2])));
+  return Number.isNaN(parsed.getTime())?null:parsed;
+}
+
 function alertExpiry(entry) {
   const direct=entry?.expires || entry?.endsAt || entry?.end || entry?.until;
   if(direct) {
@@ -28,23 +45,55 @@ function alertExpiry(entry) {
 
 function normalizeAlertsPayload(payload) {
   if(!payload?.ok)return payload;
-  const now=Date.now();
+  const now=new Date();
   const alerts=Array.isArray(payload.alerts)
     ? payload.alerts.filter(entry=>{
       const expiry=alertExpiry(entry);
-      return !expiry || expiry.getTime()>now;
+      return !expiry || expiry.getTime()>now.getTime();
     })
     : [];
-  const maxLevel=alerts.reduce((highest,entry)=>
+  const windows=classifyAlertWindows(alerts,now);
+  const maxLevel=windows.now.reduce((highest,entry)=>
     (levelRanks[entry?.level] ?? 0)>(levelRanks[highest] ?? -1) ? (entry.level || 'unknown') : highest
   ,'none');
   return {
     ...payload,
-    status:alerts.length?'active':'clear',
-    active:alerts.length,
+    status:windows.now.length?'active':'clear',
+    active:windows.now.length,
     maxLevel,
-    alerts
+    alerts,
+    windows
   };
+}
+
+function madridDateKey(value) {
+  const date=value instanceof Date?value:new Date(value);
+  if(Number.isNaN(date.getTime()))return '';
+  return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
+}
+
+function nextDateKey(key) {
+  const [year,month,day]=String(key).split('-').map(Number);
+  if(!year||!month||!day)return '';
+  return new Date(Date.UTC(year,month-1,day+1)).toISOString().slice(0,10);
+}
+
+export function classifyAlertWindows(alerts=[],now=new Date()) {
+  const current=now instanceof Date?now:new Date(now);
+  const today=madridDateKey(current);
+  const tomorrow=nextDateKey(today);
+  const result={now:[],today:[],tomorrow:[],later:[]};
+  for(const entry of alerts){
+    const start=alertStart(entry);
+    const end=alertExpiry(entry);
+    if(end&&end<=current)continue;
+    if((!start||start<=current)&&(!end||end>current)){result.now.push(entry);continue;}
+    const key=madridDateKey(start);
+    if(key===today)result.today.push(entry);
+    else if(key===tomorrow)result.tomorrow.push(entry);
+    else result.later.push(entry);
+  }
+  return result;
 }
 
 function notifyAlertState(payload) {
@@ -57,7 +106,7 @@ function scheduleExpiryRefresh(payload) {
   if(!payload?.ok)return;
   const now=Date.now();
   const next=(payload.alerts || [])
-    .map(alertExpiry)
+    .flatMap(entry=>[alertStart(entry),alertExpiry(entry)])
     .filter(date=>date && date.getTime()>now)
     .sort((a,b)=>a-b)[0];
   if(!next)return;
@@ -89,11 +138,15 @@ function renderAlertShortcuts(payload) {
     level=payload.maxLevel || 'unknown';
     const count=Number(payload.active);
     title=count===1 ? (levelLabels[level] || 'Avís oficial actiu') : `${count} avisos ${pluralLevels[level] || 'oficials'} actius`;
-    const expiry=expiryLabel(payload.alerts);
-    copy=[phenomenaLabel(payload.alerts),expiry].filter(Boolean).join(' · ');
+    const activeAlerts=payload.windows?.now||payload.alerts;
+    const expiry=expiryLabel(activeAlerts);
+    copy=[phenomenaLabel(activeAlerts),expiry].filter(Boolean).join(' · ');
     action='Consultar →';
   } else if(payload?.ok) {
-    level='clear'; title='Sense avisos oficials actius'; copy='Darrera comprovació oficial actualitzada'; action='Veure fonts →';
+    const upcoming=(payload.windows?.today?.length||0)+(payload.windows?.tomorrow?.length||0);
+    level='clear'; title='Sense avisos oficials actius ara';
+    copy=upcoming?`${upcoming} ${upcoming===1?'avís previst':'avisos previstos'} entre avui i demà`:'Darrera comprovació oficial actualitzada';
+    action='Veure fonts →';
   }
   [quick,mobile].forEach(element=>{
     if(!element)return;
@@ -114,7 +167,13 @@ function checkedLabel(payload) {
   return `Comprovat a les ${new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(date)}`;
 }
 
-function alertItem(entry) {
+function formatValidityDate(value) {
+  const date=value instanceof Date?value:new Date(value);
+  if(Number.isNaN(date.getTime()))return '';
+  return new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(date);
+}
+
+function alertItem(entry,sourceName='AEMET') {
   const article=document.createElement('article');
   article.className=`official-alert-item is-${entry.level || 'unknown'}`;
   const level=document.createElement('span');
@@ -124,10 +183,12 @@ function alertItem(entry) {
   title.textContent=entry.phenomenon || entry.title || 'Fenomen meteorològic';
   const copy=document.createElement('small');
   copy.textContent=entry.description || entry.title || 'Consulta el detall oficial per conèixer l’abast i la vigència.';
+  const start=alertStart(entry);
   const expiry=alertExpiry(entry);
   const validity=document.createElement('span');
   validity.className='official-alert-validity';
-  validity.textContent=expiry ? expiryLabel([entry]) : 'Vigència disponible al detall oficial';
+  const validityParts=[start?`Inici ${formatValidityDate(start)}`:'Inici no facilitat',expiry?`Final ${formatValidityDate(expiry)}`:'Final al detall oficial'];
+  validity.textContent=`${entry.source||sourceName} · ${validityParts.join(' · ')}`;
   const scope=document.createElement('span');
   scope.className='official-alert-scope';
   const searchable=`${entry.area||''} ${entry.description||''} ${entry.title||''}`.toLocaleLowerCase('ca-ES');
@@ -148,7 +209,9 @@ export function renderAlerts(payload) {
   const card=document.getElementById('alerts-local-card');
   const list=document.getElementById('official-alert-list');
   if(!card||!list)return payload;
-  const level=payload?.ok ? (payload.maxLevel || 'none') : 'unknown';
+  const visibleAlerts=payload?.windows ? [...payload.windows.now,...payload.windows.today,...payload.windows.tomorrow,...payload.windows.later] : (payload?.alerts||[]);
+  const visibleLevel=visibleAlerts.reduce((highest,entry)=>(levelRanks[entry?.level]??0)>(levelRanks[highest]??-1)?(entry.level||'unknown'):highest,'none');
+  const level=payload?.ok ? (payload.active?payload.maxLevel:visibleLevel) : 'unknown';
   renderAlertShortcuts(payload);
   card.className=`alerts-local is-${level}`;
   list.replaceChildren();
@@ -159,11 +222,17 @@ export function renderAlerts(payload) {
     const empty=document.createElement('div'); empty.className='official-alert-empty';
     empty.innerHTML='<strong>Estat desconegut</strong><span>No s’interpreta com a absència d’avisos.</span>';
     list.append(empty);
-  } else if(payload.active>0){
-    setText('alerts-local-title',`${payload.active} ${payload.active===1?'avís oficial actiu':'avisos oficials actius'}`);
-    setText('alerts-local-copy',`AEMET informa d’un nivell màxim ${levelLabels[level]?.replace('Avís ','').toLowerCase() || 'actiu'} a la zona oficial del Prelitoral de Barcelona, que inclou Sant Celoni. És un avís zonal: no implica la mateixa intensitat a tots els municipis.`);
-    setText('alerts-local-status',levelLabels[level] || 'Avís actiu');
-    payload.alerts.forEach(entry=>list.append(alertItem(entry)));
+  } else if(visibleAlerts.length){
+    setText('alerts-local-title',payload.active?`${payload.active} ${payload.active===1?'avís oficial actiu':'avisos oficials actius'}`:'Ara mateix, sense avisos actius');
+    const todayCount=payload.windows?.today?.length||0;const tomorrowCount=payload.windows?.tomorrow?.length||0;
+    setText('alerts-local-copy',`${payload.active?'Hi ha avisos vigents ara mateix.':'Ara mateix no hi ha cap avís vigent.'}${todayCount?` ${todayCount} ${todayCount===1?'comença':'comencen'} més tard avui.`:''}${tomorrowCount?` ${tomorrowCount} ${tomorrowCount===1?'correspon':'corresponen'} a demà.`:''} L’abast és la zona oficial del Prelitoral de Barcelona, que inclou Sant Celoni, i la intensitat exacta al municipi pot variar.`);
+    setText('alerts-local-status',payload.active?(levelLabels[payload.maxLevel]||'Avís actiu'):'Pròxims avisos');
+    const groups=[['Ara',payload.windows?.now],['Avui, més tard',payload.windows?.today],['Demà',payload.windows?.tomorrow],['Més endavant',payload.windows?.later]];
+    groups.forEach(([label,entries])=>{
+      if(!entries?.length)return;
+      const heading=document.createElement('h4');heading.className='official-alert-period';heading.textContent=label;list.append(heading);
+      entries.forEach(entry=>list.append(alertItem(entry,payload.source?.name||'AEMET')));
+    });
   } else {
     setText('alerts-local-title','Sense avisos oficials actius');
     setText('alerts-local-copy','AEMET no manté cap avís actiu a la zona oficial del Prelitoral de Barcelona en la darrera comprovació.');

@@ -13,6 +13,20 @@ let comparisonMap;
 let comparisonMapLayer;
 let leafletPromise;
 
+const escapeHtml=(value='')=>String(value).replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[character]));
+
+export function stationIdentity(station={}) {
+  const id=station.stationId?`ID WU ${station.stationId}`:'ID no facilitat';
+  const elevation=Number.isFinite(Number(station.elevation))?`${fmt(station.elevation,0)} m d’altitud`:'altitud no facilitada';
+  return `${id} · ${elevation}`;
+}
+
+export function pressureComparisonNote(payload={}) {
+  return payload.sourcePolicy?.pressureComparable===true
+    ? 'Pressió comparable: mateixa referència i correcció declarades per la font.'
+    : 'Pressió orientativa: la font no declara si totes les estacions apliquen la mateixa correcció al nivell del mar.';
+}
+
 function fmt(value, digits = 1) {
   return Number.isFinite(Number(value)) ? Number(value).toLocaleString('ca-ES', { maximumFractionDigits: digits, minimumFractionDigits: digits }) : '—';
 }
@@ -51,7 +65,7 @@ function renderCards(payload) {
     const offline = st.status !== 'online';
     return `<article class="station-card panel ${offline ? 'is-offline' : ''}">
       <header>
-        <div><span class="station-source">${st.source || 'Font externa'}</span><h3>${st.name}</h3><small>${st.municipality || ''}${Number.isFinite(Number(st.distanceKm))&&Number(st.distanceKm)>.1?` · ${fmt(st.distanceKm)} km de Fontanillas`:''}</small></div>
+        <div><span class="station-source">${escapeHtml(st.source || 'Font externa')}</span><h3>${escapeHtml(st.name)}</h3><small>${escapeHtml(st.municipality || '')}${Number.isFinite(Number(st.distanceKm))&&Number(st.distanceKm)>.1?` · ${fmt(st.distanceKm)} km de Fontanillas`:''}</small><small class="station-identity">${escapeHtml(stationIdentity(st))}</small></div>
         <span class="station-status ${offline ? 'is-offline' : ''}"><i></i>${offline ? 'Sense dades' : updatedLabel(st.updated)}</span>
       </header>
       ${offline ? `<div class="station-unavailable"><strong>Dades no disponibles</strong><span>La resta de la comparativa continua activa.</span></div>` : `
@@ -61,7 +75,7 @@ function renderCards(payload) {
         <span><small>Vent</small><b>${fmt(s.windSpeed)} km/h</b></span>
         <span><small>Ratxa</small><b>${fmt(s.windGust)} km/h</b></span>
         <span><small>Pluja</small><b>${fmt(s.rainToday)} mm</b></span>
-        <span><small>Pressió</small><b>${fmt(s.pressure)} hPa</b></span>
+        <span title="${escapeHtml(pressureComparisonNote(payload))}"><small>Pressió · orientativa</small><b>${fmt(s.pressure)} hPa</b></span>
         <span><small>Direcció</small><b>${direction(st.windDirection)}</b></span>
       </div>`}
     </article>`;
@@ -87,7 +101,7 @@ function renderMapList(stations) {
     const summary=periodSummary(station);
     const offline=station.status!=='online';
     const distance=Number.isFinite(Number(station.distanceKm))&&Number(station.distanceKm)>.1?` · ${fmt(station.distanceKm)} km`:'';
-    return `<div class="comparison-map-item ${offline?'is-offline':''}"><i style="background:${offline?'#6f7d78':COLORS[index%COLORS.length]}"></i><span><b>${station.name}</b><small>${station.municipality||'Baix Montseny'}${distance}</small></span><strong>${offline?'—':`${fmt(summary.temperature)}°`}</strong></div>`;
+    return `<div class="comparison-map-item ${offline?'is-offline':''}"><i style="background:${offline?'#6f7d78':COLORS[index%COLORS.length]}"></i><span><b>${escapeHtml(station.name)}</b><small>${escapeHtml(station.municipality||'Baix Montseny')}${distance}</small><small>${escapeHtml(stationIdentity(station))}</small></span><strong>${offline?'—':`${fmt(summary.temperature)}°`}</strong></div>`;
   }).join('');
 }
 
@@ -110,8 +124,8 @@ async function renderMap(payload) {
     online.forEach((station,index)=>{
       const summary=periodSummary(station);
       const marker=window.L.circleMarker([station.latitude,station.longitude],{radius:station.id==='fontanillas'?11:8,color:'#f3f7f3',weight:2,fillColor:COLORS[index%COLORS.length],fillOpacity:.94}).addTo(comparisonMapLayer);
-      marker.bindTooltip(station.name,{permanent:true,direction:directions[index%directions.length],offset:[0,-8],className:'comparison-map-tooltip'});
-      marker.bindPopup(`<strong>${station.name}</strong><br>${fmt(summary.temperature)} °C · ${fmt(summary.humidity,0)}% HR<br>Ratxa ${fmt(summary.windGust)} km/h · Pluja ${fmt(summary.rainToday)} mm`);
+      marker.bindTooltip(escapeHtml(station.name),{permanent:true,direction:directions[index%directions.length],offset:[0,-8],className:'comparison-map-tooltip'});
+      marker.bindPopup(`<strong>${escapeHtml(station.name)}</strong><br>${fmt(summary.temperature)} °C · ${fmt(summary.humidity,0)}% HR<br>Ratxa ${fmt(summary.windGust)} km/h · Pluja ${fmt(summary.rainToday)} mm`);
     });
     window.setTimeout(()=>comparisonMap.invalidateSize(),80);
     if(status)status.textContent=`${online.length} estacions situades`;
@@ -142,7 +156,7 @@ function renderCharts(payload) {
   const copy=document.getElementById('comparison-chart-copy');
   const note=document.getElementById('comparison-variable-note');
   if(copy)copy.textContent=historical?`Evolució de ${metric.label.toLowerCase()} durant ${state.period==='today'?'el dia d’avui':'les últimes 24 hores'}.`:`Valors actuals de ${metric.label.toLowerCase()} entre les estacions actives.`;
-  if(note)note.textContent='Lectures actuals comparades amb les mateixes unitats i criteris.';
+  if(note)note.textContent=state.metric==='pressure'?pressureComparisonNote(payload):'Lectures actuals comparades amb les mateixes unitats i criteris disponibles.';
   if(!canvas||!window.Chart)return;
   let labels;
   let datasets;
@@ -198,4 +212,6 @@ function init() {
   load();
   setInterval(load,5*60*1000);
 }
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
+if(typeof document!=='undefined'){
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+}

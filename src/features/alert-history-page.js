@@ -1,4 +1,7 @@
 import { CONFIG } from '../core/config.js';
+import { groupAlertEpisodes } from '../core/alert-episodes.js';
+
+export { groupAlertEpisodes } from '../core/alert-episodes.js';
 
 const locale='ca-ES';
 const state={page:1,pageSize:20,filters:{q:'',year:'',month:'',level:'',source:'',phenomenon:''},payload:null,controller:null};
@@ -17,7 +20,7 @@ export function buildAlertHistoryQuery(filters={},page=1,pageSize=20){
 
 export function alertHistoryCsv(items=[]){
   const cell=value=>`"${String(value??'').replaceAll('"','""')}"`;
-  const rows=[['Data inici','Data final','Nivell','Fenomen','Organisme','Títol','Descripció'],...items.map(item=>[item.started_at,item.expires_at,levelLabel(item.level),item.phenomenon,item.source,item.title,item.description])];
+  const rows=[['Data inici','Data final','Nivell màxim','Fenomen','Organisme','Actualitzacions','Títol','Descripció'],...items.map(item=>[item.started_at,item.expires_at,levelLabel(item.level),item.phenomenon,item.source,item.updates||1,item.title,item.description])];
   return `\ufeff${rows.map(row=>row.map(cell).join(';')).join('\n')}`;
 }
 
@@ -54,9 +57,9 @@ function renderFilters(){
 }
 
 function renderItems(payload){
-  const list=$('history-page-list');const items=payload.items||[];const pagination=payload.pagination||{};
-  $('history-page-count').textContent=`${number(pagination.total)} ${Number(pagination.total)===1?'episodi':'episodis'}`;
-  if(list)list.innerHTML=items.length?items.map(item=>`<article class="alert-history-item is-${escapeHtml(item.level||'unknown')}"><span class="alert-history-level">${levelLabel(item.level)}</span><div><strong>${escapeHtml(item.phenomenon||item.title||'Avís meteorològic')}</strong><small>${escapeHtml(item.source||'AEMET')} · ${dateLabel(item.started_at||item.created_at)}</small><p>${escapeHtml(item.description||item.title||'')}</p>${item.expires_at?`<em>Final previst · ${dateLabel(item.expires_at)}</em>`:''}</div></article>`).join(''):'<div class="alert-history-empty"><strong>No hi ha coincidències</strong><span>Prova un altre període, nivell, organisme o terme de cerca.</span></div>';
+  const list=$('history-page-list');const records=payload.items||[];const items=groupAlertEpisodes(records);const pagination=payload.pagination||{};
+  $('history-page-count').textContent=`${number(pagination.total)} ${Number(pagination.total)===1?'registre':'registres'} · ${number(items.length)} ${items.length===1?'episodi':'episodis'} en aquesta pàgina`;
+  if(list)list.innerHTML=items.length?items.map(item=>`<article class="alert-history-item is-${escapeHtml(item.level||'unknown')}"><span class="alert-history-level">${levelLabel(item.level)}</span><div><strong>${escapeHtml(item.phenomenon||item.title||'Avís meteorològic')}</strong><small>${escapeHtml(item.source||'AEMET')} · ${dateLabel(item.started_at||item.created_at)}${item.updates>1?` · ${number(item.updates)} actualitzacions agrupades`:''}</small><p>${escapeHtml(item.description||item.title||'')}</p>${item.expires_at?`<em>Final previst · ${dateLabel(item.expires_at)}</em>`:''}</div></article>`).join(''):'<div class="alert-history-empty"><strong>No hi ha coincidències</strong><span>Prova un altre període, nivell, organisme o terme de cerca.</span></div>';
   const totalPages=Number(pagination.totalPages)||0;const page=Number(pagination.page)||1;
   $('history-pagination-label').textContent=totalPages?`Pàgina ${page} de ${totalPages}`:'Cap pàgina';
   $('history-previous').disabled=page<=1;$('history-next').disabled=!totalPages||page>=totalPages;
@@ -85,7 +88,7 @@ async function fetchAllFiltered(){
   const first=await fetch(`${CONFIG.apiUrl}/alert-history?${buildAlertHistoryQuery(state.filters,1,100)}`,{cache:'no-store',headers:{Accept:'application/json'}});if(!first.ok)throw new Error(`API ${first.status}`);
   const payload=await first.json();const items=[...(payload.items||[])];const pages=Number(payload.pagination?.totalPages)||1;
   for(let page=2;page<=pages;page+=1){const response=await fetch(`${CONFIG.apiUrl}/alert-history?${buildAlertHistoryQuery(state.filters,page,100)}`,{cache:'no-store',headers:{Accept:'application/json'}});if(!response.ok)throw new Error(`API ${response.status}`);items.push(...((await response.json()).items||[]));}
-  return items;
+  return groupAlertEpisodes(items);
 }
 
 function download(content,type,name){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}

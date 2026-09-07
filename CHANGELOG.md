@@ -1,5 +1,16 @@
 # Changelog
 
+## Propera versió — Bloc 1 de fiabilitat i lectura — 2026-09-07
+
+- Els avisos queden separats entre vigents ara, previstos per a més tard avui, demà i dies posteriors; el recompte principal ja no barreja avisos futurs amb avisos actius.
+- Cada avís mostra organisme, inici i final, i l’historial agrupa les actualitzacions solapades d’un mateix fenomen i organisme en un únic episodi sense perdre el nivell màxim.
+- La verificació de la previsió contextualitza l’encert de pluja amb la composició real de la mostra, incorpora una comparació visual entre previsió i observació i explica l’índex Brier amb un exemple desplegable.
+- La comparativa identifica les estacions amb l’identificador de Weather Underground i l’altitud quan la font la facilita; la pressió queda marcada com a orientativa si no consta una correcció comuna al nivell del mar.
+- Les mesures de l’estació s’ordenen per temperatura i confort, vent i pluja, i sol i atmosfera, amb ajudes breus i l’Humidex presentat de manera coherent com a índex.
+- El radar mostra l’hora exacta del fotograma, una llegenda d’intensitat i un control per tornar a Sant Celoni, i evita mostrar alhora un estat carregat i un missatge de càrrega.
+- La secció astronòmica prioritza aquesta nit, calcula una finestra orientativa favorable i corregeix la qualificació de l’altura solar: 10,4° es considera sol baix, no sol alt.
+- Els textos estàtics nous disposen de versions en català, castellà, anglès i francès, i la PWA estrena una memòria cau pròpia per aplicar els canvis sense conservar interfícies antigues.
+
 ## Correcció — Màxima i mínima del dia — 2026-09-06
 
 - L’històric de l’estació es consulta des del mateix domini del portal, evitant que bloquejadors de contingut impedeixin recuperar les màximes i mínimes reals i forcin l’ús de dades antigues.

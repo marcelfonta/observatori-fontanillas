@@ -11,6 +11,14 @@ let interactiveStarted = false;
 let leafletPromise;
 let refreshTimer;
 
+function setRadarLoading(loading,message='Carregant les imatges del radar…') {
+  const loader=document.getElementById('radar-loader');
+  if(!loader)return;
+  loader.textContent=message;
+  loader.hidden=!loading;
+  loader.classList.toggle('is-hidden',!loading);
+}
+
 function ensureLeaflet() {
   if(window.L)return Promise.resolve();
   if(leafletPromise)return leafletPromise;
@@ -78,6 +86,8 @@ function buildMap() {
 }
 
 async function loadFrames() {
+  const firstLoad=!frames.length;
+  if(firstLoad){setRadarLoading(true);setText('radar-status','Carregant animació');}
   const controller=new AbortController();
   const timeout=window.setTimeout(()=>controller.abort(),12000);
   let response;
@@ -94,7 +104,7 @@ async function loadFrames() {
   if (slider) { slider.max = String(frames.length - 1); slider.value = String(frames.length - 1); }
   showFrame(frames.length - 1);
   setText('radar-status', `${frames.length} imatges · 2 h`);
-  document.getElementById('radar-loader')?.classList.add('is-hidden');
+  if(firstLoad)setRadarLoading(false);
 }
 
 function startInteractiveRadar() {
@@ -112,10 +122,11 @@ function startInteractiveRadar() {
   buildMap();
   document.getElementById('radar-slider')?.addEventListener('input', event => { stopPlayback(); showFrame(event.target.value); }, { once:false });
   document.getElementById('radar-play')?.addEventListener('click', togglePlayback, { once:false });
+  document.getElementById('radar-recenter')?.addEventListener('click',()=>map?.setView([CONFIG.station.latitude,CONFIG.station.longitude],9),{once:false});
   loadFrames().catch(error => {
     console.warn('Radar temporalment no disponible.', error);
     setText('radar-status', 'Temporalment no disponible');
-    setText('radar-loader', 'Ara mateix no es poden carregar les imatges. Consulta el radar oficial de Meteocat.');
+    setRadarLoading(true,'Ara mateix no es poden carregar les imatges. Consulta el radar oficial de Meteocat.');
   });
 }
 
