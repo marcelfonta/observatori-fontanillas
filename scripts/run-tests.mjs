@@ -8,7 +8,7 @@ const all = (await readdir(resolve(root, 'tests')))
   .filter(name => name.endsWith('.mjs'))
   .sort((a, b) => a.localeCompare(b, undefined, { numeric:true }));
 const selected = quick
-  ? all.filter(name => ['smoke.mjs', 'admin.mjs', 'extrems-dia.mjs', 'fiabilitat-bloc1.mjs', 'forecast-episodes.mjs', 'forecast-videos.mjs', 'meteocat-severe-alerts.mjs', 'social-periodic.mjs', 'social-publication-quality.mjs', 'station-records.mjs', 'youtube-short.mjs', 'v22-2.mjs', 'v22-12.mjs', 'v22-30-1.mjs', 'v22-31.mjs', 'v22-32.mjs'].includes(name))
+  ? all.filter(name => ['smoke.mjs', 'admin.mjs', 'extrems-dia.mjs', 'fiabilitat-bloc1.mjs', 'forecast-episodes.mjs', 'forecast-videos.mjs', 'meteocat-severe-alerts.mjs', 'mobile-audit-fixes.mjs', 'social-periodic.mjs', 'social-publication-quality.mjs', 'station-records.mjs', 'youtube-short.mjs', 'v22-2.mjs', 'v22-12.mjs', 'v22-30-1.mjs', 'v22-31.mjs', 'v22-32.mjs'].includes(name))
   : all;
 
 for (const file of selected) {

@@ -1,4 +1,4 @@
-import { getLanguage, setLanguage, t } from '../core/i18n.js';
+import { getLanguage, setLanguage, t, translateDocument } from '../core/i18n.js';
 import { searchMunicipalities } from '../services/weather-api.js';
 
 const escapeHtml=value=>String(value??'').replace(/[&<>"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[char]));
@@ -10,14 +10,15 @@ export function initHeaderTools(){
   const tools=document.createElement('div');
   tools.className='header-tools';
   tools.innerHTML=`<form class="header-place-search" role="search" autocomplete="off">
-    <label class="sr-only" for="header-place-query">${t('Cerca el teu municipi')}</label>
+    <label class="sr-only" for="header-place-query">Cerca el teu municipi</label>
     <span aria-hidden="true">⌕</span>
-    <input id="header-place-query" type="search" minlength="2" maxlength="80" placeholder="${t('Cerca el teu municipi')}" aria-autocomplete="list" aria-controls="header-place-suggestions" data-i18n-placeholder />
+    <input id="header-place-query" type="search" minlength="2" maxlength="80" placeholder="Cerca el teu municipi" aria-autocomplete="list" aria-controls="header-place-suggestions" data-i18n-placeholder data-i18n-source-placeholder="Cerca el teu municipi" />
     <div id="header-place-suggestions" class="header-place-suggestions" role="listbox" hidden></div>
   </form>
-  <label class="header-language"><span aria-hidden="true">◎</span><span class="sr-only">${t('Idioma')}</span><select aria-label="${t('Idioma')}" data-i18n-label><option value="ca">CA</option><option value="es">ES</option><option value="en">EN</option><option value="fr">FR</option></select></label>`;
+  <label class="header-language"><span aria-hidden="true">◎</span><span class="sr-only">Idioma</span><select aria-label="Idioma" data-i18n-label data-i18n-source-label="Idioma"><option value="ca">CA</option><option value="es">ES</option><option value="en">EN</option><option value="fr">FR</option></select></label>`;
   const socialSlot=header.querySelector('.header-social-slot');
   header.insertBefore(tools,socialSlot||null);
+  translateDocument(tools);
 
   const form=tools.querySelector('form');
   const input=tools.querySelector('input');

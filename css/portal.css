@@ -560,6 +560,13 @@ body[data-page="inici"] #avisos,
 body[data-page="inici"] #prediccio,
 body[data-page="inici"] #territori { padding-top: 42px; }
 body[data-page="inici"] #territori { grid-template-columns: 1fr; }
+
+/* Auditoria mòbil 2026-09: evita que contingut intrínsec eixampli la vista. */
+.long-term-section,
+.long-term-section > *,
+.seasonal-outlook,
+.seasonal-outlook__maps,
+.seasonal-outlook__month { min-width: 0; }
 body[data-page="radar"] #territori .webcam-card,
 body[data-page="webcams"] #territori .radar-card { display: none; }
 body[data-page="radar"] #territori,
@@ -598,6 +605,19 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .header-place-search:focus-within .header-place-suggestions { top: calc(100% + 7px); }
   .header-language { height: 40px; padding-inline: 7px; }
   .header-language > span:first-child { display: none; }
+  .header-place-search,
+  .header-language,
+  .portal-menu-button { width: 44px; min-width: 44px; height: 44px; }
+  .header-language select { width: 36px; min-height: 44px; }
+  .header-social > .social-link { display: none !important; }
+  .header-social-more { display: block; }
+  .header-social-more summary { width: 44px; min-width: 44px; height: 44px; padding: 0; }
+  .forecast-controls button,
+  .model-day-controls button,
+  .radar-timeline button,
+  .radar-utility > button,
+  .data-center-tabs button,
+  .data-export button { min-height: 44px; }
   .portal-mobile-nav { position: fixed; z-index: 72; right: 10px; bottom: max(9px,env(safe-area-inset-bottom)); left: 10px; display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 2px; padding: 5px; border: 1px solid rgba(137,214,163,.28); border-radius: 19px; background: rgba(6,20,16,.95); box-shadow: 0 16px 48px rgba(0,0,0,.48); backdrop-filter: blur(18px); }
   .portal-mobile-nav :is(a,button) { display: grid; min-width: 0; min-height: 54px; place-items: center; align-content: center; gap: 4px; padding: 5px 2px; border: 0; border-radius: 14px; background: transparent; color: var(--muted); font: inherit; text-decoration: none; cursor: pointer; }
   .portal-mobile-nav :is(a,button).is-active,.portal-mobile-nav :is(a,button):focus-visible { background: rgba(137,214,163,.13); color: var(--text); outline: none; }
@@ -659,8 +679,8 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
 
 @media (max-width: 510px) {
   .has-portal-shell .site-header { padding-inline: 10px; }
-  .header-language { width: 40px; justify-content: center; padding: 0; }
-  .header-language select { width: 32px; text-align: center; }
+  .header-language { width: 44px; justify-content: center; padding: 0; }
+  .header-language select { width: 36px; text-align: center; }
   .learning-intro { align-items: flex-start; flex-direction: column; }
   .learning-trust { max-width: none; }
   .learning-paths,.learning-resource-grid,.learning-filters,.learning-challenges > div,.global-forecast-directory__grid { grid-template-columns: 1fr; }

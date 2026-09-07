@@ -2,6 +2,8 @@
 
 ## Manteniment obert — En curs
 
+- [x] Auditar la portada, la predicció, el llarg termini, el Centre de Dades i els rècords a 375, 390 i 412 px; corregir el desplegable estacional, l’amplada dels mapes, la traducció consecutiva, les zones tàctils i l’error CSP detectat.
+
 - [x] Detectar canvis de temps només amb coincidència d’almenys dos models entre ECMWF, GFS i ICON, amb deduplicació i un màxim de dues peces setmanals.
 - [x] Generar un vídeo vertical amb relat breu, comparació de models i evolució territorial real, sempre diferenciat dels avisos oficials.
 - [x] Preparar una cadena independent de previsualització, R2, YouTube, Reels, TikTok i X amb represa per canal i sense duplicats.
