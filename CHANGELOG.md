@@ -1,5 +1,12 @@
 # Changelog
 
+## Correcció — Vigència destacada a les imatges d’avisos — 2026-09-07
+
+- Les imatges `official_alert` mostren «PREVIST PER» i el dia complet abans del fenomen i del mapa, amb «NO ÉS PER AVUI» només quan el dia afectat és posterior al de creació de la publicació. La data de publicació acompanya aquesta indicació perquè sigui interpretable quan es comparteix més endavant.
+- La data comarcal també encapçala el cos del missatge. Els esborranys antics poden recuperar-la de les franges; mai es dedueix de l’inici general de l’episodi ni de la data actual. Si falta una data comarcal vàlida, no es crea una publicació automàtica nova.
+- La llegenda del mapa es refereix al dia indicat. Nova versió de la memòria cau només per a targetes d’avisos, sense reutilitzar imatges del format anterior ni modificar les altres famílies.
+- Verificació: 59 fitxers de proves, dry-run del Worker i previsualització local de 1080 × 1350 sense solapaments. No modifica publicacions ja enviades; requereix merge i desplegament. Rollback: revertir el commit, sense migració D1.
+
 ## Correcció — Data visible als avisos socials futurs — 2026-09-07
 
 - Les notificacions socials de Meteocat indiquen al començament si l’avís és per avui, demà o una data posterior, amb el dia de la setmana i la data visibles al títol.
