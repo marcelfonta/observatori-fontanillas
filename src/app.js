@@ -1,6 +1,6 @@
 // Observatori Meteorològic Fontanillas — app.js · V7 Fase 1
 import { CONFIG } from './core/config.js';
-import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchLongRangeForecast, fetchModelComparison, fetchStationHistory, getLastCachedObs } from './services/weather-api.js';
+import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchLongRangeForecast, fetchModelComparison, fetchStationHistory, fetchStationRecords, getLastCachedObs } from './services/weather-api.js';
 import { setText } from './core/dom.js';
 import { renderStation } from './modules/estacio.js';
 import { renderCharts, renderMetricSparklines } from './modules/grafiques.js';
@@ -33,6 +33,7 @@ import { initForecastVideos } from './features/forecast-videos.js';
 import { getLocale, initLanguage } from './core/i18n.js';
 import { initHeaderTools } from './features/header-tools.js';
 import { initSeasonalOutlook } from './features/seasonal-outlook.js';
+import { initStationRecords } from './features/station-records.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -157,6 +158,7 @@ initLanguage();
 initPortal();
 initHeaderTools();
 initSeasonalOutlook();
+if(['estacio','centre-dades'].includes(document.body.dataset.page))initStationRecords(fetchStationRecords);
 if(document.body.dataset.page==='inici')initWhenVisible('.metrics-grid',enableCharts,'0px 0px');
 if(document.body.dataset.page==='estacio')initWhenVisible('#calculats',enableCharts,'0px 0px');
 if(document.body.dataset.page==='centre-dades')initWhenVisible('#tendencies',enableCharts,'200px 0px');

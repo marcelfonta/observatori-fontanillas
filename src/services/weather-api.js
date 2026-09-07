@@ -110,6 +110,13 @@ export async function fetchStationHistory(days = 31, resolution = 'auto') {
   return response.json();
 }
 
+export async function fetchStationRecords() {
+  const freshness = Math.floor(Date.now() / 3600000);
+  const response = await request(`/api/records?fresh=${freshness}`, { headers: { Accept: 'application/json' }, cache: 'no-store' }, 12000);
+  if (!response.ok) throw new Error(`Records API ${response.status}`);
+  return response.json();
+}
+
 export async function fetchDataQuality() {
   const response = await request(`${CONFIG.apiUrl}/quality`, { headers: { Accept:'application/json' }, cache:'no-store' });
   if (!response.ok) throw new Error(`Quality API ${response.status}`);

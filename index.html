@@ -130,7 +130,14 @@
         </div>
       </section>
 
+      <a class="home-records-link panel" href="./?page=centre-dades#records" data-portal-page="inici"><span aria-hidden="true">↗</span><div><b>Rècords de l’Observatori</b><small>Màximes i mínimes de tot l’arxiu disponible, amb data i hora.</small></div><strong>Veure rècords històrics →</strong></a>
+
       <section class="portal-view-header panel" aria-labelledby="station-page-title" data-portal-page="estacio"><div><p class="eyebrow">Estació Fontanillas</p><h1 id="station-page-title">L’estació, sensor a sensor.</h1><p>Lectures actuals, valors calculats i resum del dia des de Sant Celoni.</p></div><span class="tag">Cada 5 minuts</span></section>
+
+      <section class="station-records-summary panel" aria-labelledby="station-records-summary-title" data-portal-page="estacio">
+        <header><div><p class="eyebrow">Tot l’arxiu disponible</p><h2 id="station-records-summary-title">Rècords principals de l’Observatori</h2></div><a href="./?page=centre-dades#records">Veure la taula completa →</a></header>
+        <div class="station-records-grid station-records-grid--main" id="station-records-main" aria-live="polite"><p class="station-records-empty">Preparant els rècords històrics…</p></div>
+      </section>
       <section class="portal-view-header panel" aria-labelledby="meteo-ai-page-title" data-portal-page="meteo-ia"><div><p class="eyebrow">Meteo IA · dades verificades</p><h1 id="meteo-ai-page-title">Pregunta al temps, amb les fonts a la vista.</h1><p>Respostes construïdes amb l’estació, la predicció i els avisos disponibles; sense inventar lectures.</p></div><span class="tag">Consulta guiada</span></section>
       <section class="portal-view-header panel" aria-labelledby="forecast-page-title" data-portal-page="prediccio"><div><p class="eyebrow">Predicció</p><h1 id="forecast-page-title">La previsió, ordenada per horitzons.</h1><p>Properes hores, dies i models de confiança per entendre què pot canviar.</p></div><span class="tag">Sant Celoni</span></section>
       <section class="portal-view-header panel" aria-labelledby="long-term-page-title" data-portal-page="llarg-termini"><div><p class="eyebrow">Predicció a llarg termini</p><h1 id="long-term-page-title">Tendències de setmanes i mesos.</h1><p>Una lectura probabilística per detectar patrons, sense confondre’ls amb una previsió diària ni amb un avís oficial.</p></div><span class="tag">ECMWF · Meteocat</span></section>
@@ -275,6 +282,12 @@
           <article class="panel"><span>Temperatura · últimes 24 h</span><strong id="data-summary-temp-24h">—</strong><small id="data-summary-temp-24h-note">Comparació pendent</small></article>
           <article class="panel"><span>Pluja · últimes 24 h</span><strong id="data-summary-rain-24h">—</strong><small id="data-summary-rain-24h-note">Comparació pendent</small></article>
         </div>
+
+        <section class="station-records-complete panel is-active" id="records" aria-labelledby="station-records-title" data-data-center-panel="summary">
+          <header><div><p class="eyebrow">Rècords de l’Observatori</p><h2 id="station-records-title">Els extrems de tot l’arxiu disponible.</h2><p>Valor i moment del primer registre de cada extrem.</p></div><span class="tag">Dades pròpies</span></header>
+          <div class="station-records-grid" id="station-records-complete" aria-live="polite"><p class="station-records-empty">Preparant els rècords històrics…</p></div>
+          <p class="station-records-status" id="station-records-status">Comprovant des de quan hi ha dades disponibles…</p>
+        </section>
 
         <article class="data-export data-export--period panel is-active" data-data-center-panel="summary">
           <div><p class="eyebrow">Descàrrega del període</p><h2>Emporta’t exactament la selecció</h2><p>Inclou data, temperatura, humitat, pressió, vent, pluja, radiació i UV quan són disponibles.</p></div>

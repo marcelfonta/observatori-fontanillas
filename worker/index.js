@@ -2388,6 +2388,79 @@ async function history(requestUrl, env) {
   }, 200, "public, max-age=300");
 }
 
+export function buildStationRecordPayload(summary = {}, rainDay = null) {
+  const occurredAt = epoch => Number.isFinite(Number(epoch)) ? new Date(Number(epoch) * 1000).toISOString() : null;
+  const definitions = [
+    ['temperature_high','temperature_high','temperature_high_at','°C'],
+    ['temperature_low','temperature_low','temperature_low_at','°C'],
+    ['wind_gust','wind_gust','wind_gust_at','km/h'],
+    ['rain_rate','rain_rate','rain_rate_at','mm/h'],
+    ['pressure_high','pressure_high','pressure_high_at','hPa'],
+    ['pressure_low','pressure_low','pressure_low_at','hPa'],
+    ['humidity_high','humidity_high','humidity_high_at','%'],
+    ['humidity_low','humidity_low','humidity_low_at','%'],
+    ['solar_high','solar_high','solar_high_at','W/m²'],
+    ['uv_high','uv_high','uv_high_at',''],
+  ];
+  const records = definitions.map(([key,valueKey,timeKey,unit]) => ({
+    key, value:finite(summary[valueKey]), unit, occurredAt:occurredAt(summary[timeKey]), dateOnly:false
+  })).filter(record => record.value !== null && record.occurredAt);
+  if (rainDay?.local_date && finite(rainDay.value) !== null) records.splice(3,0,{
+    key:'rain_day', value:finite(rainDay.value), unit:'mm', occurredAt:`${rainDay.local_date}T12:00:00+02:00`, dateOnly:true
+  });
+  return {
+    ok:true,
+    source:'Observatori Fontanillas · D1',
+    generatedAt:new Date().toISOString(),
+    archive:{
+      firstObservation:occurredAt(summary.first_epoch),
+      lastObservation:occurredAt(summary.last_epoch),
+      storedReadings:Number(summary.stored_readings) || 0,
+      coverageDays:summary.first_epoch && summary.last_epoch ? Math.max(1,Math.floor((Number(summary.last_epoch)-Number(summary.first_epoch))/86400)+1) : 0
+    },
+    records
+  };
+}
+
+async function stationRecords(request,env,ctx) {
+  const edgeCache=typeof caches!=='undefined'?caches.default:null;
+  const edgeCached=edgeCache?await edgeCache.match(request):null;
+  if(edgeCached)return edgeCached;
+  const cached=runtimeStateCache.get('d1:station-records');
+  if(cached && cached.expiresAt>Date.now())return json(cached.value,200,'public, max-age=3600');
+  if (!(await ensureSchema(env))) return json({ ok:false,error:'Arxiu històric no configurat' },503,'no-store');
+  const summary = await env.DB.prepare(`WITH extremes AS (
+      SELECT COUNT(*) AS stored_readings, MIN(observed_epoch) AS first_epoch, MAX(observed_epoch) AS last_epoch,
+        MAX(temperature) AS temperature_high, MIN(temperature) AS temperature_low,
+        MAX(wind_gust) AS wind_gust, MAX(rain_rate) AS rain_rate,
+        MAX(pressure) AS pressure_high, MIN(pressure) AS pressure_low,
+        MAX(humidity) AS humidity_high, MIN(humidity) AS humidity_low,
+        MAX(solar_radiation) AS solar_high, MAX(uv) AS uv_high
+      FROM observations
+    ), occurrences AS (
+      SELECT
+        MIN(CASE WHEN o.temperature=e.temperature_high THEN o.observed_epoch END) AS temperature_high_at,
+        MIN(CASE WHEN o.temperature=e.temperature_low THEN o.observed_epoch END) AS temperature_low_at,
+        MIN(CASE WHEN o.wind_gust=e.wind_gust THEN o.observed_epoch END) AS wind_gust_at,
+        MIN(CASE WHEN o.rain_rate=e.rain_rate THEN o.observed_epoch END) AS rain_rate_at,
+        MIN(CASE WHEN o.pressure=e.pressure_high THEN o.observed_epoch END) AS pressure_high_at,
+        MIN(CASE WHEN o.pressure=e.pressure_low THEN o.observed_epoch END) AS pressure_low_at,
+        MIN(CASE WHEN o.humidity=e.humidity_high THEN o.observed_epoch END) AS humidity_high_at,
+        MIN(CASE WHEN o.humidity=e.humidity_low THEN o.observed_epoch END) AS humidity_low_at,
+        MIN(CASE WHEN o.solar_radiation=e.solar_high THEN o.observed_epoch END) AS solar_high_at,
+        MIN(CASE WHEN o.uv=e.uv_high THEN o.observed_epoch END) AS uv_high_at
+      FROM observations o CROSS JOIN extremes e
+    ) SELECT e.*, o.* FROM extremes e CROSS JOIN occurrences o`).first();
+  const rainDay = await env.DB.prepare(`SELECT local_date,
+      SUM(CASE WHEN rain_delta > 0 THEN rain_delta ELSE 0 END) AS value
+    FROM observations GROUP BY local_date ORDER BY value DESC, local_date ASC LIMIT 1`).first();
+  const payload=buildStationRecordPayload(summary||{},rainDay||null);
+  runtimeStateCache.set('d1:station-records',{value:payload,expiresAt:Date.now()+60*60*1000});
+  const response=json(payload,200,'public, max-age=3600');
+  if(edgeCache&&ctx)ctx.waitUntil(edgeCache.put(request,response.clone()));
+  return response;
+}
+
 async function quality(env) {
   const started = Date.now();
   // Optimització v5.6.0: si D1 té una observació de fa menys de 5 minuts, la fem
@@ -5140,6 +5213,7 @@ export default {
         return json(observation, 200, "public, max-age=60");
       }
       if (url.pathname === "/history") return history(url, env);
+      if (url.pathname === "/records") return stationRecords(request,env,ctx);
       if (url.pathname === "/quality") return quality(env);
       if (url.pathname === "/health") return health(env);
       if (url.pathname === "/alerts") return alerts(env);
@@ -5153,7 +5227,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);
