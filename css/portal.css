@@ -146,6 +146,13 @@ html[data-portal-page] .site-header {
 .data-center-hero__intro > p:last-child { max-width: 680px; margin: 0; color: var(--muted); font-size: 16px; line-height: 1.65; }
 .data-center-controls { display: grid; justify-items: end; gap: 12px; }
 .data-center-controls p { margin: 0; color: var(--muted); font-size: 12px; text-align: right; }
+.data-center-tabs { position: sticky; top: calc(var(--header-height, 76px) + 8px); z-index: 12; display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 7px; padding: 8px; border: 1px solid rgba(137,214,163,.22); border-radius: 18px; background: rgba(5,24,19,.94); box-shadow: 0 16px 36px rgba(0,0,0,.22); backdrop-filter: blur(16px); }
+.data-center-tabs button { min-width: 0; padding: 12px 14px; border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--muted); font: 750 12px/1.2 var(--font-body); cursor: pointer; transition: color .2s ease,background .2s ease,border-color .2s ease; }
+.data-center-tabs button:hover,.data-center-tabs button:focus-visible { color: var(--text); border-color: rgba(137,214,163,.28); outline: none; }
+.data-center-tabs button.is-active { border-color: rgba(137,214,163,.42); background: rgba(137,214,163,.14); color: var(--green); box-shadow: inset 0 0 0 1px rgba(137,214,163,.05); }
+body[data-page="centre-dades"] [data-data-center-panel]:not(.is-active) { display: none !important; }
+body[data-page="centre-dades"] [data-data-center-panel].is-active { animation: data-center-panel-in .24s ease both; }
+@keyframes data-center-panel-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 .data-center-scope { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 0 8px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
 .data-center-scope b { padding: 7px 10px; border: 1px solid rgba(137,214,163,.2); border-radius: 999px; background: rgba(137,214,163,.06); color: var(--green); font-size: 9px; }
 .data-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
@@ -661,6 +668,9 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .learning-criteria li { grid-template-columns: 1fr; gap: 5px; }
   .global-forecast-directory>header { align-items: flex-start; flex-direction: column; }
   .data-summary-grid, .data-periods__grid { grid-template-columns: 1fr; }
+  .data-center-tabs { top: calc(var(--header-height, 62px) + 6px); display: flex; gap: 6px; margin-inline: -2px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
+  .data-center-tabs::-webkit-scrollbar { display: none; }
+  .data-center-tabs button { flex: 0 0 auto; min-width: 94px; scroll-snap-align: start; }
   .data-center-scope span { width: 100%; }
   .share-premium { grid-template-columns: 1fr; }.share-premium__actions { grid-template-columns: 1fr 1fr; }.share-actions { grid-template-columns: 1fr 1fr !important; }
   .admin-site-header .brand small { display: none; }.admin-back { padding: 8px 10px; font-size: 9px; }.admin-hero { padding: 25px; }.admin-login { grid-template-columns: 1fr; padding: 28px 22px; }.admin-login form > div { grid-template-columns: 1fr; }.admin-overview { grid-template-columns: 1fr; }.admin-toolbar > div:last-child { display: grid; width: 100%; grid-template-columns: 1fr 1fr; }.admin-toolbar > div:last-child button:last-child { grid-column: 1/-1; }.admin-incidents li { grid-template-columns: 1fr; gap: 4px; }

@@ -6,7 +6,12 @@
 - [x] Contextualitzar la verificació de pluja, explicar el Brier i comparar visualment previsió i observació.
 - [x] Identificar millor les estacions, advertir quan la pressió només és orientativa i ordenar les mesures locals per ús.
 - [x] Fer inequívocs l’hora i l’estat del radar, i prioritzar les condicions d’observació d’aquesta nit amb una qualificació solar coherent.
-- [ ] Integrar i desplegar el bloc 1 de fiabilitat, i validar avisos, radar, estació i astronomia en escriptori i mòbil.
+- [x] Integrar i desplegar el bloc 1 de fiabilitat, i validar avisos, radar, estació i astronomia en escriptori i mòbil.
+
+- [x] Organitzar el Centre de Dades en Resum, Gràfiques, Pluja, Episodis i Qualitat sense eliminar contingut.
+- [x] Mostrar la cobertura real al costat dels acumulats anuals i distingir interval disponible de dies amb dades.
+- [x] Preservar els blocs compartits amb Estació, afegir navegació accessible i enllaços directes a cada pestanya.
+- [ ] Integrar i desplegar el bloc 2, i validar les cinc pestanyes en escriptori i mòbil.
 
 - [x] Separar la previsió operativa de la tendència a llarg termini sense eliminar contingut, amb navegació creuada i fonts identificades.
 - [x] Reforçar a la portada la vigència i el fenomen dels avisos, clarificar els índexs tèrmics i afegir accessos a municipis i preferències.

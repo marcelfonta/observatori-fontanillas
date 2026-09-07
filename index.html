@@ -255,11 +255,19 @@
           </div>
         </div>
 
-        <div class="data-center-scope" aria-label="Contingut controlat pel període seleccionat">
+        <nav class="data-center-tabs" role="tablist" aria-label="Apartats del Centre de Dades" data-i18n-label>
+          <button type="button" class="is-active" id="data-center-tab-summary" role="tab" aria-selected="true" aria-controls="data-center-summary data-center-calendar" tabindex="0" data-data-center-tab="summary">Resum</button>
+          <button type="button" id="data-center-tab-charts" role="tab" aria-selected="false" aria-controls="tendencies" tabindex="-1" data-data-center-tab="charts">Gràfiques</button>
+          <button type="button" id="data-center-tab-rain" role="tab" aria-selected="false" aria-controls="data-center-rain" tabindex="-1" data-data-center-tab="rain">Pluja</button>
+          <button type="button" id="data-center-tab-episodes" role="tab" aria-selected="false" aria-controls="data-center-episodes resum-dia" tabindex="-1" data-data-center-tab="episodes">Episodis</button>
+          <button type="button" id="data-center-tab-quality" role="tab" aria-selected="false" aria-controls="qualitat" tabindex="-1" data-data-center-tab="quality">Qualitat</button>
+        </nav>
+
+        <div class="data-center-scope is-active" id="data-center-summary" role="tabpanel" aria-labelledby="data-center-tab-summary" aria-label="Contingut controlat pel període seleccionat" data-data-center-panel="summary">
           <span>El selector controla</span><b>Resum</b><b>Gràfiques</b><b>Extrems</b><b>Descàrregues</b>
         </div>
 
-        <div class="data-summary-grid" aria-live="polite">
+        <div class="data-summary-grid is-active" aria-live="polite" data-data-center-panel="summary">
           <article class="panel"><span>Mostres</span><strong id="data-summary-samples">—</strong><small id="data-summary-coverage">Cobertura pendent</small></article>
           <article class="panel"><span>Temperatura mitjana</span><strong><b id="data-summary-temp-mean">—</b><small> °C</small></strong><small id="data-summary-temp-deviation">Desviació pendent</small></article>
           <article class="panel"><span>Pluja acumulada</span><strong><b id="data-summary-rain">—</b><small> mm</small></strong><small>Acumulació del període seleccionat</small></article>
@@ -268,17 +276,17 @@
           <article class="panel"><span>Pluja · últimes 24 h</span><strong id="data-summary-rain-24h">—</strong><small id="data-summary-rain-24h-note">Comparació pendent</small></article>
         </div>
 
-        <article class="data-export data-export--period panel">
+        <article class="data-export data-export--period panel is-active" data-data-center-panel="summary">
           <div><p class="eyebrow">Descàrrega del període</p><h2>Emporta’t exactament la selecció</h2><p>Inclou data, temperatura, humitat, pressió, vent, pluja, radiació i UV quan són disponibles.</p></div>
           <div><div class="data-export__actions" role="group" aria-label="Formats de descàrrega"><button type="button" data-export-format="csv">CSV</button><button type="button" data-export-format="excel">Excel</button><button type="button" data-export-format="json">JSON</button><button type="button" data-export-format="pdf">PDF</button></div><small id="data-export-status" role="status">Selecciona un format per descarregar el període.</small></div>
         </article>
 
-        <header class="data-calendar-heading">
+        <header class="data-calendar-heading is-active" data-data-center-panel="summary">
           <div><p class="eyebrow">02 · Calendari actual</p><h2>Avui, aquest mes i aquest any.</h2><p>Aquest bloc no canvia quan tries 7, 30 o 365 dies: sempre respon al calendari en curs.</p></div>
           <span class="tag">Independent del selector</span>
         </header>
 
-        <section class="rain-dashboard panel" aria-labelledby="rain-dashboard-title">
+        <section class="rain-dashboard panel" id="data-center-rain" role="tabpanel" aria-labelledby="data-center-tab-rain rain-dashboard-title" data-data-center-panel="rain">
           <header><div><p class="eyebrow">Pluviometria de calendari</p><h2 id="rain-dashboard-title">La pluja, amb més context.</h2><p>Acumulacions, intensitat i dies sense episodis destacables calculats amb l’arxiu real de Fontanillas.</p></div><span class="tag">Actualització automàtica</span></header>
           <div class="rain-dashboard__grid" aria-live="polite">
             <article><span>Intensitat ara</span><strong id="data-rain-now">—</strong><small>Lectura instantània</small></article>
@@ -287,7 +295,7 @@
             <article><span>Episodi recent</span><strong id="data-rain-episode">—</strong><small>Separat per 6 h sense pluja</small></article>
             <article><span>Ahir</span><strong id="data-rain-yesterday">—</strong><small>Dia natural anterior</small></article>
             <article><span>Aquest mes</span><strong id="data-rain-month">—</strong><small>Acumulació mensual</small></article>
-            <article><span>Aquest any</span><strong id="data-rain-year">—</strong><small>Acumulació anual</small></article>
+            <article><span>Aquest any</span><strong id="data-rain-year">—</strong><small id="data-rain-year-coverage">Comprovant la cobertura anual…</small></article>
             <article><span>Dies plujosos</span><strong id="data-rain-wet-days">—</strong><small>Amb 0,1 mm o més aquest any</small></article>
             <article><span>Dies sense pluja</span><strong id="data-rain-dry-days">—</strong><small>Des de l’últim dia ≥ 0,1 mm</small></article>
             <article><span>Dies sense ≥ 1 mm</span><strong id="data-rain-since-1">—</strong><small>Episodi apreciable</small></article>
@@ -298,7 +306,7 @@
           <p class="rain-dashboard__note" id="data-rain-coverage">Preparant la cobertura pluviomètrica…</p>
         </section>
 
-        <div class="data-center-grid data-center-grid--calendar">
+        <div class="data-center-grid data-center-grid--calendar is-active" id="data-center-calendar" role="tabpanel" aria-labelledby="data-center-tab-summary" data-data-center-panel="summary">
           <article class="data-periods panel">
             <header><div><p class="eyebrow">Resums</p><h2>Dia, mes i any en una mirada</h2></div></header>
             <div class="data-periods__grid">
@@ -316,14 +324,14 @@
           </article>
         </div>
 
-        <section class="weather-timeline panel" aria-labelledby="weather-timeline-title">
+        <section class="weather-timeline panel" id="data-center-episodes" role="tabpanel" aria-labelledby="data-center-tab-episodes weather-timeline-title" data-data-center-panel="episodes">
           <header><div><p class="eyebrow">Cronologia meteorològica</p><h2 id="weather-timeline-title">Els episodis, ordenats en el temps.</h2><p>Combina avisos oficials desats, dies de pluja i extrems del període seleccionat, sempre indicant d’on surt cada dada.</p></div><div class="weather-timeline__filters" role="group" aria-label="Filtrar la cronologia"><button type="button" class="is-active" data-timeline-filter="all">Tot</button><button type="button" data-timeline-filter="alert">Avisos</button><button type="button" data-timeline-filter="rain">Pluja</button><button type="button" data-timeline-filter="extreme">Extrems</button></div></header>
           <div class="weather-timeline__list" id="data-weather-timeline" aria-live="polite"><div class="weather-timeline__empty">Preparant la cronologia…</div></div>
           <footer><span id="data-weather-timeline-status">Dades de Fontanillas i historial oficial</span><a href="./historial-avisos.html">Obrir l’historial d’avisos →</a></footer>
         </section>
       </section>
 
-      <section id="resum-dia" class="insights-section section-block" aria-labelledby="insights-title" data-mobile-advanced data-portal-page="estacio centre-dades">
+      <section id="resum-dia" class="insights-section section-block" aria-labelledby="insights-title data-center-tab-episodes" data-mobile-advanced data-portal-page="estacio centre-dades" data-data-center-panel="episodes">
         <div class="section-heading insights-heading">
           <div><p class="eyebrow">Anàlisi de l’estació</p><h2 id="insights-title">Què ha passat avui?</h2></div>
           <div class="history-source"><span id="remote-history-status">Connectant amb l’històric…</span><a href="https://www.wunderground.com/dashboard/pws/ISANTC198" target="_blank" rel="noreferrer">Weather Underground · suport recent ↗</a></div>
@@ -594,7 +602,7 @@
         <p class="verification-method" id="verification-method">Cada pronòstic queda segellat amb data i hora; la realitat prové de l’Observatori Fontanillas.</p>
       </section>
 
-      <section id="tendencies" class="section-block" data-mobile-advanced data-portal-page="centre-dades">
+      <section id="tendencies" class="section-block" role="tabpanel" aria-labelledby="data-center-tab-charts" data-mobile-advanced data-portal-page="centre-dades" data-data-center-panel="charts">
         <div class="section-heading evolution-heading"><div><p class="eyebrow">Evolució</p><h2>Històric meteorològic</h2><p id="evolution-period-copy">Evolució dels últims 30 dies</p><span class="data-linked-period" id="data-evolution-period-label">Període del Centre de Dades · 30 dies</span></div><div class="segmented" role="group" aria-label="Període de gràfica"><button class="is-active" data-period="24h">24 h</button><button data-period="7d">7 dies</button><button data-period="30d">30 dies</button><button data-period="1y">1 any</button></div></div>
         <div class="charts-grid">
           <article class="chart-card panel"><header><div><span>Temperatura i punt de rosada</span><strong><b id="chart-temp-now">--</b> °C</strong></div><span class="tag" id="history-status">Iniciant històric</span></header><div class="chart-wrap"><canvas id="temperature-chart"></canvas></div></article>
@@ -653,7 +661,7 @@
         </article>
       </section>
 
-      <section id="qualitat" class="quality-section section-block" aria-labelledby="quality-title" data-mobile-advanced data-portal-page="centre-dades">
+      <section id="qualitat" class="quality-section section-block" role="tabpanel" aria-labelledby="data-center-tab-quality quality-title" data-mobile-advanced data-portal-page="centre-dades" data-data-center-panel="quality">
         <div class="section-heading quality-heading">
           <div><p class="eyebrow">Control de l’observatori</p><h2 id="quality-title">Dades sota control</h2><p>Disponibilitat, cobertura i continuïtat de cada sensor, calculades sobre les lectures guardades.</p></div>
           <span class="quality-badge is-loading" id="quality-badge"><i></i><b id="quality-badge-label">Comprovant el sistema</b></span>
