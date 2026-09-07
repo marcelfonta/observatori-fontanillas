@@ -595,6 +595,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 780px) {
+  :root { --portal-header: 128px; }
   body.has-portal-shell { padding-bottom: 88px; }
   .header-tools { position: relative; flex: none; margin-left: auto; }
   .header-place-search { width: 40px; padding: 0; justify-content: center; cursor: text; }
@@ -609,7 +610,13 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .header-language,
   .portal-menu-button { width: 44px; min-width: 44px; height: 44px; }
   .header-language select { width: 36px; min-height: 44px; }
+  .header-social-slot { position: absolute; right: 0; bottom: 0; left: 0; display: grid; height: 52px; place-items: center; margin: 0; border-top: 1px solid rgba(137,214,163,.12); background: rgba(5,18,14,.44); }
+  .header-social { gap: 8px; }
   .header-social > .social-link { display: none !important; }
+  .header-social > .social-link--instagram,
+  .header-social > .social-link--youtube,
+  .header-social > .social-link--tiktok { display: inline-grid !important; width: 44px; height: 44px; }
+  .header-social > .social-link svg { width: 17px; height: 17px; }
   .header-social-more { display: block; }
   .header-social-more summary { width: 44px; min-width: 44px; height: 44px; padding: 0; }
   .forecast-controls button,
