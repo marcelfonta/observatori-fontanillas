@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { CATALONIA_COUNTY_PATHS } from '../worker/catalonia-counties.js';
-import { meteocatAlertPollPlan, meteocatCountyWarningsByDay, meteocatDangerLevel, officialAlertSocialCopy, officialAlertTiming, parseMeteocatSmpEpisodes, socialCardHtml } from '../worker/index.js';
+import { meteocatAlertPollPlan, meteocatCountyWarningsByDay, meteocatDangerLevel, officialAlertCardDate, officialAlertSocialCopy, officialAlertTiming, parseMeteocatSmpEpisodes, socialCardHtml } from '../worker/index.js';
 import { classifyAlertWindows } from '../src/modules/avisos.js';
 
 assert.deepEqual(meteocatAlertPollPlan(new Date('2026-08-31T04:30:00Z')),{time:'06:30',localDate:'2026-08-31',targetDate:'2026-08-31',targetOffset:0});
@@ -91,6 +91,28 @@ assert.match(card,/Contorn blanc: Vallès Oriental/);
 assert.match(card,/viewBox="0 20 500 380" preserveAspectRatio="xMidYMid meet"/);
 assert.doesNotMatch(card,/AEMET/);
 assert.doesNotMatch(card,/Prelitoral de Barcelona/);
+
+const issuedAt='2026-09-07T10:30:00Z';
+const alertData={source:'Meteocat',level:'yellow',levelLabel:'GROC',phenomenon:'Intensitat de pluja en 30 minuts',targetDate:'2026-09-09',issuedAt,starts:'2026-09-08T18:00Z',expires:'2026-09-09T23:59Z',periods:['09/09 08:00–09/09 14:00 h'],description:'Llindar: Intensitat > 20 mm / 30 minuts. Franges: 09/09 08:00–09/09 14:00 h.'};
+const alertCard=data=>socialCardHtml({kind:'official_alert',created_at:'2026-09-07 10:30:00',payload:JSON.stringify(data)});
+const dated=alertCard(alertData);
+assert.match(dated,/PREVIST PER<\/small><strong>DIMECRES 9 DE SETEMBRE/);
+assert.match(dated,/NO ÉS PER AVUI · AVÍS ANTICIPAT/);
+assert.match(dated,/Publicació del 07\/09\/2026/);
+assert.ok(dated.indexOf('DIMECRES 9 DE SETEMBRE')<dated.indexOf('<h1 class="alert-title">'));
+assert.doesNotMatch(dated,/Nivell màxim vigent/);
+assert.doesNotMatch(alertCard({...alertData,issuedAt:'2026-09-09T00:00Z'}),/NO ÉS PER AVUI/);
+assert.doesNotMatch(alertCard({...alertData,issuedAt:'2026-09-08T22:30Z'}),/NO ÉS PER AVUI/,'La mitjanit local ha de seguir Europe/Madrid.');
+const legacy={...alertData,targetDate:undefined,issuedAt:undefined};
+assert.equal(officialAlertCardDate(legacy),'2026-09-09','Les franges comarcals prevalen sobre l’inici general del 8.');
+assert.match(alertCard(legacy),/DIMECRES 9 DE SETEMBRE/);
+assert.equal(officialAlertCardDate({...legacy,periods:undefined}),'2026-09-09');
+assert.equal(officialAlertCardDate({starts:'2026-12-31T18:00Z',periods:['01/01 08:00–01/01 14:00 h']}),'2027-01-01');
+for(const data of [{},{targetDate:'2026-02-31'},{starts:'2026-09-08T18:00Z'}]){
+  assert.equal(officialAlertCardDate(data),null);
+  assert.match(alertCard(data),/DATA PENDENT DE CONFIRMAR/);
+  assert.doesNotMatch(alertCard(data),/NO ÉS PER AVUI/);
+}
 
 const worker=await readFile(new URL('../worker/index.js',import.meta.url),'utf8');
 assert.match(worker,/recoverIncompleteOfficialAlertDraft/);

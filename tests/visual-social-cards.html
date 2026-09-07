@@ -6,6 +6,17 @@
   import { socialCardHtml } from '../worker/index.js';
 
   const samples = {
+    alert: {
+      // Layout fixture, not a live warning or a publishable weather product.
+      kind:'official_alert',created_at:'2026-09-07 10:30:00',
+      payload:JSON.stringify({
+        source:'Meteocat',level:'yellow',levelLabel:'GROC',
+        phenomenon:'Intensitat de pluja en 30 minuts',targetDate:'2026-09-09',issuedAt:'2026-09-07T10:30:00Z',
+        starts:'2026-09-08T18:00Z',expires:'2026-09-09T23:59Z',
+        description:'Llindar: Intensitat > 20 mm / 30 minuts. Franges: 09/09 08:00–09/09 14:00 h, 09/09 14:00–09/09 20:00 h, 09/09 20:00–10/09 02:00 h. Distribució prevista: extensa. Els xàfecs aniran acompanyats de tempesta i és possible que de calamarsa i d’algunes ratxes fortes de vent.',
+        countyWarnings:[{countyId:41,level:'yellow',rank:2},{countyId:13,level:'orange',rank:3}],
+      }),
+    },
     monthly: {
       kind:'monthly_summary',
       payload:JSON.stringify({
