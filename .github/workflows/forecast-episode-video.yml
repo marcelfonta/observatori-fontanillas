@@ -1,0 +1,115 @@
+name: Vídeo de canvi de temps · models
+
+on:
+  workflow_dispatch:
+    inputs:
+      draft_id:
+        description: Identificador de l’esborrany validat pel Worker
+        required: true
+        type: string
+      auto_publish:
+        description: Publica només quan l’automatització completa és activa
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: forecast-episode-${{ inputs.draft_id }}
+  cancel-in-progress: false
+
+jobs:
+  render-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SOCIAL_VIDEO_UPLOAD_URL: ${{ secrets.SOCIAL_VIDEO_UPLOAD_URL }}
+      SOCIAL_VIDEO_UPLOAD_TOKEN: ${{ secrets.SOCIAL_VIDEO_UPLOAD_TOKEN }}
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+      YOUTUBE_PRIVACY_STATUS: public
+      VIDEO_FILE: build/forecast-episode/video.mp4
+      VIDEO_METADATA_FILE: build/forecast-episode/metadata.json
+      YOUTUBE_RESULT_FILE: build/forecast-episode/youtube-result.json
+      VIDEO_MUSIC_OUTPUT: build/forecast-episode/music.wav
+      VIDEO_DURATION_SECONDS: '18'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Valida la petició
+        run: |
+          set -euo pipefail
+          [[ "${{ inputs.draft_id }}" =~ ^[1-9][0-9]*$ ]] || { echo "Identificador no vàlid" >&2; exit 1; }
+          test -n "$SOCIAL_VIDEO_UPLOAD_URL"
+          test -n "$SOCIAL_VIDEO_UPLOAD_TOKEN"
+      - name: Recupera només les dades aprovades pel Worker
+        run: |
+          set -euo pipefail
+          mkdir -p build/forecast-episode
+          base_url="${SOCIAL_VIDEO_UPLOAD_URL%/admin/social-video-upload}"
+          curl --fail --silent --show-error --retry 3 --retry-all-errors \
+            --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
+            --output build/forecast-episode/input.json \
+            "$base_url/admin/forecast-episodes/${{ inputs.draft_id }}"
+      - name: Instal·la el renderitzador
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg librsvg2-bin
+      - name: Genera les pantalles i la música
+        run: |
+          node scripts/forecast-episode-video.mjs
+          node scripts/youtube-music.mjs
+      - name: Renderitza el vídeo vertical
+        run: |
+          set -euo pipefail
+          for image in build/forecast-episode/frame-*.svg; do
+            rsvg-convert -w 2160 -h 3840 "$image" -o "${image%.svg}.png"
+          done
+          ffmpeg -y \
+            -loop 1 -t 3 -i build/forecast-episode/frame-1.png \
+            -loop 1 -t 3 -i build/forecast-episode/frame-2.png \
+            -loop 1 -t 2 -i build/forecast-episode/frame-3.png \
+            -loop 1 -t 2 -i build/forecast-episode/frame-4.png \
+            -loop 1 -t 2 -i build/forecast-episode/frame-5.png \
+            -loop 1 -t 2 -i build/forecast-episode/frame-6.png \
+            -loop 1 -t 4 -i build/forecast-episode/frame-7.png \
+            -i build/forecast-episode/music.wav \
+            -filter_complex "[0:v]fps=30,scale=1080:1920[v0];[1:v]fps=30,scale=1080:1920[v1];[2:v]fps=30,scale=1080:1920[v2];[3:v]fps=30,scale=1080:1920[v3];[4:v]fps=30,scale=1080:1920[v4];[5:v]fps=30,scale=1080:1920[v5];[6:v]fps=30,scale=1080:1920[v6];[v0][v1][v2][v3][v4][v5][v6]concat=n=7:v=1:a=0[v]" \
+            -map "[v]" -map 7:a -r 30 -c:v libx264 -preset medium -profile:v high -level 4.1 \
+            -b:v 5M -maxrate 5M -bufsize 10M -g 60 -pix_fmt yuv420p -colorspace bt709 \
+            -color_primaries bt709 -color_trc bt709 -c:a aac -b:a 160k -shortest -movflags +faststart \
+            build/forecast-episode/video.mp4
+          ffprobe -v error -show_entries format=duration,size -of json build/forecast-episode/video.mp4
+      - name: Conserva la previsualització
+        uses: actions/upload-artifact@v4
+        with:
+          name: forecast-episode-${{ inputs.draft_id }}
+          path: build/forecast-episode/video.mp4
+          retention-days: 14
+      - name: Desa el vídeo privat a R2
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 3 --retry-all-errors \
+            --request POST \
+            --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
+            --header "Content-Type: video/mp4" \
+            --header "Content-Length: $(wc -c < build/forecast-episode/video.mp4 | tr -d ' ')" \
+            --data-binary @build/forecast-episode/video.mp4 \
+            "$SOCIAL_VIDEO_UPLOAD_URL/episodes/${{ inputs.draft_id }}.mp4"
+      - name: Publica a YouTube
+        if: inputs.auto_publish == true
+        run: node scripts/youtube-upload.mjs
+      - name: Confirma que el vídeo està preparat
+        run: |
+          set -euo pipefail
+          base_url="${SOCIAL_VIDEO_UPLOAD_URL%/admin/social-video-upload}"
+          node -e "const fs=require('node:fs');let id=null;try{id=JSON.parse(fs.readFileSync(process.env.YOUTUBE_RESULT_FILE,'utf8')).id||null}catch{};fs.writeFileSync('/tmp/episode-ready.json',JSON.stringify({youtubeId:id,autoPublish:${{ inputs.auto_publish }}}))"
+          curl --fail --silent --show-error --retry 3 --retry-all-errors \
+            --request POST \
+            --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data-binary @/tmp/episode-ready.json \
+            "$base_url/admin/forecast-episodes/${{ inputs.draft_id }}/ready"

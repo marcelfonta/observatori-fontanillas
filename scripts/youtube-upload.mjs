@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const required=name=>{const value=process.env[name];if(!value)throw new Error(`Falta ${name}`);return value;};
@@ -19,8 +19,8 @@ async function main(){
   const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,client_secret:clientSecret,refresh_token:refreshToken,grant_type:'refresh_token'})});
   const token=await tokenResponse.json();
   if(!tokenResponse.ok||!token.access_token)throw new Error(`No s’ha pogut renovar el token (${tokenResponse.status}).`);
-  const video=await readFile(resolve('build/youtube-short/short.mp4'));
-  const metadata=JSON.parse(await readFile(resolve('build/youtube-short/metadata.json'),'utf8'));
+  const video=await readFile(resolve(process.env.VIDEO_FILE||'build/youtube-short/short.mp4'));
+  const metadata=JSON.parse(await readFile(resolve(process.env.VIDEO_METADATA_FILE||'build/youtube-short/metadata.json'),'utf8'));
   const status={privacyStatus:privacy,selfDeclaredMadeForKids:false,...(publishAt?{publishAt}: {})};
   const init=await fetch('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status',{method:'POST',headers:{Authorization:`Bearer ${token.access_token}`,'Content-Type':'application/json; charset=UTF-8','X-Upload-Content-Length':String(video.byteLength),'X-Upload-Content-Type':'video/mp4'},body:JSON.stringify({snippet:{title:metadata.title,description:metadata.description,tags:metadata.tags,categoryId:'28',defaultLanguage:'ca'},status})});
   if(!init.ok)throw new Error(`YouTube no ha iniciat la pujada (${init.status}): ${(await init.text()).slice(0,300)}`);
@@ -37,6 +37,7 @@ async function main(){
   if(!remoteStatus)throw new Error('YouTube ha pujat el vídeo però no n’ha retornat l’estat final.');
   if(remoteStatus.privacyStatus!==privacy)throw new Error(`YouTube confirma una privacitat inesperada (${remoteStatus.privacyStatus||'desconeguda'}).`);
   if(publishAt&&new Date(remoteStatus.publishAt||'').getTime()!==new Date(publishAt).getTime())throw new Error(`YouTube no confirma l’hora programada (${remoteStatus.publishAt||'absent'}).`);
+  if(process.env.YOUTUBE_RESULT_FILE)await writeFile(resolve(process.env.YOUTUBE_RESULT_FILE),JSON.stringify({id:result.id,status:remoteStatus},null,2));
   console.log(`Vídeo confirmat a YouTube com a ${privacy}${publishAt?` i programat per a ${publishAt}`:''}. ID: ${result.id}`);
 }
 

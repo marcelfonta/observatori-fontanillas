@@ -1,5 +1,14 @@
 # Changelog
 
+## Propera versió — Episodis automàtics de models — 2026-09-07
+
+- Nova detecció automàtica de canvis destacats de temperatura, pluja, tempesta o vent a cinc dies vista, només quan coincideixen almenys dos dels models ECMWF, GFS i ICON.
+- Cada episodi crea com a màxim una peça per fenomen i dia, amb un límit de dues peces en set dies per evitar alarmisme i saturació.
+- Nou vídeo vertical de 18 segons amb text editorial en català, comparació dels models i quatre fotogrames horaris generats amb dades territorials reals del model coincident.
+- La peça identifica sempre la font, el grau de coincidència i que es tracta d’una predicció de models, no d’un avís oficial.
+- El flux desa una previsualització durant catorze dies, conserva el vídeo en un bucket privat i pot distribuir-lo a YouTube, Instagram, Facebook, TikTok i X sense duplicar canals ja completats.
+- La creació d’esborranys, el vídeo i la publicació tenen tres interruptors independents, desactivats per defecte perquè la primera peça real es pugui revisar abans d’activar la publicació completa.
+
 ## Propera versió — Rècords de tot l’arxiu — 2026-09-07
 
 - Nova secció «Rècords de l’Observatori» calculada sobre tot l’arxiu D1 disponible, independentment del selector d’un any del Centre de Dades.

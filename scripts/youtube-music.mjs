@@ -3,9 +3,9 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
-const OUTPUT=resolve(ROOT,'build/youtube-short/music.wav');
+const OUTPUT=resolve(ROOT,process.env.VIDEO_MUSIC_OUTPUT||'build/youtube-short/music.wav');
 const RATE=44100;
-const DURATION=30;
+const DURATION=Math.max(5,Math.min(120,Number(process.env.VIDEO_DURATION_SECONDS)||30));
 
 const midi=note=>440*Math.pow(2,(note-69)/12);
 const clamp=value=>Math.max(-1,Math.min(1,value));

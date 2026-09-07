@@ -46,6 +46,17 @@ Els vídeos del matí i del vespre utilitzen AROME France HD per representar qua
 
 **Activació de producció, 2026-08-31:** s’activen els resums periòdics a les 12:00, els episodis locals, els canvis ambientals a les 12:00 i les efemèrides a les 17:00. El llindar editorial de pols CAMS queda fixat en 50 µg/m³ durant almenys tres hores consecutives. Els avisos socials de Meteocat continuen pendents de rebre i configurar la clau oficial de l’API.
 
+# ADR — Vídeos automàtics per canvis de temps previstos (2026-09-07)
+
+- Un model sol no pot iniciar una peça. Cal coincidència d’almenys dos entre ECMWF, GFS i ICON per al mateix fenomen i dia.
+- Els llindars inicials són deliberadament conservadors: canvi de temperatura mitjana diària de 5 °C, pluja diària de 5 mm o probabilitat del 65% amb almenys 2 mm, ratxes de 55 km/h amb augment de 12 km/h, o senyal de tempesta amb probabilitat de precipitació mínima del 45%.
+- Es crea com a màxim una peça per tipus d’episodi i data, i dues peces totals en set dies. Un canvi posterior dels models no genera una publicació duplicada.
+- La visualització territorial es calcula amb una graella real del model coincident. Si cap model retorna la graella, no es fabrica ni s’interpola una animació aparent: el flux falla i queda pendent de revisió.
+- El text parla en condicional, explica quants models coincideixen i inclou sempre «Predicció de models, no avís oficial», amb accés als avisos de Meteocat i Protecció Civil.
+- Es mantenen separats tres interruptors: detecció i esborrany, generació de vídeo i publicació. Els tres neixen desactivats; primer es valida una previsualització real i només després es pot autoritzar la publicació automàtica.
+- La publicació es coordina amb D1 i R2, recorda els canals ja completats i només reprèn els pendents. Això evita duplicats si una plataforma respon amb retard o falla a mig procés.
+- Un flux de vídeo que GitHub ja ha acceptat no es torna a disparar automàticament. Si queda interromput, es revisa i es rellança manualment amb el mateix esborrany: és preferible perdre temporalment una peça que duplicar una publicació que potser ja ha arribat a YouTube.
+
 # ADR — Pressupost mensual de consultes Meteocat (2026-08-31)
 
 - El pla oficial permet 100 consultes mensuals de predicció; el cron general de cinc minuts no pot consultar directament l’API SMP.
