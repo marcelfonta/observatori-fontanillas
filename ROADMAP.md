@@ -2,6 +2,11 @@
 
 ## Manteniment obert — En curs
 
+- [x] Detectar canvis de temps només amb coincidència d’almenys dos models entre ECMWF, GFS i ICON, amb deduplicació i un màxim de dues peces setmanals.
+- [x] Generar un vídeo vertical amb relat breu, comparació de models i evolució territorial real, sempre diferenciat dels avisos oficials.
+- [x] Preparar una cadena independent de previsualització, R2, YouTube, Reels, TikTok i X amb represa per canal i sense duplicats.
+- [ ] Activar només els esborranys i el vídeo, revisar la primera peça real i, si és correcta, autoritzar en un segon pas la publicació automàtica.
+
 - [x] Calcular els rècords absoluts de tot l’arxiu D1 amb valor i moment del primer registre, sense descarregar totes les observacions al navegador.
 - [x] Mostrar sis rècords principals a Estació, la taula completa al Centre de Dades i un accés directe des de la portada.
 - [x] Identificar la cobertura real i deixar clar que són extrems de l’arxiu Fontanillas, no rècords climàtics oficials.

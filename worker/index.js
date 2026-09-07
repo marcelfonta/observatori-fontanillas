@@ -1,5 +1,6 @@
 import { CATALONIA_COUNTY_PATHS } from './catalonia-counties.js';
 import { METEOROLOGICAL_EPHEMERIDES } from '../src/data/meteorological-ephemerides.js';
+import { detectForecastEpisode, forecastEpisodeCopy, normalizeForecastModel } from '../src/core/forecast-episodes.js';
 
 const STATION_ID = "ISANTC198";
 const WORKER_VERSION = "22.29.2";
@@ -15,6 +16,8 @@ const X_WEIGHTED_MAX_LENGTH = 280;
 const X_WEIGHTED_SAFE_LENGTH = 240;
 const PERIODIC_SOCIAL_DEFAULT_TIME = '12:00';
 const PERIODIC_SOCIAL_KINDS = new Set(['weekly_summary','monthly_summary','seasonal_summary','annual_summary']);
+const FORECAST_EPISODE_DEFAULT_TIMES = '10:00,18:00';
+const FORECAST_EPISODE_MAX_PER_WEEK = 2;
 const STATION_EVENT_MAX_PER_DAY = 2;
 const ACA_DROUGHT_DATASET_URL = 'https://analisi.transparenciacatalunya.cat/resource/i5n8-43cw.json';
 const runtimeStateCache = new Map();
@@ -1641,6 +1644,59 @@ async function socialForecast(){
   return daily.time?.map((date,index)=>({date,weatherCode:finite(daily.weather_code?.[index]),condition:socialWeatherLabel(daily.weather_code?.[index]),max:finite(daily.temperature_2m_max?.[index]),min:finite(daily.temperature_2m_min?.[index]),rainProbability:finite(daily.precipitation_probability_max?.[index]),rain:finite(daily.precipitation_sum?.[index]),gust:finite(daily.wind_gusts_10m_max?.[index])}))||[];
 }
 
+function forecastEpisodeDraftsEnabled(env){
+  return String(env.SOCIAL_FORECAST_EPISODES_ENABLED||'').trim().toLowerCase()==='true';
+}
+
+function forecastEpisodeVideoEnabled(env){
+  return String(env.SOCIAL_FORECAST_EPISODE_VIDEO_ENABLED||'').trim().toLowerCase()==='true';
+}
+
+function forecastEpisodeAutopublishEnabled(env){
+  return String(env.SOCIAL_FORECAST_EPISODE_AUTOPUBLISH_ENABLED||'').trim().toLowerCase()==='true';
+}
+
+async function forecastEpisodeModels(){
+  const params=new URLSearchParams({
+    latitude:String(STATION_LATITUDE),longitude:String(STATION_LONGITUDE),timezone:TIME_ZONE,forecast_days:'6',
+    daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max',
+  });
+  const definitions=[['ecmwf','/v1/ecmwf'],['gfs','/v1/gfs'],['icon','/v1/dwd-icon']];
+  const settled=await Promise.allSettled(definitions.map(async ([name,path])=>{
+    const response=await fetch(`https://api.open-meteo.com${path}?${params}`,{headers:{Accept:'application/json'},cf:{cacheEverything:true,cacheTtl:900}});
+    if(!response.ok)throw new Error(`${name}: HTTP ${response.status}`);
+    return normalizeForecastModel(name,await response.json());
+  }));
+  const models=settled.filter(item=>item.status==='fulfilled').map(item=>item.value);
+  if(models.length<2)throw new Error('No hi ha dos models disponibles per validar un possible episodi.');
+  return models;
+}
+
+async function createForecastEpisodeDraft(env,date=new Date()){
+  if(!forecastEpisodeDraftsEnabled(env))return {created:false,reason:'disabled'};
+  const slot=activeTimeSlot(env.SOCIAL_FORECAST_EPISODE_TIMES||FORECAST_EPISODE_DEFAULT_TIMES,date);
+  if(!slot)return {created:false,reason:'outside_schedule'};
+  if(!(await ensureSocialDraftSchema(env)))return {created:false,reason:'storage_disabled'};
+  const models=await forecastEpisodeModels();
+  const episode=detectForecastEpisode(models,{issuedAt:date.toISOString()});
+  if(!episode)return {created:false,reason:'no_consensus'};
+  const dedupeKey=`forecast-episode:${episode.episodeKey}`;
+  const existing=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key = ?').bind(dedupeKey).first();
+  if(existing)return {created:false,reason:'already_created',draft:existing,episode,localDate:localIsoDate(date),slot};
+  const weekly=await env.DB.prepare("SELECT COUNT(*) AS total FROM social_drafts WHERE kind='forecast_episode' AND created_at >= datetime('now','-7 days')").first();
+  if(Number(weekly?.total)>=FORECAST_EPISODE_MAX_PER_WEEK)return {created:false,reason:'weekly_limit',episode};
+  const copy=forecastEpisodeCopy(episode);
+  const autoPublish=forecastEpisodeAutopublishEnabled(env);
+  const payload=JSON.stringify({...episode,...copy,localDate:localIsoDate(date),slot,sourceNote:'ECMWF, GFS i ICON via Open-Meteo',autoPublish});
+  const result=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
+    (dedupe_key,kind,status,channels,title,body,source_url,payload)
+    VALUES (?,'forecast_episode',?,?,?,?,?,?)`)
+    .bind(dedupeKey,autoPublish?'approved':'review',JSON.stringify(['facebook','instagram','bluesky','telegram','threads','x']),copy.title,copy.body,'https://meteo.fontanillas.cat/?page=prediccio',payload).run();
+  const draft=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key = ?').bind(dedupeKey).first();
+  await recordOperationalState(env,'forecast-episodes','healthy',{draftId:draft?.id||null,episodeKey:episode.episodeKey,targetDate:episode.targetDate,kind:episode.kind,agreement:episode.agreement,autoPublish}).catch(()=>{});
+  return {created:Boolean(result?.meta?.changes),draft,episode,localDate:localIsoDate(date),slot,autoPublish};
+}
+
 function socialHashtags(kind='daily_observation'){
   return kind==='official_alert'
     ? '#MeteoFontanillas #SantCeloni #VallesOriental #AvisMeteorologic #Meteocat #ProteccioCivil'
@@ -3051,7 +3107,7 @@ function publicWorkerBaseUrl(env) {
   }
 }
 
-const SOCIAL_VIDEO_KEY = /^shorts\/(\d{4}-\d{2}-\d{2})\/(morning|evening)\.mp4$/;
+const SOCIAL_VIDEO_KEY = /^(?:shorts\/(\d{4}-\d{2}-\d{2})\/(morning|evening)|episodes\/(\d+))\.mp4$/;
 const SOCIAL_VIDEO_MAX_BYTES = 30 * 1024 * 1024;
 const SOCIAL_VIDEO_RETENTION_MS = 3 * 24 * 60 * 60 * 1000;
 const SOCIAL_CARD_CACHE_PREFIX = 'social-cards/';
@@ -3178,7 +3234,7 @@ async function uploadSocialVideo(request, env, key) {
   if (video.byteLength < 1 || video.byteLength > SOCIAL_VIDEO_MAX_BYTES) return json({ error:'El vídeo ha de tenir entre 1 byte i 30 MB.' }, 413, 'no-store');
   await env.SOCIAL_VIDEO_BUCKET.put(safeKey, video, {
     httpMetadata:{ contentType:'video/mp4', cacheControl:'private, no-store, max-age=0' },
-    customMetadata:{ uploadedAt:new Date().toISOString(), source:'youtube-short' },
+    customMetadata:{ uploadedAt:new Date().toISOString(), source:safeKey.startsWith('episodes/')?'forecast-episode':'youtube-short' },
   });
   return json({ ok:true, key:safeKey, url:await socialVideoUrl(safeKey, env) }, 201, 'no-store');
 }
@@ -3187,11 +3243,15 @@ async function cleanupSocialVideos(env, date = new Date()) {
   if (!env.SOCIAL_VIDEO_BUCKET) return { skipped:'binding_missing' };
   const clock = localClockParts(date);
   if (Number(clock.hour) !== 3 || Number(clock.minute) >= STORAGE_INTERVAL_MINUTES) return { skipped:'outside_window' };
-  const listing = await env.SOCIAL_VIDEO_BUCKET.list({ prefix:'shorts/', limit:1000 });
+  const [shorts,episodes] = await Promise.all([
+    env.SOCIAL_VIDEO_BUCKET.list({ prefix:'shorts/', limit:1000 }),
+    env.SOCIAL_VIDEO_BUCKET.list({ prefix:'episodes/', limit:1000 }),
+  ]);
   const cutoff = date.getTime() - SOCIAL_VIDEO_RETENTION_MS;
-  const keys = listing.objects.filter(object => new Date(object.uploaded).getTime() < cutoff).map(object => object.key);
+  const objects=[...shorts.objects,...episodes.objects];
+  const keys = objects.filter(object => new Date(object.uploaded).getTime() < cutoff).map(object => object.key);
   if (keys.length) await env.SOCIAL_VIDEO_BUCKET.delete(keys);
-  return { scanned:listing.objects.length, deleted:keys.length };
+  return { scanned:objects.length, deleted:keys.length };
 }
 
 async function cleanupSocialCards(env, date = new Date()) {
@@ -3847,6 +3907,67 @@ async function dispatchYoutubeShortFallback(env, date = new Date()) {
   return { dispatched:true,slot,localDate,attempt };
 }
 
+function forecastEpisodeRunKey(draftId){
+  const id=Number(draftId);
+  return Number.isSafeInteger(id)&&id>0?`forecast-episode-video:${id}`:'';
+}
+
+async function dispatchForecastEpisodeWorkflow(result,env){
+  const draft=result?.draft;
+  if(!draft||!forecastEpisodeVideoEnabled(env))return {dispatched:false,reason:draft?'video_disabled':'no_draft'};
+  if(!(await ensureOperationsSchema(env)))return {dispatched:false,reason:'storage_disabled'};
+  const key=forecastEpisodeRunKey(draft.id);
+  const previous=await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(key).first();
+  if(previous?.status==='healthy')return {dispatched:false,reason:'already_ready'};
+  // Un dispatch acceptat per GitHub no es repeteix automàticament: si el procés
+  // hagués arribat a YouTube però fallés el retorn al Worker, repetir-lo podria
+  // publicar el mateix vídeo dues vegades. Una execució fallida es revisa des
+  // de GitHub Actions i es torna a llançar manualment amb el mateix draft.
+  if(previous?.status==='dispatching')return {dispatched:false,reason:'already_dispatched'};
+  const token=String(env.GITHUB_SHORTS_DISPATCH_TOKEN||'');
+  const repository=cleanText(env.GITHUB_SHORTS_REPOSITORY||'marcelfonta/observatori-fontanillas',160);
+  if(token.length<24||!/^[\w.-]+\/[\w.-]+$/.test(repository))return {dispatched:false,reason:'not_configured'};
+  const autoPublish=forecastEpisodeAutopublishEnabled(env)&&draft.status==='approved';
+  const response=await fetch(`https://api.github.com/repos/${repository}/actions/workflows/forecast-episode-video.yml/dispatches`,{
+    method:'POST',
+    headers:{Accept:'application/vnd.github+json',Authorization:`Bearer ${token}`,'Content-Type':'application/json','X-GitHub-Api-Version':'2026-03-10','User-Agent':'fonta-meteo-worker'},
+    body:JSON.stringify({ref:'main',inputs:{draft_id:String(draft.id),auto_publish:String(autoPublish)}}),
+  });
+  if(!response.ok){
+    const error=cleanText(await response.text().catch(()=>''),500)||`GitHub ha respost ${response.status}.`;
+    await updateYoutubeShortRun(env,key,'down',{draftId:draft.id,stage:'dispatch_failed',responseCode:response.status,error});
+    throw Object.assign(new Error(error),{responseCode:response.status});
+  }
+  await updateYoutubeShortRun(env,key,'dispatching',{draftId:draft.id,stage:'dispatched',autoPublish});
+  return {dispatched:true,draftId:draft.id,autoPublish};
+}
+
+async function forecastEpisodePayloadControl(request,env,draftId){
+  if(!(await authorizeYoutubeShortRequest(request,env)))return json({error:'No autoritzat.'},401,'no-store');
+  if(!(await ensureSocialDraftSchema(env)))return json({error:'La base de dades no està disponible.'},503,'no-store');
+  const draft=await findSocialDraft(env,draftId);
+  if(!draft||draft.kind!=='forecast_episode')return json({error:'No s’ha trobat l’episodi.'},404,'no-store');
+  let payload={};
+  try{payload=JSON.parse(draft.payload||'{}');}catch{return json({error:'Les dades de l’episodi no són vàlides.'},500,'no-store');}
+  return json({ok:true,draft:{id:draft.id,status:draft.status,title:draft.title,body:draft.body,sourceUrl:draft.source_url},episode:payload,autoPublish:forecastEpisodeAutopublishEnabled(env)&&draft.status==='approved'},200,'no-store');
+}
+
+async function forecastEpisodeReadyControl(request,env,draftId){
+  if(!(await authorizeYoutubeShortRequest(request,env)))return json({error:'No autoritzat.'},401,'no-store');
+  if(!(await ensureSocialDraftSchema(env))||!(await ensureOperationsSchema(env)))return json({error:'La coordinació no està disponible.'},503,'no-store');
+  const draft=await findSocialDraft(env,draftId);
+  if(!draft||draft.kind!=='forecast_episode')return json({error:'No s’ha trobat l’episodi.'},404,'no-store');
+  const key=`episodes/${Number(draftId)}.mp4`;
+  if(!env.SOCIAL_VIDEO_BUCKET||!await env.SOCIAL_VIDEO_BUCKET.head(key))return json({error:'El vídeo de l’episodi encara no és a R2.'},409,'no-store');
+  const body=await request.json().catch(()=>({}));
+  const youtubeId=cleanText(body.youtubeId,120)||null;
+  await updateYoutubeShortRun(env,forecastEpisodeRunKey(draftId),'healthy',{draftId:Number(draftId),stage:'video_ready',youtubeId,autoPublish:Boolean(body.autoPublish)});
+  const published=forecastEpisodeAutopublishEnabled(env)&&draft.status==='approved'
+    ? await publishForecastEpisodeVideo(env,draft,{youtubeId})
+    : {processed:false,reason:'review_required'};
+  return json({ok:true,videoReady:true,published},published?.pending?202:200,'no-store');
+}
+
 function officialAlertColor(level){
   return level==='red'?'#ff625f':level==='orange'?'#ff9f43':'#ffd45a';
 }
@@ -4489,6 +4610,84 @@ async function runAutomaticMetaVideos(env, date = new Date()) {
   await recordOperationalState(env,'meta-video-automatic',status,{ localDate,slots,results });
   for(const item of failed.filter(result=>result.blocked))await notifyMetaVideoBlocked(env,localDate,item);
   return { processed:true,ok:failed.length===0,localDate,slots,results };
+}
+
+async function publishBufferForecastEpisode(env,{service,label,key,text}){
+  const channel=await bufferChannel(env,service,label);
+  const input={
+    text:service==='twitter'?truncateBufferXText(text):truncateBufferText(text,150),
+    channelId:channel.id,schedulingType:'automatic',mode:'shareNow',
+    assets:[{video:{url:await bufferVideoUrl(key,env),metadata:{thumbnailOffset:1200}}}],
+  };
+  const data=await bufferGraphql(env,`mutation CreatePost($input: CreatePostInput!) {
+    createPost(input: $input) {
+      ... on PostActionSuccess { post { id status sentAt externalLink } }
+      ... on MutationError { message }
+    }
+  }`,{input});
+  const result=data.createPost||{};
+  if(result.message||!result.post?.id)throw Object.assign(new Error(cleanText(result.message||`Buffer no ha creat la publicació de ${label}.`,500)),{status:502});
+  return {remoteId:String(result.post.id),remoteStatus:result.post.status||'sending'};
+}
+
+function forecastEpisodePublishState(value){
+  try{return JSON.parse(value||'{}');}catch{return {};}
+}
+
+async function publishForecastEpisodeVideo(env,draft,{youtubeId=null}={}){
+  if(!draft||draft.kind!=='forecast_episode')return {processed:false,reason:'invalid_draft'};
+  if(!forecastEpisodeAutopublishEnabled(env)||draft.status==='review')return {processed:false,reason:'review_required'};
+  if(!(await ensureOperationsSchema(env)))return {processed:false,reason:'storage_disabled'};
+  const key=`episodes/${Number(draft.id)}.mp4`;
+  if(!env.SOCIAL_VIDEO_BUCKET||!await env.SOCIAL_VIDEO_BUCKET.head(key))return {processed:false,reason:'video_not_ready'};
+  const serviceKey=`forecast-episode-publish:${Number(draft.id)}`;
+  const previous=await env.DB.prepare('SELECT status,consecutive_failures,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
+  const previousState=forecastEpisodePublishState(previous?.detail);
+  if(previous?.status==='healthy')return {processed:true,ok:true,reused:true,outcomes:previousState.outcomes||[]};
+  if(Number(previous?.consecutive_failures)>=SOCIAL_AUTOMATIC_MAX_ATTEMPTS)return {processed:true,ok:false,blocked:true,outcomes:previousState.outcomes||[]};
+  const previousOutcomes=Array.isArray(previousState.outcomes)?previousState.outcomes:[];
+  const completed=new Map(previousOutcomes.filter(item=>item?.ok&&item?.channel).map(item=>[item.channel,item]));
+  if(youtubeId&&!completed.has('youtube'))completed.set('youtube',{channel:'youtube',ok:true,remoteId:youtubeId});
+  const caption=cleanText(`${draft.body}\n\n${draft.source_url}`,2200);
+  const targets=[];
+  if(env.META_SYSTEM_USER_TOKEN){
+    targets.push(['instagram',async previousOutcome=>publishInstagramReel({videoUrl:await socialVideoUrl(key,env,3600),caption,containerId:previousOutcome?.reelContainerId||''},env)]);
+    targets.push(['facebook',async ()=>publishFacebookReel({videoUrl:await socialVideoUrl(key,env,3600),caption},env)]);
+  }
+  if(bufferTikTokConfigured(env)&&bufferTikTokEnabled(env))targets.push(['tiktok',async ()=>publishBufferForecastEpisode(env,{service:'tiktok',label:'TikTok',key,text:caption})]);
+  if(bufferXConfigured(env)&&bufferXEnabled(env))targets.push(['x',async ()=>publishBufferForecastEpisode(env,{service:'twitter',label:'X',key,text:caption})]);
+  const outcomes=[...completed.values()];
+  for(const [channel,publisher] of targets){
+    if(completed.has(channel))continue;
+    const previousOutcome=previousOutcomes.find(item=>item?.channel===channel);
+    try{
+      const result=await publisher(previousOutcome);
+      outcomes.push({channel,ok:true,remoteId:result.remoteId||result.id||null});
+    }catch(error){
+      outcomes.push({channel,ok:false,pending:Boolean(error.pending),reelContainerId:cleanText(error.reelContainerId,100)||undefined,error:cleanText(error.message,500),responseCode:error.responseCode||null});
+    }
+  }
+  const required=new Set(['youtube',...targets.map(([channel])=>channel)]);
+  const successful=new Set(outcomes.filter(item=>item.ok).map(item=>item.channel));
+  const failed=[...required].filter(channel=>!successful.has(channel));
+  const pending=outcomes.some(item=>!item.ok&&item.pending);
+  const status=failed.length?(pending?'degraded':'down'):'healthy';
+  await recordOperationalState(env,serviceKey,status,{draftId:draft.id,outcomes,required:[...required]});
+  await env.DB.prepare('UPDATE social_drafts SET status = ? WHERE id = ?').bind(failed.length?'partially_published':'published',draft.id).run();
+  return {processed:true,ok:failed.length===0,pending,failed,outcomes};
+}
+
+async function recoverForecastEpisodeVideos(env){
+  if(!forecastEpisodeAutopublishEnabled(env)||!(await ensureSocialDraftSchema(env)))return {processed:false,reason:'disabled'};
+  const result=await env.DB.prepare("SELECT * FROM social_drafts WHERE kind='forecast_episode' AND status IN ('approved','partially_published') ORDER BY id DESC LIMIT 2").all();
+  const outcomes=[];
+  for(const draft of result?.results||[]){
+    const ready=await env.DB.prepare('SELECT detail FROM monitor_state WHERE service_key = ? AND status = ?').bind(forecastEpisodeRunKey(draft.id),'healthy').first();
+    if(!ready)continue;
+    const state=forecastEpisodePublishState(ready.detail);
+    outcomes.push(await publishForecastEpisodeVideo(env,draft,{youtubeId:cleanText(state.youtubeId,120)||null}));
+  }
+  return {processed:Boolean(outcomes.length),outcomes};
 }
 
 async function notifyMetaVideoBlocked(env, localDate, result) {
@@ -5192,14 +5391,18 @@ export default {
       if (request.method === "GET" && url.pathname === "/oauth/tiktok/callback") return tiktokOAuthCallback(request, env, url);
       const socialCardMatch = url.pathname.match(/^\/social-card\/(\d+)\.(png|jpg)$/);
       if ((request.method === 'GET' || request.method === 'HEAD') && socialCardMatch) return socialCard(request, env, Number(socialCardMatch[1]), url, socialCardMatch[2] === 'jpg' ? 'jpeg' : 'png');
-      const socialVideoMatch = url.pathname.match(/^\/social-video\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
+      const socialVideoMatch = url.pathname.match(/^\/social-video\/((?:shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)|episodes\/\d+)\.mp4)$/);
       if ((request.method === 'GET' || request.method === 'HEAD') && socialVideoMatch) return serveSocialVideo(request, env, socialVideoMatch[1], url);
-      const bufferVideoMatch = url.pathname.match(/^\/buffer-video\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
+      const bufferVideoMatch = url.pathname.match(/^\/buffer-video\/((?:shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)|episodes\/\d+)\.mp4)$/);
       if ((request.method === 'GET' || request.method === 'HEAD') && bufferVideoMatch) return serveBufferVideo(request, env, bufferVideoMatch[1], url);
-      const socialVideoUploadMatch = url.pathname.match(/^\/admin\/social-video-upload\/(shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)\.mp4)$/);
+      const socialVideoUploadMatch = url.pathname.match(/^\/admin\/social-video-upload\/((?:shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)|episodes\/\d+)\.mp4)$/);
       if (request.method === 'POST' && socialVideoUploadMatch) return uploadSocialVideo(request, env, socialVideoUploadMatch[1]);
       const youtubeShortRunMatch = url.pathname.match(/^\/admin\/youtube-short-runs\/(\d{4}-\d{2}-\d{2})\/(mati|vespre)$/);
       if (request.method === 'POST' && youtubeShortRunMatch) return youtubeShortRunControl(request, env, youtubeShortRunMatch[1], youtubeShortRunMatch[2]);
+      const forecastEpisodeMatch=url.pathname.match(/^\/admin\/forecast-episodes\/(\d+)$/);
+      if(request.method==='GET'&&forecastEpisodeMatch)return forecastEpisodePayloadControl(request,env,forecastEpisodeMatch[1]);
+      const forecastEpisodeReadyMatch=url.pathname.match(/^\/admin\/forecast-episodes\/(\d+)\/ready$/);
+      if(request.method==='POST'&&forecastEpisodeReadyMatch)return forecastEpisodeReadyControl(request,env,forecastEpisodeReadyMatch[1]);
       const bufferTikTokScheduleMatch = url.pathname.match(/^\/admin\/buffer-tiktok\/schedule\/(\d{4}-\d{2}-\d{2})\/(morning|evening)$/);
       if (request.method === 'POST' && bufferTikTokScheduleMatch) return bufferTikTokScheduleControl(request, env, bufferTikTokScheduleMatch[1], bufferTikTokScheduleMatch[2]);
       const bufferXScheduleMatch = url.pathname.match(/^\/admin\/buffer-x\/schedule\/(\d{4}-\d{2}-\d{2})\/(morning|midday|evening)$/);
@@ -5275,6 +5478,8 @@ export default {
     const officialAlertRecovery=Promise.allSettled([aemetAlerts,meteocatAlerts])
       .then(()=>recoverIncompleteOfficialAlertDraft(env))
       .then(result=>publishAutomaticSocialDraft(result,env));
+    const forecastEpisode=createForecastEpisodeDraft(env)
+      .then(result=>dispatchForecastEpisodeWorkflow(result,env));
     const observedJob=(label,promise)=>promise.catch(error=>{console.error(JSON.stringify({event:'scheduled_job_failed',job:label,error:cleanText(error.message,500)}));throw error;});
     const jobs = [
       observedJob('observation',capture),
@@ -5289,6 +5494,8 @@ export default {
       observedJob('alerts',aemetAlerts),
       observedJob('meteocat-alert-social',meteocatAlerts),
       observedJob('official-alert-social-recovery',officialAlertRecovery),
+      observedJob('forecast-episodes',forecastEpisode),
+      observedJob('forecast-episode-publish',recoverForecastEpisodeVideos(env)),
       observedJob('preflight',runDailyIntegrationPreflight(env)),
       observedJob('database-maintenance',runDatabaseMaintenance(env)),
       observedJob('social-video-cleanup',cleanupSocialVideos(env)),
