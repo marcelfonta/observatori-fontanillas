@@ -24,10 +24,11 @@ for(const phrase of ['Com poden ser les pròximes sis setmanes?','A partir de la
 for(const network of ['instagram','youtube','tiktok']){
   assert.ok(portal.includes(`.header-social > .social-link--${network}`), `${network} ha de continuar visible directament en mòbil.`);
 }
-assert.ok(portal.includes(':root { --portal-header: 128px; }'), 'La franja social mòbil ha de disposar d’espai propi sense tapar el contingut.');
+assert.ok(portal.includes(':root { --portal-header: 76px; }'), 'La capçalera mòbil ha de tornar a ocupar una sola fila.');
+assert.ok(portal.includes('.live-pill :is(b,time) { display: none; }'), 'El text i l’hora de l’estat en directe s’han d’ocultar en mòbil.');
 assert.ok(portal.includes('width: 44px; min-width: 44px; height: 44px;'), 'Els controls de capçalera han de tenir una zona tàctil suficient.');
 assert.ok(worker.includes("'/src/core/page-bootstrap.js'"), 'La PWA ha de conservar l’inicialitzador fora de línia.');
 assert.ok(worker.includes("'/src/features/seasonal-outlook.js'"), 'La PWA ha de conservar el desplegable estacional fora de línia.');
-assert.ok(worker.includes('mobile-audit-v2-social-visible'), 'La PWA ha de renovar la memòria cau perquè les xarxes visibles arribin als mòbils existents.');
+assert.ok(worker.includes('mobile-audit-v3-single-row'), 'La PWA ha de renovar la memòria cau perquè la capçalera d’una fila arribi als mòbils existents.');
 
 console.log('Auditoria mòbil: llarg termini, idiomes, controls tàctils i CSP');

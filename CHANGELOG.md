@@ -1,5 +1,10 @@
 # Changelog
 
+## Correcció — Capçalera mòbil en una sola fila — 2026-09-07
+
+- L’hora redundant desapareix de la capçalera mòbil i només es conserva el punt verd que indica l’estat en directe.
+- Menú, estat, cerca, idioma, Instagram, YouTube, TikTok i «Segueix-nos» comparteixen una única fila compacta, sense perdre les zones tàctils de 44 píxels.
+
 ## Correcció — Xarxes visibles en mòbil — 2026-09-07
 
 - Instagram, YouTube i TikTok tornen a ser visibles directament a la capçalera mòbil en una franja pròpia, sense competir amb el menú, el rellotge, la cerca ni l’idioma.

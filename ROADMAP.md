@@ -2,6 +2,8 @@
 
 ## Manteniment obert — En curs
 
+- [x] Reunir tots els controls de la capçalera mòbil en una sola fila, ocultant l’hora redundant i conservant el punt d’estat en directe.
+
 - [x] Recuperar Instagram, YouTube i TikTok com a accessos directes visibles a la capçalera mòbil, amb una franja pròpia i la resta de xarxes agrupades sota «Segueix-nos».
 
 - [x] Auditar la portada, la predicció, el llarg termini, el Centre de Dades i els rècords a 375, 390 i 412 px; corregir el desplegable estacional, l’amplada dels mapes, la traducció consecutiva, les zones tàctils i l’error CSP detectat.
