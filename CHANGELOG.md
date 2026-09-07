@@ -1,5 +1,10 @@
 # Changelog
 
+## Correcció — Xarxes visibles en mòbil — 2026-09-07
+
+- Instagram, YouTube i TikTok tornen a ser visibles directament a la capçalera mòbil en una franja pròpia, sense competir amb el menú, el rellotge, la cerca ni l’idioma.
+- El desplegable «Segueix-nos» es conserva per donar accés a la resta de xarxes, i tots quatre controls mantenen una zona tàctil de 44 píxels.
+
 ## Correcció — Auditoria mòbil de navegació i llarg termini — 2026-09-07
 
 - La predicció mensual respecta de nou el botó per desplegar els mesos següents; el contingut tancat ja no queda visible ni allarga innecessàriament la pàgina.

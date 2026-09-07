@@ -21,9 +21,13 @@ assert.ok(longRange.includes('getLocale()')&&longRange.includes("typeof Node!=='
 for(const phrase of ['Com poden ser les pròximes sis setmanes?','A partir de la segona setmana la incertesa augmenta molt.','Veure la predicció mensual oficial ↗']){
   assert.ok(i18n.includes(phrase)&&french.includes(phrase), `Falta traduir el text de llarg termini: ${phrase}`);
 }
-assert.ok(portal.includes('.header-social > .social-link { display: none !important; }'), 'Les xarxes s’han d’agrupar per guanyar espai en mòbil.');
+for(const network of ['instagram','youtube','tiktok']){
+  assert.ok(portal.includes(`.header-social > .social-link--${network}`), `${network} ha de continuar visible directament en mòbil.`);
+}
+assert.ok(portal.includes(':root { --portal-header: 128px; }'), 'La franja social mòbil ha de disposar d’espai propi sense tapar el contingut.');
 assert.ok(portal.includes('width: 44px; min-width: 44px; height: 44px;'), 'Els controls de capçalera han de tenir una zona tàctil suficient.');
 assert.ok(worker.includes("'/src/core/page-bootstrap.js'"), 'La PWA ha de conservar l’inicialitzador fora de línia.');
 assert.ok(worker.includes("'/src/features/seasonal-outlook.js'"), 'La PWA ha de conservar el desplegable estacional fora de línia.');
+assert.ok(worker.includes('mobile-audit-v2-social-visible'), 'La PWA ha de renovar la memòria cau perquè les xarxes visibles arribin als mòbils existents.');
 
 console.log('Auditoria mòbil: llarg termini, idiomes, controls tàctils i CSP');
