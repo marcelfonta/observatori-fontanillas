@@ -41,7 +41,7 @@ const METEOCAT_ALERT_POLL_WINDOW_MINUTES = 30;
 const METEOCAT_ALERT_POLL_SLOTS = [
   { time:'06:30', targetOffset:0 },
   { time:'12:30', targetOffset:1 },
-  { time:'18:30', targetOffset:0 },
+  { time:'18:30', targetOffset:2 },
 ];
 const THREECAT_SEARCH_URL = "https://www.3cat.cat/cercador/";
 const FORECAST_VIDEO_HTML_LIMIT = 900_000;
@@ -537,7 +537,7 @@ async function recordAlertEvents(payload, env) {
       const result=await env.DB.prepare(`INSERT OR IGNORE INTO alert_events
         (fingerprint,source,level,phenomenon,title,description,started_at,expires_at)
         VALUES (?,?,?,?,?,?,?,?)`)
-        .bind(fingerprint,entry.source||payload.source?.name||'AEMET',entry.level||'unknown',entry.phenomenon||null,entry.title||null,entry.description||null,entry.published||new Date().toISOString(),entry.expires||null).run();
+        .bind(fingerprint,entry.source||payload.source?.name||'AEMET',entry.level||'unknown',entry.phenomenon||null,entry.title||null,entry.description||null,entry.starts||entry.published||new Date().toISOString(),entry.expires||null).run();
       if(result?.meta?.changes) inserted.push({...entry,fingerprint});
     } catch(error){ console.error('Alert history insert error',error); }
   }
@@ -5181,17 +5181,35 @@ async function alerts(env) {
     const xml = await response.text();
     if (!/<rss\b/i.test(xml) || !/<channel\b/i.test(xml)) throw new Error("Resposta AEMET no reconeguda");
     const parsed = parseAemetFeed(xml);
+    let meteocatAlerts=[];
+    if(await ensureAlertSchema(env)){
+      const stored=await env.DB.prepare(`SELECT source,level,phenomenon,title,description,started_at,expires_at
+        FROM alert_events
+        WHERE source = 'Meteocat' AND (expires_at IS NULL OR expires_at > ?)
+        ORDER BY started_at ASC`).bind(new Date().toISOString()).all();
+      meteocatAlerts=(stored?.results||[]).map(entry=>({
+        source:'Meteocat',level:entry.level||'unknown',
+        levelLabel:entry.level==='red'?'Vermell':entry.level==='orange'?'Taronja':entry.level==='yellow'?'Groc':'Oficial',
+        phenomenon:entry.phenomenon||'Fenomen meteorològic',title:entry.title||'',description:entry.description||'',
+        starts:entry.started_at||null,expires:entry.expires_at||null,active:true,
+        area:METEOCAT_VALLES_ORIENTAL_NAME,scopeKind:'comarca',scopeName:METEOCAT_VALLES_ORIENTAL_NAME,
+        link:METEOCAT_ALERTS_PAGE,
+      }));
+    }
+    const combinedAlerts=[...parsed.activeAlerts.map(entry=>({...entry,source:entry.source||'AEMET'})),...meteocatAlerts];
+    const rank={none:0,unknown:1,yellow:2,orange:3,red:4};
+    const maxLevel=combinedAlerts.reduce((highest,entry)=>(rank[entry.level]||0)>(rank[highest]||0)?entry.level:highest,'none');
     const payload = {
       ok:true,
       version:WORKER_VERSION,
-      status:parsed.activeAlerts.length ? "active" : "clear",
-      source:{ name:"AEMET", area:"Prelitoral de Barcelona", url:AEMET_PRELITORAL_PAGE, feed:AEMET_PRELITORAL_FEED },
+      status:combinedAlerts.length ? "active" : "clear",
+      source:{ name:"AEMET · Meteocat", area:"Prelitoral de Barcelona · Vallès Oriental", url:AEMET_PRELITORAL_PAGE, feed:AEMET_PRELITORAL_FEED },
       updated:parsed.channelUpdated,
       checkedAt:new Date().toISOString(),
       latencyMs:Date.now() - started,
-      active:parsed.activeAlerts.length,
-      maxLevel:parsed.maxLevel,
-      alerts:parsed.activeAlerts,
+      active:combinedAlerts.length,
+      maxLevel,
+      alerts:combinedAlerts,
     };
     await recordAlertEvents(payload, env).catch(error=>console.error("Alert history error",error));
     return json(payload, 200, "no-store");
