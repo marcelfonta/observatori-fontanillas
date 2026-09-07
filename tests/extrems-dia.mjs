@@ -76,6 +76,7 @@ try {
 }
 
 const serviceWorkerSource = await readFile(new URL('../service-worker.js', import.meta.url), 'utf8');
+assert.equal((serviceWorkerSource.match(/\bconst CACHE\s*=/g) || []).length, 1, 'El service worker només pot declarar una vegada la memòria cau principal.');
 assert.match(serviceWorkerSource, /url\.pathname\.startsWith\('\/api\/'\)/, 'La PWA ha de tractar el proxy meteorològic com una API i no com un fitxer estàtic.');
 assert.match(serviceWorkerSource, /extrems-v4/, 'La correcció ha d’estrenar una memòria cau de la PWA.');
 const oneSignalWorkerSource = await readFile(new URL('../OneSignalSDKWorker.js', import.meta.url), 'utf8');
