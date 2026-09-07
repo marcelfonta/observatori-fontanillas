@@ -1,11 +1,13 @@
+import { getLocale, translateDocument } from '../core/i18n.js';
+
 const number=value=>Number.isFinite(Number(value))?Number(value):null;
-const fmt=(value,digits=1)=>value===null?'—':new Intl.NumberFormat('ca-ES',{minimumFractionDigits:digits,maximumFractionDigits:digits}).format(value);
-const signed=(value,digits=1)=>value===null?'—':new Intl.NumberFormat('ca-ES',{minimumFractionDigits:digits,maximumFractionDigits:digits,signDisplay:'exceptZero'}).format(value);
+const fmt=(value,digits=1)=>value===null?'—':new Intl.NumberFormat(getLocale(),{minimumFractionDigits:digits,maximumFractionDigits:digits}).format(value);
+const signed=(value,digits=1)=>value===null?'—':new Intl.NumberFormat(getLocale(),{minimumFractionDigits:digits,maximumFractionDigits:digits,signDisplay:'exceptZero'}).format(value);
 const dateLabel=value=>{
   const date=new Date(`${value}T12:00:00`);
   if(Number.isNaN(date.getTime()))return value;
   const end=new Date(date);end.setDate(end.getDate()+6);
-  const format=new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'});
+  const format=new Intl.DateTimeFormat(getLocale(),{day:'numeric',month:'short'});
   return `${format.format(date)} – ${format.format(end)}`.replaceAll('.','');
 };
 
@@ -43,6 +45,7 @@ export function renderLongRangeForecast(payload){
     const tempState=temperatureSignal(tempAnomaly);const rainState=rainSignal(rainAnomaly);
     const article=document.createElement('article');article.className='long-range-week';
     article.innerHTML=`<header><span>Setmana ${index+1}</span><strong>${dateLabel(time)}</strong></header><div class="long-range-week__mean"><small>Temperatura mitjana del model</small><b>${fmt(temp)} ${temperatureUnit}</b></div><div class="long-range-signals"><span class="is-${tempState.tone}"><i></i><b>${tempState.label}</b><small>${tempAnomaly===null?'Anomalia no disponible':`${signed(tempAnomaly)} ${temperatureAnomalyUnit}`}</small></span><span class="is-${rainState.tone}"><i></i><b>${rainState.label}</b><small>${rainAnomaly===null?'Anomalia no disponible':`${signed(rainAnomaly)} ${rainAnomalyUnit}`} · mitjana ${fmt(rain)} ${rainUnit}</small></span></div>`;
+    if(typeof Node!=='undefined')translateDocument(article);
     list.append(article);
   });
   const status=document.getElementById('long-range-status');if(status)status.textContent='ECMWF EC46 · actualització diària';
@@ -51,5 +54,6 @@ export function renderLongRangeForecast(payload){
 export function renderLongRangeError(){
   const list=document.getElementById('long-range-weeks');if(!list)return;
   list.innerHTML='<div class="long-range-fallback"><strong>La tendència automàtica no està disponible ara mateix.</strong><span>Pots consultar la predicció mensual oficial d’AEMET amb els botons de sota.</span></div>';
+  if(typeof Node!=='undefined')translateDocument(list);
   const status=document.getElementById('long-range-status');if(status)status.textContent='Consulta oficial disponible';
 }

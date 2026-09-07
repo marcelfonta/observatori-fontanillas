@@ -1,5 +1,14 @@
 # Changelog
 
+## Correcció — Auditoria mòbil de navegació i llarg termini — 2026-09-07
+
+- La predicció mensual respecta de nou el botó per desplegar els mesos següents; el contingut tancat ja no queda visible ni allarga innecessàriament la pàgina.
+- Els mapes estacionals poden encongir-se dins la pantalla i ja no forcen una amplada d’escriptori en dispositius mòbils.
+- El cercador i el selector d’idioma conserven sempre el text català com a font, de manera que es pot canviar consecutivament entre català, castellà, anglès i francès sense barrejar traduccions.
+- En mòbil, els accessos socials s’agrupen en un únic control i els botons principals de capçalera, predicció, radar i Centre de Dades tenen una zona tàctil mínima de 44 píxels.
+- La selecció inicial de pàgina passa a un fitxer propi permès per la política de seguretat, eliminant l’error CSP sense relaxar la protecció contra scripts en línia.
+- La PWA renova la memòria cau i incorpora el nou inicialitzador perquè les correccions arribin també a les instal·lacions existents.
+
 ## Propera versió — Episodis automàtics de models — 2026-09-07
 
 - Nova detecció automàtica de canvis destacats de temperatura, pluja, tempesta o vent a cinc dies vista, només quan coincideixen almenys dos dels models ECMWF, GFS i ICON.

@@ -1,3 +1,5 @@
+import { t } from '../core/i18n.js';
+
 export function initSeasonalOutlook(){
   const button=document.getElementById('seasonal-outlook-toggle');
   const more=document.getElementById('seasonal-outlook-more');
@@ -8,6 +10,6 @@ export function initSeasonalOutlook(){
     button.setAttribute('aria-expanded',String(next));
     more.hidden=!next;
     button.querySelector('span').textContent=next?'−':'+';
-    button.querySelector('b').textContent=next?'Amagar els mesos següents':'Veure els mesos següents';
+    button.querySelector('b').textContent=t(next?'Amagar els mesos següents':'Veure els mesos següents');
   });
 }
