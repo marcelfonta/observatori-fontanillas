@@ -438,6 +438,39 @@ body{font-size:var(--type-body)}
 .verification-collecting{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.verification-collecting>div{display:grid;grid-template-columns:32px 1fr;column-gap:10px;align-items:center;padding:15px;border:1px solid rgba(116,182,153,.17);border-radius:16px;background:rgba(16,49,39,.48)}.verification-collecting span{grid-row:1/3;display:grid;width:32px;height:32px;place-items:center;border:1px solid var(--line);border-radius:50%;color:var(--muted);font-size:.8rem;font-weight:800}.verification-collecting span.is-done{border-color:rgba(119,212,155,.48);background:rgba(119,212,155,.12);color:#91d9ad}.verification-collecting strong{font-size:.85rem}.verification-collecting small{color:var(--muted);font-size:.68rem}.verification-example{margin:12px 2px 0;color:var(--muted);font-size:.76rem;line-height:1.5}.verification-example b{color:var(--text)}
 @media(max-width:760px){.forecast-verification>header{display:block}.forecast-verification>header .tag{display:inline-flex;margin-top:10px}.verification-hero{grid-template-columns:1fr;text-align:center}.verification-orbit{margin:auto}.verification-metrics{grid-template-columns:1fr}.verification-horizons>div{grid-template-columns:1fr 1fr}.verification-scroll-hint{display:block}.header-social>.social-link:nth-child(n+5){display:none}.header-social-more{display:block}}
 
+/* Bloc de fiabilitat: jerarquia de sensors, avisos, verificació i radar. */
+body[data-page="inici"] .metric-group{display:contents}
+body[data-page="inici"] .metric-group>header{display:none}
+body[data-page="estacio"] .metrics-grid{display:block}
+.metric-group{margin-top:26px}
+.metric-group>header{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:0 2px 12px}
+.metric-group>header h2{margin:3px 0 0;font:700 clamp(21px,2.5vw,30px)/1.1 var(--font-display);letter-spacing:-.035em}
+.metric-group__help{position:relative;color:var(--muted);font-size:var(--type-caption)}
+.metric-group__help summary{cursor:pointer;color:var(--green);list-style:none;border-bottom:1px dotted currentColor}
+.metric-group__help summary::-webkit-details-marker{display:none}
+.metric-group__help p{position:absolute;z-index:30;right:0;width:min(330px,80vw);margin:8px 0 0;padding:13px;border:1px solid var(--line-bright);border-radius:12px;background:#0a1915;color:var(--text);box-shadow:0 16px 40px rgba(0,0,0,.45);line-height:1.5}
+body[data-page="estacio"] .metric-group{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+body[data-page="estacio"] .metric-group>header{grid-column:1/-1}
+body[data-page="estacio"] .metric-group:nth-of-type(n+2){grid-template-columns:repeat(3,minmax(0,1fr))}
+.official-alert-period{margin:10px 2px 0;color:var(--text);font:700 var(--type-card) var(--font-display)}
+.official-alert-period:not(:first-child){padding-top:14px;border-top:1px solid var(--line)}
+.verification-chart{margin:18px 0;padding:16px;border:1px solid rgba(116,182,153,.17);border-radius:18px;background:rgba(4,20,16,.5)}
+.verification-chart figcaption{display:flex;flex-wrap:wrap;gap:18px;color:var(--muted);font-size:.75rem}
+.verification-chart figcaption span{display:flex;align-items:center;gap:7px}.verification-chart figcaption i{width:18px;height:3px;border-radius:3px}
+.verification-chart .is-forecast{stroke:#77d49b;background:#77d49b}.verification-chart .is-observed{stroke:#79c5d8;background:#79c5d8}
+.verification-chart svg{display:block;width:100%;height:auto;margin-top:8px}.verification-chart line{stroke:rgba(255,255,255,.13)}.verification-chart polyline{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.verification-chart>small{display:block;color:var(--muted);font-size:.7rem;text-align:center}
+.verification-method>p{line-height:1.6}.verification-brier{margin-bottom:12px;padding:14px 16px;border:1px solid rgba(116,182,153,.2);border-radius:14px;background:rgba(16,49,39,.42)}
+.verification-brier summary{cursor:pointer;color:var(--green);font-weight:700}.verification-brier p{margin:9px 0 0;line-height:1.55}
+.station-identity{display:block;margin-top:4px;color:var(--green)!important;font-variant-numeric:tabular-nums}
+.radar-loader[hidden]{display:none}.radar-timeline time{font-size:14px;font-weight:800;color:var(--green)}
+.radar-utility{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:12px}
+.radar-utility>button{border:1px solid var(--line-bright);border-radius:999px;background:rgba(137,214,163,.08);color:var(--green);padding:8px 11px;font:700 var(--type-caption) var(--font-body);cursor:pointer}
+.radar-intensity{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:var(--type-caption)}.radar-intensity i{width:18px;height:7px}.radar-intensity i:nth-of-type(1){background:#75c7e8}.radar-intensity i:nth-of-type(2){background:#65c96f}.radar-intensity i:nth-of-type(3){background:#f0d85a}.radar-intensity i:nth-of-type(4){background:#e95c4f}
+#night-best-window{color:var(--green);font-weight:700}
+@media(max-width:1120px){body[data-page="estacio"] .metric-group,body[data-page="estacio"] .metric-group:nth-of-type(n+2){grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){body[data-page="estacio"] .metric-group,body[data-page="estacio"] .metric-group:nth-of-type(n+2){grid-template-columns:1fr}.metric-group>header,.radar-utility{align-items:flex-start;flex-direction:column}.verification-chart{padding:10px}.radar-intensity{width:100%}.radar-intensity i{flex:1}}
+
 .home-metrics-toggle{display:none}
 @media(max-width:780px){
   body[data-page="inici"] .home-metrics-toggle{display:grid;grid-column:1/-1;grid-template-columns:34px 1fr;column-gap:10px;align-items:center;width:100%;min-height:64px;padding:12px 14px;border:1px dashed rgba(137,214,163,.35);border-radius:16px;background:rgba(137,214,163,.045);color:var(--text);text-align:left;font:inherit;cursor:pointer}

@@ -2,6 +2,12 @@
 
 ## Manteniment obert — En curs
 
+- [x] Separar els avisos vigents dels previstos, mostrar-ne la vigència i agrupar actualitzacions d’un mateix episodi a l’historial.
+- [x] Contextualitzar la verificació de pluja, explicar el Brier i comparar visualment previsió i observació.
+- [x] Identificar millor les estacions, advertir quan la pressió només és orientativa i ordenar les mesures locals per ús.
+- [x] Fer inequívocs l’hora i l’estat del radar, i prioritzar les condicions d’observació d’aquesta nit amb una qualificació solar coherent.
+- [ ] Integrar i desplegar el bloc 1 de fiabilitat, i validar avisos, radar, estació i astronomia en escriptori i mòbil.
+
 - [x] Separar la previsió operativa de la tendència a llarg termini sense eliminar contingut, amb navegació creuada i fonts identificades.
 - [x] Reforçar a la portada la vigència i el fenomen dels avisos, clarificar els índexs tèrmics i afegir accessos a municipis i preferències.
 - [x] Prioritzar les xarxes principals a la capçalera i agrupar la resta sota un únic accés «Segueix-nos».

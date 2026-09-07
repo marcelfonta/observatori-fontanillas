@@ -2,9 +2,29 @@ import { fetchForecastVerification } from '../services/weather-api.js';
 
 const fmt=(value,digits=1)=>Number.isFinite(Number(value))?Number(value).toLocaleString('ca-ES',{maximumFractionDigits:digits,minimumFractionDigits:digits}):'—';
 const quality=(mae,good,medium)=>!Number.isFinite(Number(mae))?'Recollint':mae<=good?'Molt bona':mae<=medium?'Bona':'Millorable';
+const escapeHtml=(value='')=>String(value).replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[character]));
 
 function metric(label,value,unit,copy,tone='good'){
   return `<article class="is-${tone}"><span>${label}</span><strong>${value}<small>${unit}</small></strong><p>${copy}</p></article>`;
+}
+
+export function rainSampleCopy(summary={}){
+  const wet=Math.max(0,Number(summary.wetDays)||0);
+  const dry=Math.max(0,Number(summary.dryDays)||0);
+  if(!wet&&dry)return `${dry} ${dry===1?'dia sec':'dies secs'} · encara cap dia amb pluja`;
+  return `${wet} ${wet===1?'dia amb pluja':'dies amb pluja'} · ${dry} ${dry===1?'dia sec':'dies secs'}`;
+}
+
+function verificationChart(detail=[]){
+  const rows=detail.slice(0,14).reverse().filter(item=>Number.isFinite(Number(item.forecast?.max))&&Number.isFinite(Number(item.observed?.max)));
+  if(rows.length<2)return '';
+  const values=rows.flatMap(item=>[Number(item.forecast.max),Number(item.observed.max)]);
+  const min=Math.min(...values)-1;const max=Math.max(...values)+1;const span=Math.max(1,max-min);
+  const point=(value,index)=>`${24+index*(592/(rows.length-1))},${154-(Number(value)-min)/span*122}`;
+  const forecast=rows.map((item,index)=>point(item.forecast.max,index)).join(' ');
+  const observed=rows.map((item,index)=>point(item.observed.max,index)).join(' ');
+  const first=escapeHtml(rows[0]?.date);const last=escapeHtml(rows.at(-1)?.date);
+  return `<figure class="verification-chart"><figcaption><span><i class="is-forecast"></i> Màxima prevista</span><span><i class="is-observed"></i> Màxima observada</span></figcaption><svg viewBox="0 0 640 180" role="img" aria-label="Evolució de la temperatura màxima prevista i observada"><line x1="24" y1="154" x2="616" y2="154"></line><polyline class="is-forecast" points="${forecast}"></polyline><polyline class="is-observed" points="${observed}"></polyline></svg><small>${first||''} → ${last||''} · cada punt és un pronòstic de demà verificat</small></figure>`;
 }
 
 function render(payload){
@@ -34,7 +54,7 @@ function render(payload){
   metrics.hidden=false;
   metrics.innerHTML=[
     metric('Temperatura',fmt(s.temperatureMae),' °C d’error',quality(s.temperatureMae,1.5,2.5),Number(s.temperatureMae)<=2.5?'good':'warn'),
-    metric('Pluja',fmt(s.rainAccuracy,0),'% d’encert','Dia amb pluja o dia sec',Number(s.rainAccuracy)>=70?'good':'warn'),
+    metric('Pluja',fmt(s.rainAccuracy,0),'% d’encert',rainSampleCopy(s),Number(s.rainAccuracy)>=70?'good':'warn'),
     metric('Probabilitat de pluja',fmt(s.rainBrier,3),' Brier','0 és perfecte · 1 és el pitjor',Number(s.rainBrier)<=.25?'good':'warn'),
     metric('Ratxa de vent',fmt(s.windMae),' km/h d’error',quality(s.windMae,7,12),Number(s.windMae)<=12?'good':'warn')
   ].join('');
@@ -42,10 +62,10 @@ function render(payload){
   horizons.innerHTML=`<h4>Com canvia l’encert amb l’horitzó?</h4><p class="verification-legend">«Avui» és l’última actualització del mateix dia i només serveix de context; el resum principal usa exclusivament «Demà».</p><div>${(payload.horizons||[]).map(item=>`<article><span>${item.key==='today'?'Avui · actualització del dia':item.label}</span><strong>${item.samples?`${fmt(item.temperatureMae)} °C`:'Encara sense mostra'}</strong><small>${item.samples?`${fmt(item.rainAccuracy,0)}% pluja · ${item.samples} casos`:'Recollint prediccions'}</small></article>`).join('')}</div>`;
   if((payload.detail||[]).length){
     detail.hidden=false;
-    detail.innerHTML=`<h4>Pronòstics de demà verificats: previsió → resultat real</h4><p class="verification-legend">El valor verd es va guardar el dia anterior; després de la fletxa hi ha el que va mesurar l’estació.</p><p class="verification-scroll-hint">En pantalles petites, arrossega la taula cap als costats.</p><div class="verification-table" role="table" aria-label="Pronòstics de demà comparats amb observacions" tabindex="0"><div class="verification-row is-head" role="row"><span role="columnheader">Dia</span><span role="columnheader">Màxima</span><span role="columnheader">Mínima</span><span role="columnheader">Pluja</span><span role="columnheader">Ratxa</span></div>${payload.detail.slice(0,7).map(item=>`<div class="verification-row" role="row"><span role="cell">${new Date(`${item.date}T12:00:00`).toLocaleDateString('ca-ES',{day:'numeric',month:'short'})}</span><span role="cell"><b>${fmt(item.forecast.max)}°</b> → ${fmt(item.observed.max)}°</span><span role="cell"><b>${fmt(item.forecast.min)}°</b> → ${fmt(item.observed.min)}°</span><span role="cell"><b>${fmt(item.forecast.rain)} mm</b> → ${fmt(item.observed.rain)} mm</span><span role="cell"><b>${fmt(item.forecast.gust)} km/h</b> → ${fmt(item.observed.gust)} km/h</span></div>`).join('')}</div>`;
+    detail.innerHTML=`<h4>Pronòstics de demà verificats: previsió → resultat real</h4><p class="verification-legend">El valor verd es va guardar el dia anterior; després de la fletxa hi ha el que va mesurar l’estació.</p>${verificationChart(payload.detail)}<p class="verification-scroll-hint">En pantalles petites, arrossega la taula cap als costats.</p><div class="verification-table" role="table" aria-label="Pronòstics de demà comparats amb observacions" tabindex="0"><div class="verification-row is-head" role="row"><span role="columnheader">Dia</span><span role="columnheader">Màxima</span><span role="columnheader">Mínima</span><span role="columnheader">Pluja</span><span role="columnheader">Ratxa</span></div>${payload.detail.slice(0,7).map(item=>`<div class="verification-row" role="row"><span role="cell">${new Date(`${item.date}T12:00:00`).toLocaleDateString('ca-ES',{day:'numeric',month:'short'})}</span><span role="cell"><b>${fmt(item.forecast.max)}°</b> → ${fmt(item.observed.max)}°</span><span role="cell"><b>${fmt(item.forecast.min)}°</b> → ${fmt(item.observed.min)}°</span><span role="cell"><b>${fmt(item.forecast.rain)} mm</b> → ${fmt(item.observed.rain)} mm</span><span role="cell"><b>${fmt(item.forecast.gust)} km/h</b> → ${fmt(item.observed.gust)} km/h</span></div>`).join('')}</div>`;
   }
   const wet=Number(s.wetDays)||0;const dry=Number(s.dryDays)||0;
-  method.textContent=`${payload.method?.note||'Predicció registrada abans del dia i contrastada amb l’estació.'} Mostra principal: ${days} pronòstics (${wet} dies amb pluja i ${dry} dies secs). Fonts: ${payload.method?.provider||'proveïdor de previsió'} i ${payload.method?.observation||'estació local'}. L’encert binari de pluja usa el llindar publicat de ${payload.method?.rainProbabilityThreshold??40}% o ${fmt(payload.method?.rainThresholdMillimetres??0.2)} mm; no es presenta com una certesa.`;
+  method.innerHTML=`<details class="verification-brier"><summary>Què vol dir l’índex Brier?</summary><p>Mesura si les probabilitats de pluja estan ben calibrades: 0 és perfecte i 1 és el pitjor resultat. Exemple: si es dona un 20% de probabilitat i no plou, l’error és (0,2 − 0)² = 0,04. No és una unitat meteorològica, sinó una puntuació estadística.</p></details><p>${escapeHtml(payload.method?.note||'Predicció registrada abans del dia i contrastada amb l’estació.')} Mostra principal: ${days} pronòstics (${wet} dies amb pluja i ${dry} dies secs).${!wet?' Sense dies plujosos, el percentatge descriu sobretot l’encert dels dies secs i encara no avalua bé la detecció de pluja.':''} Fonts: ${escapeHtml(payload.method?.provider||'proveïdor de previsió')} i ${escapeHtml(payload.method?.observation||'estació local')}. L’encert binari usa el llindar de ${Number(payload.method?.rainProbabilityThreshold) || 40}% o ${fmt(payload.method?.rainThresholdMillimetres??0.2)} mm.</p>`;
 }
 
 export async function initForecastVerification(){

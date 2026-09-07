@@ -1,4 +1,5 @@
 import { CONFIG } from '../core/config.js';
+import { groupAlertEpisodes } from '../core/alert-episodes.js';
 
 const LOCAL_KEY='fontanillas-alert-history-local-v1';
 let serverItems=[];
@@ -14,7 +15,7 @@ function historyLimit(){const host=document.getElementById('alert-history-list')
 function combinedItems(){
   const map=new Map();
   [...serverItems,...localItems].forEach(item=>map.set(keyOf(item),item));
-  return [...map.values()].sort((a,b)=>new Date(b.started_at||b.created_at||0)-new Date(a.started_at||a.created_at||0)).slice(0,historyLimit());
+  return groupAlertEpisodes([...map.values()]).slice(0,historyLimit());
 }
 function render(){
   const host=document.getElementById('alert-history-list');
@@ -26,13 +27,13 @@ function render(){
     if(status)status.textContent='Sense episodis registrats';
     return;
   }
-  host.innerHTML=items.map(item=>`<article class="alert-history-item is-${escapeHtml(item.level||'unknown')}"><span class="alert-history-level">${levelLabel(item.level)}</span><div><strong>${escapeHtml(item.phenomenon||item.title||'Avís meteorològic')}</strong><small>${escapeHtml(item.source||'AEMET')} · ${formatDate(item.started_at||item.created_at)}</small><p>${escapeHtml(item.description||'')}</p></div></article>`).join('');
+  host.innerHTML=items.map(item=>`<article class="alert-history-item is-${escapeHtml(item.level||'unknown')}"><span class="alert-history-level">${levelLabel(item.level)}</span><div><strong>${escapeHtml(item.phenomenon||item.title||'Avís meteorològic')}</strong><small>${escapeHtml(item.source||'AEMET')} · ${formatDate(item.started_at||item.created_at)}${item.updates>1?` · ${item.updates} actualitzacions agrupades`:''}</small><p>${escapeHtml(item.description||'')}</p></div></article>`).join('');
   if(status)status.textContent=`${items.length} episodis recents`;
 }
 function capturePayload(payload){
   if(!payload?.ok || !Array.isArray(payload.alerts) || !payload.alerts.length)return;
   const now=new Date().toISOString();
-  const additions=payload.alerts.map(item=>({source:'AEMET',level:item.level||payload.maxLevel||'unknown',phenomenon:item.phenomenon||item.title||'Avís meteorològic',title:item.title||'',description:item.description||'',started_at:item.published||now,expires_at:item.expires||null,created_at:now}));
+  const additions=payload.alerts.map(item=>({source:item.source||payload.source?.name||'AEMET',level:item.level||payload.maxLevel||'unknown',phenomenon:item.phenomenon||item.title||'Avís meteorològic',title:item.title||'',description:item.description||'',started_at:item.starts||item.start||item.published||now,expires_at:item.expires||item.end||null,created_at:now}));
   const map=new Map([...additions,...localItems].map(item=>[keyOf(item),item]));
   localItems=[...map.values()].sort((a,b)=>new Date(b.started_at||0)-new Date(a.started_at||0)).slice(0,30);
   saveLocal(localItems); render();

@@ -168,7 +168,7 @@ function renderSun(forecast) {
   setText('solar-time',solarClock.time);
   const difference=Math.abs(Math.round(solarClock.correction)); const differenceHours=Math.floor(difference/60); const differenceMinutes=difference%60;
   setText('solar-offset',`${differenceHours?`${differenceHours} h `:''}${differenceMinutes} min ${solarClock.correction<0?'per darrere':'per davant'} de l’hora oficial`);
-  setText('sun-status',position.elevation>10?`Sol alt cap al ${cardinal(position.azimuth)}`:position.elevation>0?`Sol baix cap al ${cardinal(position.azimuth)}`:`Sol sota l’horitzó · ${cardinal(position.azimuth)}`);
+  setText('sun-status',`${sunHeightLabel(position.elevation)} ${position.elevation>0?'cap al':'·'} ${cardinal(position.azimuth)}`);
   const sunrise=new Date(forecast?.daily?.sunrise?.[0]);
   const sunset=new Date(forecast?.daily?.sunset?.[0]);
   if (!Number.isNaN(sunrise.getTime())&&!Number.isNaN(sunset.getTime())) {
@@ -180,6 +180,15 @@ function renderSun(forecast) {
     const orbit=document.getElementById('sun-orbit-marker');
     if(orbit){orbit.style.left=`${progress*100}%`;orbit.style.bottom=`${Math.max(0,Math.sin(progress*Math.PI)*72)}%`;}
   }
+}
+
+export function sunHeightLabel(elevation) {
+  const value=Number(elevation);
+  if(!Number.isFinite(value))return 'Posició solar no disponible';
+  if(value>=45)return 'Sol alt';
+  if(value>=15)return 'Sol a mitja altura';
+  if(value>0)return 'Sol baix';
+  return 'Sol sota l’horitzó';
 }
 
 function seasonMeta(item) {
@@ -248,6 +257,17 @@ function renderNightQuality(forecast, moon) {
   const rating = score >= 80 ? 'Nit excel·lent' : score >= 60 ? 'Condicions bones' : score >= 40 ? 'Condicions irregulars' : 'Observació difícil';
   setText('night-score',score); setText('night-rating',rating);
   setText('night-summary',`${format(cloudAverage,0)}% de nuvolositat mitjana · ${format(rainMaximum,0)}% màxim de pluja · Lluna ${format(moon.illumination,0)}%`);
+  const candidates=indices.map(item=>({
+    date:item.date,
+    clouds:Number(forecast.hourly.cloud_cover?.[item.index]),
+    rain:Number(forecast.hourly.precipitation_probability?.[item.index]),
+  })).filter(item=>Number.isFinite(item.clouds)&&Number.isFinite(item.rain));
+  const best=candidates.sort((a,b)=>(a.clouds+a.rain*.6)-(b.clouds+b.rain*.6))[0];
+  if(best){
+    const end=new Date(best.date.getTime()+2*3600000);
+    const formatter=new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'});
+    setText('night-best-window',`Millor finestra orientativa: ${formatter.format(best.date)}–${formatter.format(end)} · ${format(best.clouds,0)}% núvols · ${format(best.rain,0)}% pluja`);
+  }
   const darkness = (sunrise - sunset) / 3600000;
   setText('darkness-hours',`${format(darkness,1)} h`);
   setText('darkness-times',`${new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(sunset)} → ${new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(sunrise)}`);
