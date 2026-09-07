@@ -1,5 +1,11 @@
 # Changelog
 
+## Correcció — Data visible als avisos socials futurs — 2026-09-07
+
+- Les notificacions socials de Meteocat indiquen al començament si l’avís és per avui, demà o una data posterior, amb el dia de la setmana i la data visibles al títol.
+- Quan l’avís encara no ha començat, el text aclareix que és una previsió oficial futura i que no descriu el temps actual.
+- La data es pren del dia concret de l’evolució comarcal del Vallès Oriental, no de l’inici general de l’episodi, que pot començar abans en altres zones.
+
 ## Correcció — Capçalera mòbil en una sola fila — 2026-09-07
 
 - L’hora redundant desapareix de la capçalera mòbil i només es conserva el punt verd que indica l’estat en directe.
