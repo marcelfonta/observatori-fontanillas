@@ -36,9 +36,9 @@ export function initHeaderTools(){
     url.searchParams.set('lang',select.value);
     window.history.replaceState({},'',url);
   });
-  document.addEventListener('observatori:language-change',()=>{select.value=getLanguage();});
+  document.addEventListener('observatori:language-change',()=>{select.value=getLanguage();clearTimeout(timer);requestNumber++;render([]);form.classList.remove('is-loading');});
 
-  const close=()=>{suggestions.hidden=true;activeIndex=-1;input.setAttribute('aria-expanded','false');};
+  const close=()=>{clearTimeout(timer);requestNumber++;candidates=[];form.classList.remove('is-loading');suggestions.hidden=true;activeIndex=-1;input.setAttribute('aria-expanded','false');};
   const focusOption=index=>{
     const options=[...suggestions.querySelectorAll('[role="option"]')];
     if(!options.length)return;
@@ -62,6 +62,7 @@ export function initHeaderTools(){
     input.setAttribute('aria-expanded',String(Boolean(candidates.length)));
   };
   const search=async()=>{
+    clearTimeout(timer);
     const query=input.value.trim();
     const currentRequest=++requestNumber;
     if(query.length<2){render([]);return;}
@@ -73,10 +74,10 @@ export function initHeaderTools(){
     finally{if(currentRequest===requestNumber)form.classList.remove('is-loading');}
   };
 
-  input.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(search,260);});
+  input.addEventListener('input',()=>{clearTimeout(timer);requestNumber++;render([]);form.classList.remove('is-loading');timer=setTimeout(search,260);});
   input.addEventListener('keydown',event=>{
     if(event.key==='ArrowDown'&&!suggestions.hidden){event.preventDefault();focusOption(0);}
-    if(event.key==='Escape')close();
+    if(event.key==='Escape'){clearTimeout(timer);requestNumber++;form.classList.remove('is-loading');close();}
   });
   suggestions.addEventListener('keydown',event=>{
     if(event.key==='ArrowDown'){event.preventDefault();focusOption(activeIndex+1);}
@@ -84,6 +85,6 @@ export function initHeaderTools(){
     if(event.key==='Escape'){close();input.focus();}
   });
   suggestions.addEventListener('click',event=>openPlace(candidates[Number(event.target.closest('[data-place-index]')?.dataset.placeIndex)]));
-  form.addEventListener('submit',event=>{event.preventDefault();if(candidates[0])openPlace(candidates[0]);else search();});
+  form.addEventListener('submit',event=>{event.preventDefault();clearTimeout(timer);if(candidates[0])openPlace(candidates[0]);else search();});
   document.addEventListener('click',event=>{if(!tools.contains(event.target))close();});
 }

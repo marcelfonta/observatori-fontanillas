@@ -1,5 +1,14 @@
 # Changelog
 
+## Correcció — Fiabilitat del cercador municipal — 2026-09-08
+
+- La cerca automàtica i «Buscar» comparteixen les peticions idèntiques en curs; enviar el formulari cancel·la el temporitzador pendent.
+- Els dos cercadors descarten resultats obsolets després de canviar el text o l’idioma. La pàgina municipal també invalida la cerca quan se selecciona un resultat.
+- Un únic reintent per errors de transport, temps d’espera, JSON truncat o resposta 5xx; sense reintentar 4xx ni límits 429. No desa cerques ni escriu a D1.
+- El geocodificador rep el francès quan aquest és l’idioma seleccionat. Renovació de la memòria cau PWA per distribuir el canvi.
+- La fallada inicial de Chamonix no s’ha pogut reproduir de manera sostinguda: el proveïdor ha tornat a respondre 200. La correcció resol defectes comprovats de concurrència i tolerància a errors, no atribueix sense proves la incidència a una causa externa concreta.
+- Rollback: revertir el commit. Sense canvis al Worker, secrets, automatitzacions ni esquema de dades. Producció pendent de revisió i desplegament autoritzat.
+
 ## Correcció — Vigència destacada a les imatges d’avisos — 2026-09-07
 
 - Les imatges `official_alert` mostren «PREVIST PER» i el dia complet abans del fenomen i del mapa, amb «NO ÉS PER AVUI» només quan el dia afectat és posterior al de creació de la publicació. La data de publicació acompanya aquesta indicació perquè sigui interpretable quan es comparteix més endavant.

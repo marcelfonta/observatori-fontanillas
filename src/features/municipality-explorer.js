@@ -27,6 +27,7 @@ const favoritesList=$('#municipality-favorites-list');
 const FAVORITES_KEY='fontanillas-municipality-favorites-v1';
 let candidates=[];
 let timer=null;
+let requestNumber=0;
 
 function placeLabel(place){return [place.name,place.admin2||place.admin1,place.country].filter(Boolean).join(' · ');}
 function validPlace(place){return Boolean(place&&String(place.name||'').trim())&&Number.isFinite(Number(place.latitude))&&Number.isFinite(Number(place.longitude));}
@@ -42,14 +43,17 @@ function renderSuggestions(items){
 }
 
 async function suggest(){
+  clearTimeout(timer);
+  const currentRequest=++requestNumber;
   const query=input.value.trim();
   if(query.length<2){renderSuggestions([]);status.textContent='Escriu com a mínim dues lletres.';return;}
   status.textContent='Buscant municipis…';
   try{
     const items=await searchMunicipalities(query,getLanguage());
+    if(currentRequest!==requestNumber)return;
     renderSuggestions(items);
     status.textContent=items.length?'Selecciona el municipi correcte.':'No hem trobat cap coincidència.';
-  }catch(error){renderSuggestions([]);status.textContent='No s’ha pogut completar la cerca. Torna-ho a provar.';}
+  }catch(error){if(currentRequest!==requestNumber)return;renderSuggestions([]);status.textContent='No s’ha pogut completar la cerca. Torna-ho a provar.';}
 }
 
 function renderForecast(location,weather,selectedLocation=location){
@@ -112,6 +116,7 @@ function renderWebcams(payload,location){
 }
 
 async function selectPlace(location,{updateUrl=true}={}){
+  clearTimeout(timer);requestNumber++;
   updateMunicipalitySeo(location);
   input.value=location.name;suggestions.hidden=true;result.hidden=false;result.innerHTML='<div class="panel municipality-loading"><strong>Preparant la consulta…</strong><span>Separem les previsions de les observacions reals.</span></div>';
   status.textContent=`Consultant ${placeLabel(location)}…`;
@@ -125,14 +130,15 @@ async function selectPlace(location,{updateUrl=true}={}){
   }catch(error){result.innerHTML='<div class="panel municipality-loading is-error"><strong>No hem pogut carregar aquest lloc.</strong><span>Comprova la connexió o prova una altra localitat.</span></div>';status.textContent='Consulta no disponible temporalment.';}
 }
 
-input?.addEventListener('input',()=>{clearTimeout(timer);renderSuggestions([]);timer=setTimeout(suggest,300);});
-input?.addEventListener('keydown',event=>{if(event.key==='Escape')renderSuggestions([]);});
-form?.addEventListener('submit',async event=>{event.preventDefault();if(candidates[0])selectPlace(candidates[0]);else await suggest();});
+input?.addEventListener('input',()=>{clearTimeout(timer);requestNumber++;renderSuggestions([]);timer=setTimeout(suggest,300);});
+input?.addEventListener('keydown',event=>{if(event.key==='Escape'){clearTimeout(timer);requestNumber++;renderSuggestions([]);}});
+form?.addEventListener('submit',async event=>{event.preventDefault();clearTimeout(timer);if(candidates[0])selectPlace(candidates[0]);else await suggest();});
 suggestions?.addEventListener('click',event=>{const button=event.target.closest('[data-place-index]');if(button)selectPlace(candidates[Number(button.dataset.placeIndex)]);});
 result?.addEventListener('click',event=>{const favorite=event.target.closest('[data-favorite-toggle]');if(favorite){const url=new URL(window.location.href);const added=toggleFavorite({name:url.searchParams.get('municipi')||input.value,latitude:Number(url.searchParams.get('lat')),longitude:Number(url.searchParams.get('lon'))});favorite.setAttribute('aria-pressed',String(added));favorite.textContent=added?'★ Desat':'☆ Desar municipi';return;}const tab=event.target.closest('[data-forecast-tab]');if(!tab)return;const tabs=tab.closest('[data-source-tabs]');tabs.querySelectorAll('[data-forecast-tab]').forEach(button=>{const active=button===tab;button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});tabs.querySelectorAll('[data-source-panel]').forEach(panel=>{panel.hidden=panel.dataset.sourcePanel!==tab.dataset.forecastTab;});});
 result?.addEventListener('keydown',event=>{const tab=event.target.closest('[data-forecast-tab]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;const buttons=[...tab.closest('[role="tablist"]').querySelectorAll('[data-forecast-tab]')];let index=buttons.indexOf(tab);if(event.key==='Home')index=0;else if(event.key==='End')index=buttons.length-1;else index=(index+(event.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length;event.preventDefault();buttons[index].focus();buttons[index].click();});
-document.addEventListener('click',event=>{if(!event.target.closest('.municipality-search'))suggestions.hidden=true;});
+document.addEventListener('click',event=>{if(!event.target.closest('.municipality-search')){clearTimeout(timer);requestNumber++;renderSuggestions([]);}});
 document.addEventListener('observatori:language-change',()=>{
+  clearTimeout(timer);requestNumber++;renderSuggestions([]);
   const params=new URLSearchParams(window.location.search);
   if(params.get('municipi')){params.set('lang',getLanguage());history.replaceState({},'',`${window.location.pathname}?${params.toString()}`);updateMunicipalitySeo({name:params.get('municipi'),latitude:Number(params.get('lat')),longitude:Number(params.get('lon'))});}
 });

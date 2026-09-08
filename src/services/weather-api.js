@@ -162,15 +162,40 @@ export async function fetchAdvancedMeteoAI(question, context) {
 }
 
 const normalizePlace=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+// Browser-only: share identical in-flight searches, never persist location queries.
+const pendingPlaceSearches=new Map();
+
+async function requestPlaces(url){
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      const response=await request(url,{headers:{Accept:'application/json'},cache:'no-store'},12000);
+      if(!response.ok){
+        const error=new Error(`Geocoding API ${response.status}`);
+        error.retryable=response.status>=500;
+        throw error;
+      }
+      return await response.json();
+    }catch(error){
+      const transient=error.retryable===true||error instanceof TypeError||error instanceof SyntaxError||error.name==='AbortError';
+      if(attempt||!transient)throw error;
+      await new Promise(resolve=>setTimeout(resolve,250));
+    }
+  }
+}
 
 export async function searchMunicipalities(query,language='ca') {
   const name=String(query||'').trim().slice(0,80);
   if(name.length<2)throw new Error('LOCALITY_REQUIRED');
-  const geocodingLanguage=['ca','es','en'].includes(language)?language:'ca';
+  const geocodingLanguage=['ca','es','en','fr'].includes(language)?language:'ca';
   const geocoding=new URLSearchParams({name,count:'10',language:geocodingLanguage,format:'json'});
-  const locationResponse=await request(`https://geocoding-api.open-meteo.com/v1/search?${geocoding}`,{headers:{Accept:'application/json'},cache:'no-store'},12000);
-  if(!locationResponse.ok)throw new Error(`Geocoding API ${locationResponse.status}`);
-  const candidates=((await locationResponse.json())?.results||[]).filter(item=>Number.isFinite(item.latitude)&&Number.isFinite(item.longitude));
+  const key=geocoding.toString();
+  if(!pendingPlaceSearches.has(key)){
+    const pending=requestPlaces(`https://geocoding-api.open-meteo.com/v1/search?${geocoding}`)
+      .finally(()=>pendingPlaceSearches.delete(key));
+    pendingPlaceSearches.set(key,pending);
+  }
+  const payload=await pendingPlaceSearches.get(key);
+  const candidates=(Array.isArray(payload?.results)?payload.results:[]).filter(item=>Number.isFinite(item.latitude)&&Number.isFinite(item.longitude));
   const unique=[];const seen=new Set();
   for(const item of candidates){const key=`${normalizePlace(item.name)}|${normalizePlace(item.admin1)}|${item.country_code}`;if(!seen.has(key)){seen.add(key);unique.push(item);}}
   return unique.slice(0,8);
