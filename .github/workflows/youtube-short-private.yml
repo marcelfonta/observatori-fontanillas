@@ -51,10 +51,11 @@ jobs:
       SOCIAL_VIDEO_UPLOAD_URL: ${{ secrets.SOCIAL_VIDEO_UPLOAD_URL }}
       SOCIAL_VIDEO_UPLOAD_TOKEN: ${{ secrets.SOCIAL_VIDEO_UPLOAD_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
+          package-manager-cache: false
       - name: Valida la finestra horària de reserva
         if: github.event_name == 'schedule'
         run: node scripts/youtube-backup-window.mjs >> "$GITHUB_ENV"
@@ -106,7 +107,7 @@ jobs:
           ffprobe -v error -show_entries format=duration,size -of json build/youtube-short/short.mp4
       - name: Conserva una previsualització
         if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: meteo-fontanillas-short-preview
           path: build/youtube-short/short.mp4

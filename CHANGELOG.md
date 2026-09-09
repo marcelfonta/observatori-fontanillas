@@ -1,5 +1,12 @@
 # Changelog
 
+## Manteniment — GitHub Actions sobre Node 24 — 2026-09-09
+
+- Els workflows utilitzen les versions vigents d’`actions/checkout`, `actions/setup-node` i `actions/upload-artifact`, executades internament sobre Node 24.
+- Els scripts del projecte es mantenen en Node 22 LTS; el canvi només elimina la dependència interna obsoleta de les accions de GitHub.
+- Els dos fluxos de vídeo desactiven la memòria cau automàtica de paquets perquè no instal·len dependències i gestionen credencials de publicació.
+- No canvia cap horari, secret, publicació, Worker ni dada meteorològica. Rollback: revertir aquest commit.
+
 ## Correcció — Fiabilitat del cercador municipal — 2026-09-08
 
 - La cerca automàtica i «Buscar» comparteixen les peticions idèntiques en curs; enviar el formulari cancel·la el temporitzador pendent.
