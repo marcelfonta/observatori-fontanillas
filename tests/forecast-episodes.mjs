@@ -42,7 +42,7 @@ const workflow=await readFile(new URL('../.github/workflows/forecast-episode-vid
 assert.match(workflow,/workflow_dispatch:/);
 assert.match(workflow,/episodes\/\$\{\{ inputs\.draft_id \}\}\.mp4/);
 assert.match(workflow,/if: inputs\.auto_publish == true/);
-assert.match(workflow,/actions\/upload-artifact@v4/);
+assert.match(workflow,/actions\/upload-artifact@v7/);
 const generator=await readFile(new URL('../scripts/forecast-episode-video.mjs',import.meta.url),'utf8');
 assert.match(generator,/Cap model coincident ha retornat una graella real/);
 assert.match(generator,/no és un avís oficial/);

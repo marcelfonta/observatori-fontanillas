@@ -37,10 +37,11 @@ jobs:
       VIDEO_MUSIC_OUTPUT: build/forecast-episode/music.wav
       VIDEO_DURATION_SECONDS: '18'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
+          package-manager-cache: false
       - name: Valida la petició
         run: |
           set -euo pipefail
@@ -84,7 +85,7 @@ jobs:
             build/forecast-episode/video.mp4
           ffprobe -v error -show_entries format=duration,size -of json build/forecast-episode/video.mp4
       - name: Conserva la previsualització
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: forecast-episode-${{ inputs.draft_id }}
           path: build/forecast-episode/video.mp4
