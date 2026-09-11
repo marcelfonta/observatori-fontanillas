@@ -2,6 +2,8 @@
 
 ## Manteniment obert — En curs
 
+- [x] Fer adaptable la caixa de data dels vídeos diaris perquè el text no sobresurti en dies i mesos llargs.
+
 - [x] Evitar valors anteriors ficticis a les publicacions esporàdiques i elevar a 10 °C el llindar dels canvis sobtats de temperatura.
 
 - [x] Reunir tots els controls de la capçalera mòbil en una sola fila, ocultant l’hora redundant i conservant el punt d’estat en directe.

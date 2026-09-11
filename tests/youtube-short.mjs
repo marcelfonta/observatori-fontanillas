@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { buildSlideSvg, datedKicker, editionLabel, shortDateLabel, weatherGlyph, weatherLabel, weatherTheme } from '../scripts/youtube-short.mjs';
+import { buildSlideSvg, datedKicker, editionLabel, kickerPillWidth, shortDateLabel, weatherGlyph, weatherLabel, weatherTheme } from '../scripts/youtube-short.mjs';
 import { projectRainPoint, rainColor, rainEvolutionFooter, rainFrameHours, rainMapContent, rainMapGrid } from '../scripts/youtube-rain-map.mjs';
 import { sampleAt } from '../scripts/youtube-music.mjs';
 
@@ -26,6 +26,9 @@ assert.equal(shortDateLabel('2026-09-01'),'DT 1 DE SETEMBRE');
 assert.equal(datedKicker('Demà','2026-09-01'),'Demà · DT 1 DE SETEMBRE');
 assert.equal(editionLabel('mati',new Date('2026-08-31T05:00:00.000Z')),'EDICIÓ MATÍ · 31 D’AGOST DEL 2026');
 assert.equal(editionLabel('vespre',new Date('2026-08-31T18:30:00.000Z')),'EDICIÓ VESPRE · 31 D’AGOST DEL 2026');
+assert.equal(kickerPillWidth('Observació'),300);
+assert.equal(kickerPillWidth('Avui · DV 11 DE SETEMBRE'),496);
+assert.equal(kickerPillWidth('X'.repeat(100)),928);
 const svg=buildSlideSvg({title:'Prova',kicker:'Avui · DL 31 D’AGOST',edition:'EDICIÓ MATÍ · 31 D’AGOST DEL 2026',content:'<text>24°</text>',footer:'Dades reals',weatherCode:61});
 assert.match(svg,/width="1080" height="1920"/);
 assert.match(svg,/METEO FONTANILLAS/);
@@ -34,6 +37,7 @@ assert.match(svg,/24°/);
 assert.match(svg,/<title>Pluja<\/title>/);
 assert.match(svg,/EDICIÓ MATÍ · 31 D’AGOST DEL 2026/);
 assert.match(svg,/AVUI · DL 31 D’AGOST/);
+assert.match(svg,/<rect x="76" y="272" width="424" height="62"/);
 assert.match(svg,/y="390"/);
 assert.equal((svg.match(/y="1684"/g)||[]).length,6);
 const observation=buildSlideSvg({title:'Dades reals',kicker:'Observació',content:'<text>19°</text>',footer:'Estació',weatherCode:null});
