@@ -33,6 +33,17 @@ const periodicCard=socialCardHtml({kind:'monthly_summary',payload:JSON.stringify
 assert.match(periodicCard,/El mes en xifres a Sant Celoni/);
 assert.match(periodicCard,/no és una normal climàtica oficial/);
 
+const dailyCard=socialCardHtml({kind:'daily_observation',payload:JSON.stringify({
+  eyebrow:'Actualització del migdia',localDate:'2026-09-11',observationUpdated:'2026-09-11 13:00',
+  temperature:27.4,feelsLike:27.3,humidity:45,windSpeed:8,windGust:14,
+  temperatureTrend:{hours:24,minimum:18.2,maximum:27.4,change:4.9,points:[{epoch:1,temperature:22.5},{epoch:2,temperature:18.2},{epoch:3,temperature:27.4}]},
+  forecast:[],
+})});
+assert.match(dailyCard,/ÚLTIMES 24 H · DADES OBSERVADES/);
+assert.match(dailyCard,/class="temperature-trend-line"/);
+assert.match(dailyCard,/Mín\. <b>18,2°<\/b>/);
+assert.match(dailyCard,/Màx\. <b>27,4°<\/b>/);
+
 const eventCard=socialCardHtml({kind:'station_event',payload:JSON.stringify({
   eyebrow:'RATXA DESTACADA',eventTitle:'El vent ha superat el llindar de ratxa forta',value:74,unit:'km\/h',
   advice:'Consulta els avisos oficials.',localDate:'2026-08-31',observationUpdated:'2026-08-31 12:00',

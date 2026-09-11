@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { buildSlideSvg, datedKicker, editionLabel, kickerPillWidth, shortDateLabel, weatherGlyph, weatherLabel, weatherTheme } from '../scripts/youtube-short.mjs';
+import { buildSlideSvg, datedKicker, editionLabel, kickerPillWidth, shortDateLabel, temperatureTrendVideoContent, weatherGlyph, weatherLabel, weatherTheme } from '../scripts/youtube-short.mjs';
 import { projectRainPoint, rainColor, rainEvolutionFooter, rainFrameHours, rainMapContent, rainMapGrid } from '../scripts/youtube-rain-map.mjs';
 import { sampleAt } from '../scripts/youtube-music.mjs';
 
@@ -45,6 +45,12 @@ assert.doesNotMatch(observation,/<title>/);
 const longObservation=buildSlideSvg({title:'Ara mateix, dades reals',kicker:'Observació',content:'',footer:'Estació',weatherCode:null});
 assert.match(longObservation,/>Ara mateix, dades<\/text>/);
 assert.match(longObservation,/>reals<\/text>/);
+const observedTrend={hours:24,minimum:18.2,maximum:27.4,change:4.9,points:[{epoch:1,temperature:22.5},{epoch:2,temperature:18.2},{epoch:3,temperature:27.4}]};
+const trendContent=temperatureTrendVideoContent({temperature:27.4,feelsLike:27.3,humidity:45,windSpeed:8,rainToday:0,pressure:1016},'13:00','#8fe0ad',observedTrend,.5);
+assert.match(trendContent,/ÚLTIMES 24 H · DADES OBSERVADES/);
+assert.match(trendContent,/Mín\./);
+assert.match(trendContent,/Màx\./);
+assert.match(trendContent,/↗ \+4,9°/);
 const trend=buildSlideSvg({title:'Tendència dels pròxims dies',kicker:'D’un cop d’ull',content:'',footer:'Web',weatherCode:0});
 assert.match(trend,/>Tendència dels<\/text>/);
 assert.match(trend,/>pròxims dies<\/text>/);
@@ -81,7 +87,9 @@ const workflow=await readFile(new URL('../.github/workflows/youtube-short-privat
 assert.match(workflow,/xfade=transition=fade/);
 assert.match(workflow,/zoompan=/);
 assert.match(workflow,/rain-frame-4\.png/);
-assert.match(workflow,/-map 9:a/);
+assert.match(workflow,/temperature-frame-4\.png/);
+assert.match(workflow,/\[t0\]\[t1\]xfade/);
+assert.match(workflow,/-map 12:a/);
 assert.match(workflow,/rsvg-convert -w 2160 -h 3840/);
 assert.match(workflow,/-b:v 5M -minrate 5M -maxrate 5M/);
 assert.match(workflow,/colorprim=bt709:transfer=bt709:colormatrix=bt709/);

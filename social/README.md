@@ -1,4 +1,4 @@
-# Xarxes socials — automatització segura V22.29.3
+# Xarxes socials — automatització segura V22.29.4
 
 ## Publicacions de ritme lent i episodis puntuals
 
