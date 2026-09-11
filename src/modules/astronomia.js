@@ -1,5 +1,6 @@
 import { CONFIG } from '../core/config.js';
 import { cardinal, clamp, format, setText } from '../core/dom.js';
+import { ASTRONOMICAL_EVENTS, SEASON_TRANSITIONS } from '../data/astronomical-calendar.js';
 
 const SYNODIC_MONTH = 29.530588853;
 const KNOWN_NEW_MOON = Date.UTC(2000, 0, 6, 18, 14);
@@ -8,29 +9,12 @@ const phaseNames = [
   ['Lluna plena','🌕'],['Gibosa minvant','🌖'],['Quart minvant','🌗'],['Lluna minvant','🌘']
 ];
 
-const fallbackSeasons = [
-  ['2025-12-21T15:03:00Z','Hivern','Solstici d’hivern','❄'],
-  ['2026-03-20T14:46:00Z','Primavera','Equinocci de primavera','🌱'],
-  ['2026-06-21T08:24:00Z','Estiu','Solstici d’estiu','☀'],
-  ['2026-09-23T00:05:00Z','Tardor','Equinocci de tardor','🍂'],
-  ['2026-12-21T20:50:00Z','Hivern','Solstici d’hivern','❄'],
-  ['2027-03-20T20:25:00Z','Primavera','Equinocci de primavera','🌱'],
-  ['2027-06-21T14:11:00Z','Estiu','Solstici d’estiu','☀'],
-  ['2027-09-23T06:02:00Z','Tardor','Equinocci de tardor','🍂'],
-  ['2027-12-22T02:42:00Z','Hivern','Solstici d’hivern','❄']
-].map(([date,season,label,symbol])=>({date:new Date(date),season,label,symbol}));
+const fallbackSeasons = SEASON_TRANSITIONS.map(item=>({...item,date:new Date(item.date)}));
 
 let seasonsRequested = false;
 let seasonsCache = fallbackSeasons;
 
-const events = [
-  { date:'2026-08-12T19:30:00+02:00', title:'Eclipsi de Sol', badge:'Excepcional', copy:'Visible al capvespre. Cal horitzó oest lliure i protecció solar homologada.' },
-  { date:'2026-08-12T23:00:00+02:00', title:'Màxim de les Perseides', badge:'Nit 12–13', copy:'Pluja de meteors molt favorable el 2026 per la proximitat de la Lluna nova.' },
-  { date:'2026-08-28T04:00:00+02:00', title:'Eclipsi parcial de Lluna', badge:'Visible', copy:'Observable a simple vista abans que la Lluna es pongui des de l’est peninsular.' },
-  { date:'2026-12-14T00:00:00+01:00', title:'Màxim dels Gemínids', badge:'Destacat', copy:'Una de les pluges de meteors més intenses i regulars de l’any.' },
-  { date:'2027-01-03T23:00:00+01:00', title:'Màxim dels Quadràntids', badge:'Finestra curta', copy:'Pluja de meteors d’hivern amb un màxim breu però potencialment intens.' },
-  { date:'2027-04-22T23:00:00+02:00', title:'Màxim dels Lírides', badge:'Primavera', copy:'Meteors ràpids visibles millor des de llocs foscos i amb horitzó obert.' }
-];
+const events = ASTRONOMICAL_EVENTS;
 
 function localDateKey(date = new Date()) {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone:'Europe/Madrid', year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(date);

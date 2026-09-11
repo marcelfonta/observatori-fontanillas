@@ -1,5 +1,13 @@
 # Registre de decisions
 
+## ADR — Publicacions astronòmiques verificades i condicionades (2026-09-11)
+
+- El calendari visible i les publicacions comparteixen un únic catàleg; no es mantenen dues llistes de dates.
+- Els equinoccis i solsticis publiquen l’instant oficial i expliquen que no impliquen un canvi meteorològic sobtat.
+- Cada fenomen anual confirmat genera un avanç dos dies abans. El recordatori només es publica quan la previsió local de la finestra d’observació queda per sota dels llindars de núvols i pluja.
+- Una data genèrica o encara no confirmada per a l’any pot aparèixer al calendari, però queda exclosa de l’automatització amb `social:false`.
+- La família reutilitza la cua D1, la deduplicació i la recuperació per canal. Les imatges es distribueixen als sis canals estàtics; TikTok i YouTube continuen separats fins que existeixi una peça de vídeo justificada.
+
 ## ADR-001 — Sistema híbrid, no substitució total
 
 **Estat:** acceptada, 2026-08-22.

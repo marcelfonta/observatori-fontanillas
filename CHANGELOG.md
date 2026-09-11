@@ -1,5 +1,13 @@
 # Changelog
 
+## Millora — Publicacions de canvis d’estació i astronomia — 2026-09-11
+
+- Els equinoccis i solsticis generen una publicació pròpia amb el dia i l’hora oficials, deixant clar que l’instant astronòmic no implica un canvi meteorològic sobtat.
+- Els fenòmens anuals confirmats per l’IGN generen un avanç dos dies abans i un recordatori el mateix dia només si la previsió local ofereix una observació raonable.
+- La targeta mostra la nit concreta, la font astronòmica i, al recordatori, nuvolositat i probabilitat de pluja. Les dates sense hora anual confirmada continuen al calendari web però no es publiquen automàticament.
+- El calendari visible i el Worker comparteixen el mateix catàleg per evitar divergències; la deduplicació D1 i la recuperació per canal s’apliquen també a aquesta família.
+- Distribució: Facebook, Instagram, Threads, Bluesky, Telegram i X. TikTok i YouTube continuen reservats als fluxos de vídeo i no reben una imatge estàtica disfressada de vídeo. Rollback: revertir aquest commit; no hi ha migracions ni secrets nous.
+
 ## Millora — Evolució tèrmica a les publicacions diàries — 2026-09-11
 
 - Les imatges diàries incorporen una gràfica compacta de la temperatura observada durant les últimes 24 hores, amb punt actual, canvi i mínim i màxim del període.
