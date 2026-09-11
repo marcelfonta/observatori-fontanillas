@@ -2,6 +2,8 @@
 
 ## Manteniment obert — En curs
 
+- [x] Evitar valors anteriors ficticis a les publicacions esporàdiques i elevar a 10 °C el llindar dels canvis sobtats de temperatura.
+
 - [x] Reunir tots els controls de la capçalera mòbil en una sola fila, ocultant l’hora redundant i conservant el punt d’estat en directe.
 
 - [x] Recuperar Instagram, YouTube i TikTok com a accessos directes visibles a la capçalera mòbil, amb una franja pròpia i la resta de xarxes agrupades sota «Segueix-nos».
