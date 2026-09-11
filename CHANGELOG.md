@@ -1,5 +1,12 @@
 # Changelog
 
+## Correcció — Valors anteriors i canvis sobtats — 2026-09-11
+
+- Les publicacions puntuals d’observació ja no mostren «Valor anterior de l’arxiu: 0,0» quan no existeix cap rècord anterior associat.
+- La comparació només apareix als extrems reals de l’arxiu i conserva correctament un zero quan aquest és una dada històrica vàlida.
+- Els canvis sobtats de temperatura només generen una publicació a partir d’una diferència de 10,0 °C en aproximadament 24 hores; una variació inferior no l’activa.
+- La correcció s’aplica a totes les publicacions esporàdiques de l’estació, no només a les d’índex UV. Rollback: revertir aquest commit; no hi ha migracions ni canvis de secrets.
+
 ## Manteniment — GitHub Actions sobre Node 24 — 2026-09-09
 
 - Els workflows utilitzen les versions vigents d’`actions/checkout`, `actions/setup-node` i `actions/upload-artifact`, executades internament sobre Node 24.

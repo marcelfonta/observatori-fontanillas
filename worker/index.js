@@ -3,8 +3,8 @@ import { METEOROLOGICAL_EPHEMERIDES } from '../src/data/meteorological-ephemerid
 import { detectForecastEpisode, forecastEpisodeCopy, normalizeForecastModel } from '../src/core/forecast-episodes.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.2";
-const WORKER_BUILT = "2026-08-31";
+const WORKER_VERSION = "22.29.3";
+const WORKER_BUILT = "2026-09-11";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
@@ -19,6 +19,7 @@ const PERIODIC_SOCIAL_KINDS = new Set(['weekly_summary','monthly_summary','seaso
 const FORECAST_EPISODE_DEFAULT_TIMES = '10:00,18:00';
 const FORECAST_EPISODE_MAX_PER_WEEK = 2;
 const STATION_EVENT_MAX_PER_DAY = 2;
+const STATION_TEMPERATURE_CHANGE_THRESHOLD_C = 10;
 const ACA_DROUGHT_DATASET_URL = 'https://analisi.transparenciacatalunya.cat/resource/i5n8-43cw.json';
 const runtimeStateCache = new Map();
 const STATION_LATITUDE = 41.6906;
@@ -296,6 +297,10 @@ function value(primary, fallback = null) {
 function finite(input) {
   const number = Number(input);
   return Number.isFinite(number) ? number : null;
+}
+
+function optionalFinite(input) {
+  return input===null||input===undefined||input===''?null:finite(input);
 }
 
 function observationIsPlausible(observation) {
@@ -1889,18 +1894,18 @@ export function stationEventCandidates(observation, context = {}) {
   const add=(condition,type,rank,eyebrow,title,value,unit,advice,cooldown='daily')=>{
     if(condition)candidates.push({type,rank,eyebrow,title,value,unit,advice,cooldown});
   };
-  const temperature=finite(observation?.temperature);
-  const gust=finite(observation?.windGust);
-  const rainRate=finite(observation?.rainRate);
-  const rainToday=finite(observation?.rainToday);
-  const uv=finite(observation?.uv);
-  const previousTemperature=finite(context.previousTemperature);
+  const temperature=optionalFinite(observation?.temperature);
+  const gust=optionalFinite(observation?.windGust);
+  const rainRate=optionalFinite(observation?.rainRate);
+  const rainToday=optionalFinite(observation?.rainToday);
+  const uv=optionalFinite(observation?.uv);
+  const previousTemperature=optionalFinite(context.previousTemperature);
   add(rainRate!==null&&rainRate>=30,'intense_rain',75,'PLUJA MOLT INTENSA','La intensitat de pluja destaca a l’estació',rainRate,'mm/h','Segueix el radar i els avisos oficials.');
   add(gust!==null&&gust>=70,'strong_gust',70,'RATXA DESTACADA','El vent ha superat el llindar de ratxa forta',gust,'km/h','Allunya’t d’elements inestables i consulta els avisos oficials.');
   add(rainToday!==null&&rainToday>=50,'heavy_daily_rain',65,'DIA MOLT PLUJÓS','L’acumulació diària ja és destacada',rainToday,'mm','Consulta l’evolució i les indicacions oficials.');
   add(temperature!==null&&temperature>=35,'high_temperature',60,'CALOR MARCADA','L’estació arriba a una temperatura molt elevada',temperature,'°C','Hidrata’t i evita l’esforç a les hores centrals.');
   add(temperature!==null&&temperature<=0,'frost',60,'GLAÇADA','La temperatura ha baixat fins als 0 °C o menys',temperature,'°C','Precaució amb superfícies lliscants i plantes sensibles.');
-  add(previousTemperature!==null&&temperature!==null&&Math.abs(temperature-previousTemperature)>=8,'temperature_change',50,'CANVI BRUSC','La temperatura ha variat clarament en 24 hores',Math.abs(temperature-previousTemperature),'°C','Observació local: comprova la previsió per a les hores següents.');
+  add(previousTemperature!==null&&temperature!==null&&Math.abs(temperature-previousTemperature)>=STATION_TEMPERATURE_CHANGE_THRESHOLD_C,'temperature_change',50,'CANVI BRUSC','La temperatura ha variat clarament en 24 hores',Math.abs(temperature-previousTemperature),'°C','Observació local: comprova la previsió per a les hores següents.');
   add(uv!==null&&uv>=8,'very_high_uv',35,'UV MOLT ALT','La radiació ultraviolada requereix màxima protecció',uv,'','Evita l’exposició central i protegeix pell i ulls.','weekly');
   return candidates.sort((a,b)=>b.rank-a.rank);
 }
@@ -1920,10 +1925,10 @@ async function localRecordCandidates(observation, env) {
     const broken=mode==='max'?value>=record+.2:value<=record-.2;
     if(broken)candidates.push({type,rank,eyebrow,title,value,unit,advice:`Nou extrem dins els ${archiveDays} dies disponibles de l’arxiu local; no és un rècord climàtic oficial.`,cooldown:'daily',archiveDays,previousRecord:record});
   };
-  compare('local_temperature_high',90,'NOU EXTREM LOCAL','Temperatura més alta de l’arxiu disponible',finite(observation.temperature),finite(previous?.temperature_max),'max','°C');
-  compare('local_temperature_low',90,'NOU EXTREM LOCAL','Temperatura més baixa de l’arxiu disponible',finite(observation.temperature),finite(previous?.temperature_min),'min','°C');
-  compare('local_wind_gust',90,'NOU EXTREM LOCAL','Ratxa més forta de l’arxiu disponible',finite(observation.windGust),finite(previous?.wind_gust_max),'max','km/h');
-  compare('local_rain_rate',90,'NOU EXTREM LOCAL','Intensitat de pluja més alta de l’arxiu disponible',finite(observation.rainRate),finite(previous?.rain_rate_max),'max','mm/h');
+  compare('local_temperature_high',90,'NOU EXTREM LOCAL','Temperatura més alta de l’arxiu disponible',optionalFinite(observation.temperature),optionalFinite(previous?.temperature_max),'max','°C');
+  compare('local_temperature_low',90,'NOU EXTREM LOCAL','Temperatura més baixa de l’arxiu disponible',optionalFinite(observation.temperature),optionalFinite(previous?.temperature_min),'min','°C');
+  compare('local_wind_gust',90,'NOU EXTREM LOCAL','Ratxa més forta de l’arxiu disponible',optionalFinite(observation.windGust),optionalFinite(previous?.wind_gust_max),'max','km/h');
+  compare('local_rain_rate',90,'NOU EXTREM LOCAL','Intensitat de pluja més alta de l’arxiu disponible',optionalFinite(observation.rainRate),optionalFinite(previous?.rain_rate_max),'max','mm/h');
   return candidates;
 }
 
@@ -1949,7 +1954,7 @@ async function createStationEventSocialDraft(observation, env, date = new Date()
   const dedupeKey=`event:${localDate}:${event.type}`;
   const observedAt=cleanText(observation.updated,32);
   const body=`${event.eyebrow==='GLAÇADA'?'❄️':'📍'} ${event.title}: ${socialNumber(event.value,1)}${event.unit}. Lectura real de l’Observatori Fontanillas a les ${observedAt.slice(11,16)}. ${event.advice} Aquesta observació local no substitueix cap avís oficial.\n\n${socialHashtags('station_event')}`;
-  const payload=JSON.stringify({eventType:event.type,rank:event.rank,eyebrow:event.eyebrow,eventTitle:event.title,value:event.value,unit:event.unit,advice:event.advice,archiveDays:event.archiveDays||null,previousRecord:event.previousRecord||null,localDate,observationUpdated:observedAt});
+  const payload=JSON.stringify({eventType:event.type,rank:event.rank,eyebrow:event.eyebrow,eventTitle:event.title,value:event.value,unit:event.unit,advice:event.advice,archiveDays:event.archiveDays??null,previousRecord:event.previousRecord??null,localDate,observationUpdated:observedAt});
   const result=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
     (dedupe_key,kind,status,channels,title,body,source_url,payload)
     VALUES (?,'station_event','approved',?,?,?,?,?)`).bind(dedupeKey,JSON.stringify(['facebook','instagram','bluesky','telegram','threads','x']),`${event.eyebrow} · Sant Celoni`,body,'https://meteo.fontanillas.cat/?page=estacio',payload).run();
@@ -4079,6 +4084,7 @@ function stationEventCardMarkup(data) {
   const isEphemeris=data.eventType==='meteorological_ephemeris';
   const accent=isRecord?'#ffd166':'#8fe0ad';
   const eventValue=finite(data.value)===null?cleanText(data.value,80):reportMetric(data.value,data.unit||'',1);
+  const previousRecord=optionalFinite(data.previousRecord);
   const compactValue=String(eventValue||'').length>9;
   const time=String(data.observationUpdated||'').slice(11,16);
   const stamp=isEphemeris
@@ -4099,7 +4105,7 @@ function stationEventCardMarkup(data) {
     <h1 class="event-title">${escapeHtml(data.eventTitle||'Condició meteorològica destacada')}</h1>
     <p class="stamp">${escapeHtml(stamp)}</p>
     <section class="event-value" style="border-color:${accent}"><b class="${compactValue?'is-text':''}">${escapeHtml(eventValue||'—')}</b><span>${isRecord?`Arxiu local disponible · ${escapeHtml(String(data.archiveDays||''))} dies`:escapeHtml(data.sourceNote||'Estació Fontanillas')}</span></section>
-    ${finite(data.previousRecord)!==null?`<p class="previous-record">Valor anterior de l’arxiu: <b>${escapeHtml(reportMetric(data.previousRecord,data.unit||'',1))}</b></p>`:''}
+    ${isRecord&&previousRecord!==null?`<p class="previous-record">Valor anterior de l’arxiu: <b>${escapeHtml(reportMetric(previousRecord,data.unit||'',1))}</b></p>`:''}
     <section class="event-advice"><small>COM INTERPRETAR-HO</small><p>${escapeHtml(data.advice||'Consulta l’evolució i les fonts oficials.')}</p></section>
     <p class="method-note">${escapeHtml(methodNote)}</p>`;
 }

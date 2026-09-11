@@ -20,6 +20,9 @@ assert.ok(events.some(item=>item.type==='strong_gust'));
 assert.ok(events.some(item=>item.type==='temperature_change'));
 assert.ok(events.some(item=>item.type==='very_high_uv'&&item.cooldown==='weekly'));
 assert.deepEqual(stationEventCandidates({temperature:21,windGust:12,rainRate:0,rainToday:0,uv:2}),[]);
+assert.deepEqual(stationEventCandidates({temperature:null,windGust:null,rainRate:null,rainToday:null,uv:null},{previousTemperature:null}),[]);
+assert.ok(!stationEventCandidates({temperature:29.9},{previousTemperature:20}).some(item=>item.type==='temperature_change'));
+assert.ok(stationEventCandidates({temperature:30},{previousTemperature:20}).some(item=>item.type==='temperature_change'));
 
 const periodicCard=socialCardHtml({kind:'monthly_summary',payload:JSON.stringify({
   eyebrow:'El mes meteorològic',reportTitle:'El mes en xifres a Sant Celoni',
@@ -35,6 +38,20 @@ const eventCard=socialCardHtml({kind:'station_event',payload:JSON.stringify({
   advice:'Consulta els avisos oficials.',localDate:'2026-08-31',observationUpdated:'2026-08-31 12:00',
 })});
 assert.match(eventCard,/És una observació local, no un avís oficial/);
+assert.doesNotMatch(eventCard,/Valor anterior de l’arxiu/);
+
+const uvCard=socialCardHtml({kind:'station_event',payload:JSON.stringify({
+  eventType:'very_high_uv',eyebrow:'UV MOLT ALT',eventTitle:'La radiació ultraviolada requereix màxima protecció',
+  value:8,unit:'',previousRecord:null,advice:'Protegeix pell i ulls.',localDate:'2026-09-11',observationUpdated:'2026-09-11 12:24',
+})});
+assert.doesNotMatch(uvCard,/Valor anterior de l’arxiu/);
+
+const recordCard=socialCardHtml({kind:'station_event',payload:JSON.stringify({
+  eventType:'local_temperature_high',eyebrow:'NOU EXTREM LOCAL',eventTitle:'Temperatura més alta de l’arxiu disponible',
+  value:10.2,unit:'°C',archiveDays:120,previousRecord:0,advice:'Rècord de l’arxiu local.',localDate:'2026-09-11',observationUpdated:'2026-09-11 12:24',
+})});
+assert.match(recordCard,/Valor anterior de l’arxiu/);
+assert.match(recordCard,/0,0°C/);
 
 const droughtCard=socialCardHtml({kind:'environmental_event',payload:JSON.stringify({
   eventType:'drought_state_change',eyebrow:'CANVI OFICIAL DE SEQUERA',eventTitle:'Nou estat hidrològic per a Sant Celoni',
