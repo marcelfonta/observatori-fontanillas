@@ -1,5 +1,11 @@
 # Changelog
 
+## Correcció — Caixa de data dels vídeos diaris — 2026-09-11
+
+- La pastilla superior reserva ara el marge horitzontal real del text i s’adapta a dies i mesos llargs sense que la data en sobresurti.
+- L’amplada queda limitada a la zona segura de 928 píxels del format vertical, tant a l’edició del matí com a la del vespre i a totes les pantalles del vídeo.
+- S’han afegit proves per a etiquetes curtes, la data «11 de setembre» i textos excepcionalment llargs. Rollback: revertir aquest commit; no modifica dades, secrets ni automatitzacions.
+
 ## Correcció — Valors anteriors i canvis sobtats — 2026-09-11
 
 - Les publicacions puntuals d’observació ja no mostren «Valor anterior de l’arxiu: 0,0» quan no existeix cap rècord anterior associat.
