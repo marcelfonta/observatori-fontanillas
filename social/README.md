@@ -1,4 +1,4 @@
-# Xarxes socials — automatització segura V22.29.4
+# Xarxes socials — automatització segura V22.29.5
 
 ## Publicacions de ritme lent i episodis puntuals
 
@@ -10,10 +10,13 @@ La V22.28 prepara quatre famílies noves, totes desactivades per defecte:
 - `SOCIAL_EVENT_POSTS_ENABLED=true`: episodis destacats de l’estació i nous extrems de l’arxiu local. Com a màxim publica dos episodis al dia i el segon ha de ser clarament més rellevant.
 - `SOCIAL_ENVIRONMENTAL_ENABLED=true`: comprova a `SOCIAL_ENVIRONMENTAL_TIME` l’estat de sequera de l’ACA i la previsió de pols CAMS. La pols només es pot activar després d’acordar `SOCIAL_DUST_THRESHOLD_UG_M3`; el valor `0` la manté desactivada.
 - `SOCIAL_EPHEMERIDES_ENABLED=true`: publica a `SOCIAL_EDUCATIONAL_TIME`, per defecte `17:00`, només les efemèrides exactes i verificades de la biblioteca del portal.
+- `SOCIAL_ASTRONOMY_ENABLED=true`: publica els canvis d’estació a `SOCIAL_ASTRONOMY_SEASON_TIME` (`09:00`), avança dos dies els fenòmens anuals verificats a `SOCIAL_ASTRONOMY_ADVANCE_TIME` (`18:00`) i només en fa recordatori si el cel previst és raonablement observable a `SOCIAL_ASTRONOMY_REMINDER_TIME` (`17:00`).
 
 Els resums exigeixen almenys un 60% dels dies i 72 mostres diàries; indiquen que l’arxiu propi no és una normal climàtica oficial. Els rècords locals necessiten 90 dies d’arxiu i mai s’anomenen rècords climàtics. La sequera només publica canvis posteriors a la primera lectura de referència. La pols es presenta com una previsió modelitzada CAMS d’uns 11 km i no com una observació de l’estació ni un avís sanitari.
 
 Cada esborrany es deduplica a D1, es publica canal per canal i es recupera fins a quatre vegades sense repetir els canals completats. Els estats `social-periodic` i `environment:*` formen part del diagnòstic d’administració.
+
+El calendari astronòmic i el Worker comparteixen les mateixes dates. Un esdeveniment pot continuar visible al portal amb una data orientativa, però només porta `social:true` quan l’edició anual està confirmada per l’IGN o l’USNO. Els recordatoris consulten Open-Meteo una sola vegada dins la franja prevista i s’ometen amb massa núvols o pluja; l’avanç de dos dies continua disponible perquè l’absència d’un recordatori no amagui l’esdeveniment.
 
 Els avisos oficials de Meteocat consulten SMP només a les 06:30 i 18:30 per al dia actual i a les 12:30 per a l’endemà. Cada franja queda reclamada a D1 abans de la petició: el màxim és de 93 consultes en un mes de 31 dies, amb set consultes de marge respecte del pla oficial de 100. El panell mostra el recompte intern; el comptador de Meteocat continua sent l’autoritat sobre el consum real.
 

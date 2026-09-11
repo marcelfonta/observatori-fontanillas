@@ -2,6 +2,10 @@
 
 ## Manteniment obert — En curs
 
+- [x] Compartir entre la web i el Worker el calendari de canvis d’estació i fenòmens astronòmics anuals verificats.
+- [x] Preparar un avanç astronòmic dos dies abans i un recordatori condicionat per nuvolositat i pluja, amb data explícita i deduplicació per canal.
+- [ ] Integrar i desplegar el Worker V22.29.5, i validar visualment el primer canvi d’estació abans de donar l’automatització per tancada.
+
 - [x] Incorporar a les imatges i vídeos diaris una evolució de temperatura observada de 24 hores, compartida per totes les xarxes, amb mínim, màxim, canvi i degradació segura si falta historial.
 
 - [x] Fer adaptable la caixa de data dels vídeos diaris perquè el text no sobresurti en dies i mesos llargs.

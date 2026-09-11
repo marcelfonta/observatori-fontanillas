@@ -56,6 +56,23 @@
         localDate:'2026-08-31',observationUpdated:'2026-08-31 12:00',sourceNote:'Observatori Fontanillas',
       }),
     },
+    astronomy: {
+      kind:'astronomical_event',
+      payload:JSON.stringify({
+        eventType:'astronomical_event',phase:'advance',eyebrow:'D’AQUÍ DOS DIES',eventTitle:'Màxim dels Oriònids',symbol:'☄',
+        dateLabel:'dimecres 21 d’octubre',advice:'La segona meitat de la nit serà la més favorable, després que es pongui la Lluna.',
+        sourceNote:'IGN · Observatori Astronòmic Nacional',
+      }),
+    },
+    'astronomy-reminder': {
+      kind:'astronomical_event',
+      payload:JSON.stringify({
+        eventType:'astronomical_event',phase:'reminder',eyebrow:'AQUESTA NIT',eventTitle:'Màxim dels Gemínids',symbol:'✦',
+        dateLabel:'dilluns 14 de desembre',advice:'Una de les pluges de meteors més actives de l’any; la Lluna baixa afavorirà l’observació.',
+        visibility:{averageCloud:28,maxRainProbability:15,precipitation:0,hours:8,reasonable:true},
+        sourceNote:'IGN · Observatori Astronòmic Nacional',
+      }),
+    },
   };
   const key = new URLSearchParams(location.search).get('sample') || 'monthly';
   document.open();
