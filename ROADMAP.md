@@ -2,6 +2,8 @@
 
 ## Manteniment obert — En curs
 
+- [x] Incorporar a les imatges i vídeos diaris una evolució de temperatura observada de 24 hores, compartida per totes les xarxes, amb mínim, màxim, canvi i degradació segura si falta historial.
+
 - [x] Fer adaptable la caixa de data dels vídeos diaris perquè el text no sobresurti en dies i mesos llargs.
 
 - [x] Evitar valors anteriors ficticis a les publicacions esporàdiques i elevar a 10 °C el llindar dels canvis sobtats de temperatura.

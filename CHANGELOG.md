@@ -1,5 +1,13 @@
 # Changelog
 
+## Millora — Evolució tèrmica a les publicacions diàries — 2026-09-11
+
+- Les imatges diàries incorporen una gràfica compacta de la temperatura observada durant les últimes 24 hores, amb punt actual, canvi i mínim i màxim del període.
+- Els vídeos diaris mostren el mateix gràfic a la pantalla de dades reals i en dibuixen l’evolució de manera progressiva.
+- El text identifica explícitament les dades com a observades perquè no es confonguin amb la predicció meteorològica.
+- El resum es calcula una vegada des de l’arxiu D1 i es reutilitza a tots els canals; si no hi ha almenys sis hores vàlides, la composició anterior continua funcionant sense bloquejar cap publicació.
+- La millora afecta els recursos compartits per Instagram, Facebook, Threads, Bluesky, Telegram, X, TikTok i YouTube. Rollback: revertir aquest commit; no hi ha migracions ni secrets nous.
+
 ## Correcció — Caixa de data dels vídeos diaris — 2026-09-11
 
 - La pastilla superior reserva ara el marge horitzontal real del text i s’adapta a dies i mesos llargs sense que la data en sobresurti.

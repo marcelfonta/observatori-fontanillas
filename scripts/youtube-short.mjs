@@ -2,10 +2,12 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { fetchRainEvolution, rainEvolutionFooter, rainMapContent } from './youtube-rain-map.mjs';
+import { temperatureTrendGeometry } from '../src/core/temperature-trend.js';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const OUTPUT=resolve(ROOT,'build/youtube-short');
 const API='https://fonta-meteo.marcelfonta.workers.dev';
+const TEMPERATURE_TREND=`${API}/temperature-trend`;
 const FORECAST='https://api.open-meteo.com/v1/forecast';
 const LATITUDE=41.6906;
 const LONGITUDE=2.4890;
@@ -101,6 +103,15 @@ function metricCard(x,y,label,value,unit='',accent='#8ee7ba'){
   return `<rect x="${x}" y="${y}" width="438" height="230" rx="34" fill="#071712" fill-opacity=".7" stroke="${accent}" stroke-opacity=".34"/><text x="${x+38}" y="${y+64}" fill="#9cb8ab" font-family="DejaVu Sans" font-size="27">${esc(label)}</text><text x="${x+38}" y="${y+160}" fill="#f7fcf9" font-family="DejaVu Sans" font-size="64" font-weight="780">${esc(value)}<tspan fill="${accent}" font-size="32"> ${esc(unit)}</tspan></text>`;
 }
 
+export function temperatureTrendVideoContent(current,time,accent,trend,progress=1){
+  const geometry=temperatureTrendGeometry(trend,{width:850,height:126,paddingX:5,paddingY:10,progress});
+  if(!geometry)return `<text x="76" y="650" fill="${accent}" font-family="DejaVu Sans" font-size="31" font-weight="700">LECTURA DE LES ${esc(time)} H</text>${metricCard(76,720,'Temperatura',number(current.temperature,1),'°')}${metricCard(566,720,'Sensació',number(current.feelsLike,1),'°')}${metricCard(76,972,'Humitat',number(current.humidity),'%')}${metricCard(566,972,'Vent',number(current.windSpeed,1),'km/h')}<text x="76" y="1328" fill="#b8cdc3" font-family="DejaVu Sans" font-size="34">Pluja avui: ${esc(number(current.rainToday,1))} mm · pressió: ${esc(number(current.pressure,0))} hPa</text>`;
+  const change=Number(trend.change);
+  const changeText=Number.isFinite(change)?`${change>0?'↗ +':change<0?'↘ ':'→ '}${number(change,1)}°`:'';
+  const label=Number(trend.hours)>=20?'ÚLTIMES 24 H · DADES OBSERVADES':'EVOLUCIÓ RECENT · DADES OBSERVADES';
+  return `<text x="76" y="650" fill="${accent}" font-family="DejaVu Sans" font-size="31" font-weight="700">LECTURA DE LES ${esc(time)} H</text>${metricCard(76,720,'Temperatura',number(current.temperature,1),'°')}${metricCard(566,720,'Sensació',number(current.feelsLike,1),'°')}<rect x="76" y="982" width="928" height="330" rx="38" fill="#071712" fill-opacity=".7" stroke="${accent}" stroke-opacity=".38"/><text x="116" y="1038" fill="${accent}" font-family="DejaVu Sans" font-size="24" font-weight="800" letter-spacing="1.5">${label}</text>${changeText?`<text x="964" y="1038" text-anchor="end" fill="${accent}" font-family="DejaVu Sans" font-size="28" font-weight="800">${esc(changeText)}</text>`:''}<g transform="translate(115 1072)"><path d="${geometry.area}" fill="${accent}" fill-opacity=".12"/><path d="${geometry.path}" fill="none" stroke="${accent}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${geometry.current.x}" cy="${geometry.current.y}" r="8" fill="#f7fcf9" stroke="${accent}" stroke-width="5"/></g><text x="116" y="1257" fill="#b8cdc3" font-family="DejaVu Sans" font-size="24">Mín. <tspan fill="#f7fcf9" font-weight="800">${esc(number(trend.minimum,1))}°</tspan></text><text x="964" y="1257" text-anchor="end" fill="#b8cdc3" font-family="DejaVu Sans" font-size="24">Màx. <tspan fill="#f7fcf9" font-weight="800">${esc(number(trend.maximum,1))}°</tspan></text><text x="76" y="1382" fill="#b8cdc3" font-family="DejaVu Sans" font-size="28">Humitat ${esc(number(current.humidity))}% · vent ${esc(number(current.windSpeed,1))} km/h</text><text x="76" y="1430" fill="#b8cdc3" font-family="DejaVu Sans" font-size="28">Pluja avui ${esc(number(current.rainToday,1))} mm · pressió ${esc(number(current.pressure,0))} hPa</text>`;
+}
+
 function forecastAdvice(day){
   const code=Number(day?.weatherCode);const rain=Number(day?.rainProbability);const gust=Number(day?.gust);const max=Number(day?.max);
   if(code>=95)return 'Possibles tempestes: segueix el radar i els avisos oficials.';
@@ -131,7 +142,7 @@ async function main(){
   await mkdir(OUTPUT,{recursive:true});
   const slot=process.env.SHORT_SLOT==='vespre'?'vespre':'mati';
   const params=new URLSearchParams({latitude:String(LATITUDE),longitude:String(LONGITUDE),timezone:'Europe/Madrid',forecast_days:'6',hourly:'precipitation',daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_gusts_10m_max'});
-  const [current,forecast,logo]=await Promise.all([getJson(API),getJson(`${FORECAST}?${params}`),readFile(resolve(ROOT,'assets/icons/icon-512.png'))]);
+  const [current,forecast,logo,trendPayload]=await Promise.all([getJson(API),getJson(`${FORECAST}?${params}`),readFile(resolve(ROOT,'assets/icons/icon-512.png')),getJson(TEMPERATURE_TREND).catch(()=>({trend:null}))]);
   if(current.degraded)throw new Error('La font principal està degradada; no es genera el Short.');
   const logoData=logo.toString('base64');const daily=forecast.daily;
   if(!daily?.time?.length||daily.time.length<5)throw new Error('La predicció no conté prou dies per generar el Short.');
@@ -142,7 +153,8 @@ async function main(){
   const accent=weatherTheme(mainDay.weatherCode).accent;
   const slides=[];
   slides.push(baseSvg({title:sentence(mainDay.condition),kicker:datedKicker(slot==='vespre'?'Demà':'Avui',mainDay.date),edition,weatherCode:mainDay.weatherCode,slideIndex:1,logoData,content:`<text x="76" y="720" fill="#b8cdc3" font-family="DejaVu Sans" font-size="31">PREVISIÓ PRINCIPAL</text><text x="76" y="850" fill="#f7fcf9" font-family="DejaVu Sans" font-size="120" font-weight="850">${esc(number(mainDay.max))}° <tspan fill="${accent}" font-size="64">/ ${esc(number(mainDay.min))}°</tspan></text><rect x="76" y="955" width="928" height="210" rx="38" fill="#071712" fill-opacity=".68" stroke="${accent}" stroke-opacity=".42"/>${multilineText(forecastAdvice(mainDay),{x:124,y:1030,maxChars:36,maxLines:3,fontSize:38,lineHeight:51,fill:'#f7fcf9',weight:650})}<text x="76" y="1295" fill="#b8cdc3" font-family="DejaVu Sans" font-size="34">Pluja ${esc(number(mainDay.rainProbability))}% · ratxa ${esc(number(mainDay.gust))} km/h</text>`,footer:'Predicció Open-Meteo · actualització automàtica'}));
-  slides.push(baseSvg({title:'Ara mateix, dades reals',kicker:datedKicker('Observació',now),edition,slideIndex:2,logoData,content:`<text x="76" y="650" fill="${accent}" font-family="DejaVu Sans" font-size="31" font-weight="700">LECTURA DE LES ${esc(time)} H</text>${metricCard(76,720,'Temperatura',number(current.temperature,1),'°')}${metricCard(566,720,'Sensació',number(current.feelsLike,1),'°')}${metricCard(76,972,'Humitat',number(current.humidity),'%')}${metricCard(566,972,'Vent',number(current.windSpeed,1),'km/h')}<text x="76" y="1328" fill="#b8cdc3" font-family="DejaVu Sans" font-size="34">Pluja avui: ${esc(number(current.rainToday,1))} mm · pressió: ${esc(number(current.pressure,0))} hPa</text>`,footer:'Observació real · Estació Meteo Fontanillas'}));
+  const temperatureTrend=trendPayload?.trend||null;
+  slides.push(baseSvg({title:'Ara mateix, dades reals',kicker:datedKicker('Observació',now),edition,slideIndex:2,logoData,content:temperatureTrendVideoContent(current,time,accent,temperatureTrend),footer:'Observació real · Estació Meteo Fontanillas'}));
   slides.push(baseSvg({title:'Les claus de la previsió',kicker:datedKicker(slot==='vespre'?'Demà':'Avui',mainDay.date),edition,weatherCode:mainDay.weatherCode,slideIndex:3,logoData,content:forecastDetail(mainDay,720),footer:`${dateLabel(mainDay.date)} · predicció orientativa`}));
   slides.push(baseSvg({title:sentence(secondaryDay.condition),kicker:datedKicker(slot==='vespre'?'Demà passat':'Demà',secondaryDay.date),edition,weatherCode:secondaryDay.weatherCode,slideIndex:4,logoData,content:forecastDetail(secondaryDay,720),footer:`${dateLabel(secondaryDay.date)} · segueix-ne l’evolució`}));
   const trendStart=slot==='vespre'?2:1;
@@ -150,14 +162,16 @@ async function main(){
   slides.push(baseSvg({title:'Tendència dels pròxims dies',kicker:`3 dies · des de ${shortDateLabel(days[trendStart].date)}`,edition,weatherCode:mainDay.weatherCode,slideIndex:5,logoData,content:rows,footer:'Predicció actualitzada i més detall a la web'}));
   const rainEvolution=await fetchRainEvolution({slot,targetDate:mainDay.date,hourlyFallback:forecast.hourly});
   const rainFrames=rainEvolution.frames.map((_,index)=>baseSvg({title:'Evolució de la pluja',kicker:datedKicker(slot==='vespre'?'Demà':'Avui',mainDay.date),edition,weatherCode:61,slideIndex:6,logoData,content:rainMapContent(rainEvolution,index),footer:rainEvolutionFooter(rainEvolution)}));
+  const temperatureFrames=[.25,.5,.75,1].map(progress=>baseSvg({title:'Ara mateix, dades reals',kicker:datedKicker('Observació',now),edition,slideIndex:2,logoData,content:temperatureTrendVideoContent(current,time,accent,temperatureTrend,progress),footer:'Observació real · Estació Meteo Fontanillas'}));
   await Promise.all(slides.map((svg,index)=>writeFile(resolve(OUTPUT,`slide-${index+1}.svg`),svg)));
+  await Promise.all(temperatureFrames.map((svg,index)=>writeFile(resolve(OUTPUT,`temperature-frame-${index+1}.svg`),svg)));
   await Promise.all(rainFrames.map((svg,index)=>writeFile(resolve(OUTPUT,`rain-frame-${index+1}.svg`),svg)));
   const targetDate=dateLabel(mainDay.date);
   const title=slot==='vespre'?`Demà a Sant Celoni: ${mainDay.condition.toLowerCase()} · ${targetDate} #Shorts`:`Avui a Sant Celoni: ${mainDay.condition.toLowerCase()} · ${targetDate} #Shorts`;
   const period=slot==='vespre'?'demà':'avui';
   const description=`Previsió per ${period}, ${targetDate}: ${mainDay.condition.toLowerCase()}, màxima ${number(mainDay.max)}°, mínima ${number(mainDay.min)}° i ${number(mainDay.rainProbability)}% de probabilitat de pluja. Edició ${slot==='vespre'?'del vespre':'del matí'} generada el ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Madrid'}).format(now)} amb dades reals de l’Observatori Meteo Fontanillas, Sant Celoni.`;
   await writeFile(resolve(OUTPUT,'metadata.json'),JSON.stringify({title,description:`${description}\n\nConsulta totes les dades: https://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #ElTemps #Meteo #Shorts`,tags:['Meteo Fontanillas','Sant Celoni','meteorologia','el temps','Shorts']},null,2));
-  console.log(`Generades ${slides.length} pantalles i ${rainFrames.length} fotogrames de pluja ${slot} · ${mainDay.condition} · ${number(mainDay.max)}°/${number(mainDay.min)}° · ${rainEvolution.source}`);
+  console.log(`Generades ${slides.length} pantalles, ${temperatureFrames.length} fotogrames tèrmics i ${rainFrames.length} fotogrames de pluja ${slot} · ${mainDay.condition} · ${number(mainDay.max)}°/${number(mainDay.min)}° · ${rainEvolution.source}`);
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href)main().catch(error=>{console.error(error);process.exitCode=1;});
