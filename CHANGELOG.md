@@ -1,5 +1,12 @@
 # Changelog
 
+## Correcció — Vigència social i límit de reintents de YouTube · 2026-09-12
+
+- Els episodis de l’estació, resums periòdics, canvis ambientals i efemèrides només es poden reprendre durant el mateix dia local en què es van crear; l’endemà queden aparcats com a esborrany per revisar, sense eliminar l’historial ni tornar-los a publicar.
+- YouTube conserva el número d’intent entre Cloudflare i GitHub Actions i admet un màxim de quatre intents per franja. Els estats intermedis `running` i `dispatching` ja no inflen el recompte de fallades.
+- El procés de pujada classifica de manera segura els errors OAuth permanents, com `invalid_grant`, sense incloure tokens ni descripcions remotes. En aquest cas, Cloudflare atura immediatament els reintents de la franja i envia com a màxim l’avís operatiu ja previst.
+- Tant el disparador principal de Cloudflare com la reserva programada de GitHub respecten el mateix bloqueig. Worker proposat 22.29.13; sense migracions, secrets, canvis d’horari, publicacions reals ni desplegament automàtic.
+
 ## Correcció — Conciliació segura dels vídeos de Meta · 2026-09-12
 
 - Facebook consulta l’estat oficial del vídeo abans de reprendre la fase final d’un Reel o una Story després d’una resposta perduda.

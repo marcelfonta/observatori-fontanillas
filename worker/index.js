@@ -7,7 +7,7 @@ import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core
 import { finiteNumber } from '../src/core/numeric.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.12";
+const WORKER_VERSION = "22.29.13";
 const WORKER_BUILT = "2026-09-12";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -2165,16 +2165,22 @@ export async function createAstronomicalEventSocialDraft(env,date=new Date(),pha
     }});
 }
 
+const SAME_DAY_SOCIAL_KINDS=new Set([
+  'weekly_summary','monthly_summary','seasonal_summary','annual_summary',
+  'station_event','environmental_event','meteorological_ephemeris',
+]);
+
 // Read-only editorial guard. No migration or extra upstream alert request:
 // dated copy is never replayed on another local day, even if an episode lasts longer.
 export function socialDraftTemporalEligibility(draft,date=new Date()) {
-  if(!['official_alert','astronomical_event'].includes(draft?.kind))return true;
+  if(!['official_alert','astronomical_event'].includes(draft?.kind)&&!SAME_DAY_SOCIAL_KINDS.has(draft?.kind))return true;
   if(!Number.isFinite(date.getTime()))return false;
   let data;
   try{data=JSON.parse(draft.payload);}catch{return false;}
   if(!data||typeof data!=='object')return false;
   const today=localIsoDate(date);
   const instant=value=>typeof value==='string'&&/(?:Z|[+-]\d{2}:\d{2})$/.test(value)?Date.parse(value):NaN;
+  if(SAME_DAY_SOCIAL_KINDS.has(draft.kind))return data.localDate===today;
   if(draft.kind==='astronomical_event') {
     if(data.localDate!==today)return false;
     if(data.eventType==='season_change')return Number.isFinite(instant(data.observationUpdated));
@@ -2232,6 +2238,7 @@ const YOUTUBE_SHORT_FALLBACK_WINDOWS={ mati:{ hour:6, minute:20 }, vespre:{ hour
 const YOUTUBE_SHORT_FALLBACK_WINDOW_MINUTES=35;
 const YOUTUBE_SHORT_DISPATCH_ACK_MS=8*60*1000;
 const YOUTUBE_SHORT_RUN_STALE_MS=20*60*1000;
+const YOUTUBE_SHORT_MAX_ATTEMPTS=4;
 
 function socialSchedulePlan(env){
   const active=new Set(String(env.SOCIAL_AUTO_TIMES||DEFAULT_SOCIAL_AUTO_TIMES).split(',').map(value=>value.trim()));
@@ -3585,6 +3592,13 @@ function parseYoutubeShortRunDetail(value) {
   try { return JSON.parse(value || '{}'); } catch { return {}; }
 }
 
+function youtubeShortRetryBlockReason(previous, detail = {}) {
+  if (previous?.status !== 'down') return null;
+  if (detail.terminal === true) return 'terminal_failure';
+  const attempts=Math.max(Number(detail.attempt)||0,Number(previous?.consecutive_failures)||0);
+  return attempts >= YOUTUBE_SHORT_MAX_ATTEMPTS ? 'max_attempts' : null;
+}
+
 async function authorizeYoutubeShortRequest(request, env) {
   const expected=String(env.SOCIAL_VIDEO_UPLOAD_TOKEN || '');
   if (expected.length < 24) return false;
@@ -3597,12 +3611,12 @@ async function updateYoutubeShortRun(env, key, status, detail) {
     (service_key,status,consecutive_failures,last_checked_at,last_failure_at,last_success_at,detail)
     VALUES (?,?,?,?,?,?,?)
     ON CONFLICT(service_key) DO UPDATE SET status=excluded.status,
-      consecutive_failures=CASE WHEN excluded.status='healthy' THEN 0 ELSE monitor_state.consecutive_failures+1 END,
+      consecutive_failures=CASE WHEN excluded.status='healthy' THEN 0 WHEN excluded.status='down' THEN monitor_state.consecutive_failures+1 ELSE monitor_state.consecutive_failures END,
       last_checked_at=excluded.last_checked_at,
       last_failure_at=CASE WHEN excluded.status='down' THEN excluded.last_failure_at ELSE monitor_state.last_failure_at END,
       last_success_at=CASE WHEN excluded.status='healthy' THEN excluded.last_success_at ELSE monitor_state.last_success_at END,
       detail=excluded.detail`)
-    .bind(key,status,status==='healthy'?0:1,now,status==='down'?now:null,status==='healthy'?now:null,JSON.stringify(detail).slice(0,12000)).run();
+    .bind(key,status,status==='down'?1:0,now,status==='down'?now:null,status==='healthy'?now:null,JSON.stringify(detail).slice(0,12000)).run();
 }
 
 async function youtubeShortRunControl(request, env, localDate, slot) {
@@ -3613,7 +3627,7 @@ async function youtubeShortRunControl(request, env, localDate, slot) {
   const body=await request.json().catch(()=>({}));
   const action=cleanText(body.action,20).toLowerCase();
   const source=cleanText(body.source,80) || 'github-actions';
-  const previous=await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(key).first();
+  const previous=await env.DB.prepare('SELECT status,consecutive_failures,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(key).first();
   const detail=parseYoutubeShortRunDetail(previous?.detail);
   if (action === 'start') {
     if (previous?.status === 'healthy' && detail.localDate === localDate && detail.slot === slot) {
@@ -3623,7 +3637,10 @@ async function youtubeShortRunControl(request, env, localDate, slot) {
     if (previous?.status === 'running' && age >= 0 && age < YOUTUBE_SHORT_RUN_STALE_MS) {
       return json({ ok:true, shouldRun:false, reason:'already_running' },200,'no-store');
     }
-    await updateYoutubeShortRun(env,key,'running',{ localDate,slot,source,stage:'running' });
+    const blocked=youtubeShortRetryBlockReason(previous,detail);
+    if (blocked) return json({ ok:true,shouldRun:false,reason:blocked },200,'no-store');
+    const attempt=Math.max(1,Number(detail.attempt)||1);
+    await updateYoutubeShortRun(env,key,'running',{ localDate,slot,source,stage:'running',attempt });
     return json({ ok:true, shouldRun:true },200,'no-store');
   }
   if (action === 'complete') {
@@ -3636,6 +3653,9 @@ async function youtubeShortRunControl(request, env, localDate, slot) {
       localDate,slot,source,
       stage:cleanText(body.stage,80) || 'github-workflow',
       responseCode:Number.isFinite(Number(body.responseCode)) ? Number(body.responseCode) : null,
+      failureCode:cleanText(body.failureCode,80) || null,
+      terminal:body.terminal === true,
+      attempt:Math.max(1,Number(detail.attempt)||1),
       error:cleanText(body.error || 'GitHub Actions no ha completat la preparació o la pujada del Short.',500),
     };
     await updateYoutubeShortRun(env,key,'down',failure);
@@ -4173,7 +4193,7 @@ async function youtubeShortDispatchDiagnosticsControl(request, env) {
   return json({ error:'GitHub no ha validat el permís per iniciar YouTube.', detail:failure.error, responseCode:response.status },502,'no-store');
 }
 
-async function dispatchYoutubeShortFallback(env, date = new Date()) {
+export async function dispatchYoutubeShortFallback(env, date = new Date()) {
   const slot=youtubeShortFallbackSlot(date);
   if (!slot) return { skipped:'outside_window' };
   if (!(await ensureOperationsSchema(env))) return { skipped:'no_database' };
@@ -4187,7 +4207,7 @@ async function dispatchYoutubeShortFallback(env, date = new Date()) {
   }
   const localDate=localIsoDate(date);
   const key=youtubeShortRunKey(localDate,slot);
-  const previous=await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(key).first();
+  const previous=await env.DB.prepare('SELECT status,consecutive_failures,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(key).first();
   const previousDetail=parseYoutubeShortRunDetail(previous?.detail);
   const age=previous?.last_checked_at ? date.getTime()-new Date(previous.last_checked_at).getTime() : Infinity;
   if (previous?.status === 'healthy' && previousDetail.localDate === localDate && previousDetail.slot === slot) {
@@ -4202,7 +4222,11 @@ async function dispatchYoutubeShortFallback(env, date = new Date()) {
     await recordOperationalState(env,'youtube-shorts-scheduler','healthy',{ localDate,slot,stage:'awaiting_github' });
     return { skipped:'awaiting_github' };
   }
-  const attempt=previousDetail.localDate===localDate && previousDetail.slot===slot ? Math.max(1,Number(previousDetail.attempt)||1)+1 : 1;
+  const blocked=youtubeShortRetryBlockReason(previous,previousDetail);
+  if (blocked) return { skipped:blocked,slot,localDate,attempt:Number(previousDetail.attempt)||Number(previous?.consecutive_failures)||null };
+  const attempt=previousDetail.localDate===localDate && previousDetail.slot===slot
+    ? Math.max(Number(previousDetail.attempt)||0,Number(previous?.consecutive_failures)||0)+1
+    : 1;
   const response=await fetch(`https://api.github.com/repos/${repository}/actions/workflows/youtube-short-private.yml/dispatches`,{
     method:'POST',
     headers:{ Accept:'application/vnd.github+json', Authorization:`Bearer ${token}`, 'Content-Type':'application/json', 'X-GitHub-Api-Version':'2026-03-10', 'User-Agent':'fonta-meteo-worker' },
@@ -4210,8 +4234,8 @@ async function dispatchYoutubeShortFallback(env, date = new Date()) {
   });
   if (!response.ok) {
     const detail=cleanText(await response.text().catch(()=>''),500);
-    await updateYoutubeShortRun(env,key,'down',{ localDate,slot,stage:'dispatch_failed',responseCode:response.status,error:detail });
-    const failure={ localDate,slot,stage:'dispatch_failed',responseCode:response.status,error:detail || 'GitHub ha rebutjat el disparador.' };
+    await updateYoutubeShortRun(env,key,'down',{ localDate,slot,stage:'dispatch_failed',responseCode:response.status,error:detail,attempt,terminal:false });
+    const failure={ localDate,slot,stage:'dispatch_failed',responseCode:response.status,error:detail || 'GitHub ha rebutjat el disparador.',attempt,terminal:false };
     await recordOperationalState(env,'youtube-shorts-scheduler','down',failure);
     await notifyYoutubeShortSchedulerFailure(env,failure);
     throw Object.assign(new Error(`GitHub no ha acceptat la recuperació del Short (${response.status}).`),{ responseCode:response.status });
@@ -5710,6 +5734,7 @@ async function notifyYoutubeShortSchedulerFailure(env, detail) {
     'forecast-api':'Causa probable: l’API meteorològica no ha respost correctament. Es reintentarà automàticament.',
     'publication-time':'Causa probable: no s’ha pogut calcular la finestra de publicació.',
     'video-render':'Causa probable: ha fallat el renderitzat del vídeo o d’una de les seves imatges.',
+    'youtube-auth':'Causa: YouTube ha rebutjat les credencials. Els reintents automàtics d’aquesta franja s’han aturat fins que es renovi el token.',
     'youtube-upload':'Causa probable: YouTube no ha acceptat la pujada o les credencials del canal requereixen revisió.',
     'github-dispatch':'Causa probable: el token o el disparador de GitHub Actions requereixen revisió.',
     'github-workflow':'Causa: el flux de GitHub Actions no ha completat totes les fases.'
