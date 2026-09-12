@@ -2,6 +2,10 @@
 
 ## Manteniment obert — En curs
 
+- [x] Auditoria paquet A: dades absents, cobertura de la previsió astronòmica, dates inequívoques i caducitat editorial amb proves dels esborranys reals.
+- [ ] Revisió humana i validació a staging del paquet A (Worker V22.29.6); producció encara no autoritzada per aquest canvi.
+- [ ] Auditoria paquet B: intents esgotats que no bloquegin altres candidats, reserva concurrent per canal i conciliació d’èxits remots incerts.
+
 - [x] Compartir entre la web i el Worker el calendari de canvis d’estació i fenòmens astronòmics anuals verificats.
 - [x] Preparar un avanç astronòmic dos dies abans i un recordatori condicionat per nuvolositat i pluja, amb data explícita i deduplicació per canal.
 - [ ] Integrar i desplegar el Worker V22.29.5, i validar visualment el primer canvi d’estació abans de donar l’automatització per tancada.

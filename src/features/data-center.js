@@ -1,6 +1,7 @@
 import { ephemerisDateLabel, meteorologicalEphemeridesForDate } from '../data/meteorological-ephemerides.js';
 import { fetchAlertHistory } from '../services/weather-api.js';
 import { getLanguage, getLocale } from '../core/i18n.js';
+import { finiteNumber as number } from '../core/numeric.js';
 
 const DAY = 86400000;
 const DATA_TABS = ['summary', 'charts', 'rain', 'episodes', 'quality'];
@@ -12,10 +13,6 @@ let activeTab = 'summary';
 let alertArchive = [];
 let timelineFilter = 'all';
 
-const number = value => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-};
 const values = (items, key, fallback) => items.map(item => number(item[key] ?? (fallback ? item[fallback] : null))).filter(value => value !== null);
 const mean = list => list.length ? list.reduce((total, value) => total + value, 0) / list.length : null;
 const deviation = list => { const average = mean(list); return average === null ? null : Math.sqrt(list.reduce((total, value) => total + (value - average) ** 2, 0) / list.length); };

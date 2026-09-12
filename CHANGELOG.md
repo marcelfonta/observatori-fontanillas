@@ -1,5 +1,17 @@
 # Changelog
 
+## Correcció — Auditoria paquet A · dades i vigència — 2026-09-12
+
+- Conversió numèrica compartida a la primera càrrega, Centre de Dades i calendari astronòmic: null, buits i booleans no es converteixen en zeros; els zeros reals es conserven.
+- La primera càrrega no inventa una data actual quan falta l’instant d’observació i marca les lectures de cinc minuts o més com a desades. Les dates sense zona horària es descarten en aquesta via inicial.
+- Els recordatoris astronòmics exigeixen tota la graella horària de la finestra, dades vàlides i llindars comprovats abans d’arrodonir. Es diferencien dia i nit, es mostra l’any i es corregeixen els articles dels canvis d’estació.
+- Avisos oficials i astronomia: comprovació de vigència abans de publicar i durant recuperació; cap reutilització de text relatiu en un altre dia local. En avisos es comprova també el final de les franges comarcals, no només el final general de l’episodi.
+- Un esborrany caducat passa a `draft` per revisió, sense esborrar intents ni identificadors remots. L’enviament manual també el bloqueja mentre la data no sigui vàlida.
+- Worker V22.29.6, paquet web V22.31.0 amb revisió de memòria cau `astronomy-v2-audit-a`; es registren explícitament les dues versions a `project.json`. No hi ha migracions ni secrets nous.
+- Proves noves dels creadors d’esborranys reals, dades nul·les, buits, duplicats horaris, canvi d’hora, canvi d’any i caducitat. Queden fora d’aquest paquet la reserva concurrent per canal i la recuperació dels intents esgotats.
+- Rollback: revertir el canvi i desplegar la versió anterior amb aprovació. Els esborranys aturats continuen a D1 per revisió; no reaprovar-los ni reenviar-los en bloc.
+
+
 ## Millora — Publicacions de canvis d’estació i astronomia — 2026-09-11
 
 - Els equinoccis i solsticis generen una publicació pròpia amb el dia i l’hora oficials, deixant clar que l’instant astronòmic no implica un canvi meteorològic sobtat.

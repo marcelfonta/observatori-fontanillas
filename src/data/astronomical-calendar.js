@@ -1,3 +1,5 @@
+import { finiteNumber } from '../core/numeric.js';
+
 export const SEASON_TRANSITIONS = [
   { id:'winter-2025', date:'2025-12-21T16:03:00+01:00', season:'Hivern', label:'Solstici d’hivern', symbol:'❄', source:'USNO', sourceUrl:'https://aa.usno.navy.mil/api/seasons?year=2025' },
   { id:'spring-2026', date:'2026-03-20T15:46:00+01:00', season:'Primavera', label:'Equinocci de primavera', symbol:'🌱', source:'USNO', sourceUrl:'https://aa.usno.navy.mil/api/seasons?year=2026' },
@@ -49,7 +51,7 @@ export const ASTRONOMICAL_EVENTS = [
   {
     id:'solar-eclipse-2027', date:'2027-08-02T10:50:00+02:00', reminderDate:'2027-08-02', reminderTime:'07:30',
     forecastStart:'2027-08-02T09:30:00+02:00', forecastEnd:'2027-08-02T11:30:00+02:00',
-    title:'Eclipsi parcial de Sol a Catalunya', badge:'2 d’agost', symbol:'◉', social:true,
+    title:'Eclipsi parcial de Sol a Catalunya', badge:'2 d’agost', symbol:'◉', social:true, observationPeriod:'day',
     copy:'A Catalunya serà parcial. No s’ha de mirar mai el Sol sense protecció solar homologada.',
     source:'IGN · Observatori Astronòmic Nacional', sourceUrl:'https://astronomia.ign.es/eclipses-de-sol-y-luna/eclipse-total-sol-de-2-de-agosto-2027',
   },
@@ -79,19 +81,39 @@ export function astronomyEventsForDate(date = new Date(), phase = 'advance') {
 
 export function astronomyVisibilitySummary(hourly, event) {
   const times=Array.isArray(hourly?.time)?hourly.time:[];
-  const start=new Date(event.forecastStart).getTime();
-  const end=new Date(event.forecastEnd).getTime();
+  const hour=3600000;
+  const start=new Date(event?.forecastStart).getTime();
+  const end=new Date(event?.forecastEnd).getTime();
+  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start||end-start>24*hour)return null;
+  // Include the boundary hours for windows such as 09:30–11:30. Require the
+  // complete hourly grid, not two arbitrary samples from a much longer night.
+  const first=Math.floor(start/hour)*hour;
+  const last=Math.ceil(end/hour)*hour;
   const rows=times.map((time,index)=>({
     epoch:new Date(/(?:Z|[+-]\d{2}:\d{2})$/.test(String(time))?time:`${time}Z`).getTime(),
-    cloud:Number(hourly.cloud_cover?.[index]),
-    rainProbability:Number(hourly.precipitation_probability?.[index]),
-    precipitation:Number(hourly.precipitation?.[index]),
-  })).filter(row=>Number.isFinite(row.epoch)&&row.epoch>=start&&row.epoch<=end
-    &&Number.isFinite(row.cloud)&&Number.isFinite(row.rainProbability)&&Number.isFinite(row.precipitation));
-  if(rows.length<2)return null;
-  const averageCloud=Math.round(rows.reduce((sum,row)=>sum+row.cloud,0)/rows.length);
-  const maxRainProbability=Math.round(Math.max(...rows.map(row=>row.rainProbability)));
-  const precipitation=Math.round(rows.reduce((sum,row)=>sum+row.precipitation,0)*10)/10;
-  return {averageCloud,maxRainProbability,precipitation,hours:rows.length,
+    cloud:finiteNumber(hourly.cloud_cover?.[index]),
+    rainProbability:finiteNumber(hourly.precipitation_probability?.[index]),
+    precipitation:finiteNumber(hourly.precipitation?.[index]),
+  })).filter(row=>Number.isFinite(row.epoch)&&row.epoch>=first&&row.epoch<=last
+    &&row.cloud!==null&&row.cloud>=0&&row.cloud<=100
+    &&row.rainProbability!==null&&row.rainProbability>=0&&row.rainProbability<=100
+    &&row.precipitation!==null&&row.precipitation>=0);
+  const expected=(last-first)/hour+1;
+  const epochs=new Set(rows.map(row=>row.epoch));
+  if(rows.length!==expected||epochs.size!==expected)return null;
+  for(let epoch=first;epoch<=last;epoch+=hour)if(!epochs.has(epoch))return null;
+  const averageCloud=rows.reduce((sum,row)=>sum+row.cloud,0)/rows.length;
+  const maxRainProbability=Math.max(...rows.map(row=>row.rainProbability));
+  const precipitation=rows.reduce((sum,row)=>sum+row.precipitation,0);
+  return {averageCloud:Math.round(averageCloud),maxRainProbability:Math.round(maxRainProbability),precipitation:Math.round(precipitation*10)/10,hours:rows.length,
     reasonable:averageCloud<=70&&maxRainProbability<=50&&precipitation<=0.5};
+}
+
+export function astronomyObservationDateLabel(event) {
+  const format=value=>new Intl.DateTimeFormat('ca-ES',{timeZone:'Europe/Madrid',day:'numeric',month:'long',year:'numeric'}).format(new Date(value));
+  if(event.observationPeriod==='day')return format(event.forecastStart);
+  const start=`${event.reminderDate}T12:00:00Z`;
+  const end=madridDateKey(new Date(event.forecastEnd));
+  if(end!==event.reminderDate&&end.slice(0,7)===event.reminderDate.slice(0,7))return `Nit del ${Number(event.reminderDate.slice(8))} al ${format(event.forecastEnd)}`;
+  return end===event.reminderDate?`Nit del ${format(start)}`:`Nit del ${format(start)} al ${format(event.forecastEnd)}`;
 }
