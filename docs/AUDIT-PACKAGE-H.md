@@ -35,7 +35,7 @@ Referència: https://www.postman.com/meta/facebook/documentation/r56bjfd/faceboo
 4. Només amb una autorització humana posterior, desplegar el Worker 22.29.12 a producció.
 5. Confirmar una franja automàtica real abans de retirar qualsevol control manual.
 
-La primera execució de staging de la branca, 34711239681, va superar la validació però va mostrar un avís de Node 20 de dues accions antigues. El paquet actualitza `cloudflare/wrangler-action` a v4 i `pnpm/action-setup` a v6; cal repetir staging amb aquestes versions abans d’integrar.
+La primera execució de staging de la branca, 34711239681, va superar la validació però va mostrar un avís de Node 20 de dues accions antigues. Després d’actualitzar `cloudflare/wrangler-action` a v4 i `pnpm/action-setup` a v6, l’execució 34711430511 ha tornat a superar el desplegament i totes les rutes públiques sense aquell avís.
 
 ## Reversió
 
