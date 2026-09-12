@@ -7,11 +7,13 @@ import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core
 import { finiteNumber } from '../src/core/numeric.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.8";
+const WORKER_VERSION = "22.29.9";
 const WORKER_BUILT = "2026-09-12";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
+const HISTORY_EDGE_CACHE_SECONDS = 5 * 60;
+const HISTORY_EDGE_CACHE_VERSION = "history-v1";
 const SOCIAL_AUTOMATIC_MAX_ATTEMPTS = 4;
 const X_WEIGHTED_MAX_LENGTH = 280;
 // Buffer pot reservar espai addicional en lliurar una imatge a X. Mantenim
@@ -2461,6 +2463,21 @@ function chooseResolution(days, requested) {
   return "daily";
 }
 
+export function historyCacheRequest(requestUrl, range, resolution) {
+  const cacheUrl = new URL("/__internal-cache/history", requestUrl.origin);
+  cacheUrl.searchParams.set("v", HISTORY_EDGE_CACHE_VERSION);
+  cacheUrl.searchParams.set("start", range.start);
+  cacheUrl.searchParams.set("end", range.end);
+  cacheUrl.searchParams.set("resolution", resolution);
+  return new Request(cacheUrl.toString(), { method:"GET" });
+}
+
+function historyCacheState(response, state) {
+  const headers = new Headers(response.headers);
+  headers.set("X-History-Cache", state);
+  return new Response(response.body, { status:response.status, statusText:response.statusText, headers });
+}
+
 function rowToObservation(row) {
   return {
     time: row.time,
@@ -2639,10 +2656,25 @@ async function storageSummary(env) {
   return value;
 }
 
-async function history(requestUrl, env) {
+async function history(requestUrl, env, ctx) {
   const range = historyRange(requestUrl);
   if (!range) return json({ error:"L'interval no és vàlid o supera els 366 dies" }, 400);
   const resolution = chooseResolution(range.days, requestUrl.searchParams.get("resolution"));
+  const edgeCache = typeof caches !== "undefined" ? caches.default : null;
+  const cacheRequest = historyCacheRequest(requestUrl, range, resolution);
+  const runtimeCacheKey = `d1:${cacheRequest.url}`;
+  const runtimeCached = runtimeStateCache.get(runtimeCacheKey);
+  if (runtimeCached && runtimeCached.expiresAt > Date.now()) {
+    return historyCacheState(json(runtimeCached.value, 200, `public, max-age=${HISTORY_EDGE_CACHE_SECONDS}`), "RUNTIME_HIT");
+  }
+  if (edgeCache) {
+    try {
+      const cached = await edgeCache.match(cacheRequest);
+      if (cached) return historyCacheState(cached, "HIT");
+    } catch (error) {
+      console.error(JSON.stringify({ event:"history_cache_match_error", error:String(error?.message || error) }));
+    }
+  }
   let databaseRows = [];
   let wuRows = [];
   try { databaseRows = await d1History(env, range, resolution); }
@@ -2652,7 +2684,7 @@ async function history(requestUrl, env) {
   const observations = mergeHistories(databaseRows, wuRows, resolution);
   const storage = await storageSummary(env).catch(() => ({ enabled:false, storedReadings:0, coverageDays:0 }));
   const source = databaseRows.length && wuRows.length ? "d1+weather-underground" : databaseRows.length ? "d1" : "weather-underground";
-  return json({
+  const payload = {
     station:"Observatori Meteorològic Fontanillas",
     stationId:STATION_ID,
     range:{ start:range.start, end:range.end },
@@ -2662,7 +2694,16 @@ async function history(requestUrl, env) {
     count:observations.length,
     storage,
     observations,
-  }, 200, "public, max-age=300");
+  };
+  const response = json(payload, 200, `public, max-age=${HISTORY_EDGE_CACHE_SECONDS}`);
+  if (observations.length) runtimeStateCache.set(runtimeCacheKey, { value:payload, expiresAt:Date.now() + HISTORY_EDGE_CACHE_SECONDS * 1000 });
+  if (edgeCache && ctx && observations.length) {
+    const cachedResponse = historyCacheState(response.clone(), "HIT");
+    ctx.waitUntil(edgeCache.put(cacheRequest, cachedResponse).catch(error => {
+      console.error(JSON.stringify({ event:"history_cache_put_error", error:String(error?.message || error) }));
+    }));
+  }
+  return historyCacheState(response, "MISS");
 }
 
 export function buildStationRecordPayload(summary = {}, rainDay = null) {
@@ -5750,7 +5791,7 @@ export default {
         }
         return json(observation, 200, "public, max-age=60");
       }
-      if (url.pathname === "/history") return history(url, env);
+      if (url.pathname === "/history") return history(url, env, ctx);
       if (url.pathname === "/temperature-trend") return temperatureTrend(env);
       if (url.pathname === "/records") return stationRecords(request,env,ctx);
       if (url.pathname === "/quality") return quality(env);

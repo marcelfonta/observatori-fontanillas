@@ -1,5 +1,13 @@
 # Changelog
 
+## Correcció — Auditoria E · consum D1 i escales gràfiques — 2026-09-12
+
+- L’històric comparteix durant cinc minuts una clau de memòria cau canònica per data i resolució, tant dins del Worker com a Cache API quan està disponible; el marcador `fresh` del navegador ja no força consultes D1 equivalents.
+- La memòria cau només desa respostes amb observacions, funciona per centre de dades de Cloudflare i conserva la degradació normal si la memòria cau no està disponible.
+- La resposta exposa `X-History-Cache: HIT`, `RUNTIME_HIT` o `MISS` per poder comprovar l’estalvi sense inspeccionar dades ni activar serveis de pagament.
+- Els eixos temporals comencen i acaben a la primera i última observació reals. Pluja acumulada (`mm`) i intensitat (`mm/h`) utilitzen escales independents.
+- Worker proposat 22.29.9 i PWA `audit-e`. Cap migració, reescriptura històrica, canvi d’horaris ni desplegament automàtic.
+
 ## Correcció — Auditoria D · històric i gràfiques — 2026-09-12
 
 - Intervals d’històric corregits a dies de 24 hores; absències preservades en captures futures i agregats, amb recompte de mostres pluviomètriques conegudes.

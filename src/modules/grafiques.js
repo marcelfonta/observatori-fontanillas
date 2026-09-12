@@ -11,7 +11,15 @@ function makeChart(canvas, labels, datasets, unit, showLegend = false) {
   if (!window.Chart || !canvas) return null;
   const normalized=datasets.map(dataset=>({...dataset,label:t(dataset.label),data:dataset.data.map((y,index)=>({x:labels[index],y:finiteNumber(y)})),tension:0,borderWidth:2,pointRadius:dataset.data.filter(value=>finiteNumber(value)!==null).length<3?3:0,spanGaps:false}));
   const hasValues = datasets.some(dataset=>dataset.data.some(value=>finiteNumber(value)!==null));
-  return new Chart(canvas, { type:'line', data:{ labels, datasets:normalized }, options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{display:showLegend,position:'bottom',align:'start',labels:{color:palette.text,usePointStyle:true,boxWidth:6,font:{size:9},padding:12}},tooltip:{backgroundColor:'#0c1b17',borderColor:'rgba(197,231,208,.18)',borderWidth:1,displayColors:true,callbacks:{title:items=>dateLabel(items[0]?.parsed.x),label:c=>`${c.dataset.label}: ${c.formattedValue} ${c.dataset.unit ?? unit}`}}},scales:{x:{display:hasValues,type:'linear',grid:{display:false},ticks:{color:palette.text,maxTicksLimit:5,font:{size:9},callback:v=>dateLabel(v,labels.at(-1)-labels[0]<172800000)}},y:{display:hasValues,border:{display:false},grid:{color:palette.grid},ticks:{color:palette.text,maxTicksLimit:4,font:{size:9},callback:v=>`${v}${unit}`}}}}});
+  const validLabels=labels.filter(value=>Number.isFinite(value));
+  const xBounds=validLabels.length>1?{min:validLabels[0],max:validLabels.at(-1)}:{};
+  const hasSecondaryAxis=normalized.some(dataset=>dataset.yAxisID==='yRate');
+  const scales={
+    x:{display:hasValues,type:'linear',...xBounds,grid:{display:false},ticks:{color:palette.text,maxTicksLimit:5,font:{size:9},callback:v=>dateLabel(v,validLabels.at(-1)-validLabels[0]<172800000)}},
+    y:{display:hasValues,border:{display:false},grid:{color:palette.grid},ticks:{color:palette.text,maxTicksLimit:4,font:{size:9},callback:v=>`${v}${unit}`}}
+  };
+  if(hasSecondaryAxis)scales.yRate={display:hasValues,position:'right',border:{display:false},grid:{drawOnChartArea:false},ticks:{color:palette.violet,maxTicksLimit:4,font:{size:9},callback:v=>`${v} mm/h`}};
+  return new Chart(canvas, { type:'line', data:{ labels, datasets:normalized }, options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{display:showLegend,position:'bottom',align:'start',labels:{color:palette.text,usePointStyle:true,boxWidth:6,font:{size:9},padding:12}},tooltip:{backgroundColor:'#0c1b17',borderColor:'rgba(197,231,208,.18)',borderWidth:1,displayColors:true,callbacks:{title:items=>dateLabel(items[0]?.parsed.x),label:c=>`${c.dataset.label}: ${c.formattedValue} ${c.dataset.unit ?? unit}`}}},scales}});
 }
 export function renderCharts(data, history = [], period='24h') {
   charts.forEach(c=>c?.destroy());
@@ -29,7 +37,7 @@ export function renderCharts(data, history = [], period='24h') {
     makeChart(document.getElementById('pressure-chart'),labels,[{label:'Pressió',data:pressures,borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true}],' hPa'),
     makeChart(document.getElementById('humidity-chart'),labels,[{label:'Humitat',data:humidity,borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true}],' %'),
     makeChart(document.getElementById('wind-chart'),labels,[{label:'Vent mitjà',data:wind,borderColor:palette.green,backgroundColor:`${palette.green}12`,fill:true},{label:'Ratxa',data:gusts,borderColor:palette.amber,backgroundColor:'transparent',borderDash:[5,5],fill:false}],' km/h',true),
-    makeChart(document.getElementById('rain-chart'),labels,[{label:'Acumulada registrada (pot ser parcial)',data:rainTotal,unit:'mm',borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true},{label:'Intensitat',data:rainRate,unit:'mm/h',borderColor:palette.violet,backgroundColor:'transparent',borderDash:[5,5],fill:false}],' mm',true),
+    makeChart(document.getElementById('rain-chart'),labels,[{label:'Acumulada registrada (pot ser parcial)',data:rainTotal,unit:'mm',yAxisID:'y',borderColor:palette.blue,backgroundColor:`${palette.blue}16`,fill:true},{label:'Intensitat',data:rainRate,unit:'mm/h',yAxisID:'yRate',borderColor:palette.violet,backgroundColor:'transparent',borderDash:[5,5],fill:false}],' mm',true),
     makeChart(document.getElementById('uv-chart'),labels,[{label:'Índex UV',data:uv,borderColor:palette.coral,backgroundColor:`${palette.coral}16`,fill:true}],' UV')
   ].filter(Boolean);
 }

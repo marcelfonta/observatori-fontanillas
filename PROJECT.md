@@ -54,7 +54,7 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - Les taules de rate limit tenen indexos compostos i neteja programada diaria.
 - `monitor_state` guarda ultims estats operatius per evitar reprocessaments i facilitar diagnosi.
 - Les captures programades de cinc minuts son l’escriptor normal d’observacions. En produccio, `PERSIST_ON_REQUEST` ha de romandre desactivat.
-- El resum d’ús de D1 es conserva cinc minuts a memòria del Worker i una observació repetida no sobreescriu una fila existent.
+- El resum d’ús i les respostes públiques de l’històric es conserven cinc minuts amb claus canòniques que ignoren marcadors de refresc; una observació repetida no sobreescriu una fila existent.
 
 ## Ordres de comprovacio
 

@@ -5,7 +5,7 @@ import { prepareChartHistory } from '../src/core/history-data.js';
 import { rainSummary } from '../src/core/archive-coverage.js';
 import { normalizeRemoteHistory, recordReading, summarizeRemoteHistory } from '../src/modules/historics.js';
 import { renderCharts, renderMetricSparklines } from '../src/modules/grafiques.js';
-import { aggregateWuHistory, counterRainIncrement, historyRange, persistObservation, d1History } from '../worker/index.js';
+import { aggregateWuHistory, counterRainIncrement, historyCacheRequest, historyRange, persistObservation, d1History } from '../worker/index.js';
 
 const now = Date.now(), start = now - 3600000;
 const rows = [
@@ -43,7 +43,13 @@ const temperature=configs.find(chart=>chart.id==='temperature-chart');
 assert.deepEqual(temperature.data.datasets[0].data.map(p=>p.y),[0,null,20,null,21]);
 assert.equal(temperature.data.datasets[0].spanGaps,false);
 assert.equal(temperature.options.scales.x.type,'linear','Spacing represents elapsed time, not row index');
+assert.equal(temperature.options.scales.x.min,start,'The chart starts at the first real timestamp');
+assert.equal(temperature.options.scales.x.max,now,'The chart ends at the last real timestamp');
 assert.equal(temperature.data.datasets[0].tension,0,'No smoothing overshoot');
+const rain=configs.find(chart=>chart.id==='rain-chart');
+assert.equal(rain.data.datasets[0].yAxisID,'y');
+assert.equal(rain.data.datasets[1].yAxisID,'yRate');
+assert.equal(rain.options.scales.yRate.position,'right','Rain intensity has its own mm/h scale');
 configs.length=0;
 renderMetricSparklines({temperature:25},[]);
 assert.equal(configs.length,0,'One reading must not become a fictitious flat two-point series');
@@ -73,10 +79,19 @@ assert.equal(aggregateWuHistory([{time:'2026-09-01',temperature:null,rainIncreme
 for(const days of [1,7,30,366])assert.equal(historyRange(new URL(`https://example.test/history?days=${days}`)).days,days);
 assert.equal(historyRange(new URL('https://example.test/history?start=20260901&end=20260907')).days,7);
 assert.equal(historyRange(new URL('https://example.test/history?start=20260101&end=20270102')),null);
+const explicitRange=historyRange(new URL('https://example.test/history?start=20260901&end=20260907'));
+const cacheA=historyCacheRequest(new URL('https://example.test/history?start=20260901&end=20260907&resolution=hourly&fresh=1'),explicitRange,'hourly');
+const cacheB=historyCacheRequest(new URL('https://example.test/history?fresh=999&end=20260907&start=20260901&resolution=hourly'),explicitRange,'hourly');
+assert.equal(cacheA.url,cacheB.url,'Client freshness markers must share one edge-cache key');
+assert.equal(new URL(cacheA.url).searchParams.has('fresh'),false);
+assert.notEqual(cacheA.url,historyCacheRequest(new URL('https://example.test/history'),explicitRange,'daily').url,'Resolution remains part of the cache key');
 
 // Real SQLite: validate both persistence bindings and all three SQL resolutions.
 const sqlite=new DatabaseSync(':memory:');
 const source=await readFile(new URL('../worker/index.js',import.meta.url),'utf8');
+assert.match(source,/runtimeStateCache\.set\(runtimeCacheKey/,'Successful history responses populate the isolate cache');
+assert.match(source,/ctx\.waitUntil\(edgeCache\.put\(cacheRequest/,'Edge-cache writes remain attached to the request lifecycle');
+assert.match(source,/url\.pathname === "\/history"\) return history\(url, env, ctx\)/,'The history route passes its execution context');
 for(const match of source.matchAll(/const CREATE_[A-Z_]+ = `([\s\S]*?)`;/g))sqlite.exec(match[1]);
 const DB={prepare(sql){let values=[];return {
   bind(...args){values=args;return this;},
@@ -94,4 +109,4 @@ for(const resolution of ['raw','hourly','daily']) {
   else {assert.equal(result[0].temperature,10);assert.equal(result[0].rainSamples,1);assert.equal(result[0].samples,3);assert.equal(result[0].rainIncrement,0);}
 }
 sqlite.close();
-console.log('Auditoria D: intervals, absències, persistència/agregació SQLite i gràfiques reals sense dades fictícies.');
+console.log('Auditoria E: memòria cau canònica, eixos exactes i escales de pluja separades.');
