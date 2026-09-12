@@ -81,6 +81,7 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - El nom accessible de la webcam inclou literalment el text visible i la càrrega normal d’una subscripció push ja no reenvia etiquetes redundants a OneSignal. Els canvis explícits de preferències continuen sincronitzant tant OneSignal com el registre propi D1.
 - El diagnòstic OAuth de YouTube ha superat l’execució 34716271807 sense preparar ni publicar cap vídeo.
 - El diagnòstic remot 34716813993 confirma la connexió de Buffer/TikTok i el permís del disparador Cloudflare → GitHub, també sense crear esborranys ni iniciar vídeos.
+- Les tres franges automàtiques d’X del 12-09-2026 consten enviades al primer intent (07:00, 14:06 i 20:30, hora local), amb estat remot `sent` i enllaç de publicació; la seqüència diària completa queda validada sense intervenció manual.
 - Una traça mòbil real en producció mesura LCP 408 ms i CLS 0,00. El paquet elimina la descàrrega duplicada de la webcam, agrupa les càrregues inicials concurrents i corregeix els defectes d’accessibilitat detectats per Lighthouse.
 - El diagnòstic manual de YouTube comprova el client, el secret i el refresh token mitjançant l’intercanvi OAuth, però s’atura abans de generar o llegir cap fitxer de vídeo. No té programació automàtica.
 - No incorpora canvis de Worker, migracions ni secrets i no desplega ni publica contingut automàticament.

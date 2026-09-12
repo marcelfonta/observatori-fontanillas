@@ -7,6 +7,7 @@
 - Les subscripcions push actives es refresquen al registre propi sense reenviar les mateixes etiquetes a OneSignal en cada visita, evitant l’operació redundant que retornava 409. Desar o desactivar preferències continua actualitzant els dos sistemes.
 - El diagnòstic segur de YouTube confirma les credencials renovades sense generar ni pujar cap vídeo.
 - La diagnosi remota confirma la connexió de Buffer/TikTok i el permís del disparador Cloudflare → GitHub sense crear cap esborrany ni iniciar cap vídeo.
+- Verificada una seqüència diària completa d’X: les franges de matí, migdia i vespre del 12-09-2026 es van enviar al primer intent, amb estat remot `sent` i enllaç de publicació.
 - Web proposada 22.31.5; Worker es manté en 22.29.13. Sense migracions, secrets, publicacions reals ni desplegament automàtic.
 
 ## Millora — Auditoria mòbil, càrrega única i diagnòstic segur de YouTube · 2026-09-12

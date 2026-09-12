@@ -94,7 +94,7 @@
 - [x] Connectar X a Buffer i preparar tres publicacions diàries pròpies: vídeo a les 07:00, imatge a les 14:00 i vídeo a les 20:30.
 - [x] Afegir deduplicació, comprovació de lliurament, fins a quatre reintents i correu només després de la fallada definitiva d’X.
 - [x] Fer que Buffer pugui verificar les targetes del migdia amb `HEAD` i impedir duplicats quan ja existeix una entrada remota amb error.
-- [ ] Integrar, desplegar i confirmar visualment una seqüència completa d’X sense intervenció manual.
+- [x] Integrar, desplegar i confirmar una seqüència completa d’X sense intervenció manual: les franges del 12-09-2026 van quedar enviades al primer intent a les 07:00, 14:06 i 20:30 (hora local), amb estat remot `sent` i enllaç de publicació.
 
 - [x] Substituir el reproductor inestable de 3Cat per un accés extern oficial, mantenint només Meteocat com a vídeo integrat sota demanda.
 
