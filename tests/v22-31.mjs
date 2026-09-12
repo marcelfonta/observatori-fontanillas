@@ -7,10 +7,10 @@ const [page,header,shell,worker,sitemap,project,emails]=await Promise.all([
   read('service-worker.js'),read('sitemap.xml'),read('project.json'),read('docs/patrocini/correus-personalitzats.md')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.31.3');
+assert.equal(JSON.parse(project).version,'22.31.4');
 assert.ok(header.includes('<option value="fr">FR</option>'));
 assert.ok(shell.includes("['collaboracions','Col·laboracions','./colaboracions.html']"));
-assert.ok(worker.includes('observatori-fontanillas-v22-31-3-frances-colaboracions'));
+assert.ok(worker.includes('observatori-fontanillas-v22-31-4-frances-colaboracions'));
 assert.ok(worker.includes("'/colaboracions.html'")&&worker.includes("'/src/core/i18n-fr.js'"));
 assert.ok(sitemap.includes('https://meteo.fontanillas.cat/colaboracions.html'));
 assert.ok(page.includes('data-portal-static="collaboracions"'));
@@ -39,4 +39,4 @@ assert.equal(translations.getLocale(),'fr-FR');
 assert.equal(translations.t('Col·laboracions'),'Collaborations');
 assert.equal(translations.t('Material, no finançament'),'Du matériel, pas un financement');
 
-console.log('Test V22.31.3: francès, col·laboracions i dossiers');
+console.log('Test V22.31.4: francès, col·laboracions i dossiers');

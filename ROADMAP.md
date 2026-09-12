@@ -110,8 +110,8 @@
 
 - [x] Completar l’anàlisi visible amb la comparació de les últimes 24 hores respecte de les 24 anteriors.
 - [x] Afegir accessos locals a municipis favorits sense crear cap perfil ni desar dades al servidor.
-- [ ] Activar la clau `WINDY_WEBCAMS_API_KEY` al Worker i validar webcams properes en tres ciutats de continents diferents; la interfície ja evita vídeo automàtic i no conserva URLs temporals.
-- [ ] Mesurar Core Web Vitals mòbils en producció amb Chrome DevTools o PageSpeed Insights quan la traça estigui disponible.
+- [x] Activar la clau `WINDY_WEBCAMS_API_KEY` al Worker i validar webcams properes en tres ciutats de continents diferents: Sant Celoni, Tòquio i Sydney retornen quatre càmeres, configuració activa i resposta 200; la interfície evita vídeo automàtic i no conserva URLs temporals.
+- [x] Mesurar Core Web Vitals mòbils en producció amb Chrome DevTools: LCP 408 ms i CLS 0,00 en Fast 4G amb CPU ×4; sense dades CrUX disponibles. Corregides la webcam duplicada i les incidències d’accessibilitat mesurades a la V22.31.4.
 
 - [x] Publicar guies de contribució, seguretat, suport i arquitectura.
 - [x] Afegir llicència MIT i plantilles per informar d'incidències o correccions de dades.
@@ -121,6 +121,9 @@
 - [x] Mostrar al panell administratiu el recompte de files reals desades a D1.
 
 ## Vídeos temporals i Stories — Preparació segura
+
+- [x] Preparar un diagnòstic manual de les credencials OAuth de YouTube que s’atura abans de generar, llegir o pujar cap vídeo.
+- [ ] Executar el diagnòstic segur de YouTube després d’integrar-lo i confirmar que el token renovat és acceptat, sense publicació externa.
 
 - [x] Fer que totes les escenes dels vídeos de matí i vespre conservin la data de l’edició, la data prevista i, en les observacions, l’hora de lectura perquè els vídeos antics no perdin context.
 

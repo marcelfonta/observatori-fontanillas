@@ -47,6 +47,7 @@ let chartsAvailable = false;
 let chartPeriod = '24h';
 let chartData = null;
 let chartHistory = [];
+let loadInFlight = null;
 
 const OFFLINE_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hores
 function showOfflineBanner(ageMinutes,message=''){ const banner=document.getElementById('offline-banner'); if(!banner)return; banner.textContent=message||`Mostrant dades de fa ${ageMinutes} min (mode sense connexió)`; banner.hidden=false; }
@@ -107,7 +108,7 @@ async function loadAlerts(){
   alertsFetchedAt=Date.now();
 }
 
-async function load(){
+async function performLoad(){
   const label=document.getElementById('connection-label');
   try {
     latest=await fetchCurrentWeather();
@@ -141,6 +142,14 @@ async function load(){
   }
   updateEnvironmentStation(latest);
   currentFetchedAt=Date.now();
+}
+function load(){
+  if(loadInFlight)return loadInFlight;
+  const pending=performLoad().finally(()=>{
+    if(loadInFlight===pending)loadInFlight=null;
+  });
+  loadInFlight=pending;
+  return pending;
 }
 const periodLabels={ '24h':'Lectures de les últimes 24 hores','7d':'Evolució dels últims 7 dies','30d':'Evolució dels últims 30 dies','1y':'Evolució de l’últim any disponible' };
 document.querySelectorAll('[data-period]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-period]').forEach(b=>b.classList.remove('is-active'));button.classList.add('is-active');setText('evolution-period-copy',periodLabels[button.dataset.period]||'Històric disponible');refreshCharts(latest,latestHistory,button.dataset.period);}));

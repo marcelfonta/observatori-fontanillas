@@ -1,0 +1,17 @@
+# Observatori Meteorològic Fontanillas
+
+Portal meteorològic local de Sant Celoni i el Baix Montseny. Separa observacions pròpies, prediccions de models i avisos oficials, i identifica sempre les fonts i l’hora de les dades.
+
+## Pàgines principals
+
+- [Portada i observació actual](https://meteo.fontanillas.cat/)
+- [Predicció](https://meteo.fontanillas.cat/?page=prediccio)
+- [Avisos oficials](https://meteo.fontanillas.cat/?page=avisos)
+- [Centre de Dades](https://meteo.fontanillas.cat/?page=centre-dades)
+- [Metodologia](https://meteo.fontanillas.cat/metodologia.html)
+
+## Criteris d’ús
+
+- Les dades de l’estació Fontanillas són observacions locals i no substitueixen una estació oficial.
+- Meteocat, AEMET, Protecció Civil i el 112 prevalen en situacions de risc.
+- Les prediccions de models expressen probabilitat i incertesa; no són avisos oficials.

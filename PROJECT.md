@@ -73,13 +73,13 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.31.3
+## Estat V22.31.4
 
-- Branca de treball: `fix/social-expiry-youtube-retries`.
-- Versió web actual: V22.31.3. Worker proposat: V22.29.13.
-- El Worker proposat impedeix recuperar publicacions especials fora del seu dia editorial i limita cada Short a quatre intents, amb aturada immediata quan Google confirma un error OAuth permanent.
-- No incorpora migracions ni secrets i no desplega ni publica contingut automàticament.
-- La web V22.31.3 i el Worker V22.29.12 estan desplegats i operatius. El Worker V22.29.13 ha superat les proves locals i la simulació de desplegament; queda pendent de revisió, integració i desplegament amb aprovació humana separada.
+- Branca de treball: `fix/mobile-performance-and-diagnostics`.
+- Versió web proposada: V22.31.4. Worker desplegat: V22.29.13.
+- Una traça mòbil real en producció mesura LCP 408 ms i CLS 0,00. El paquet elimina la descàrrega duplicada de la webcam, agrupa les càrregues inicials concurrents i corregeix els defectes d’accessibilitat detectats per Lighthouse.
+- El diagnòstic manual de YouTube comprova el client, el secret i el refresh token mitjançant l’intercanvi OAuth, però s’atura abans de generar o llegir cap fitxer de vídeo. No té programació automàtica.
+- No incorpora canvis de Worker, migracions ni secrets i no desplega ni publica contingut automàticament.
 - Les mitjanes de l’arxiu ponderen cada agregat pel nombre de lectures, la cobertura intradiària és visible i la direcció del vent utilitza estadística circular.
 - Les hores històriques es deriven de l’epoch amb `Europe/Madrid` i s’agrupen per temps UTC transcorregut, sense migrar ni reescriure D1.
 - El selector ofereix català, castellà, anglès i francès. Una prova automàtica impedeix publicar un catàleg amb frases registrades sense traducció.

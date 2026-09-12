@@ -39,6 +39,10 @@ export async function main(){
   const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,client_secret:clientSecret,refresh_token:refreshToken,grant_type:'refresh_token'})});
   const token=await tokenResponse.json().catch(()=>({}));
   if(!tokenResponse.ok||!token.access_token)throw youtubeTokenRefreshFailure(tokenResponse.status,token);
+  if(process.env.YOUTUBE_AUTH_CHECK_ONLY==='true'){
+    console.log('Credencials de YouTube verificades correctament; no s’ha preparat ni pujat cap vídeo.');
+    return;
+  }
   const video=await readFile(resolve(process.env.VIDEO_FILE||'build/youtube-short/short.mp4'));
   const metadata=JSON.parse(await readFile(resolve(process.env.VIDEO_METADATA_FILE||'build/youtube-short/metadata.json'),'utf8'));
   const status={privacyStatus:privacy,selfDeclaredMadeForKids:false,...(publishAt?{publishAt}: {})};

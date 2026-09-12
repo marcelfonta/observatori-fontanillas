@@ -77,7 +77,7 @@ export function mountPortalShell(activePage){
     [['inici','Inici'],['estacio','Ara'],['municipis','Arreu'],['prediccio','Previsió'],['avisos','Avisos']].forEach(([id,label])=>{
       const [, ,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=href;link.dataset.mobilePage=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span><b>${label}</b>`;mobile.append(link);
     });
-    const more=document.createElement('button');more.type='button';more.id='portal-mobile-more';more.setAttribute('aria-label','Obrir totes les seccions');more.setAttribute('aria-controls','portal-sidebar');more.setAttribute('aria-expanded','false');more.innerHTML='<span aria-hidden="true">•••</span><b>Més</b>';
+    const more=document.createElement('button');more.type='button';more.id='portal-mobile-more';more.setAttribute('aria-label','Més: obrir totes les seccions');more.setAttribute('aria-controls','portal-sidebar');more.setAttribute('aria-expanded','false');more.innerHTML='<span aria-hidden="true">•••</span><b>Més</b>';
     more.addEventListener('click',()=>{button?.click();more.setAttribute('aria-expanded',button?.getAttribute('aria-expanded')||'false');});
     mobile.append(more);document.body.append(mobile);
   }

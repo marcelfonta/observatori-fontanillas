@@ -151,7 +151,8 @@ function renderAlertShortcuts(payload) {
   [quick,mobile].forEach(element=>{
     if(!element)return;
     element.className=element===quick?`quick-alert is-${level}`:`mobile-alert-shortcut is-${level}`;
-    element.setAttribute('aria-label',`${title}. ${copy}. Anar als avisos oficials.`);
+    if(element===mobile)element.setAttribute('aria-label',`${title}. ${copy}. Anar als avisos oficials.`);
+    else element.removeAttribute('aria-label');
   });
   setText('quick-alert-kicker',level==='clear'?'Vigilància oficial':'Avisos oficials');
   setText('quick-alert-title',title); setText('quick-alert-action',action);
