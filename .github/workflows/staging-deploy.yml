@@ -33,7 +33,7 @@ jobs:
           package-manager-cache: false
 
       - name: Configura pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 11.19.0
 
@@ -43,7 +43,7 @@ jobs:
         run: node scripts/render-staging-wrangler-config.mjs "$GITHUB_WORKSPACE/.wrangler-staging.generated.jsonc"
 
       - name: Desplega a l'entorn de proves
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}

@@ -5,8 +5,9 @@ import { buildSeoStructuredGraph, seoPageUrl } from '../src/features/seo.js';
 import { claimMetaVideoRun } from '../worker/index.js';
 
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
-const [sitemap,worker,staging,index,...staticPages]=await Promise.all([
+const [sitemap,worker,staging,index,qualityWorkflow,stagingWorkflow,...staticPages]=await Promise.all([
   read('sitemap.xml'),read('worker/index.js'),read('scripts/staging-smoke.mjs'),read('index.html'),
+  read('.github/workflows/quality.yml'),read('.github/workflows/staging-deploy.yml'),
   ...['condicions.html','privacitat.html','metodologia.html','municipis.html','xarxes.html'].map(read),
 ]);
 
@@ -46,4 +47,7 @@ assert.equal(await claimMetaVideoRun(env,key,'2026-09-12','morning',[]),true,'Un
 sqlite.close();
 
 for(const token of ['facebookReelVideoId','facebookReelUploadUrl','facebookReelStage',"reelStage!=='finish_pending'"])assert.ok(worker.includes(token));
+assert.match(qualityWorkflow,/pnpm\/action-setup@v6/,'La qualitat ha d’utilitzar una acció compatible amb Node 24.');
+assert.match(stagingWorkflow,/pnpm\/action-setup@v6/,'Staging ha d’utilitzar una acció de pnpm compatible amb Node 24.');
+assert.match(stagingWorkflow,/cloudflare\/wrangler-action@v4/,'Staging ha d’utilitzar l’acció actual de Wrangler amb Node 24.');
 console.log('Auditoria G: SEO multilingüe, contractes d’històric i reserva de vídeo verificats.');

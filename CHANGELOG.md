@@ -5,6 +5,7 @@
 - Facebook consulta l’estat oficial del vídeo abans de reprendre la fase final d’un Reel o una Story després d’una resposta perduda.
 - Si la fase de publicació ja consta com a completada, es reutilitza el mateix identificador i no es torna a enviar la petició final; si no hi ha una confirmació inequívoca, es conserva la represa del mateix vídeo sense iniciar una segona pujada.
 - Les Stories adopten l’estat coherent `finish_pending` i continuen reconeixent l’antic `finish_failed` per no perdre intents ja desats.
+- Les comprovacions i el desplegament de staging actualitzen pnpm Setup a v6 i Wrangler Action a v4, amb runtime Node 24 declarat pels proveïdors.
 - Worker proposat 22.29.12. Sense canvis web, migracions, secrets, horaris, publicacions reals ni desplegament automàtic.
 
 ## Correcció — Contracte de l’històric a staging · 2026-09-12
