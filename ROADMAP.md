@@ -3,7 +3,7 @@
 ## Manteniment obert — En curs
 
 - [x] Auditoria D: intervals de consulta, absències a origen i gràfiques, increments de pluja i agregats parcials, amb proves locals.
-- [ ] Revisar i integrar D; validar a staging el volum/consum d’històric abans d’autoritzar Worker 22.29.8 a producció.
+- [x] D integrat a la PR 140 i desplegat amb autorització humana en Worker 22.29.8; intervals validats a staging, consum revisat amb analítica real i web `audit-d` comprovada en producció. Evidència i límits a `docs/DEPLOY-AUDIT-D-2026-09-12.md`.
 - [ ] Optimitzar la memòria cau d’històric i auditar mitjanes ponderades, direcció del vent i cobertura intradiària.
 
 - [x] Auditoria C: cobertura de dies reals, pluja absent diferenciada de zero i antiguitat de registres sense inferir ratxes seques.
