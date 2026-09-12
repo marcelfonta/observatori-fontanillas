@@ -271,7 +271,7 @@
         <div class="data-summary-grid is-active" aria-live="polite" data-data-center-panel="summary">
           <article class="panel"><span>Mostres</span><strong id="data-summary-samples">—</strong><small id="data-summary-coverage">Cobertura pendent</small></article>
           <article class="panel"><span>Temperatura mitjana</span><strong><b id="data-summary-temp-mean">—</b><small> °C</small></strong><small id="data-summary-temp-deviation">Desviació pendent</small></article>
-          <article class="panel"><span>Pluja acumulada</span><strong><b id="data-summary-rain">—</b><small> mm</small></strong><small>Acumulació del període seleccionat</small></article>
+          <article class="panel"><span>Pluja acumulada</span><strong><b id="data-summary-rain">—</b><small> mm</small></strong><small>Acumulació registrada; pot ser parcial</small></article>
           <article class="panel"><span>Ratxa màxima</span><strong><b id="data-summary-gust">—</b><small> km/h</small></strong><small>Valor més alt observat</small></article>
           <article class="panel"><span>Temperatura · últimes 24 h</span><strong id="data-summary-temp-24h">—</strong><small id="data-summary-temp-24h-note">Comparació pendent</small></article>
           <article class="panel"><span>Pluja · últimes 24 h</span><strong id="data-summary-rain-24h">—</strong><small id="data-summary-rain-24h-note">Comparació pendent</small></article>
@@ -297,17 +297,17 @@
           <header><div><p class="eyebrow">Pluviometria de calendari</p><h2 id="rain-dashboard-title">La pluja, amb més context.</h2><p>Acumulacions, intensitat i dies sense episodis destacables calculats amb l’arxiu real de Fontanillas.</p></div><span class="tag">Actualització automàtica</span></header>
           <div class="rain-dashboard__grid" aria-live="polite">
             <article><span>Intensitat ara</span><strong id="data-rain-now">—</strong><small>Lectura instantània</small></article>
-            <article><span>Pluja avui</span><strong id="data-rain-today">—</strong><small>Des de les 00:00</small></article>
-            <article><span>Últimes 24 hores</span><strong id="data-rain-24h">—</strong><small>Finestra mòbil</small></article>
-            <article><span>Episodi recent</span><strong id="data-rain-episode">—</strong><small>Separat per 6 h sense pluja</small></article>
-            <article><span>Ahir</span><strong id="data-rain-yesterday">—</strong><small>Dia natural anterior</small></article>
-            <article><span>Aquest mes</span><strong id="data-rain-month">—</strong><small>Acumulació mensual</small></article>
+            <article><span>Pluja avui</span><strong id="data-rain-today">—</strong><small>Acumulació registrada; pot ser parcial</small></article>
+            <article><span>Últimes 24 hores</span><strong id="data-rain-24h">—</strong><small>Acumulació registrada; pot ser parcial</small></article>
+            <article><span>Episodi recent</span><strong id="data-rain-episode">—</strong><small>Agrupació orientativa de registres</small></article>
+            <article><span>Ahir</span><strong id="data-rain-yesterday">—</strong><small>Acumulació registrada; pot ser parcial</small></article>
+            <article><span>Aquest mes</span><strong id="data-rain-month">—</strong><small>Acumulació registrada; pot ser parcial</small></article>
             <article><span>Aquest any</span><strong id="data-rain-year">—</strong><small id="data-rain-year-coverage">Comprovant la cobertura anual…</small></article>
             <article><span>Dies plujosos</span><strong id="data-rain-wet-days">—</strong><small>Amb 0,1 mm o més aquest any</small></article>
-            <article><span>Dies sense pluja</span><strong id="data-rain-dry-days">—</strong><small>Des de l’últim dia ≥ 0,1 mm</small></article>
-            <article><span>Dies sense ≥ 1 mm</span><strong id="data-rain-since-1">—</strong><small>Episodi apreciable</small></article>
-            <article><span>Dies sense ≥ 10 mm</span><strong id="data-rain-since-10">—</strong><small>Episodi abundant</small></article>
-            <article><span>Dies sense ≥ 20 mm</span><strong id="data-rain-since-20">—</strong><small>Episodi molt abundant</small></article>
+            <article><span>Dies des del registre ≥ 0,1 mm</span><strong id="data-rain-dry-days">—</strong><small>No certifica una ratxa seca</small></article>
+            <article><span>Dies des del registre ≥ 1 mm</span><strong id="data-rain-since-1">—</strong><small>No certifica una ratxa seca</small></article>
+            <article><span>Dies des del registre ≥ 10 mm</span><strong id="data-rain-since-10">—</strong><small>No certifica una ratxa seca</small></article>
+            <article><span>Dies des del registre ≥ 20 mm</span><strong id="data-rain-since-20">—</strong><small>No certifica una ratxa seca</small></article>
             <article class="rain-dashboard__wide"><span>Dia més plujós de l’any</span><strong id="data-rain-wettest">—</strong><small>Segons la cobertura disponible</small></article>
           </div>
           <p class="rain-dashboard__note" id="data-rain-coverage">Preparant la cobertura pluviomètrica…</p>

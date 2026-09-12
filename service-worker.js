@@ -1,8 +1,9 @@
-const CACHE = 'observatori-fontanillas-v22-31-0-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-b';
+const CACHE = 'observatori-fontanillas-v22-31-0-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-c';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
   '/src/core/numeric.js',
+  '/src/core/archive-coverage.js',
   '/', '/index.html', '/metodologia.html', '/comparativa.html', '/municipis.html', '/historial-avisos.html', '/privacitat.html', '/condicions.html', '/xarxes.html', '/colaboracions.html', '/site.webmanifest',
   '/css/variables.css', '/css/layout.css', '/css/style.css', '/css/portal.css',
   '/src/app.js', '/src/core/page-bootstrap.js', '/src/core/config.js', '/src/core/dom.js', '/src/core/i18n.js', '/src/core/i18n-fr.js', '/src/core/alert-episodes.js', '/src/core/notification-preferences.js', '/src/data/meteorological-ephemerides.js', '/src/data/astronomical-calendar.js', '/src/data/learning-resources.js', '/src/services/weather-api.js',

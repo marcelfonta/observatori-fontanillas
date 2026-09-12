@@ -2,6 +2,8 @@ import { ephemerisDateLabel, meteorologicalEphemeridesForDate } from '../data/me
 import { fetchAlertHistory } from '../services/weather-api.js';
 import { getLanguage, getLocale } from '../core/i18n.js';
 import { finiteNumber as number } from '../core/numeric.js';
+import { normalizeArchive, calendarCoverage, rainTotal, dailyRainTotals as dailyRain, daysSinceRainRecord as daysSinceThreshold } from '../core/archive-coverage.js';
+export { calendarCoverage } from '../core/archive-coverage.js';
 
 const DAY = 86400000;
 const DATA_TABS = ['summary', 'charts', 'rain', 'episodes', 'quality'];
@@ -22,39 +24,13 @@ const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, character =
 const dateKey = value => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid' }).format(new Date(value));
 const selected = () => archive.filter(item => item.t >= Date.now() - activeDays * DAY);
 
-function rainTotal(items) {
-  const increments = values(items, 'rainIncrement');
-  if (increments.length) return increments.reduce((total, value) => total + Math.max(0, value), 0);
-  return items.reduce((total, item, index) => {
-    const value = number(item.rainTotal);
-    const previous = number(items[index - 1]?.rainTotal);
-    if (value === null || previous === null) return total;
-    return total + (value >= previous ? value - previous : value);
-  }, 0);
-}
-
-function dailyRain(items) {
-  const groups = new Map();
-  items.forEach(item => {
-    const key = dateKey(item.t);
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(item);
-  });
-  const totals = new Map([...groups].map(([key, group]) => [key, rainTotal(group)]));
-  const today = dateKey(Date.now());
-  const observedToday = number(current?.rainToday);
-  if (observedToday !== null) totals.set(today, Math.max(totals.get(today) || 0, observedToday));
-  return totals;
-}
-
-export function calendarCoverage(items = []) {
-  const valid = items.filter(item => Number.isFinite(Number(item.t))).sort((a, b) => a.t - b.t);
-  if (!valid.length) return { observedDays: 0, spanDays: 0, first: null, last: null };
-  const observedDays = new Set(valid.map(item => dateKey(item.t))).size;
-  const first = valid[0].t;
-  const last = valid.at(-1).t;
-  return { observedDays, spanDays: Math.max(1, Math.round((last - first) / DAY) + 1), first, last };
-}
+const copy = (ca, es, en, fr) => ({ ca, es, en, fr })[getLanguage()] || ca;
+const coverageLabel = coverage => copy(
+  `${coverage.observedDays} dies amb registres · interval de ${coverage.spanDays} dies`,
+  `${coverage.observedDays} días con registros · intervalo de ${coverage.spanDays} días`,
+  `${coverage.observedDays} days with records · ${coverage.spanDays}-day span`,
+  `${coverage.observedDays} jours avec relevés · intervalle de ${coverage.spanDays} jours`
+);
 
 function annualCoverageLabel(coverage) {
   if (!coverage.observedDays) return ({ es: 'Sin cobertura disponible este año', en: 'No coverage available this year', fr: 'Aucune couverture disponible cette année' })[getLanguage()] || 'Sense cobertura disponible aquest any';
@@ -71,16 +47,16 @@ function archiveCoverageLabel(coverage) {
   const first = new Intl.DateTimeFormat(getLocale(), { dateStyle: 'medium' }).format(coverage.first);
   const last = new Intl.DateTimeFormat(getLocale(), { dateStyle: 'medium' }).format(coverage.last);
   return ({
-    es: `Cálculo realizado con ${coverage.observedDays} días observados entre el ${first} y el ${last}. «Más de» indica que no hay un episodio anterior en el archivo.`,
-    en: `Calculated from ${coverage.observedDays} observed days between ${first} and ${last}. “More than” means that no earlier event exists in the archive.`,
-    fr: `Calcul effectué sur ${coverage.observedDays} jours observés entre le ${first} et le ${last}. « Plus de » signifie qu’aucun épisode antérieur ne figure dans les archives.`
-  })[getLanguage()] || `Càlcul fet amb ${coverage.observedDays} dies observats entre el ${first} i el ${last}. «Més de» indica que no hi ha cap episodi anterior dins de l’arxiu.`;
+    es: `Archivo: ${coverage.observedDays} días con registros entre el ${first} y el ${last}. Las sumas pueden ser parciales. Los días desde la última lluvia registrada no certifican una racha seca: puede haber huecos.`,
+    en: `Archive: ${coverage.observedDays} days with records between ${first} and ${last}. Totals may be partial. Days since the last recorded rain do not certify a dry spell: gaps may exist.`,
+    fr: `Archives : ${coverage.observedDays} jours avec relevés du ${first} au ${last}. Les cumuls peuvent être partiels. Les jours depuis la dernière pluie enregistrée ne prouvent pas une période sèche : des lacunes sont possibles.`
+  })[getLanguage()] || `Arxiu: ${coverage.observedDays} dies amb registres entre el ${first} i el ${last}. Els acumulats poden ser parcials. Els dies des de l’última pluja registrada no certifiquen una ratxa seca: hi pot haver buits.`;
 }
 
 function recentEpisodeRain(items) {
   const samples = items.filter(item => item.t >= Date.now() - 72 * 3600000).sort((a, b) => a.t - b.t);
   const wet = samples.map((item, index) => ({ t: item.t, rain: Math.max(0, number(item.rainIncrement) ?? 0), rate: Math.max(0, number(item.rainRate) ?? 0), index })).filter(item => item.rain > 0 || item.rate > 0);
-  if (!wet.length || (Date.now() - wet.at(-1).t > 12 * 3600000 && (number(current?.rainRate) ?? 0) <= 0)) return 0;
+  if (!wet.length || (Date.now() - wet.at(-1).t > 12 * 3600000 && (number(current?.rainRate) ?? 0) <= 0)) return null;
   let start = wet.at(-1).index;
   let previousWet = wet.at(-1).t;
   for (let index = wet.length - 2; index >= 0; index -= 1) {
@@ -91,50 +67,36 @@ function recentEpisodeRain(items) {
   return rainTotal(samples.slice(start));
 }
 
-function daysSinceThreshold(totals, threshold) {
-  const today = new Date(`${dateKey(Date.now())}T12:00:00`);
-  const matches = [...totals].filter(([, rain]) => rain >= threshold).map(([key]) => key).sort();
-  if (matches.length) {
-    const last = new Date(`${matches.at(-1)}T12:00:00`);
-    return Math.max(0, Math.round((today - last) / DAY));
-  }
-  if (!archive.length) return null;
-  const first = new Date(`${dateKey(archive[0].t)}T12:00:00`);
-  return { minimum: Math.max(0, Math.round((today - first) / DAY)) };
-}
-
 function dryLabel(value) {
   if (value === null) return '—';
-  if (typeof value === 'object') return `Més de ${value.minimum}`;
   return String(value);
 }
 
 function renderRainDashboard() {
   const totals = dailyRain(archive);
   const today = dateKey(Date.now());
-  const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-  const yesterday = dateKey(yesterdayDate);
+  const yesterday = new Date(Date.parse(`${today}T12:00:00Z`) - DAY).toISOString().slice(0, 10);
   const month = today.slice(0, 7); const year = today.slice(0, 4);
-  const totalFor = prefix => [...totals].filter(([key]) => key.startsWith(prefix)).reduce((sum, [, value]) => sum + value, 0);
+  const totalFor = prefix => { const known = [...totals].filter(([key, value]) => key.startsWith(prefix) && value !== null); return known.length ? known.reduce((sum, [, value]) => sum + value, 0) : null; };
   const recent24h = archive.filter(item => item.t >= Date.now() - DAY);
-  const yearItems = archive.filter(item => dateKey(item.t).startsWith(year));
+  const yearItems = archive.filter(item => dateKey(item.t).startsWith(year) && totals.get(dateKey(item.t)) !== null);
   const yearCoverage = calendarCoverage(yearItems);
-  const yearDays = [...totals].filter(([key]) => key.startsWith(year));
+  const yearDays = [...totals].filter(([key, value]) => key.startsWith(year) && value !== null);
   const wettest = yearDays.sort((a, b) => b[1] - a[1])[0];
   set('data-rain-now', `${fmt(number(current?.rainRate))} mm/h`);
-  set('data-rain-today', `${fmt(totals.get(today) ?? number(current?.rainToday) ?? 0)} mm`);
+  set('data-rain-today', `${fmt(totals.get(today) ?? null)} mm`);
   set('data-rain-24h', `${fmt(rainTotal(recent24h))} mm`);
   set('data-rain-episode', `${fmt(recentEpisodeRain(archive))} mm`);
-  set('data-rain-yesterday', `${fmt(totals.get(yesterday) ?? 0)} mm`);
+  set('data-rain-yesterday', `${fmt(totals.get(yesterday) ?? null)} mm`);
   set('data-rain-month', `${fmt(totalFor(month))} mm`);
   set('data-rain-year', `${fmt(totalFor(year))} mm`);
   set('data-rain-year-coverage', annualCoverageLabel(yearCoverage));
-  set('data-rain-wet-days', String(yearDays.filter(([, value]) => value >= .1).length));
+  set('data-rain-wet-days', yearDays.length ? String(yearDays.filter(([, value]) => value >= .1).length) : '—');
   set('data-rain-dry-days', dryLabel(daysSinceThreshold(totals, .1)));
   set('data-rain-since-1', dryLabel(daysSinceThreshold(totals, 1)));
   set('data-rain-since-10', dryLabel(daysSinceThreshold(totals, 10)));
   set('data-rain-since-20', dryLabel(daysSinceThreshold(totals, 20)));
-  set('data-rain-wettest', wettest && wettest[1] > 0 ? `${fmt(wettest[1])} mm · ${new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short' }).format(new Date(`${wettest[0]}T12:00:00`))}` : 'Encara cap dia plujós');
+  set('data-rain-wettest', wettest && wettest[1] > 0 ? `${fmt(wettest[1])} mm · ${new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short' }).format(new Date(`${wettest[0]}T12:00:00`))}` : copy('Sense pluja registrada', 'Sin lluvia registrada', 'No recorded rain', 'Aucune pluie enregistrée'));
   set('data-rain-coverage', archiveCoverageLabel(calendarCoverage(archive)));
 }
 
@@ -161,7 +123,13 @@ function renderLast24HoursComparison() {
   set('data-summary-temp-24h', currentTemperature === null ? '—' : `${fmt(currentTemperature)} °C`);
   set('data-summary-temp-24h-note', temperatureDelta === null ? 'Calen 48 h de dades comparables' : Math.abs(temperatureDelta) < .1 ? 'Pràcticament igual que les 24 h anteriors' : `${fmt(Math.abs(temperatureDelta))} °C ${temperatureDelta > 0 ? 'més càlida' : 'més fresca'} que les 24 h anteriors`);
   set('data-summary-rain-24h', `${fmt(currentRain)} mm`);
-  set('data-summary-rain-24h-note', previous24.length ? `${fmt(Math.abs(currentRain - previousRain))} mm ${currentRain >= previousRain ? 'més' : 'menys'} que les 24 h anteriors` : 'Calen 48 h de dades comparables');
+  const difference = fmt(Math.abs(currentRain - previousRain));
+  set('data-summary-rain-24h-note', currentRain !== null && previousRain !== null ? copy(
+    `${difference} mm ${currentRain >= previousRain ? 'més' : 'menys'} registrats que les 24 h anteriors · cobertura possiblement parcial`,
+    `${difference} mm ${currentRain >= previousRain ? 'más' : 'menos'} registrados que en las 24 h anteriores · cobertura posiblemente parcial`,
+    `${difference} mm ${currentRain >= previousRain ? 'more' : 'less'} recorded than in the previous 24 h · coverage may be partial`,
+    `${difference} mm enregistrés ${currentRain >= previousRain ? 'de plus' : 'de moins'} que durant les 24 h précédentes · couverture éventuellement partielle`
+  ) : copy('Calen 48 h de dades comparables', 'Se necesitan 48 h de datos comparables', '48 h of comparable data needed', '48 h de données comparables nécessaires'));
 }
 
 function renderEphemeris() {
@@ -184,7 +152,7 @@ function renderEphemeris() {
 }
 
 export function buildWeatherTimeline(history=[],alerts=[]){
-  const items=[...history].filter(item=>Number.isFinite(Number(item.t))).sort((a,b)=>a.t-b.t);const groups=new Map();
+  const items=normalizeArchive(history);const groups=new Map();
   items.forEach(item=>{const key=dateKey(item.t);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(item);});
   const firstTimestamp=items[0]?.t||0;const events=(alerts||[]).map(item=>({timestamp:new Date(item.started_at||item.created_at||0).getTime(),type:'alert',label:'Avís oficial',title:item.phenomenon||item.title||'Avís meteorològic',detail:`Nivell ${String(item.level||'oficial').toLowerCase()} · ${item.source||'AEMET'}`,source:item.source||'AEMET',href:'./historial-avisos.html'})).filter(item=>Number.isFinite(item.timestamp)&&(!firstTimestamp||item.timestamp>=firstTimestamp));
   const days=[...groups].map(([key,group])=>{const temperatures=values(group,'temperature');const highs=values(group,'temperatureMax','temperature');const lows=values(group,'temperatureMin','temperature');const gusts=values(group,'windGust');return {key,timestamp:new Date(`${key}T12:00:00`).getTime(),rain:rainTotal(group),high:highs.length?Math.max(...highs):temperatures.length?Math.max(...temperatures):null,low:lows.length?Math.min(...lows):temperatures.length?Math.min(...temperatures):null,gust:gusts.length?Math.max(...gusts):null};});
@@ -198,7 +166,7 @@ export function buildWeatherTimeline(history=[],alerts=[]){
 function renderWeatherTimeline(){
   const host=document.getElementById('data-weather-timeline');if(!host)return;const periodItems=selected();const all=buildWeatherTimeline(periodItems,alertArchive);const filtered=(timelineFilter==='all'?all:all.filter(item=>item.type===timelineFilter)).slice(0,10);
   host.innerHTML=filtered.length?filtered.map(item=>`<article class="is-${escapeHtml(item.type)}"><time datetime="${new Date(item.timestamp).toISOString()}">${new Intl.DateTimeFormat(getLocale(),{day:'numeric',month:'short',year:'numeric'}).format(item.timestamp)}</time><i></i><div><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p><a href="${escapeHtml(item.href)}">${escapeHtml(item.source)} →</a></div></article>`).join(''):'<div class="weather-timeline__empty">No hi ha episodis d’aquest tipus dins del període disponible.</div>';
-  const coverage=periodItems.length?Math.max(1,Math.round((periodItems.at(-1).t-periodItems[0].t)/DAY)+1):0;set('data-weather-timeline-status',`${all.length} fites trobades · ${coverage?`${coverage} dies de cobertura disponible`:'sense cobertura local'}`);
+  set('data-weather-timeline-status',`${all.length} fites trobades · ${coverageLabel(calendarCoverage(periodItems))}`);
 }
 
 async function loadAlertTimeline(){
@@ -206,17 +174,17 @@ async function loadAlertTimeline(){
 }
 
 export function renderDataCenter(history = [], latest = null) {
-  archive = [...history].filter(item => Number.isFinite(Number(item.t))).sort((a, b) => a.t - b.t);
+  archive = normalizeArchive(history);
   current = latest;
   const items = selected();
   const temperatures = values(items, 'temperature');
   const gusts = values(items, 'windGust');
   const first = items[0]?.t;
   const last = items.at(-1)?.t;
-  const coverageDays = first && last ? Math.max(1, Math.round((last - first) / DAY) + 1) : 0;
+  const coverage = calendarCoverage(items);
   const samples = items.reduce((total, item) => total + (number(item.samples) ?? 1), 0);
   set('data-summary-samples', new Intl.NumberFormat(getLocale()).format(samples));
-  set('data-summary-coverage', coverageDays ? `${coverageDays} dies amb dades dins del període` : 'Sense cobertura disponible');
+  set('data-summary-coverage', coverageLabel(coverage));
   set('data-summary-temp-mean', fmt(mean(temperatures)));
   set('data-summary-temp-deviation', temperatures.length ? `Desviació estàndard ${fmt(deviation(temperatures))} °C` : 'Desviació no disponible');
   set('data-summary-rain', fmt(rainTotal(items)));

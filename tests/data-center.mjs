@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const nodes=new Map();
 global.document={getElementById(id){if(!nodes.has(id))nodes.set(id,{textContent:''});return nodes.get(id);}};
 const {buildWeatherTimeline,calendarCoverage,renderDataCenter}=await import('../src/features/data-center.js');
-const atNoon=daysAgo=>{const date=new Date();date.setHours(12,0,0,0);date.setDate(date.getDate()-daysAgo);return date.getTime();};
+const atNoon=daysAgo=>{const date=new Date();date.setHours(12,0,0,0);date.setDate(date.getDate()-daysAgo);return Math.min(date.getTime(),Date.now());};
 const history=[
   {t:atNoon(4),temperature:21,rainIncrement:0,windGust:9,samples:24},
   {t:atNoon(3),temperature:20,rainIncrement:12,windGust:18,samples:24},
