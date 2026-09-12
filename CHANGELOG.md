@@ -1,5 +1,11 @@
 # Changelog
 
+## Correcció — Contracte de l’històric a staging · 2026-09-12
+
+- La validació de staging deixa d’exigir a `/history` un camp `ok` que aquesta ruta no exposa i comprova, en canvi, el contracte real: resolució, recompte, observacions i emmagatzematge.
+- El recompte ha de coincidir amb la longitud retornada i es mantenen les comprovacions d’ordre temporal, mostres i cobertura quan hi ha dades.
+- No canvia el Worker, el web, D1, els secrets ni les automatitzacions; evita un fals error després d’un desplegament correcte a staging.
+
 ## Correcció — Auditoria G · SEO, staging i vídeos — 2026-09-12
 
 - Cada vista interna té una URL canònica pròpia i variants `hreflang` en català, castellà, anglès i francès; el sitemap ja inclou les vistes i els quatre idiomes.
