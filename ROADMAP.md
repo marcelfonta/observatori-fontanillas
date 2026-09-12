@@ -4,7 +4,9 @@
 
 - [x] Auditoria paquet A: dades absents, cobertura de la previsió astronòmica, dates inequívoques i caducitat editorial amb proves dels esborranys reals.
 - [ ] Revisió humana i validació a staging del paquet A (Worker V22.29.6); producció encara no autoritzada per aquest canvi.
-- [ ] Auditoria paquet B: intents esgotats que no bloquegin altres candidats, reserva concurrent per canal i conciliació d’èxits remots incerts.
+- [x] Auditoria paquet B: cua limitada amb avanç, reserva concurrent per canal i conciliació humana d’èxits remots incerts al flux d’imatges.
+- [ ] Revisió humana i staging del paquet B (Worker 22.29.7), sense escriptors antics i nous simultanis. Producció pendent d’autorització.
+- [ ] Extendre la mateixa garantia als fluxos separats de vídeo i afegir conciliació automàtica verificada per proveïdor quan sigui possible.
 
 - [x] Compartir entre la web i el Worker el calendari de canvis d’estació i fenòmens astronòmics anuals verificats.
 - [x] Preparar un avanç astronòmic dos dies abans i un recordatori condicionat per nuvolositat i pluja, amb data explícita i deduplicació per canal.
