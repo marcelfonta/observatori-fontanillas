@@ -8,7 +8,7 @@
 - [x] Paquet E integrat, validat a staging i desplegat en Worker 22.29.9 i web 22.31.1; memòria cau `MISS` → `HIT` comprovada i consum D1 per sota del límit diari.
 - [x] Auditar i corregir mitjanes ponderades, direcció circular del vent, cobertura intradiària i dates locals antigues, sense reescriure D1.
 - [x] Paquet F integrat i desplegat en Worker 22.29.10 i web 22.31.2; el paquet G converteix la comprovació manual de les tres resolucions en una prova obligatòria de staging.
-- [ ] Retirar al tauler només la integració redundant de Workers Builds `observatori-fontanillas`; conservar Pages `observatori-fontanillas` i Worker `fonta-meteo`.
+- [x] Retirar al tauler només la integració redundant de Workers Builds `observatori-fontanillas`; Pages `observatori-fontanillas` i Worker `fonta-meteo` continuen actius i verificats.
 
 - [x] Auditoria C: cobertura de dies reals, pluja absent diferenciada de zero i antiguitat de registres sense inferir ratxes seques.
 - [x] Paquet C integrat a la PR 139; web pública amb revisió PWA `audit-c`. Desplegament A/B/C verificat el 12-09-2026.
@@ -123,7 +123,7 @@
 ## Vídeos temporals i Stories — Preparació segura
 
 - [x] Preparar un diagnòstic manual de les credencials OAuth de YouTube que s’atura abans de generar, llegir o pujar cap vídeo.
-- [ ] Executar el diagnòstic segur de YouTube després d’integrar-lo i confirmar que el token renovat és acceptat, sense publicació externa.
+- [x] Executar el diagnòstic segur de YouTube després d’integrar-lo i confirmar que el token renovat és acceptat, sense publicació externa. Execució 34716271807 superada el 12-09-2026.
 
 - [x] Fer que totes les escenes dels vídeos de matí i vespre conservin la data de l’edició, la data prevista i, en les observacions, l’hora de lectura perquè els vídeos antics no perdin context.
 

@@ -125,15 +125,17 @@ function collectPrefs(){
   if(prefs.all)prefs.levels=levelFields.filter(field=>field.checked).map(field=>field.value);
   return prefs;
 }
-async function syncPushPreferences(prefs){
+async function syncPushPreferences(prefs,{syncProvider=true}={}){
   if(!OneSignalRef)throw new Error('onesignal-not-ready');
   const subscriptionId=pushSubscriptionId();
   if(!subscriptionId)throw new Error('subscription-not-ready');
   const tags=notificationTags(prefs);
-  try {
-    if(OneSignalRef.User?.addTags) await OneSignalRef.User.addTags(tags);
-    else if(OneSignalRef.sendTags) await OneSignalRef.sendTags(tags);
-  } catch(error){ console.warn('No s’han pogut sincronitzar les etiquetes de OneSignal.',error); }
+  if(syncProvider){
+    try {
+      if(OneSignalRef.User?.addTags) await OneSignalRef.User.addTags(tags);
+      else if(OneSignalRef.sendTags) await OneSignalRef.sendTags(tags);
+    } catch(error){ console.warn('No s’han pogut sincronitzar les etiquetes de OneSignal.',error); }
+  }
   const response=await fetch(`${CONFIG.apiUrl}/push-preferences`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({subscriptionId,tags})});
   const payload=await response.json().catch(()=>({}));
   if(!response.ok||!payload.ok)throw new Error(payload.error||`HTTP ${response.status}`);
@@ -324,7 +326,10 @@ if(appId){
       sdkReady=true;
       window.clearTimeout(sdkReadyTimer);
       OneSignal.User?.PushSubscription?.addEventListener?.('change',refresh);
-      if(await optedIn())await syncPushPreferences(loadPrefs()).catch(error=>console.warn('No s’han pogut desar les preferències push al portal.',error));
+      // En cada càrrega només refresquem el registre propi. Reenviar les mateixes
+      // etiquetes a OneSignal provocava una operació redundant i un 409 en
+      // subscripcions antigues; els canvis explícits continuen sincronitzant-les.
+      if(await optedIn())await syncPushPreferences(loadPrefs(),{syncProvider:false}).catch(error=>console.warn('No s’han pogut desar les preferències push al portal.',error));
       await refresh();
     } catch(error){
       window.clearTimeout(sdkReadyTimer);

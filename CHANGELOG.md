@@ -1,5 +1,13 @@
 # Changelog
 
+## Correcció — Neteja Cloudflare, webcam accessible i sincronització push · 2026-09-12
+
+- S’ha retirat del compte la integració redundant de Workers Builds `observatori-fontanillas`; el projecte Pages del mateix nom i el Worker productiu `fonta-meteo` continuen actius.
+- El nom accessible de la previsualització de la webcam coincideix literalment amb «Webcam · ara» i elimina l’avís detectat per Chrome.
+- Les subscripcions push actives es refresquen al registre propi sense reenviar les mateixes etiquetes a OneSignal en cada visita, evitant l’operació redundant que retornava 409. Desar o desactivar preferències continua actualitzant els dos sistemes.
+- El diagnòstic segur de YouTube confirma les credencials renovades sense generar ni pujar cap vídeo.
+- Web proposada 22.31.5; Worker es manté en 22.29.13. Sense migracions, secrets, publicacions reals ni desplegament automàtic.
+
 ## Millora — Auditoria mòbil, càrrega única i diagnòstic segur de YouTube · 2026-09-12
 
 - Una traça mòbil real en producció confirma un LCP de 408 ms i CLS 0,00; les correccions se centren en problemes mesurats, sense reestructurar el portal ni afegir dependències.
