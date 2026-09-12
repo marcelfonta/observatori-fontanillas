@@ -73,10 +73,12 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.31.2
+## Estat V22.31.3
 
 - Branca de treball: `fix/statistics-and-deployment-hygiene`.
-- Versió web proposada: V22.31.2. Worker proposat: V22.29.10.
+- Versió web proposada: V22.31.3. Worker proposat: V22.29.11.
+- L’auditoria G separa la indexació de cada vista i idioma, valida les tres resolucions de l’històric a staging i reserva atòmicament cada franja de vídeo de Meta.
+- No incorpora migracions ni secrets i no desplega ni publica contingut automàticament.
 - La V22.31.1 i el Worker V22.29.9 estan desplegats i operatius. La revisió actual queda pendent d’integrar, validar a staging i desplegar amb aprovació humana separada.
 - Les mitjanes de l’arxiu ponderen cada agregat pel nombre de lectures, la cobertura intradiària és visible i la direcció del vent utilitza estadística circular.
 - Les hores històriques es deriven de l’epoch amb `Europe/Madrid` i s’agrupen per temps UTC transcorregut, sense migrar ni reescriure D1.

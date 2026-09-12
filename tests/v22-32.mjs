@@ -18,8 +18,8 @@ assert.ok(!forecast.includes('amb temps tranquil')&&forecast.includes('amb poca 
 assert.ok(forecast.includes("document.addEventListener('observatori:alerts-updated'")&&html.includes('id="forecast-risk-context"'));
 assert.ok(html.includes('home-personalization')&&html.includes('thermal-index-guide'));
 assert.ok(social.includes("['instagram','youtube','tiktok']")&&social.includes('Segueix-nos'));
-assert.ok(seo.includes("'llarg-termini':{title:"));
-assert.ok(!sitemap.includes('?page='));
+assert.ok(seo.includes("'llarg-termini':{ca:"));
+assert.ok(sitemap.includes('?page=llarg-termini')&&sitemap.includes('?page=llarg-termini&amp;lang=fr'));
 assert.ok(i18n.includes("'Predicció a llarg termini'")&&french.includes("'Predicció a llarg termini':'Prévisions à long terme'"));
 
 console.log('Test V22.32: portada, risc i predicció a llarg termini');

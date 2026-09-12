@@ -19,7 +19,7 @@ assert.match(page,/Per avisos i decisions de seguretat, consulta sempre el serve
 assert.doesNotMatch(page,/id="forecast-video-frame"[^>]+src=/,'El reproductor extern no s’ha de carregar abans del clic.');
 assert.match(router,/'videos'/);
 assert.match(shell,/\['videos','Predicció en vídeo'/);
-assert.match(seo,/videos:\{title:'Predicció del temps en vídeo/);
+assert.match(seo,/videos:\{ca:\['Predicció del temps en vídeo/);
 assert.match(feature,/youtube-nocookie\.com\/embed\/videoseries/);
 assert.doesNotMatch(feature,/UUd-ceYPisAtCmmoZa26I-5g/);
 assert.doesNotMatch(feature,/fetchForecastVideos|threeCat/,'La vista no ha de consultar ni carregar el reproductor inestable de 3Cat.');

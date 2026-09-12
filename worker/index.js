@@ -7,7 +7,7 @@ import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core
 import { finiteNumber } from '../src/core/numeric.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.10";
+const WORKER_VERSION = "22.29.11";
 const WORKER_BUILT = "2026-09-12";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -4705,24 +4705,26 @@ async function uploadFacebookHostedReel(uploadUrl, videoUrl, accessToken) {
   return { payload, responseCode:response.status };
 }
 
-async function publishFacebookReel({ videoUrl, caption }, env) {
+async function publishFacebookReel({ videoUrl, caption, videoId='', uploadUrl='', stage='' }, env) {
   const assets = await resolveMetaAssets(env);
   if (!assets.pageId) throw Object.assign(new Error('No s’ha identificat la pàgina de Facebook.'), { status:503 });
-  const started = await metaGraphRequest(env, `${assets.pageId}/video_reels`, {
-    method:'POST', accessToken:assets.pageToken,
-    params:{ upload_phase:'start' },
-  });
-  const videoId = cleanText(started.payload.video_id, 100);
-  const uploadUrl = cleanText(started.payload.upload_url, 1000);
-  if (!videoId || !uploadUrl) throw Object.assign(new Error('Facebook no ha pogut iniciar la pujada del Reel.'), { status:502, responseCode:started.responseCode });
-  await uploadFacebookHostedReel(uploadUrl, videoUrl, assets.pageToken);
-  const published = await metaGraphRequest(env, `${assets.pageId}/video_reels`, {
-    method:'POST', accessToken:assets.pageToken,
-    params:{ upload_phase:'finish', video_id:videoId, video_state:'PUBLISHED', description:caption },
-  });
-  const remoteId = published.payload.id || published.payload.video_id || published.payload.post_id || videoId;
-  if (!remoteId) throw Object.assign(new Error('Facebook no ha retornat l’identificador del Reel.'), { status:502, responseCode:published.responseCode });
-  return { remoteId:String(remoteId), responseCode:published.responseCode };
+  let reelVideoId=cleanText(videoId,100);let reelUploadUrl=cleanText(uploadUrl,1000);let reelStage=cleanText(stage,40);
+  try {
+    if(!reelVideoId||!reelUploadUrl){
+      const started=await metaGraphRequest(env,`${assets.pageId}/video_reels`,{method:'POST',accessToken:assets.pageToken,params:{upload_phase:'start'}});
+      reelVideoId=cleanText(started.payload.video_id,100);reelUploadUrl=cleanText(started.payload.upload_url,1000);reelStage='started';
+      if(!reelVideoId||!reelUploadUrl)throw Object.assign(new Error('Facebook no ha pogut iniciar la pujada del Reel.'),{status:502,responseCode:started.responseCode});
+    }
+    if(reelStage!=='finish_pending'){
+      await uploadFacebookHostedReel(reelUploadUrl,videoUrl,assets.pageToken);reelStage='finish_pending';
+    }
+    const published=await metaGraphRequest(env,`${assets.pageId}/video_reels`,{method:'POST',accessToken:assets.pageToken,params:{upload_phase:'finish',video_id:reelVideoId,video_state:'PUBLISHED',description:caption}});
+    const remoteId=published.payload.id||published.payload.video_id||published.payload.post_id||reelVideoId;
+    if(!remoteId)throw Object.assign(new Error('Facebook no ha retornat l’identificador del Reel.'),{status:502,responseCode:published.responseCode});
+    return {remoteId:String(remoteId),responseCode:published.responseCode};
+  } catch(error) {
+    throw Object.assign(error,{facebookReelVideoId:reelVideoId||undefined,facebookReelUploadUrl:reelUploadUrl||undefined,facebookReelStage:reelStage||undefined});
+  }
 }
 
 async function checkInstagramStory(containerId, accessToken, env) {
@@ -4814,6 +4816,18 @@ function previousSocialReelOutcomes(detail) {
   } catch { return []; }
 }
 
+export async function claimMetaVideoRun(env,serviceKey,localDate,slot,outcomes){
+  const now=new Date().toISOString();const claimId=crypto.randomUUID();
+  const detail=JSON.stringify({localDate,slot,outcomes,claimId,phase:'publishing'}).slice(0,12000);
+  const result=await env.DB.prepare(`INSERT INTO monitor_state
+    (service_key,status,consecutive_failures,last_checked_at,detail)
+    VALUES (?,'running',0,?,?)
+    ON CONFLICT(service_key) DO UPDATE SET status='running',last_checked_at=excluded.last_checked_at,detail=excluded.detail
+    WHERE monitor_state.status NOT IN ('healthy','running')`)
+    .bind(serviceKey,now,detail).run();
+  return Number(result?.meta?.changes||0)===1;
+}
+
 async function adminSocialReelTest(request, env) {
   const auth = await authorizeAdminRequest(request, env);
   if (auth.response) return auth.response;
@@ -4846,6 +4860,12 @@ async function publishSocialReelsForSlot(env, localDate, slot, { force=false } =
     return { ok:false, status:409, error, outcomes:previousOutcomes, retryable:true };
   }
   const payload = { videoUrl:await socialVideoUrl(key, env, 3600), caption:await socialReelCaption(localDate, slot) };
+  if(!await claimMetaVideoRun(env,serviceKey,localDate,slot,previousOutcomes)){
+    const current=await env.DB.prepare('SELECT status,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
+    const outcomes=previousSocialReelOutcomes(current?.detail);
+    if(current?.status==='healthy')return {ok:true,localDate,slot,outcomes,alreadyCompleted:true,reused:true};
+    return {ok:false,status:409,error:'Aquesta franja de Reels ja s’està publicant. No se n’iniciarà una altra.',localDate,slot,outcomes,pending:true,retryable:false,blocked:true};
+  }
   const outcomes = [];
   for (const [channel, publisher] of [['instagram', publishInstagramReel], ['facebook', publishFacebookReel]]) {
     const previousOutcome = previousOutcomes.find(item => item?.channel === channel);
@@ -4856,11 +4876,19 @@ async function publishSocialReelsForSlot(env, localDate, slot, { force=false } =
     try {
       const result = await publisher(channel === 'instagram'
         ? { ...payload, containerId:previousOutcome?.reelContainerId || '' }
-        : payload, env);
+        : {
+            ...payload,
+            videoId:previousOutcome?.facebookReelVideoId || '',
+            uploadUrl:previousOutcome?.facebookReelUploadUrl || '',
+            stage:previousOutcome?.facebookReelStage || '',
+          }, env);
       outcomes.push({ channel, ok:true, remoteId:result.remoteId });
     } catch (error) {
       outcomes.push({
         channel, ok:false, pending:Boolean(error.pending), reelContainerId:cleanText(error.reelContainerId, 100) || undefined,
+        facebookReelVideoId:cleanText(error.facebookReelVideoId,100)||undefined,
+        facebookReelUploadUrl:cleanText(error.facebookReelUploadUrl,1000)||undefined,
+        facebookReelStage:cleanText(error.facebookReelStage,40)||undefined,
         error:cleanText(error.message, 500), responseCode:error.responseCode || null,
       });
     }
@@ -4908,6 +4936,12 @@ async function publishSocialStoriesForSlot(env, localDate, slot, { force=false }
     return { ok:false, status:409, error, outcomes:previousOutcomes, retryable:true };
   }
   const payload = { videoUrl:await socialVideoUrl(key, env, 3600) };
+  if(!await claimMetaVideoRun(env,serviceKey,localDate,slot,previousOutcomes)){
+    const current=await env.DB.prepare('SELECT status,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
+    const outcomes=previousSocialReelOutcomes(current?.detail);
+    if(current?.status==='healthy')return {ok:true,localDate,slot,outcomes,alreadyCompleted:true,reused:true};
+    return {ok:false,status:409,error:'Aquesta franja de Stories ja s’està publicant. No se n’iniciarà una altra.',localDate,slot,outcomes,pending:true,retryable:false,blocked:true};
+  }
   const outcomes = [];
   for (const [channel, publisher] of [['instagram', publishInstagramStory], ['facebook', publishFacebookStory]]) {
     const previousOutcome = previousOutcomes.find(item => item?.channel === channel);

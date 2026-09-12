@@ -17,7 +17,7 @@ for(const symbol of ['☀️','☁️','🌧️','⛈️'])assert.ok(forecast.in
 assert.ok(html.includes('apple-touch-icon-v21.png?v=22.0.0'),'PWA V21.4: la icona iOS no té una URL renovada.');
 assert.ok(serviceWorker.includes("'/assets/icons/apple-touch-icon-v21.png'"),'PWA V21.4: la nova icona iOS no és a la memòria cau.');
 assert.ok(!seo.includes("setAttribute('href',url)"),'SEO V21.4: el JavaScript encara canvia la canònica.');
-assert.ok(!sitemap.includes('?page='),'SEO V21.4: el sitemap encara conté vistes internes duplicades.');
+assert.ok(sitemap.includes('?page=estacio')&&sitemap.includes('?page=estacio&amp;lang=fr'),'SEO: falten les vistes internes indexables o els seus idiomes.');
 assert.equal((html.match(/<link rel="canonical"/g)||[]).length,1,'SEO V21.4: cal una única canònica a l’HTML font.');
 
 console.log('Test V21.4: llegibilitat, extrems, icona i SEO correctes');
