@@ -19,7 +19,7 @@
 - [x] Auditoria paquet B: cua limitada amb avanç, reserva concurrent per canal i conciliació humana d’èxits remots incerts al flux d’imatges.
 - [x] Paquet B validat i desplegat en Worker 22.29.7: pausa controlada superior a 15 minuts i automatització represa. Evidència a `docs/DEPLOY-AUDIT-ABC-2026-09-12.md`.
 - [x] Extendre la reserva atòmica als fluxos separats de Reels i Stories i conservar els identificadors de la pujada de Facebook per reprendre el mateix vídeo sense començar-ne un altre.
-- [ ] Afegir conciliació automàtica verificada per proveïdor quan les API permetin confirmar de forma inequívoca una resposta perduda.
+- [x] Afegir conciliació automàtica verificada per proveïdor als vídeos de Meta quan existeix un identificador estable: Instagram reutilitza el contenidor i Facebook consulta la fase oficial de publicació abans de reprendre. Les imatges sense identificador remot continuen, deliberadament, en conciliació humana.
 
 - [x] Compartir entre la web i el Worker el calendari de canvis d’estació i fenòmens astronòmics anuals verificats.
 - [x] Preparar un avanç astronòmic dos dies abans i un recordatori condicionat per nuvolositat i pluja, amb data explícita i deduplicació per canal.

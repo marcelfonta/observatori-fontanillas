@@ -75,11 +75,11 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 
 ## Estat V22.31.3
 
-- Branca de treball: `fix/statistics-and-deployment-hygiene`.
-- Versió web proposada: V22.31.3. Worker proposat: V22.29.11.
-- L’auditoria G separa la indexació de cada vista i idioma, valida les tres resolucions de l’històric a staging i reserva atòmicament cada franja de vídeo de Meta.
+- Branca de treball: `fix/meta-video-provider-reconciliation`.
+- Versió web actual: V22.31.3. Worker proposat: V22.29.12.
+- L’auditoria G ja està integrada, desplegada i validada a staging. El paquet H completa la represa dels vídeos de Meta amb una consulta d’estat de Facebook abans de repetir la fase final.
 - No incorpora migracions ni secrets i no desplega ni publica contingut automàticament.
-- La V22.31.1 i el Worker V22.29.9 estan desplegats i operatius. La revisió actual queda pendent d’integrar, validar a staging i desplegar amb aprovació humana separada.
+- La web V22.31.3 i el Worker V22.29.11 estan desplegats i operatius. El Worker V22.29.12 queda pendent d’integrar, validar a staging i desplegar amb aprovació humana separada.
 - Les mitjanes de l’arxiu ponderen cada agregat pel nombre de lectures, la cobertura intradiària és visible i la direcció del vent utilitza estadística circular.
 - Les hores històriques es deriven de l’epoch amb `Europe/Madrid` i s’agrupen per temps UTC transcorregut, sense migrar ni reescriure D1.
 - El selector ofereix català, castellà, anglès i francès. Una prova automàtica impedeix publicar un catàleg amb frases registrades sense traducció.
