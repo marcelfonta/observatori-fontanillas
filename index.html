@@ -7,6 +7,7 @@
     <meta name="application-name" content="Observatori" />
     <meta name="apple-mobile-web-app-title" content="Observatori" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="color-scheme" content="dark" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -42,7 +43,7 @@
     <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-v21.png?v=22.0.0" />
     <link rel="manifest" href="site.webmanifest" />
-    <script src="src/core/page-bootstrap.js?v=22.31.3-mobile-audit"></script>
+    <script src="src/core/page-bootstrap.js?v=22.31.4-mobile-performance"></script>
     <style>
       html[data-portal-page="inici"] [data-portal-page]:not([data-portal-page~="inici"]),
       html[data-portal-page="meteo-ia"] [data-portal-page]:not([data-portal-page~="meteo-ia"]),
@@ -65,12 +66,12 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=22.31.3" />
-    <link rel="stylesheet" href="css/portal.css?v=22.31.3" />
+    <link rel="stylesheet" href="css/style.css?v=22.31.4" />
+    <link rel="stylesheet" href="css/portal.css?v=22.31.4" />
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=22.31.3"></script>
-    <script type="module" src="src/features/pwa.js?v=22.31.3"></script>
-    <script type="module" src="src/app.js?v=22.31.3"></script>
+    <script type="module" src="src/features/push.js?v=22.31.4"></script>
+    <script type="module" src="src/features/pwa.js?v=22.31.4"></script>
+    <script type="module" src="src/app.js?v=22.31.4"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/?page=centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -100,7 +101,7 @@
           <div class="freshness"><span class="freshness__dot"></span><span>Actualitzat <b id="updated-relative">ara mateix</b></span><span class="separator">·</span><time id="updated-time">--:--</time></div>
         </div>
         <div class="current-temp">
-          <a class="hero-webcam-preview" href="?page=webcams" aria-label="Obrir la webcam de l’observatori">
+          <a class="hero-webcam-preview" href="?page=webcams" aria-label="Webcam ara: obrir la webcam de l’observatori">
             <img id="hero-webcam-image" alt="Vista actual des de la webcam de l’observatori" loading="eager" decoding="async" fetchpriority="high" />
             <span><i aria-hidden="true"></i>Webcam · ara</span>
           </a>
@@ -116,7 +117,7 @@
           <small id="comfort-label">Confort tèrmic</small>
         </aside>
         <div class="hero-alert-row">
-          <a class="quick-alert is-pending quick-alert--hero" id="quick-alert-link" href="./?page=avisos" aria-label="Obrir la pàgina d’avisos meteorològics oficials">
+          <a class="quick-alert is-pending quick-alert--hero" id="quick-alert-link" href="./?page=avisos">
             <span class="quick-alert__signal" aria-hidden="true">!</span>
             <span><small id="quick-alert-kicker">Avisos oficials</small><strong id="quick-alert-title">Comprovant la situació</strong><span id="quick-alert-meta">Consultant fenomen, territori i vigència</span></span>
             <em id="quick-alert-action">Consultar →</em>
@@ -656,7 +657,7 @@
         <article class="radar-card panel">
           <header><div><p class="eyebrow">Radar meteorològic</p><h2>Animació + Meteocat</h2><div class="radar-sources"><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Radar oficial Meteocat ↗</a><a href="https://www.aemet.es/es/eltiempo/observacion/radar?p=GLD" target="_blank" rel="noreferrer">AEMET Barcelona–Gelida ↗</a></div></div><span class="tag" id="radar-status">Carregant animació</span></header>
           <div class="radar-mode-tabs" role="tablist" aria-label="Tipus de radar"><button class="is-active" id="radar-tab-interactive" type="button" role="tab" aria-selected="true" aria-controls="radar-panel-interactive" tabindex="0" data-radar-mode="interactive">Animació interactiva</button><button id="radar-tab-meteocat" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-meteocat" tabindex="-1" data-radar-mode="meteocat">Meteocat oficial</button><button id="radar-tab-lightning" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-lightning" tabindex="-1" data-radar-mode="lightning">Llamps en directe</button></div>
-          <div class="radar-panel is-active" id="radar-panel-interactive" role="tabpanel" aria-labelledby="radar-tab-interactive" tabindex="0" data-radar-panel="interactive"><div class="radar-frame"><div id="radar-map" aria-label="Mapa interactiu del radar de precipitació"></div><div class="radar-loader" id="radar-loader">Carregant les imatges del radar…</div></div><div class="radar-timeline"><button type="button" id="radar-play" aria-label="Reproduir animació del radar">▶</button><input id="radar-slider" type="range" min="0" max="0" value="0" aria-label="Seleccionar hora del radar" /><time id="radar-time" aria-label="Hora de la imatge del radar">—</time></div><div class="radar-utility"><button type="button" id="radar-recenter">⌖ Tornar a Sant Celoni</button><div class="radar-intensity" aria-label="Llegenda orientativa d’intensitat de precipitació"><span>Feble</span><i></i><i></i><i></i><i></i><span>Intensa</span></div></div><div class="radar-actions"><p>Arrossega i amplia el mapa. L’hora destacada correspon exactament a la imatge mostrada.</p><a href="https://www.rainviewer.com/" target="_blank" rel="noreferrer">Capa temporal: RainViewer ↗</a></div></div>
+          <div class="radar-panel is-active" id="radar-panel-interactive" role="tabpanel" aria-labelledby="radar-tab-interactive" tabindex="0" data-radar-panel="interactive"><div class="radar-frame"><div id="radar-map" role="region" aria-label="Mapa interactiu del radar de precipitació"></div><div class="radar-loader" id="radar-loader">Carregant les imatges del radar…</div></div><div class="radar-timeline"><button type="button" id="radar-play" aria-label="Reproduir animació del radar">▶</button><input id="radar-slider" type="range" min="0" max="0" value="0" aria-label="Seleccionar hora del radar" /><time id="radar-time" aria-label="Hora de la imatge del radar">—</time></div><div class="radar-utility"><button type="button" id="radar-recenter">⌖ Tornar a Sant Celoni</button><div class="radar-intensity" aria-label="Llegenda orientativa d’intensitat de precipitació"><span>Feble</span><i></i><i></i><i></i><i></i><span>Intensa</span></div></div><div class="radar-actions"><p>Arrossega i amplia el mapa. L’hora destacada correspon exactament a la imatge mostrada.</p><a href="https://www.rainviewer.com/" target="_blank" rel="noreferrer">Capa temporal: RainViewer ↗</a></div></div>
           <div class="radar-panel" id="radar-panel-meteocat" role="tabpanel" aria-labelledby="radar-tab-meteocat" tabindex="0" hidden data-radar-panel="meteocat"><div class="radar-meteocat"><iframe title="Última imatge oficial del radar de Meteocat" data-src="https://static-m.meteo.cat/ginys/mapaRadar?language=ca&amp;color=0f2a22&amp;target=_blank" loading="lazy"></iframe></div><div class="radar-actions"><p>Imatge oficial de la Xarxa de Radars Meteorològics de Catalunya. Permet ampliar el mapa i obrir l’animació de la darrera hora a Meteocat.</p><a href="https://www.meteo.cat/observacions/radar" target="_blank" rel="noreferrer">Obrir l’animació i la previsió +1 h →</a></div></div><div class="radar-panel" id="radar-panel-lightning" role="tabpanel" aria-labelledby="radar-tab-lightning" tabindex="0" hidden data-radar-panel="lightning">
             <div class="lightning-integrated">
               <header><div><p class="eyebrow">Blitzortung · xarxa col·laborativa</p><h3>Llamps detectats en temps real</h3><p>Mapa vectorial centrat en Catalunya amb deteccions aportades per la xarxa internacional d’estacions de Blitzortung.</p></div><span class="tag">Temps real</span></header>

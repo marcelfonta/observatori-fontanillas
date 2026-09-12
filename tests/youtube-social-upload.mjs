@@ -4,6 +4,7 @@ import { youtubeTokenRefreshFailure, youtubeUploadFailureReport } from '../scrip
 import { youtubeWorkflowFailurePayload } from '../scripts/youtube-workflow-failure.mjs';
 
 const workflow = await readFile(new URL('../.github/workflows/youtube-short-private.yml', import.meta.url), 'utf8');
+const authWorkflow = await readFile(new URL('../.github/workflows/youtube-auth-diagnostics.yml', import.meta.url), 'utf8');
 const uploader = await readFile(new URL('../scripts/youtube-upload.mjs', import.meta.url), 'utf8');
 assert.match(workflow, /SOCIAL_VIDEO_UPLOAD_URL/);
 assert.match(workflow, /SOCIAL_VIDEO_UPLOAD_TOKEN/);
@@ -35,6 +36,13 @@ assert.match(uploader,/YouTube ha pujat el vídeo però no n’ha retornat l’e
 assert.match(uploader,/remoteStatus\.privacyStatus/);
 assert.match(uploader,/MINIMUM_SCHEDULING_MARGIN_MS=5\*60_000/);
 assert.match(uploader,/almenys 5 minuts de marge/);
+assert.match(uploader,/YOUTUBE_AUTH_CHECK_ONLY==='true'/);
+assert.ok(uploader.indexOf("YOUTUBE_AUTH_CHECK_ONLY==='true'")<uploader.indexOf("readFile(resolve(process.env.VIDEO_FILE"),'El diagnòstic ha d’aturar-se abans de llegir o pujar cap vídeo.');
+assert.match(authWorkflow,/workflow_dispatch:/);
+assert.doesNotMatch(authWorkflow,/schedule:/);
+assert.match(authWorkflow,/YOUTUBE_AUTH_CHECK_ONLY: 'true'/);
+assert.match(authWorkflow,/node scripts\/youtube-upload\.mjs/);
+assert.doesNotMatch(authWorkflow,/youtube-short\.mjs|ffmpeg|youtube-publish-at|SOCIAL_VIDEO_UPLOAD/);
 
 const invalidGrant=youtubeTokenRefreshFailure(400,{error:'invalid_grant',error_description:'secret value must never be forwarded'});
 assert.equal(invalidGrant.terminal,true);

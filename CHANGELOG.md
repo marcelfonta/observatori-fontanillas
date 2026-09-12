@@ -1,5 +1,15 @@
 # Changelog
 
+## Millora — Auditoria mòbil, càrrega única i diagnòstic segur de YouTube · 2026-09-12
+
+- Una traça mòbil real en producció confirma un LCP de 408 ms i CLS 0,00; les correccions se centren en problemes mesurats, sense reestructurar el portal ni afegir dependències.
+- La portada evita una segona càrrega simultània de les dades actuals i de l’històric quan el navegador recupera el focus durant l’arrencada.
+- Només es descarrega la webcam visible: s’elimina una petició duplicada de la imatge de 1920 × 830, equivalent a uns 258 kB transferits i 475 kB potencialment evitables segons Chrome.
+- Cercador, selector d’idioma, mapa de radar, avís ràpid, botó «Més» i fonts del radar corregeixen els defectes d’accessibilitat detectats; la comprovació local passa de 89 a 100 en accessibilitat.
+- `llms.txt` descriu el projecte, les pàgines principals i la separació entre observació, models i avisos oficials.
+- Un nou workflow manual permet comprovar les tres credencials OAuth de YouTube sense generar, llegir, programar ni pujar cap vídeo. No té horari automàtic i no s’executa amb aquest canvi.
+- Web proposada 22.31.4; Worker es manté en 22.29.13. Sense migracions, secrets, publicacions reals ni desplegament automàtic.
+
 ## Correcció — Vigència social i límit de reintents de YouTube · 2026-09-12
 
 - Els episodis de l’estació, resums periòdics, canvis ambientals i efemèrides només es poden reprendre durant el mateix dia local en què es van crear; l’endemà queden aparcats com a esborrany per revisar, sense eliminar l’historial ni tornar-los a publicar.
