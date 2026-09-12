@@ -73,10 +73,15 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.31.4
+## Estat V22.31.5
 
-- Branca de treball: `fix/mobile-performance-and-diagnostics`.
-- Versió web proposada: V22.31.4. Worker desplegat: V22.29.13.
+- Branca de treball: `fix/cloudflare-cleanup-push-accessibility`.
+- Versió web proposada: V22.31.5. Worker desplegat: V22.29.13.
+- El Worker redundant d’actius estàtics `observatori-fontanillas` s’ha eliminat del tauler; Pages `observatori-fontanillas` i el Worker productiu `fonta-meteo` continuen actius.
+- El nom accessible de la webcam inclou literalment el text visible i la càrrega normal d’una subscripció push ja no reenvia etiquetes redundants a OneSignal. Els canvis explícits de preferències continuen sincronitzant tant OneSignal com el registre propi D1.
+- El diagnòstic OAuth de YouTube ha superat l’execució 34716271807 sense preparar ni publicar cap vídeo.
+- El diagnòstic remot 34716813993 confirma la connexió de Buffer/TikTok i el permís del disparador Cloudflare → GitHub, també sense crear esborranys ni iniciar vídeos.
+- Les tres franges automàtiques d’X del 12-09-2026 consten enviades al primer intent (07:00, 14:06 i 20:30, hora local), amb estat remot `sent` i enllaç de publicació; la seqüència diària completa queda validada sense intervenció manual.
 - Una traça mòbil real en producció mesura LCP 408 ms i CLS 0,00. El paquet elimina la descàrrega duplicada de la webcam, agrupa les càrregues inicials concurrents i corregeix els defectes d’accessibilitat detectats per Lighthouse.
 - El diagnòstic manual de YouTube comprova el client, el secret i el refresh token mitjançant l’intercanvi OAuth, però s’atura abans de generar o llegir cap fitxer de vídeo. No té programació automàtica.
 - No incorpora canvis de Worker, migracions ni secrets i no desplega ni publica contingut automàticament.

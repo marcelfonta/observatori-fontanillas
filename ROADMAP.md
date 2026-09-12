@@ -8,7 +8,7 @@
 - [x] Paquet E integrat, validat a staging i desplegat en Worker 22.29.9 i web 22.31.1; memòria cau `MISS` → `HIT` comprovada i consum D1 per sota del límit diari.
 - [x] Auditar i corregir mitjanes ponderades, direcció circular del vent, cobertura intradiària i dates locals antigues, sense reescriure D1.
 - [x] Paquet F integrat i desplegat en Worker 22.29.10 i web 22.31.2; el paquet G converteix la comprovació manual de les tres resolucions en una prova obligatòria de staging.
-- [ ] Retirar al tauler només la integració redundant de Workers Builds `observatori-fontanillas`; conservar Pages `observatori-fontanillas` i Worker `fonta-meteo`.
+- [x] Retirar al tauler només la integració redundant de Workers Builds `observatori-fontanillas`; Pages `observatori-fontanillas` i Worker `fonta-meteo` continuen actius i verificats.
 
 - [x] Auditoria C: cobertura de dies reals, pluja absent diferenciada de zero i antiguitat de registres sense inferir ratxes seques.
 - [x] Paquet C integrat a la PR 139; web pública amb revisió PWA `audit-c`. Desplegament A/B/C verificat el 12-09-2026.
@@ -94,7 +94,7 @@
 - [x] Connectar X a Buffer i preparar tres publicacions diàries pròpies: vídeo a les 07:00, imatge a les 14:00 i vídeo a les 20:30.
 - [x] Afegir deduplicació, comprovació de lliurament, fins a quatre reintents i correu només després de la fallada definitiva d’X.
 - [x] Fer que Buffer pugui verificar les targetes del migdia amb `HEAD` i impedir duplicats quan ja existeix una entrada remota amb error.
-- [ ] Integrar, desplegar i confirmar visualment una seqüència completa d’X sense intervenció manual.
+- [x] Integrar, desplegar i confirmar una seqüència completa d’X sense intervenció manual: les franges del 12-09-2026 van quedar enviades al primer intent a les 07:00, 14:06 i 20:30 (hora local), amb estat remot `sent` i enllaç de publicació.
 
 - [x] Substituir el reproductor inestable de 3Cat per un accés extern oficial, mantenint només Meteocat com a vídeo integrat sota demanda.
 
@@ -123,13 +123,13 @@
 ## Vídeos temporals i Stories — Preparació segura
 
 - [x] Preparar un diagnòstic manual de les credencials OAuth de YouTube que s’atura abans de generar, llegir o pujar cap vídeo.
-- [ ] Executar el diagnòstic segur de YouTube després d’integrar-lo i confirmar que el token renovat és acceptat, sense publicació externa.
+- [x] Executar el diagnòstic segur de YouTube després d’integrar-lo i confirmar que el token renovat és acceptat, sense publicació externa. Execució 34716271807 superada el 12-09-2026.
 
 - [x] Fer que totes les escenes dels vídeos de matí i vespre conservin la data de l’edició, la data prevista i, en les observacions, l’hora de lectura perquè els vídeos antics no perdin context.
 
-- [ ] Validar a producció el diagnòstic segur del disparador Cloudflare → GitHub abans de la franja de YouTube del vespre.
+- [x] Validar a producció el diagnòstic segur del disparador Cloudflare → GitHub sense iniciar cap vídeo. Execució 34716813993 superada el 12-09-2026.
 
-- [ ] Executar el diagnòstic remot de Buffer/TikTok i validar un esborrany de cada franja. Després, activar `BUFFER_TIKTOK_AUTOMATION_ENABLED=true` al Worker perquè la cua programi els dos vídeos diaris sense afectar YouTube.
+- [ ] Diagnòstic remot de Buffer/TikTok superat a l’execució 34716813993; queda validar un esborrany de cada franja. Després, activar `BUFFER_TIKTOK_AUTOMATION_ENABLED=true` al Worker perquè la cua programi els dos vídeos diaris sense afectar YouTube.
 
 - [ ] Desplegar i validar el disparador principal Cloudflare → GitHub dels YouTube Shorts a les 06:20 i 19:45, amb correu d’error, confirmació remota de YouTube i reserva estiu/hivern de GitHub.
 

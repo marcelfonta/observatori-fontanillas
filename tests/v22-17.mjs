@@ -16,6 +16,7 @@ assert.match(worker, /async function registeredPushRecipients/);
 assert.match(worker, /include_subscription_ids:registeredRecipients/);
 assert.match(push, /async function syncPushPreferences/);
 assert.match(push, /\/push-preferences/);
+assert.match(push, /syncPushPreferences\(loadPrefs\(\),\{syncProvider:false\}\)/, 'La càrrega normal no ha de reenviar etiquetes redundants a OneSignal.');
 assert.match(privacy, /identificador tècnic de subscripció/);
 
 console.log('Test V22.17: preferències push verificables i destinataris persistents');

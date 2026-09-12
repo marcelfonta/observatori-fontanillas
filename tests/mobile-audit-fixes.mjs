@@ -34,7 +34,7 @@ assert.ok(worker.includes('mobile-audit-v3-single-row'), 'La PWA ha de renovar l
 assert.ok(header.includes('role="combobox"')&&header.includes('name="municipi"'), 'El cercador ha de declarar el patró accessible de llista de suggeriments.');
 assert.ok(header.includes('id="header-language-select"')&&header.includes('name="idioma"'), 'El selector d’idioma ha de ser identificable pels navegadors i lectors de pantalla.');
 assert.ok(html.includes('role="region" aria-label="Mapa interactiu del radar de precipitació"'), 'El mapa ha de tenir un rol compatible amb el seu nom accessible.');
-assert.ok(html.includes('aria-label="Webcam ara: obrir la webcam de l’observatori"'), 'El nom accessible de la webcam ha d’incloure el text visible.');
+assert.ok(html.includes('aria-label="Webcam · ara: obrir la webcam de l’observatori"'), 'El nom accessible de la webcam ha d’incloure literalment el text visible.');
 assert.ok(!html.match(/id="quick-alert-link"[^>]*aria-label=/), 'L’avís ràpid ha d’utilitzar el text visible com a nom accessible.');
 assert.ok(alerts.includes("else element.removeAttribute('aria-label')"), 'Les actualitzacions d’avisos no han de tornar a crear un nom accessible divergent.');
 assert.ok(shell.includes("Més: obrir totes les seccions"), 'El botó mòbil ha d’incloure el text visible al nom accessible.');
