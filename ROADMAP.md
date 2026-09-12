@@ -127,9 +127,9 @@
 
 - [x] Fer que totes les escenes dels vídeos de matí i vespre conservin la data de l’edició, la data prevista i, en les observacions, l’hora de lectura perquè els vídeos antics no perdin context.
 
-- [ ] Validar a producció el diagnòstic segur del disparador Cloudflare → GitHub abans de la franja de YouTube del vespre.
+- [x] Validar a producció el diagnòstic segur del disparador Cloudflare → GitHub sense iniciar cap vídeo. Execució 34716813993 superada el 12-09-2026.
 
-- [ ] Executar el diagnòstic remot de Buffer/TikTok i validar un esborrany de cada franja. Després, activar `BUFFER_TIKTOK_AUTOMATION_ENABLED=true` al Worker perquè la cua programi els dos vídeos diaris sense afectar YouTube.
+- [ ] Diagnòstic remot de Buffer/TikTok superat a l’execució 34716813993; queda validar un esborrany de cada franja. Després, activar `BUFFER_TIKTOK_AUTOMATION_ENABLED=true` al Worker perquè la cua programi els dos vídeos diaris sense afectar YouTube.
 
 - [ ] Desplegar i validar el disparador principal Cloudflare → GitHub dels YouTube Shorts a les 06:20 i 19:45, amb correu d’error, confirmació remota de YouTube i reserva estiu/hivern de GitHub.
 
