@@ -1,18 +1,25 @@
+import { finiteNumber as finite } from '../src/core/numeric.js';
+
 const OBSERVATION_URL='https://fonta-meteo.marcelfonta.workers.dev/';
 const BASE_URL='https://meteo.fontanillas.cat/';
 
-const finite=value=>Number.isFinite(Number(value))?Number(value):null;
 const format=(value,digits=1)=>finite(value)===null?'—':finite(value).toLocaleString('ca-ES',{minimumFractionDigits:digits,maximumFractionDigits:digits});
 const escapeHtml=value=>String(value??'').replace(/[&<>"]/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[character]));
 
-export function normalizeObservation(payload){
+export function normalizeObservation(payload, now = new Date()){
   const temperature=finite(payload?.temperature);
   if(temperature===null)return null;
+  const updated=payload?.updatedUtc||payload?.updated;
+  // An unzoned local timestamp cannot identify an instant at the autumn DST fold.
+  if(typeof updated!=='string'||!/(?:Z|[+-]\d{2}:\d{2})$/.test(updated))return null;
+  const epoch=Date.parse(updated);
+  const age=now.getTime()-epoch;
+  if(!Number.isFinite(epoch)||!Number.isFinite(age)||age < -5*60*1000)return null;
   return {
-    updated:String(payload?.updatedUtc||payload?.updated||new Date().toISOString()),temperature,
+    updated,temperature,
     feelsLike:finite(payload?.feelsLike),humidity:finite(payload?.humidity),dewPoint:finite(payload?.dewPoint),
     pressure:finite(payload?.pressure),windSpeed:finite(payload?.windSpeed),windGust:finite(payload?.windGust),
-    rainToday:finite(payload?.rainToday),rainRate:finite(payload?.rainRate),stale:Boolean(payload?.stale),degraded:Boolean(payload?.degraded)
+    rainToday:finite(payload?.rainToday),rainRate:finite(payload?.rainRate),stale:Boolean(payload?.stale)||age>=5*60*1000,degraded:Boolean(payload?.degraded)
   };
 }
 
@@ -82,6 +89,6 @@ export async function onRequest(context){
     .on('#seo-structured-data',new SchemaHandler(initialSchema(observation)))
     .on('.noscript-weather',new NoscriptHandler(observation));
   const transformed=rewriter.transform(response);
-  const headers=new Headers(transformed.headers);headers.set('X-Observatori-Initial-Data','live');
+  const headers=new Headers(transformed.headers);headers.set('X-Observatori-Initial-Data',observation.stale?'stored':'live');
   return new Response(transformed.body,{status:transformed.status,statusText:transformed.statusText,headers});
 }

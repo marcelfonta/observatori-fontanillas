@@ -1,12 +1,12 @@
 import { CATALONIA_COUNTY_PATHS } from './catalonia-counties.js';
 import { METEOROLOGICAL_EPHEMERIDES } from '../src/data/meteorological-ephemerides.js';
-import { astronomyEventsForDate, astronomyVisibilitySummary, seasonTransitionForDate } from '../src/data/astronomical-calendar.js';
+import { astronomyEventsForDate, astronomyVisibilitySummary, astronomyObservationDateLabel, seasonTransitionForDate } from '../src/data/astronomical-calendar.js';
 import { detectForecastEpisode, forecastEpisodeCopy, normalizeForecastModel } from '../src/core/forecast-episodes.js';
 import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core/temperature-trend.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.5";
-const WORKER_BUILT = "2026-09-11";
+const WORKER_VERSION = "22.29.6";
+const WORKER_BUILT = "2026-09-12";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
 const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
@@ -2069,7 +2069,7 @@ function astronomySocialEnabled(env){
 }
 
 function catalanAstronomyDate(value,{time=false}={}){
-  return new Intl.DateTimeFormat('ca-ES',{timeZone:TIME_ZONE,weekday:'long',day:'numeric',month:'long',
+  return new Intl.DateTimeFormat('ca-ES',{timeZone:TIME_ZONE,weekday:'long',day:'numeric',month:'long',year:'numeric',
     ...(time?{hour:'2-digit',minute:'2-digit'}:{})}).format(new Date(value)).replace(',', '');
 }
 
@@ -2092,11 +2092,13 @@ export async function createSeasonChangeSocialDraft(env,date=new Date()){
   const hasStarted=date.getTime()>=transitionAt.getTime();
   const when=catalanAstronomyDate(transition.date,{time:true});
   const tense=hasStarted?'ha començat':'començarà';
-  const body=`${transition.symbol} Avui ${tense} la ${transition.season.toLowerCase()}: ${transition.label.toLowerCase()} a les ${new Intl.DateTimeFormat('ca-ES',{timeZone:TIME_ZONE,hour:'2-digit',minute:'2-digit'}).format(transitionAt)}. És l’instant astronòmic oficial que marca el canvi d’estació a l’hemisferi nord.\n\n${socialHashtags('astronomical_event')}`;
+  const season=transition.season.toLowerCase();
+  const seasonWithArticle=/^[aeiouh]/.test(season)?`l’${season}`:`la ${season}`;
+  const body=`${transition.symbol} Avui ${tense} ${seasonWithArticle}: ${transition.label.toLowerCase()} el ${when}. És l’instant astronòmic oficial que marca el canvi d’estació a l’hemisferi nord.\n\n${socialHashtags('astronomical_event')}`;
   return createSpecialSocialDraft(env,{dedupeKey:`astronomy:season:${transition.id}`,kind:'astronomical_event',
-    title:`Avui comença la ${transition.season.toLowerCase()} · ${when}`,body,
+    title:`Avui ${tense} ${seasonWithArticle} · ${when}`,body,
     sourceUrl:transition.sourceUrl,localDate,slot:'season-change',payload:{
-      eventType:'season_change',phase:'season',eyebrow:'CANVI D’ESTACIÓ',eventTitle:`Comença la ${transition.season.toLowerCase()}`,
+      eventType:'season_change',phase:'season',eyebrow:'CANVI D’ESTACIÓ',eventTitle:`Avui ${tense} ${seasonWithArticle}`,
       symbol:transition.symbol,dateLabel:when,advice:'El canvi d’estació és un instant astronòmic; no implica un canvi sobtat del temps meteorològic.',
       localDate,observationUpdated:transition.date,sourceNote:transition.source,
     }});
@@ -2110,7 +2112,9 @@ export async function createAstronomicalEventSocialDraft(env,date=new Date(),pha
     : item.reminderTime||env.SOCIAL_ASTRONOMY_REMINDER_TIME||ASTRONOMY_REMINDER_DEFAULT_TIME,date));
   if(!event)return null;
   const localDate=localIsoDate(date);
-  const dateLabel=catalanAstronomyDate(event.forecastStart);
+  const dateLabel=astronomyObservationDateLabel(event);
+  const daytime=event.observationPeriod==='day';
+  const relativeLabel=phase==='advance'?'D’aquí dos dies':daytime?'Avui, de dia':'Aquesta nit';
   let visibility=null;
   if(phase==='reminder'){
     visibility=await astronomyForecast(event);
@@ -2119,18 +2123,57 @@ export async function createAstronomicalEventSocialDraft(env,date=new Date(),pha
       return {created:false,reason:visibility?'unfavorable_forecast':'forecast_unavailable'};
     }
   }
-  const lead=phase==='advance'?`🔭 Apunta-t’ho: la nit de ${dateLabel}`:`✨ Aquesta nit, ${dateLabel}`;
+  const lead=phase==='advance'?`🔭 Apunta-t’ho: ${dateLabel}`:`${daytime?'☀️':'✨'} ${relativeLabel}: ${dateLabel}`;
   const conditions=visibility?` La previsió orientativa per a la finestra d’observació indica ${visibility.averageCloud}% de nuvolositat mitjana i fins a ${visibility.maxRainProbability}% de probabilitat de pluja.`:'';
   const observationAdvice=event.id.startsWith('solar-eclipse')
     ? 'Fes servir exclusivament protecció solar homologada i comprova l’actualització del cel abans de sortir.'
     : 'Busca un lloc fosc i comprova l’actualització del cel abans de sortir.';
   const body=`${lead}: ${event.title.toLowerCase()}. ${event.copy}${conditions} ${observationAdvice} Font astronòmica: ${event.source}.\n\n${socialHashtags('astronomical_event')}`;
   return createSpecialSocialDraft(env,{dedupeKey:`astronomy:${event.id}:${phase}`,kind:'astronomical_event',
-    title:`${phase==='advance'?'D’aquí dos dies':'Aquesta nit'} · ${event.title}`,body,sourceUrl:event.sourceUrl,localDate,
-    slot:`astronomy-${phase}`,payload:{eventType:'astronomical_event',phase,eyebrow:phase==='advance'?'D’AQUÍ DOS DIES':'AQUESTA NIT',
+    title:`${relativeLabel} · ${dateLabel} · ${event.title}`,body,sourceUrl:event.sourceUrl,localDate,
+    slot:`astronomy-${phase}`,payload:{eventType:'astronomical_event',phase,eyebrow:relativeLabel.toLocaleUpperCase('ca-ES'),
       eventTitle:event.title,symbol:event.symbol,dateLabel,eventDate:event.date,forecastStart:event.forecastStart,forecastEnd:event.forecastEnd,
       advice:event.copy,visibility,localDate,observationUpdated:event.date,sourceNote:event.source,
     }});
+}
+
+// Read-only editorial guard. No migration or extra upstream alert request:
+// dated copy is never replayed on another local day, even if an episode lasts longer.
+export function socialDraftTemporalEligibility(draft,date=new Date()) {
+  if(!['official_alert','astronomical_event'].includes(draft?.kind))return true;
+  if(!Number.isFinite(date.getTime()))return false;
+  let data;
+  try{data=JSON.parse(draft.payload);}catch{return false;}
+  if(!data||typeof data!=='object')return false;
+  const today=localIsoDate(date);
+  const instant=value=>typeof value==='string'&&/(?:Z|[+-]\d{2}:\d{2})$/.test(value)?Date.parse(value):NaN;
+  if(draft.kind==='astronomical_event') {
+    if(data.localDate!==today)return false;
+    if(data.eventType==='season_change')return Number.isFinite(instant(data.observationUpdated));
+    const end=instant(data.forecastEnd);
+    return Number.isFinite(end)&&date.getTime()<end;
+  }
+  if(data.source!=='Meteocat')return false;
+  const issued=data.issuedAt|| (typeof draft.created_at==='string'?`${draft.created_at.replace(' ','T').replace(/Z$/,'')}Z`:null);
+  if(!Number.isFinite(instant(issued))||localIsoDate(new Date(issued))!==today)return false;
+  const expiry=instant(data.expires);
+  if(!Number.isFinite(expiry)||date.getTime()>=expiry)return false;
+  const target=officialAlertCardDate(data);
+  if(!target)return false;
+  const periods=Array.isArray(data.periods)?data.periods:[];
+  if(!periods.length)return target>=today;
+  const ends=periods.map(period=>{
+    const match=String(period).match(/–(\d{2})\/(\d{2})\s(\d{2}):(\d{2})\s*h?$/);
+    if(!match)return null;
+    const year=Number(target.slice(0,4))+(target.slice(5,7)==='12'&&match[2]==='01'?1:0);
+    const day=`${year}-${match[2]}-${match[1]}`;
+    const parsedDay=new Date(`${day}T12:00Z`);
+    if(!Number.isFinite(parsedDay.getTime())||parsedDay.toISOString().slice(0,10)!==day||Number(match[3])>23||Number(match[4])>59)return null;
+    return `${day} ${match[3]}:${match[4]}`;
+  });
+  if(ends.some(end=>!end))return false;
+  const clock=new Intl.DateTimeFormat('en-GB',{timeZone:TIME_ZONE,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(date);
+  return `${today} ${clock}`<ends.sort().at(-1);
 }
 
 function socialSlotProfile(slot='07:00'){
@@ -5097,9 +5140,17 @@ async function refreshSocialDraftPublicationStatus(env, draft) {
   return status;
 }
 
-async function publishAutomaticSocialDraft(result, env) {
+async function holdExpiredSocialDraft(env,draft) {
+  if(env.DB&&draft?.id)await env.DB.prepare("UPDATE social_drafts SET status = 'draft' WHERE id = ? AND status IN ('approved','partially_published')").bind(draft.id).run();
+}
+
+export async function publishAutomaticSocialDraft(result, env) {
   const draft = result?.draft;
   if (!draft || !socialAutomationEnabled(env)) return { published:false, reason:result?.reason || 'automation_disabled' };
+  if(!socialDraftTemporalEligibility(draft)){
+    await holdExpiredSocialDraft(env,draft);
+    return {published:false,reason:'editorial_validity_expired_or_unknown'};
+  }
   const configured = {
     facebook:Boolean(env.META_SYSTEM_USER_TOKEN), instagram:Boolean(env.META_SYSTEM_USER_TOKEN),
     bluesky:Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
@@ -5121,6 +5172,10 @@ async function publishAutomaticSocialDraft(result, env) {
     outcomes.push({ channel, ok:false, error });
   }
   for (const channel of channels) {
+    if(!socialDraftTemporalEligibility(draft)){
+      await holdExpiredSocialDraft(env,draft);
+      return {published:outcomes.some(item=>item.ok),outcomes,reason:'editorial_validity_expired_or_unknown'};
+    }
     try {
       const details = await publishers[channel](draft, env);
       await recordSocialPublication(env, draft.id, channel, 'published', details);
@@ -5175,6 +5230,7 @@ async function recoverIncompleteOfficialAlertDraft(env) {
   let payload={};
   try{payload=JSON.parse(draft.payload||'{}');}catch{}
   if(payload.source!=='Meteocat')return null;
+  if(!socialDraftTemporalEligibility(draft)){await holdExpiredSocialDraft(env,draft);return null;}
   const publications=await socialPublicationsForDraft(env,draft.id);
   const retryChannels=pendingSocialRetryChannels(draft,publications);
   if(!retryChannels.length)return null;
@@ -5190,6 +5246,7 @@ async function recoverIncompleteSpecialSocialDraft(env) {
       AND created_at <= datetime('now','-2 minutes')
     ORDER BY id ASC LIMIT 1`).first();
   if(!draft)return null;
+  if(!socialDraftTemporalEligibility(draft)){await holdExpiredSocialDraft(env,draft);return null;}
   const publications=await socialPublicationsForDraft(env,draft.id);
   const retryChannels=pendingSocialRetryChannels(draft,publications);
   if(!retryChannels.length)return null;
@@ -5203,6 +5260,7 @@ async function adminPublishSocialDraft(request, env, draftId) {
   const draft = await findSocialDraft(env, draftId);
   if (!draft) return json({ error:'No s’ha trobat l’esborrany.' }, 404, 'no-store', auth.origin);
   if (!['approved','partially_published','published'].includes(draft.status)) return json({ error:'Primer cal aprovar l’esborrany. Aprovar no el publica.' }, 409, 'no-store', auth.origin);
+  if(!socialDraftTemporalEligibility(draft))return json({error:'La vigència o la data del text ja no és vàlida. Cal preparar un esborrany actualitzat.',code:'EDITORIAL_VALIDITY_EXPIRED'},409,'no-store',auth.origin);
   const body = await adminJsonBody(request, auth.origin);
   const channel = cleanText(body.channel, 20).toLowerCase();
   if (!SOCIAL_CHANNELS.has(channel)) return json({ error:'Aquest canal no admet publicació manual des del panell.' }, 400, 'no-store', auth.origin);

@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { normalizeObservation, initialCondition, initialSchema } from '../functions/_middleware.js';
 import { answerMeteoQuestion } from '../src/features/meteo-ai.js';
 
-const observation=normalizeObservation({updatedUtc:'2026-08-22T10:23:40Z',temperature:24.2,humidity:53,pressure:1015.2,windSpeed:1.1,windGust:1.4,rainToday:0,stale:false});
+const observation=normalizeObservation({updatedUtc:'2026-08-22T10:23:40Z',temperature:24.2,humidity:53,pressure:1015.2,windSpeed:1.1,windGust:1.4,rainToday:0,stale:false},new Date('2026-08-22T10:24:00Z'));
 assert.equal(observation.temperature,24.2);
 assert.equal(initialCondition(observation),'Observació en directe');
 assert.equal(normalizeObservation({temperature:'sense dada'}),null);
