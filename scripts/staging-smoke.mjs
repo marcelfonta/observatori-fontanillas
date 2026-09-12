@@ -38,4 +38,28 @@ if (alerts.ok !== true || !Array.isArray(alerts.alerts) || !alerts.source?.name)
   throw new Error('/alerts: contracte d’avisos invàlid.');
 }
 
-console.log(`Staging correcte (${version.version}): salut ${health.status}, historial i avisos disponibles.`);
+async function validateWeatherHistory(resolution, days) {
+  const payload = await getJson(`/history?days=${days}&resolution=${resolution}`);
+  if (payload.ok !== true || payload.interval !== resolution || !Array.isArray(payload.observations)) {
+    throw new Error(`/history (${resolution}): contracte de dades invàlid.`);
+  }
+  let previousEpoch = 0;
+  for (const observation of payload.observations) {
+    const epoch = Number(observation?.epoch);
+    if (!Number.isFinite(epoch) || epoch <= 0 || epoch < previousEpoch) {
+      throw new Error(`/history (${resolution}): ordre temporal o marca de temps invàlids.`);
+    }
+    if (Number(observation.samples) < 1 || Number(observation.coverageMinutes) < 1) {
+      throw new Error(`/history (${resolution}): mostres o cobertura invàlides.`);
+    }
+    previousEpoch = epoch;
+  }
+}
+
+await Promise.all([
+  validateWeatherHistory('raw', 1),
+  validateWeatherHistory('hourly', 7),
+  validateWeatherHistory('daily', 30),
+]);
+
+console.log(`Staging correcte (${version.version}): salut ${health.status}, avisos i històric raw/hourly/daily disponibles.`);

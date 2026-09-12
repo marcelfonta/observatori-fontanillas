@@ -66,7 +66,7 @@ if(!portalShell.includes("['aprendre','Aprendre'")||!html.includes('data-portal-
 const methodology=await readFile(resolve(root,'metodologia.html'),'utf8');
 if(!methodology.includes('portal-view-header portal-view-header--static'))throw new Error('Metodologia no té la capçalera compartida.');
 const backend=await readFile(resolve(root,'worker/index.js'),'utf8');
-if(!backend.includes('/v3/location/near')||!backend.includes('discoverComparisonStations')||!backend.includes('WORKER_VERSION = "22.29.10"'))throw new Error('El Worker no amplia les estacions properes de forma compatible o no és V22.29.10.');
+if(!backend.includes('/v3/location/near')||!backend.includes('discoverComparisonStations')||!backend.includes('WORKER_VERSION = "22.29.11"'))throw new Error('El Worker no amplia les estacions properes de forma compatible o no és V22.29.11.');
 if(!comparison.includes('Com canvia el temps al Baix Montseny?'))throw new Error('El títol del comparador no s’ha aclarit.');
 const manifest=JSON.parse(await readFile(resolve(root,'site.webmanifest'),'utf8'));
 if(manifest.short_name!=='Observatori')throw new Error('El nom curt de la PWA no segueix la guia de marca.');
@@ -97,7 +97,7 @@ if(!staticPortal.includes('initMeteoAIWidget'))throw new Error('El xat flotant n
 if(!portalCss.includes('.meteo-ai-widget__toggle')||!portalCss.includes('.meteo-ai-sources a'))throw new Error('Falten els estils del xat flotant o dels enllaços de fonts.');
 const sitemap=await readFile(resolve(root,'sitemap.xml'),'utf8');
 for(const page of ['metodologia.html','comparativa.html','historial-avisos.html','privacitat.html'])if(!sitemap.includes(page))throw new Error(`Sitemap: falta ${page}.`);
-if(sitemap.includes('?page='))throw new Error('Sitemap: les vistes internes amb paràmetres no han de competir amb la canònica.');
+for(const page of ['estacio','prediccio','avisos','centre-dades'])if(!sitemap.includes(`?page=${page}`))throw new Error(`Sitemap: falta la vista indexable ${page}.`);
 if(!weatherApi.includes('ecmwf_ec46_ensemble_mean')||!weatherApi.includes('temperature_2m_anomaly')||!weatherApi.includes('precipitation_anomaly'))throw new Error('Falta la consulta setmanal ECMWF EC46.');
 const share=await readFile(resolve(root,'src/features/share.js'),'utf8');for(const capability of ['buildShareCardModel','updateShareContext','share-card-canvas','download-card','navigator.canShare'])if(!share.includes(capability))throw new Error(`Compartició Premium: falta ${capability}.`);
 const historyPage=await readFile(resolve(root,'historial-avisos.html'),'utf8');if(!historyPage.includes('id="share-btn"')||!historyPage.includes('src/features/share-page.js'))throw new Error('L’historial no incorpora Compartició Premium.');
@@ -111,5 +111,5 @@ for(const capability of ['alertHistoryParams','alertHistoryWhere','pagination','
 for(const capability of ['alert_level_${normalizedLevel}','?page=avisos','INSERT OR IGNORE INTO alert_events'])if(!backend.includes(capability))throw new Error(`Notificacions V18: falta ${capability}.`);
 if(worker.includes("APP_SHELL = [\n  '/administracio.html'")||!worker.includes("url.pathname.startsWith('/admin/')")||!worker.includes("url.pathname === '/administracio.html'"))throw new Error('La PWA desa la pàgina o les respostes administratives quan no ho hauria de fer.');
 const robots=await readFile(resolve(root,'robots.txt'),'utf8');const sitemapText=await readFile(resolve(root,'sitemap.xml'),'utf8');if(!robots.includes('Disallow: /administracio.html')||sitemapText.includes('administracio.html'))throw new Error('Administració no està correctament exclosa dels cercadors.');
-const project=JSON.parse(await readFile(resolve(root,'project.json'),'utf8'));if(project.version!=='22.31.2')throw new Error('La versió web del projecte no és V22.31.2.');
+const project=JSON.parse(await readFile(resolve(root,'project.json'),'utf8'));if(project.version!=='22.31.3')throw new Error('La versió web del projecte no és V22.31.3.');
 console.log('Smoke test V21: correcte');

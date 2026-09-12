@@ -1,90 +1,66 @@
 import { CONFIG } from '../core/config.js';
+import { getLanguage, SUPPORTED_LANGUAGES } from '../core/i18n.js';
 
 const BASE='https://meteo.fontanillas.cat/';
+const LANGUAGE_META={ca:{locale:'ca_ES',home:'Inici'},es:{locale:'es_ES',home:'Inicio'},en:{locale:'en_GB',home:'Home'},fr:{locale:'fr_FR',home:'Accueil'}};
 const PAGES={
-  inici:{title:'Observatori Meteorològic Fontanillas · Temps a Sant Celoni',description:'Dades meteorològiques en directe, avisos, predicció i radar des de Sant Celoni, als peus del Montseny.'},
-  'meteo-ia':{title:'Meteo IA · Pregunta pel temps',description:'Assistent meteorològic amb fonts visibles per consultar Sant Celoni, altres poblacions, dates i activitats.'},
-  estacio:{title:'Estació Fontanillas · Dades meteorològiques en directe',description:'Temperatura, humitat, vent, pressió, pluja, radiació i índex UV mesurats a Sant Celoni.'},
-  prediccio:{title:'Predicció del temps a Sant Celoni · Hores i 7 dies',description:'Previsió horària i diària i comparació de models per entendre el temps de les pròximes hores i dies a Sant Celoni.'},
-  'llarg-termini':{title:'Predicció a llarg termini · Sant Celoni i Catalunya',description:'Tendència ECMWF fins a sis setmanes i mapes mensuals oficials del Meteocat, amb la incertesa explicada.'},
-  videos:{title:'Predicció del temps en vídeo i fonts mundials',description:'Predicció audiovisual de Meteocat i 3Cat, amb una guia de fonts fiables per consultar el temps arreu del món i comparar models.'},
-  verificacio:{title:'Predicció vs realitat · Precisió meteorològica a Sant Celoni',description:'Comprovació transparent de la previsió comparada amb les observacions reals de l’estació Fontanillas.'},
-  cel:{title:'Sol, Lluna i astronomia a Sant Celoni',description:'Sortida i posta del Sol, fases de la Lluna, estacions i esdeveniments del cel visibles des del Baix Montseny.'},
-  avisos:{title:'Avisos meteorològics per a Sant Celoni',description:'Avisos oficials de Meteocat i AEMET per al Vallès Oriental i el Prelitoral de Barcelona.'},
-  radar:{title:'Radar meteorològic i llamps a Catalunya',description:'Radar de precipitació i activitat elèctrica centrats a Sant Celoni i el Baix Montseny.'},
-  webcams:{title:'Webcams de Sant Celoni i el Montseny',description:'Vista actual de la webcam Fontanillas i selecció de webcams properes al Montseny.'},
-  'centre-dades':{title:'Dades meteorològiques històriques de Sant Celoni',description:'Històric, pluja, extrems, cobertura i descàrregues de l’estació Fontanillas a Sant Celoni.'},
-  'medi-ambient':{title:'Qualitat de l’aire i medi ambient a Sant Celoni',description:'Qualitat de l’aire, UV, pol·len, risc d’incendi, sequera i meduses amb fonts identificades.'},
-  aprendre:{title:'Aprendre meteorologia · Observatori Fontanillas',description:'Biblioteca educativa de meteorologia amb recursos verificats per nivell, tema i idioma de Meteocat, AEMET, OMM, NOAA, NASA, ESA i centres científics.'},
-  contacte:{title:'Contacte · Observatori Fontanillas',description:'Contacta amb l’Observatori Meteorològic Fontanillas per consultes, incidències de dades o propostes.'}
+  inici:{ca:['Observatori Meteorològic Fontanillas · Temps a Sant Celoni','Dades meteorològiques en directe, avisos, predicció i radar des de Sant Celoni, als peus del Montseny.'],es:['Observatorio Meteorológico Fontanillas · Tiempo en Sant Celoni','Datos meteorológicos en directo, avisos, predicción y radar desde Sant Celoni, a los pies del Montseny.'],en:['Fontanillas Weather Observatory · Weather in Sant Celoni','Live weather data, alerts, forecasts and radar from Sant Celoni, at the foot of the Montseny massif.'],fr:['Observatoire météo Fontanillas · Météo à Sant Celoni','Données météo en direct, alertes, prévisions et radar depuis Sant Celoni, au pied du Montseny.']},
+  'meteo-ia':{ca:['Meteo IA · Pregunta pel temps','Assistent meteorològic amb fonts visibles per consultar Sant Celoni, altres poblacions, dates i activitats.'],es:['Meteo IA · Pregunta por el tiempo','Asistente meteorológico con fuentes visibles para Sant Celoni, otras localidades, fechas y actividades.'],en:['Meteo AI · Ask about the weather','Weather assistant with visible sources for Sant Celoni, other places, dates and activities.'],fr:['Météo IA · Posez vos questions météo','Assistant météo avec sources visibles pour Sant Celoni, d’autres villes, dates et activités.']},
+  estacio:{ca:['Estació Fontanillas · Dades meteorològiques en directe','Temperatura, humitat, vent, pressió, pluja, radiació i índex UV mesurats a Sant Celoni.'],es:['Estación Fontanillas · Datos meteorológicos en directo','Temperatura, humedad, viento, presión, lluvia, radiación e índice UV medidos en Sant Celoni.'],en:['Fontanillas station · Live weather data','Temperature, humidity, wind, pressure, rain, solar radiation and UV index measured in Sant Celoni.'],fr:['Station Fontanillas · Données météo en direct','Température, humidité, vent, pression, pluie, rayonnement et indice UV mesurés à Sant Celoni.']},
+  prediccio:{ca:['Predicció del temps a Sant Celoni · Hores i 7 dies','Previsió horària i diària i comparació de models per entendre el temps de les pròximes hores i dies a Sant Celoni.'],es:['Predicción del tiempo en Sant Celoni · Horas y 7 días','Previsión horaria y diaria y comparación de modelos para las próximas horas y días en Sant Celoni.'],en:['Sant Celoni weather forecast · Hourly and 7 days','Hourly and daily forecasts with model comparisons for the next hours and days in Sant Celoni.'],fr:['Prévisions météo à Sant Celoni · Heure par heure et 7 jours','Prévisions horaires et quotidiennes avec comparaison de modèles pour Sant Celoni.']},
+  'llarg-termini':{ca:['Predicció a llarg termini · Sant Celoni i Catalunya','Tendència ECMWF fins a sis setmanes i mapes mensuals oficials del Meteocat, amb la incertesa explicada.'],es:['Predicción a largo plazo · Sant Celoni y Cataluña','Tendencia ECMWF hasta seis semanas y mapas mensuales oficiales de Meteocat, con la incertidumbre explicada.'],en:['Long-range forecast · Sant Celoni and Catalonia','ECMWF trends up to six weeks and official Meteocat monthly maps, with uncertainty explained.'],fr:['Prévisions à long terme · Sant Celoni et Catalogne','Tendances ECMWF jusqu’à six semaines et cartes mensuelles officielles de Meteocat, avec explication des incertitudes.']},
+  videos:{ca:['Predicció del temps en vídeo i fonts mundials','Predicció audiovisual de Meteocat i 3Cat, amb fonts fiables per consultar el temps i comparar models.'],es:['Predicción del tiempo en vídeo y fuentes mundiales','Predicción audiovisual de Meteocat y 3Cat, con fuentes fiables para consultar el tiempo y comparar modelos.'],en:['Video weather forecasts and global sources','Video forecasts from Meteocat and 3Cat, plus reliable global sources for checking weather and comparing models.'],fr:['Prévisions météo en vidéo et sources mondiales','Prévisions vidéo de Meteocat et 3Cat, avec des sources fiables pour consulter la météo et comparer les modèles.']},
+  verificacio:{ca:['Predicció vs realitat · Precisió meteorològica a Sant Celoni','Comprovació transparent de la previsió comparada amb les observacions reals de l’estació Fontanillas.'],es:['Predicción vs realidad · Precisión meteorológica en Sant Celoni','Comprobación transparente de la predicción frente a las observaciones reales de la estación Fontanillas.'],en:['Forecast vs reality · Weather accuracy in Sant Celoni','Transparent verification of forecasts against real observations from the Fontanillas station.'],fr:['Prévisions et réalité · Précision météo à Sant Celoni','Vérification transparente des prévisions par rapport aux observations réelles de la station Fontanillas.']},
+  cel:{ca:['Sol, Lluna i astronomia a Sant Celoni','Sortida i posta del Sol, fases de la Lluna, estacions i esdeveniments del cel visibles des del Baix Montseny.'],es:['Sol, Luna y astronomía en Sant Celoni','Salida y puesta del Sol, fases de la Luna, estaciones y fenómenos celestes visibles desde el Baix Montseny.'],en:['Sun, Moon and astronomy in Sant Celoni','Sunrise, sunset, Moon phases, seasons and sky events visible from the Baix Montseny area.'],fr:['Soleil, Lune et astronomie à Sant Celoni','Lever et coucher du Soleil, phases de la Lune, saisons et événements célestes visibles depuis le Baix Montseny.']},
+  avisos:{ca:['Avisos meteorològics per a Sant Celoni','Avisos oficials de Meteocat i AEMET per al Vallès Oriental i el Prelitoral de Barcelona.'],es:['Avisos meteorológicos para Sant Celoni','Avisos oficiales de Meteocat y AEMET para el Vallès Oriental y el Prelitoral de Barcelona.'],en:['Weather alerts for Sant Celoni','Official Meteocat and AEMET alerts for Vallès Oriental and the Barcelona Pre-coastal area.'],fr:['Alertes météo pour Sant Celoni','Alertes officielles de Meteocat et AEMET pour le Vallès Oriental et le Prélittoral de Barcelone.']},
+  radar:{ca:['Radar meteorològic i llamps a Catalunya','Radar de precipitació i activitat elèctrica centrats a Sant Celoni i el Baix Montseny.'],es:['Radar meteorológico y rayos en Cataluña','Radar de precipitación y actividad eléctrica centrado en Sant Celoni y el Baix Montseny.'],en:['Weather radar and lightning in Catalonia','Precipitation radar and lightning activity centred on Sant Celoni and the Baix Montseny area.'],fr:['Radar météo et foudre en Catalogne','Radar des précipitations et activité électrique centrés sur Sant Celoni et le Baix Montseny.']},
+  webcams:{ca:['Webcams de Sant Celoni i el Montseny','Vista actual de la webcam Fontanillas i selecció de webcams properes al Montseny.'],es:['Webcams de Sant Celoni y el Montseny','Vista actual de la webcam Fontanillas y selección de webcams próximas al Montseny.'],en:['Sant Celoni and Montseny webcams','Current view from the Fontanillas webcam and a selection of webcams near the Montseny massif.'],fr:['Webcams de Sant Celoni et du Montseny','Vue actuelle de la webcam Fontanillas et sélection de webcams proches du Montseny.']},
+  'centre-dades':{ca:['Dades meteorològiques històriques de Sant Celoni','Històric, pluja, extrems, cobertura i descàrregues de l’estació Fontanillas a Sant Celoni.'],es:['Datos meteorológicos históricos de Sant Celoni','Histórico, lluvia, extremos, cobertura y descargas de la estación Fontanillas en Sant Celoni.'],en:['Historical weather data for Sant Celoni','History, rain, extremes, coverage and downloads from the Fontanillas station in Sant Celoni.'],fr:['Données météo historiques de Sant Celoni','Historique, pluie, extrêmes, couverture et téléchargements de la station Fontanillas à Sant Celoni.']},
+  'medi-ambient':{ca:['Qualitat de l’aire i medi ambient a Sant Celoni','Qualitat de l’aire, UV, pol·len, risc d’incendi, sequera i meduses amb fonts identificades.'],es:['Calidad del aire y medio ambiente en Sant Celoni','Calidad del aire, UV, polen, riesgo de incendio, sequía y medusas con fuentes identificadas.'],en:['Air quality and environment in Sant Celoni','Air quality, UV, pollen, wildfire risk, drought and jellyfish information with identified sources.'],fr:['Qualité de l’air et environnement à Sant Celoni','Qualité de l’air, UV, pollen, risque d’incendie, sécheresse et méduses avec sources identifiées.']},
+  aprendre:{ca:['Aprendre meteorologia · Observatori Fontanillas','Biblioteca educativa de meteorologia amb recursos verificats per nivell, tema i idioma.'],es:['Aprender meteorología · Observatorio Fontanillas','Biblioteca educativa de meteorología con recursos verificados por nivel, tema e idioma.'],en:['Learn meteorology · Fontanillas Observatory','Educational weather library with verified resources organised by level, subject and language.'],fr:['Apprendre la météorologie · Observatoire Fontanillas','Bibliothèque météo éducative avec ressources vérifiées par niveau, sujet et langue.']},
+  contacte:{ca:['Contacte · Observatori Fontanillas','Contacta amb l’Observatori Meteorològic Fontanillas per consultes, incidències de dades o propostes.'],es:['Contacto · Observatorio Fontanillas','Contacta con el Observatorio Meteorológico Fontanillas para consultas, incidencias de datos o propuestas.'],en:['Contact · Fontanillas Observatory','Contact the Fontanillas Weather Observatory with questions, data issues or suggestions.'],fr:['Contact · Observatoire Fontanillas','Contactez l’Observatoire météo Fontanillas pour toute question, anomalie de données ou proposition.']}
 };
 
-function setMeta(selector,value){const node=document.querySelector(selector);if(node)node.setAttribute('content',value);}
-
-let activePage='inici';
-
-function observationFromInitialSchema(){
-  if(typeof document==='undefined')return null;
-  const schema=document.getElementById('seo-structured-data');
-  if(!schema?.textContent)return null;
-  try{
-    const parsed=JSON.parse(schema.textContent);
-    const observation=parsed?.['@graph']?.find(item=>item?.['@type']==='Observation');
-    if(!observation)return null;
-    const values=new Map((observation.measuredProperty||[]).map(item=>[item?.name,item?.value]));
-    const temperature=Number(values.get('Temperatura'));
-    if(!Number.isFinite(temperature))return null;
-    return {
-      temperature,
-      humidity:values.get('Humitat relativa'),
-      pressure:values.get('Pressió atmosfèrica'),
-      windSpeed:values.get('Velocitat del vent'),
-      rainToday:values.get('Precipitació acumulada avui'),
-      updated:observation.observationDate
-    };
-  }catch{return null;}
+function language(){const current=getLanguage();return SUPPORTED_LANGUAGES.includes(current)?current:'ca';}
+function pageCopy(page,lang=language()){const entry=PAGES[page]||PAGES.inici;const [title,description]=entry[lang]||entry.ca;return {title,description};}
+export function seoPageUrl(page='inici',lang='ca'){
+  const url=new URL(BASE);if(page!=='inici')url.searchParams.set('page',PAGES[page]?page:'inici');
+  if(lang!=='ca'&&SUPPORTED_LANGUAGES.includes(lang))url.searchParams.set('lang',lang);return url.toString();
 }
-
+function setMeta(selector,value){const node=document.querySelector(selector);if(node)node.setAttribute('content',value);}
+function setLink(rel,href,hreflang=''){
+  const selector=hreflang?`link[rel="${rel}"][hreflang="${hreflang}"]`:`link[rel="${rel}"]:not([hreflang])`;let node=document.querySelector(selector);
+  if(!node){node=document.createElement('link');node.rel=rel;if(hreflang)node.hreflang=hreflang;document.head.append(node);}node.href=href;
+}
+let activePage='inici';
+function observationFromInitialSchema(){
+  if(typeof document==='undefined')return null;const schema=document.getElementById('seo-structured-data');if(!schema?.textContent)return null;
+  try{const parsed=JSON.parse(schema.textContent);const observation=parsed?.['@graph']?.find(item=>item?.['@type']==='Observation');if(!observation)return null;const values=new Map((observation.measuredProperty||[]).map(item=>[item?.name,item?.value]));const temperature=Number(values.get('Temperatura'));if(!Number.isFinite(temperature))return null;return {temperature,humidity:values.get('Humitat relativa'),pressure:values.get('Pressió atmosfèrica'),windSpeed:values.get('Velocitat del vent'),rainToday:values.get('Precipitació acumulada avui'),updated:observation.observationDate};}catch{return null;}
+}
 let latestObservation=observationFromInitialSchema();
-
-function structuredGraph(page,observation){
-  const current=PAGES[page]||PAGES.inici;
-  const canonicalUrl=BASE;
+export function buildSeoStructuredGraph(page='inici',observation=null,lang='ca'){
+  const current=pageCopy(page,lang);const canonicalUrl=seoPageUrl(page,lang);const meta=LANGUAGE_META[lang]||LANGUAGE_META.ca;const breadcrumbs=[{'@type':'ListItem',position:1,name:meta.home,item:seoPageUrl('inici',lang)}];
+  if(page!=='inici')breadcrumbs.push({'@type':'ListItem',position:2,name:current.title.split(' · ')[0],item:canonicalUrl});
   const graph=[
-    {'@type':'WebSite','@id':`${BASE}#website`,name:'Observatori Meteorològic Fontanillas',url:BASE,inLanguage:'ca',description:PAGES.inici.description},
+    {'@type':'WebSite','@id':`${BASE}#website`,name:'Observatori Meteorològic Fontanillas',url:BASE,inLanguage:['ca','es','en','fr'],description:pageCopy('inici',lang).description},
     {'@type':'Organization','@id':`${BASE}#organization`,name:'Observatori Meteorològic Fontanillas',url:BASE,logo:{'@type':'ImageObject',url:`${BASE}assets/images/observatori-fontanillas-avatar-v21.png`},sameAs:['https://www.facebook.com/meteofontanillas/','https://www.instagram.com/meteo_fontanillas/','https://www.threads.com/@meteo_fontanillas','https://x.com/meteo_fonta','https://bsky.app/profile/meteofontanillas.bsky.social','https://t.me/meteofontanillas','https://www.tiktok.com/@meteo_fontanillas','https://www.youtube.com/@MeteoFontanillas']},
-    {'@type':'WebPage','@id':`${canonicalUrl}#webpage`,url:canonicalUrl,name:current.title,description:current.description,inLanguage:'ca',isPartOf:{'@id':`${BASE}#website`},about:{'@id':`${BASE}#dataset`},publisher:{'@id':`${BASE}#organization`}},
-    {'@type':'Dataset','@id':`${BASE}#dataset`,name:'Observacions meteorològiques de l’estació Fontanillas',description:'Sèries meteorològiques locals de temperatura, humitat, pressió, vent, precipitació, radiació solar i índex UV.',url:BASE,inLanguage:'ca',creator:{'@id':`${BASE}#organization`},spatialCoverage:{'@type':'Place',name:'Sant Celoni, Vallès Oriental',geo:{'@type':'GeoCoordinates',latitude:41.6906,longitude:2.489}},temporalCoverage:'2025/..',measurementTechnique:'Estació meteorològica automàtica',variableMeasured:['Temperatura','Humitat relativa','Pressió atmosfèrica','Velocitat i ratxa del vent','Precipitació','Radiació solar','Índex UV']},
-    {'@type':'BreadcrumbList','@id':`${canonicalUrl}#breadcrumb`,itemListElement:[{'@type':'ListItem',position:1,name:'Inici',item:BASE}]}
+    {'@type':'WebPage','@id':`${canonicalUrl}#webpage`,url:canonicalUrl,name:current.title,description:current.description,inLanguage:lang,isPartOf:{'@id':`${BASE}#website`},about:{'@id':`${BASE}#dataset`},publisher:{'@id':`${BASE}#organization`}},
+    {'@type':'Dataset','@id':`${BASE}#dataset`,name:'Observacions meteorològiques de l’estació Fontanillas',description:'Sèries meteorològiques locals de temperatura, humitat, pressió, vent, precipitació, radiació solar i índex UV.',url:seoPageUrl('centre-dades',lang),inLanguage:['ca','es','en','fr'],creator:{'@id':`${BASE}#organization`},spatialCoverage:{'@type':'Place',name:'Sant Celoni, Vallès Oriental',geo:{'@type':'GeoCoordinates',latitude:41.6906,longitude:2.489}},temporalCoverage:'2026-08-04/..',measurementTechnique:'Estació meteorològica automàtica',variableMeasured:['Temperatura','Humitat relativa','Pressió atmosfèrica','Velocitat i ratxa del vent','Precipitació','Radiació solar','Índex UV']},
+    {'@type':'BreadcrumbList','@id':`${canonicalUrl}#breadcrumb`,itemListElement:breadcrumbs}
   ];
   if(observation&&Number.isFinite(Number(observation.temperature))){
-    const property=(name,value,unit)=>({'@type':'PropertyValue',name,value:Number(value),...(unit?{unitText:unit}:{})});
-    const values=[property('Temperatura',observation.temperature,'°C')];
-    if(Number.isFinite(Number(observation.humidity)))values.push(property('Humitat relativa',observation.humidity,'%'));
-    if(Number.isFinite(Number(observation.pressure)))values.push(property('Pressió atmosfèrica',observation.pressure,'hPa'));
-    if(Number.isFinite(Number(observation.windSpeed)))values.push(property('Velocitat del vent',observation.windSpeed,'km/h'));
-    if(Number.isFinite(Number(observation.rainToday)))values.push(property('Precipitació acumulada avui',observation.rainToday,'mm'));
-    graph.push({'@type':'Observation','@id':`${BASE}#latest-observation`,name:'Darrera observació meteorològica de Fontanillas',observationDate:observation.updated||new Date().toISOString(),measuredProperty:values,about:{'@id':`${BASE}#dataset`},spatialCoverage:{'@type':'Place',name:'Sant Celoni'}});
+    const property=(name,value,unit)=>({'@type':'PropertyValue',name,value:Number(value),...(unit?{unitText:unit}:{})});const values=[property('Temperatura',observation.temperature,'°C')];
+    if(Number.isFinite(Number(observation.humidity)))values.push(property('Humitat relativa',observation.humidity,'%'));if(Number.isFinite(Number(observation.pressure)))values.push(property('Pressió atmosfèrica',observation.pressure,'hPa'));if(Number.isFinite(Number(observation.windSpeed)))values.push(property('Velocitat del vent',observation.windSpeed,'km/h'));if(Number.isFinite(Number(observation.rainToday)))values.push(property('Precipitació acumulada avui',observation.rainToday,'mm'));
+    const updated=Date.parse(observation.updated||'');graph.push({'@type':'Observation','@id':`${BASE}#latest-observation`,name:'Darrera observació meteorològica de Fontanillas',...(Number.isFinite(updated)?{observationDate:new Date(updated).toISOString()}:{}),measuredProperty:values,about:{'@id':`${BASE}#dataset`},spatialCoverage:{'@type':'Place',name:'Sant Celoni'}});
   }
   return {'@context':'https://schema.org','@graph':graph};
 }
-
-function renderStructuredData(){const schema=document.getElementById('seo-structured-data');if(schema)schema.textContent=JSON.stringify(structuredGraph(activePage,latestObservation));}
-
+function renderStructuredData(){const schema=document.getElementById('seo-structured-data');if(schema)schema.textContent=JSON.stringify(buildSeoStructuredGraph(activePage,latestObservation,language()));}
 export function updateSeoMetadata(page='inici'){
-  activePage=page;
-  const current=PAGES[page]||PAGES.inici;
-  const viewUrl=page==='inici'?BASE:`${BASE}?page=${encodeURIComponent(page)}`;
-  const canonicalUrl=BASE;
-  const verification=String(CONFIG.googleSiteVerification||'').trim();
-  let verificationMeta=document.querySelector('meta[name="google-site-verification"]');
-  if(verification&&!verificationMeta){verificationMeta=document.createElement('meta');verificationMeta.name='google-site-verification';document.head.append(verificationMeta);}
-  if(verificationMeta){if(verification)verificationMeta.content=verification;else verificationMeta.remove();}
-  document.title=current.title;
-  setMeta('meta[name="description"]',current.description);
-  setMeta('meta[property="og:title"]',current.title);setMeta('meta[property="og:description"]',current.description);setMeta('meta[property="og:url"]',viewUrl);
-  setMeta('meta[name="twitter:title"]',current.title);setMeta('meta[name="twitter:description"]',current.description);
-  renderStructuredData();
+  activePage=PAGES[page]?page:'inici';const lang=language();const current=pageCopy(activePage,lang);const viewUrl=seoPageUrl(activePage,lang);const verification=String(CONFIG.googleSiteVerification||'').trim();let verificationMeta=document.querySelector('meta[name="google-site-verification"]');
+  if(verification&&!verificationMeta){verificationMeta=document.createElement('meta');verificationMeta.name='google-site-verification';document.head.append(verificationMeta);}if(verificationMeta){if(verification)verificationMeta.content=verification;else verificationMeta.remove();}
+  document.documentElement.lang=lang;document.title=current.title;setMeta('meta[name="description"]',current.description);setMeta('meta[property="og:locale"]',LANGUAGE_META[lang].locale);setMeta('meta[property="og:title"]',current.title);setMeta('meta[property="og:description"]',current.description);setMeta('meta[property="og:url"]',viewUrl);setMeta('meta[name="twitter:title"]',current.title);setMeta('meta[name="twitter:description"]',current.description);
+  setLink('canonical',viewUrl);for(const code of SUPPORTED_LANGUAGES)setLink('alternate',seoPageUrl(activePage,code),code);setLink('alternate',seoPageUrl(activePage,'ca'),'x-default');renderStructuredData();
 }
-
 export function updateSeoObservation(observation){latestObservation=observation||null;renderStructuredData();}
+if(typeof document!=='undefined')document.addEventListener('observatori:language-change',()=>updateSeoMetadata(activePage));

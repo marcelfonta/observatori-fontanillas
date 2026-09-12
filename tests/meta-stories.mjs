@@ -15,6 +15,7 @@ for (const token of [
   'runAutomaticMetaVideos', 'META_VIDEO_AUTOMATION_ENABLED',
   "observedJob('meta-video',runAutomaticMetaVideos(env))",
   'publishSocialReelsForSlot', 'publishSocialStoriesForSlot',
+  'claimMetaVideoRun', "status NOT IN ('healthy','running')",
 ]) assert.ok(worker.includes(token), `Falta la protecció o el flux de Stories: ${token}`);
 
 assert.match(worker, /upload_phase:'start'/, 'Facebook Stories ha d’inicialitzar una sessió de pujada.');

@@ -7,22 +7,24 @@
 - [x] Preparar una memòria cau canònica de cinc minuts per a l’històric, independent del marcador de refresc del client, amb estat `HIT`/`MISS` verificable.
 - [x] Paquet E integrat, validat a staging i desplegat en Worker 22.29.9 i web 22.31.1; memòria cau `MISS` → `HIT` comprovada i consum D1 per sota del límit diari.
 - [x] Auditar i corregir mitjanes ponderades, direcció circular del vent, cobertura intradiària i dates locals antigues, sense reescriure D1.
-- [ ] Integrar el paquet F, validar les tres resolucions a staging i, amb aprovació separada, desplegar Worker 22.29.10 i web 22.31.2.
+- [x] Paquet F integrat i desplegat en Worker 22.29.10 i web 22.31.2; el paquet G converteix la comprovació manual de les tres resolucions en una prova obligatòria de staging.
 - [ ] Retirar al tauler només la integració redundant de Workers Builds `observatori-fontanillas`; conservar Pages `observatori-fontanillas` i Worker `fonta-meteo`.
 
 - [x] Auditoria C: cobertura de dies reals, pluja absent diferenciada de zero i antiguitat de registres sense inferir ratxes seques.
 - [x] Paquet C integrat a la PR 139; web pública amb revisió PWA `audit-c`. Desplegament A/B/C verificat el 12-09-2026.
-- [ ] Completar l’auditoria d’etiquetes meteorològiques, traduccions antigues i SEO; revisar per separat cobertura horària/diària a l’origen i les gràfiques.
+- [x] Auditar etiquetes i SEO: URLs canòniques per vista i idioma, metadades en quatre idiomes, sitemap de les vistes internes i cobertura real de l’arxiu; comprovació separada de l’històric raw, horari i diari a staging.
 
 - [x] Auditoria paquet A: dades absents, cobertura de la previsió astronòmica, dates inequívoques i caducitat editorial amb proves dels esborranys reals.
 - [x] Paquet A revisat, validat a staging i desplegat juntament amb B en Worker 22.29.7 amb autorització humana.
 - [x] Auditoria paquet B: cua limitada amb avanç, reserva concurrent per canal i conciliació humana d’èxits remots incerts al flux d’imatges.
 - [x] Paquet B validat i desplegat en Worker 22.29.7: pausa controlada superior a 15 minuts i automatització represa. Evidència a `docs/DEPLOY-AUDIT-ABC-2026-09-12.md`.
-- [ ] Extendre la mateixa garantia als fluxos separats de vídeo i afegir conciliació automàtica verificada per proveïdor quan sigui possible.
+- [x] Extendre la reserva atòmica als fluxos separats de Reels i Stories i conservar els identificadors de la pujada de Facebook per reprendre el mateix vídeo sense començar-ne un altre.
+- [ ] Afegir conciliació automàtica verificada per proveïdor quan les API permetin confirmar de forma inequívoca una resposta perduda.
 
 - [x] Compartir entre la web i el Worker el calendari de canvis d’estació i fenòmens astronòmics anuals verificats.
 - [x] Preparar un avanç astronòmic dos dies abans i un recordatori condicionat per nuvolositat i pluja, amb data explícita i deduplicació per canal.
-- [ ] Integrar i desplegar el Worker V22.29.5, i validar visualment el primer canvi d’estació abans de donar l’automatització per tancada.
+- [x] Integrar i desplegar el Worker amb canvis d’estació i astronomia.
+- [ ] Validar visualment la primera publicació real de canvi d’estació abans de donar l’automatització per tancada.
 
 - [x] Incorporar a les imatges i vídeos diaris una evolució de temperatura observada de 24 hores, compartida per totes les xarxes, amb mínim, màxim, canvi i degradació segura si falta historial.
 
@@ -44,7 +46,7 @@
 - [x] Calcular els rècords absoluts de tot l’arxiu D1 amb valor i moment del primer registre, sense descarregar totes les observacions al navegador.
 - [x] Mostrar sis rècords principals a Estació, la taula completa al Centre de Dades i un accés directe des de la portada.
 - [x] Identificar la cobertura real i deixar clar que són extrems de l’arxiu Fontanillas, no rècords climàtics oficials.
-- [ ] Integrar, desplegar i validar els rècords en escriptori i mòbil.
+- [x] Integrar, desplegar i validar els rècords en escriptori i mòbil.
 
 - [x] Separar els avisos vigents dels previstos, mostrar-ne la vigència i agrupar actualitzacions d’un mateix episodi a l’historial.
 - [x] Contextualitzar la verificació de pluja, explicar el Brier i comparar visualment previsió i observació.
@@ -55,17 +57,18 @@
 - [x] Organitzar el Centre de Dades en Resum, Gràfiques, Pluja, Episodis i Qualitat sense eliminar contingut.
 - [x] Mostrar la cobertura real al costat dels acumulats anuals i distingir interval disponible de dies amb dades.
 - [x] Preservar els blocs compartits amb Estació, afegir navegació accessible i enllaços directes a cada pestanya.
-- [ ] Integrar i desplegar el bloc 2, i validar les cinc pestanyes en escriptori i mòbil.
+- [x] Integrar i desplegar el bloc 2, i validar les cinc pestanyes en escriptori i mòbil.
 
 - [x] Separar la previsió operativa de la tendència a llarg termini sense eliminar contingut, amb navegació creuada i fonts identificades.
 - [x] Reforçar a la portada la vigència i el fenomen dels avisos, clarificar els índexs tèrmics i afegir accessos a municipis i preferències.
 - [x] Prioritzar les xarxes principals a la capçalera i agrupar la resta sota un únic accés «Segueix-nos».
-- [ ] Integrar i desplegar el paquet de portada i llarg termini, i verificar-lo en producció en escriptori i mòbil.
+- [x] Integrar i desplegar el paquet de portada i llarg termini, i verificar-lo en producció en escriptori i mòbil.
 
 - [x] Afegir francès al selector, completar el catàleg de traduccions i validar automàticament català, castellà, anglès i francès.
 - [x] Crear una pàgina pública de col·laboracions amb atribució visible, independència editorial i estat dels patrocinis declarat.
 - [x] Preparar dossiers en castellà i anglès i correus adaptats a sis fabricants d’estacions meteorològiques.
-- [ ] Integrar i desplegar la V22.31.0, comprovar els quatre idiomes en producció i iniciar els contactes de forma gradual.
+- [x] Integrar i desplegar la V22.31.0 i comprovar els quatre idiomes en producció.
+- [ ] Iniciar els contactes de col·laboració de forma gradual.
 
 - [x] Preparar resums setmanals, mensuals, estacionals i anuals amb dades pròpies, cobertura mínima i verificació de la previsió.
 - [x] Preparar publicacions puntuals per episodis destacats i extrems de l’arxiu local, amb límits de freqüència i sense presentar-los com a avisos oficials.
@@ -78,7 +81,7 @@
 - [x] Incorporar a cada publicació un mapa de Catalunya amb tots els avisos comarcals vigents i un detall específic del Vallès Oriental i Sant Celoni, identificant Meteocat com a única font social.
 - [x] Desar `METEOCAT_API_KEY` com a secret de Cloudflare sense exposar-ne el valor.
 - [x] Limitar persistentment les consultes SMP a un màxim planificat de 93 al mes i fer-ne visible el recompte al panell administratiu.
-- [ ] Desplegar conjuntament el secret i la protecció de quota, i verificar el primer cicle sense avisos abans de donar l’activació per tancada.
+- [x] Desplegar conjuntament el secret i la protecció de quota, i verificar el cicle d’avisos de Meteocat.
 
 - [x] Crear una publicació de presentació de les nou xarxes i una pàgina oficial única amb tots els enllaços clicables.
 

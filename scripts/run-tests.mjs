@@ -15,6 +15,7 @@ if (quick && !selected.includes('audit-data-dates.mjs')) selected.push('audit-da
 if (quick && !selected.includes('audit-social-delivery.mjs')) selected.push('audit-social-delivery.mjs');
 if (quick && !selected.includes('audit-rain-coverage.mjs')) selected.push('audit-rain-coverage.mjs');
 if (quick && !selected.includes('audit-history-charts.mjs')) selected.push('audit-history-charts.mjs');
+if (quick && !selected.includes('audit-seo-video.mjs')) selected.push('audit-seo-video.mjs');
 
 for (const file of selected) {
   const result = spawnSync(process.execPath, [resolve(root, 'tests', file)], { cwd:root, stdio:'inherit' });

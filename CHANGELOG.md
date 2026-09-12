@@ -1,5 +1,14 @@
 # Changelog
 
+## Correcció — Auditoria G · SEO, staging i vídeos — 2026-09-12
+
+- Cada vista interna té una URL canònica pròpia i variants `hreflang` en català, castellà, anglès i francès; el sitemap ja inclou les vistes i els quatre idiomes.
+- Títols, descripcions, Open Graph i dades estructurades canvien amb la vista i l’idioma. La cobertura del conjunt de dades comença el 4 d’agost de 2026 i no s’inventa una hora d’observació quan falta.
+- Les pàgines estàtiques que tenien metadades incompletes incorporen alternances d’idioma i targetes socials. Les etiquetes visibles de versió i els recursos de la PWA queden alineats.
+- La validació de staging comprova els contractes `raw`, `hourly` i `daily` de l’històric, inclosos ordre temporal, mostres i cobertura.
+- Reels i Stories comparteixen una reserva atòmica per data i franja. Facebook conserva l’identificador, la URL de pujada i la fase del Reel per reprendre el mateix vídeo després d’una fallada sense començar-ne un altre.
+- Web proposada 22.31.3, Worker proposat 22.29.11 i PWA `audit-g`. Sense migracions, secrets, publicacions ni desplegament automàtic.
+
 ## Correcció — Auditoria F · estadística, vent i temps local — 2026-09-12
 
 - Les mitjanes i desviacions del Centre de Dades i de l’arxiu d’extrems ponderen cada agregat pel seu nombre real de mostres; la interfície separa dies amb dades i continuïtat intradiària.
