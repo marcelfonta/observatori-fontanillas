@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { facebookVideoPublicationState } from '../worker/index.js';
 
 const worker = await readFile(new URL('../worker/index.js', import.meta.url), 'utf8');
 const admin = await readFile(new URL('../src/features/admin.js', import.meta.url), 'utf8');
@@ -12,7 +13,13 @@ for (const token of [
   'uploadFacebookHostedReel', "upload_phase:'start'", "upload_phase:'finish'",
   'file_url:videoUrl', 'checkInstagramReel', 'reelContainerId', 'previousSocialReelOutcomes',
   'claimMetaVideoRun', 'facebookReelVideoId', 'facebookReelUploadUrl', 'facebookReelStage',
+  'checkFacebookVideoPublication', 'resumedAfterFinish', "fields:'status'", 'alreadyPublished:true',
 ]) assert.ok(worker.includes(token), `Falta la protecció o el flux de Reels: ${token}`);
+
+assert.equal(facebookVideoPublicationState({ status:{ publishing_phase:{ status:'complete' } } }), 'published');
+assert.equal(facebookVideoPublicationState({ status:{ publishing_phase:{ status:'not_started' } } }), 'pending');
+assert.equal(facebookVideoPublicationState({ status:{ publishing_phase:{ status:'failed' } } }), 'failed');
+assert.equal(facebookVideoPublicationState({}), 'pending');
 
 assert.match(worker, /request\.method === 'HEAD'/, 'La URL temporal ha d’acceptar comprovacions HEAD de Meta.');
 assert.match(worker, /Content-Length/, 'La URL temporal ha de facilitar la mida del vídeo quan R2 la coneix.');

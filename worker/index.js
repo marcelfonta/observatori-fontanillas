@@ -7,7 +7,7 @@ import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core
 import { finiteNumber } from '../src/core/numeric.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.11";
+const WORKER_VERSION = "22.29.12";
 const WORKER_BUILT = "2026-09-12";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -4705,15 +4705,42 @@ async function uploadFacebookHostedReel(uploadUrl, videoUrl, accessToken) {
   return { payload, responseCode:response.status };
 }
 
+export function facebookVideoPublicationState(payload) {
+  const publishingStatus = String(payload?.status?.publishing_phase?.status || '').trim().toLowerCase();
+  if (publishingStatus === 'complete') return 'published';
+  if (publishingStatus === 'error' || publishingStatus === 'failed') return 'failed';
+  return 'pending';
+}
+
+async function checkFacebookVideoPublication(videoId, accessToken, env) {
+  const status = await metaGraphRequest(env, videoId, {
+    accessToken,
+    params:{ fields:'status' },
+  });
+  const publicationState = facebookVideoPublicationState(status.payload);
+  if (publicationState === 'failed') {
+    throw Object.assign(new Error('Facebook indica que la publicació del vídeo ha fallat.'), {
+      status:502,
+      responseCode:status.responseCode,
+    });
+  }
+  return { ...status, publicationState, alreadyPublished:publicationState === 'published' };
+}
+
 async function publishFacebookReel({ videoUrl, caption, videoId='', uploadUrl='', stage='' }, env) {
   const assets = await resolveMetaAssets(env);
   if (!assets.pageId) throw Object.assign(new Error('No s’ha identificat la pàgina de Facebook.'), { status:503 });
   let reelVideoId=cleanText(videoId,100);let reelUploadUrl=cleanText(uploadUrl,1000);let reelStage=cleanText(stage,40);
+  const resumedAfterFinish = Boolean(reelVideoId && reelUploadUrl) && reelStage === 'finish_pending';
   try {
     if(!reelVideoId||!reelUploadUrl){
       const started=await metaGraphRequest(env,`${assets.pageId}/video_reels`,{method:'POST',accessToken:assets.pageToken,params:{upload_phase:'start'}});
       reelVideoId=cleanText(started.payload.video_id,100);reelUploadUrl=cleanText(started.payload.upload_url,1000);reelStage='started';
       if(!reelVideoId||!reelUploadUrl)throw Object.assign(new Error('Facebook no ha pogut iniciar la pujada del Reel.'),{status:502,responseCode:started.responseCode});
+    }
+    if (resumedAfterFinish) {
+      const status = await checkFacebookVideoPublication(reelVideoId, assets.pageToken, env);
+      if (status.alreadyPublished) return { remoteId:reelVideoId, responseCode:status.responseCode, alreadyPublished:true };
     }
     if(reelStage!=='finish_pending'){
       await uploadFacebookHostedReel(reelUploadUrl,videoUrl,assets.pageToken);reelStage='finish_pending';
@@ -4773,6 +4800,7 @@ async function publishFacebookStory({ videoUrl, videoId='', uploadUrl='', stage=
   let storyVideoId = cleanText(videoId, 100);
   let storyUploadUrl = cleanText(uploadUrl, 1000);
   let storyStage = cleanText(stage, 40);
+  const resumedAfterFinish = Boolean(storyVideoId && storyUploadUrl) && (storyStage === 'finish_pending' || storyStage === 'finish_failed');
   try {
     if (!storyVideoId || !storyUploadUrl) {
       const started = await metaGraphRequest(env, `${assets.pageId}/video_stories`, {
@@ -4784,9 +4812,14 @@ async function publishFacebookStory({ videoUrl, videoId='', uploadUrl='', stage=
       storyStage = 'started';
       if (!storyVideoId || !storyUploadUrl) throw Object.assign(new Error('Facebook no ha pogut iniciar la pujada de la Story.'), { status:502, responseCode:started.responseCode });
     }
-    if (storyStage !== 'finish_failed') {
+    if (resumedAfterFinish) {
+      const status = await checkFacebookVideoPublication(storyVideoId, assets.pageToken, env);
+      if (status.alreadyPublished) return { remoteId:storyVideoId, responseCode:status.responseCode, alreadyPublished:true };
+      storyStage = 'finish_pending';
+    }
+    if (storyStage !== 'finish_pending') {
       await uploadFacebookHostedReel(storyUploadUrl, videoUrl, assets.pageToken);
-      storyStage = 'finish_failed';
+      storyStage = 'finish_pending';
     }
     const published = await metaGraphRequest(env, `${assets.pageId}/video_stories`, {
       method:'POST', accessToken:assets.pageToken,

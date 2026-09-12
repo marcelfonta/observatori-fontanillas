@@ -16,10 +16,12 @@ for (const token of [
   "observedJob('meta-video',runAutomaticMetaVideos(env))",
   'publishSocialReelsForSlot', 'publishSocialStoriesForSlot',
   'claimMetaVideoRun', "status NOT IN ('healthy','running')",
+  'checkFacebookVideoPublication', "storyStage === 'finish_pending' || storyStage === 'finish_failed'",
 ]) assert.ok(worker.includes(token), `Falta la protecció o el flux de Stories: ${token}`);
 
 assert.match(worker, /upload_phase:'start'/, 'Facebook Stories ha d’inicialitzar una sessió de pujada.');
 assert.match(worker, /upload_phase:'finish'/, 'Facebook Stories ha de finalitzar explícitament la publicació.');
+assert.match(worker, /storyStage = 'finish_pending'/, 'Facebook Stories ha de conservar una fase de represa inequívoca.');
 assert.match(worker, /if\(!reels\.ok\)\{results\.push\(\{slot,stage:'reels'/, 'Les Stories no poden començar fins que els dos Reels siguin correctes.');
 assert.match(worker, /previous\?\.status === 'healthy'.*alreadyCompleted:true/, 'Els reintents han de reutilitzar una franja ja completada.');
 assert.match(worker, /META_VIDEO_AUTOMATIC_MAX_ATTEMPTS=4/, 'L’automatització ha de limitar els errors definitius.');
