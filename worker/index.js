@@ -7,9 +7,13 @@ import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core
 import { finiteNumber } from '../src/core/numeric.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.9";
+const WORKER_VERSION = "22.29.10";
 const WORKER_BUILT = "2026-09-12";
 const TIME_ZONE = "Europe/Madrid";
+const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
+  timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
+  hour:"2-digit", minute:"2-digit", second:"2-digit", hourCycle:"h23",
+});
 const STORAGE_INTERVAL_MINUTES = 5;
 const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
 const HISTORY_EDGE_CACHE_SECONDS = 5 * 60;
@@ -231,21 +235,25 @@ let operationsSchemaReady = false;
 let forecastSchemaReady = false;
 let oauthTokenSchemaReady = false;
 
-// Offset (en segons) de la zona horària de Madrid respecte a UTC, calculat
-// dinàmicament perquè s'adapti automàticament a CET (UTC+1) i CEST (UTC+2).
-function madridOffsetSeconds() {
-  try {
-    const zone = new Intl.DateTimeFormat("en-US", {
-      timeZone: TIME_ZONE,
-      timeZoneName: "longOffset",
-    }).formatToParts(new Date()).find(part => part.type === "timeZoneName")?.value || "GMT+1";
-    const match = zone.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
-    if (!match) return 3600;
-    const hours = Number(match[2]) + Number(match[3] || 0) / 60;
-    return (match[1] === "+" ? hours : -hours) * 3600;
-  } catch {
-    return 3600;
-  }
+export function madridLocalTime(epoch, fallback = null) {
+  const seconds = finiteNumber(epoch);
+  if (seconds === null || seconds <= 0) return fallback;
+  const parts = Object.fromEntries(MADRID_TIMESTAMP_FORMATTER.formatToParts(new Date(seconds * 1000))
+    .filter(part => part.type !== "literal").map(part => [part.type, part.value]));
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+}
+
+function utcTimeForEpoch(epoch, fallback = null) {
+  const seconds = finiteNumber(epoch);
+  if (seconds === null || seconds <= 0) return fallback;
+  return new Date(seconds * 1000).toISOString();
+}
+
+function epochFromUtc(value) {
+  const source = typeof value === "string" ? value.trim().replace(" ", "T") : "";
+  if (!source) return null;
+  const timestamp = Date.parse(/(?:Z|[+-]\d{2}:?\d{2})$/i.test(source) ? source : `${source}Z`);
+  return Number.isFinite(timestamp) ? Math.floor(timestamp / 1000) : null;
 }
 
 // Capçaleres de seguretat aplicades a totes les respostes del Worker.
@@ -1429,8 +1437,8 @@ async function latestStoredObservation(env) {
   const ageMinutes = Math.max(0, Math.round((Date.now() / 1000 - Number(row.observed_epoch)) / 60));
   return {
     station:"Observatori Meteorològic Fontanillas", stationId:STATION_ID,
-    location:"Sant Celoni · Montseny", updated:row.local_time,
-    updatedUtc:row.observed_at_utc, epoch:row.observed_epoch,
+    location:"Sant Celoni · Montseny", updated:madridLocalTime(row.observed_epoch, row.local_time),
+    updatedUtc:utcTimeForEpoch(row.observed_epoch, row.observed_at_utc), epoch:row.observed_epoch,
     temperature:row.temperature, feelsLike:row.feels_like, humidity:row.humidity,
     dewPoint:row.dew_point, pressure:row.pressure, windSpeed:row.wind_speed,
     windGust:row.wind_gust, windDirection:row.wind_direction,
@@ -1470,10 +1478,13 @@ export function counterRainIncrement(current, previous, hasPrevious) {
 
 export async function persistObservation(observation, env) {
   if (!(await ensureSchema(env))) return { stored:false, reason:"D1 no configurat" };
-  const epoch = Number(observation.epoch) || Math.floor(new Date(observation.updatedUtc).getTime() / 1000);
-  if (!Number.isFinite(epoch)) throw new Error("L'observació no té una hora UTC vàlida");
-  const localTime = String(observation.updated || "");
+  const suppliedEpoch = finiteNumber(observation.epoch);
+  const parsedUtc = epochFromUtc(observation.updatedUtc);
+  const epoch = suppliedEpoch !== null && suppliedEpoch > 0 ? suppliedEpoch : parsedUtc;
+  if (!Number.isFinite(epoch) || epoch <= 0) throw new Error("L'observació no té una hora UTC vàlida");
+  const localTime = madridLocalTime(epoch);
   const localDate = localTime.slice(0, 10);
+  const observedAtUtc = utcTimeForEpoch(epoch);
   const currentRain = nonnegativeRain(observation.rainToday);
   const previous = await env.DB.prepare(
     "SELECT rain_total FROM observations WHERE local_date = ? AND observed_epoch < ? ORDER BY observed_epoch DESC LIMIT 1"
@@ -1487,7 +1498,7 @@ export async function persistObservation(observation, env) {
     solar_radiation, uv, quality
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   ON CONFLICT(observed_epoch) DO NOTHING`).bind(
-    epoch, observation.updatedUtc, localTime, localDate, STATION_ID,
+    epoch, observedAtUtc, localTime, localDate, STATION_ID,
     finiteNumber(observation.temperature), finiteNumber(observation.feelsLike), finiteNumber(observation.humidity),
     finiteNumber(observation.dewPoint), finiteNumber(observation.pressure), finiteNumber(observation.windSpeed),
     finiteNumber(observation.windGust), finiteNumber(observation.windDirection), currentRain,
@@ -2395,10 +2406,11 @@ async function createOfficialAlertSocialDraft(entry,env){
 
 function mapHistoryObservation(obs) {
   const metric = obs.metric || {};
+  const epoch = finiteNumber(obs.epoch);
   return {
-    time: obs.obsTimeLocal,
-    timeUtc: obs.obsTimeUtc,
-    epoch: obs.epoch,
+    time: madridLocalTime(epoch, obs.obsTimeLocal),
+    timeUtc: utcTimeForEpoch(epoch, obs.obsTimeUtc),
+    epoch,
     temperature: metric.tempAvg,
     temperatureMin: metric.tempLow,
     temperatureMax: metric.tempHigh,
@@ -2424,6 +2436,7 @@ function mapHistoryObservation(obs) {
     uv: obs.uvHigh,
     quality: obs.qcStatus,
     samples: 1,
+    coverageMinutes: 60,
   };
 }
 
@@ -2478,11 +2491,37 @@ function historyCacheState(response, state) {
   return new Response(response.body, { status:response.status, statusText:response.statusText, headers });
 }
 
+export function circularMeanDegrees(values = []) {
+  let sine = 0;
+  let cosine = 0;
+  let samples = 0;
+  for (const item of values) {
+    const value = finiteNumber(item);
+    if (value === null) continue;
+    const radians = value * Math.PI / 180;
+    sine += Math.sin(radians);
+    cosine += Math.cos(radians);
+    samples += 1;
+  }
+  if (!samples || Math.hypot(sine, cosine) / samples < 1e-8) return null;
+  return (Math.atan2(sine, cosine) * 180 / Math.PI + 360) % 360;
+}
+
+function circularDirectionFromComponents(sineValue, cosineValue) {
+  const sine = finiteNumber(sineValue);
+  const cosine = finiteNumber(cosineValue);
+  if (sine === null || cosine === null || Math.hypot(sine, cosine) < 1e-8) return null;
+  return (Math.atan2(sine, cosine) * 180 / Math.PI + 360) % 360;
+}
+
 function rowToObservation(row) {
+  const epoch = finiteNumber(row.epoch);
+  const aggregateDirection = circularDirectionFromComponents(row.windDirectionSin, row.windDirectionCos);
+  const samples = Number(row.samples) || 1;
   return {
-    time: row.time,
-    timeUtc: row.timeUtc,
-    epoch: row.epoch,
+    time: madridLocalTime(epoch, row.time),
+    timeUtc: utcTimeForEpoch(epoch, row.timeUtc),
+    epoch,
     temperature: row.temperature,
     temperatureMin: row.temperatureMin,
     temperatureMax: row.temperatureMax,
@@ -2498,7 +2537,7 @@ function rowToObservation(row) {
     windSpeed: row.windSpeed,
     windSpeedMax: row.windSpeedMax,
     windGust: row.windGust,
-    windDirection: row.windDirection,
+    windDirection: aggregateDirection ?? finiteNumber(row.windDirection),
     rainRate: row.rainRate,
     rainTotal: row.rainTotal,
     rainIncrement: row.rainIncrement,
@@ -2506,16 +2545,15 @@ function rowToObservation(row) {
     solarRadiation: row.solarRadiation,
     uv: row.uv,
     quality: row.quality,
-    samples: Number(row.samples) || 1,
+    samples,
+    coverageMinutes:samples * STORAGE_INTERVAL_MINUTES,
   };
 }
 
 export async function d1History(env, range, resolution) {
   if (!(await ensureSchema(env))) return [];
   const commonWhere = "WHERE local_date >= ? AND local_date <= ?";
-  const offset = madridOffsetSeconds();
   let sql;
-  let bindOffset = false;
   if (resolution === "raw") {
     sql = `SELECT observed_epoch AS epoch, local_time AS time, observed_at_utc AS timeUtc,
       temperature, temperature AS temperatureMin, temperature AS temperatureMax,
@@ -2534,12 +2572,13 @@ export async function d1History(env, range, resolution) {
       AVG(dew_point) AS dewPoint, MIN(dew_point) AS dewPointMin, MAX(dew_point) AS dewPointMax,
       AVG(pressure) AS pressure, MIN(pressure) AS pressureMin, MAX(pressure) AS pressureMax,
       AVG(wind_speed) AS windSpeed, MAX(wind_speed) AS windSpeedMax, MAX(wind_gust) AS windGust,
-      AVG(wind_direction) AS windDirection, MAX(rain_rate) AS rainRate, MAX(rain_total) AS rainTotal,
+      AVG(CASE WHEN wind_direction IS NOT NULL THEN SIN(wind_direction * 0.017453292519943295) END) AS windDirectionSin,
+      AVG(CASE WHEN wind_direction IS NOT NULL THEN COS(wind_direction * 0.017453292519943295) END) AS windDirectionCos,
+      MAX(rain_rate) AS rainRate, MAX(rain_total) AS rainTotal,
       SUM(rain_delta) AS rainIncrement, COUNT(rain_delta) AS rainSamples, MAX(solar_radiation) AS solarRadiation, MAX(uv) AS uv,
       MAX(quality) AS quality, COUNT(*) AS samples
       FROM observations ${commonWhere}
-      GROUP BY strftime('%Y-%m-%dT%H', observed_epoch + ?, 'unixepoch') ORDER BY epoch`;
-    bindOffset = true;
+      GROUP BY CAST(observed_epoch / 3600 AS INTEGER) ORDER BY epoch`;
   } else {
     sql = `SELECT MIN(observed_epoch) AS epoch, MIN(local_time) AS time, MIN(observed_at_utc) AS timeUtc,
       AVG(temperature) AS temperature, MIN(temperature) AS temperatureMin, MAX(temperature) AS temperatureMax,
@@ -2547,7 +2586,9 @@ export async function d1History(env, range, resolution) {
       AVG(dew_point) AS dewPoint, MIN(dew_point) AS dewPointMin, MAX(dew_point) AS dewPointMax,
       AVG(pressure) AS pressure, MIN(pressure) AS pressureMin, MAX(pressure) AS pressureMax,
       AVG(wind_speed) AS windSpeed, MAX(wind_speed) AS windSpeedMax, MAX(wind_gust) AS windGust,
-      AVG(wind_direction) AS windDirection, MAX(rain_rate) AS rainRate, SUM(rain_delta) AS rainTotal,
+      AVG(CASE WHEN wind_direction IS NOT NULL THEN SIN(wind_direction * 0.017453292519943295) END) AS windDirectionSin,
+      AVG(CASE WHEN wind_direction IS NOT NULL THEN COS(wind_direction * 0.017453292519943295) END) AS windDirectionCos,
+      MAX(rain_rate) AS rainRate, SUM(rain_delta) AS rainTotal,
       SUM(rain_delta) AS rainIncrement, COUNT(rain_delta) AS rainSamples, MAX(solar_radiation) AS solarRadiation, MAX(uv) AS uv,
       MAX(quality) AS quality, COUNT(*) AS samples
       FROM observations ${commonWhere} GROUP BY local_date ORDER BY epoch`;
@@ -2556,7 +2597,6 @@ export async function d1History(env, range, resolution) {
     `${range.start.slice(0, 4)}-${range.start.slice(4, 6)}-${range.start.slice(6, 8)}`,
     `${range.end.slice(0, 4)}-${range.end.slice(4, 6)}-${range.end.slice(6, 8)}`,
   ];
-  if (bindOffset) bindings.push(offset);
   const result = await env.DB.prepare(sql).bind(...bindings).all();
   return (result.results || []).map(rowToObservation);
 }
@@ -2608,14 +2648,17 @@ export function aggregateWuHistory(items, resolution) {
     const increments = group.map(row=>nonnegativeRain(row.rainIncrement)).filter(value=>value!==null);
     const rainTotal = increments.length ? increments.reduce((sum,value)=>sum+value,0) : null;
     return {
-      time:first.time, timeUtc:first.timeUtc, epoch:first.epoch,
+      time:madridLocalTime(first.epoch, first.time), timeUtc:utcTimeForEpoch(first.epoch, first.timeUtc), epoch:first.epoch,
       temperature:average(group, "temperature"), temperatureMin:minimum(group, "temperatureMin"), temperatureMax:maximum(group, "temperatureMax"),
       humidity:average(group, "humidity"), humidityMin:minimum(group, "humidityMin"), humidityMax:maximum(group, "humidityMax"),
       dewPoint:average(group, "dewPoint"), dewPointMin:minimum(group, "dewPointMin"), dewPointMax:maximum(group, "dewPointMax"),
       pressure:average(group, "pressure"), pressureMin:minimum(group, "pressureMin"), pressureMax:maximum(group, "pressureMax"),
       windSpeed:average(group, "windSpeed"), windSpeedMax:maximum(group, "windSpeedMax"), windGust:maximum(group, "windGust"),
-      windDirection:average(group, "windDirection"), rainRate:maximum(group, "rainRate"), rainTotal, rainIncrement:rainTotal,
-      solarRadiation:maximum(group, "solarRadiation"), uv:maximum(group, "uv"), quality:maximum(group, "quality"), samples:group.length, rainSamples:increments.length,
+      windDirection:circularMeanDegrees(group.map(item=>item.windDirection)), rainRate:maximum(group, "rainRate"), rainTotal, rainIncrement:rainTotal,
+      solarRadiation:maximum(group, "solarRadiation"), uv:maximum(group, "uv"), quality:maximum(group, "quality"),
+      samples:group.reduce((sum,item)=>sum+(Number(item.samples)||1),0),
+      coverageMinutes:group.reduce((sum,item)=>sum+(finiteNumber(item.coverageMinutes)??60),0),
+      rainSamples:increments.length,
     };
   });
 }
@@ -2645,12 +2688,15 @@ async function storageSummary(env) {
   const value=await (async()=>{
     if (!(await ensureSchema(env))) return { enabled:false, storedReadings:0, coverageDays:0 };
     const row = await env.DB.prepare(`SELECT COUNT(*) AS storedReadings,
-      MIN(observed_epoch) AS firstEpoch, MAX(observed_epoch) AS lastEpoch,
-      MIN(local_time) AS firstObservation, MAX(local_time) AS lastObservation
+      MIN(observed_epoch) AS firstEpoch, MAX(observed_epoch) AS lastEpoch
       FROM observations`).first();
     const count = Number(row?.storedReadings) || 0;
     const coverageDays = row?.firstEpoch && row?.lastEpoch ? Math.max(0, (row.lastEpoch - row.firstEpoch) / 86400) : 0;
-    return { enabled:true, storedReadings:count, coverageDays, firstObservation:row?.firstObservation || null, lastObservation:row?.lastObservation || null };
+    return {
+      enabled:true, storedReadings:count, coverageDays,
+      firstObservation:madridLocalTime(row?.firstEpoch),
+      lastObservation:madridLocalTime(row?.lastEpoch),
+    };
   })();
   runtimeStateCache.set('d1:storage-summary',{value,expiresAt:Date.now()+STORAGE_SUMMARY_CACHE_MS});
   return value;

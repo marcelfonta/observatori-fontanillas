@@ -6,8 +6,8 @@ const [page,worker,style,project,serviceWorker]=await Promise.all([
   read('index.html'),read('worker/index.js'),read('css/style.css'),read('project.json'),read('service-worker.js')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.31.1');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-1-frances-colaboracions'));
+assert.equal(JSON.parse(project).version,'22.31.2');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-2-frances-colaboracions'));
 assert.ok(page.includes('ESTOFEX: vigilància de tempestes severes')&&page.includes('No és un avís oficial')&&page.includes('AEMET, Meteocat, Protecció Civil i 112 prevalen sempre'));
 assert.ok(style.includes('.estofex-card'));
 assert.ok(worker.includes("function alertPushStateKey")&&worker.includes("reason:'no_recipients'")&&worker.includes('canRetryAlertPush'));

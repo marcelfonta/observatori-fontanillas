@@ -26,6 +26,10 @@ const timeline=buildWeatherTimeline(history,[{started_at:new Date(atNoon(2)).toI
 assert.ok(timeline.some(item=>item.type==='alert'));
 assert.match(nodes.get('data-summary-temp-24h').textContent,/°C|—/,'Falta la comparació de temperatura de les últimes 24 hores.');
 assert.match(nodes.get('data-summary-rain-24h').textContent,/mm/,'Falta la comparació de pluja de les últimes 24 hores.');
+assert.match(nodes.get('data-summary-coverage').textContent,/% de continuïtat/,'La cobertura intradiària ha de ser visible.');
+assert.doesNotMatch(nodes.get('data-summary-coverage').textContent,/· 0%/,'Una cobertura positiva inferior a l’1% no s’ha de presentar com a zero.');
+assert.equal(nodes.get('data-summary-samples').textContent,'108');
+assert.equal(nodes.get('data-summary-temp-mean').textContent,'21,8','La mitjana ha de ponderar les files pel nombre de mostres.');
 assert.ok(timeline.some(item=>item.type==='rain'));
 assert.ok(timeline.some(item=>item.type==='extreme'));
 console.log('Test de pluviometria V18: correcte');

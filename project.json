@@ -1,10 +1,10 @@
 {
   "name": "observatori-fontanillas",
-  "version": "22.31.1",
+  "version": "22.31.2",
   "type": "static-pwa",
   "entry": "index.html",
   "frontend": "src/app.js",
   "worker": "worker/index.js",
-  "workerVersion": "22.29.9",
+  "workerVersion": "22.29.10",
   "architecture": "PROJECT.md"
 }

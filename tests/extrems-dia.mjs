@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { madridLocalTimestamp } from '../src/core/history-data.js';
 import { summarizeRemoteHistory } from '../src/modules/historics.js';
 
 const current = {
@@ -15,7 +16,7 @@ const history = [
 ];
 
 const context = summarizeRemoteHistory(current, history);
-const currentTime = new Date('2026-09-06T15:30:00').getTime();
+const currentTime = madridLocalTimestamp(current.updated);
 assert.equal(context.stats.maxTemperature, 35.3, 'La lectura actual ha de corregir una màxima històrica endarrerida.');
 assert.equal(context.stats.maxTemperatureTime, currentTime, 'L’hora de la màxima ha de correspondre a la lectura actual quan aquesta guanya.');
 assert.equal(context.stats.minTemperature, 20.6, 'La mínima històrica vàlida s’ha de conservar.');
