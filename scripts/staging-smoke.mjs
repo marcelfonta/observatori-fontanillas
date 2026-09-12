@@ -40,7 +40,13 @@ if (alerts.ok !== true || !Array.isArray(alerts.alerts) || !alerts.source?.name)
 
 async function validateWeatherHistory(resolution, days) {
   const payload = await getJson(`/history?days=${days}&resolution=${resolution}`);
-  if (payload.ok !== true || payload.interval !== resolution || !Array.isArray(payload.observations)) {
+  const validEnvelope = payload.interval === resolution
+    && Number.isInteger(payload.count)
+    && payload.count >= 0
+    && Array.isArray(payload.observations)
+    && payload.count === payload.observations.length
+    && payload.storage?.enabled === true;
+  if (!validEnvelope) {
     throw new Error(`/history (${resolution}): contracte de dades invàlid.`);
   }
   let previousEpoch = 0;

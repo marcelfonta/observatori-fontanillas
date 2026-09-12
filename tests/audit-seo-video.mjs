@@ -29,6 +29,8 @@ for(const html of staticPages){
   assert.match(html,/hreflang="fr"/);assert.match(html,/property="og:title"/);assert.match(html,/name="twitter:card"/);
 }
 for(const resolution of ['raw','hourly','daily'])assert.ok(staging.includes(`validateWeatherHistory('${resolution}'`));
+assert.ok(!staging.includes('payload.ok !== true'),'/history no exposa cap camp ok al seu contracte.');
+for(const token of ['Number.isInteger(payload.count)','payload.count === payload.observations.length','payload.storage?.enabled === true'])assert.ok(staging.includes(token));
 
 const sqlite=new DatabaseSync(':memory:');
 sqlite.exec(`CREATE TABLE monitor_state (
