@@ -66,7 +66,7 @@ if(!portalShell.includes("['aprendre','Aprendre'")||!html.includes('data-portal-
 const methodology=await readFile(resolve(root,'metodologia.html'),'utf8');
 if(!methodology.includes('portal-view-header portal-view-header--static'))throw new Error('Metodologia no té la capçalera compartida.');
 const backend=await readFile(resolve(root,'worker/index.js'),'utf8');
-if(!backend.includes('/v3/location/near')||!backend.includes('discoverComparisonStations')||!backend.includes('WORKER_VERSION = "22.29.7"'))throw new Error('El Worker no amplia les estacions properes de forma compatible o no és V22.29.7.');
+if(!backend.includes('/v3/location/near')||!backend.includes('discoverComparisonStations')||!backend.includes('WORKER_VERSION = "22.29.8"'))throw new Error('El Worker no amplia les estacions properes de forma compatible o no és V22.29.8.');
 if(!comparison.includes('Com canvia el temps al Baix Montseny?'))throw new Error('El títol del comparador no s’ha aclarit.');
 const manifest=JSON.parse(await readFile(resolve(root,'site.webmanifest'),'utf8'));
 if(manifest.short_name!=='Observatori')throw new Error('El nom curt de la PWA no segueix la guia de marca.');

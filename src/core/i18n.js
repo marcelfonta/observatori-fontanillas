@@ -146,6 +146,7 @@ export const PHRASES={
   'Arrossega i amplia el mapa. L’hora destacada correspon exactament a la imatge mostrada.':{es:'Arrastra y amplía el mapa. La hora destacada corresponde exactamente a la imagen mostrada.',en:'Drag and zoom the map. The highlighted time matches the displayed image exactly.'},
   'Sensor':{es:'Sensor',en:'Sensor'},
   'Acumulada':{es:'Acumulada',en:'Accumulated'},
+  'Acumulada registrada (pot ser parcial)':{es:'Acumulada registrada (puede ser parcial)',en:'Recorded accumulation (may be partial)'},
   'Risc solar':{es:'Riesgo solar',en:'Solar risk'},
   'Combinada':{es:'Combinada',en:'Combined'},
   'Interpretant':{es:'Interpretando',en:'Interpreting'},

@@ -129,6 +129,7 @@ export const FRENCH_PHRASES={
   'Arrossega i amplia el mapa. L’hora destacada correspon exactament a la imatge mostrada.':'Faites glisser et zoomez sur la carte. L’heure mise en évidence correspond exactement à l’image affichée.',
   'Sensor':'Capteur',
   'Acumulada':'Cumulée',
+  'Acumulada registrada (pot ser parcial)':'Cumul enregistré (peut être partiel)',
   'Risc solar':'Risque solaire',
   'Combinada':'Combinée',
   'Interpretant':'Interprétation',

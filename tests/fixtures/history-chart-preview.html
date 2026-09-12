@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ca"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auditoria D · prova local de gràfiques</title>
+<style>
+body{margin:0;padding:16px;background:#081b15;color:#e4f1e8;font:16px system-ui}main{max-width:1100px;margin:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+article{border:1px solid #305344;border-radius:20px;padding:16px;min-width:0}h2{font-size:18px}
+.plot{height:240px;position:relative}button{padding:12px;margin:4px}p{line-height:1.5}
+</style>
+<main><h1>Gràfiques · dades fictícies de prova</h1>
+<p>Prova local: els buits han de tallar les línies. Un zero real es conserva; una dada absent no es dibuixa.</p>
+<button id="partial">Dades parcials</button><button id="empty">Sense dades</button><button id="french">Français</button>
+<p id="history-status"></p><div class="grid">
+<article><h2>Temperatura</h2><div class="plot"><canvas id="temperature-chart"></canvas></div></article>
+<article><h2>Pressió</h2><div class="plot"><canvas id="pressure-chart"></canvas></div></article>
+<article><h2>Humitat</h2><div class="plot"><canvas id="humidity-chart"></canvas></div></article>
+<article><h2>Vent</h2><div class="plot"><canvas id="wind-chart"></canvas></div></article>
+<article><h2>Pluja</h2><div class="plot"><canvas id="rain-chart"></canvas></div></article>
+<article><h2>UV</h2><div class="plot"><canvas id="uv-chart"></canvas></div></article>
+</div></main>
+<script type="module">
+import { loadChartJs } from '../../src/modules/chart-loader.js';
+import { renderCharts } from '../../src/modules/grafiques.js';
+import { setLanguage } from '../../src/core/i18n.js';
+await loadChartJs();
+const now=Date.now();
+const rows=Array.from({length:24},(_,i)=>({t:now-(24-i)*300000,temperature:i===8?null:20+i/3,pressure:i===8?null:1010+i/10,humidity:50-i,windSpeed:i/2,windGust:i,rainIncrement:i===8?null:i%4===0?1:0,rainRate:i%4===0?2:0,uv:i/5})).filter((_,i)=>i<12||i>19);
+function draw(){renderCharts({},rows);}
+document.getElementById('partial').onclick=draw;
+document.getElementById('empty').onclick=()=>renderCharts({},[]);
+document.getElementById('french').onclick=()=>{setLanguage('fr',{persist:false});draw();};
+draw();
+</script></html>

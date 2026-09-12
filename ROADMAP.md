@@ -2,14 +2,18 @@
 
 ## Manteniment obert — En curs
 
+- [x] Auditoria D: intervals de consulta, absències a origen i gràfiques, increments de pluja i agregats parcials, amb proves locals.
+- [ ] Revisar i integrar D; validar a staging el volum/consum d’històric abans d’autoritzar Worker 22.29.8 a producció.
+- [ ] Optimitzar la memòria cau d’històric i auditar mitjanes ponderades, direcció del vent i cobertura intradiària.
+
 - [x] Auditoria C: cobertura de dies reals, pluja absent diferenciada de zero i antiguitat de registres sense inferir ratxes seques.
-- [ ] Revisió humana i previsualització del paquet C abans d’integrar. No modifica el Worker ni desplega els paquets A/B pendents.
+- [x] Paquet C integrat a la PR 139; web pública amb revisió PWA `audit-c`. Desplegament A/B/C verificat el 12-09-2026.
 - [ ] Completar l’auditoria d’etiquetes meteorològiques, traduccions antigues i SEO; revisar per separat cobertura horària/diària a l’origen i les gràfiques.
 
 - [x] Auditoria paquet A: dades absents, cobertura de la previsió astronòmica, dates inequívoques i caducitat editorial amb proves dels esborranys reals.
-- [ ] Revisió humana i validació a staging del paquet A (Worker V22.29.6); producció encara no autoritzada per aquest canvi.
+- [x] Paquet A revisat, validat a staging i desplegat juntament amb B en Worker 22.29.7 amb autorització humana.
 - [x] Auditoria paquet B: cua limitada amb avanç, reserva concurrent per canal i conciliació humana d’èxits remots incerts al flux d’imatges.
-- [ ] Revisió humana i staging del paquet B (Worker 22.29.7), sense escriptors antics i nous simultanis. Producció pendent d’autorització.
+- [x] Paquet B validat i desplegat en Worker 22.29.7: pausa controlada superior a 15 minuts i automatització represa. Evidència a `docs/DEPLOY-AUDIT-ABC-2026-09-12.md`.
 - [ ] Extendre la mateixa garantia als fluxos separats de vídeo i afegir conciliació automàtica verificada per proveïdor quan sigui possible.
 
 - [x] Compartir entre la web i el Worker el calendari de canvis d’estació i fenòmens astronòmics anuals verificats.

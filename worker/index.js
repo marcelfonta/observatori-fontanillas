@@ -4,9 +4,10 @@ import { METEOROLOGICAL_EPHEMERIDES } from '../src/data/meteorological-ephemerid
 import { astronomyEventsForDate, astronomyVisibilitySummary, astronomyObservationDateLabel, seasonTransitionForDate } from '../src/data/astronomical-calendar.js';
 import { detectForecastEpisode, forecastEpisodeCopy, normalizeForecastModel } from '../src/core/forecast-episodes.js';
 import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core/temperature-trend.js';
+import { finiteNumber } from '../src/core/numeric.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.7";
+const WORKER_VERSION = "22.29.8";
 const WORKER_BUILT = "2026-09-12";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -1451,18 +1452,31 @@ async function resilientCurrentObservation(env) {
   }
 }
 
-async function persistObservation(observation, env) {
+function nonnegativeRain(value) {
+  const number = finiteNumber(value);
+  return number !== null && number >= 0 ? number : null;
+}
+
+export function counterRainIncrement(current, previous, hasPrevious) {
+  const amount = nonnegativeRain(current), before = nonnegativeRain(previous);
+  if (amount === null) return null;
+  // The first daily counter is a known total since midnight. A missing previous
+  // counter or a same-day reset cannot establish an increment.
+  if (!hasPrevious) return amount;
+  return before !== null && amount >= before ? amount - before : null;
+}
+
+export async function persistObservation(observation, env) {
   if (!(await ensureSchema(env))) return { stored:false, reason:"D1 no configurat" };
   const epoch = Number(observation.epoch) || Math.floor(new Date(observation.updatedUtc).getTime() / 1000);
   if (!Number.isFinite(epoch)) throw new Error("L'observació no té una hora UTC vàlida");
   const localTime = String(observation.updated || "");
   const localDate = localTime.slice(0, 10);
-  const currentRain = Math.max(0, finite(observation.rainToday) || 0);
+  const currentRain = nonnegativeRain(observation.rainToday);
   const previous = await env.DB.prepare(
     "SELECT rain_total FROM observations WHERE local_date = ? AND observed_epoch < ? ORDER BY observed_epoch DESC LIMIT 1"
   ).bind(localDate, epoch).first();
-  const previousRain = finite(previous?.rain_total);
-  const rainDelta = previousRain === null ? currentRain : Math.max(0, currentRain - previousRain);
+  const rainDelta = counterRainIncrement(currentRain, previous?.rain_total, Boolean(previous));
 
   await env.DB.prepare(`INSERT INTO observations (
     observed_epoch, observed_at_utc, local_time, local_date, station_id,
@@ -1472,11 +1486,11 @@ async function persistObservation(observation, env) {
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   ON CONFLICT(observed_epoch) DO NOTHING`).bind(
     epoch, observation.updatedUtc, localTime, localDate, STATION_ID,
-    finite(observation.temperature), finite(observation.feelsLike), finite(observation.humidity),
-    finite(observation.dewPoint), finite(observation.pressure), finite(observation.windSpeed),
-    finite(observation.windGust), finite(observation.windDirection), currentRain,
-    finite(observation.rainRate), rainDelta, finite(observation.solarRadiation),
-    finite(observation.uv), finite(observation.quality)
+    finiteNumber(observation.temperature), finiteNumber(observation.feelsLike), finiteNumber(observation.humidity),
+    finiteNumber(observation.dewPoint), finiteNumber(observation.pressure), finiteNumber(observation.windSpeed),
+    finiteNumber(observation.windGust), finiteNumber(observation.windDirection), currentRain,
+    finiteNumber(observation.rainRate), rainDelta, finiteNumber(observation.solarRadiation),
+    finiteNumber(observation.uv), finiteNumber(observation.quality)
   ).run();
   runtimeStateCache.delete('d1:storage-summary');
   return { stored:true, epoch };
@@ -2411,7 +2425,7 @@ function mapHistoryObservation(obs) {
   };
 }
 
-function historyRange(requestUrl, maximumDays = 366) {
+export function historyRange(requestUrl, maximumDays = 366) {
   const requestedDate = requestUrl.searchParams.get("date");
   const startParam = requestUrl.searchParams.get("start");
   const endParam = requestUrl.searchParams.get("end");
@@ -2426,10 +2440,10 @@ function historyRange(requestUrl, maximumDays = 366) {
   } else {
     const days = Math.min(maximumDays, Math.max(1, Number.isFinite(requestedDays) ? Math.round(requestedDays) : 7));
     endDate = new Date();
-    startDate = new Date(endDate.getTime() - (days - 1) * 8640000);
+    startDate = new Date(endDate.getTime() - (days - 1) * 86400000);
   }
   if (!startDate || !endDate || startDate > endDate) return null;
-  const days = Math.floor((endDate - startDate) / 8640000) + 1;
+  const days = Math.floor((endDate - startDate) / 86400000) + 1;
   if (days > maximumDays) return null;
   return {
     startDate,
@@ -2471,6 +2485,7 @@ function rowToObservation(row) {
     rainRate: row.rainRate,
     rainTotal: row.rainTotal,
     rainIncrement: row.rainIncrement,
+    rainSamples: row.rainSamples,
     solarRadiation: row.solarRadiation,
     uv: row.uv,
     quality: row.quality,
@@ -2478,7 +2493,7 @@ function rowToObservation(row) {
   };
 }
 
-async function d1History(env, range, resolution) {
+export async function d1History(env, range, resolution) {
   if (!(await ensureSchema(env))) return [];
   const commonWhere = "WHERE local_date >= ? AND local_date <= ?";
   const offset = madridOffsetSeconds();
@@ -2492,7 +2507,8 @@ async function d1History(env, range, resolution) {
       pressure, pressure AS pressureMin, pressure AS pressureMax,
       wind_speed AS windSpeed, wind_speed AS windSpeedMax, wind_gust AS windGust,
       wind_direction AS windDirection, rain_rate AS rainRate, rain_total AS rainTotal,
-      rain_delta AS rainIncrement, solar_radiation AS solarRadiation, uv, quality, 1 AS samples
+      rain_delta AS rainIncrement, CASE WHEN rain_delta IS NULL THEN 0 ELSE 1 END AS rainSamples,
+      solar_radiation AS solarRadiation, uv, quality, 1 AS samples
       FROM observations ${commonWhere} ORDER BY observed_epoch`;
   } else if (resolution === "hourly") {
     sql = `SELECT MIN(observed_epoch) AS epoch, MIN(local_time) AS time, MIN(observed_at_utc) AS timeUtc,
@@ -2502,7 +2518,7 @@ async function d1History(env, range, resolution) {
       AVG(pressure) AS pressure, MIN(pressure) AS pressureMin, MAX(pressure) AS pressureMax,
       AVG(wind_speed) AS windSpeed, MAX(wind_speed) AS windSpeedMax, MAX(wind_gust) AS windGust,
       AVG(wind_direction) AS windDirection, MAX(rain_rate) AS rainRate, MAX(rain_total) AS rainTotal,
-      SUM(rain_delta) AS rainIncrement, MAX(solar_radiation) AS solarRadiation, MAX(uv) AS uv,
+      SUM(rain_delta) AS rainIncrement, COUNT(rain_delta) AS rainSamples, MAX(solar_radiation) AS solarRadiation, MAX(uv) AS uv,
       MAX(quality) AS quality, COUNT(*) AS samples
       FROM observations ${commonWhere}
       GROUP BY strftime('%Y-%m-%dT%H', observed_epoch + ?, 'unixepoch') ORDER BY epoch`;
@@ -2515,7 +2531,7 @@ async function d1History(env, range, resolution) {
       AVG(pressure) AS pressure, MIN(pressure) AS pressureMin, MAX(pressure) AS pressureMax,
       AVG(wind_speed) AS windSpeed, MAX(wind_speed) AS windSpeedMax, MAX(wind_gust) AS windGust,
       AVG(wind_direction) AS windDirection, MAX(rain_rate) AS rainRate, SUM(rain_delta) AS rainTotal,
-      SUM(rain_delta) AS rainIncrement, MAX(solar_radiation) AS solarRadiation, MAX(uv) AS uv,
+      SUM(rain_delta) AS rainIncrement, COUNT(rain_delta) AS rainSamples, MAX(solar_radiation) AS solarRadiation, MAX(uv) AS uv,
       MAX(quality) AS quality, COUNT(*) AS samples
       FROM observations ${commonWhere} GROUP BY local_date ORDER BY epoch`;
   }
@@ -2531,40 +2547,38 @@ async function d1History(env, range, resolution) {
 async function wuHistory(env, range) {
   const now = new Date();
   const endDate = new Date(Math.min(range.endDate.getTime(), now.getTime()));
-  const startDate = new Date(Math.max(range.startDate.getTime(), endDate.getTime() - 30 * 8640000));
+  const startDate = new Date(Math.max(range.startDate.getTime(), endDate.getTime() - 30 * 86400000));
   const start = dateKey(startDate);
   const end = dateKey(endDate);
   const params = start === end ? { date:end } : { startDate:start, endDate:end };
   const data = await weatherRequest("/v2/pws/history/hourly", params, env, 300);
-  const observations = (data.observations || []).map(mapHistoryObservation);
+  const observations = (data.observations || []).map(mapHistoryObservation).filter(row=>finiteNumber(row.epoch)!==null).sort((a,b)=>a.epoch-b.epoch);
   return observations.map((observation, index) => {
     const previous = observations[index - 1];
-    const currentRain = Math.max(0, finite(observation.rainTotal) || 0);
     const sameDay = String(previous?.time || "").slice(0, 10) === String(observation.time || "").slice(0, 10);
-    const previousRain = sameDay ? finite(previous?.rainTotal) : null;
     return {
       ...observation,
-      rainIncrement:previousRain === null ? currentRain : Math.max(0, currentRain - previousRain),
+      rainIncrement:counterRainIncrement(observation.rainTotal, previous?.rainTotal, sameDay),
     };
   });
 }
 
 function average(items, key) {
-  const values = items.map(item => finite(item[key])).filter(item => item !== null);
+  const values = items.map(item => finiteNumber(item[key])).filter(item => item !== null);
   return values.length ? values.reduce((total, item) => total + item, 0) / values.length : null;
 }
 
 function minimum(items, key) {
-  const values = items.map(item => finite(item[key])).filter(item => item !== null);
+  const values = items.map(item => finiteNumber(item[key])).filter(item => item !== null);
   return values.length ? Math.min(...values) : null;
 }
 
 function maximum(items, key) {
-  const values = items.map(item => finite(item[key])).filter(item => item !== null);
+  const values = items.map(item => finiteNumber(item[key])).filter(item => item !== null);
   return values.length ? Math.max(...values) : null;
 }
 
-function aggregateWuHistory(items, resolution) {
+export function aggregateWuHistory(items, resolution) {
   if (resolution !== "daily") return items;
   const groups = new Map();
   items.forEach(item => {
@@ -2574,7 +2588,8 @@ function aggregateWuHistory(items, resolution) {
   });
   return [...groups.values()].map(group => {
     const first = group[0];
-    const rainTotal = maximum(group, "rainTotal") || 0;
+    const increments = group.map(row=>nonnegativeRain(row.rainIncrement)).filter(value=>value!==null);
+    const rainTotal = increments.length ? increments.reduce((sum,value)=>sum+value,0) : null;
     return {
       time:first.time, timeUtc:first.timeUtc, epoch:first.epoch,
       temperature:average(group, "temperature"), temperatureMin:minimum(group, "temperatureMin"), temperatureMax:maximum(group, "temperatureMax"),
@@ -2583,7 +2598,7 @@ function aggregateWuHistory(items, resolution) {
       pressure:average(group, "pressure"), pressureMin:minimum(group, "pressureMin"), pressureMax:maximum(group, "pressureMax"),
       windSpeed:average(group, "windSpeed"), windSpeedMax:maximum(group, "windSpeedMax"), windGust:maximum(group, "windGust"),
       windDirection:average(group, "windDirection"), rainRate:maximum(group, "rainRate"), rainTotal, rainIncrement:rainTotal,
-      solarRadiation:maximum(group, "solarRadiation"), uv:maximum(group, "uv"), quality:maximum(group, "quality"), samples:group.length,
+      solarRadiation:maximum(group, "solarRadiation"), uv:maximum(group, "uv"), quality:maximum(group, "quality"), samples:group.length, rainSamples:increments.length,
     };
   });
 }

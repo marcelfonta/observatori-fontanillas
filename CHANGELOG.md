@@ -1,5 +1,12 @@
 # Changelog
 
+## Correcció — Auditoria D · històric i gràfiques — 2026-09-12
+
+- Intervals d’històric corregits a dies de 24 hores; absències preservades en captures futures i agregats, amb recompte de mostres pluviomètriques conegudes.
+- Gràfiques sense reserves fictícies, amb eix temporal proporcional i línies tallades als buits. Es conserven els punts i increments rebuts.
+- Miniatures sense falsa línia plana quan falta historial; eixos ocults quan no hi ha dades. Llegenda pluviomètrica amb advertiment de parcialitat en quatre idiomes.
+- Worker proposat 22.29.8 i PWA `audit-d`. Cap migració ni correcció retroactiva de dades. Proves SQLite, renderitzat i previsualització local; producció pendent de revisió humana.
+
 ## Correcció — Auditoria C · cobertura i pluja registrada — 2026-09-12
 
 - Centre de Dades: sense dades pluviomètriques es mostra un guió, no 0 mm. Es preserven els zeros reals i s’indica que les sumes poden ser parcials.
