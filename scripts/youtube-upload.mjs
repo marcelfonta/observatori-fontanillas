@@ -1,10 +1,30 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const required=name=>{const value=process.env[name];if(!value)throw new Error(`Falta ${name}`);return value;};
 const MINIMUM_SCHEDULING_MARGIN_MS=5*60_000;
+const TERMINAL_OAUTH_ERRORS=new Set(['invalid_grant','invalid_client','unauthorized_client','deleted_client']);
 
-async function main(){
+export function youtubeTokenRefreshFailure(status,payload={}){
+  const oauthError=/^[a-z0-9_.-]{1,80}$/i.test(String(payload?.error||''))?String(payload.error).toLowerCase():'';
+  const terminal=status>=400&&status<500&&TERMINAL_OAUTH_ERRORS.has(oauthError);
+  const failureCode=oauthError?`oauth_${oauthError}`:`oauth_http_${Number(status)||0}`;
+  return Object.assign(new Error(`No s’ha pogut renovar el token de YouTube (${status}${oauthError?`; ${oauthError}`:''}).`),{
+    stage:'youtube-auth',failureCode,terminal,
+  });
+}
+
+export function youtubeUploadFailureReport(error){
+  return {
+    stage:String(error?.stage||'youtube-upload').slice(0,80),
+    failureCode:String(error?.failureCode||'youtube_upload_failed').slice(0,80),
+    terminal:error?.terminal===true,
+    error:String(error?.message||'YouTube no ha completat la pujada.').replace(/[\r\n]+/g,' ').slice(0,500),
+  };
+}
+
+export async function main(){
   const clientId=required('YOUTUBE_CLIENT_ID');
   const clientSecret=required('YOUTUBE_CLIENT_SECRET');
   const refreshToken=required('YOUTUBE_REFRESH_TOKEN');
@@ -17,8 +37,8 @@ async function main(){
     if(privacy!=='private')throw new Error('Un Short programat a YouTube s’ha de pujar inicialment com a privat.');
   }
   const tokenResponse=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:clientId,client_secret:clientSecret,refresh_token:refreshToken,grant_type:'refresh_token'})});
-  const token=await tokenResponse.json();
-  if(!tokenResponse.ok||!token.access_token)throw new Error(`No s’ha pogut renovar el token (${tokenResponse.status}).`);
+  const token=await tokenResponse.json().catch(()=>({}));
+  if(!tokenResponse.ok||!token.access_token)throw youtubeTokenRefreshFailure(tokenResponse.status,token);
   const video=await readFile(resolve(process.env.VIDEO_FILE||'build/youtube-short/short.mp4'));
   const metadata=JSON.parse(await readFile(resolve(process.env.VIDEO_METADATA_FILE||'build/youtube-short/metadata.json'),'utf8'));
   const status={privacyStatus:privacy,selfDeclaredMadeForKids:false,...(publishAt?{publishAt}: {})};
@@ -41,4 +61,15 @@ async function main(){
   console.log(`Vídeo confirmat a YouTube com a ${privacy}${publishAt?` i programat per a ${publishAt}`:''}. ID: ${result.id}`);
 }
 
-main().catch(error=>{console.error(error);process.exitCode=1;});
+async function runCli(){
+  try{await main();}
+  catch(error){
+    const report=youtubeUploadFailureReport(error);
+    const errorFile=resolve(process.env.YOUTUBE_UPLOAD_ERROR_FILE||'/tmp/youtube-upload-error.json');
+    await writeFile(errorFile,JSON.stringify(report)).catch(writeError=>console.error(`No s’ha pogut desar el diagnòstic segur de YouTube: ${writeError.message}`));
+    console.error(report.error);
+    process.exitCode=1;
+  }
+}
+
+if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href)await runCli();

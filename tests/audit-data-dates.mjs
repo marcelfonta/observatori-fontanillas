@@ -136,5 +136,11 @@ assert.equal(eligible({...alert,issuedAt:'2026-09-11T07:00Z'}),false,'Do not rep
 assert.equal(eligible({...alert,targetDate:'2026-09-13',periods:['13/09 08:00–13/09 14:00 h']}),true,'Advance alerts remain allowed');
 assert.equal(eligible({...alert,issuedAt:'2026-12-31T15:00Z',targetDate:'2026-12-31',expires:'2027-01-01T02:00Z',periods:['31/12 20:00–01/01 02:00 h']},new Date('2026-12-31T22:30Z')),true);
 assert.equal(socialDraftTemporalEligibility({kind:'official_alert',payload:'bad'},now),false);
+for(const kind of ['weekly_summary','monthly_summary','seasonal_summary','annual_summary','station_event','environmental_event','meteorological_ephemeris']){
+  const dated={kind,payload:JSON.stringify({localDate:'2026-09-12'})};
+  assert.equal(socialDraftTemporalEligibility(dated,now),true,`${kind}: same-day retries remain available`);
+  assert.equal(socialDraftTemporalEligibility(dated,new Date('2026-09-13T10:00:00Z')),false,`${kind}: stale recovery is blocked`);
+  assert.equal(socialDraftTemporalEligibility({kind,payload:'bad'},now),false,`${kind}: unknown dates are blocked`);
+}
 assert.equal(socialDraftTemporalEligibility({kind:'daily'},now),true);
 console.log('Auditoria paquet A: dades absents, cobertura astronòmica, esborranys reals i caducitat editorial correctes');

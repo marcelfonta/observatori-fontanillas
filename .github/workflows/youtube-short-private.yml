@@ -43,6 +43,7 @@ jobs:
       YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
       YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+      YOUTUBE_UPLOAD_ERROR_FILE: /tmp/youtube-upload-error.json
       YOUTUBE_PRIVACY_STATUS: ${{ github.event_name == 'schedule' && 'private' || inputs.privacy || 'private' }}
       SHORT_SLOT: ${{ github.event_name == 'schedule' && (startsWith(github.event.schedule, '0 ') && 'vespre' || 'mati') || inputs.slot || 'mati' }}
       SHOULD_SCHEDULE_PUBLICATION: ${{ github.event_name == 'schedule' || inputs.schedule_publication }}
@@ -176,7 +177,7 @@ jobs:
             --header "Content-Type: application/json" \
             --data "{\"action\":\"complete\",\"source\":\"github-${GITHUB_EVENT_NAME}\"}" \
             "$YOUTUBE_SHORT_COORDINATION_URL"
-      - name: Allibera la franja fallida perquè Cloudflare la reintenti
+      - name: Registra la franja fallida i limita els reintents
         if: always() && steps.youtube_upload.outcome != 'success' && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.YOUTUBE_SHORT_COORDINATION_ACTIVE == 'true'
         continue-on-error: true
         run: |
@@ -196,8 +197,9 @@ jobs:
             failure_stage="github-workflow"
             failure_message="La preparació del Short no s’ha completat."
           fi
+          FAILURE_STAGE="$failure_stage" FAILURE_MESSAGE="$failure_message" node scripts/youtube-workflow-failure.mjs > /tmp/youtube-short-failure.json
           curl --fail --silent --show-error --retry 2 --request POST \
             --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
             --header "Content-Type: application/json" \
-            --data "{\"action\":\"fail\",\"source\":\"github-${GITHUB_EVENT_NAME}\",\"stage\":\"${failure_stage}\",\"error\":\"${failure_message}\"}" \
+            --data-binary @/tmp/youtube-short-failure.json \
             "$YOUTUBE_SHORT_COORDINATION_URL"

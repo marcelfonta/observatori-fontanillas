@@ -20,6 +20,8 @@
 - [x] Paquet B validat i desplegat en Worker 22.29.7: pausa controlada superior a 15 minuts i automatització represa. Evidència a `docs/DEPLOY-AUDIT-ABC-2026-09-12.md`.
 - [x] Extendre la reserva atòmica als fluxos separats de Reels i Stories i conservar els identificadors de la pujada de Facebook per reprendre el mateix vídeo sense començar-ne un altre.
 - [x] Afegir conciliació automàtica verificada per proveïdor als vídeos de Meta quan existeix un identificador estable: Instagram reutilitza el contenidor i Facebook consulta la fase oficial de publicació abans de reprendre. Les imatges sense identificador remot continuen, deliberadament, en conciliació humana.
+- [x] Caducar el mateix dia els episodis de l’estació, resums, canvis ambientals i efemèrides perquè una recuperació posterior no publiqui contingut antic.
+- [x] Limitar els Shorts de YouTube a quatre intents per franja i aturar-los immediatament davant un error OAuth permanent, tant al disparador de Cloudflare com a la reserva de GitHub.
 
 - [x] Compartir entre la web i el Worker el calendari de canvis d’estació i fenòmens astronòmics anuals verificats.
 - [x] Preparar un avanç astronòmic dos dies abans i un recordatori condicionat per nuvolositat i pluja, amb data explícita i deduplicació per canal.

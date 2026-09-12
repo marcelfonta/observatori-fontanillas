@@ -23,7 +23,7 @@ function draft(kind='station_event',channels=['telegram'],payload={}){
   const id=next++;
   const date=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Madrid'}).format(new Date());
   const key=kind==='daily_observation'?`daily:${date}:${id}`:`test:${id}`;
-  sqlite.prepare("INSERT INTO social_drafts (id,dedupe_key,kind,status,channels,title,body,payload,created_at) VALUES (?,?,?,'approved',?,'Prova local','Contingut de prova sense enviament real',?,datetime('now','-5 minutes'))").run(id,key,kind,JSON.stringify(channels),JSON.stringify(payload));
+  sqlite.prepare("INSERT INTO social_drafts (id,dedupe_key,kind,status,channels,title,body,payload,created_at) VALUES (?,?,?,'approved',?,'Prova local','Contingut de prova sense enviament real',?,datetime('now','-5 minutes'))").run(id,key,kind,JSON.stringify(channels),JSON.stringify({localDate:date,...payload}));
   return sqlite.prepare('SELECT * FROM social_drafts WHERE id = ?').get(id);
 }
 const rows=id=>sqlite.prepare('SELECT * FROM social_publications WHERE draft_id = ? ORDER BY id').all(id);
@@ -91,6 +91,11 @@ try{
   const officialExpired=draft('official_alert',['telegram'],{source:'Meteocat',issuedAt:now.toISOString(),targetDate:localDate,expires:new Date(now.getTime()-1).toISOString()});
   assert.equal((await recoverIncompleteOfficialAlertDraft({DB})).draft.id,officialGood.id);
   assert.equal(sqlite.prepare('SELECT status FROM social_drafts WHERE id=?').get(officialExpired.id).status,'draft');
+  sqlite.prepare("UPDATE social_drafts SET status='discarded'").run();
+  const staleSpecial=draft('station_event',['telegram'],{localDate:'2020-01-01'});
+  const currentSpecial=draft('monthly_summary');
+  assert.equal((await recoverIncompleteSpecialSocialDraft({DB})).draft.id,currentSpecial.id);
+  assert.equal(sqlite.prepare('SELECT status FROM social_drafts WHERE id=?').get(staleSpecial.id).status,'draft','Stale special drafts are held without being sent');
 
   // Exercise actual Telegram publisher + automatic orchestration with local HTTP responses.
   const real=draft('station_event',['telegram','bluesky']);let telegramSends=0;
