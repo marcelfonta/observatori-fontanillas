@@ -5,8 +5,10 @@
 - [x] Auditoria D: intervals de consulta, absències a origen i gràfiques, increments de pluja i agregats parcials, amb proves locals.
 - [x] D integrat a la PR 140 i desplegat amb autorització humana en Worker 22.29.8; intervals validats a staging, consum revisat amb analítica real i web `audit-d` comprovada en producció. Evidència i límits a `docs/DEPLOY-AUDIT-D-2026-09-12.md`.
 - [x] Preparar una memòria cau canònica de cinc minuts per a l’històric, independent del marcador de refresc del client, amb estat `HIT`/`MISS` verificable.
-- [ ] Integrar i validar a staging el paquet E; mesurar l’estalvi D1 abans de proposar Worker 22.29.9 a producció.
-- [ ] Auditar mitjanes ponderades, direcció circular del vent, cobertura intradiària i dates locals antigues.
+- [x] Paquet E integrat, validat a staging i desplegat en Worker 22.29.9 i web 22.31.1; memòria cau `MISS` → `HIT` comprovada i consum D1 per sota del límit diari.
+- [x] Auditar i corregir mitjanes ponderades, direcció circular del vent, cobertura intradiària i dates locals antigues, sense reescriure D1.
+- [ ] Integrar el paquet F, validar les tres resolucions a staging i, amb aprovació separada, desplegar Worker 22.29.10 i web 22.31.2.
+- [ ] Retirar al tauler només la integració redundant de Workers Builds `observatori-fontanillas`; conservar Pages `observatori-fontanillas` i Worker `fonta-meteo`.
 
 - [x] Auditoria C: cobertura de dies reals, pluja absent diferenciada de zero i antiguitat de registres sense inferir ratxes seques.
 - [x] Paquet C integrat a la PR 139; web pública amb revisió PWA `audit-c`. Desplegament A/B/C verificat el 12-09-2026.

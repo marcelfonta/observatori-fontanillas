@@ -1,5 +1,14 @@
 # Changelog
 
+## Correcció — Auditoria F · estadística, vent i temps local — 2026-09-12
+
+- Les mitjanes i desviacions del Centre de Dades i de l’arxiu d’extrems ponderen cada agregat pel seu nombre real de mostres; la interfície separa dies amb dades i continuïtat intradiària.
+- La direcció agregada del vent usa mitjana circular: 350° i 10° produeixen nord, mentre que direccions oposades sense orientació dominant queden sense valor.
+- Els intervals horaris D1 segueixen hores UTC transcorregudes i conserven les dues hores repetides del canvi de tardor. Dates locals i UTC es reconstrueixen des de l’epoch a `Europe/Madrid` sense reescriure l’arxiu.
+- Els temps locals heretats del navegador ja no depenen de la zona del visitant i es descarten durant una hora local inexistent.
+- Web proposada 22.31.2, Worker proposat 22.29.10 i PWA `audit-f`. Sense migracions, secrets, publicacions ni desplegament automàtic.
+- Es documenta per separat el projecte redundant de Workers Builds que origina checks vermells; no es converteix l’arrel del repositori en recursos públics per ocultar l’error.
+
 ## Correcció — Auditoria E · consum D1 i escales gràfiques — 2026-09-12
 
 - L’històric comparteix durant cinc minuts una clau de memòria cau canònica per data i resolució, tant dins del Worker com a Cache API quan està disponible; el marcador `fresh` del navegador ja no força consultes D1 equivalents.

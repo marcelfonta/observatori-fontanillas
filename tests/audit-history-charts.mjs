@@ -5,7 +5,7 @@ import { prepareChartHistory } from '../src/core/history-data.js';
 import { rainSummary } from '../src/core/archive-coverage.js';
 import { normalizeRemoteHistory, recordReading, summarizeRemoteHistory } from '../src/modules/historics.js';
 import { renderCharts, renderMetricSparklines } from '../src/modules/grafiques.js';
-import { aggregateWuHistory, counterRainIncrement, historyCacheRequest, historyRange, persistObservation, d1History } from '../worker/index.js';
+import { aggregateWuHistory, circularMeanDegrees, counterRainIncrement, historyCacheRequest, historyRange, madridLocalTime, persistObservation, d1History } from '../worker/index.js';
 
 const now = Date.now(), start = now - 3600000;
 const rows = [
@@ -76,6 +76,14 @@ assert.equal(daily.temperature,20);
 assert.equal(daily.rainTotal,2);
 assert.equal(daily.rainSamples,1);
 assert.equal(aggregateWuHistory([{time:'2026-09-01',temperature:null,rainIncrement:null}],'daily')[0].rainTotal,null);
+assert.ok(Math.abs(circularMeanDegrees([350,10])) < 1e-10,'350° and 10° average to north, not south');
+assert.equal(circularMeanDegrees([90,270]),null,'Opposing directions have no stable circular mean');
+assert.ok(Math.abs(aggregateWuHistory([
+  {time:'2026-09-01 01:00:00',epoch:1788217200,windDirection:350},
+  {time:'2026-09-01 02:00:00',epoch:1788220800,windDirection:10}
+],'daily')[0].windDirection) < 1e-10);
+assert.equal(madridLocalTime(Date.parse('2026-01-15T11:00:00Z')/1000),'2026-01-15 12:00:00');
+assert.equal(madridLocalTime(Date.parse('2026-07-15T10:00:00Z')/1000),'2026-07-15 12:00:00');
 for(const days of [1,7,30,366])assert.equal(historyRange(new URL(`https://example.test/history?days=${days}`)).days,days);
 assert.equal(historyRange(new URL('https://example.test/history?start=20260901&end=20260907')).days,7);
 assert.equal(historyRange(new URL('https://example.test/history?start=20260101&end=20270102')),null);
@@ -100,13 +108,25 @@ const DB={prepare(sql){let values=[];return {
   async first(){return sqlite.prepare(sql).get(...values)||null;}
 };},async batch(items){return Promise.all(items.map(item=>item.run()));}};
 const base={epoch:1788217200,updatedUtc:'2026-09-01T01:00:00Z',updated:'2026-09-01 03:00:00'};
-await persistObservation({...base,temperature:null,rainToday:null},{DB});
-await persistObservation({...base,epoch:base.epoch+300,updated:'2026-09-01 03:05:00',updatedUtc:'2026-09-01T01:05:00Z',temperature:20,rainToday:0},{DB});
+await persistObservation({...base,temperature:null,rainToday:null,windDirection:350},{DB});
+await persistObservation({...base,epoch:base.epoch+300,updated:'2026-09-01 03:05:00',updatedUtc:'2026-09-01T01:05:00Z',temperature:20,rainToday:0,windDirection:10},{DB});
 await persistObservation({...base,epoch:base.epoch+600,updated:'2026-09-01 03:10:00',updatedUtc:'2026-09-01T01:10:00Z',temperature:0,rainToday:0},{DB});
 for(const resolution of ['raw','hourly','daily']) {
   const result=await d1History({DB},{start:'20260901',end:'20260901'},resolution);
   if(resolution==='raw') {assert.equal(result[0].temperature,null);assert.equal(result[0].rainIncrement,null);assert.equal(result[1].rainIncrement,null);assert.equal(result[2].rainIncrement,0);}
-  else {assert.equal(result[0].temperature,10);assert.equal(result[0].rainSamples,1);assert.equal(result[0].samples,3);assert.equal(result[0].rainIncrement,0);}
+  else {assert.equal(result[0].temperature,10);assert.equal(result[0].rainSamples,1);assert.equal(result[0].samples,3);assert.equal(result[0].rainIncrement,0);assert.ok(Math.abs(result[0].windDirection)<1e-10);}
 }
+const autumnA=Date.parse('2026-10-25T00:30:00Z')/1000;
+const autumnB=Date.parse('2026-10-25T01:30:00Z')/1000;
+await persistObservation({epoch:autumnA,temperature:12,rainToday:null},{DB});
+await persistObservation({epoch:autumnB,temperature:11,rainToday:null},{DB});
+const repeatedHour=await d1History({DB},{start:'20261025',end:'20261025'},'hourly');
+assert.equal(repeatedHour.length,2,'The repeated autumn local hour remains two elapsed UTC hours');
+assert.equal(repeatedHour[0].time,'2026-10-25 02:30:00');
+assert.equal(repeatedHour[1].time,'2026-10-25 02:30:00');
+assert.notEqual(repeatedHour[0].timeUtc,repeatedHour[1].timeUtc);
+await persistObservation({updatedUtc:'2026-11-01 10:00:00',temperature:9,rainToday:null},{DB});
+const utcWithoutSuffix=await d1History({DB},{start:'20261101',end:'20261101'},'raw');
+assert.equal(utcWithoutSuffix[0].epoch,Date.parse('2026-11-01T10:00:00Z')/1000,'UTC without a suffix must not use the host timezone');
 sqlite.close();
-console.log('Auditoria E: memòria cau canònica, eixos exactes i escales de pluja separades.');
+console.log('Auditoria F: historial, vent circular, DST, memòria cau i gràfiques.');

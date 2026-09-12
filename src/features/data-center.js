@@ -3,6 +3,7 @@ import { fetchAlertHistory } from '../services/weather-api.js';
 import { getLanguage, getLocale } from '../core/i18n.js';
 import { finiteNumber as number } from '../core/numeric.js';
 import { normalizeArchive, calendarCoverage, rainTotal, dailyRainTotals as dailyRain, daysSinceRainRecord as daysSinceThreshold } from '../core/archive-coverage.js';
+import { intradayCoverage, weightedDeviation, weightedMean } from '../core/statistics.js';
 export { calendarCoverage } from '../core/archive-coverage.js';
 
 const DAY = 86400000;
@@ -16,8 +17,6 @@ let alertArchive = [];
 let timelineFilter = 'all';
 
 const values = (items, key, fallback) => items.map(item => number(item[key] ?? (fallback ? item[fallback] : null))).filter(value => value !== null);
-const mean = list => list.length ? list.reduce((total, value) => total + value, 0) / list.length : null;
-const deviation = list => { const average = mean(list); return average === null ? null : Math.sqrt(list.reduce((total, value) => total + (value - average) ** 2, 0) / list.length); };
 const fmt = (value, digits = 1) => value === null || !Number.isFinite(value) ? '—' : new Intl.NumberFormat(getLocale(), { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(value);
 const set = (id, value) => { const node = document.getElementById(id); if (node) node.textContent = value; };
 const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, character => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' })[character]);
@@ -25,12 +24,26 @@ const dateKey = value => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Ma
 const selected = () => archive.filter(item => item.t >= Date.now() - activeDays * DAY);
 
 const copy = (ca, es, en, fr) => ({ ca, es, en, fr })[getLanguage()] || ca;
-const coverageLabel = coverage => copy(
-  `${coverage.observedDays} dies amb registres · interval de ${coverage.spanDays} dies`,
-  `${coverage.observedDays} días con registros · intervalo de ${coverage.spanDays} días`,
-  `${coverage.observedDays} days with records · ${coverage.spanDays}-day span`,
-  `${coverage.observedDays} jours avec relevés · intervalle de ${coverage.spanDays} jours`
-);
+const coverageLabel = (coverage, continuity = null) => {
+  const calendar = copy(
+    `${coverage.observedDays} dies amb registres · interval de ${coverage.spanDays} dies`,
+    `${coverage.observedDays} días con registros · intervalo de ${coverage.spanDays} días`,
+    `${coverage.observedDays} days with records · ${coverage.spanDays}-day span`,
+    `${coverage.observedDays} jours avec relevés · intervalle de ${coverage.spanDays} jours`
+  );
+  if (continuity?.percent == null) return calendar;
+  const percent = continuity.percent > 0 && continuity.percent < 1
+    ? '<1'
+    : new Intl.NumberFormat(getLocale(), { maximumFractionDigits: 0 }).format(continuity.percent);
+  const samples = new Intl.NumberFormat(getLocale()).format(continuity.coveredSamples);
+  const expected = new Intl.NumberFormat(getLocale()).format(continuity.expectedSamples);
+  return `${calendar} · ${copy(
+    `${percent}% de continuïtat (${samples}/${expected} intervals equivalents)`,
+    `${percent}% de continuidad (${samples}/${expected} intervalos equivalentes)`,
+    `${percent}% continuity (${samples}/${expected} equivalent intervals)`,
+    `${percent}% de continuité (${samples}/${expected} intervalles équivalents)`
+  )}`;
+};
 
 function annualCoverageLabel(coverage) {
   if (!coverage.observedDays) return ({ es: 'Sin cobertura disponible este año', en: 'No coverage available this year', fr: 'Aucune couverture disponible cette année' })[getLanguage()] || 'Sense cobertura disponible aquest any';
@@ -101,8 +114,8 @@ function renderRainDashboard() {
 }
 
 function periodSummary(items) {
-  const temperatures = values(items, 'temperature');
-  return { temperature: mean(temperatures), rain: rainTotal(items), samples: items.length };
+  const continuity = intradayCoverage(items);
+  return { temperature: weightedMean(items, 'temperature'), rain: rainTotal(items), samples: continuity.samples };
 }
 
 function renderPeriod(idPrefix, items) {
@@ -115,8 +128,8 @@ function renderLast24HoursComparison() {
   const end = Date.now();
   const current24 = archive.filter(item => item.t >= end - DAY && item.t <= end);
   const previous24 = archive.filter(item => item.t >= end - 2 * DAY && item.t < end - DAY);
-  const currentTemperature = mean(values(current24, 'temperature'));
-  const previousTemperature = mean(values(previous24, 'temperature'));
+  const currentTemperature = weightedMean(current24, 'temperature');
+  const previousTemperature = weightedMean(previous24, 'temperature');
   const currentRain = rainTotal(current24);
   const previousRain = rainTotal(previous24);
   const temperatureDelta = currentTemperature === null || previousTemperature === null ? null : currentTemperature - previousTemperature;
@@ -182,11 +195,11 @@ export function renderDataCenter(history = [], latest = null) {
   const first = items[0]?.t;
   const last = items.at(-1)?.t;
   const coverage = calendarCoverage(items);
-  const samples = items.reduce((total, item) => total + (number(item.samples) ?? 1), 0);
-  set('data-summary-samples', new Intl.NumberFormat(getLocale()).format(samples));
-  set('data-summary-coverage', coverageLabel(coverage));
-  set('data-summary-temp-mean', fmt(mean(temperatures)));
-  set('data-summary-temp-deviation', temperatures.length ? `Desviació estàndard ${fmt(deviation(temperatures))} °C` : 'Desviació no disponible');
+  const continuity = intradayCoverage(items);
+  set('data-summary-samples', new Intl.NumberFormat(getLocale()).format(continuity.samples));
+  set('data-summary-coverage', coverageLabel(coverage, continuity));
+  set('data-summary-temp-mean', fmt(weightedMean(items, 'temperature')));
+  set('data-summary-temp-deviation', temperatures.length ? `Desviació estàndard ${fmt(weightedDeviation(items, 'temperature'))} °C` : 'Desviació no disponible');
   set('data-summary-rain', fmt(rainTotal(items)));
   set('data-summary-gust', fmt(gusts.length ? Math.max(...gusts) : null));
   renderLast24HoursComparison();

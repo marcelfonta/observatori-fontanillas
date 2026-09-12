@@ -1,14 +1,11 @@
 import { format, isNumber, setText } from '../core/dom.js';
+import { weightedMean } from '../core/statistics.js';
 
 let completeHistory = [];
 let activeDays = 1;
 
 function values(items, keys) {
   return items.flatMap(item => keys.map(key => item[key])).filter(isNumber).map(Number);
-}
-
-function mean(items) {
-  return items.length ? items.reduce((sum,value)=>sum+value,0) / items.length : NaN;
 }
 
 function accumulatedRain(items) {
@@ -37,9 +34,8 @@ function render(days = activeDays) {
   const temperatureMin = values(selected,['temperatureMin','temperature']);
   const rainRate = values(selected,['rainRate']);
   const gusts = values(selected,['windGust']);
-  const winds = values(selected,['windSpeed']);
   const solar = values(selected,['solarRadiation']);
-  const daytimeSolar = solar.filter(value=>value>0);
+  const daytimeSolar = selected.filter(item=>isNumber(item.solarRadiation) && Number(item.solarRadiation)>0);
   const uv = values(selected,['uv']);
   const pressuresMin = values(selected,['pressureMin','pressure']);
   const pressuresMax = values(selected,['pressureMax','pressure']);
@@ -51,9 +47,9 @@ function render(days = activeDays) {
   setText('extreme-rain-total',format(accumulatedRain(selected),1));
   setText('extreme-rain-rate',format(rainRate.length?Math.max(...rainRate):NaN,1));
   setText('extreme-wind-gust',format(gusts.length?Math.max(...gusts):NaN,1));
-  setText('extreme-wind-mean',format(mean(winds),1));
+  setText('extreme-wind-mean',format(weightedMean(selected,'windSpeed'),1));
   setText('extreme-solar-max',format(solar.length?Math.max(...solar):NaN,0));
-  setText('extreme-solar-mean',format(mean(daytimeSolar),0));
+  setText('extreme-solar-mean',format(weightedMean(daytimeSolar,'solarRadiation'),0));
   setText('extreme-uv-max',format(uv.length?Math.max(...uv):NaN,1));
   setText('extreme-uv-high-hours',format(uv.filter(value=>value>=6).length,0));
   setText('extreme-pressure-range',pressuresMin.length&&pressuresMax.length?`${format(Math.min(...pressuresMin),0)}–${format(Math.max(...pressuresMax),0)} hPa`:'—');

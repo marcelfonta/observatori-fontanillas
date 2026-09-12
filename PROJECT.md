@@ -73,11 +73,13 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.31.0
+## Estat V22.31.2
 
-- Branca de treball: `feature/frances-colaboracions-patrocini`.
-- Versio codi: V22.31.0.
-- La V22.30.1 està desplegada i operativa; la V22.31.0 queda pendent d’integrar i desplegar amb francès, pàgina de col·laboracions i material comercial transparent.
+- Branca de treball: `fix/statistics-and-deployment-hygiene`.
+- Versió web proposada: V22.31.2. Worker proposat: V22.29.10.
+- La V22.31.1 i el Worker V22.29.9 estan desplegats i operatius. La revisió actual queda pendent d’integrar, validar a staging i desplegar amb aprovació humana separada.
+- Les mitjanes de l’arxiu ponderen cada agregat pel nombre de lectures, la cobertura intradiària és visible i la direcció del vent utilitza estadística circular.
+- Les hores històriques es deriven de l’epoch amb `Europe/Madrid` i s’agrupen per temps UTC transcorregut, sense migrar ni reescriure D1.
 - El selector ofereix català, castellà, anglès i francès. Una prova automàtica impedeix publicar un catàleg amb frases registrades sense traducció.
 - `colaboracions.html` explica què ofereix i què demana el projecte, declara que no hi ha patrocinis actius i preserva la independència editorial.
 - Els dossiers en castellà i anglès i sis correus adaptats permeten proposar material cedit o en préstec sense inventar audiències ni prometre opinions positives.

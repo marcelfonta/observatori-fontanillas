@@ -1,6 +1,6 @@
 # Inventari Cloudflare
 
-Comprovat en lectura el 22 d'agost de 2026. Aquest document no conté valors secrets.
+Comprovat en lectura el 12 de setembre de 2026. Aquest document no conté valors secrets.
 
 ## Producció actual
 
@@ -33,6 +33,14 @@ S'han comprovat variables públiques i setze secrets configurats. Els noms detal
 3. El cron real no es pot exportar amb les ordres de lectura disponibles. La documentació històrica parla de cinc minuts i la guia moderna recomana deu; s'ha de confirmar al tauler abans de versionar-lo.
 4. No s'ha de reutilitzar `fonta-meteo-history` en proves d'escriptura; staging té la seva D1 separada.
 5. `ops/wrangler.example.jsonc` manté l'automatització social desactivada i identificadors placeholder expressament.
+6. Hi ha un projecte redundant de Workers Builds anomenat `observatori-fontanillas`, connectat a `main`, que no és ni el Pages públic ni el Worker `fonta-meteo`. Executa `npx wrangler deploy --assets . --name observatori-fontanillas --compatibility-date 2026-08-04` des de l’arrel. Això intenta tractar tot el repositori, inclòs `node_modules`, com a recursos públics i falla quan troba el binari `workerd` de 144 MiB, per sobre del límit de 25 MiB per fitxer. És l’origen dels checks i correus vermells de Workers Builds, però no afecta el servei publicat.
+
+## Integració redundant de Workers Builds
+
+- No s’ha de fer funcionar aquest desplegament afegint només `.assetsignore`: continuar desplegant `--assets .` duplicaria Pages i podria publicar fitxers interns del repositori.
+- La correcció segura és desconnectar o eliminar al tauler de Cloudflare el projecte de Workers Builds `observatori-fontanillas`.
+- S’han de conservar Pages `observatori-fontanillas` i el Worker `fonta-meteo`; són els dos serveis reals.
+- Aquesta acció externa no forma part del codi ni s’ha executat automàticament. Cal confirmar els tres noms al tauler abans de retirar exclusivament la integració redundant.
 
 ## Següent pas segur
 
