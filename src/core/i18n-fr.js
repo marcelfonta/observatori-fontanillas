@@ -1,6 +1,13 @@
 // Catàleg francès separat per mantenir i auditar la quarta llengua sense
 // barrejar-la amb la font catalana i les traduccions castellana i anglesa.
 export const FRENCH_PHRASES={
+  'Acumulació registrada; pot ser parcial':'Cumul enregistré ; peut être partiel',
+  'Agrupació orientativa de registres':'Regroupement indicatif des relevés',
+  'No certifica una ratxa seca':'Ne prouve pas une période sèche',
+  'Dies des del registre ≥ 0,1 mm':'Jours depuis le relevé ≥ 0,1 mm',
+  'Dies des del registre ≥ 1 mm':'Jours depuis le relevé ≥ 1 mm',
+  'Dies des del registre ≥ 10 mm':'Jours depuis le relevé ≥ 10 mm',
+  'Dies des del registre ≥ 20 mm':'Jours depuis le relevé ≥ 20 mm',
   'En directe':'En direct',
   'Consulta oberta':'Recherche ouverte',
   'Consulta ràpida':'Aperçu rapide',

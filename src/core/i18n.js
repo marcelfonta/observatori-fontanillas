@@ -4,6 +4,13 @@ const STORAGE_KEY='fontanillas-language-v1';
 export const SUPPORTED_LANGUAGES=['ca','es','en','fr'];
 
 export const PHRASES={
+  'Acumulació registrada; pot ser parcial':{es:'Acumulación registrada; puede ser parcial',en:'Recorded total; may be partial'},
+  'Agrupació orientativa de registres':{es:'Agrupación orientativa de registros',en:'Indicative grouping of records'},
+  'No certifica una ratxa seca':{es:'No certifica una racha seca',en:'Does not certify a dry spell'},
+  'Dies des del registre ≥ 0,1 mm':{es:'Días desde el registro ≥ 0,1 mm',en:'Days since record ≥ 0.1 mm'},
+  'Dies des del registre ≥ 1 mm':{es:'Días desde el registro ≥ 1 mm',en:'Days since record ≥ 1 mm'},
+  'Dies des del registre ≥ 10 mm':{es:'Días desde el registro ≥ 10 mm',en:'Days since record ≥ 10 mm'},
+  'Dies des del registre ≥ 20 mm':{es:'Días desde el registro ≥ 20 mm',en:'Days since record ≥ 20 mm'},
   'En directe':{es:'En directo',en:'Live'},
   'Consulta oberta':{es:'Consulta abierta',en:'Open search'},
   'Consulta ràpida':{es:'Consulta rápida',en:'Quick view'},

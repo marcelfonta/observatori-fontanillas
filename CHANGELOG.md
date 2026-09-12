@@ -1,5 +1,14 @@
 # Changelog
 
+## Correcció — Auditoria C · cobertura i pluja registrada — 2026-09-12
+
+- Centre de Dades: sense dades pluviomètriques es mostra un guió, no 0 mm. Es preserven els zeros reals i s’indica que les sumes poden ser parcials.
+- Dies amb registres separats de l’interval entre dates, amb calendari Europe/Madrid, inclosos canvis d’hora. Dates buides/futures i duplicats no inflen el recompte ni les sumes.
+- Els comptadors expressen dies des de l’última pluja registrada, no una ratxa seca demostrada. Sense registre suficient no s’inventa un «Més de».
+- La pluja de calendari es calcula amb l’arxiu seleccionat, sense atribuir una lectura actual sense data fiable al dia d’avui. La cobertura anual de pluja exclou dies sense dades pluviomètriques.
+- Noves etiquetes en quatre idiomes i comprovació local a 320/360 px. Revisió de memòria cau `audit-c`; cap canvi de Worker, D1 ni automatitzacions.
+
+
 ## Correcció — Auditoria B · cua i reserva social — 2026-09-12
 
 - Reserva atòmica D1 per esborrany i canal, compartida per enviaments manuals i automàtics d’imatges. Un intent incert o en curs no es reenvia.
