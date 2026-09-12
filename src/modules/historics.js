@@ -1,17 +1,21 @@
+import { finiteNumber } from '../core/numeric.js';
+import { normalizeArchive, rainTotal } from '../core/archive-coverage.js';
+import { historyTimestamp, normalizeHistoryMetrics } from '../core/history-data.js';
+
 const STORAGE_KEY = 'fontanillas-weather-history-v1';
 const MAX_SAMPLES = 2016; // Set dies a intervals de cinc minuts.
 
 function read() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  try { const rows = JSON.parse(localStorage.getItem(STORAGE_KEY)); return Array.isArray(rows) ? normalizeArchive(rows).map(normalizeHistoryMetrics) : []; }
   catch { return []; }
 }
 
 export function recordReading(data) {
   const history = read();
-  const timestamp = new Date(String(data.updated || '').replace(' ', 'T')).getTime() || Date.now();
-  const sample = { t: timestamp, temperature: Number(data.temperature), pressure: Number(data.pressure), humidity: Number(data.humidity), windSpeed: Number(data.windSpeed) };
+  const timestamp = historyTimestamp(data);
+  const sample = { t: timestamp, temperature: finiteNumber(data.temperature), pressure: finiteNumber(data.pressure), humidity: finiteNumber(data.humidity), windSpeed: finiteNumber(data.windSpeed) };
   const previous = history.length ? history[history.length - 1] : null;
-  if (!previous || previous.t !== timestamp) history.push(sample);
+  if (Number.isFinite(timestamp) && timestamp <= Date.now() && (!previous || previous.t !== timestamp)) history.push(sample);
   const trimmed = history.slice(-MAX_SAMPLES);
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed)); } catch { /* L'espai local pot estar desactivat. */ }
   const start = new Date(); start.setHours(0, 0, 0, 0);
@@ -23,29 +27,26 @@ export function recordReading(data) {
     history: trimmed,
     previous,
     stats: {
-      maxTemperature: temperatures.length ? Math.max(...temperatures) : Number(data.temperature),
+      maxTemperature: temperatures.length ? Math.max(...temperatures) : finiteNumber(data.temperature),
       maxTemperatureTime: high?.t ?? timestamp,
-      minTemperature: temperatures.length ? Math.min(...temperatures) : Number(data.temperature),
+      minTemperature: temperatures.length ? Math.min(...temperatures) : finiteNumber(data.temperature),
       minTemperatureTime: low?.t ?? timestamp
     }
   };
 }
 
 export function normalizeRemoteHistory(payload) {
-  return (payload?.observations || []).map(item => ({
-    ...item,
-    t: Number(item.epoch) * 1000 || new Date(String(item.time).replace(' ', 'T')).getTime()
-  })).filter(item => Number.isFinite(item.t)).sort((a, b) => a.t - b.t);
+  return normalizeArchive((payload?.observations || []).map(item => ({ ...normalizeHistoryMetrics(item), interval:payload.interval, t:historyTimestamp(item) })));
 }
 
-function numeric(items, key) { return items.map(item => Number(item[key])).filter(Number.isFinite); }
-function extreme(items, key, mode) { return items.filter(item => Number.isFinite(Number(item[key]))).reduce((best,item) => !best || (mode === 'max' ? Number(item[key]) > Number(best[key]) : Number(item[key]) < Number(best[key])) ? item : best, null); }
+function numeric(items, key) { return items.map(item => finiteNumber(item[key])).filter(value=>value!==null); }
+function extreme(items, key, mode) { return items.filter(item => finiteNumber(item[key])!==null).reduce((best,item) => !best || (mode === 'max' ? Number(item[key]) > Number(best[key]) : Number(item[key]) < Number(best[key])) ? item : best, null); }
 function temperatureExtreme(items, mode) {
   const aggregateKey = mode === 'max' ? 'temperatureMax' : 'temperatureMin';
   const value = item => {
-    const aggregate = Number(item?.[aggregateKey]);
+    const aggregate = finiteNumber(item?.[aggregateKey]);
     if (item?.[aggregateKey] !== null && item?.[aggregateKey] !== '' && Number.isFinite(aggregate)) return aggregate;
-    const temperature = Number(item?.temperature);
+    const temperature = finiteNumber(item?.temperature);
     return item?.temperature !== null && item?.temperature !== '' && Number.isFinite(temperature) ? temperature : NaN;
   };
   return items.reduce((best, item) => {
@@ -56,39 +57,30 @@ function temperatureExtreme(items, mode) {
   }, null);
 }
 function closest(items, target) { return items.reduce((best,item) => Math.abs(item.t-target) < Math.abs((best?.t ?? 0)-target) ? item : best, null); }
-function accumulatedRain(items) {
-  const increments=items.map(item=>Number(item.rainIncrement)).filter(Number.isFinite);
-  if(increments.length)return increments.reduce((total,value)=>total+Math.max(0,value),0);
-  return items.reduce((result,item,index) => {
-    const current=Number(item.rainTotal); const previous=Number(items[index-1]?.rainTotal);
-    if (!Number.isFinite(current)) return result;
-    if (!Number.isFinite(previous)) return result;
-    return result + (current >= previous ? current - previous : current);
-  },0);
-}
+function difference(a,b) { const left=finiteNumber(a), right=finiteNumber(b); return left!==null && right!==null ? left-right : null; }
 
 export function summarizeRemoteHistory(data, history, localStats = {}) {
-  const currentTime = new Date(String(data.updated).replace(' ', 'T')).getTime() || Date.now();
+  const currentTime = historyTimestamp(data);
   const dayKey = String(data.updated).slice(0, 10);
   const today = history.filter(item => String(item.time).startsWith(dayKey));
-  const currentTemperature = Number(data.temperature);
-  const currentObservation = data.temperature !== null && data.temperature !== '' && Number.isFinite(currentTemperature)
+  const currentTemperature = finiteNumber(data.temperature);
+  const currentObservation = Number.isFinite(currentTime) && data.temperature !== null && data.temperature !== '' && Number.isFinite(currentTemperature)
     ? { t:currentTime, time:data.updated, temperature:currentTemperature, source:data.source || 'current' }
     : null;
-  const localHigh = Number(localStats.maxTemperature);
-  const localLow = Number(localStats.minTemperature);
+  const localHigh = finiteNumber(localStats.maxTemperature);
+  const localLow = finiteNumber(localStats.minTemperature);
   const localObservations = [];
   if (Number.isFinite(localHigh)) localObservations.push({ t:Number(localStats.maxTemperatureTime) || currentTime, temperatureMax:localHigh, source:'browser-history' });
   if (Number.isFinite(localLow)) localObservations.push({ t:Number(localStats.minTemperatureTime) || currentTime, temperatureMin:localLow, source:'browser-history' });
   const todayWithCurrent = [...today, ...localObservations, ...(currentObservation ? [currentObservation] : [])];
   const recent24h = history.filter(item => item.t >= currentTime - 86400000);
-  const compare = closest(history.filter(item => item.t < currentTime - 3600000), currentTime - 10800000) || history[0] || null;
+  const compare = Number.isFinite(currentTime) ? closest(history.filter(item => item.t < currentTime - 3600000), currentTime - 10800000) || history[0] || null : null;
   const high = temperatureExtreme(todayWithCurrent, 'max');
   const low = temperatureExtreme(todayWithCurrent, 'min');
   const gust = extreme(today, 'windGust', 'max');
-  const rain24h = accumulatedRain(recent24h);
+  const rain24h = rainTotal(recent24h);
   const todayTotals = numeric(today, 'rainTotal');
-  const rainToday = todayTotals.length ? todayTotals[todayTotals.length - 1] : Number(data.rainToday) || 0;
+  const rainToday = todayTotals.length ? todayTotals[todayTotals.length - 1] : finiteNumber(data.rainToday);
   const wetHours = recent24h.filter((item,index) => Number(item.rainRate) > 0 || Number(item.rainTotal) > Number(recent24h[index-1]?.rainTotal)).length;
   return {
     history,
@@ -102,10 +94,10 @@ export function summarizeRemoteHistory(data, history, localStats = {}) {
     summary: {
       high, low, gust, rain24h, rainToday, wetHours,
       comparisonHours: compare ? Math.max(1, Math.round((currentTime - compare.t) / 3600000)) : null,
-      deltaTemperature: compare ? Number(data.temperature) - Number(compare.temperature) : null,
-      deltaPressure: compare ? Number(data.pressure) - Number(compare.pressure) : null,
-      deltaHumidity: compare ? Number(data.humidity) - Number(compare.humidity) : null,
-      deltaUv: compare && Number.isFinite(Number(data.uv)) && Number.isFinite(Number(compare.uv)) ? Number(data.uv) - Number(compare.uv) : null,
+      deltaTemperature: difference(data.temperature, compare?.temperature),
+      deltaPressure: difference(data.pressure, compare?.pressure),
+      deltaHumidity: difference(data.humidity, compare?.humidity),
+      deltaUv: difference(data.uv, compare?.uv),
     }
   };
 }

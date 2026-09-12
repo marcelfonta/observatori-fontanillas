@@ -2,7 +2,7 @@
 
 ## Abast
 
-Correcció de càlculs i etiquetes al navegador, sense canviar API, Worker, D1, horaris o publicacions. Continua sobre el merge de la PR 138. La integració de B no equival al seu desplegament: el procediment de pausa i revisió dels enviaments continua pendent d’autorització.
+Correcció de càlculs i etiquetes al navegador, sense canviar API, Worker, D1, horaris o publicacions. Continua sobre el merge de la PR 138. Actualització 12-09-2026: A/B/C desplegats amb autorització, pausa i represa verificades; evidència a `DEPLOY-AUDIT-ABC-2026-09-12.md`.
 
 ## Contracte
 

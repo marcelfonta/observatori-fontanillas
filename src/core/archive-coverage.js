@@ -43,7 +43,8 @@ export function rainSummary(items = []) {
     }
     if (amount !== null) { total += amount; known += 1; }
   });
-  return { total: known ? total : null, known, rows: valid.length, partial: known < valid.length };
+  const incompleteAggregate = valid.some(row => finiteNumber(row.rainSamples) !== null && finiteNumber(row.samples) !== null && Number(row.rainSamples) < Number(row.samples));
+  return { total: known ? total : null, known, rows: valid.length, partial: known < valid.length || incompleteAggregate };
 }
 
 export const rainTotal = items => rainSummary(items).total;
