@@ -1,5 +1,14 @@
 # Changelog
 
+## Correcció — Auditoria B · cua i reserva social — 2026-09-12
+
+- Reserva atòmica D1 per esborrany i canal, compartida per enviaments manuals i automàtics d’imatges. Un intent incert o en curs no es reenvia.
+- Separació entre preparació fallida, resposta incerta i èxit remot no registrat. Els errors definitius es conserven; quatre intents totals per canal.
+- Recuperació limitada a deu candidats: retira esgotats i incerts a revisió i continua amb els següents; conserva l’historial i les reserves.
+- Panell amb estats llegibles, botons bloquejats i conciliació manual d’un èxit comprovat sense publicació. Controls revisats a 320 i 360 px.
+- Threads comprova el contenidor abans d’un únic POST de publicació. L’estat agregat de l’esborrany es calcula amb dades actuals en una sola sentència.
+- Worker 22.29.7; sense migracions ni desplegament. Proves noves amb SQLite real i HTTP simulat. Abast i rollback segur a `docs/AUDIT-PACKAGE-B.md`.
+
 ## Correcció — Auditoria paquet A · dades i vigència — 2026-09-12
 
 - Conversió numèrica compartida a la primera càrrega, Centre de Dades i calendari astronòmic: null, buits i booleans no es converteixen en zeros; els zeros reals es conserven.

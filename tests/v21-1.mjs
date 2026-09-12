@@ -18,7 +18,7 @@ for(const source of [worker,schema]){
   assert.ok(source.includes('idx_social_publications_draft_created'),'Falta l’índex del registre social.');
   assert.ok(!source.includes('UNIQUE(draft_id, channel)'),'Cada intent ha de conservar-se, no sobreescriure el precedent.');
 }
-for(const token of ['adminSocialDrafts','adminUpdateSocialDraft','adminPublishSocialDraft','adminSocialDiagnostics','diagnoseSocialChannel','publishFacebook','publishInstagram','publishTelegram','publishBluesky','recordSocialPublication','/admin/social-drafts','/admin/social-diagnostics','manual-confirmation','partially_published']){
+for(const token of ['adminSocialDrafts','adminUpdateSocialDraft','adminPublishSocialDraft','adminSocialDiagnostics','diagnoseSocialChannel','publishFacebook','publishInstagram','publishTelegram','publishBluesky','deliverSocialChannel','/admin/social-drafts','/admin/social-diagnostics','manual-confirmation','partially_published']){
   assert.ok(worker.includes(token),`Worker V21.2: falta ${token}.`);
 }
 assert.ok(worker.includes('Després de publicar només pots afegir canals pendents; el text queda protegit.'),'Falta protegir el text publicat tot permetent completar canals pendents.');

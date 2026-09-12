@@ -176,14 +176,26 @@ function socialDraftValues(card){
 function makeSocialButton(label,action,className=''){
   const button=document.createElement('button');button.type='button';button.textContent=label;button.dataset.socialAction=action;if(className)button.className=className;return button;
 }
+export function socialDeliveryState(item){
+  if(item.status==='published')return `Publicat · ${formatDate(item.published_at)}`;
+  if(item.status==='pending')return 'Reservat o enviament interromput · cal comprovar el canal; no es reenviarà.';
+  if(item.status==='uncertain')return 'Resultat incert · comprova la plataforma abans de fer res.';
+  if(item.status==='failed_terminal')return `Error definitiu · ${item.error||'cal revisar'}`;
+  return `Error · ${item.error||'sense detall'}`;
+}
 function socialPublicationRows(draft){
   const container=document.createElement('div');container.className='admin-social-publications';
   const publications=Array.isArray(draft.publications)?draft.publications:[];
   if(!publications.length){const empty=document.createElement('small');empty.textContent='Encara no hi ha cap intent de publicació.';container.append(empty);return container;}
-  publications.forEach(item=>{const row=document.createElement('div');const channel=document.createElement('strong');const status=document.createElement('span');channel.textContent=CHANNEL_LABELS[item.channel]||item.channel;status.textContent=item.status==='published'?`Publicat · ${formatDate(item.published_at)}`:`Error · ${item.error||'sense detall'}`;row.className=item.status==='published'?'is-ok':'is-error';row.append(channel,status);container.append(row);});
+  publications.forEach(item=>{const row=document.createElement('div');const channel=document.createElement('strong');const status=document.createElement('span');channel.textContent=CHANNEL_LABELS[item.channel]||item.channel;status.textContent=socialDeliveryState(item);row.className=item.status==='published'?'is-ok':'is-error';row.append(channel,status);
+    if(['pending','uncertain'].includes(item.status)){
+      const confirm=makeSocialButton('Ja el veig publicat: registrar identificador','confirm-delivery','is-secondary');
+      confirm.dataset.attemptId=String(item.id);row.append(confirm);
+    }
+    container.append(row);});
   return container;
 }
-function socialDraftCard(draft){
+export function socialDraftCard(draft){
   const card=document.createElement('article');card.className='admin-social-card';card.dataset.draftId=String(draft.id);card.dataset.status=draft.status;
   const header=document.createElement('header');const heading=document.createElement('div');const eyebrow=document.createElement('p');const title=document.createElement('h3');const badge=document.createElement('span');
   eyebrow.className='eyebrow';eyebrow.textContent=`${draft.kind||'contingut'} · ${formatDate(draft.created_at)}`;title.textContent=draft.title||'Resum meteorològic';badge.className=`admin-social-state is-${draft.status}`;badge.textContent=SOCIAL_LABELS[draft.status]||draft.status;heading.append(eyebrow,title);header.append(heading,badge);
@@ -193,7 +205,7 @@ function socialDraftCard(draft){
   const channels=document.createElement('fieldset');const legend=document.createElement('legend');legend.textContent='Canals previstos';channels.append(legend);
   Object.entries(CHANNEL_LABELS).forEach(([value,label])=>{const option=document.createElement('label');const input=document.createElement('input');input.type='checkbox';input.name='channels';input.value=value;input.checked=(draft.channels||[]).includes(value);option.append(input,document.createTextNode(label));channels.append(option);});
   form.append(titleLabel,bodyLabel,channels);
-  const note=document.createElement('p');note.className='admin-social-meta-note';note.textContent='Cada canal publica només quan prems el seu botó i confirmes l’acció. Els intents i errors queden registrats.';
+  const note=document.createElement('p');note.className='admin-social-meta-note';note.textContent='Els botons demanen confirmació abans d’enviar. L’automatització configurada funciona per separat. Un enviament incert queda bloquejat fins que es comprovi.';
   const actions=document.createElement('div');actions.className='admin-social-actions';
   if(draft.status==='published'){
     const immutable=document.createElement('small');immutable.className='admin-social-immutable';immutable.textContent='El text queda protegit. Pots marcar un canal que faltava, desar-lo i publicar-hi després.';actions.append(immutable,makeSocialButton('Desar canals nous','save','is-secondary'));
@@ -206,8 +218,9 @@ function socialDraftCard(draft){
   }
   if(['approved','partially_published','published'].includes(draft.status)){
     const publishedChannels=new Set((draft.publications||[]).filter(item=>item.status==='published').map(item=>item.channel));
-    const failedChannels=[...new Set((draft.publications||[]).filter(item=>item.status==='failed'&&!publishedChannels.has(item.channel)).map(item=>item.channel))];
-    Object.entries(CHANNEL_LABELS).forEach(([channel,label])=>{const published=publishedChannels.has(channel);const selected=(draft.channels||[]).includes(channel);const button=makeSocialButton(published?`${label} · publicat`:`Publicar a ${label}`,`publish-${channel}`,'is-publish');button.disabled=published||!selected||!socialCredentials[channel];button.title=published?`Aquest contingut ja s’ha publicat a ${label}`:!selected?`Marca ${label} i desa els canals abans de publicar`:socialCredentials[channel]?'Demana confirmació abans de publicar':`Falten credencials de ${label}`;actions.append(button);});
+    const blockedChannels=new Set((draft.publications||[]).filter(item=>['pending','uncertain'].includes(item.status)).map(item=>item.channel));
+    const failedChannels=[...new Set((draft.publications||[]).filter(item=>item.status==='failed'&&!publishedChannels.has(item.channel)&&!blockedChannels.has(item.channel)).map(item=>item.channel))];
+    Object.entries(CHANNEL_LABELS).forEach(([channel,label])=>{const published=publishedChannels.has(channel);const blocked=blockedChannels.has(channel);const selected=(draft.channels||[]).includes(channel);const button=makeSocialButton(published?`${label} · publicat`:blocked?`${label} · comprovar`:`Publicar a ${label}`,`publish-${channel}`,'is-publish');button.disabled=published||blocked||!selected||!socialCredentials[channel];button.title=blocked?'Cal comprovar i conciliar l’enviament anterior':published?`Aquest contingut ja s’ha publicat a ${label}`:!selected?`Marca ${label} i desa els canals abans de publicar`:socialCredentials[channel]?'Demana confirmació abans de publicar':`Falten credencials de ${label}`;actions.append(button);});
     if(failedChannels.length){const retry=makeSocialButton(`Repetir només els errors (${failedChannels.length})`,'retry-failed','is-primary');retry.dataset.failedChannels=failedChannels.join(',');actions.append(retry);}
     actions.append(makeSocialButton('Preparar per al canal de WhatsApp','whatsapp','is-secondary'));
   }
@@ -253,6 +266,14 @@ async function handleSocialAction(event){
   const button=event.target.closest('[data-social-action]');if(!button)return;
   const card=button.closest('[data-draft-id]');if(!card)return;
   const draftId=Number(card.dataset.draftId);const action=button.dataset.socialAction;
+  if(action==='confirm-delivery'){
+    const remoteId=window.prompt('Només si has comprovat que aquest contingut ja està publicat en aquest canal: enganxa l’enllaç o l’identificador de la publicació. No es farà cap enviament.');
+    if(!remoteId?.trim()||!window.confirm('Confirmes que l’enllaç o identificador correspon a aquest contingut i canal?'))return;
+    button.disabled=true;
+    try{await adminApi(`/admin/social-drafts/${draftId}/confirm-delivery`,{method:'POST',body:{confirmed:true,attemptId:Number(button.dataset.attemptId),remoteId:remoteId.trim()}});socialEditorDirty=false;await fetchSocialDrafts(true);socialFeedback('Identificador registrat. No s’ha publicat ni reenviat res.','ok');}
+    catch(error){socialFeedback(error.message,'error');button.disabled=false;}
+    return;
+  }
   if(action==='retry-failed'){
     const channels=String(button.dataset.failedChannels||'').split(',').filter(Boolean);
     if(!channels.length||!window.confirm(`Vols repetir només ${channels.length===1?'el canal que ha fallat':'els canals que han fallat'}?`))return;

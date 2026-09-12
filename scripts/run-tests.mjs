@@ -12,6 +12,7 @@ const selected = quick
   : all;
 
 if (quick && !selected.includes('audit-data-dates.mjs')) selected.push('audit-data-dates.mjs');
+if (quick && !selected.includes('audit-social-delivery.mjs')) selected.push('audit-social-delivery.mjs');
 
 for (const file of selected) {
   const result = spawnSync(process.execPath, [resolve(root, 'tests', file)], { cwd:root, stdio:'inherit' });

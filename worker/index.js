@@ -1,11 +1,12 @@
 import { CATALONIA_COUNTY_PATHS } from './catalonia-counties.js';
+import { deliverSocialChannel, confirmSocialDelivery } from './social-delivery.js';
 import { METEOROLOGICAL_EPHEMERIDES } from '../src/data/meteorological-ephemerides.js';
 import { astronomyEventsForDate, astronomyVisibilitySummary, astronomyObservationDateLabel, seasonTransitionForDate } from '../src/data/astronomical-calendar.js';
 import { detectForecastEpisode, forecastEpisodeCopy, normalizeForecastModel } from '../src/core/forecast-episodes.js';
 import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core/temperature-trend.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.6";
+const WORKER_VERSION = "22.29.7";
 const WORKER_BUILT = "2026-09-12";
 const TIME_ZONE = "Europe/Madrid";
 const STORAGE_INTERVAL_MINUTES = 5;
@@ -3193,21 +3194,17 @@ async function adminJsonBody(request, origin) {
 
 async function socialPublicationsForDraft(env, draftId) {
   const result = await env.DB.prepare(`SELECT id,draft_id,channel,status,remote_id,response_code,error,created_at,published_at
-    FROM social_publications WHERE draft_id = ? ORDER BY created_at DESC`).bind(draftId).all();
+    FROM social_publications WHERE draft_id = ? ORDER BY id DESC`).bind(draftId).all();
   return result?.results || [];
 }
 
 function socialRetryAttemptCount(publications,channel) {
-  return publications.filter(item=>item.channel===channel && !(
-    channel==='x'
-    && Number(item.response_code)!==422
-    && isBufferXLengthError(item.error)
-  )).length;
+  return publications.filter(item=>item.channel===channel).length;
 }
 
 function socialChannelCanRetry(publications,channel) {
-  const latest=publications.find(item=>item.channel===channel);
-  if(latest?.status==='failed' && Number(latest.response_code)===422)return false;
+  if(publications.some(item=>item.channel===channel&&['published','pending','uncertain','failed_terminal'].includes(item.status)))return false;
+  if(publications.some(item=>item.channel===channel&&Number(item.response_code)===422))return false;
   return socialRetryAttemptCount(publications,channel)<SOCIAL_AUTOMATIC_MAX_ATTEMPTS;
 }
 
@@ -3252,6 +3249,11 @@ async function adminUpdateSocialDraft(request, env, draftId) {
   const title = cleanText(body.title ?? current.title, 180);
   const content = cleanText(body.body ?? current.body, 3900);
   const channels = body.channels === undefined ? parseSocialChannels(current.channels) : parseSocialChannels(body.channels);
+  const history=await socialPublicationsForDraft(env,draftId);
+  if(history.some(item=>['pending','uncertain','published'].includes(item.status)) &&
+    (title!==current.title||content!==current.body||parseSocialChannels(current.channels).some(channel=>!channels.includes(channel)))){
+    return json({error:'Hi ha un enviament publicat o pendent de comprovació. No es pot canviar el text ni retirar canals del seu registre.'},409,'no-store',auth.origin);
+  }
   if (title.length < 3 || content.length < 20) return json({ error:'El títol o el text són massa curts.' }, 400, 'no-store', auth.origin);
   if (!channels.length) return json({ error:'Selecciona almenys un canal.' }, 400, 'no-store', auth.origin);
   if(current.status==='published'){
@@ -3891,7 +3893,7 @@ async function createBufferXPost(env, { localDate, slot, draft = null }) {
   };
 }
 
-async function publishBufferXImage(draft, env) {
+async function publishBufferXImage(draft, env, beforeSend) {
   if(!bufferXConfigured(env))throw Object.assign(new Error('Falta la connexió d’X a Buffer.'),{status:503});
   const channel=await bufferXChannel(env);
   const input={
@@ -3901,6 +3903,7 @@ async function publishBufferXImage(draft, env) {
     mode:'shareNow',
     assets:[{image:{url:await ensureSocialCardUrl(draft,env)}}],
   };
+  await beforeSend();
   const data=await bufferGraphql(env,`mutation CreatePost($input: CreatePostInput!) {
     createPost(input: $input) {
       ... on PostActionSuccess { post { id status dueAt sentAt externalLink } }
@@ -3909,7 +3912,9 @@ async function publishBufferXImage(draft, env) {
   }`,{input});
   const result=data.createPost||{};
   if(result.message||!result.post?.id||result.post.status==='error'){
-    throw bufferXMutationError(result.message,'Buffer no ha creat la publicació especial d’X.');
+    const error=bufferXMutationError(result.message,'Buffer no ha confirmat la publicació especial d’X.');
+    error.remoteId=result.post?.id||null;
+    throw error;
   }
   return {remoteId:String(result.post.id),responseCode:200,externalLink:result.post.externalLink||null};
 }
@@ -4483,18 +4488,20 @@ async function resolveMetaAssets(env) {
   return { pageId, pageName, pageToken, instagramId, instagramUsername };
 }
 
-async function publishFacebook(draft, env) {
+async function publishFacebook(draft, env, beforeSend) {
   const assets = await resolveMetaAssets(env);
   if (!assets.pageId) throw Object.assign(new Error('No s’ha identificat la pàgina de Facebook.'), { status:503 });
+  const imageUrl=await ensureSocialCardUrl(draft, env);
+  await beforeSend();
   const { payload, responseCode } = await metaGraphRequest(env, `${assets.pageId}/photos`, {
     method:'POST', accessToken:assets.pageToken,
-    params:{ caption:socialPostText(draft, 6000), url:await ensureSocialCardUrl(draft, env), published:true },
+    params:{ caption:socialPostText(draft, 6000), url:imageUrl, published:true },
   });
   if (!payload.id) throw Object.assign(new Error('Facebook no ha retornat l’identificador de la publicació.'), { status:502, responseCode });
   return { remoteId:String(payload.id), responseCode };
 }
 
-async function publishInstagram(draft, env) {
+async function publishInstagram(draft, env, beforeSend) {
   const assets = await resolveMetaAssets(env);
   if (!assets.instagramId) throw Object.assign(new Error('La pàgina no té cap compte professional d’Instagram vinculat. També pots afegir META_INSTAGRAM_ACCOUNT_ID.'), { status:503 });
   const imageUrl = await ensureSocialCardUrl(draft, env, 'jpeg');
@@ -4517,6 +4524,7 @@ async function publishInstagram(draft, env) {
     await new Promise(resolve => setTimeout(resolve, 800));
   }
   if (!containerReady) throw Object.assign(new Error('Instagram encara està processant la imatge. Torna-ho a provar d’aquí a uns segons.'), { status:409, responseCode:created.responseCode });
+  await beforeSend();
   const published = await metaGraphRequest(env, `${assets.instagramId}/media_publish`, {
     method:'POST', accessToken:assets.pageToken, params:{ creation_id:created.payload.id },
   });
@@ -4972,7 +4980,7 @@ async function threadsGraphRequest(env, path, { method='GET', params={} } = {}) 
   return { payload, responseCode:response.status };
 }
 
-async function publishThreads(draft, env) {
+async function publishThreads(draft, env, beforeSend) {
   const text = socialPostText(draft, 500);
   const imageUrl=await ensureSocialCardUrl(draft,env);
   const created = await threadsGraphRequest(env, 'me/threads', {
@@ -4980,15 +4988,22 @@ async function publishThreads(draft, env) {
     params:{ media_type:'IMAGE', image_url:imageUrl, text, alt_text:'Dades meteorològiques reals i previsió de Meteo Fontanillas' },
   });
   if (!created.payload.id) throw Object.assign(new Error('Threads no ha pogut preparar la publicació.'), { status:502, responseCode:created.responseCode });
-  let lastError=null;
+  let ready=false;
   for(let attempt=0;attempt<6;attempt+=1){
+    const state=await threadsGraphRequest(env,created.payload.id,{params:{fields:'status,error_message'}});
+    if(state.payload.status==='FINISHED'){ready=true;break;}
+    if(['ERROR','EXPIRED'].includes(state.payload.status))throw new Error(cleanText(state.payload.error_message||'Threads no ha pogut preparar el contingut.',500));
+    if(state.payload.status==='PUBLISHED'){
+      await beforeSend();
+      throw new Error('Threads indica que ja està publicat; cal conciliar-ne l’identificador.');
+    }
     await new Promise(resolve=>setTimeout(resolve,800+attempt*400));
-    try{
-      const published=await threadsGraphRequest(env,'me/threads_publish',{method:'POST',params:{creation_id:created.payload.id}});
-      if(published.payload.id)return {remoteId:String(published.payload.id),responseCode:published.responseCode};
-    }catch(error){lastError=error;if(error.metaCode&&!['1','2'].includes(String(error.metaCode)))throw error;}
   }
-  throw Object.assign(new Error(lastError?.message||'Threads encara està processant la publicació. Torna-ho a provar.'),{status:502,responseCode:lastError?.responseCode||created.responseCode});
+  if(!ready)throw new Error('Threads encara no ha acabat de preparar el contingut.');
+  await beforeSend();
+  const published=await threadsGraphRequest(env,'me/threads_publish',{method:'POST',params:{creation_id:created.payload.id}});
+  if(!published.payload.id)throw new Error('Threads no ha confirmat l’identificador; cal comprovar la plataforma.');
+  return {remoteId:String(published.payload.id),responseCode:published.responseCode};
 }
 
 async function diagnoseSocialChannel(channel, env) {
@@ -5081,18 +5096,20 @@ async function runDailyIntegrationPreflight(env, date = new Date()) {
   return {checked:true,ok:failed.length===0,results};
 }
 
-async function publishTelegram(draft, env) {
+async function publishTelegram(draft, env, beforeSend) {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHANNEL_ID) throw Object.assign(new Error('Falten les credencials de Telegram.'), { status:503 });
+  const imageUrl=await socialCardUrl(draft,env);
+  await beforeSend();
   const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, {
     method:'POST', headers:{ 'Content-Type':'application/json' },
-    body:JSON.stringify({ chat_id:env.TELEGRAM_CHANNEL_ID, photo:await socialCardUrl(draft, env), caption:socialPostText(draft, 1000) }),
+    body:JSON.stringify({ chat_id:env.TELEGRAM_CHANNEL_ID, photo:imageUrl, caption:socialPostText(draft, 1000) }),
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || payload.ok !== true) throw Object.assign(new Error(payload.description || `Telegram ha respost ${response.status}.`), { status:502, responseCode:response.status });
   return { remoteId:String(payload.result?.message_id || ''), responseCode:response.status };
 }
 
-async function publishBluesky(draft, env) {
+async function publishBluesky(draft, env, beforeSend) {
   if (!env.BLUESKY_HANDLE || !env.BLUESKY_APP_PASSWORD) throw Object.assign(new Error('Falten les credencials de Bluesky.'), { status:503 });
   const service = String(env.BLUESKY_SERVICE_URL || 'https://bsky.social').replace(/\/$/, '');
   const sessionResponse = await fetch(`${service}/xrpc/com.atproto.server.createSession`, {
@@ -5116,6 +5133,7 @@ async function publishBluesky(draft, env) {
   }
   const post = { '$type':'app.bsky.feed.post', text:socialPostText(draft, 300), createdAt:new Date().toISOString(), langs:['ca'] };
   if (imageEmbed) post.embed = imageEmbed;
+  await beforeSend();
   const recordResponse = await fetch(`${service}/xrpc/com.atproto.repo.createRecord`, {
     method:'POST', headers:{ 'Authorization':`Bearer ${session.accessJwt}`, 'Content-Type':'application/json' },
     body:JSON.stringify({ repo:session.did, collection:'app.bsky.feed.post', record:post }),
@@ -5125,19 +5143,17 @@ async function publishBluesky(draft, env) {
   return { remoteId:String(record.uri), responseCode:recordResponse.status };
 }
 
-async function recordSocialPublication(env, draftId, channel, status, details = {}) {
-  await env.DB.prepare(`INSERT INTO social_publications (draft_id,channel,status,remote_id,response_code,error,published_at)
-    VALUES (?,?,?,?,?,?,?)`)
-    .bind(draftId, channel, status, details.remoteId || null, details.responseCode || null, details.error || null, status === 'published' ? new Date().toISOString() : null).run();
-}
-
 async function refreshSocialDraftPublicationStatus(env, draft) {
-  const publishable = parseSocialChannels(draft.channels);
-  const publications = await socialPublicationsForDraft(env, draft.id);
-  const published = new Set(publications.filter(item => item.status === 'published').map(item => item.channel));
-  const status = publishable.length && publishable.every(channel => published.has(channel)) ? 'published' : published.size ? 'partially_published' : 'approved';
-  await env.DB.prepare('UPDATE social_drafts SET status = ? WHERE id = ?').bind(status, draft.id).run();
-  return status;
+  // Derive from current rows in one statement, not an earlier request snapshot.
+  await env.DB.prepare(`UPDATE social_drafts SET status = CASE
+    WHEN json_array_length(channels)>0 AND NOT EXISTS (
+      SELECT 1 FROM json_each(social_drafts.channels) AS selected
+      WHERE NOT EXISTS (SELECT 1 FROM social_publications p WHERE p.draft_id = social_drafts.id AND p.channel = selected.value AND p.status = 'published')
+    ) THEN 'published'
+    WHEN EXISTS (SELECT 1 FROM social_publications p WHERE p.draft_id = social_drafts.id AND p.status = 'published') THEN 'partially_published'
+    ELSE 'approved' END
+    WHERE id = ? AND status IN ('approved','partially_published','published')`).bind(draft.id).run();
+  return (await findSocialDraft(env,draft.id))?.status||draft.status;
 }
 
 async function holdExpiredSocialDraft(env,draft) {
@@ -5162,14 +5178,14 @@ export async function publishAutomaticSocialDraft(result, env) {
   const previous = await socialPublicationsForDraft(env, draft.id);
   const completed = new Set(previous.filter(item=>item.status==='published').map(item=>item.channel));
   const retryChannels = Array.isArray(result?.retryChannels) ? new Set(result.retryChannels) : null;
-  const requested = parseSocialChannels(draft.channels).filter(channel=>!completed.has(channel) && (!retryChannels || retryChannels.has(channel)));
+  const requested = parseSocialChannels(draft.channels).filter(channel=>!completed.has(channel) && socialChannelCanRetry(previous,channel) && (!retryChannels || retryChannels.has(channel)));
   const unavailable = requested.filter(channel=>!configured[channel]);
   const channels = requested.filter(channel=>configured[channel]);
   const outcomes = [];
   for (const channel of unavailable) {
     const error='El canal no té les credencials necessàries configurades a Cloudflare.';
-    await recordSocialPublication(env, draft.id, channel, 'failed', { error, responseCode:503 });
-    outcomes.push({ channel, ok:false, error });
+    const outcome=await deliverSocialChannel(env,draft,channel,async()=>{throw Object.assign(new Error(error),{responseCode:503});});
+    outcomes.push({channel,...outcome});
   }
   for (const channel of channels) {
     if(!socialDraftTemporalEligibility(draft)){
@@ -5177,16 +5193,17 @@ export async function publishAutomaticSocialDraft(result, env) {
       return {published:outcomes.some(item=>item.ok),outcomes,reason:'editorial_validity_expired_or_unknown'};
     }
     try {
-      const details = await publishers[channel](draft, env);
-      await recordSocialPublication(env, draft.id, channel, 'published', details);
-      outcomes.push({ channel, ok:true });
+      const outcome=await deliverSocialChannel(env,draft,channel,publishers[channel],{eligible:()=>socialDraftTemporalEligibility(draft)});
+      outcomes.push({channel,...outcome});
     } catch (error) {
-      await recordSocialPublication(env, draft.id, channel, 'failed', { error:cleanText(error.message,500), responseCode:error.responseCode||null });
-      outcomes.push({ channel, ok:false, error:cleanText(error.message,500), retryable:error.retryable!==false });
+      // D1 may be unavailable before/after a reservation. Never manufacture a
+      // retryable publication row: a pending reservation must keep blocking.
+      outcomes.push({ channel, ok:false, status:'uncertain', error:'No s’ha pogut completar el registre segur; cal revisar-lo.', retryable:false });
     }
   }
+  if(outcomes.every(item=>item.skipped))return {published:false,outcomes,reason:'no_retryable_channels'};
   await refreshSocialDraftPublicationStatus(env, draft);
-  const failed = outcomes.filter(item=>!item.ok);
+  const failed = outcomes.filter(item=>!item.ok&&!item.skipped);
   const definitiveFailures = failed.filter(item=>{
     return item.retryable===false || socialRetryAttemptCount(previous,item.channel)+1>=SOCIAL_AUTOMATIC_MAX_ATTEMPTS;
   });
@@ -5200,57 +5217,57 @@ export async function publishAutomaticSocialDraft(result, env) {
   // l'error és definitiu i repetir exactament la mateixa petició no el resoldrà.
   if (definitiveFailures.length) {
     const exhausted=definitiveFailures.every(item=>item.retryable!==false);
-    const reason=exhausted?`després de ${SOCIAL_AUTOMATIC_MAX_ATTEMPTS} intents`:'per un error definitiu del proveïdor';
+    const reason=definitiveFailures.some(item=>item.status==='uncertain')?'amb resultat incert; cal comprovar la plataforma abans de fer res (no es reenviarà automàticament)':exhausted?`després de ${SOCIAL_AUTOMATIC_MAX_ATTEMPTS} intents`:'per un error definitiu durant la preparació';
     await sendOperationalEmail(env, '[Observatori] Publicació automàtica incompleta', `No s’ha pogut publicar l’informe de ${result.localDate || 'avui'} ${reason} a: ${definitiveFailures.map(item=>item.channel).join(', ')}.\n\n${definitiveFailures.map(item=>`${item.channel}: ${item.error}`).join('\n')}`, 'social_publish_failed').catch(error=>console.error('Social notification error',error));
   }
   return { published:outcomes.some(item=>item.ok), outcomes };
 }
 
-async function recoverIncompleteDailySocialDraft(env, date = new Date()) {
-  if (!socialAutomationEnabled(env) || !(await ensureSocialDraftSchema(env))) return null;
-  const localDate = localIsoDate(date);
-  const draft = await env.DB.prepare(`SELECT * FROM social_drafts
-    WHERE dedupe_key LIKE ? AND status IN ('approved','partially_published')
-    ORDER BY id DESC LIMIT 1`).bind(`daily:${localDate}:%`).first();
-  if (!draft) return null;
-  const publications = await socialPublicationsForDraft(env, draft.id);
-  const retryChannels=pendingSocialRetryChannels(draft,publications);
-  if (!retryChannels.length) return null;
-  return { created:false, recovered:true, localDate, slot:'recovery', retryChannels, draft };
+async function recoverSocialCandidates(env, drafts, {localDate,slot,date=new Date()}={}) {
+  for(const draft of drafts){
+    if(!socialDraftTemporalEligibility(draft,date)){await holdExpiredSocialDraft(env,draft);continue;}
+    const publications=await socialPublicationsForDraft(env,draft.id);
+    const retryChannels=pendingSocialRetryChannels(draft,publications);
+    if(retryChannels.length)return {created:false,recovered:true,localDate:localDate||String(draft.created_at||'').slice(0,10),slot,retryChannels,draft};
+    const selected=parseSocialChannels(draft.channels);
+    if(selected.length&&selected.every(channel=>publications.some(item=>item.channel===channel&&item.status==='published'))){await refreshSocialDraftPublicationStatus(env,draft);continue;}
+    // Do not move an actively running request out of the automatic states.
+    if(publications.some(item=>item.status==='pending'&&date.getTime()-Date.parse(`${String(item.created_at).replace(' ','T').replace(/Z$/,'')}Z`)<45*60000))continue;
+    // Park terminal, uncertain and exhausted candidates so the next bounded
+    // page advances. No publication history is removed and no resend is made.
+    await env.DB.prepare("UPDATE social_drafts SET status = 'review' WHERE id = ? AND status IN ('approved','partially_published')").bind(draft.id).run();
+  }
+  return null;
 }
 
-async function recoverIncompleteOfficialAlertDraft(env) {
+export async function recoverIncompleteDailySocialDraft(env, date = new Date()) {
   if (!socialAutomationEnabled(env) || !(await ensureSocialDraftSchema(env))) return null;
-  const draft=await env.DB.prepare(`SELECT * FROM social_drafts
+  const localDate = localIsoDate(date);
+  const result = await env.DB.prepare(`SELECT * FROM social_drafts
+    WHERE dedupe_key LIKE ? AND status IN ('approved','partially_published')
+    ORDER BY id DESC LIMIT 10`).bind(`daily:${localDate}:%`).all();
+  return recoverSocialCandidates(env,result?.results||[],{localDate,slot:'recovery',date});
+}
+
+export async function recoverIncompleteOfficialAlertDraft(env) {
+  if (!socialAutomationEnabled(env) || !(await ensureSocialDraftSchema(env))) return null;
+  const result=await env.DB.prepare(`SELECT * FROM social_drafts
     WHERE kind = 'official_alert' AND status IN ('approved','partially_published')
       AND created_at >= datetime('now','-4 days')
       AND created_at <= datetime('now','-2 minutes')
-    ORDER BY id DESC LIMIT 1`).first();
-  if(!draft)return null;
-  let payload={};
-  try{payload=JSON.parse(draft.payload||'{}');}catch{}
-  if(payload.source!=='Meteocat')return null;
-  if(!socialDraftTemporalEligibility(draft)){await holdExpiredSocialDraft(env,draft);return null;}
-  const publications=await socialPublicationsForDraft(env,draft.id);
-  const retryChannels=pendingSocialRetryChannels(draft,publications);
-  if(!retryChannels.length)return null;
-  return {created:false,recovered:true,localDate:String(draft.created_at||'').slice(0,10),slot:'official-alert-recovery',retryChannels,draft};
+    ORDER BY id DESC LIMIT 10`).all();
+  return recoverSocialCandidates(env,result?.results||[],{slot:'official-alert-recovery'});
 }
 
-async function recoverIncompleteSpecialSocialDraft(env) {
+export async function recoverIncompleteSpecialSocialDraft(env) {
   if(!socialAutomationEnabled(env)||!(await ensureSocialDraftSchema(env)))return null;
-  const draft=await env.DB.prepare(`SELECT * FROM social_drafts
+  const result=await env.DB.prepare(`SELECT * FROM social_drafts
     WHERE kind IN ('weekly_summary','monthly_summary','seasonal_summary','annual_summary','station_event','environmental_event','meteorological_ephemeris','astronomical_event')
       AND status IN ('approved','partially_published')
       AND created_at >= datetime('now','-14 days')
       AND created_at <= datetime('now','-2 minutes')
-    ORDER BY id ASC LIMIT 1`).first();
-  if(!draft)return null;
-  if(!socialDraftTemporalEligibility(draft)){await holdExpiredSocialDraft(env,draft);return null;}
-  const publications=await socialPublicationsForDraft(env,draft.id);
-  const retryChannels=pendingSocialRetryChannels(draft,publications);
-  if(!retryChannels.length)return null;
-  return {created:false,recovered:true,localDate:String(draft.created_at||'').slice(0,10),slot:'special-recovery',retryChannels,draft};
+    ORDER BY id ASC LIMIT 10`).all();
+  return recoverSocialCandidates(env,result?.results||[],{slot:'special-recovery'});
 }
 
 async function adminPublishSocialDraft(request, env, draftId) {
@@ -5271,15 +5288,27 @@ async function adminPublishSocialDraft(request, env, draftId) {
   }
   try {
     const publishers = { facebook:publishFacebook, instagram:publishInstagram, telegram:publishTelegram, bluesky:publishBluesky, threads:publishThreads, x:publishBufferXImage };
-    const details = await publishers[channel](draft, env);
-    await recordSocialPublication(env, draftId, channel, 'published', details);
+    const outcome=await deliverSocialChannel(env,draft,channel,publishers[channel],{manual:true,eligible:()=>socialDraftTemporalEligibility(draft)});
+    if(!outcome.ok)return json({error:outcome.error||'Canal reservat, pendent de comprovació o ja publicat. No es reenviarà.',channel,retryable:outcome.retryable===true},409,'no-store',auth.origin);
     const status = await refreshSocialDraftPublicationStatus(env, draft);
     const updated = await findSocialDraft(env, draftId);
     return json({ ok:true, channel, status, draft:socialDraftPayload(updated, await socialPublicationsForDraft(env, draftId)) }, 200, 'no-store, private', auth.origin);
   } catch (error) {
-    await recordSocialPublication(env, draftId, channel, 'failed', { error:cleanText(error.message, 500), responseCode:error.responseCode || null }).catch(recordError => console.error('Social publication log error', recordError));
-    return json({ error:error.message || 'No s’ha pogut publicar.', channel, retryable:true }, error.status || 502, 'no-store', auth.origin);
+    return json({ error:'No s’ha pogut completar el registre segur. Comprova el canal abans de repetir.', channel, retryable:false }, 503, 'no-store', auth.origin);
   }
+}
+
+async function adminConfirmSocialDelivery(request,env,draftId){
+  const auth=await authorizeAdminRequest(request,env);
+  if(auth.response)return auth.response;
+  if(!(await ensureSocialDraftSchema(env)))return json({error:'D1 no disponible.'},503,'no-store',auth.origin);
+  const body=await adminJsonBody(request,auth.origin);
+  if(body.confirmed!==true)return json({error:'Cal confirmar que has comprovat la publicació a la plataforma.'},400,'no-store',auth.origin);
+  const confirmed=await confirmSocialDelivery(env,draftId,body.attemptId,body.remoteId);
+  if(!confirmed)return json({error:'Identificador absent o intent no conciliable.'},409,'no-store',auth.origin);
+  const draft=await findSocialDraft(env,draftId);
+  if(draft)await refreshSocialDraftPublicationStatus(env,draft);
+  return json({ok:true,published:false,reconciled:true},200,'no-store',auth.origin);
 }
 
 async function adminPrepareWhatsApp(request, env, draftId) {
@@ -5692,6 +5721,8 @@ export default {
       if (request.method === "POST" && url.pathname === "/admin/buffer-tiktok/test") return adminBufferTikTokTest(request, env);
       const socialPublishMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/publish$/);
       if (request.method === "POST" && socialPublishMatch) return adminPublishSocialDraft(request, env, Number(socialPublishMatch[1]));
+      const socialConfirmMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/confirm-delivery$/);
+      if (request.method === 'POST' && socialConfirmMatch) return adminConfirmSocialDelivery(request,env,Number(socialConfirmMatch[1]));
       const socialWhatsAppMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)\/prepare-whatsapp$/);
       if (request.method === "POST" && socialWhatsAppMatch) return adminPrepareWhatsApp(request, env, Number(socialWhatsAppMatch[1]));
       const socialDraftMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)$/);
