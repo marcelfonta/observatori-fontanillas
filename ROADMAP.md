@@ -133,7 +133,7 @@
 
 - [ ] Desplegar i validar el disparador principal Cloudflare → GitHub dels YouTube Shorts a les 06:20 i 19:45, amb correu d’error, confirmació remota de YouTube i reserva estiu/hivern de GitHub.
 - [x] Recuperar sense duplicats el Short del matí del 13-09-2026 després d’una cua de GitHub sense runner; YouTube confirma la publicació pública `eg4HRkShnJY`.
-- [ ] Integrar i desplegar el Worker 22.29.14: reserva de 45 minuts, publicació tardana segura fins a 90 minuts i independència de TikTok/X.
+- [x] Integrar i desplegar el Worker 22.29.14: reserva de 45 minuts, publicació tardana segura fins a 90 minuts i independència de TikTok/X. Staging i producció verificats el 13-09-2026; TikTok, X, Reels i Stories del matí recuperats sense duplicats.
 
 - [x] Crear un bucket R2 privat a Europa per als vídeos temporals de Shorts, sense domini públic.
 - [x] Preparar càrrega autenticada, URL signada i neteja automàtica de vídeos amb més de tres dies.
