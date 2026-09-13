@@ -12,13 +12,16 @@ assert.match(worker, /buffer-video/);
 assert.match(worker, /admin\/buffer-tiktok\/test/);
 assert.match(worker, /buffer-tiktok/);
 assert.match(worker, /saveToDraft:true/);
-assert.match(worker, /mode:draft \? 'addToQueue' : 'customScheduled'/);
+assert.match(worker, /mode:draft \? 'addToQueue' : shareNow \? 'shareNow' : 'customScheduled'/);
 assert.match(worker, /admin\/buffer-tiktok\/diagnostics/);
 assert.match(worker, /previous\?\.status === 'running'/);
 assert.match(workflow, /Deixa el TikTok preparat a Buffer/);
 assert.match(workflow, /buffer-tiktok/);
 assert.match(workflow, /steps\.social_video_upload\.outcome == 'success'/);
-assert.doesNotMatch(workflow, /name: Deixa el TikTok preparat a Buffer[\s\S]{0,250}continue-on-error: true/);
+assert.match(worker, /shareNow=!draft&&delay<=0/);
+assert.match(worker, /BUFFER_TIKTOK_RECOVERY_AFTER_MINUTES = 90/);
+assert.match(workflow, /name: Deixa el TikTok preparat a Buffer[\s\S]{0,250}continue-on-error: true/);
+assert.match(workflow, /Espera l'hora pública si queda poc marge/);
 assert.match(admin, /Prova segura de TikTok amb Buffer/);
 assert.match(admin, /id="admin-buffer-diagnostics"/);
 assert.match(worker, /bufferTikTokAutomationEnabled:bufferTikTokEnabled/);
@@ -27,10 +30,12 @@ assert.match(worker, /observedJob\('buffer-tiktok-recovery'/);
 
 assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:20:00.000Z')),'morning');
 assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:54:59.000Z')),'morning');
-assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:55:00.000Z')),null);
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T06:29:59.000Z')),'morning');
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T06:30:00.000Z')),null);
 assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T17:45:00.000Z')),'evening');
 assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T18:24:59.000Z')),'evening');
-assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T18:25:00.000Z')),null);
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T19:59:59.000Z')),'evening');
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T20:00:00.000Z')),null);
 
 const token='t'.repeat(32);
 const env={
