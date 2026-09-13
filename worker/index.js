@@ -7,7 +7,7 @@ import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core
 import { finiteNumber } from '../src/core/numeric.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.14";
+const WORKER_VERSION = "22.29.15";
 const WORKER_BUILT = "2026-09-13";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -5201,7 +5201,20 @@ async function publishThreads(draft, env, beforeSend) {
   }
   if(!ready)throw new Error('Threads encara no ha acabat de preparar el contingut.');
   await beforeSend();
-  const published=await threadsGraphRequest(env,'me/threads_publish',{method:'POST',params:{creation_id:created.payload.id}});
+  let published;
+  try {
+    published=await threadsGraphRequest(env,'me/threads_publish',{method:'POST',params:{creation_id:created.payload.id}});
+  } catch (firstError) {
+    // Threads can expose a freshly FINISHED container before the publish
+    // endpoint can resolve it. Reuse the same container once: never create a
+    // second media object and keep the delivery blocked if the result remains
+    // ambiguous.
+    if(Number(firstError.responseCode)!==400||!String(firstError.message||'').toLowerCase().includes('resource does not exist'))throw firstError;
+    const state=await threadsGraphRequest(env,created.payload.id,{params:{fields:'status,error_message'}}).catch(()=>null);
+    if(state?.payload?.status!=='FINISHED')throw firstError;
+    await new Promise(resolve=>setTimeout(resolve,1200));
+    published=await threadsGraphRequest(env,'me/threads_publish',{method:'POST',params:{creation_id:created.payload.id}});
+  }
   if(!published.payload.id)throw new Error('Threads no ha confirmat l’identificador; cal comprovar la plataforma.');
   return {remoteId:String(published.payload.id),responseCode:published.responseCode};
 }

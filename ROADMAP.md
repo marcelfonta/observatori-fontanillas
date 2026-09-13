@@ -9,6 +9,7 @@
 - [x] Auditar i corregir mitjanes ponderades, direcció circular del vent, cobertura intradiària i dates locals antigues, sense reescriure D1.
 - [x] Paquet F integrat i desplegat en Worker 22.29.10 i web 22.31.2; el paquet G converteix la comprovació manual de les tres resolucions en una prova obligatòria de staging.
 - [x] Retirar al tauler només la integració redundant de Workers Builds `observatori-fontanillas`; Pages `observatori-fontanillas` i Worker `fonta-meteo` continuen actius i verificats.
+- [x] Reprendre un error transitori de Threads reutilitzant el mateix contenidor preparat, amb un únic segon intent i sense repetir els altres canals.
 
 - [x] Auditoria C: cobertura de dies reals, pluja absent diferenciada de zero i antiguitat de registres sense inferir ratxes seques.
 - [x] Paquet C integrat a la PR 139; web pública amb revisió PWA `audit-c`. Desplegament A/B/C verificat el 12-09-2026.

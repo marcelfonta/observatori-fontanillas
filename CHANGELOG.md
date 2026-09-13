@@ -1,5 +1,12 @@
 # Changelog
 
+## Correcció — Represa segura de Threads · 2026-09-13
+
+- Si Threads declara un contenidor d’imatge com a preparat però el pas final respon temporalment que el recurs no existeix, el Worker torna a provar una sola vegada reutilitzant exactament el mateix contenidor.
+- La represa no crea una segona imatge ni torna a enviar els canals ja completats. Qualsevol segon resultat ambigu continua bloquejat per a comprovació humana.
+- La incidència del vespre del 13-09-2026 s’ha recuperat després de comprovar primer el perfil públic; Bluesky i Telegram no s’han repetit.
+- Worker proposat 22.29.15; web es manté en 22.31.5. Sense migracions ni secrets nous.
+
 ## Correcció — Cua resilient de vídeos i independència de canals · 2026-09-13
 
 - Una execució de GitHub acceptada conserva la reserva durant 45 minuts: el Worker deixa d’enviar un nou intent cada deu minuts mentre el primer encara espera servidor.
