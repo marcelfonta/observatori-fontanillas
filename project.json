@@ -5,6 +5,6 @@
   "entry": "index.html",
   "frontend": "src/app.js",
   "worker": "worker/index.js",
-  "workerVersion": "22.29.13",
+  "workerVersion": "22.29.14",
   "architecture": "PROJECT.md"
 }

@@ -1,5 +1,14 @@
 # Changelog
 
+## Correcció — Cua resilient de vídeos i independència de canals · 2026-09-13
+
+- Una execució de GitHub acceptada conserva la reserva durant 45 minuts: el Worker deixa d’enviar un nou intent cada deu minuts mentre el primer encara espera servidor.
+- Si GitHub comença tard, YouTube publica immediatament dins dels 90 minuts posteriors a la franja; si encara falten menys de cinc minuts, espera l’hora prevista i no publica abans.
+- TikTok adopta la mateixa recuperació de 90 minuts i envia immediatament quan el vídeo arriba després de l’hora, sense crear una programació amb data passada.
+- Un error de TikTok ja no interromp els passos d’X ni converteix en fallida una pujada de YouTube que ja s’ha completat.
+- La recuperació manual del matí del 13-09-2026 ha generat, desat a R2 i publicat correctament el Short de YouTube `eg4HRkShnJY`; no s’ha repetit cap publicació ja completada.
+- Worker proposat 22.29.14; web es manté en 22.31.5. Sense migracions ni secrets nous.
+
 ## Correcció — Neteja Cloudflare, webcam accessible i sincronització push · 2026-09-12
 
 - S’ha retirat del compte la integració redundant de Workers Builds `observatori-fontanillas`; el projecte Pages del mateix nom i el Worker productiu `fonta-meteo` continuen actius.

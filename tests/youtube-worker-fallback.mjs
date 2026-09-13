@@ -20,7 +20,7 @@ assert.match(worker,/youtube-short-runs/);
 assert.match(worker,/youtube-shorts-fallback/);
 assert.match(worker,/youtube-shorts-scheduler/);
 assert.match(worker,/No s’ha pogut preparar el YouTube Short/);
-assert.match(worker,/YOUTUBE_SHORT_DISPATCH_ACK_MS=8\*60\*1000/);
+assert.match(worker,/YOUTUBE_SHORT_DISPATCH_ACK_MS=45\*60\*1000/);
 assert.match(worker,/YOUTUBE_SHORT_MAX_ATTEMPTS=4/);
 assert.match(worker,/skipped:'awaiting_github'/);
 assert.match(workflow,/Coordina una sola execució per franja/);

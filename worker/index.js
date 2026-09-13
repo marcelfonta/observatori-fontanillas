@@ -7,8 +7,8 @@ import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core
 import { finiteNumber } from '../src/core/numeric.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.13";
-const WORKER_BUILT = "2026-09-12";
+const WORKER_VERSION = "22.29.14";
+const WORKER_BUILT = "2026-09-13";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -2236,7 +2236,7 @@ const META_VIDEO_AUTOMATIC_WINDOW_MINUTES=90;
 // retardar-se o no arribar a iniciar-se. Les hores són locals de Sant Celoni.
 const YOUTUBE_SHORT_FALLBACK_WINDOWS={ mati:{ hour:6, minute:20 }, vespre:{ hour:19, minute:45 } };
 const YOUTUBE_SHORT_FALLBACK_WINDOW_MINUTES=35;
-const YOUTUBE_SHORT_DISPATCH_ACK_MS=8*60*1000;
+const YOUTUBE_SHORT_DISPATCH_ACK_MS=45*60*1000;
 const YOUTUBE_SHORT_RUN_STALE_MS=20*60*1000;
 const YOUTUBE_SHORT_MAX_ATTEMPTS=4;
 
@@ -3668,6 +3668,7 @@ async function youtubeShortRunControl(request, env, localDate, slot) {
 
 const BUFFER_TIKTOK_SLOT_TIMES = { morning:{ hour:7, minute:0 }, evening:{ hour:20, minute:30 } };
 const BUFFER_TIKTOK_RECOVERY_STARTS = { morning:{ hour:6, minute:20 }, evening:{ hour:19, minute:45 } };
+const BUFFER_TIKTOK_RECOVERY_AFTER_MINUTES = 90;
 const BUFFER_X_SLOT_TIMES = { morning:{ hour:7, minute:0 }, midday:{ hour:14, minute:0 }, evening:{ hour:20, minute:30 } };
 const BUFFER_X_RECOVERY_STARTS = { morning:{ hour:6, minute:20 }, midday:{ hour:14, minute:0 }, evening:{ hour:19, minute:45 } };
 const BUFFER_X_RECOVERY_AFTER_MINUTES = 90;
@@ -3759,17 +3760,19 @@ async function createBufferTikTokPost(env, { localDate, slot, draft = false }) {
   if (!await env.SOCIAL_VIDEO_BUCKET.head(key)) throw Object.assign(new Error('Encara no hi ha el Short temporal preparat.'), { status:409 });
   const channel = await bufferTikTokChannel(env);
   const publishAt = bufferTikTokPublishAt(localDate, slot);
-  if (!draft && publishAt.getTime() - Date.now() < 5 * 60_000) {
-    throw Object.assign(new Error('No queda prou marge per programar el TikTok amb seguretat.'), { status:409 });
+  const delay=publishAt.getTime()-Date.now();
+  if (!draft && delay > 0 && delay < 5 * 60_000) {
+    throw Object.assign(new Error('Falten menys de cinc minuts: TikTok es publicarà puntualment al següent cicle.'), { status:425,pending:true });
   }
+  const shareNow=!draft&&delay<=0;
   const forecast=await socialForecast().catch(()=>[]);
   const input = {
     text:bufferTikTokCaption(localDate, slot, socialForecastFocus(forecast,slot)),
     channelId:channel.id,
     schedulingType:'automatic',
-    mode:draft ? 'addToQueue' : 'customScheduled',
+    mode:draft ? 'addToQueue' : shareNow ? 'shareNow' : 'customScheduled',
     assets:[{ video:{ url:await bufferVideoUrl(key, env), metadata:{ thumbnailOffset:2000 } } }],
-    ...(draft ? { saveToDraft:true } : { dueAt:publishAt.toISOString() }),
+    ...(draft ? { saveToDraft:true } : shareNow ? {} : { dueAt:publishAt.toISOString() }),
   };
   const data = await bufferGraphql(env, `mutation CreatePost($input: CreatePostInput!) {
     createPost(input: $input) {
@@ -3779,7 +3782,7 @@ async function createBufferTikTokPost(env, { localDate, slot, draft = false }) {
   }`, { input });
   const result = data.createPost || {};
   if (result.message || !result.post?.id) throw Object.assign(new Error(cleanText(result.message || 'Buffer no ha creat la publicació.', 500)), { status:502 });
-  return { id:String(result.post.id), status:result.post.status || (draft ? 'draft' : 'scheduled'), dueAt:result.post.dueAt || input.dueAt || null, draft };
+  return { id:String(result.post.id), status:result.post.status || (draft ? 'draft' : shareNow ? 'sending' : 'scheduled'), dueAt:result.post.dueAt || input.dueAt || null, draft, immediate:shareNow };
 }
 
 async function bufferTikTokDiagnosticsControl(request, env) {
@@ -3820,9 +3823,13 @@ async function scheduleBufferTikTokSlot(env, localDate, slot) {
   try {
     await recordOperationalState(env, serviceKey, 'running', { localDate, slot:safeSlot, stage:'scheduling' });
     const result = await createBufferTikTokPost(env, { localDate, slot:safeSlot });
-    await recordOperationalState(env, serviceKey, 'healthy', { localDate, slot:safeSlot, remoteId:result.id, dueAt:result.dueAt, stage:'scheduled' });
+    await recordOperationalState(env, serviceKey, 'healthy', { localDate, slot:safeSlot, remoteId:result.id, dueAt:result.dueAt, stage:result.immediate?'submitted':'scheduled' });
     return { ok:true, scheduled:true, ...result };
   } catch (error) {
+    if(error.pending){
+      await recordOperationalState(env,serviceKey,'running',{localDate,slot:safeSlot,stage:'waiting_target',reason:cleanText(error.message,300)}).catch(()=>{});
+      return {ok:true,pending:true,reason:cleanText(error.message,300)};
+    }
     await recordOperationalState(env, serviceKey, 'down', { localDate, slot:safeSlot, stage:'schedule_failed', error:cleanText(error.message,500), responseCode:error.responseCode || null }).catch(()=>{});
     await notifyBufferTikTokFailure(env, serviceKey, { localDate, slot:safeSlot, error:cleanText(error.message,500), responseCode:error.responseCode || null }).catch(()=>{});
     throw error;
@@ -3835,7 +3842,7 @@ export function bufferTikTokRecoverySlot(date = new Date()) {
   return Object.entries(BUFFER_TIKTOK_RECOVERY_STARTS).find(([slot,start])=>{
     const target=BUFFER_TIKTOK_SLOT_TIMES[slot];
     const startMinutes=start.hour*60+start.minute;
-    const latestMinutes=target.hour*60+target.minute-5;
+    const latestMinutes=target.hour*60+target.minute+BUFFER_TIKTOK_RECOVERY_AFTER_MINUTES;
     return current>=startMinutes && current<latestMinutes;
   })?.[0] || null;
 }
