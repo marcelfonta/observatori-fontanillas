@@ -128,5 +128,31 @@ try{
   assert.equal(telegramSends,2,'Reconciliation never sends content');
   assert.match(socialDeliveryState({status:'uncertain'}),/incert/);
   assert.match(socialDeliveryState({status:'pending'}),/no es reenviarà/);
+
+  // Threads may briefly report a FINISHED container that the publish endpoint
+  // cannot resolve yet. The retry must reuse that exact container.
+  const threadsDraft=draft('daily_observation',['threads']);
+  let threadCreates=0;let threadPublishes=0;let threadChecks=0;
+  globalThis.fetch=async (url,options={})=>{
+    const parsed=new URL(url);
+    if(parsed.pathname.endsWith('/me/threads')&&options.method==='POST'){
+      threadCreates+=1;return Response.json({id:'threads-container-1'});
+    }
+    if(parsed.pathname.endsWith('/threads-container-1')){
+      threadChecks+=1;return Response.json({id:'threads-container-1',status:'FINISHED'});
+    }
+    if(parsed.pathname.endsWith('/me/threads_publish')){
+      threadPublishes+=1;
+      if(threadPublishes===1)return Response.json({error:{message:'The requested resource does not exist',code:100}},{status:400});
+      return Response.json({id:'threads-post-1'});
+    }
+    throw new Error(`Unexpected Threads request: ${parsed.pathname}`);
+  };
+  const threadsResult=await publishAutomaticSocialDraft({draft:threadsDraft},{...env,THREADS_ACCESS_TOKEN:'threads-test'});
+  assert.equal(threadsResult.outcomes.find(item=>item.channel==='threads')?.ok,true);
+  assert.equal(threadCreates,1,'Threads recovery must not create another container');
+  assert.equal(threadPublishes,2,'Threads publish retries the same container once');
+  assert.equal(threadChecks,2,'Threads checks readiness before and after the transient 400');
+  assert.equal(rows(threadsDraft.id)[0].remote_id,'threads-post-1');
 }finally{globalThis.fetch=originalFetch;sqlite.close();}
 console.log('Auditoria B: reserva atòmica, errors incerts, conciliació i cua limitada verificats amb SQLite.');

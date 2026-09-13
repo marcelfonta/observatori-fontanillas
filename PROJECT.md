@@ -73,10 +73,11 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.31.5 / Worker 22.29.14
+## Estat V22.31.5 / Worker 22.29.15
 
-- Branca de treball: `fix/youtube-queue-resilience`.
-- Versions desplegades: web V22.31.5 i Worker V22.29.14.
+- Branca de treball: `fix/threads-publish-recovery`.
+- Versions proposades: web V22.31.5 i Worker V22.29.15.
+- Threads reutilitza una única vegada el mateix contenidor quan Meta el declara preparat però el pas final retorna temporalment que el recurs no existeix; no es crea una segona imatge ni es repeteixen els altres canals.
 - La cua de vídeo tolera fins a 90 minuts de retard sense publicar abans d’hora ni repetir el disparador cada deu minuts. TikTok i X continuen encara que un dels dos canals falli.
 - El Short del matí del 13-09-2026 s’ha recuperat manualment i YouTube l’ha confirmat com a públic amb l’identificador `eg4HRkShnJY`. TikTok i X han quedat enviats, i els Reels i Stories d’Instagram i Facebook s’han recuperat reutilitzant els identificadors remots, sense duplicats.
 - El Worker redundant d’actius estàtics `observatori-fontanillas` s’ha eliminat del tauler; Pages `observatori-fontanillas` i el Worker productiu `fonta-meteo` continuen actius.
