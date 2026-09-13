@@ -76,9 +76,9 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 ## Estat V22.31.5 / Worker 22.29.14
 
 - Branca de treball: `fix/youtube-queue-resilience`.
-- Versió web desplegada: V22.31.5. Worker proposat: V22.29.14.
+- Versions desplegades: web V22.31.5 i Worker V22.29.14.
 - La cua de vídeo tolera fins a 90 minuts de retard sense publicar abans d’hora ni repetir el disparador cada deu minuts. TikTok i X continuen encara que un dels dos canals falli.
-- El Short del matí del 13-09-2026 s’ha recuperat manualment i YouTube l’ha confirmat com a públic amb l’identificador `eg4HRkShnJY`; la resta de canals es reconcilien separadament.
+- El Short del matí del 13-09-2026 s’ha recuperat manualment i YouTube l’ha confirmat com a públic amb l’identificador `eg4HRkShnJY`. TikTok i X han quedat enviats, i els Reels i Stories d’Instagram i Facebook s’han recuperat reutilitzant els identificadors remots, sense duplicats.
 - El Worker redundant d’actius estàtics `observatori-fontanillas` s’ha eliminat del tauler; Pages `observatori-fontanillas` i el Worker productiu `fonta-meteo` continuen actius.
 - El nom accessible de la webcam inclou literalment el text visible i la càrrega normal d’una subscripció push ja no reenvia etiquetes redundants a OneSignal. Els canvis explícits de preferències continuen sincronitzant tant OneSignal com el registre propi D1.
 - El diagnòstic OAuth de YouTube ha superat l’execució 34716271807 sense preparar ni publicar cap vídeo.
@@ -86,7 +86,7 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - Les tres franges automàtiques d’X del 12-09-2026 consten enviades al primer intent (07:00, 14:06 i 20:30, hora local), amb estat remot `sent` i enllaç de publicació; la seqüència diària completa queda validada sense intervenció manual.
 - Una traça mòbil real en producció mesura LCP 408 ms i CLS 0,00. El paquet elimina la descàrrega duplicada de la webcam, agrupa les càrregues inicials concurrents i corregeix els defectes d’accessibilitat detectats per Lighthouse.
 - El diagnòstic manual de YouTube comprova el client, el secret i el refresh token mitjançant l’intercanvi OAuth, però s’atura abans de generar o llegir cap fitxer de vídeo. No té programació automàtica.
-- La proposta 22.29.14 modifica la coordinació del Worker i el workflow de vídeo, sense migracions ni secrets nous. Requereix staging, merge i aprovació humana abans de desplegar-se a producció.
+- El Worker 22.29.14 s’ha validat a staging i s’ha desplegat a producció amb autorització humana el 13-09-2026, sense migracions ni secrets nous.
 - Les mitjanes de l’arxiu ponderen cada agregat pel nombre de lectures, la cobertura intradiària és visible i la direcció del vent utilitza estadística circular.
 - Les hores històriques es deriven de l’epoch amb `Europe/Madrid` i s’agrupen per temps UTC transcorregut, sense migrar ni reescriure D1.
 - El selector ofereix català, castellà, anglès i francès. Una prova automàtica impedeix publicar un catàleg amb frases registrades sense traducció.

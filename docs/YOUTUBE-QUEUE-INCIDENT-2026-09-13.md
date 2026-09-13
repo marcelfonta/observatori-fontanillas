@@ -28,3 +28,10 @@ La franja de les 07:00 va publicar correctament la targeta diària a Bluesky i T
 - Proves dirigides: càlcul horari d’estiu i hivern, marge inferior a cinc minuts, retard de vint minuts, caducitat de noranta minuts, recuperació TikTok/X i màxim d’intents.
 - Abans de producció: `npm run check`, dry-run, staging i comprovació de `/version`.
 - Rollback: tornar el Worker a 22.29.13 i el workflow al commit anterior. No hi ha migració D1 ni canvi de secrets.
+
+## Tancament operatiu
+
+- PR 149 fusionat i Worker 22.29.14 desplegat a staging i producció el 13-09-2026.
+- Producció confirmada saludable amb la versió 22.29.14.
+- YouTube, TikTok i X del matí recuperats; els Reels i Stories d’Instagram i Facebook també han quedat saludables.
+- Els reintents de Meta han reutilitzat els identificadors remots de Facebook i Instagram, sense crear peces duplicades.
