@@ -45,7 +45,7 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - Si produccio va per darrere del repositori, la publicacio pot fallar amb targeta no preparada. Des de V22.13 el codi ho detecta amb un missatge explicit de versio.
 - Si es demana un canal sense credencials, es registra com a error explicit i reintentable; no es considera una publicacio feta ni es descarta silenciosament.
 - TikTok queda diferenciat entre compte connectat i direct post aprovat per la plataforma.
-- X publica mitjançant el canal connectat a Buffer: vídeo a les 07:00, targeta a les 14:00 i vídeo a les 20:30, amb estat remot, deduplicació i reintents al Worker.
+- X publica mitjançant el canal connectat a Buffer: vídeo a les 06:45, targeta a les 14:00 i vídeo a les 20:30, amb estat remot, deduplicació i reintents al Worker.
 - YouTube Shorts va per GitHub Actions, no pel mateix boto de publicacio social.
 
 ### D1 i limits
@@ -73,10 +73,11 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - `ROADMAP.md`: estat viu de properes fites.
 - `CHANGELOG.md`: historial detallat de versions.
 
-## Estat V22.31.5 / Worker 22.29.15
+## Estat V22.31.6 / Worker 22.29.16
 
-- Branca de treball: `fix/threads-publish-recovery`.
-- Versions proposades: web V22.31.5 i Worker V22.29.15.
+- Branca de treball: `fix/morning-publication-0645`.
+- Versions proposades: web V22.31.6 i Worker V22.29.16.
+- El paquet matinal es publica a les 06:45. La comprovació preventiva s’executa a les 06:30, el disparador principal de YouTube a les 06:05 i la reserva de GitHub a les 06:20; les recuperacions de TikTok i X segueixen el mateix avanç sense alterar migdia ni vespre.
 - Threads reutilitza una única vegada el mateix contenidor quan Meta el declara preparat però el pas final retorna temporalment que el recurs no existeix; no es crea una segona imatge ni es repeteixen els altres canals.
 - La cua de vídeo tolera fins a 90 minuts de retard sense publicar abans d’hora ni repetir el disparador cada deu minuts. TikTok i X continuen encara que un dels dos canals falli.
 - El Short del matí del 13-09-2026 s’ha recuperat manualment i YouTube l’ha confirmat com a públic amb l’identificador `eg4HRkShnJY`. TikTok i X han quedat enviats, i els Reels i Stories d’Instagram i Facebook s’han recuperat reutilitzant els identificadors remots, sense duplicats.
@@ -104,5 +105,5 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - Els vídeos incorporen una sisena escena animada d'evolució territorial de la pluja amb AROME France HD, Open-Meteo Best Match com a alternativa i reserva puntual segura per a Sant Celoni.
 - Els vídeos duren 30 segons, incorporen moviment subtil i transicions, i els textos de Meta, TikTok i X resumeixen el fenomen i les temperatures de la franja corresponent.
 - La targeta del migdia mostra una icona pròpia de la predicció d’avui.
-- Configuració de producció prevista: `SOCIAL_AUTO_TIMES=07:00,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:45,13:45,20:15`.
+- Configuració de producció prevista: `SOCIAL_AUTO_TIMES=06:45,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:30,13:45,20:15`.
 - Els avisos socials de Meteocat tenen un pressupost persistent de tres consultes al dia —màxim 93 al mes— per respectar el pla de 100 consultes de predicció. La primera activació real queda pendent del desplegament conjunt del codi i el secret `METEOCAT_API_KEY`.

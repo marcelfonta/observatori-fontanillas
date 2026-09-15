@@ -7,8 +7,8 @@ const worker = await readFile(resolve(root, 'worker/index.js'), 'utf8');
 const schema = await readFile(resolve(root, 'worker/schema.sql'), 'utf8');
 const project = JSON.parse(await readFile(resolve(root, 'project.json'), 'utf8'));
 
-assert.equal(project.version, '22.31.5');
-assert.match(worker, /WORKER_VERSION = "22\.29\.15"/);
+assert.equal(project.version, '22.31.6');
+assert.match(worker, /WORKER_VERSION = "22\.29\.16"/);
 assert.match(worker, /publicWorkerBaseUrl/);
 assert.match(worker, /Meta must receive a stable image response/);
 assert.match(worker, /materializeSocialCard/);

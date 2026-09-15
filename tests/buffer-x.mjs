@@ -30,9 +30,10 @@ assert.match(admin, /id="admin-buffer-x-operation"/);
 assert.match(adminJs, /x:'X'/);
 
 // Europe/Madrid és UTC+2 el 29 d’agost: recuperació abans i fins a 90 minuts després.
-assert.equal(bufferXRecoverySlot(new Date('2026-08-29T04:20:00.000Z')), 'morning');
-assert.equal(bufferXRecoverySlot(new Date('2026-08-29T06:29:59.000Z')), 'morning');
-assert.equal(bufferXRecoverySlot(new Date('2026-08-29T06:30:00.000Z')), null);
+assert.equal(bufferXRecoverySlot(new Date('2026-08-29T04:04:59.000Z')), null);
+assert.equal(bufferXRecoverySlot(new Date('2026-08-29T04:05:00.000Z')), 'morning');
+assert.equal(bufferXRecoverySlot(new Date('2026-08-29T06:14:59.000Z')), 'morning');
+assert.equal(bufferXRecoverySlot(new Date('2026-08-29T06:15:00.000Z')), null);
 assert.equal(bufferXRecoverySlot(new Date('2026-08-29T12:00:00.000Z')), 'midday');
 assert.equal(bufferXRecoverySlot(new Date('2026-08-29T13:29:59.000Z')), 'midday');
 assert.equal(bufferXRecoverySlot(new Date('2026-08-29T17:45:00.000Z')), 'evening');

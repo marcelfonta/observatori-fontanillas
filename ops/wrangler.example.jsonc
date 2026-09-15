@@ -8,7 +8,7 @@
   "vars": {
     "ENVIRONMENT": "local",
     "META_VIDEO_AUTOMATION_ENABLED": "false",
-    "META_VIDEO_AUTO_TIMES": "07:00,20:30",
+    "META_VIDEO_AUTO_TIMES": "06:45,20:30",
     "BUFFER_TIKTOK_AUTOMATION_ENABLED": "false",
     "BUFFER_X_AUTOMATION_ENABLED": "false",
     "SOCIAL_AUTOMATION_ENABLED": "false",
@@ -29,8 +29,8 @@
     "SOCIAL_FORECAST_EPISODE_TIMES": "10:00,18:00",
     "SOCIAL_EDUCATIONAL_TIME": "17:00",
     "METEOCAT_ALERT_SOCIAL_ENABLED": "false",
-    "SOCIAL_AUTO_TIMES": "07:00,14:00,20:30",
-    "SOCIAL_PREFLIGHT_TIME": "06:45,13:45,20:15",
+    "SOCIAL_AUTO_TIMES": "06:45,14:00,20:30",
+    "SOCIAL_PREFLIGHT_TIME": "06:30,13:45,20:15",
     "BLUESKY_HANDLE": "meteofontanillas.bsky.social",
     "TELEGRAM_CHANNEL_ID": "@meteofontanillas",
     "CONTACT_FROM": "Observatori Fontanillas <formulari@fontanillas.cat>",
@@ -62,7 +62,7 @@
       "vars": {
         "ENVIRONMENT": "staging",
         "META_VIDEO_AUTOMATION_ENABLED": "false",
-        "META_VIDEO_AUTO_TIMES": "07:00,20:30",
+        "META_VIDEO_AUTO_TIMES": "06:45,20:30",
         "BUFFER_TIKTOK_AUTOMATION_ENABLED": "false",
         "BUFFER_X_AUTOMATION_ENABLED": "false",
         "SOCIAL_AUTOMATION_ENABLED": "false",
@@ -79,7 +79,7 @@
         "SOCIAL_FORECAST_EPISODE_AUTOPUBLISH_ENABLED": "false",
         "SOCIAL_FORECAST_EPISODE_TIMES": "10:00,18:00",
         "METEOCAT_ALERT_SOCIAL_ENABLED": "false",
-        "SOCIAL_PREFLIGHT_TIME": "06:45,13:45,20:15"
+        "SOCIAL_PREFLIGHT_TIME": "06:30,13:45,20:15"
       },
       "d1_databases": [
         {
