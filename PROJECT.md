@@ -75,9 +75,10 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 
 ## Estat V22.31.6 / Worker 22.29.16
 
-- Branca de treball: `fix/morning-publication-0645`.
-- Versions proposades: web V22.31.6 i Worker V22.29.16.
+- Branca de documentació: `docs/morning-0645-deployment`.
+- Versions desplegades: web V22.31.6 i Worker V22.29.16.
 - El paquet matinal es publica a les 06:45. La comprovació preventiva s’executa a les 06:30, el disparador principal de YouTube a les 06:05 i la reserva de GitHub a les 06:20; les recuperacions de TikTok i X segueixen el mateix avanç sense alterar migdia ni vespre.
+- Staging ha superat el desplegament controlat `34933005547`. Producció serveix el Worker `22.29.16` amb la versió Cloudflare `bc22b9e7-0863-4731-a48f-80adebaf8126` i Pages publica el commit `0d51866` de `main`.
 - Threads reutilitza una única vegada el mateix contenidor quan Meta el declara preparat però el pas final retorna temporalment que el recurs no existeix; no es crea una segona imatge ni es repeteixen els altres canals.
 - La cua de vídeo tolera fins a 90 minuts de retard sense publicar abans d’hora ni repetir el disparador cada deu minuts. TikTok i X continuen encara que un dels dos canals falli.
 - El Short del matí del 13-09-2026 s’ha recuperat manualment i YouTube l’ha confirmat com a públic amb l’identificador `eg4HRkShnJY`. TikTok i X han quedat enviats, i els Reels i Stories d’Instagram i Facebook s’han recuperat reutilitzant els identificadors remots, sense duplicats.
@@ -105,5 +106,5 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - Els vídeos incorporen una sisena escena animada d'evolució territorial de la pluja amb AROME France HD, Open-Meteo Best Match com a alternativa i reserva puntual segura per a Sant Celoni.
 - Els vídeos duren 30 segons, incorporen moviment subtil i transicions, i els textos de Meta, TikTok i X resumeixen el fenomen i les temperatures de la franja corresponent.
 - La targeta del migdia mostra una icona pròpia de la predicció d’avui.
-- Configuració de producció prevista: `SOCIAL_AUTO_TIMES=06:45,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:30,13:45,20:15`.
+- Configuració de producció activa: `SOCIAL_AUTO_TIMES=06:45,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:30,13:45,20:15`.
 - Els avisos socials de Meteocat tenen un pressupost persistent de tres consultes al dia —màxim 93 al mes— per respectar el pla de 100 consultes de predicció. La primera activació real queda pendent del desplegament conjunt del codi i el secret `METEOCAT_API_KEY`.

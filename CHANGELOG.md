@@ -5,7 +5,7 @@
 - La targeta diària, els Reels i Stories de Meta, TikTok, X i el YouTube Short passen de les 07:00 a les 06:45, hora de Sant Celoni.
 - La comprovació preventiva s’avança a les 06:30 i el disparador principal del vídeo a les 06:05; la reserva de GitHub s’executa a les 06:20 tant a l’estiu com a l’hivern.
 - Les finestres de recuperació de YouTube, TikTok i X mantenen els mateixos marges i la protecció contra duplicats. Les franges de les 14:00 i les 20:30 no canvien.
-- Web proposada 22.31.6 i Worker proposat 22.29.16. Sense migracions, secrets, publicacions reals ni desplegament automàtic.
+- Web 22.31.6 i Worker 22.29.16 desplegats a producció el 15-09-2026 després de superar staging. Sense migracions, secrets ni publicacions socials forçades durant el desplegament.
 
 ## Correcció — Represa segura de Threads · 2026-09-13
 

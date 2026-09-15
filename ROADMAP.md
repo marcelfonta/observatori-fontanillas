@@ -132,7 +132,7 @@
 
 - [ ] Diagnòstic remot de Buffer/TikTok superat a l’execució 34716813993; queda validar un esborrany de cada franja. Després, activar `BUFFER_TIKTOK_AUTOMATION_ENABLED=true` al Worker perquè la cua programi els dos vídeos diaris sense afectar YouTube.
 
-- [ ] Desplegar i validar el disparador principal Cloudflare → GitHub dels YouTube Shorts a les 06:05 i 19:45, amb correu d’error, confirmació remota de YouTube i reserva estiu/hivern de GitHub.
+- [ ] Confirmar en una franja real el disparador principal Cloudflare → GitHub dels YouTube Shorts a les 06:05 i 19:45, ja desplegat amb correu d’error, confirmació remota de YouTube i reserva estiu/hivern de GitHub.
 - [x] Recuperar sense duplicats el Short del matí del 13-09-2026 després d’una cua de GitHub sense runner; YouTube confirma la publicació pública `eg4HRkShnJY`.
 - [x] Integrar i desplegar el Worker 22.29.14: reserva de 45 minuts, publicació tardana segura fins a 90 minuts i independència de TikTok/X. Staging i producció verificats el 13-09-2026; TikTok, X, Reels i Stories del matí recuperats sense duplicats.
 
@@ -284,7 +284,7 @@
 
 - [x] Codi preparat per a les franges `06:45`, `14:00` i `20:30`, amb textos diferents de matí, migdia i vespre.
 - [x] Comprovació preventiva abans de cada franja: `06:30`, `13:45` i `20:15`.
-- [ ] Aplicar a producció `SOCIAL_AUTO_TIMES=06:45,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:30,13:45,20:15` en desplegar el Worker.
+- [x] Aplicar a producció `SOCIAL_AUTO_TIMES=06:45,14:00,20:30` i `SOCIAL_PREFLIGHT_TIME=06:30,13:45,20:15` en desplegar el Worker.
 - [ ] Confirmar una execució automàtica real de cada franja als cinc canals actius.
 - [ ] Confirmar recepció d’un avís real de prova en Android/iPhone i escriptori.
 
