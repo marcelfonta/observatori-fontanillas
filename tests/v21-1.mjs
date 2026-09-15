@@ -9,8 +9,8 @@ const [worker,schema,adminPage,adminFeature,portalCss,serviceWorker,project]=awa
   read('worker/index.js'),read('worker/schema.sql'),read('administracio.html'),read('src/features/admin.js'),read('css/portal.css'),read('service-worker.js'),read('project.json')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.31.5','La versió web del projecte no és V22.31.5.');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-5-frances-colaboracions'),'La memòria cau PWA no és V22.31.5.');
+assert.equal(JSON.parse(project).version,'22.31.6','La versió web del projecte no és V22.31.6.');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-6-morning-publication-0645'),'La memòria cau PWA no és V22.31.6.');
 assert.ok(worker.includes('socialCardHtml')&&worker.includes("env.BROWSER.quickAction('screenshot'"),'Falta la targeta social dinàmica amb dades reals.');
 
 for(const source of [worker,schema]){
@@ -31,7 +31,7 @@ assert.ok(scheduled.includes('createDailySocialDraft'),'El cron ha de poder crea
 for(const publisher of ['publishFacebook(','publishInstagram(','publishTelegram(','publishBluesky('])assert.ok(!scheduled.includes(publisher),`El cron no pot executar ${publisher}.`);
 
 for(const id of ['admin-social-list','admin-social-feedback','admin-social-mode','admin-social-drafts','admin-social-diagnose','admin-social-diagnostic-list','admin-social-facebook','admin-social-instagram','admin-social-pagination','admin-social-previous','admin-social-next'])assert.ok(adminPage.includes(`id="${id}"`),`Panell editorial: falta ${id}.`);
-for(const text of ['Publicació automàtica i control','Facebook i Instagram publiquen Reel + Story a les 07:00 i 20:30, i una imatge al migdia'])assert.ok(adminPage.includes(text),`Panell editorial: falta l’avís «${text}».`);
+for(const text of ['Publicació automàtica i control','Facebook i Instagram publiquen Reel + Story a les 06:45 i 20:30, i una imatge al migdia'])assert.ok(adminPage.includes(text),`Panell editorial: falta l’avís «${text}».`);
 for(const token of ['/admin/social-drafts','/admin/social-diagnostics','runSocialDiagnostics','window.confirm','socialEditorDirty','textContent','socialPublicationRows',"facebook:'Facebook'","instagram:'Instagram'","telegram:'Telegram'","bluesky:'Bluesky'",'Publicar a ${label}','SOCIAL_PAGE_SIZE','hasMore','initSocialPagination','admin-social-card__details'])assert.ok(adminFeature.includes(token),`Editor social: falta ${token}.`);
 for(const token of ['.admin-social-card','.admin-social-publications','.admin-social-actions','@media'])assert.ok(portalCss.includes(token),`Estils editorials: falta ${token}.`);
 

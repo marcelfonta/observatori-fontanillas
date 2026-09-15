@@ -28,10 +28,11 @@ assert.match(worker, /bufferTikTokAutomationEnabled:bufferTikTokEnabled/);
 assert.match(worker, /recoverBufferTikTokSchedule/);
 assert.match(worker, /observedJob\('buffer-tiktok-recovery'/);
 
-assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:20:00.000Z')),'morning');
-assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:54:59.000Z')),'morning');
-assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T06:29:59.000Z')),'morning');
-assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T06:30:00.000Z')),null);
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:04:59.000Z')),null);
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:05:00.000Z')),'morning');
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:44:59.000Z')),'morning');
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T06:14:59.000Z')),'morning');
+assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T06:15:00.000Z')),null);
 assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T17:45:00.000Z')),'evening');
 assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T18:24:59.000Z')),'evening');
 assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T19:59:59.000Z')),'evening');

@@ -3,9 +3,9 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFile } from 'node:fs/promises';
 import workerRuntime, { dispatchYoutubeShortFallback, youtubeShortFallbackSlot } from '../worker/index.js';
 
-assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:20:00.000Z')),'mati');
-assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:54:59.000Z')),'mati');
-assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:55:00.000Z')),null);
+assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:05:00.000Z')),'mati');
+assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:39:59.000Z')),'mati');
+assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T04:40:00.000Z')),null);
 assert.equal(youtubeShortFallbackSlot(new Date('2026-08-28T17:45:00.000Z')),'vespre');
 assert.equal(youtubeShortFallbackSlot(new Date('2026-12-10T18:45:00.000Z')),'vespre');
 
@@ -70,7 +70,7 @@ try{
   assert.equal((await dispatchYoutubeShortFallback(coordinatedEnv,evening)).skipped,'terminal_failure');
   assert.equal(dispatches,1,'A permanent OAuth failure is never dispatched again');
 
-  const morning=new Date('2026-09-12T04:20:00Z');
+  const morning=new Date('2026-09-12T04:05:00Z');
   for(let attempt=1;attempt<=4;attempt+=1){
     assert.equal((await dispatchYoutubeShortFallback(coordinatedEnv,morning)).attempt,attempt);
     assert.equal((await (await control('2026-09-12','mati',{action:'start'})).json()).shouldRun,true);
