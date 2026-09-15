@@ -1,5 +1,12 @@
 # Changelog
 
+## Funcionalitat — Widget privat d'iPhone · 2026-09-15
+
+- Primera app nativa privada de Meteo Fontanillas amb widgets en línia, circular i rectangular per a la pantalla bloquejada, més un format petit per a la pantalla d'inici.
+- La temperatura és l'observació real del Worker; la condició, la màxima, la mínima i la probabilitat de pluja s'identifiquen com a previsió d'avui d'Open-Meteo.
+- Les dades absents no es converteixen en zeros i una lectura de reserva queda marcada com a «Darrera lectura fiable» amb la seva antiguitat.
+- La fase no modifica el Worker, D1, la PWA, els horaris ni les publicacions. La instal·lació física queda pendent de disposar d'Xcode complet i seleccionar l'equip de signatura de l'usuari.
+
 ## Millora — Publicació matinal a les 06:45 · 2026-09-15
 
 - La targeta diària, els Reels i Stories de Meta, TikTok, X i el YouTube Short passen de les 07:00 a les 06:45, hora de Sant Celoni.

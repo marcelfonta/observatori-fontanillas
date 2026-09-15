@@ -1,0 +1,38 @@
+name: Widget iPhone · compilació
+
+on:
+  pull_request:
+    paths:
+      - "ios/MeteoFontanillas/**"
+      - ".github/workflows/ios-widget-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-widget-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Compila app i widget
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - name: Descarrega el repositori
+        uses: actions/checkout@v5
+
+      - name: Proves del nucli
+        working-directory: ios/MeteoFontanillas
+        run: swift test
+
+      - name: Compila per al simulador sense signatura
+        run: >-
+          xcodebuild
+          -project ios/MeteoFontanillas/MeteoFontanillas.xcodeproj
+          -target MeteoFontanillas
+          -sdk iphonesimulator
+          -configuration Debug
+          CODE_SIGNING_ALLOWED=NO
+          build

@@ -1,4 +1,7 @@
 .DS_Store
+.build/
+DerivedData/
+xcuserdata/
 .dev.vars*
 .env*
 .wrangler/

@@ -2,6 +2,9 @@
 
 ## Manteniment obert — En curs
 
+- [x] Preparar una primera app privada d'iPhone amb widgets de pantalla bloquejada en línia, circular i rectangular, alimentats per l'observació pública del Worker i la previsió d'avui.
+- [ ] Instal·lar-la en un iPhone real amb Xcode, revisar-ne la lectura, els tres formats i el refresc efectiu abans de plantejar TestFlight o distribució pública.
+
 - [x] Auditoria D: intervals de consulta, absències a origen i gràfiques, increments de pluja i agregats parcials, amb proves locals.
 - [x] D integrat a la PR 140 i desplegat amb autorització humana en Worker 22.29.8; intervals validats a staging, consum revisat amb analítica real i web `audit-d` comprovada en producció. Evidència i límits a `docs/DEPLOY-AUDIT-D-2026-09-12.md`.
 - [x] Preparar una memòria cau canònica de cinc minuts per a l’històric, independent del marcador de refresc del client, amb estat `HIT`/`MISS` verificable.
