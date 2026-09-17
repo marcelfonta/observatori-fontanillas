@@ -1,5 +1,15 @@
 # Registre de decisions
 
+## ADR — Previsió social per franges sense allargar els vídeos (2026-09-17)
+
+- Objectiu i acceptació: tres escenes consecutives de matí (06–12 h), tarda (12–19 h) i vespre (19–24 h), avui al vídeo matinal i demà al del vespre. Conservar les sis escenes i el límit de 30 segons; mantenir observació, gràfica tèrmica, tendència i animació de pluja. La targeta del migdia omet el matí i comença a les 14 h.
+- Càlcul compartit pur a `src/core/forecast-dayparts.js`. Temperatura i codi meteorològic usen instants `[inici,final)`; probabilitat de pluja i ratxa usen els extrems `(inici,final]`, perquè descriuen l’hora precedent. La darrera franja inclou la probabilitat i ratxa de mitjanit del dia següent.
+- Font del contracte horari: [documentació oficial d’Open-Meteo](https://open-meteo.com/en/docs). Mostrar explícitament «màx. horària»: no sumar probabilitats ni presentar-ne el màxim com a probabilitat de tot el període.
+- Símbol: fenomen significatiu de més impacte quan existeix; si només hi ha cel sec, condició predominant amb empat a favor del cel més cobert. Fenomen intermitent indicat com a possibilitat. No és un avís oficial. Dades incompletes: ocultar la mètrica afectada amb «—» i marcar incompletes, sense substituir-les pel resum diari.
+- Compatibilitat: camps diaris existents conservats, `dayparts` és additiu dins del JSON de l’esborrany. Sense canvis d’esquema D1, consultes D1 addicionals, secrets, horaris, reserves, recuperacions ni canals. Una sola consulta horària/diària al proveïdor, amb la memòria cau existent de 15 minuts al Worker. Esborranys antics conserven el renderitzat anterior i els recursos R2 ja generats no es reescriuen.
+- Rollback: revertir aquest paquet en Worker i generador/workflow conjuntament. Els JSON nous continuen llegibles pel codi anterior perquè els camps diaris persisteixen i el codi antic ignora `dayparts`. No repetir ni eliminar publicacions durant el desplegament; validar primer un esborrany de staging sense enviament.
+- Verificació local: proves de límits, mitjanit, canvi d’any i DST, franges seques/plujoses, camps absents, textos curts i constructor real d’esborrany amb fronteres simulades; suite completa, compilació Wrangler `--dry-run`, render local amb el mateix filtre del workflow i comprovació visual amb Chrome. Evidència operativa a `docs/DAYPARTS-VALIDATION-2026-09-17.md`.
+
 ## ADR — Publicacions astronòmiques verificades i condicionades (2026-09-11)
 
 - El calendari visible i les publicacions comparteixen un únic catàleg; no es mantenen dues llistes de dates.

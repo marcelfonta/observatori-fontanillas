@@ -2,6 +2,9 @@
 
 ## Manteniment obert — En curs
 
+- [x] Preparar vídeos diaris amb matí, tarda i vespre i targeta del migdia amb les franges restants, mantenint el límit de 30 segons, les dades reals i les animacions existents.
+- [ ] Revisar i integrar la previsió per franges; validar a staging i desplegar el Worker 22.29.17 amb autorització abans de comprovar les següents publicacions programades.
+
 - [x] Preparar una primera app privada d'iPhone amb widgets de pantalla bloquejada en línia, circular i rectangular, alimentats per l'observació pública del Worker i la previsió d'avui.
 - [ ] Instal·lar-la en un iPhone real amb Xcode, revisar-ne la lectura, els tres formats i el refresc efectiu abans de plantejar TestFlight o distribució pública.
 
