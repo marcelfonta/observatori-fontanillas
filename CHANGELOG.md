@@ -1,5 +1,14 @@
 # Changelog
 
+## Millora — Previsió diària per matí, tarda i vespre · 2026-09-17
+
+- Els vídeos substitueixen les escenes de resum general, detall repetit i segon dia per tres franges amb símbol, condició, temperatures i ratxa propis: 06–12 h, 12–19 h i 19–24 h, hora de Sant Celoni. Es conserven les sis escenes, transicions, gràfica tèrmica, tendència, mapa animat i límit de 30 segons.
+- El matí explica avui; el vespre explica demà amb la data explícita. La targeta del migdia conserva les dades reals i la gràfica, i mostra la tarda des de les 14 h i el vespre, sense repetir el matí.
+- Les franges s’obtenen de les dades horàries d’Open-Meteo, no del símbol ni de la probabilitat diària. La pluja es presenta com a màxim de les probabilitats horàries, no com a probabilitat conjunta de tota la franja. Probabilitat i ratxa respecten l’hora precedent indicada pel proveïdor.
+- Les dades incompletes es mostren com a absents, mai com a zero. Una tempesta o ruixat curt no queda amagat pel cel predominant. Els textos curts mantenen les tres franges, la data i l’enllaç.
+- Logo conservat, peu del vídeo separat en dues línies i maquetació compacta de la targeta. Els esborranys antics sense franges continuen compatibles i les imatges ja desades no s’invaliden.
+- Worker proposat 22.29.17; web 22.31.6 sense canvis. Sense migracions, secrets, horaris ni publicacions forçades. Preparat localment; pendent de revisió, PR, staging i desplegament autoritzat.
+
 ## Funcionalitat — Widget privat d'iPhone · 2026-09-15
 
 - Primera app nativa privada de Meteo Fontanillas amb widgets en línia, circular i rectangular per a la pantalla bloquejada, més un format petit per a la pantalla d'inici.

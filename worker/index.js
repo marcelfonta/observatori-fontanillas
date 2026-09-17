@@ -5,10 +5,11 @@ import { astronomyEventsForDate, astronomyVisibilitySummary, astronomyObservatio
 import { detectForecastEpisode, forecastEpisodeCopy, normalizeForecastModel } from '../src/core/forecast-episodes.js';
 import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core/temperature-trend.js';
 import { finiteNumber } from '../src/core/numeric.js';
+import { DAYPART_HOURLY_VARIABLES, normalizeSocialForecast, summarizeForecastDayparts, daypartCaption } from '../src/core/forecast-dayparts.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.16";
-const WORKER_BUILT = "2026-09-15";
+const WORKER_VERSION = "22.29.17";
+const WORKER_BUILT = "2026-09-17";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -1656,17 +1657,20 @@ function socialForecastFocus(forecast, slot){
   return forecast[slot==='evening'?1:0]||null;
 }
 
-function socialForecastSummary(day, slot){
+export function socialForecastSummary(day, slot){
   if(!day)return '';
   const when=slot==='evening'?'Demà':'Avui';
   const temperatures=finite(day.max)===null?'':finite(day.min)===null?` · màx. ${socialNumber(day.max,0)}°`:` · ${socialNumber(day.max,0)}°/${socialNumber(day.min,0)}°`;
   const rain=finite(day.rainProbability)===null?'':` · ${socialNumber(day.rainProbability,0)}% pluja`;
-  return `${socialWeatherEmoji(day.weatherCode)} ${when}: ${day.condition||socialWeatherLabel(day.weatherCode)}${temperatures}${rain}`;
+  const parts=Array.isArray(day.dayparts)?day.dayparts:[];
+  const detail=parts.length?parts.map(part=>`${part.label}: ${part.condition}`).join(' · '):day.condition||socialWeatherLabel(day.weatherCode);
+  return `${socialWeatherEmoji(day.weatherCode)} ${when}${day.date?`, ${day.date}`:''}: ${detail}${temperatures}${rain}`;
 }
 
-function socialWeatherGlyphSvg(code){
+function socialWeatherGlyphSvg(code,night=false){
   const value=Number(code);const clear=value===0;const partly=value<=2;const fog=value===45||value===48;const rain=(value>=51&&value<=67)||(value>=80&&value<=82)||value>=95;const snow=(value>=71&&value<=77)||(value>=85&&value<=86);const storm=value>=95;
-  const sun=clear?'<circle r="52" fill="#ffd166"/><g stroke="#ffd166" stroke-width="13" stroke-linecap="round"><path d="M0-94v-24M0 94v24M-94 0h-24M94 0h24M-67-67l-17-17M67 67l17 17M67-67l17-17M-67 67l-17 17"/></g>':partly?'<circle cx="-55" cy="-45" r="38" fill="#ffd166"/>':'';
+  const moon='<path d="M22-72A76 76 0 1 0 80 38A68 68 0 0 1 22-72" fill="#d8f4ff"/>';
+  const sun=clear?(night?moon:'<circle r="52" fill="#ffd166"/><g stroke="#ffd166" stroke-width="13" stroke-linecap="round"><path d="M0-94v-24M0 94v24M-94 0h-24M94 0h24M-67-67l-17-17M67 67l17 17M67-67l17-17M-67 67l-17 17"/></g>'):partly?(night?`<g transform="translate(-45 -65) scale(.75)">${moon}</g>`:'<circle cx="-55" cy="-45" r="38" fill="#ffd166"/>'):'';
   const cloud=clear?'':'<path d="M-84 60c-25 0-45-18-45-41 0-22 18-40 41-42 10-32 40-53 75-53 45 0 81 33 85 76 27 4 48 25 48 51 0 29-25 52-57 52H-84z" fill="#f2f8f5" stroke="#8cbba8" stroke-width="9"/>';
   const drops=rain?'<g stroke="#67cae9" stroke-width="11" stroke-linecap="round"><path d="M-65 119l-12 25M0 119l-12 25M65 119l-12 25"/></g>':'';
   const flakes=snow?'<g fill="#d8f4ff"><circle cx="-62" cy="137" r="9"/><circle cy="166" r="9"/><circle cx="62" cy="137" r="9"/></g>':'';
@@ -1675,12 +1679,13 @@ function socialWeatherGlyphSvg(code){
   return `<svg viewBox="-180 -180 360 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${escapeHtml(socialWeatherLabel(code))}">${sun}${cloud}${drops}${flakes}${mist}${bolt}</svg>`;
 }
 
-async function socialForecast(){
-  const params=new URLSearchParams({latitude:String(STATION_LATITUDE),longitude:String(STATION_LONGITUDE),timezone:TIME_ZONE,forecast_days:'4',daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max'});
+async function socialForecast({referenceDate=null,fromHour=0}={}){
+  const params=new URLSearchParams({latitude:String(STATION_LATITUDE),longitude:String(STATION_LONGITUDE),timezone:TIME_ZONE,forecast_days:'4',hourly:DAYPART_HOURLY_VARIABLES,daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max'});
   const response=await fetch(`https://api.open-meteo.com/v1/forecast?${params}`,{headers:{Accept:'application/json'},cf:{cacheEverything:true,cacheTtl:900}});
   if(!response.ok)throw new Error(`Open-Meteo social ${response.status}`);
-  const daily=(await response.json()).daily||{};
-  return daily.time?.map((date,index)=>({date,weatherCode:finite(daily.weather_code?.[index]),condition:socialWeatherLabel(daily.weather_code?.[index]),max:finite(daily.temperature_2m_max?.[index]),min:finite(daily.temperature_2m_min?.[index]),rainProbability:finite(daily.precipitation_probability_max?.[index]),rain:finite(daily.precipitation_sum?.[index]),gust:finite(daily.wind_gusts_10m_max?.[index])}))||[];
+  const payload=await response.json();
+  return normalizeSocialForecast(payload).map(day=>day.date===referenceDate?
+    {...day,dayparts:summarizeForecastDayparts(payload.hourly,day.date,{fromHour})}:day);
 }
 
 async function recentTemperatureTrend(env, referenceEpoch = null) {
@@ -2308,7 +2313,7 @@ export function dailySocialChannelsForSlot(slot) {
     : channels.filter(channel=>channel !== 'facebook' && channel !== 'instagram');
 }
 
-async function createDailySocialDraft(observation, env, slot = null) {
+export async function createDailySocialDraft(observation, env, slot = null) {
   if (!(await ensureSocialDraftSchema(env)) || !observation || !slot) return { created:false, reason:slot?'storage_disabled':'outside_schedule' };
   const localDate = String(observation.updated || '').slice(0, 10) || new Intl.DateTimeFormat('en-CA', { timeZone:TIME_ZONE }).format(new Date());
   const temperature = socialNumber(observation.temperature);
@@ -2321,13 +2326,15 @@ async function createDailySocialDraft(observation, env, slot = null) {
     wind === null ? null : `vent ${wind} km/h`,
     rain === null ? null : `pluja avui ${rain} mm`,
   ].filter(Boolean);
+  const profile=socialSlotProfile(slot);
   const [forecast,temperatureTrend]=await Promise.all([
-    socialForecast().catch(error=>{console.error('Social forecast error',error);return [];}),
+    socialForecast({referenceDate:localDate,fromHour:profile.period==='migdia'?Number(slot.slice(0,2)):0}).catch(error=>{console.error('Social forecast error',error);return [];}),
     recentTemperatureTrend(env,observation.epoch).catch(error=>{console.error('Social temperature trend error',error);return null;}),
   ]);
   const today=forecast[0];const tomorrow=forecast[1];
-  const profile=socialSlotProfile(slot);
-  const forecastText=today?` ${profile.forecastLead}: ${today.condition}, màxima ${socialNumber(today.max,0)}° i mínima ${socialNumber(today.min,0)}°, pluja ${socialNumber(today.rainProbability,0)}%.${tomorrow?` Demà: ${tomorrow.condition}, ${socialNumber(tomorrow.max,0)}°/${socialNumber(tomorrow.min,0)}°, pluja ${socialNumber(tomorrow.rainProbability,0)}%.`:''}`:'';
+  const focus=profile.period==='vespre'?tomorrow:today;
+  const detail=focus?daypartCaption(focus.dayparts):'';
+  const forecastText=focus?` ${profile.forecastLead}, ${focus.date}: ${detail||focus.condition}.${profile.period==='mati'&&tomorrow?` Demà, ${tomorrow.date}: ${tomorrow.condition}, ${socialNumber(tomorrow.max,0)}°/${socialNumber(tomorrow.min,0)}°.`:''}`:'';
   const title = `${profile.eyebrow} a Sant Celoni · ${localDate}`;
   const body = `${profile.greeting} des de Meteo Fontanillas. ${profile.lead} a les ${String(observation.updated || '').slice(11,16)}: ${facts.join(' · ')}.${forecastText} Consulta l’evolució i la predicció a meteo.fontanillas.cat.\n\n${socialHashtags()}`;
   const payload = JSON.stringify({ localDate, slot, period:profile.period, eyebrow:profile.eyebrow, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv), forecast, temperatureTrend });
@@ -3388,11 +3395,23 @@ async function adminUpdateSocialDraft(request, env, draftId) {
   return json({ ok:true, action, draft:socialDraftPayload(updated, await socialPublicationsForDraft(env, draftId)), published:false }, 200, 'no-store, private', auth.origin);
 }
 
-function socialPostText(draft, maxLength = 3900) {
+export function socialPostText(draft, maxLength = 3900) {
   const parts = [cleanText(draft.title, 180), cleanText(draft.body, 3900), cleanText(draft.source_url, 500)].filter(Boolean);
   const text = parts.join('\n\n');
   const graphemes = Array.from(text);
+  if(graphemes.length>maxLength&&draft.kind==='daily_observation'){
+    let payload={};try{payload=JSON.parse(draft.payload||'{}');}catch{}
+    const day=payload.forecast?.[payload.period==='vespre'?1:0];
+    if(Array.isArray(day?.dayparts)&&day.dayparts.length&&maxLength>=240){
+      return compactDaypartSocialText(day,payload.period==='vespre'?'demà':payload.period==='migdia'?'resta d’avui':'avui');
+    }
+  }
   return graphemes.length <= maxLength ? text : `${graphemes.slice(0, Math.max(1, maxLength - 1)).join('')}…`;
+}
+
+function compactDaypartSocialText(day,when){
+  const detail=day.dayparts.map(part=>`${part.label}: ${truncateBufferText(part.condition,40)}`).join('\n');
+  return `Sant Celoni · ${when}, ${day.date}\n${detail}\n\nhttps://meteo.fontanillas.cat/`;
 }
 
 async function socialCardSignature(draftId, env) {
@@ -3751,7 +3770,7 @@ async function bufferXChannel(env) {
 function bufferTikTokCaption(localDate, slot, day = null) {
   const forecast=socialForecastSummary(day,slot);
   const fallback=slot==='morning'?'El temps d’avui':'La previsió de demà';
-  return truncateBufferText(`${forecast||fallback} · Sant Celoni. Dades reals i previsió. #meteo #SantCeloni #Montseny`,150);
+  return truncateBufferText(`${localDate} · ${forecast||fallback} · Sant Celoni. Dades reals i previsió. #meteo #SantCeloni #Montseny`,400);
 }
 
 async function createBufferTikTokPost(env, { localDate, slot, draft = false }) {
@@ -3944,10 +3963,18 @@ function bufferXMutationError(message,fallback) {
   });
 }
 
-function bufferXCaption(localDate, slot, draft = null, day = null) {
+export function bufferXCaption(localDate, slot, draft = null, day = null) {
   if (slot === 'midday' && draft) {
+    let payload={};try{payload=JSON.parse(draft.payload||'{}');}catch{}
+    const parts=payload.forecast?.[0]?.dayparts;
+    if(Array.isArray(parts)&&parts.length){
+      return truncateBufferXText(compactDaypartSocialText({...payload.forecast[0],dayparts:parts.filter(part=>part.endHour>14)},'resta d’avui'));
+    }
     const body = cleanText(draft.body, 3900).split(/\n\s*\n/)[0].replace(/\s+/g, ' ').trim();
     return truncateBufferXText(`Actualització del migdia a Sant Celoni · ${localDate}\n\n${body}\n\n#MeteoFontanillas #SantCeloni`);
+  }
+  if(Array.isArray(day?.dayparts)&&day.dayparts.length){
+    return truncateBufferXText(compactDaypartSocialText({...day,date:day.date||localDate},slot==='evening'?'demà':'avui'));
   }
   const intro=socialForecastSummary(day,slot)||(slot==='morning'?'Bon dia! El temps d’avui a Sant Celoni.':'Balanç del dia i previsió de demà a Sant Celoni.');
   return truncateBufferXText(`${intro}\n\n🎥 Dades reals, evolució i previsió completa al vídeo.\nhttps://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #Montseny`);
@@ -4420,6 +4447,16 @@ function astronomyCardMarkup(data){
     <p class="method-note">${escapeHtml(note)}</p>`;
 }
 
+export function dailyDaypartsCardMarkup(data) {
+  const focus=data.forecast?.[data.period==='vespre'?1:0];
+  const parts=Array.isArray(focus?.dayparts)?focus.dayparts.filter(part=>
+    ['morning','afternoon','evening'].includes(part.id) && (data.period!=='migdia'||part.endHour>14)):[];
+  if(!parts.length)return '';
+  const display=(value,suffix='')=>finiteNumber(value)===null?'—':`${socialNumber(value,0)}${suffix}`;
+  const cards=parts.map(part=>`<article><div class="daypart-head"><b>${escapeHtml(part.label)}</b><span>${escapeHtml(part.timeLabel)} h</span></div>${finiteNumber(part.weatherCode)!==null?socialWeatherGlyphSvg(part.weatherCode,part.id==='evening'):''}<strong>${escapeHtml(part.condition)}</strong><p>${escapeHtml(display(part.min,'°'))} / ${escapeHtml(display(part.max,'°'))}<small>temperatura prevista</small></p><span>Pluja · màx. horària ${escapeHtml(display(part.rainProbability,'%'))}</span><span>Ratxa màx. ${escapeHtml(display(part.gust,' km/h'))}</span>${part.complete?'':'<em>Dades incompletes</em>'}</article>`).join('');
+  return `<section class="dayparts"><h2>${data.period==='vespre'?'DEMÀ':data.period==='migdia'?'PREVISIÓ PER A LA RESTA D’AVUI':'AVUI'} · ${escapeHtml(focus.date)}</h2><div class="dayparts-grid" style="grid-template-columns:repeat(${parts.length},1fr)">${cards}</div><small class="dayparts-note">Hora local · símbol: fenomen més destacat · pluja: màxim de les probabilitats horàries, no de tota la franja.</small></section>`;
+}
+
 export function socialCardHtml(draft) {
   let data = {};
   try { data = JSON.parse(draft.payload || '{}'); } catch {}
@@ -4434,6 +4471,8 @@ export function socialCardHtml(draft) {
   const rain = display(data.rainToday, ' mm', 1);
   const pressure = display(data.pressure, ' hPa', 1);
   const forecast=Array.isArray(data.forecast)?data.forecast:[];
+  const dayparts=draft.kind==='daily_observation'?dailyDaypartsCardMarkup(data):'';
+  const outlook=dayparts?forecast.slice(data.period==='vespre'?2:1,data.period==='vespre'?4:3).map(day=>`<div><span>${escapeHtml(day.date)} · ${escapeHtml(day.condition)}</span><b>${escapeHtml(display(day.max,'°',0))} / ${escapeHtml(display(day.min,'°',0))}</b></div>`).join(''):'';
   const temperatureTrend=dailyTemperatureTrendMarkup(data.temperatureTrend);
   const today=forecast[0]||{};const tomorrow=forecast[1]||{};const afterTomorrow=forecast[2]||{};
   const isAlert=draft.kind==='official_alert';
@@ -4441,10 +4480,10 @@ export function socialCardHtml(draft) {
   const isAstronomy=draft.kind==='astronomical_event';
   const isStationEvent=['station_event','environmental_event','meteorological_ephemeris'].includes(draft.kind);
   const alertColor=officialAlertColor(data.level);
-  const main=isAlert?`<p class="eyebrow alert-eyebrow" style="color:${alertColor}">AVÍS OFICIAL METEOCAT · ${escapeHtml(data.levelLabel||'')}</p>${officialAlertCardTimingMarkup(data,draft)}<h1 class="alert-title">${escapeHtml(data.phenomenon||'Fenomen meteorològic')}</h1><p class="stamp">Catalunya · detall del Vallès Oriental i Sant Celoni</p>${meteocatCountyAlertMapSvg(data.countyWarnings)}<section class="alert local-alert" style="border-color:${alertColor}"><div><small>DETALL PER A SANT CELONI</small><b style="color:${alertColor}">${escapeHtml(data.levelLabel||'AVÍS')} AL VALLÈS ORIENTAL</b></div><p>${escapeHtml(cleanText(data.description||draft.body,460))}</p></section><p class="advice">És un avís comarcal: consulta Meteocat i segueix les indicacions de Protecció Civil.</p>`:isPeriodic?periodicSocialCardMarkup(data):isAstronomy?astronomyCardMarkup(data):isStationEvent?stationEventCardMarkup(data):`<div class="headline"><div><p class="eyebrow">${escapeHtml(data.eyebrow||'El temps ara')}</p><h1>Dades reals i previsió per entendre el dia.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p></div>${finite(today.weatherCode)!==null?`<div class="forecast-symbol">${socialWeatherGlyphSvg(today.weatherCode)}<b>${escapeHtml(today.condition||socialWeatherLabel(today.weatherCode))}</b><span>Predicció d’avui</span></div>`:''}</div>
+  const main=isAlert?`<p class="eyebrow alert-eyebrow" style="color:${alertColor}">AVÍS OFICIAL METEOCAT · ${escapeHtml(data.levelLabel||'')}</p>${officialAlertCardTimingMarkup(data,draft)}<h1 class="alert-title">${escapeHtml(data.phenomenon||'Fenomen meteorològic')}</h1><p class="stamp">Catalunya · detall del Vallès Oriental i Sant Celoni</p>${meteocatCountyAlertMapSvg(data.countyWarnings)}<section class="alert local-alert" style="border-color:${alertColor}"><div><small>DETALL PER A SANT CELONI</small><b style="color:${alertColor}">${escapeHtml(data.levelLabel||'AVÍS')} AL VALLÈS ORIENTAL</b></div><p>${escapeHtml(cleanText(data.description||draft.body,460))}</p></section><p class="advice">És un avís comarcal: consulta Meteocat i segueix les indicacions de Protecció Civil.</p>`:isPeriodic?periodicSocialCardMarkup(data):isAstronomy?astronomyCardMarkup(data):isStationEvent?stationEventCardMarkup(data):`<div class="headline"><div><p class="eyebrow">${escapeHtml(data.eyebrow||'El temps ara')}</p><h1>Dades reals i previsió per entendre el dia.</h1><p class="stamp">${escapeHtml(date)} · lectura de les ${escapeHtml(time)}</p></div>${!dayparts&&finite(today.weatherCode)!==null?`<div class="forecast-symbol">${socialWeatherGlyphSvg(today.weatherCode)}<b>${escapeHtml(today.condition||socialWeatherLabel(today.weatherCode))}</b><span>Predicció d’avui</span></div>`:''}</div>
     <section class="hero"><div class="hero-reading"><small>Temperatura</small><div class="temp">${escapeHtml(temperature)}</div></div><div class="hero-side"><div class="feels">Sensació tèrmica<b>${escapeHtml(feeling)}</b></div>${temperatureTrend}</div></section>
     <section class="grid"><div class="metric"><span>Humitat</span><b>${escapeHtml(humidity)}</b></div><div class="metric"><span>Vent · ratxa</span><b>${escapeHtml(wind)} · ${escapeHtml(gust)}</b></div></section>
-    ${forecast.length?`<section class="forecast"><div><span>AVUI · ${escapeHtml(today.condition||'')}</span><b>${escapeHtml(display(today.max,'°',0))} / ${escapeHtml(display(today.min,'°',0))}</b><small>${escapeHtml(display(today.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(today.gust,' km/h',0))}</small></div><div><span>DEMÀ · ${escapeHtml(tomorrow.condition||'')}</span><b>${escapeHtml(display(tomorrow.max,'°',0))} / ${escapeHtml(display(tomorrow.min,'°',0))}</b><small>${escapeHtml(display(tomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(tomorrow.gust,' km/h',0))}</small></div><div><span>DEMÀ PASSAT · ${escapeHtml(afterTomorrow.condition||'')}</span><b>${escapeHtml(display(afterTomorrow.max,'°',0))} / ${escapeHtml(display(afterTomorrow.min,'°',0))}</b><small>${escapeHtml(display(afterTomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(afterTomorrow.gust,' km/h',0))}</small></div></section>`:`<section class="grid"><div class="metric"><span>Pressió</span><b>${escapeHtml(pressure)}</b></div><div class="metric"><span>Pluja acumulada avui</span><b>${escapeHtml(rain)}</b></div></section>`}`;
+    ${dayparts}${dayparts?`<section class="forecast">${outlook}</section>`:forecast.length?`<section class="forecast"><div><span>AVUI · ${escapeHtml(today.condition||'')}</span><b>${escapeHtml(display(today.max,'°',0))} / ${escapeHtml(display(today.min,'°',0))}</b><small>${escapeHtml(display(today.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(today.gust,' km/h',0))}</small></div><div><span>DEMÀ · ${escapeHtml(tomorrow.condition||'')}</span><b>${escapeHtml(display(tomorrow.max,'°',0))} / ${escapeHtml(display(tomorrow.min,'°',0))}</b><small>${escapeHtml(display(tomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(tomorrow.gust,' km/h',0))}</small></div><div><span>DEMÀ PASSAT · ${escapeHtml(afterTomorrow.condition||'')}</span><b>${escapeHtml(display(afterTomorrow.max,'°',0))} / ${escapeHtml(display(afterTomorrow.min,'°',0))}</b><small>${escapeHtml(display(afterTomorrow.rainProbability,'% pluja',0))} · ratxa ${escapeHtml(display(afterTomorrow.gust,' km/h',0))}</small></div></section>`:`<section class="grid"><div class="metric"><span>Pressió</span><b>${escapeHtml(pressure)}</b></div><div class="metric"><span>Pluja acumulada avui</span><b>${escapeHtml(rain)}</b></div></section>`}`;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     *{box-sizing:border-box}html,body{margin:0;width:1080px;height:1350px;overflow:hidden;font-family:Arial,sans-serif;background:#061713;color:#f5faf7}
     body{padding:64px;background:radial-gradient(circle at 84% 10%,#286d55 0,rgba(40,109,85,.18) 28%,transparent 44%),linear-gradient(145deg,#061713,#0b241c 62%,#102e24)}
@@ -4453,7 +4492,9 @@ export function socialCardHtml(draft) {
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}.metric{padding:25px 30px;border-radius:25px;border:1px solid #315c4b;background:rgba(5,28,22,.74)}.metric span{display:block;color:#a8beb4;font-size:21px;margin-bottom:9px}.metric b{font-size:34px}.forecast{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}.forecast div{padding:22px 20px;border-radius:25px;border:1px solid #477764;background:rgba(7,31,24,.92)}.forecast span,.forecast small{display:block;color:#91d8ad;font-size:16px;line-height:1.25}.forecast b{display:block;font-size:31px;margin:11px 0}.report-title{max-width:900px}.report-hero{margin-top:42px;padding:34px 38px;border:1px solid #477764;border-radius:30px;background:rgba(7,31,24,.86);display:flex;justify-content:space-between;align-items:end}.report-hero small,.event-advice small{display:block;color:#8fe0ad;font-size:17px;font-weight:800;letter-spacing:2px}.report-hero b{display:block;font-size:62px;margin-top:10px}.report-hero em{color:#6f9284;font-style:normal}.report-hero strong{display:block;font-size:45px;margin-top:10px;text-align:right}.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}.report-grid div{padding:25px 28px;border:1px solid #315c4b;border-radius:24px;background:rgba(5,28,22,.7)}.report-grid span{display:block;color:#a8beb4;font-size:19px;margin-bottom:8px}.report-grid b{font-size:32px}.verification{margin-top:20px;padding:24px 28px;border:1px solid #6d8050;border-radius:24px;background:rgba(67,76,33,.25);display:flex;justify-content:space-between;align-items:center}.verification small{display:block;color:#ffd166;font-weight:800;letter-spacing:1px}.verification b{display:block;font-size:25px;margin-top:8px}.verification strong{max-width:50%;font-size:25px;line-height:1.15;text-align:right;color:#ffd166}.mini-forecast{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}.mini-forecast div{padding:17px;border:1px solid #315c4b;border-radius:19px}.mini-forecast span,.mini-forecast small{display:block;color:#a8beb4;font-size:14px;line-height:1.35}.mini-forecast b{display:block;font-size:28px;margin:7px 0}.outlook-row{grid-template-columns:repeat(3,1fr)}.outlook-note{color:#ffd166;font-size:16px;line-height:1.3;margin:12px 0}.method-note{color:#a8beb4;font-size:18px;line-height:1.35;margin-top:22px}.event-title{max-width:900px}.event-value{margin-top:70px;padding:55px 42px;border:2px solid;border-radius:38px;text-align:center;background:rgba(7,31,24,.86)}.event-value b{display:block;font-size:150px;letter-spacing:-7px}.event-value b.is-text{font-size:72px;line-height:1.05;letter-spacing:-2px;overflow-wrap:anywhere}.event-value span{display:block;color:#b8cbc2;font-size:22px;margin-top:10px}.previous-record{text-align:center;font-size:24px;color:#c7d8d0}.event-advice{margin-top:35px;padding:32px;border:1px solid #477764;border-radius:28px}.event-advice p{font-size:29px;line-height:1.35;margin:14px 0 0}.astronomy-date{margin-top:55px;padding:38px 42px;border:1px solid #477764;border-radius:34px;background:rgba(7,31,24,.86);display:grid;grid-template-columns:180px 1fr;gap:34px;align-items:center}.astronomy-date>b{font-size:132px;line-height:1;text-align:center}.astronomy-date small{display:block;color:#8fe0ad;font-size:18px;font-weight:800;letter-spacing:3px}.astronomy-date strong{display:block;font-size:44px;line-height:1.08;margin-top:12px}.astronomy-conditions{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}.astronomy-conditions div{padding:24px 28px;border:1px solid #315c4b;border-radius:24px;background:rgba(5,28,22,.7)}.astronomy-conditions span{display:block;color:#a8beb4;font-size:19px}.astronomy-conditions b{display:block;font-size:38px;margin-top:8px}.map-panel{margin-top:22px;padding:18px 26px;border:1px solid #416d5b;border-radius:30px;background:rgba(5,28,22,.82);display:grid;grid-template-columns:600px 1fr;gap:22px;align-items:center}.county-map{display:block;width:600px;height:410px}.map-meta>span{color:#8fe0ad;font-size:18px;font-weight:800;letter-spacing:3px}.map-meta>b,.map-meta>small,.map-meta>em{display:block}.map-meta>b{font-size:31px;line-height:1.08;margin:12px 0}.map-meta>small{color:#a8beb4;font-size:18px;line-height:1.3}.map-meta>em{color:#dbe9e2;font-size:16px;font-style:normal;margin-top:18px}.legend{display:grid;grid-template-columns:16px 1fr;gap:8px 9px;align-items:center;margin-top:22px;color:#dbe9e2;font-size:17px}.legend i{width:14px;height:14px;border-radius:50%}.legend .yellow{background:#ffd45a}.legend .orange{background:#ff9f43}.legend .red{background:#ff625f}.alert{border:2px solid;border-radius:28px;background:rgba(5,28,22,.88)}.local-alert{margin-top:20px;padding:25px 30px}.local-alert small{display:block;color:#a8beb4;font-size:16px;letter-spacing:2px;margin-bottom:7px}.local-alert b{font-size:31px}.local-alert p{font-size:23px;line-height:1.28;margin:16px 0 0}.advice{font-size:21px;line-height:1.3;color:#d7e5de;margin-top:18px}.footer{position:absolute;left:64px;right:64px;bottom:44px;display:flex;justify-content:space-between;align-items:center;padding-top:19px;border-top:1px solid #315c4b;color:#aec3b9;font-size:19px}.footer strong{color:#8fe0ad}
     .alert-validity{margin:18px 0 20px;padding:20px 26px;border-radius:22px;background:#d7f3e2;color:#08251b}.alert-validity small,.alert-validity strong,.alert-validity span{display:block}.alert-validity>small{font-size:21px;font-weight:800;letter-spacing:2px}.alert-validity strong{font-size:42px;line-height:1.08;margin:7px 0}.alert-validity .alert-future{font-size:25px;font-weight:800;margin-top:9px}.alert-validity .alert-issued{font-size:17px;font-weight:400;letter-spacing:0;margin-top:8px}
     body.official-alert-card{padding-top:40px}.official-alert-card .alert-eyebrow{margin-top:24px}.official-alert-card .alert-title{font-size:44px;max-width:952px;letter-spacing:-1.5px}.official-alert-card .stamp{margin:10px 0}.official-alert-card .map-panel{margin-top:14px;padding:12px 24px;grid-template-columns:560px 1fr}.official-alert-card .county-map{width:560px;height:320px}.official-alert-card .local-alert{padding:20px 26px;margin-top:16px}.official-alert-card .local-alert p{font-size:22px;margin-top:10px}.official-alert-card .advice{font-size:20px;margin-top:14px}
-  </style></head><body class="${isAlert?'official-alert-card':''}">
+    .daily-dayparts-card .headline{grid-template-columns:1fr}.daily-dayparts-card .eyebrow{margin-top:44px}.daily-dayparts-card h1{font-size:52px;max-width:930px;letter-spacing:-2px}.daily-dayparts-card .hero{margin-top:24px;padding-top:25px;padding-bottom:25px}.dayparts{margin-top:22px}.dayparts h2{font-size:19px;letter-spacing:1.3px;color:#8fe0ad;margin:0 0 12px}.dayparts-grid{display:grid;gap:16px}.dayparts article{position:relative;min-width:0;padding:20px;border:1px solid #477764;border-radius:25px;background:rgba(7,31,24,.92)}.daypart-head b,.daypart-head span{display:block}.daypart-head b{font-size:27px;color:#f5faf7}.daypart-head span{font-size:17px;color:#91d8ad;margin-top:5px}.dayparts svg{position:absolute;right:15px;top:12px;width:70px;height:70px}.dayparts article>strong{display:block;font-size:22px;line-height:1.15;margin:16px 0 10px;min-height:51px;max-width:100%}.dayparts article p{font-size:30px;font-weight:800;margin:9px 0}.dayparts article p small{display:block;font-size:14px;font-weight:400;color:#a8beb4;margin-top:3px}.dayparts article>span{display:block;font-size:17px;color:#cfe0d8;margin-top:5px}.dayparts article em{display:block;font-size:14px;color:#ffd166;margin-top:6px;font-style:normal}.dayparts-note{display:block;font-size:15px;line-height:1.3;color:#a8beb4;margin-top:9px}.daily-dayparts-card .forecast{grid-template-columns:repeat(2,1fr);margin-top:15px}.daily-dayparts-card .forecast div{padding:12px 18px}.daily-dayparts-card .forecast b{font-size:24px;margin:6px 0 0}
+    body.daily-dayparts-card{position:relative}.daily-dayparts-card .eyebrow{margin:24px 0 12px}.daily-dayparts-card h1{font-size:48px}.daily-dayparts-card .hero{padding:20px 30px;gap:24px}.daily-dayparts-card .temperature-trend svg{height:70px}.daily-dayparts-card .metric{padding:18px 24px}.daily-dayparts-card .metric b{font-size:30px}
+  </style></head><body class="${isAlert?'official-alert-card':dayparts?'daily-dayparts-card':''}">
     <div class="top"><div class="brand"><img class="mark" src="https://meteo.fontanillas.cat/assets/icons/icon-512.png" alt=""><div><b>Meteo Fontanillas</b><span>Observatori meteorològic · Sant Celoni</span></div></div><div class="live">${isAlert?'METEOCAT':isPeriodic?'RESUM':isAstronomy?'ASTRONOMIA':isStationEvent?'OBSERVACIÓ':'DADA REAL'}</div></div>
     ${main}
     <div class="footer"><span>${isAlert?'Dades: Meteocat · mapa comarcal: ICGC':isPeriodic?'Dades: arxiu propi de l’Observatori':isAstronomy?`Font: ${escapeHtml(data.sourceNote||'IGN · Observatori Astronòmic Nacional')}`:isStationEvent?`Font: ${escapeHtml(data.sourceNote||'Observatori Fontanillas')}`:'Fonts: estació Fontanillas · Open-Meteo'}</span><strong>meteo.fontanillas.cat</strong></div>
