@@ -8,8 +8,8 @@ import { finiteNumber } from '../src/core/numeric.js';
 import { DAYPART_HOURLY_VARIABLES, normalizeSocialForecast, summarizeForecastDayparts, daypartCaption } from '../src/core/forecast-dayparts.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.17";
-const WORKER_BUILT = "2026-09-17";
+const WORKER_VERSION = "22.29.18";
+const WORKER_BUILT = "2026-09-18";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -4404,7 +4404,12 @@ function stationEventCardMarkup(data) {
   const isDust=data.eventType==='saharan_dust_forecast';
   const isEphemeris=data.eventType==='meteorological_ephemeris';
   const accent=isRecord?'#ffd166':'#8fe0ad';
-  const eventValue=finite(data.value)===null?cleanText(data.value,80):reportMetric(data.value,data.unit||'',1);
+  // A historical year is an identifier, not a measured value: never round it or add decimals.
+  const year=typeof data.value==='number'||(typeof data.value==='string'&&/^\d{1,4}$/.test(data.value.trim()))
+    ? optionalFinite(data.value):null;
+  const eventValue=isEphemeris
+    ? Number.isInteger(year)&&year>=1&&year<=9999?String(year):'—'
+    : finite(data.value)===null?cleanText(data.value,80):reportMetric(data.value,data.unit||'',1);
   const previousRecord=optionalFinite(data.previousRecord);
   const compactValue=String(eventValue||'').length>9;
   const time=String(data.observationUpdated||'').slice(11,16);

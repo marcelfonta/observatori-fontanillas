@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { periodicSocialKindForDate, stationEventCandidates, socialCardHtml } from '../worker/index.js';
+import { METEOROLOGICAL_EPHEMERIDES } from '../src/data/meteorological-ephemerides.js';
 
 const wrangler=await readFile(new URL('../ops/wrangler.example.jsonc',import.meta.url),'utf8');
 for(const flag of ['SOCIAL_PERIODIC_ENABLED','SOCIAL_EVENT_POSTS_ENABLED','SOCIAL_ENVIRONMENTAL_ENABLED','SOCIAL_EPHEMERIDES_ENABLED']){
@@ -56,6 +57,25 @@ const uvCard=socialCardHtml({kind:'station_event',payload:JSON.stringify({
   value:8,unit:'',previousRecord:null,advice:'Protegeix pell i ulls.',localDate:'2026-09-11',observationUpdated:'2026-09-11 12:24',
 })});
 assert.doesNotMatch(uvCard,/Valor anterior de l’arxiu/);
+assert.match(uvCard,/>8,0<\/b>/);
+
+// Exercise every catalogued year and legacy payloads, including numeric strings.
+const ephemerisCard=value=>socialCardHtml({kind:'meteorological_ephemeris',payload:JSON.stringify({
+  eventType:'meteorological_ephemeris',value,unit:'',eventTitle:'Set dies d’aiguats',
+  localDate:'2026-09-18',sourceNote:'Meteocat',
+})});
+for(const {year} of METEOROLOGICAL_EPHEMERIDES){
+  assert.ok(Number.isInteger(year)&&year>=1&&year<=9999);
+  for(const value of [year,String(year)]){
+    const card=ephemerisCard(value);
+    assert.match(card,new RegExp(`>${year}</b>`));
+    assert.doesNotMatch(card,new RegExp(`${year}[,.]0`));
+    assert.match(card,/Efemèride documentada: no descriu la situació meteorològica actual/);
+  }
+}
+for(const value of [null,undefined,'',' ',0,-1971,1971.5,'1971,0',10000,'no disponible',true,false,[],{},'1e3']){
+  assert.match(ephemerisCard(value),/class="event-value"[^>]*><b class="">—<\/b>/);
+}
 
 const recordCard=socialCardHtml({kind:'station_event',payload:JSON.stringify({
   eventType:'local_temperature_high',eyebrow:'NOU EXTREM LOCAL',eventTitle:'Temperatura més alta de l’arxiu disponible',
@@ -63,6 +83,7 @@ const recordCard=socialCardHtml({kind:'station_event',payload:JSON.stringify({
 })});
 assert.match(recordCard,/Valor anterior de l’arxiu/);
 assert.match(recordCard,/0,0°C/);
+assert.match(recordCard,/>10,2°C<\/b>/);
 
 const droughtCard=socialCardHtml({kind:'environmental_event',payload:JSON.stringify({
   eventType:'drought_state_change',eyebrow:'CANVI OFICIAL DE SEQUERA',eventTitle:'Nou estat hidrològic per a Sant Celoni',
