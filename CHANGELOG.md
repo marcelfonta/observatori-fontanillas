@@ -1,5 +1,11 @@
 # Changelog
 
+## Correcció — Anys d’efemèrides sense decimals · 2026-09-18
+
+- La targeta d’efemèrides mostra l’any com a enter sense decimals ni separadors de milers: `1971`, no `1971,0`. Les mesures meteorològiques mantenen la precisió anterior.
+- Proves sobre tots els anys del catàleg, esborranys existents amb any numèric o cadena i valors absents o invàlids; aquests darrers mostren «—», sense inventar ni arrodonir anys.
+- Worker proposat 22.29.18, pendent d’integració, staging i desplegament autoritzat. Sense migracions, consultes D1 noves, horaris ni enviaments. Les imatges ja publicades o desades a R2 no es reescriuen; revertir aquesta correcció permet rollback sense canviar dades.
+
 ## Millora — Previsió diària per matí, tarda i vespre · 2026-09-17
 
 - Els vídeos substitueixen les escenes de resum general, detall repetit i segon dia per tres franges amb símbol, condició, temperatures i ratxa propis: 06–12 h, 12–19 h i 19–24 h, hora de Sant Celoni. Es conserven les sis escenes, transicions, gràfica tèrmica, tendència, mapa animat i límit de 30 segons.
