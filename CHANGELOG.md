@@ -1,5 +1,12 @@
 # Changelog
 
+## Preparació — Fonta, laboratori de previsió local · 2026-09-20
+
+- Nova pàgina experimental, integrada al menú, amb metodologia, comparadors, errors i estat de l'arxiu; sense afirmar superioritat ni extrapolar una estació a tot el Montseny.
+- Captures horàries/diàries de quatre fonts, originals amb hashes, qualitat d'observacions sense zeros ficticis ni penalització per jitter, dies de 23/24/25 hores i límits de recursos.
+- Correcció tèrmica limitada, verificació cronològica amb embargament i candidats immutables abans dels fets; resultats recalculats separats dels prospectius. Sense promoció automàtica.
+- Workflow independent, desactivat fins a configuració explícita; cap canvi al Worker, D1, secrets, horaris ni publicacions. Auditoria real, operació i fases pendents a `docs/FONTA-LAB.md`.
+
 ## Preparació — seguiment social i pol·len XAC local · 2026-09-20
 
 - Desplegament PR 160 documentat, separat de les comprovacions futures dels lliuraments reals.

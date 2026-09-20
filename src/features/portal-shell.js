@@ -1,5 +1,6 @@
 const icon=paths=>`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths}</svg>`;
 const ICONS={
+  fonta:icon('<path d="m2 19 7-10 4 5 3-7 6 12M3 5h6M6 2v6"/>'),
   inici:icon('<path d="M3.5 11.2 12 4l8.5 7.2"/><path d="M5.5 10v9.5h13V10M9.5 19.5v-6h5v6"/>'),
   'meteo-ia':icon('<path d="M4 5.5h16v11H9l-5 3v-14Z"/><path d="m12 8 .7 1.6 1.8.7-1.8.7-.7 1.7-.7-1.7-1.8-.7 1.8-.7L12 8ZM17.5 4v3M16 5.5h3"/>'),
   estacio:icon('<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2M5.7 7.2h12.6"/>'),
@@ -21,6 +22,7 @@ const ICONS={
   collaboracions:icon('<path d="m8.2 12.2 2.2 2.1a2.1 2.1 0 0 0 3 0l5.1-5.1"/><path d="m15.8 12.2-2.2-2.1a2.1 2.1 0 0 0-3 0l-5.1 5.1"/><path d="M6.7 7.2 4.5 5 2 7.5l4.7 4.7M17.3 16.8l2.2 2.2 2.5-2.5-4.7-4.7"/>')
 };
 const NAV_ITEMS=[
+  ['fonta','Fonta · laboratori','./fonta.html'],
   ['inici','Inici','./?page=inici'],['meteo-ia','Meteo IA','./?page=meteo-ia'],['estacio','Estació','./?page=estacio'],
   ['prediccio','Predicció','./?page=prediccio'],['llarg-termini','Llarg termini','./?page=llarg-termini'],['videos','Predicció en vídeo','./?page=videos'],['verificacio','Predicció vs realitat','./?page=verificacio'],['avisos','Avisos','./?page=avisos'],
   ['cel','Cel de dia i de nit','./?page=cel'],['radar','Radar','./?page=radar'],['webcams','Webcams','./?page=webcams'],
@@ -29,7 +31,7 @@ const NAV_ITEMS=[
 ];
 const NAV_GROUPS=[
   ['Ara',['inici','meteo-ia','estacio','municipis']],
-  ['Previsió i risc',['prediccio','llarg-termini','videos','verificacio','avisos']],
+  ['Previsió i risc',['prediccio','fonta','llarg-termini','videos','verificacio','avisos']],
   ['Explora',['cel','radar','webcams']],
   ['Dades i projecte',['centre-dades','comparar','medi-ambient','aprendre','contacte','metodologia','collaboracions']]
 ];

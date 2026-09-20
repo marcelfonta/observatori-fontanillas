@@ -1,5 +1,14 @@
 # Roadmap oficial
 
+## Fonta · laboratori independent — Preparat per revisar
+
+- [x] Auditar l'arxiu real i detectar el recompte insuficient causat per caselles de cinc minuts i jitter; substituir-lo al nou circuit per instants i cobertura temporal.
+- [x] Capturador multimodel, dades originals immutables, integritat, qualitat, DST i embargament temporal; primera captura real local sense enviaments.
+- [x] Comparadors, correcció limitada, backtest cronològic i congelació de candidats futurs; promoció operativa bloquejada.
+- [x] Pàgina Fonta amb abast local, caducitat, dades absents i mètriques honestes; workflow independent amb activació explícita i límits.
+- [ ] Revisar/fusionar, validar Pages, excloure branca de dades dels builds i activar el pilot amb comprovació real. Detall a `docs/FONTA-LAB.md`.
+- [ ] Revisar l'estació, acumular dies suficients i validar prospectivament abans d'ampliar variables, territori o ús operatiu.
+
 ## Manteniment obert — En curs
 
 - [x] Preparar control de vigència ambiental, UV amb hora pròpia, proves de caducitat i cobertura del pol·len explícita.

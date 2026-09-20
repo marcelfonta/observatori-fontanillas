@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08231b"><meta name="color-scheme" content="dark">
+  <title>Fonta · Previsió local en evolució</title>
+  <meta name="description" content="El laboratori de previsió local de Fontanillas: models, observacions i resultats verificables. En fase experimental, sense substituir els avisos oficials.">
+  <link rel="canonical" href="https://meteo.fontanillas.cat/fonta.html">
+  <link rel="icon" href="assets/icons/favicon-32.png">
+  <link rel="stylesheet" href="css/variables.css"><link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/portal.css">
+  <link rel="stylesheet" href="css/fonta.css">
+  <script type="module" src="src/features/fonta.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#fonta">Saltar al contingut</a>
+  <header class="site-header shell"><p class="header-context">Laboratori Fonta</p><a href="./?page=prediccio">Previsió operativa ↗</a></header>
+  <main id="fonta" class="shell fonta-page">
+    <section class="fonta-hero">
+      <div><p class="fonta-kicker">FONTANILLAS / LABORATORI 01</p><h1>Fonta<span>Previsió local<br>en evolució.</span></h1>
+      <p class="fonta-intro">Conèixer millor el nostre racó del Montseny.<br>Una previsió, una observació i una comprovació cada vegada.</p>
+      <span class="fonta-badge">EXPERIMENTAL · SANT CELONI</span></div>
+      <div class="fonta-landscape" aria-hidden="true"><span>DEL MODEL AL LLOC</span><svg viewBox="0 0 500 310" fill="none"><path d="M0 260 95 200 155 220 270 60 390 184 450 170 500 224V310H0Z" fill="#183c30"/><path d="M0 290 110 222 175 241 288 110 412 223 500 191" stroke="#80d6af" stroke-width="2"/><path d="M0 280Q110 145 210 211T500 113" stroke="#e6c884" stroke-width="2" stroke-dasharray="5 7"/><circle cx="288" cy="110" r="7" fill="#80d6af"/><circle cx="288" cy="110" r="19" stroke="#80d6af" opacity=".4"/></svg><small>Esquema conceptual · no representa una previsió</small></div>
+    </section>
+    <aside class="fonta-notice"><strong>Primer demostrar. Després millorar.</strong><p>Fonta encara no és una previsió validada. Compara models i aprèn a corregir errors locals en un entorn de prova. No substitueix la previsió habitual ni els avisos de Meteocat, AEMET o Protecció Civil.</p></aside>
+    <section aria-labelledby="state-title"><div class="fonta-section-head"><div><p class="fonta-kicker">01 / EVIDÈNCIA, NO PROMESES</p><h2 id="state-title">On som ara?</h2></div><button id="fonta-refresh" type="button">Consultar l’arxiu actual</button></div>
+      <p id="fonta-status" role="status">El circuit està preparat. L’arxiu automàtic encara no s’ha confirmat actiu.</p>
+      <div class="fonta-stats"><article><b id="fonta-captures">—</b><span>Captures conservades</span></article><article><b id="fonta-pairs">—</b><span>Dies comparables</span></article><article><b id="fonta-evaluated">—</b><span>Dies avaluats fora d’entrenament</span></article></div>
+      <p class="fonta-muted">Cap percentatge de «precisió» inventat. Calen almenys 30 dies d’entrenament elegibles i 14 de prova per començar a interpretar els resultats; això no garanteix qualitat ni superioritat.</p>
+    </section>
+    <section aria-labelledby="forecast-title"><p class="fonta-kicker">02 / ABANS D’APRENDRE, CONTRASTEM</p><h2 id="forecast-title">Què diuen els models?</h2>
+      <p id="fonta-forecast-date">Les previsions apareixeran amb data i hora de captura quan hi hagi un arxiu vigent.</p><div id="fonta-forecasts" class="fonta-models"></div>
+      <p class="fonta-muted">Màxima i mínima diàries dels models de base, no predicció pròpia de Fonta. Les diferències entre models no són un interval de confiança. Font: Open-Meteo, ECMWF, DWD i Météo-France.</p>
+    </section>
+    <section aria-labelledby="scores-title"><p class="fonta-kicker">03 / LA REALITAT DECIDEIX</p><h2 id="scores-title">Fonta contra les alternatives</h2>
+      <p>Mateixos dies, mateix lloc i només dades conegudes quan es va preparar cada previsió.</p>
+      <div id="fonta-scores"><p class="fonta-empty">Encara no hi ha una avaluació disponible. Un guió significa «sense resultat», no error zero.</p></div>
+      <p class="fonta-muted">MAE: error absolut mitjà en °C; més baix és millor. Es comparen quatre fonts, la mitjana de tres models, persistència i la correcció Fonta. La persistència repeteix l’últim dia complet anterior a l’emissió. Els resultats són exploratoris, no una prova independent de superioritat.</p>
+    </section>
+    <section aria-labelledby="method-title"><p class="fonta-kicker">04 / COM APRENDRÀ</p><h2 id="method-title">Un camí amb controls.</h2>
+      <ol class="fonta-steps"><li><strong>Conservar</strong><p>Arxivar la previsió abans dels fets, amb model, hora, resposta original i empremta d’integritat.</p></li><li><strong>Comprovar</strong><p>Descartar absències, salts sospitosos i dies incomplets. El zero real no és una dada absent.</p></li><li><strong>Aprendre</strong><p>Corregir màximes i mínimes de demà amb errors anteriors. Canvis limitats a ±3 °C, sense consultar el futur.</p></li><li><strong>Demostrar</strong><p>Avaluar nous dies i fenòmens. Una persona revisa els resultats abans de qualsevol ús operatiu.</p></li></ol>
+    </section>
+    <section class="fonta-limits"><h2>Especialista local, sense dreceres.</h2><p>Comencem a l’estació Fontanillas. No podem estendre’n els resultats a tot el Baix Montseny sense estacions independents, diferents altituds i més situacions meteorològiques.</p><p>La pluja, les ratxes, els mapes territorials i els intervals calibrats arribaran per fases, quan les dades i la validació ho permetin. No hi ha cap model autoritzat a modificar el codi, publicar a les xarxes o generar avisos pel seu compte.</p>
+      <details><summary>Fonts, limitacions i traçabilitat</summary><p>Les captures de l’API de previsió conserven què estava disponible en consultar-la. No coneixem l’hora exacta d’inicialització de cada sortida: es registra com a desconeguda, mai com l’hora de captura. Els extrems de l’estació es mostregen aproximadament cada cinc minuts i poden diferir dels extrems reals.</p><p>La cobertura tècnica no substitueix una revisió de l’abric, l’emplaçament, l’altura i el calibratge del sensor.</p><ul><li><a href="https://open-meteo.com/en/docs">API i models Open-Meteo</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></li><li><a href="https://www.ecmwf.int/en/research/modelling-and-prediction/forecast-evaluation">Verificació de prediccions · ECMWF</a></li><li><a href="https://github.com/marcelfonta/observatori-fontanillas/blob/main/docs/FONTA-LAB.md">Mètode i versions del laboratori</a></li></ul></details>
+    </section>
+    <footer class="fonta-footer"><img src="assets/images/observatori-fontanillas-avatar-v21.png" width="44" height="44" alt=""><span>Meteo Fontanillas<br><small>Ciència local, resultats oberts.</small></span><a href="./?page=avisos">Consultar avisos oficials →</a></footer>
+  </main>
+</body>
+</html>
