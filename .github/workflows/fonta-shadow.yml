@@ -1,0 +1,60 @@
+name: Fonta · laboratori independent (sense publicacions)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '10 8,20 * * *'
+
+# Activation is separate from merge. No social or Cloudflare secrets.
+permissions:
+  contents: write
+concurrency:
+  group: fonta-shadow-archive
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    if: vars.FONTA_SHADOW_ENABLED == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Obre l'arxiu independent sense canviar main
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote="https://github.com/${GITHUB_REPOSITORY}.git"
+          existing="$(git ls-remote --heads "$remote" refs/heads/fonta-data)"
+          if [ -n "$existing" ]; then
+            git clone --depth=1 --single-branch --branch fonta-data "$remote" build/fonta-data
+          else
+            mkdir -p build/fonta-data
+            git -C build/fonta-data init -b fonta-data
+            git -C build/fonta-data remote add origin "$remote"
+          fi
+      - name: Captura dades públiques (màxim cinc consultes)
+        id: collect
+        continue-on-error: true
+        run: node scripts/fonta/collect.mjs build/fonta-data
+      - name: Recalcula l'avaluació sense promocionar cap model
+        run: node scripts/fonta/report.mjs build/fonta-data
+      - name: Conserva captures i informe a fonta-data
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh auth setup-git
+          git -C build/fonta-data config user.name 'Fonta shadow archive'
+          git -C build/fonta-data config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C build/fonta-data add -- '*.json'
+          if ! git -C build/fonta-data diff --cached --quiet; then
+            git -C build/fonta-data commit -m 'Archive Fonta shadow capture and evaluation'
+            git -C build/fonta-data push origin HEAD:fonta-data
+          fi
+      - name: Assenyala una captura degradada o pressupost esgotat
+        if: steps.collect.outcome == 'failure'
+        run: exit 1

@@ -17,6 +17,7 @@ if (quick && !selected.includes('audit-rain-coverage.mjs')) selected.push('audit
 if (quick && !selected.includes('audit-history-charts.mjs')) selected.push('audit-history-charts.mjs');
 if (quick && !selected.includes('audit-seo-video.mjs')) selected.push('audit-seo-video.mjs');
 if (quick && !selected.includes('forecast-dayparts.mjs')) selected.push('forecast-dayparts.mjs');
+if (quick && !selected.includes('fonta-model.mjs')) selected.push('fonta-model.mjs');
 if (quick && !selected.includes('environment-missing-values.mjs')) selected.push('environment-missing-values.mjs');
 if (quick && !selected.includes('environment-freshness.mjs')) selected.push('environment-freshness.mjs');
 if (quick && !selected.includes('social-production.mjs')) selected.push('social-production.mjs');
