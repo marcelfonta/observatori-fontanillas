@@ -97,6 +97,7 @@ export const PHRASES={
   'Lectura en directe des de l’estació Fontanillas. Una mirada precisa al temps que fa i al que està canviant.':{es:'Lectura en directo desde la estación Fontanillas. Una mirada precisa al tiempo actual y a cómo está cambiando.',en:'Live readings from the Fontanillas station. A precise view of current weather and how it is changing.'},
   'Actualitzat':{es:'Actualizado',en:'Updated'},
   'Hora del model no disponible':{es:'Hora del modelo no disponible',en:'Model time unavailable'},
+  'Només cinc tipus de pol·len: no inclou xiprer, plàtan, parietària ni espores. Valors baixos aquí no descarten altres al·lèrgens.':{es:'Solo cinco tipos de polen: no incluye ciprés, plátano, parietaria ni esporas. Valores bajos aquí no descartan otros alérgenos.',en:'Only five pollen types: excludes cypress, plane, pellitory and spores. Low values here do not rule out other allergens.'},
   'ara mateix':{es:'ahora mismo',en:'just now'},
   'Webcam · ara':{es:'Webcam · ahora',en:'Webcam · now'},
   'Observació en directe':{es:'Observación en directo',en:'Live observation'},

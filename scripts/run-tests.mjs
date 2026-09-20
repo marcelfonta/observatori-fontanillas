@@ -18,6 +18,7 @@ if (quick && !selected.includes('audit-history-charts.mjs')) selected.push('audi
 if (quick && !selected.includes('audit-seo-video.mjs')) selected.push('audit-seo-video.mjs');
 if (quick && !selected.includes('forecast-dayparts.mjs')) selected.push('forecast-dayparts.mjs');
 if (quick && !selected.includes('environment-missing-values.mjs')) selected.push('environment-missing-values.mjs');
+if (quick && !selected.includes('environment-freshness.mjs')) selected.push('environment-freshness.mjs');
 if (quick) for(const name of ['publication-state.mjs','youtube-recovery.mjs','home-forecast.mjs','forecast-bias-experiment.mjs']) if(!selected.includes(name))selected.push(name);
 
 for (const file of selected) {

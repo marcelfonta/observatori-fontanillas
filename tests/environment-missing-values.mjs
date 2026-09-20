@@ -5,6 +5,8 @@ import { answerMeteoQuestion } from '../src/features/meteo-ai.js';
 const originals=Object.fromEntries(['document','window','fetch','CustomEvent'].map(k=>[k,globalThis[k]]));
 const fields=['european_aqi','european_aqi_pm10','european_aqi_pm2_5','european_aqi_nitrogen_dioxide','european_aqi_ozone','european_aqi_sulphur_dioxide','pm10','pm2_5','nitrogen_dioxide','ozone','carbon_monoxide','sulphur_dioxide','uv_index','grass_pollen','olive_pollen','birch_pollen','mugwort_pollen','ragweed_pollen'];
 let sequence=0;
+const realNow=Date.now;
+Date.now=()=>Date.parse('2026-09-20T08:10:00Z');
 async function fixture(current,{offline=false}={}){
  const nodes=new Map(),events=[];
  globalThis.document={getElementById(id){if(!nodes.has(id))nodes.set(id,{textContent:'',hidden:false,style:{},classList:{remove(){}},removeAttribute(){}});return nodes.get(id);},querySelectorAll(){return [];},dispatchEvent(e){events.push(e.detail);}};
@@ -50,7 +52,7 @@ try{
  const f=await fixture({...all(null),uv_index:4,olive_pollen:30,time:'2026-09-20T10:00'});
  assert.equal(f.text('environment-uv'),'4,0');assert.equal(f.text('environment-pollen-main'),'Olivera · Moderat');
  assert.equal((await answer(f.events.at(-1))).level,'info');
- f.module.updateEnvironmentStation({uv:0});assert.equal(f.text('environment-uv'),'0,0');assert.equal(f.text('environment-uv-source'),'Sensor Fontanillas');
+ f.module.updateEnvironmentStation({uv:0,updatedUtc:'2026-09-20T08:05:00Z'});assert.equal(f.text('environment-uv'),'0,0');assert.equal(f.text('environment-uv-source'),'Sensor Fontanillas');
  f.module.updateEnvironmentStation({uv:null});assert.equal(f.text('environment-uv'),'4,0');assert.equal(f.text('environment-uv-source'),'Estimació CAMS');
  for(const time of [null,undefined,'','invalid',0,false,'2026-02-30T10:00','2026-09-20T25:00']){
   const f=await fixture({...all(0),time});assert.equal(f.events.at(-1).time,null);assert.equal(f.text('environment-updated'),'Hora del model no disponible');
@@ -72,5 +74,6 @@ try{
  for(const value of [false,' ',[],{},-1])assert.equal((await answer({european_aqi:value,uv:value})).level,'info');
  console.log('Medi ambient: absències, zeros reals, pol·len, UV, marcadors, hores i Meteo IA verificats sense xarxa.');
 }finally{
+ Date.now=realNow;
  for(const [key,value]of Object.entries(originals)){if(value===undefined)delete globalThis[key];else globalThis[key]=value;}
 }

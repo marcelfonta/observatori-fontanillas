@@ -1,12 +1,20 @@
 # Changelog
 
+## Preparació — vigència ambiental i pilot social 05 · 2026-09-20
+
+- UV del sensor amb límit de 30 minuts i hora visible; estimacions actuals caducades als 90 minuts. Reavaluació cada minut i consulta de model cada quinze minuts amb la pàgina visible.
+- Pol·len: abast de les cinc espècies explícit; no descarta altres al·lèrgens. Incorporació social ajornada fins a verificar referència territorial, nivells i llicència.
+- Pilots locals de matí i vespre de 30 segons, fase lunar datada i mapa de pluja sempre a l'última escena. Revisió 05: UV com a nota discreta a la tarda, amb hora i font; no substitueix el mapa. Imatge del migdia amb lectura real, gràfica, franges restants, aire i UV de menor pes visual.
+- UV global i aire regional separats, sense zeros ficticis. Proves de temps/DST, caducitat, errors i maquetació. Detall i fonts a `docs/SOCIAL-ENVIRONMENT-IMPLEMENTATION-2026-09-20.md`.
+- Sense modificar Worker, D1, secrets, horaris ni publicacions. Format social nou no integrat al programador ni activat; pendent de revisió visual humana. Rollback frontend per reversió i renovació de memòria cau.
+
 ## Correcció local — dades ambientals absents · 2026-09-20
 
 - Medi Ambient deixa de convertir absències, buits, booleans i valors invàlids en zeros o qualitat de l'aire bona. Es conserven els zeros reals i s'oculten els marcadors sense dades.
 - Pol·len sense dades no escull una espècie dominant fictícia. UV diferencia sensor, model i absència, sense atribuir una font a un valor desconegut.
 - La data/hora absent o invàlida no se substitueix per l'hora actual. La validesa del model inclou data i hora local de Sant Celoni, independent del fus del dispositiu.
 - Meteo IA dona un estat neutral amb indicadors incomplets; manté precaució/advertiment si les dades disponibles ho justifiquen.
-- Proves de regressió del render real i del consumidor Meteo IA incloses a la suite ràpida. Sense canvis de llindars, disseny de vídeos, Worker, D1, horaris ni publicacions. Pendent d'integració i desplegament autoritzat; rollback per reversió del paquet frontend.
+- Proves de regressió del render real i del consumidor Meteo IA incloses a la suite ràpida. Integrat a la PR 158 i verificat en producció el 20/09/2026. Sense canvis de llindars, disseny de vídeos, Worker, D1, horaris ni publicacions; rollback per reversió del paquet frontend.
 
 ## Sis paquets seqüencials — fiabilitat i consulta ràpida · 2026-09-20
 
