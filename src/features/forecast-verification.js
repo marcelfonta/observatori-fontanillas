@@ -15,6 +15,15 @@ export function rainSampleCopy(summary={}){
   return `${wet} ${wet===1?'dia amb pluja':'dies amb pluja'} · ${dry} ${dry===1?'dia sec':'dies secs'}`;
 }
 
+export function verificationMilestoneCopy(payload={}){
+  const days=Math.max(0,Number(payload.sampleDays)||0);
+  if(days===29)return 'Demà, si arriba un cas complet, s’assolirà el primer tall de 30 dies. Servirà per detectar tendències inicials, no per corregir automàticament la previsió ni l’estació.';
+  if(days<30)return '';
+  const wet=Math.max(0,Number(payload.summary?.wetDays)||0);
+  const rainCaution=wet<5?` La pluja encara només inclou ${wet} ${wet===1?'dia plujós':'dies plujosos'}: cal més varietat meteorològica.`:'';
+  return `Primer tall de 30 dies assolit: ja permet detectar tendències inicials, però no certificar ni corregir automàticament la previsió o l’estació.${rainCaution}`;
+}
+
 function verificationChart(detail=[]){
   const rows=detail.slice(0,14).reverse().filter(item=>Number.isFinite(Number(item.forecast?.max))&&Number.isFinite(Number(item.observed?.max)));
   if(rows.length<2)return '';
@@ -50,7 +59,8 @@ function render(payload){
   status.textContent=`${confidence.label} · ${days} pronòstics de demà`;
   const s=payload.summary||{};
   const bias=Number(s.temperatureBias);const biasCopy=!Number.isFinite(bias)||Math.abs(bias)<.2?'sense biaix apreciable':bias>0?`tendeix a preveure ${fmt(Math.abs(bias))} °C de més`:`tendeix a preveure ${fmt(Math.abs(bias))} °C de menys`;
-  hero.innerHTML=`<div class="verification-orbit is-ready" aria-label="${days} pronòstics de demà verificats"><strong>${days}</strong><span>pronòstics de demà verificats</span></div><div><h4>Resultats mesurats, no impressions</h4><p><b>${confidence.label}:</b> ${confidence.note}. Tots els casos tenen el mateix horitzó: la previsió de l’endemà guardada el dia anterior. Amb aquesta mostra, el model ${biasCopy}.</p></div>`;
+  const milestone=verificationMilestoneCopy(payload);
+  hero.innerHTML=`<div class="verification-orbit is-ready" aria-label="${days} pronòstics de demà verificats"><strong>${days}</strong><span>pronòstics de demà verificats</span></div><div><h4>Resultats mesurats, no impressions</h4><p><b>${confidence.label}:</b> ${confidence.note}. Tots els casos tenen el mateix horitzó: la previsió de l’endemà guardada el dia anterior. Amb aquesta mostra, el model ${biasCopy}.</p>${milestone?`<p class="verification-milestone">${escapeHtml(milestone)}</p>`:''}</div>`;
   metrics.hidden=false;
   metrics.innerHTML=[
     metric('Temperatura',fmt(s.temperatureMae),' °C d’error',quality(s.temperatureMae,1.5,2.5),Number(s.temperatureMae)<=2.5?'good':'warn'),

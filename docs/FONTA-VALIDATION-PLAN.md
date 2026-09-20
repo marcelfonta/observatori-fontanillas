@@ -18,10 +18,13 @@ millor la temperatura de l'aire regional: això s'ha d'explicar, no amagar.
 Declaració precisada pel responsable, 20/09: **0,70 m entre les teules vermelles
 i el sensor**, en substitució de l'aproximació inicial d'1 m. Sis fotografies
 revisades en privat: muntatge sobre teulada i abric blanc de plats visibles;
-no permeten certificar distàncies, ventilació, anivellament ni calibratge.
+no permeten certificar distàncies, ventilació ni calibratge.
 El responsable declara absència d'obstacles al sol/vent en uns 50 m; les fotos
 no acrediten aquesta distància en tot l'horitzó. Marca/família declarada:
 **VEVOR 7 en 1, model YT60234**, identificat amb l'etiqueta aportada el 20/09.
+El responsable confirma també la referència nord orientada al nord i la
+bombolla incorporada centrada; són comprovacions directes declarades, no
+mesures de calibratge ni una validació independent de l'emplaçament.
 Manual europeu del mateix model contrastat; el primer article facilitat era
 del YT60231 i no s'utilitza per atribuir especificacions. Fitxa, limitacions,
 protocol independent i checklist a [`STATION-YT60234.md`](STATION-YT60234.md).

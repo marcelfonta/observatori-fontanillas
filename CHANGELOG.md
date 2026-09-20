@@ -1,5 +1,12 @@
 # Changelog
 
+## Preparació — franges corregides i primer tall de verificació · 2026-09-20
+
+- Separació real entre la portada i «El que queda d'avui», targeta única centrada i acotada, i contenidor visual propi per als símbols.
+- Transicions dia/nit representades com una posta de sol recognoscible; absència d'`is_day` amb cel genèric, sense l'antic cercle ambigu. Nova cache PWA `home-dayparts-v3`.
+- Avís específic en arribar a 29/30 pronòstics verificats: el primer tall detecta tendències, però no certifica ni activa correccions automàtiques; la poca mostra de dies plujosos queda explícita.
+- Orientació nord i bombolla centrada registrades com a comprovacions declarades pel responsable. Ventilació, altura sobre terreny, altitud i calibratge continuen pendents.
+
 ## Preparació — portada per franges i fitxa YT60234 · 2026-09-20
 
 - Targetes de portada adaptables a una, dues o tres franges, símbols SVG segons codi meteorològic, data local llegible, temperatura sense duplicats arrodonits i pluja/ratxa amb absències explícites.
