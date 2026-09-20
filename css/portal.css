@@ -804,3 +804,6 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .home-dayparts__grid article { display:grid; grid-template-columns:1fr 1fr; column-gap:16px; padding:12px; }
   .home-dayparts__grid p { grid-column:1/-1; }
 }
+.meteo-ai-more { margin-top:12px; }
+.meteo-ai-more summary { cursor:pointer; padding:12px 0; min-height:44px; }
+.meteo-ai-more .meteo-ai-suggestions { margin-top:8px; }

@@ -47,3 +47,27 @@ for(const width of [360,390,768]){
     expect(errors).toEqual([]);
   });
 }
+test('Meteo IA: quatre preguntes i desplegable accessible',async({page})=>{
+  await page.goto('/?page=meteo-ia');
+  await expect(page.locator('.meteo-ai-intro > .meteo-ai-suggestions > button')).toHaveCount(4);
+  await expect(page.locator('.meteo-ai-more')).not.toHaveAttribute('open');
+  await page.locator('.meteo-ai-more summary').click();
+  await expect(page.locator('.meteo-ai-more button')).toHaveCount(10);
+  await expect(page.locator('.meteo-ai-more button').first()).toBeVisible();
+});
+test('portada: franges amb dades de prova i errors sense zeros inventats',async({page},info)=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/?page=inici');
+  await page.evaluate(async()=>{
+    const {renderHomeForecast}=await import('/src/features/home-forecast.js');
+    const date=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+    const times=Array.from({length:24},(_,h)=>date+'T'+String(h).padStart(2,'0')+':00');
+    renderHomeForecast({hourly:{time:times,temperature_2m:times.map(()=>21),weather_code:times.map(()=>3),precipitation_probability:times.map(()=>50),wind_gusts_10m:times.map(()=>20)}});
+  });
+  await page.locator('.home-dayparts').scrollIntoViewIfNeeded();
+  await expect(page.locator('#home-dayparts article').first()).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await page.screenshot({path:info.outputPath('dayparts-mobile.png')});
+  await page.evaluate(async()=>{const {renderHomeForecast}=await import('/src/features/home-forecast.js');renderHomeForecast(null);});
+  await expect(page.locator('#home-dayparts')).toHaveText('Predicció temporalment no disponible');
+});
