@@ -1,5 +1,13 @@
 # Changelog
 
+## Correcció local — dades ambientals absents · 2026-09-20
+
+- Medi Ambient deixa de convertir absències, buits, booleans i valors invàlids en zeros o qualitat de l'aire bona. Es conserven els zeros reals i s'oculten els marcadors sense dades.
+- Pol·len sense dades no escull una espècie dominant fictícia. UV diferencia sensor, model i absència, sense atribuir una font a un valor desconegut.
+- La data/hora absent o invàlida no se substitueix per l'hora actual. La validesa del model inclou data i hora local de Sant Celoni, independent del fus del dispositiu.
+- Meteo IA dona un estat neutral amb indicadors incomplets; manté precaució/advertiment si les dades disponibles ho justifiquen.
+- Proves de regressió del render real i del consumidor Meteo IA incloses a la suite ràpida. Sense canvis de llindars, disseny de vídeos, Worker, D1, horaris ni publicacions. Pendent d'integració i desplegament autoritzat; rollback per reversió del paquet frontend.
+
 ## Sis paquets seqüencials — fiabilitat i consulta ràpida · 2026-09-20
 
 - Administració: separa configuració, execució sol·licitada, programació i confirmació del proveïdor. Un horari de YouTube passat sense comprovació pública no apareix com a lliurament verificat.

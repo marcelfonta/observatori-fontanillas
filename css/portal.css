@@ -368,6 +368,7 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .environment-level.is-poor,.environment-level.is-very-poor,.environment-level.is-extreme { border-color: rgba(237,138,95,.5); background: rgba(237,138,95,.11); color: #f09a74 !important; }
 .environment-mini-meter { height: 4px; margin-top: 9px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.06); }
 .environment-mini-meter i { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#6fd08c,#f0c35f,#d66568); transition: width .35s ease; }
+.environment-mini-meter i[hidden],.environment-aqi__scale span[hidden] { display: none; }
 .pollen-panel { padding: 30px; }.pollen-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .pollen-summary { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: rgba(137,214,163,.055); }.pollen-summary > span { display: grid; flex: none; width: 32px; height: 32px; place-items: center; border-radius: 50%; background: rgba(137,214,163,.12); color: var(--green); }.pollen-summary strong,.pollen-summary p { display: block; margin: 0; }.pollen-summary strong { color: var(--text); font-size: 12px; }.pollen-summary p { margin-top: 3px; color: var(--muted); font-size: 10px; line-height: 1.45; }
 .pollen-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin: 24px 0 16px; }

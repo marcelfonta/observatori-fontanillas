@@ -1,4 +1,5 @@
 import { CONFIG } from '../core/config.js';
+import { finiteNumber } from '../core/numeric.js';
 
 const AIR_API='https://air-quality-api.open-meteo.com/v1/air-quality';
 let loaded=false;
@@ -13,10 +14,10 @@ function put(id,value){
   node.classList.remove('is-placeholder');
   node.removeAttribute('aria-busy');
 }
-function number(value,digits=1){const n=Number(value);return Number.isFinite(n)?new Intl.NumberFormat(CONFIG.locale,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(n):'—';}
+function number(value,digits=1){const n=finiteValue(value);return n!==null?new Intl.NumberFormat(CONFIG.locale,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(n):'—';}
 function aqiReading(value){
-  const n=Number(value);
-  if(!Number.isFinite(n))return {label:'No disponible',copy:'No s’ha pogut calcular l’índex actual.',health:'Dades pendents',advice:'Torna-ho a consultar més tard.',position:0};
+  const n=finiteValue(value);
+  if(n===null)return {label:'No disponible',copy:'No s’ha pogut calcular l’índex actual.',health:'Dades pendents',advice:'Torna-ho a consultar més tard.',position:null};
   if(n<=20)return {label:'Bona',copy:'La qualitat de l’aire estimada és favorable.',health:'Bona situació ambiental',advice:'Condicions adequades per a l’activitat habitual a l’exterior.',position:n/120*100};
   if(n<=40)return {label:'Raonablement bona',copy:'La qualitat de l’aire continua dins d’un rang generalment favorable.',health:'Activitat normal',advice:'La majoria de persones poden mantenir l’activitat habitual a l’exterior.',position:n/120*100};
   if(n<=60)return {label:'Moderada',copy:'Alguns contaminants presenten valors moderats.',health:'Atenció si ets sensible',advice:'Les persones sensibles poden reduir l’esforç intens i prolongat a l’exterior.',position:n/120*100};
@@ -25,8 +26,8 @@ function aqiReading(value){
   return {label:'Extremadament dolenta',copy:'L’índex europeu supera el llindar de 100.',health:'Evita l’esforç exterior',advice:'Prioritza espais interiors i consulta els avisos de salut pública.',position:100};
 }
 function componentReading(value){
-  const n=Number(value);
-  if(!Number.isFinite(n))return {label:'No disponible',className:'',position:0};
+  const n=finiteValue(value);
+  if(n===null)return {label:'No disponible',className:'',position:null};
   if(n<=20)return {label:'Baix · bona',className:'is-good',position:n/120*100};
   if(n<=40)return {label:'Raonable',className:'is-fair',position:n/120*100};
   if(n<=60)return {label:'Moderat',className:'is-moderate',position:n/120*100};
@@ -39,19 +40,32 @@ function renderComponent(prefix,value){
   const label=document.getElementById(`environment-${prefix}-level`);
   const meter=document.getElementById(`environment-${prefix}-meter`);
   if(label){label.textContent=reading.label;label.className=`environment-level ${reading.className}`.trim();}
-  if(meter)meter.style.width=`${Math.max(0,Math.min(100,reading.position))}%`;
+  if(meter){meter.hidden=reading.position===null;meter.style.width=reading.position===null?'0%':`${Math.max(0,Math.min(100,reading.position))}%`;}
 }
-function finiteValue(value){return value!==null&&value!==''&&Number.isFinite(Number(value))?Number(value):null;}
+function finiteValue(value){const n=finiteNumber(value);return n!==null&&n>=0?n:null;}
+// Offset-less provider times are already in Europe/Madrid, not the viewer's zone.
+// Never manufacture an update time when the provider omits it.
+function environmentTime(value){
+  if(typeof value!=='string')return null;
+  const raw=value.trim();
+  const m=raw.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(Z|[+-]\d{2}:\d{2})?$/);
+  if(!m)return null;
+  const [,year,month,day,hour,minute,second='00',offset]=m;
+  const date=new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}Z`);
+  if(!Number.isFinite(date.getTime())||date.toISOString().slice(0,19)!==`${year}-${month}-${day}T${hour}:${minute}:${second}`)return null;
+  if(offset&&!Number.isFinite(Date.parse(raw)))return null;
+  return {value:raw,label:offset?new Intl.DateTimeFormat(CONFIG.locale,{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(new Date(raw)):`${day}/${month}/${year} · ${hour}:${minute}`};
+}
 function renderUv(){
   const useStation=stationUv!==null;
   put('environment-uv',number(useStation?stationUv:modelUv));
-  put('environment-uv-source',useStation?'Sensor Fontanillas':'Estimació CAMS');
+  put('environment-uv-source',useStation?'Sensor Fontanillas':modelUv!==null?'Estimació CAMS':'No disponible');
 }
 function notifyEnvironment(current=modelCurrent){
   document.dispatchEvent(new CustomEvent('observatori:environment-updated',{detail:{
     european_aqi:finiteValue(current.european_aqi),pm10:finiteValue(current.pm10),pm25:finiteValue(current.pm2_5),
     no2:finiteValue(current.nitrogen_dioxide),o3:finiteValue(current.ozone),uv:stationUv??modelUv,
-    uvSource:stationUv!==null?'Sensor Fontanillas':'Estimació CAMS',pollenMain:pollenName(current),time:current.time||new Date().toISOString()
+    uvSource:stationUv!==null?'Sensor Fontanillas':modelUv!==null?'Estimació CAMS':'No disponible',pollenMain:pollenName(current),time:environmentTime(current.time)?.value??null
   }}));
 }
 export function updateEnvironmentStation(current){
@@ -60,7 +74,7 @@ export function updateEnvironmentStation(current){
   if(loaded)notifyEnvironment(modelCurrent);
 }
 function pollenName(current){
-  const entries=[['Gramínies','grass',current.grass_pollen],['Olivera','olive',current.olive_pollen],['Bedoll','birch',current.birch_pollen],['Artemisa','mugwort',current.mugwort_pollen],['Ambrosia','ragweed',current.ragweed_pollen]].filter(([, ,v])=>Number.isFinite(Number(v)));
+  const entries=[['Gramínies','grass',current.grass_pollen],['Olivera','olive',current.olive_pollen],['Bedoll','birch',current.birch_pollen],['Artemisa','mugwort',current.mugwort_pollen],['Ambrosia','ragweed',current.ragweed_pollen]].filter(([, ,v])=>finiteValue(v)!==null);
   if(!entries.length)return 'No disponible';
   const [name,key,value]=entries.sort((a,b)=>pollenReading(b[1],b[2]).rank-pollenReading(a[1],a[2]).rank||Number(b[2])-Number(a[2]))[0];
   return `${name} · ${pollenReading(key,value).label}`;
@@ -75,7 +89,7 @@ const POLLEN_LIMITS={
 };
 function pollenReading(species,value){
   const n=finiteValue(value);const limits=POLLEN_LIMITS[species]||[1,10,50,100];
-  if(n===null)return {label:'No disponible',className:'',rank:-1,position:0};
+  if(n===null)return {label:'No disponible',className:'',rank:-1,position:null};
   if(n<limits[0])return {label:'Nul o residual',className:'is-none',rank:0,position:Math.min(8,n/limits[0]*8)};
   if(n<limits[1])return {label:'Baix',className:'is-good',rank:1,position:8+(n-limits[0])/(limits[1]-limits[0])*22};
   if(n<limits[2])return {label:'Moderat',className:'is-moderate',rank:2,position:30+(n-limits[1])/(limits[2]-limits[1])*30};
@@ -85,7 +99,7 @@ function pollenReading(species,value){
 function renderPollen(prefix,key,value){
   const reading=pollenReading(key,value);const level=document.getElementById(`pollen-${prefix}-level`);const meter=document.getElementById(`pollen-${prefix}-meter`);
   if(level){level.textContent=reading.label;level.className=`environment-level ${reading.className}`.trim();}
-  if(meter)meter.style.width=`${Math.max(0,Math.min(100,reading.position))}%`;
+  if(meter){meter.hidden=reading.position===null;meter.style.width=reading.position===null?'0%':`${Math.max(0,Math.min(100,reading.position))}%`;}
   return reading;
 }
 function renderPollenSummary(current){
@@ -107,10 +121,11 @@ function render(payload){
   [['pm10','european_aqi_pm10'],['pm25','european_aqi_pm2_5'],['no2','european_aqi_nitrogen_dioxide'],['o3','european_aqi_ozone'],['so2','european_aqi_sulphur_dioxide']].forEach(([prefix,key])=>renderComponent(prefix,current[key]));
   [['grass','grass',current.grass_pollen],['olive','olive',current.olive_pollen],['birch','birch',current.birch_pollen],['mugwort','mugwort',current.mugwort_pollen],['ragweed','ragweed',current.ragweed_pollen]].forEach(args=>renderPollen(...args));
   renderPollenSummary(current);
-  const marker=document.getElementById('environment-aqi-marker');if(marker)marker.style.left=`${Math.max(0,Math.min(100,reading.position))}%`;
-  const time=current.time?new Date(current.time):new Date();
-  put('environment-status-copy','Indicadors ambientals disponibles');
-  put('environment-updated',`Actualitzat ${new Intl.DateTimeFormat(CONFIG.locale,{hour:'2-digit',minute:'2-digit'}).format(time)}`);
+  const marker=document.getElementById('environment-aqi-marker');if(marker){marker.hidden=reading.position===null;marker.style.left=reading.position===null?'0%':`${Math.max(0,Math.min(100,reading.position))}%`;}
+  const time=environmentTime(current.time);
+  const hasData=['european_aqi','pm10','pm2_5','nitrogen_dioxide','ozone','carbon_monoxide','sulphur_dioxide','uv_index','grass_pollen','olive_pollen','birch_pollen','mugwort_pollen','ragweed_pollen'].some(key=>finiteValue(current[key])!==null);
+  put('environment-status-copy',hasData?'Indicadors ambientals disponibles':'Indicadors automàtics temporalment no disponibles');
+  put('environment-updated',time?`Validesa del model: ${time.label} · hora local`:'Hora del model no disponible');
   notifyEnvironment(current);
 }
 
@@ -150,6 +165,7 @@ export async function initEnvironment(){
     render(await response.json());
   }catch(error){
     console.warn('Indicadors ambientals temporalment no disponibles.',error);
+    render({current:{}});
     put('environment-status-copy','Indicadors automàtics temporalment no disponibles');
     put('environment-updated','Fonts oficials accessibles a sota');
     put('environment-health-title','Consulta les fonts oficials');
