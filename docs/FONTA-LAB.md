@@ -5,9 +5,11 @@ del PR 162. Primera captura manual correcta: execució 35509945260, 20/09 a les
 12:12 UTC. La primera execució programada encara queda pendent de verificar.
 La previsió operativa, els avisos i les xarxes no canvien.
 
-Següent paquet: diagnòstic de fonts, cobertura, motius de descartament,
+PR 163 desplegat: diagnòstic de fonts, cobertura, motius de descartament,
 franges sense captura, pressupost i progrés tècnic; no altera l'algoritme ni
-relaxa els filtres. Separació visible de backtest i prospectiu. Estat operatiu,
+relaxa els filtres. Nou paquet de comparació aparellada, eines locals i ordre de
+menú a [`FONTA-FOUNDATIONS-2026-09-20.md`](FONTA-FOUNDATIONS-2026-09-20.md).
+Separació visible de backtest i prospectiu. Estat operatiu,
 declaració instrumental, protocol proposat i estudi Single Runs a
 [`FONTA-VALIDATION-PLAN.md`](FONTA-VALIDATION-PLAN.md).
 
@@ -24,7 +26,7 @@ un resultat favorable.
 | 0 · auditoria | Arxiu i defecte de cobertura analitzats; contracte de qualitat | Revisar abric, emplaçament, altura i calibratge del sensor |
 | 1 · arxiu | Quatre fonts, sèries horàries i diàries, originals i SHA-256; pilot activat i primera captura remota real | Comprovar execució programada real |
 | 2 · experiment | Mitjana de tres models, correcció limitada, avaluació cronològica i prediccions congelades | Acumular dies vàlids i executar seguiment prospectiu |
-| 3 · web | Pàgina Fonta desplegada, navegació, comparadors, caducitat i metodologia | Revisar el nou diagnòstic abans de fusionar |
+| 3 · web | Pàgina Fonta i diagnòstic desplegats, navegació, comparadors, caducitat i metodologia | Revisar nou ordre de menú i comparació aparellada |
 | 4 · promoció | Bloqueig explícit de qualsevol promoció operativa | Prova independent, estacions/extrems, revisió humana |
 | 5 · autonomia | Workflow activat, límits de recursos, arxiu independent, detecció de fallades | No hi ha autoreescriptura ni autodesplegament |
 | Evolució regional | Pla de variables i estacions | Fonts, llicències, representativitat i evidència espacial |

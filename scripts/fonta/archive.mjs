@@ -2,6 +2,7 @@ import {readFile,readdir,stat} from 'node:fs/promises';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {normalizeForecast,observedDays} from '../../src/core/fonta-model.js';
+import {validFrozenComparison} from '../../src/core/fonta-prospective.js';
 
 export async function readArchive(directory){
   const names=(await readdir(directory)).filter(n=>/^\d{4}-\d{2}-\d{2}-(am|pm)\.json$/.test(n)).sort();
@@ -11,6 +12,7 @@ export async function readArchive(directory){
     if((await stat(join(directory,name))).size>12*1024*1024)throw new Error('Captura massa gran');
     const c=JSON.parse(await readFile(join(directory,name),'utf8'));
     if(c.id+'.json'!==name||c.schema!==1||!Array.isArray(c.sources))throw new Error('Contracte d’arxiu invàlid');
+    if(c.frozenComparison&&(!validFrozenComparison(c.frozenComparison,c)||createHash('sha256').update(JSON.stringify(c.frozenComparison)).digest('hex')!==c.frozenComparisonSha256))throw new Error('Integritat del paquet prospectiu incorrecta: '+name);
     c.forecasts=[];c.observed=[];
     const kinds=new Set();
     for(const s of c.sources){

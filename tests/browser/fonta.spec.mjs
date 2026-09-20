@@ -13,6 +13,8 @@ for(const width of [360,390,1280])test(`Fonta: laboratori ${width}`,async({page}
   await page.route(url,r=>r.fulfill({json:detailed()}));
   await page.goto('/fonta.html');
   await expect(page.getByRole('heading',{level:1})).toContainText('Fonta');
+  const group=page.locator('.portal-nav-group').filter({has:page.locator('p',{hasText:'Previsió i risc'})});
+  await expect(group.locator('a').last()).toHaveAttribute('data-page-link','fonta');
   await expect(page.locator('#fonta-captures')).toHaveText('—');
   await page.getByRole('button',{name:'Consultar l’arxiu actual'}).click();
   await expect(page.locator('#fonta-captures')).toHaveText('12');
@@ -22,12 +24,13 @@ for(const width of [360,390,1280])test(`Fonta: laboratori ${width}`,async({page}
   await page.getByText('Qualitat dels darrers dies observats (màxim 14)',{exact:true}).click();
   await expect(page.locator('#fonta-monitor')).toContainText('buit superior a 20 min');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-  if(width<700){await page.locator('#portal-menu-button').click();await expect(page.locator('[data-page-link="fonta"]')).toBeVisible();await page.keyboard.press('Escape');}
+  if(width<700){await page.locator('#portal-menu-button').click();await expect(page.locator('[data-page-link="fonta"]')).toBeVisible();await page.screenshot({path:info.outputPath('fonta-menu.png')});await page.keyboard.press('Escape');}
   await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo({top:0,behavior:'instant'});});
   await page.screenshot({path:info.outputPath('fonta-lab.png'),fullPage:true});
   expect(errors).toEqual([]);
 });
 test('Fonta: diagnòstic degradat, caducat, antic i connexió perduda',async({page})=>{
+  await page.setViewportSize({width:390,height:900});
   let payload=detailed(),offline=false;await page.route(url,r=>offline?r.abort():r.fulfill({json:payload}));await page.goto('/fonta.html');
   payload.diagnostics.sources[0].state='missing';payload.diagnostics.budget.reviewNeeded=true;
   await page.locator('#fonta-refresh').click();await expect(page.locator('#fonta-monitor')).toHaveAttribute('data-state','review');
@@ -39,6 +42,11 @@ test('Fonta: diagnòstic degradat, caducat, antic i connexió perduda',async({pa
   await expect(page.locator('#fonta-monitor')).not.toHaveAttribute('data-state','review');
   payload=detailed();payload.prospective={days:2,max:{mae:0},min:{mae:null}};await page.locator('#fonta-refresh').click();
   await expect(page.locator('#fonta-prospective')).toContainText('MAE màxima: 0 °C · MAE mínima: — °C');
+  payload.pairedProspective={schema:1,protocol:'fonta-paired-daily-v1',holdout:false,promotionAllowed:false,frozenDays:3,days:2,scores:{fonta:{max:{mae:0,bias:0,rmse:0},min:{mae:1,bias:-1,rmse:1}}}};
+  await page.locator('#fonta-refresh').click();await expect(page.locator('#fonta-prospective')).toContainText('3 dies amb tots els comparadors congelats; 2 dies');
+  await page.getByText('Comparadors congelats · resultats exploratoris',{exact:true}).click();
+  await expect(page.locator('#fonta-prospective tbody tr').last()).toContainText('0');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   offline=true;await page.locator('#fonta-refresh').click();await expect(page.locator('#fonta-monitor')).toContainText('Diagnòstic no disponible');
   await expect(page.locator('#fonta-forecasts')).toBeEmpty();await expect(page.locator('#fonta-prospective')).toHaveText('Resultats prospectius no disponibles.');
 });

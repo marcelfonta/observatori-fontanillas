@@ -3,6 +3,7 @@ import {resolve,join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {FONTA,normalizeForecast,observedDays,evaluateFonta} from '../../src/core/fonta-model.js';
 import {readArchive} from './archive.mjs';
+import {freezeComparison} from '../../src/core/fonta-prospective.js';
 
 // One capture per UTC half-day, create-only files, no D1 or social writes.
 const directory=resolve(process.argv[2]||'build/fonta-archive');
@@ -35,7 +36,10 @@ if(!forecasts.length&&!observed.length)throw new Error('Cap font disponible; no 
 const capture={schema:1,id,station:FONTA.station,version:FONTA.version,startedAt,capturedAt:new Date().toISOString(),forecasts,observed,sources,failures};
 capture.codeRevision=process.env.GITHUB_SHA||null;
 // Freeze any candidate before the target day. Never replace it after observing truth.
-capture.shadowPrediction=evaluateFonta([...(await readArchive(directory)),capture]).candidate;
+const previous=await readArchive(directory);
+capture.shadowPrediction=evaluateFonta([...previous,capture]).candidate;
+capture.frozenComparison=freezeComparison(previous,capture,capture.shadowPrediction);
+if(capture.frozenComparison)capture.frozenComparisonSha256=createHash('sha256').update(JSON.stringify(capture.frozenComparison)).digest('hex');
 await writeFile(path,JSON.stringify(capture)+'\n',{flag:'wx'});
 console.log(JSON.stringify({id,forecasts:forecasts.length,observedDays:observed.length,failures}));
 if(failures.length)process.exitCode=2; // Archive partial evidence, signal a degraded job.

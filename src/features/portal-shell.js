@@ -31,7 +31,7 @@ const NAV_ITEMS=[
 ];
 const NAV_GROUPS=[
   ['Ara',['inici','meteo-ia','estacio','municipis']],
-  ['Previsió i risc',['prediccio','fonta','llarg-termini','videos','verificacio','avisos']],
+  ['Previsió i risc',['prediccio','llarg-termini','videos','verificacio','avisos','fonta']],
   ['Explora',['cel','radar','webcams']],
   ['Dades i projecte',['centre-dades','comparar','medi-ambient','aprendre','contacte','metodologia','collaboracions']]
 ];

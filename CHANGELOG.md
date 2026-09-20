@@ -1,5 +1,13 @@
 # Changelog
 
+## Preparació — Fonta, comparació aparellada i arxiu portable · 2026-09-20
+
+- Fonta passa al final de «Previsió i risc», després d'Avisos, sense augmentar-ne la prominència. Cache PWA `fonta-lab-v3`.
+- Paquets prospectius additius amb tots els comparadors congelats, integritat i mètriques sobre els mateixos dies; sense reconstruir el passat ni iniciar un holdout de promoció.
+- Prova Single Runs local separada amb identitat explícita, cobertura horària Europe/Madrid i rebuig de nuls/duplicats; tres models amb 24/24 hores reals del dia objectiu. Font activa preservada.
+- Auditoria de cron de només lectura, exportació portable verificada i preselecció oficial XEMA amb condicions encara pendents. Detall i límits a `docs/FONTA-FOUNDATIONS-2026-09-20.md`.
+- Sense noves consultes periòdiques, serveis contractats, canvis de Worker/D1/socials ni reescriptura de captures.
+
 ## Preparació — Fonta, seguiment i protocol de validació · 2026-09-20
 
 - Diagnòstic additiu a l'informe: fonts i hores de recepció, qualitat i motius de descartament, captures fora de finestra, pressupost i dies reals d'entrenament disponibles.
