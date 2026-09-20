@@ -1,0 +1,14 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {madridOffset,normalizeMoon} from './lunar.mjs';
+const root=process.argv[2]||'build/social-pilot';
+const data=JSON.parse(await readFile(`${root}/data.json`,'utf8'));
+const evening=process.argv.includes('--evening');
+const date=evening?data.days[1].date:data.date;
+const url=new URL('https://aa.usno.navy.mil/api/rstt/oneday');
+url.search=new URLSearchParams({date,coords:'41.6906,2.4890',tz:String(madridOffset(date)),ID:'FONTAMET'});
+const response=await fetch(url,{signal:AbortSignal.timeout(30000)});
+if(!response.ok)throw Error(`USNO ${response.status}`);
+const raw=await response.json(),moon=normalizeMoon(raw,date);
+if(!moon)throw Error('USNO date, timezone or lunar data invalid');
+await writeFile(`${root}/${evening?'lunar-evening':'lunar'}.json`,JSON.stringify({url:String(url),retrievedAt:new Date().toISOString(),raw,moon},null,2));
+console.log(JSON.stringify(moon));

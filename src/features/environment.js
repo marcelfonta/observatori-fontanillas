@@ -1,11 +1,16 @@
 import { CONFIG } from '../core/config.js';
 import { finiteNumber } from '../core/numeric.js';
+import { stationUvReading, currentEnvironment, environmentalTimestamp } from '../core/environment-freshness.js';
 
 const AIR_API='https://air-quality-api.open-meteo.com/v1/air-quality';
 let loaded=false;
 let stationUv=null;
 let modelUv=null;
 let modelCurrent={};
+let stationCurrent=null;
+let modelPayload={};
+let refreshInFlight=null;
+let lastAttempt=0;
 
 function put(id,value){
   const node=document.getElementById(id);
@@ -60,6 +65,8 @@ function renderUv(){
   const useStation=stationUv!==null;
   put('environment-uv',number(useStation?stationUv:modelUv));
   put('environment-uv-source',useStation?'Sensor Fontanillas':modelUv!==null?'Estimació CAMS':'No disponible');
+  const time=useStation?stationUvReading(stationCurrent).time:modelUv!==null?environmentalTimestamp(modelCurrent.time):NaN;
+  put('environment-uv-time',Number.isFinite(time)?new Intl.DateTimeFormat(CONFIG.locale,{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(new Date(time)):'—');
 }
 function notifyEnvironment(current=modelCurrent){
   document.dispatchEvent(new CustomEvent('observatori:environment-updated',{detail:{
@@ -69,9 +76,9 @@ function notifyEnvironment(current=modelCurrent){
   }}));
 }
 export function updateEnvironmentStation(current){
-  stationUv=finiteValue(current?.uv);
-  renderUv();
-  if(loaded)notifyEnvironment(modelCurrent);
+  stationCurrent=current;
+  stationUv=stationUvReading(current).value;
+  if(loaded)render(modelPayload);else renderUv();
 }
 function pollenName(current){
   const entries=[['Gramínies','grass',current.grass_pollen],['Olivera','olive',current.olive_pollen],['Bedoll','birch',current.birch_pollen],['Artemisa','mugwort',current.mugwort_pollen],['Ambrosia','ragweed',current.ragweed_pollen]].filter(([, ,v])=>finiteValue(v)!==null);
@@ -111,7 +118,9 @@ function renderPollenSummary(current){
   put('pollen-summary-title',`${highest.name}: nivell ${highest.label.toLowerCase()}`);put('pollen-summary-copy',copy);
 }
 function render(payload){
-  const current=payload?.current||{};
+  modelPayload=payload;
+  const current=currentEnvironment(payload?.current||{});
+  stationUv=stationUvReading(stationCurrent).value;
   modelCurrent=current;
   const reading=aqiReading(current.european_aqi);
   put('environment-aqi',number(current.european_aqi,0));put('environment-aqi-label',reading.label);put('environment-aqi-copy',reading.copy);
@@ -122,7 +131,7 @@ function render(payload){
   [['grass','grass',current.grass_pollen],['olive','olive',current.olive_pollen],['birch','birch',current.birch_pollen],['mugwort','mugwort',current.mugwort_pollen],['ragweed','ragweed',current.ragweed_pollen]].forEach(args=>renderPollen(...args));
   renderPollenSummary(current);
   const marker=document.getElementById('environment-aqi-marker');if(marker){marker.hidden=reading.position===null;marker.style.left=reading.position===null?'0%':`${Math.max(0,Math.min(100,reading.position))}%`;}
-  const time=environmentTime(current.time);
+  const time=environmentTime(payload?.current?.time);
   const hasData=['european_aqi','pm10','pm2_5','nitrogen_dioxide','ozone','carbon_monoxide','sulphur_dioxide','uv_index','grass_pollen','olive_pollen','birch_pollen','mugwort_pollen','ragweed_pollen'].some(key=>finiteValue(current[key])!==null);
   put('environment-status-copy',hasData?'Indicadors ambientals disponibles':'Indicadors automàtics temporalment no disponibles');
   put('environment-updated',time?`Validesa del model: ${time.label} · hora local`:'Hora del model no disponible');
@@ -156,7 +165,22 @@ function initEnvironmentViewers(){
 export async function initEnvironment(){
   if(loaded||!document.getElementById('medi-ambient'))return;
   loaded=true;
+  // An open/background tab must not keep treating an old observation as live.
+  window.setInterval?.(()=>{
+    render(modelPayload);
+    if(document.visibilityState!=='hidden'&&Date.now()-lastAttempt>=15*60_000)void refreshEnvironment();
+  },60_000);
   initEnvironmentViewers();
+  await refreshEnvironment();
+}
+function refreshEnvironment(){
+  if(refreshInFlight)return refreshInFlight;
+  lastAttempt=Date.now();
+  const pending=loadEnvironment().finally(()=>{if(refreshInFlight===pending)refreshInFlight=null;});
+  refreshInFlight=pending;
+  return pending;
+}
+async function loadEnvironment(){
   const params=new URLSearchParams({latitude:String(CONFIG.station.latitude),longitude:String(CONFIG.station.longitude),current:'european_aqi,european_aqi_pm10,european_aqi_pm2_5,european_aqi_nitrogen_dioxide,european_aqi_ozone,european_aqi_sulphur_dioxide,pm10,pm2_5,nitrogen_dioxide,ozone,carbon_monoxide,sulphur_dioxide,uv_index,grass_pollen,olive_pollen,birch_pollen,mugwort_pollen,ragweed_pollen',timezone:'Europe/Madrid',domains:'cams_europe'});
   const controller=new AbortController();const timeout=window.setTimeout(()=>controller.abort(),12000);
   try{

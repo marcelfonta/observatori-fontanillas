@@ -2,6 +2,11 @@
 
 ## Manteniment obert — En curs
 
+- [x] Preparar control de vigència ambiental, UV amb hora pròpia, proves de caducitat i cobertura del pol·len explícita.
+- [x] Preparar pilots socials de matí, vespre i migdia amb fonts ambientals separades, fase lunar datada i prioritat meteorològica conservadora.
+- [ ] Revisar visualment els pilots i integrar el format aprovat als programadors; staging i desplegament autoritzat abans d'activació. No confondre el merge de la correcció frontend amb l'activació dels pilots.
+- [ ] Per al pol·len social: acordar l'estació de referència XAC, reutilització i nivells verificats abans de qualsevol automatització.
+
 - [x] Preparar vídeos diaris amb matí, tarda i vespre i targeta del migdia amb les franges restants, mantenint el límit de 30 segons, les dades reals i les animacions existents.
 - [ ] Revisar i integrar la previsió per franges; validar a staging i desplegar el Worker 22.29.17 amb autorització abans de comprovar les següents publicacions programades.
 

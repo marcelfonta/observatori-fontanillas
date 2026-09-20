@@ -80,6 +80,7 @@ export const FRENCH_PHRASES={
   'Lectura en directe des de l’estació Fontanillas. Una mirada precisa al temps que fa i al que està canviant.':'Mesures en direct depuis la station Fontanillas. Une vision précise du temps actuel et de son évolution.',
   'Actualitzat':'Mis à jour',
   'Hora del model no disponible':'Heure du modèle indisponible',
+  'Només cinc tipus de pol·len: no inclou xiprer, plàtan, parietària ni espores. Valors baixos aquí no descarten altres al·lèrgens.':'Seulement cinq types de pollen : sans cyprès, platane, pariétaire ni spores. Des valeurs faibles ici n’excluent pas d’autres allergènes.',
   'ara mateix':'à l’instant',
   'Webcam · ara':'Webcam · maintenant',
   'Observació en directe':'Observation en direct',
