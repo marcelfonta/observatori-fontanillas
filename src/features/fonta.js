@@ -60,6 +60,14 @@ function render(report){
   const p=report.prospective;
   $('fonta-prospective').replaceChildren(cell('strong','Prediccions congelades abans dels fets'));
   $('fonta-prospective').append(cell('p',Number.isInteger(p?.days)&&p.days>0?`${p.days} dies verificats · MAE màxima: ${number(p.max?.mae)} °C · MAE mínima: ${number(p.min?.mae)} °C. Sèrie exploratòria separada: no comparar-la directament amb la taula si els dies o les hores són diferents.`:'Encara no hi ha resultats prospectius disponibles. No equival a un error de zero graus.'));
+  const paired=report.pairedProspective;
+  if(paired?.schema===1&&paired.protocol==='fonta-paired-daily-v1'&&paired.holdout===false&&paired.promotionAllowed===false){
+    const box=$('fonta-prospective');
+    box.append(cell('p',`Comparació aparellada: ${number(paired.frozenDays)} dies amb tots els comparadors congelats; ${number(paired.days)} dies amb observació posterior. Mateixa finestra d’emissió i mateixos dies per a tots els mètodes. Encara no és una prova independent de promoció.`));
+    if(paired.invalidPackets>0)box.append(cell('p','Hi ha paquets prospectius invàlids, exclosos i pendents de revisió.'));
+    if(paired.days>0)box.append(detailTable('Comparadors congelats · resultats exploratoris',['Mètode','MAE màx. °C','MAE mín. °C','Biaix màx. °C','Biaix mín. °C','RMSE màx. °C','RMSE mín. °C'],Object.entries(names).map(([key,label])=>[
+      label,...['mae','bias','rmse'].flatMap(metric=>['max','min'].map(v=>number(paired.scores?.[key]?.[v]?.[metric])))])));
+  }
   $('fonta-captures').textContent=number(report.captureCount);$('fonta-pairs').textContent=number(report.pairedDays);$('fonta-evaluated').textContent=number(report.evaluatedDays);
   $('fonta-status').textContent=`Última captura: ${date(report.latestCaptureAt)}. ${age>30*3600000?'Arxiu desactualitzat: les previsions queden ocultes.':'Arxiu consultat. Fonta continua en fase experimental.'}`;
   $('fonta-forecasts').replaceChildren();

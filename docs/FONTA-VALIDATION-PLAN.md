@@ -2,6 +2,11 @@
 
 20/09/2026 · Proposta v1 per revisió. **No autoritza promocions ni publicacions.**
 
+Continuació tècnica posterior al PR 163 a
+[`FONTA-FOUNDATIONS-2026-09-20.md`](FONTA-FOUNDATIONS-2026-09-20.md): comparadors
+prospectius aparellats, prova Single Runs i exportació local implementats per
+revisar, sense donar per iniciat el holdout ni integrar estacions externes.
+
 ## 1. Què es valida
 
 Objectiu inicial: màxima i mínima de demà a l'estació ISANTC198, separadament.

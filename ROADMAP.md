@@ -1,6 +1,6 @@
 # Roadmap oficial
 
-## Fonta · laboratori independent — Pilot actiu, seguiment en revisió
+## Fonta · laboratori independent — Pilot actiu, següents fases en revisió
 
 - [x] Auditar l'arxiu real i detectar el recompte insuficient causat per caselles de cinc minuts i jitter; substituir-lo al nou circuit per instants i cobertura temporal.
 - [x] Capturador multimodel, dades originals immutables, integritat, qualitat, DST i embargament temporal; primera captura real local sense enviaments.
@@ -10,7 +10,11 @@
 - [ ] Comprovar el primer inici real per cron, separat de la prova manual.
 - [x] Preparar seguiment detallat: fonts, captures no aptes, cobertura, límits de recursos i progrés, sense modificar l'algoritme ni els publicadors.
 - [x] Registrar emplaçament declarat i preparar protocol de validació; estudiar Single Runs amb sis peticions reals, detectant incompatibilitat d'agregats diaris i hores nul·les.
-- [ ] Revisar/fusionar el panell i acordar el protocol abans del holdout. Single Runs necessita arxiu v2 separat, no una substitució silenciosa. Detall a `docs/FONTA-VALIDATION-PLAN.md`.
+- [x] PR 163 fusionat i desplegat, panell real verificat en mòbil/escriptori i informe actualitzat amb l'execució manual 35511348263.
+- [x] Preparar ordre discret al menú, comparadors prospectius aparellats, prova horària Single Runs separada, auditoria de cron i exportació portable amb integritat.
+- [x] Provar tres fonts Single Runs amb 24/24 hores per al dia objectiu i exportar/verificar la captura real sense alterar-la; identificar candidates oficials XEMA.
+- [ ] Revisar/fusionar aquest paquet; acordar el protocol independent abans del holdout. Detall a `docs/FONTA-FOUNDATIONS-2026-09-20.md`.
+- [ ] Activar Single Runs només amb objectiu observacional coherent i pressupost revisat; confirmar reutilització/cobertura de candidates XEMA i escollir arxiu remot durable abans del límit pilot.
 - [ ] Revisar l'estació, acumular dies suficients i validar prospectivament abans d'ampliar variables, territori o ús operatiu.
 
 ## Manteniment obert — En curs
