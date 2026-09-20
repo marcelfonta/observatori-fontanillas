@@ -1,5 +1,12 @@
 # Changelog
 
+## Preparació — format social 05 als publicadors · 2026-09-20
+
+- Worker 22.29.20: noves imatges diàries amb franges, lectura i gràfica observades, pluja prominent, aire i UV secundari; esborranys i imatges antics preservats.
+- Vídeos de 30 s integrats al workflow existent amb dades acabades de recollir, fase lunar datada i mapa final. Rebuig de snapshots de pilot o caducats; fonts opcionals poden fallar sense inventar zeros.
+- Proves de dates, manca de dades, maquetació i rollback; workflow manual de previsualització sense secrets ni enviaments. Staging separat i revisió humana abans de producció.
+- Horaris i deduplicació intactes. Lliuraments reals i pol·len pendents; detall a `docs/SOCIAL-PRODUCTION-V5-2026-09-20.md`.
+
 ## Preparació — vigència ambiental i pilot social 05 · 2026-09-20
 
 - UV del sensor amb límit de 30 minuts i hora visible; estimacions actuals caducades als 90 minuts. Reavaluació cada minut i consulta de model cada quinze minuts amb la pàgina visible.

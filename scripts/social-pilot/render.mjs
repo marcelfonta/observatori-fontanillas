@@ -6,19 +6,23 @@ import {chromium} from '@playwright/test';
 import {daypartWeatherLabel} from '../../src/core/forecast-dayparts.js';
 import {normalizeMoon,moonSpan} from './lunar.mjs';
 import {summarizeEnvironment,chooseEnvironmentScene,environmentalCaption,secondaryUv} from './environment.mjs';
-const environment=process.argv.includes('--environment');
+import {assertProductionSnapshot} from '../social-production.mjs';
+const production=process.argv.includes('--production');
+const environment=production||process.argv.includes('--environment');
 const evening=process.argv.includes('--evening');
 if(evening&&!environment)throw Error('--evening requires --environment');
-const root=resolve(environment?'build/social-pilot-environment':'build/social-pilot');await mkdir(root,{recursive:true});
+if(production&&evening)throw Error('Production edition comes from the validated snapshot');
+const root=resolve(production?'build/youtube-short':environment?'build/social-pilot-environment':'build/social-pilot');await mkdir(root,{recursive:true});
 const lunar=environment||process.argv.includes('--lunar');
 const v2=lunar||process.argv.includes('--v2');
-const output=environment?resolve(root,evening?'v5-evening':'v5-rain-priority'):lunar?resolve(root,'v3-lunar'):v2?resolve(root,'v2'):root;await mkdir(output,{recursive:true});
+const output=production?root:environment?resolve(root,evening?'v5-evening':'v5-rain-priority'):lunar?resolve(root,'v3-lunar'):v2?resolve(root,'v2'):root;await mkdir(output,{recursive:true});
 const data=JSON.parse(await readFile(resolve(root,'data.json'),'utf8'));
+if(production)assertProductionSnapshot(data);
 if(evening){
  data.edition='evening';data.day=data.days[1];data.date=data.day.date;data.days=data.days.slice(1);
  const frames=data.rain.byDate?.[data.date]||[];data.rain={...data.rain,frames,available:frames.length===4&&frames.some(f=>f.values.some(v=>v!==null))};
 }
-if(environment){
+if(environment&&!production){
  // Re-evaluate both editions, including old snapshots with a stored UV scene.
  // This offline design pilot deliberately uses the original collection clock.
  const e=data.environment,options={date:data.date,now:Date.parse(e.retrievedAt),retrievedAt:e.retrievedAt};
@@ -27,7 +31,7 @@ if(environment){
  e.secondaryUv=secondaryUv(e.summary,options);
  e.caption=environmentalCaption(e.summary,e.selection,options);
 }
-if(lunar){const saved=JSON.parse(await readFile(resolve(root,evening?'lunar-evening.json':'lunar.json'),'utf8'));data.lunarEnabled=true;data.moon=normalizeMoon(saved.raw,data.date);}
+if(lunar&&!production){const saved=JSON.parse(await readFile(resolve(root,evening?'lunar-evening.json':'lunar.json'),'utf8'));data.lunarEnabled=true;data.moon=normalizeMoon(saved.raw,data.date);}
 const b64=async f=>(await readFile(resolve(root,f))).toString('base64');
 data.logo=await b64('logo.png');data.fonts={manrope:await b64('Manrope.ttf'),dm:await b64('DM-Sans.ttf')};
 const browser=await chromium.launch({headless:true});
@@ -46,7 +50,7 @@ for(const [i,t]of times.entries()){
  const result=await page.evaluate(t=>window.renderPilot(t),t);if(result.errors.length)throw Error('Layout: '+JSON.stringify(result.errors));
  await page.screenshot({path:resolve(output,`scene-${i+1}.png`)});
 }
-if(environment&&!evening){
+if(environment&&!evening&&!production){
  const result=await page.evaluate(()=>window.renderMidday());
  if(result.errors.length)throw Error('Midday layout: '+JSON.stringify(result.errors));
  await page.locator('canvas').screenshot({path:resolve(output,'midday.png')});
@@ -89,7 +93,7 @@ if(environment){
   if(uv&&uv.height>35)throw Error('UV lost secondary hierarchy');
   stressCases++;
  }
- if(!evening){
+ if(!evening&&!production){
   for(const missing of [true,false]){
    const fixture=structuredClone(data);fixture.environment.midday={uv:missing?null:fixture.environment.midday.uv,air:null};
    fixture.middayParts.forEach(p=>{p.condition='Possibilitat de tempesta amb calamarsa';p.min=null;p.max=null;p.rainProbability=null;});
@@ -112,7 +116,7 @@ if(lunar){
 const report={version:environment?5:lunar?3:v2?2:1,environment:data.environment?.selection,secondaryUv:data.environment?.secondaryUv,moon:data.moon,date:data.date,capturedAt:data.capturedAt,resolution:'1080x1920',duration:30,scenes:6,safeTextBounds:{left:76,right:946,top:185,bottom:1710},syntheticStressCases:stressCases,pageErrors:errors,publishing:false};
 if(errors.length)throw Error(errors.join('\n'));
 if(!process.argv.includes('--stills')){
- const ff=spawn('ffmpeg',['-y','-hide_banner','-loglevel','warning','-f','image2pipe','-framerate','30','-vcodec','mjpeg','-i','pipe:0','-i',resolve(root,'music.wav'),'-map','0:v:0','-map','1:a:0','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-c:a','aac','-b:a','192k','-af','afade=t=in:st=0:d=0.8,afade=t=out:st=28.8:d=1.2','-t','30','-movflags','+faststart',resolve(output,'meteo-fontanillas-pilot.mp4')],{stdio:['pipe','inherit','inherit']});
+ const ff=spawn('ffmpeg',['-y','-hide_banner','-loglevel','warning','-f','image2pipe','-framerate','30','-vcodec','mjpeg','-i','pipe:0','-i',resolve(root,'music.wav'),'-map','0:v:0','-map','1:a:0','-c:v','libx264','-preset','fast','-crf','18','-pix_fmt','yuv420p','-c:a','aac','-b:a','192k','-af','afade=t=in:st=0:d=0.8,afade=t=out:st=28.8:d=1.2','-t','30','-movflags','+faststart',resolve(output,production?'short.mp4':'meteo-fontanillas-pilot.mp4')],{stdio:['pipe','inherit','inherit']});
  encoder=ff;
  const done=once(ff,'close');
  for(let f=0;f<900;f++){
@@ -123,8 +127,9 @@ if(!process.argv.includes('--stills')){
  ff.stdin.end();const [code]=await done;if(code!==0)throw Error('ffmpeg failed '+code);
  report.validatedFrames=900;
 }
+if(production)assertProductionSnapshot(data);
 await writeFile(resolve(output,process.argv.includes('--stills')?'validation-stills.json':'validation.json'),JSON.stringify(report,null,2));
-console.log('Pilot validated; no publication performed.');
+console.log('Render validated; no publication performed.');
 } finally {
  if(encoder&&encoder.exitCode===null)encoder.kill('SIGTERM');
  await browser.close();
