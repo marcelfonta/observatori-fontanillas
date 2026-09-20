@@ -37,3 +37,18 @@ jobs:
 
       - name: Executa les comprovacions
         run: npm run check
+      - name: Instal·la Chromium per comprovar dissenys
+        run: |
+          pnpm exec playwright install --with-deps chromium
+          sudo apt-get install -y fonts-dejavu-core
+      - name: Comprova mòbil i targetes amb dades de prova
+        run: pnpm test:browser
+      - name: Conserva captures i informe visual
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-checks
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7

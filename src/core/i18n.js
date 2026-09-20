@@ -4,6 +4,18 @@ const STORAGE_KEY='fontanillas-language-v1';
 export const SUPPORTED_LANGUAGES=['ca','es','en','fr'];
 
 export const PHRASES={
+  "Hora local · Sant Celoni":{"es":"Hora local · Sant Celoni","en":"Local time · Sant Celoni"},
+  "Carregant la previsió horària…":{"es":"Cargando la previsión horaria…","en":"Loading hourly forecast…"},
+  "Open-Meteo · símbol del fenomen més destacat. Pluja: màxim horari, no probabilitat de tota la franja.":{"es":"Open-Meteo · símbolo del fenómeno más destacado. Lluvia: máximo horario, no probabilidad de toda la franja.","en":"Open-Meteo · most significant weather symbol. Rain: hourly maximum, not probability for the whole period."},
+  "Previsió completa →":{"es":"Previsión completa →","en":"Full forecast →"},
+  "Veure radar →":{"es":"Ver radar →","en":"View radar →"},
+  "Avisos oficials →":{"es":"Avisos oficiales →","en":"Official warnings →"},
+  "Pluja · màx. horària":{"es":"Lluvia · máx. horaria","en":"Rain · hourly max."},
+  "Dades incompletes":{"es":"Datos incompletos","en":"Incomplete data"},
+  "Jornada gairebé acabada":{"es":"Jornada casi terminada","en":"Day nearly over"},
+  "Més preguntes":{"es":"Más preguntas","en":"More questions"},
+  "Demà a Sant Celoni":{"es":"Mañana en Sant Celoni","en":"Tomorrow in Sant Celoni"},
+  "Ex.: Demà plourà a Sant Celoni?":{"es":"Ej.: ¿Mañana lloverá en Sant Celoni?","en":"E.g. Will it rain tomorrow in Sant Celoni?"},
   'Acumulació registrada; pot ser parcial':{es:'Acumulación registrada; puede ser parcial',en:'Recorded total; may be partial'},
   'Agrupació orientativa de registres':{es:'Agrupación orientativa de registros',en:'Indicative grouping of records'},
   'No certifica una ratxa seca':{es:'No certifica una racha seca',en:'Does not certify a dry spell'},

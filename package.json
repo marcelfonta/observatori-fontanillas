@@ -1,6 +1,6 @@
 {
   "name": "observatori-fontanillas",
-  "version": "22.31.6",
+  "version": "22.31.7",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",
@@ -12,11 +12,13 @@
     "test:quick": "node scripts/run-tests.mjs --quick",
     "check": "npm test",
     "test:staging": "node scripts/staging-smoke.mjs",
+    "test:browser": "playwright test",
     "serve": "python3 -m http.server 8080",
     "worker:types": "wrangler types --config ops/wrangler.example.jsonc worker-configuration.d.ts",
     "worker:dry-run": "wrangler deploy --dry-run --config ops/wrangler.example.jsonc"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "wrangler": "^4.0.0"
   }
 }

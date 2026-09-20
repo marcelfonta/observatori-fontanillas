@@ -1,7 +1,10 @@
-const CACHE = 'observatori-fontanillas-v22-31-6-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup';
+const CACHE = 'observatori-fontanillas-v22-31-7-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
+  '/src/core/forecast-dayparts.js',
+  '/src/core/home-forecast.js',
+  '/src/features/home-forecast.js',
   '/src/core/numeric.js',
   '/src/core/statistics.js',
   '/src/core/history-data.js',

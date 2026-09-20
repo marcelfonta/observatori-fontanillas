@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {homeForecast} from '../src/core/home-forecast.js';
+const time=Array.from({length:25},(_,h)=>h===24?'2026-09-21T00:00':`2026-09-20T${String(h).padStart(2,'0')}:00`);
+const hourly={time,temperature_2m:time.map(()=>20),precipitation_probability:time.map(()=>0),weather_code:time.map(()=>0),wind_gusts_10m:time.map(()=>15)};
+const now=new Date('2026-09-20T13:15:00Z');
+assert.equal(homeForecast({hourly},now).periods.length,2);
+assert.equal(homeForecast({hourly},now).periods[0].timeLabel,'16:00–19:00');
+assert.equal(homeForecast({hourly},new Date('2026-09-21T13:00Z')).available,false);
+assert.equal(homeForecast(null,now).available,false);
+hourly.precipitation_probability[17]=null;
+assert.equal(homeForecast({hourly},now).periods[0].rainProbability,null);
+console.log('Portada: franges locals, absència de dades i hores passades correctes');

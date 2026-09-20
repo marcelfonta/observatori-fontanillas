@@ -1,5 +1,18 @@
 # Changelog
 
+## Sis paquets seqüencials — fiabilitat i consulta ràpida · 2026-09-20
+
+- Administració: separa configuració, execució sol·licitada, programació i confirmació del proveïdor. Un horari de YouTube passat sense comprovació pública no apareix com a lliurament verificat.
+- Recuperació de Shorts: confirmació humana al panell, només avui dins la finestra vigent, un intent manual, OAuth comprovat amb els secrets reals de GitHub i reserva atòmica. Errors de pujada incerts, resultats completats, execucions en curs i peticions ja sol·licitades queden bloquejats. Una recuperació fallida no reactiva reintents automàtics.
+- GitHub Actions s’atura si falla la coordinació; calcula l’hora pública després del render i registra ID, privacitat i programació retornats per YouTube.
+- Proves de maquetació Chromium a CI: mòbil 360/390/768 px, quatre dates de vídeo, sis targetes socials, Meteo IA i franges de portada; captures descarregables. No són una garantia estètica ni substitueixen la revisió de vídeo/iPhone.
+- Portada: previsió restant per franges abans dels rècords; el detall complet es conserva a Predicció. Reutilitza les dades carregades, sense consultes addicionals. Absències visibles, màxim horari de probabilitat explícit i franges en hora de Sant Celoni.
+- Meteo IA: quatre suggeriments principals, deu sota «Més preguntes» i exemples contextuals de demà.
+- Prototip de correcció de temperatura diària només local: separació cronològica, embargament temporal, cobertura mínima, límit ±3 °C i comparació MAE/biaix/RMSE. No s’ha validat encara amb l’arxiu real ni modifica la previsió pública.
+- Web 22.31.7 i Worker 22.29.19. Sense migracions, canvis d’horari, desplegament ni publicacions reals durant les proves. Requereix revisió humana, staging i desplegament autoritzat.
+
+Rollback: revertir aquest paquet i desplegar versions prèvies autoritzades. Els registres de coordinació afegits són compatibles; no esborreu registres d’execucions o publicacions per forçar un reintent. Consulteu docs/YOUTUBE-RECOVERY.md.
+
 ## Correcció — Anys d’efemèrides sense decimals · 2026-09-18
 
 - La targeta d’efemèrides mostra l’any com a enter sense decimals ni separadors de milers: `1971`, no `1971,0`. Les mesures meteorològiques mantenen la precisió anterior.

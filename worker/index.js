@@ -5,11 +5,12 @@ import { astronomyEventsForDate, astronomyVisibilitySummary, astronomyObservatio
 import { detectForecastEpisode, forecastEpisodeCopy, normalizeForecastModel } from '../src/core/forecast-episodes.js';
 import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core/temperature-trend.js';
 import { finiteNumber } from '../src/core/numeric.js';
+import { youtubeRecoveryEligibility } from '../src/core/youtube-recovery.js';
 import { DAYPART_HOURLY_VARIABLES, normalizeSocialForecast, summarizeForecastDayparts, daypartCaption } from '../src/core/forecast-dayparts.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.18";
-const WORKER_BUILT = "2026-09-18";
+const WORKER_VERSION = "22.29.19";
+const WORKER_BUILT = "2026-09-20";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -505,7 +506,8 @@ async function adminOperationsSummary(env) {
        OR service_key LIKE 'social-preflight:%'
        OR service_key LIKE 'environment:%'
        OR service_key LIKE 'buffer-tiktok:%'
-       OR service_key LIKE 'buffer-x:%'`).all();
+       OR service_key LIKE 'buffer-x:%'
+       OR service_key IN (?,?)`).bind(youtubeShortRunKey(localIsoDate(),'mati'),youtubeShortRunKey(localIsoDate(),'vespre')).all();
   const rows = result?.results || [];
   const states = Object.fromEntries(rows.map(row => [row.service_key, monitorPayload(row)]));
   const preflightRow = rows
@@ -526,6 +528,13 @@ async function adminOperationsSummary(env) {
   const meteocatUsage=await env.DB.prepare("SELECT COUNT(*) AS total FROM monitor_state WHERE service_key LIKE ?")
     .bind(`meteocat-alert-poll:${monthPrefix}-%`).first();
   return { enabled:true, scheduler:states.scheduler || null, push:states['push-alert'] || null, social:states['social-automatic'] || null, periodicSocial:states['social-periodic'] || null, environmental, preflight:monitorPayload(preflightRow), youtube:states['youtube-shorts-scheduler'] || null, bufferTikTok:monitorPayload(bufferRow), bufferTikTokDiagnostics:states['buffer-tiktok-diagnostics'] || null, bufferTikTokTest:states['buffer-tiktok-test'] || null, bufferX:monitorPayload(bufferXRow), metaVideo:states['meta-video-automatic'] || null,
+    youtubeSlots:['mati','vespre'].map(slot=>{
+      const localDate=localIsoDate();
+      const row=rows.find(row=>row.service_key===youtubeShortRunKey(localDate,slot));
+      const recovery=youtubeRecoveryEligibility(row,localDate,slot);
+      if (parseYoutubeShortRunDetail(row?.detail).recoveryRequestedAt) Object.assign(recovery,{allowed:false,reason:'Recuperació sol·licitada: comprova GitHub Actions abans de tornar a actuar.'});
+      return {slot,localDate,run:monitorPayload(row),recovery};
+    }),
     meteocat:{state:states['meteocat-alert-social']||null,lastPoll:monitorPayload(meteocatPollRow),quota:{monthlyLimit:METEOCAT_MONTHLY_PREDICTION_LIMIT,plannedMaximum:31*METEOCAT_ALERT_POLL_SLOTS.length,registeredByWorker:Number(meteocatUsage?.total)||0}},
   };
 }
@@ -3608,11 +3617,12 @@ function youtubeShortRunKey(localDate, slot) {
 }
 
 function parseYoutubeShortRunDetail(value) {
-  try { return JSON.parse(value || '{}'); } catch { return {}; }
+  try { const parsed=JSON.parse(value || '{}');return parsed&&typeof parsed==='object'?parsed:{}; } catch { return {}; }
 }
 
 function youtubeShortRetryBlockReason(previous, detail = {}) {
   if (previous?.status !== 'down') return null;
+  if (detail.recoveryRequestedAt || Number(detail.recoveryCount||0)>=1) return 'manual_recovery_pending_or_exhausted';
   if (detail.terminal === true) return 'terminal_failure';
   const attempts=Math.max(Number(detail.attempt)||0,Number(previous?.consecutive_failures)||0);
   return attempts >= YOUTUBE_SHORT_MAX_ATTEMPTS ? 'max_attempts' : null;
@@ -3638,6 +3648,37 @@ async function updateYoutubeShortRun(env, key, status, detail) {
     .bind(key,status,status==='down'?1:0,now,status==='down'?now:null,status==='healthy'?now:null,JSON.stringify(detail).slice(0,12000)).run();
 }
 
+async function adminYoutubeRecovery(request,env) {
+  const auth=await authorizeAdminRequest(request,env);
+  if(auth.response)return auth.response;
+  const body=await adminJsonBody(request);
+  if(!body || typeof body!=='object')return json({error:'Cal un objecte JSON.'},400,'no-store',auth.origin);
+  if(body.confirm!==true)return json({error:'Cal confirmar la recuperació i la publicació d’aquesta franja.'},400,'no-store',auth.origin);
+  if(!(await ensureOperationsSchema(env)))return json({error:'Coordinació no disponible.'},503,'no-store',auth.origin);
+  const key=youtubeShortRunKey(body.localDate,body.slot);
+  if(!key)return json({error:'Data o franja no vàlida.'},400,'no-store',auth.origin);
+  const row=await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key=?').bind(key).first();
+  const eligible=youtubeRecoveryEligibility(row,body.localDate,body.slot);
+  const detail=parseYoutubeShortRunDetail(row?.detail);
+  if(!eligible.allowed || detail.recoveryRequestedAt)return json({error:detail.recoveryRequestedAt?'Ja sol·licitada: revisa GitHub Actions.':eligible.reason},409,'no-store',auth.origin);
+  const repository=String(env.GITHUB_SHORTS_REPOSITORY||'marcelfonta/observatori-fontanillas');
+  if(!env.GITHUB_SHORTS_DISPATCH_TOKEN || !/^[\w.-]+\/[\w.-]+$/.test(repository))return json({error:'Disparador de GitHub no configurat.'},503,'no-store',auth.origin);
+  const requested={...detail,recoveryRequestedAt:new Date().toISOString()};
+  const claim=await env.DB.prepare('UPDATE monitor_state SET detail=? WHERE service_key=? AND status=? AND detail=?')
+    .bind(JSON.stringify(requested),key,row.status,row.detail).run();
+  if(Number(claim?.meta?.changes)!==1)return json({error:'L’estat ha canviat. Actualitza el panell.'},409,'no-store',auth.origin);
+  // Keep the failure lock until Actions validates its own OAuth credentials.
+  // An ambiguous dispatch is never automatically repeated.
+  try {
+    const response=await fetch(`https://api.github.com/repos/${repository}/actions/workflows/youtube-short-private.yml/dispatches`,{
+      method:'POST',signal:AbortSignal.timeout(15000),headers:{Authorization:`Bearer ${env.GITHUB_SHORTS_DISPATCH_TOKEN}`,Accept:'application/vnd.github+json','Content-Type':'application/json','User-Agent':'Fontanillas'},
+      body:JSON.stringify({ref:'main',inputs:{slot:body.slot,privacy:'private',schedule_publication:'true',recovery:'true',recovery_date:body.localDate}})
+    });
+    if(response.status!==204)return json({error:`GitHub no ha confirmat la petició (HTTP ${response.status}). Revisa Actions; no es repetirà automàticament.`},502,'no-store',auth.origin);
+  } catch { return json({error:'Resposta de GitHub incerta. Revisa Actions abans de qualsevol reintent.'},502,'no-store',auth.origin); }
+  return json({ok:true,message:'Sol·licitada. OAuth es validarà a GitHub abans de publicar. Encara no és una publicació confirmada.'},202,'no-store',auth.origin);
+}
+
 async function youtubeShortRunControl(request, env, localDate, slot) {
   if (!(await authorizeYoutubeShortRequest(request,env))) return json({ error:'No autoritzat.' },401,'no-store');
   if (!(await ensureOperationsSchema(env))) return json({ error:'La coordinació de Shorts no està disponible.' },503,'no-store');
@@ -3656,15 +3697,25 @@ async function youtubeShortRunControl(request, env, localDate, slot) {
     if (previous?.status === 'running' && age >= 0 && age < YOUTUBE_SHORT_RUN_STALE_MS) {
       return json({ ok:true, shouldRun:false, reason:'already_running' },200,'no-store');
     }
-    const blocked=youtubeShortRetryBlockReason(previous,detail);
+    const recovery=body.recover === true;
+    if (recovery && (!detail.recoveryRequestedAt || !youtubeRecoveryEligibility(previous,localDate,slot).allowed)) return json({ok:true,shouldRun:false,reason:'recovery_blocked'},200,'no-store');
+    const blocked=recovery ? null : youtubeShortRetryBlockReason(previous,detail);
     if (blocked) return json({ ok:true,shouldRun:false,reason:blocked },200,'no-store');
     const attempt=Math.max(1,Number(detail.attempt)||1);
-    await updateYoutubeShortRun(env,key,'running',{ localDate,slot,source,stage:'running',attempt });
+    const nextDetail=JSON.stringify({localDate,slot,source,stage:'running',attempt,recoveryCount:recovery?1:Number(detail.recoveryCount||0)});
+    // Compare-and-swap: concurrent manual and scheduled starts cannot both win.
+    const claimed=previous
+      ? await env.DB.prepare("UPDATE monitor_state SET status='running',last_checked_at=?,detail=? WHERE service_key=? AND status=? AND last_checked_at=? AND detail=?")
+        .bind(new Date().toISOString(),nextDetail,key,previous.status,previous.last_checked_at,previous.detail).run()
+      : await env.DB.prepare("INSERT OR IGNORE INTO monitor_state (service_key,status,consecutive_failures,last_checked_at,detail) VALUES (?,'running',0,?,?)")
+        .bind(key,new Date().toISOString(),nextDetail).run();
+    if (Number(claimed?.meta?.changes)!==1) return json({ok:true,shouldRun:false,reason:'concurrent_start'},200,'no-store');
     return json({ ok:true, shouldRun:true },200,'no-store');
   }
   if (action === 'complete') {
-    await updateYoutubeShortRun(env,key,'healthy',{ localDate,slot,source,stage:'completed' });
-    await recordOperationalState(env,'youtube-shorts-scheduler','healthy',{ localDate,slot,source,stage:'completed' });
+    const completed={localDate,slot,source,stage:'completed',youtubeId:/^[\w-]{11}$/.test(body.youtubeId||'')?body.youtubeId:null,privacy:['private','unlisted','public'].includes(body.privacy)?body.privacy:null,publishAt:Number.isFinite(Date.parse(body.publishAt))?body.publishAt:null};
+    await updateYoutubeShortRun(env,key,'healthy',completed);
+    await recordOperationalState(env,'youtube-shorts-scheduler','healthy',completed);
     return json({ ok:true, completed:true },200,'no-store');
   }
   if (action === 'fail') {
@@ -3674,6 +3725,7 @@ async function youtubeShortRunControl(request, env, localDate, slot) {
       responseCode:Number.isFinite(Number(body.responseCode)) ? Number(body.responseCode) : null,
       failureCode:cleanText(body.failureCode,80) || null,
       terminal:body.terminal === true,
+      recoveryCount:Number(detail.recoveryCount||0),
       attempt:Math.max(1,Number(detail.attempt)||1),
       error:cleanText(body.error || 'GitHub Actions no ha completat la preparació o la pujada del Short.',500),
     };
@@ -5987,6 +6039,7 @@ export default {
       if (request.method === "POST" && socialWhatsAppMatch) return adminPrepareWhatsApp(request, env, Number(socialWhatsAppMatch[1]));
       const socialDraftMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)$/);
       if (request.method === "POST" && socialDraftMatch) return adminUpdateSocialDraft(request, env, Number(socialDraftMatch[1]));
+      if (request.method === 'POST' && url.pathname === '/admin/youtube-recovery') return await adminYoutubeRecovery(request,env);
       if (request.method !== "GET") return json({ error:"Mètode no permès" }, 405);
       if (url.pathname === "/" || url.pathname === "") {
         const observation = await resilientCurrentObservation(env);

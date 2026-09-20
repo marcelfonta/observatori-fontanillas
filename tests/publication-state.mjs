@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {publicationState} from '../src/core/publication-state.js';
+assert.equal(publicationState(null).tone,'is-muted');
+assert.equal(publicationState({status:'healthy',detail:{stage:'dispatched'}}).tone,'is-warning');
+assert.equal(publicationState({status:'healthy',detail:{stage:'completed'}}).tone,'is-warning');
+assert.equal(publicationState({status:'healthy',detail:{stage:'completed',youtubeId:'id',privacy:'private'}}).tone,'is-warning');
+assert.equal(publicationState({status:'healthy',detail:{stage:'completed',youtubeId:'id',privacy:'public'}}).label,'Publicació confirmada');
+assert.equal(publicationState({status:'healthy',detail:{stage:'completed',publishAt:'2026-09-20T04:45:00Z'}},new Date('2026-09-20T05:00:00Z')).tone,'is-warning');
+assert.equal(publicationState({status:'healthy',detail:{stage:'scheduled'}}).tone,'is-warning');
+assert.equal(publicationState({status:'healthy',detail:{stage:'sent'}}).tone,'is-ok');
+assert.equal(publicationState({status:'down',detail:{terminal:true}}).tone,'is-error');
+console.log('Estats de publicació: configuració, programació i confirmació diferenciades.');

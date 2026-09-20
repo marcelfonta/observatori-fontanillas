@@ -1,6 +1,18 @@
 // Catàleg francès separat per mantenir i auditar la quarta llengua sense
 // barrejar-la amb la font catalana i les traduccions castellana i anglesa.
 export const FRENCH_PHRASES={
+  "Hora local · Sant Celoni":"Heure locale · Sant Celoni",
+  "Carregant la previsió horària…":"Chargement des prévisions horaires…",
+  "Open-Meteo · símbol del fenomen més destacat. Pluja: màxim horari, no probabilitat de tota la franja.":"Open-Meteo · symbole du phénomène dominant. Pluie : maximum horaire, pas probabilité de toute la période.",
+  "Previsió completa →":"Prévisions complètes →",
+  "Veure radar →":"Voir le radar →",
+  "Avisos oficials →":"Alertes officielles →",
+  "Pluja · màx. horària":"Pluie · max. horaire",
+  "Dades incompletes":"Données incomplètes",
+  "Jornada gairebé acabada":"Journée presque terminée",
+  "Més preguntes":"Plus de questions",
+  "Demà a Sant Celoni":"Demain à Sant Celoni",
+  "Ex.: Demà plourà a Sant Celoni?":"Ex. : Pleuvra-t-il demain à Sant Celoni ?",
   'Acumulació registrada; pot ser parcial':'Cumul enregistré ; peut être partiel',
   'Agrupació orientativa de registres':'Regroupement indicatif des relevés',
   'No certifica una ratxa seca':'Ne prouve pas une période sèche',

@@ -1,6 +1,7 @@
 import { format, setText } from '../core/dom.js';
 import { getLanguage, getLocale, t } from '../core/i18n.js';
 import { initWhenVisible } from './navigation.js';
+import { renderHomeForecast } from '../features/home-forecast.js';
 
 const codes = {
   0:['☀️','Cel serè'],1:['🌤️','Poc ennuvolat'],2:['⛅','Intervals'],3:['☁️','Cobert'],
@@ -135,6 +136,7 @@ function renderWeeklyBrief(daily){
 }
 
 export function renderForecast(data) {
+  renderHomeForecast(data);
   const strip=document.getElementById('forecast-strip'); if(!strip||!data?.hourly) return;
   const now=Date.now(); let start=data.hourly.time.findIndex(time=>new Date(time).getTime()>=now-1800000); if(start<0) start=0;
   const indices=Array.from({length:17},(_,index)=>start+(index*3)).filter(index=>data.hourly.time[index]);
@@ -314,6 +316,7 @@ export function initForecastControls() {
 }
 
 export function renderForecastError() {
+  renderHomeForecast(null);
   setText('forecast-status','Predicció temporalment no disponible');
   const strip=document.getElementById('forecast-strip'); if(strip) strip.innerHTML='<div class="forecast-loading">La predicció no està disponible ara mateix. Les dades de l’estació continuen actives.</div>';
   const daily=document.getElementById('daily-forecast'); if(daily) daily.innerHTML='<div class="forecast-loading">No s’ha pogut carregar la previsió diària.</div>';
