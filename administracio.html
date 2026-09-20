@@ -36,6 +36,13 @@
     </section>
 
     <section class="admin-dashboard" id="admin-dashboard" hidden aria-live="polite">
+      <article class="admin-panel panel">
+        <header><h2>YouTube · recuperació d’avui</h2></header>
+        <p>Només per a errors anteriors a la pujada. Els resultats incerts es revisen manualment per evitar duplicats.</p>
+        <div id="admin-youtube-slots"></div>
+        <p id="admin-youtube-recovery-feedback" role="status"></p>
+        <a href="https://github.com/marcelfonta/observatori-fontanillas/actions/workflows/youtube-short-private.yml" target="_blank" rel="noopener noreferrer">Comprova l’execució a GitHub Actions</a>
+      </article>
       <div class="admin-toolbar panel"><div><span class="admin-live-dot"></span><strong id="admin-overall-status">Comprovant serveis…</strong><small id="admin-last-update">Sense actualització</small></div><div><button type="button" id="admin-copy-diagnostic">Copiar diagnòstic</button><button type="button" id="admin-refresh">Actualitzar</button><button type="button" id="admin-logout">Tancar sessió</button></div></div>
 
       <div class="admin-overview">

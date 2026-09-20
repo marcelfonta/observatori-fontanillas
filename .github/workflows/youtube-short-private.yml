@@ -16,6 +16,13 @@ on:
         default: mati
         type: choice
         options: [mati, vespre]
+      recovery:
+        description: Recuperació autoritzada des del panell (verifica OAuth abans de començar)
+        type: boolean
+        default: false
+      recovery_date:
+        description: Data local autoritzada pel panell (AAAA-MM-DD)
+        type: string
       privacy:
         description: Visibilitat del vídeo de prova
         required: true
@@ -44,6 +51,9 @@ jobs:
       YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
       YOUTUBE_UPLOAD_ERROR_FILE: /tmp/youtube-upload-error.json
+      YOUTUBE_RESULT_FILE: /tmp/youtube-result.json
+      YOUTUBE_SHORT_RECOVERY: ${{ inputs.recovery == true && 'true' || 'false' }}
+      YOUTUBE_RECOVERY_DATE: ${{ inputs.recovery_date }}
       YOUTUBE_PRIVACY_STATUS: ${{ github.event_name == 'schedule' && 'private' || inputs.privacy || 'private' }}
       SHORT_SLOT: ${{ github.event_name == 'schedule' && (startsWith(github.event.schedule, '0 ') && 'vespre' || 'mati') || inputs.slot || 'mati' }}
       SHOULD_SCHEDULE_PUBLICATION: ${{ github.event_name == 'schedule' || inputs.schedule_publication }}
@@ -60,6 +70,13 @@ jobs:
       - name: Valida la finestra horària de reserva
         if: github.event_name == 'schedule'
         run: node scripts/youtube-backup-window.mjs >> "$GITHUB_ENV"
+      - name: Verifica OAuth abans de recuperar
+        if: inputs.recovery == true
+        env:
+          YOUTUBE_AUTH_CHECK_ONLY: 'true'
+        run: |
+          test -n "$SOCIAL_VIDEO_UPLOAD_URL" && test -n "$SOCIAL_VIDEO_UPLOAD_TOKEN"
+          node scripts/youtube-upload.mjs
       - name: Coordina una sola execució per franja
         if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.SOCIAL_VIDEO_UPLOAD_URL != '' && env.SOCIAL_VIDEO_UPLOAD_TOKEN != ''
         run: |
@@ -69,20 +86,27 @@ jobs:
             *) echo "Franja de Short no vàlida" >&2; exit 1 ;;
           esac
           local_date="$(TZ=Europe/Madrid date +%F)"
+          if [ "$YOUTUBE_SHORT_RECOVERY" = "true" ]; then
+            if [ "$local_date" != "$YOUTUBE_RECOVERY_DATE" ]; then
+              echo "La recuperació ha caducat: no es publicarà un altre dia." >&2
+              exit 1
+            fi
+          fi
           control_url="${SOCIAL_VIDEO_UPLOAD_URL%/admin/social-video-upload}/admin/youtube-short-runs/$local_date/$SHORT_SLOT"
           if curl --fail --silent --show-error --retry 2 --request POST \
             --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
             --header "Content-Type: application/json" \
-            --data "{\"action\":\"start\",\"source\":\"github-${GITHUB_EVENT_NAME}\"}" \
+            --data "{\"action\":\"start\",\"source\":\"github-${GITHUB_EVENT_NAME}\",\"recover\":${YOUTUBE_SHORT_RECOVERY}}" \
             --output /tmp/youtube-short-run.json "$control_url"; then
             should_run="$(node -e "const value=JSON.parse(require('node:fs').readFileSync(process.argv[1],'utf8')); process.stdout.write(value.shouldRun ? 'true' : 'false')" /tmp/youtube-short-run.json)"
             echo "YOUTUBE_SHORT_SHOULD_RUN=$should_run" >> "$GITHUB_ENV"
             echo "YOUTUBE_SHORT_COORDINATION_URL=$control_url" >> "$GITHUB_ENV"
             echo "YOUTUBE_SHORT_COORDINATION_ACTIVE=true" >> "$GITHUB_ENV"
           else
-            echo "La coordinació amb el Worker encara no està activa; s'executa el flux normal." >&2
-            echo "YOUTUBE_SHORT_SHOULD_RUN=true" >> "$GITHUB_ENV"
+            echo "Coordinació no confirmada: s’atura per evitar duplicats." >&2
+            echo "YOUTUBE_SHORT_SHOULD_RUN=false" >> "$GITHUB_ENV"
             echo "YOUTUBE_SHORT_COORDINATION_ACTIVE=false" >> "$GITHUB_ENV"
+            exit 1
           fi
       - name: Instal·la el renderitzador
         if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
@@ -93,10 +117,6 @@ jobs:
         run: |
           node scripts/youtube-short.mjs
           node scripts/youtube-music.mjs
-      - name: Programa l'hora pública del Short
-        id: schedule
-        if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.SHOULD_SCHEDULE_PUBLICATION == 'true'
-        run: node scripts/youtube-publish-at.mjs >> "$GITHUB_ENV"
       - name: Renderitza el Short vertical
         id: render
         if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true'
@@ -133,6 +153,10 @@ jobs:
             --header "Content-Length: $(wc -c < build/youtube-short/short.mp4 | tr -d ' ')" \
             --data-binary @build/youtube-short/short.mp4 \
             "$SOCIAL_VIDEO_UPLOAD_URL/shorts/$local_date/$video_slot.mp4"
+      - name: Programa l'hora pública del Short
+        id: schedule
+        if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.SHOULD_SCHEDULE_PUBLICATION == 'true'
+        run: node scripts/youtube-publish-at.mjs >> "$GITHUB_ENV"
       - name: Espera l'hora pública si queda poc marge
         if: env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.YOUTUBE_PUBLISH_DELAY_SECONDS != ''
         run: |
@@ -184,10 +208,11 @@ jobs:
         if: always() && steps.youtube_upload.outcome == 'success' && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.YOUTUBE_SHORT_COORDINATION_ACTIVE == 'true'
         continue-on-error: true
         run: |
+          node scripts/youtube-completion.mjs
           curl --fail --silent --show-error --retry 2 --request POST \
             --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
             --header "Content-Type: application/json" \
-            --data "{\"action\":\"complete\",\"source\":\"github-${GITHUB_EVENT_NAME}\"}" \
+            --data-binary @/tmp/youtube-complete.json \
             "$YOUTUBE_SHORT_COORDINATION_URL"
       - name: Registra la franja fallida i limita els reintents
         if: always() && steps.youtube_upload.outcome != 'success' && env.YOUTUBE_SHORT_SHOULD_RUN == 'true' && env.YOUTUBE_SHORT_COORDINATION_ACTIVE == 'true'

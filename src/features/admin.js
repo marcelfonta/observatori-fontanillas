@@ -91,7 +91,27 @@ function renderSocialQueue(social={}){
   socialCredentials={...socialCredentials,...(social.channelCredentials||{})};
 }
 
+function renderYoutubeSlots(slots=[]){
+  const list=element('admin-youtube-slots');if(!list)return;
+  list.replaceChildren(...slots.map(item=>{
+    const row=document.createElement('section'),title=document.createElement('h3'),state=document.createElement('p'),reason=document.createElement('p'),button=document.createElement('button');
+    title.textContent=`${item.slot==='mati'?'Matí':'Vespre'} · ${item.localDate}`;
+    state.textContent=publicationState(item.run).label;
+    reason.textContent=item.recovery?.reason||'Recuperació no disponible.';
+    button.type='button';button.className='btn';button.textContent='Recuperar aquesta franja';button.disabled=!item.recovery?.allowed;
+    button.onclick=async()=>{
+      if(!window.confirm(`Recuperar el vídeo del ${item.localDate}, franja ${item.slot}? Es publicarà a YouTube i es reutilitzarà el flux habitual de TikTok i X. Primer es validarà OAuth. No es repeteixen publicacions confirmades.`))return;
+      button.disabled=true;
+      try{const result=await adminApi('/admin/youtube-recovery',{method:'POST',body:{localDate:item.localDate,slot:item.slot,confirm:true}});text('admin-youtube-recovery-feedback',result.message);}
+      catch(error){text('admin-youtube-recovery-feedback',error.message);}
+      await fetchStatus({skipDrafts:true});
+    };
+    row.append(title,state,reason,button);return row;
+  }));
+}
+
 function renderOperations(operations={},schedule={}){
+  renderYoutubeSlots(operations.youtubeSlots);
   const scheduler=operations.scheduler;
   const social=operations.social;
   const push=operations.push;
