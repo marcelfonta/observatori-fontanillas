@@ -6,6 +6,7 @@ import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {readArchive} from '../scripts/fonta/archive.mjs';
 import {FONTA,dayBounds,localDay,nextDay,normalizeForecast,observedDays,evaluateFonta} from '../src/core/fonta-model.js';
+import {diagnoseArchive,executionMetadata,missingCaptureSlots} from '../src/core/fonta-diagnostics.js';
 
 assert.equal(dayBounds('2026-03-29').hours,23);assert.equal(dayBounds('2026-10-25').hours,25);
 assert.equal(nextDay('2026-12-31'),'2027-01-01');assert.throws(()=>dayBounds('2026-02-30'));
@@ -24,6 +25,10 @@ const missing=structuredClone(h);missing.observations[20].temperature=null;asser
 const zero=structuredClone(h);zero.observations.forEach(x=>x.temperature=0);assert.equal(observedDays(zero,'2026-09-19T08:00:00Z')[0].min,0);
 const jump=structuredClone(h);jump.observations[20].temperature=45;assert.equal(observedDays(jump,'2026-09-19T08:00:00Z')[0].eligible,false);
 const gap=structuredClone(h);gap.observations.splice(100,5);assert.equal(observedDays(gap,'2026-09-19T08:00:00Z')[0].eligible,false);
+assert(observedDays(gap,'2026-09-19T08:00:00Z')[0].reasons.includes('gap'));
+assert(observedDays(missing,'2026-09-19T08:00:00Z')[0].reasons.includes('invalid'));
+assert(observedDays(jump,'2026-09-19T08:00:00Z')[0].reasons.includes('jump'));
+assert.deepEqual(observedDays(zero,'2026-09-19T08:00:00Z')[0].reasons,[]);
 assert.throws(()=>observedDays({...h,stationId:'other'},'2026-09-19T08:00:00Z'));
 assert.throws(()=>observedDays({...h,interval:'daily'},'2026-09-19T08:00:00Z'));
 assert.equal(observedDays(h,'2026-09-18T20:00:00Z').length,0);
@@ -61,6 +66,26 @@ assert.deepEqual(evaluateFonta([...captures,...captures],{now:'2026-08-01T00:00:
 const changed=structuredClone(captures);changed.at(-1).observed[0].max=40;
 const changedResult=evaluateFonta(changed,{now:'2026-08-01T00:00:00Z'});assert.deepEqual(changedResult.evaluation[0],result.evaluation[0]);
 
+// Diagnostic progress never confuses observation count with paired training days.
+const diagnostic=diagnoseArchive(captures,result,{bytes:0,execution:executionMetadata({GITHUB_EVENT_NAME:'schedule',GITHUB_RUN_ID:'123'})});
+assert.equal(diagnostic.progress.trainingDays,result.trainingAvailableDays);
+assert.equal(diagnostic.progress.prospectiveDays,0);assert.equal(diagnostic.budget.bytes,0);
+assert.equal(diagnostic.execution.event,'schedule');assert.equal(diagnostic.execution.runId,'123');
+assert.equal(diagnostic.recentCaptures.length,14);assert.equal(diagnostic.quality.recent.length,14);
+assert(diagnostic.sources.slice(0,4).every(s=>s.modelRunAt===null));
+assert.equal(diagnoseArchive(captures,result,{bytes:81*1024*1024}).budget.reviewNeeded,true);
+assert.equal(diagnoseArchive([],evaluateFonta([])).budget.bytes,null);
+assert.equal(diagnoseArchive([],evaluateFonta([])).progress.trainingDays,0);
+assert.equal(diagnoseArchive(wrongWindow,evaluateFonta(wrongWindow,{now:'2026-08-01T00:00:00Z'})).recentCaptures[0].issueState,'outside-window');
+assert.equal(diagnoseArchive(noModels,evaluateFonta(noModels,{now:'2026-08-01T00:00:00Z'})).recentCaptures[0].issueState,'incomplete-models');
+assert.deepEqual(executionMetadata({GITHUB_EVENT_NAME:'secret-value',GITHUB_RUN_ID:'https://evil.example'}),{event:'local-or-unknown',runId:null});
+const cadence={firstCaptureAt:'2026-09-20T12:12:00Z',recentCaptures:[{capturedAt:'2026-09-20T12:12:00Z'}]};
+assert.deepEqual(missingCaptureSlots(cadence,'2026-09-20T23:00:00Z'),[]); // manual pm fills its slot
+assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T10:09:59Z'),[]);
+assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T10:10:00Z'),['2026-09-21-am']);
+assert.equal(missingCaptureSlots({},'2026-09-21T10:10:00Z'),null);
+assert(missingCaptureSlots(cadence,'2026-10-29T12:00:00Z').length<=14); // bounded and UTC across DST
+
 // Idempotent collector must exit before making any network call.
 const temp=await mkdtemp(join(tmpdir(),'fonta-test-'));
 try{
@@ -71,6 +96,10 @@ try{
   const source={kind:'icon_eu',receivedAt:options.capturedAt,hashFormat:'JSON.stringify',raw,sha256:createHash('sha256').update(JSON.stringify(raw)).digest('hex')};
   const valid={schema:1,id:id.slice(0,-5),capturedAt:now.toISOString(),sources:[source]};
   await writeFile(join(temp,id),JSON.stringify(valid));assert.equal((await readArchive(temp))[0].forecasts.length,1);
+  const reportRun=spawnSync(process.execPath,['scripts/fonta/report.mjs',temp],{encoding:'utf8'});
+  assert.equal(reportRun.status,0,reportRun.stderr);
+  const diskReport=JSON.parse(await readFile(join(temp,'status.json'),'utf8'));
+  assert.equal(diskReport.diagnostics.schema,1);assert(diskReport.diagnostics.budget.bytes>0);
   valid.sources[0].raw.daily.temperature_2m_max[0]=35;await writeFile(join(temp,id),JSON.stringify(valid));await assert.rejects(()=>readArchive(temp),/Integritat/);
 }finally{await rm(temp,{recursive:true});}
 const worker=await readFile('worker/index.js','utf8');assert(!worker.includes('fonta-model.js'));

@@ -64,10 +64,17 @@ export function observedDays(raw,capturedAt){
     let covered=0,lastEnd=bounds.start;
     for(const p of points){const start=Math.max(bounds.start,p.t-150000),end=Math.min(bounds.end,p.t+150000);covered+=Math.max(0,end-Math.max(start,lastEnd));lastEnd=Math.max(lastEnd,end);}
     const coverage=covered/(bounds.end-bounds.start);
-    const eligible=coverage>=.9&&bins.size>=Math.ceil(bounds.bins*.9)&&hours===bounds.hours&&maxGapMinutes<=20&&!suspiciousJump&&invalid===0;
+    const reasons=[];
+    if(coverage<.9)reasons.push('coverage');
+    if(bins.size<Math.ceil(bounds.bins*.9))reasons.push('samples');
+    if(hours!==bounds.hours)reasons.push('hours');
+    if(maxGapMinutes>20)reasons.push('gap');
+    if(suspiciousJump)reasons.push('jump');
+    if(invalid>0)reasons.push('invalid');
+    const eligible=reasons.length===0;
     return {date,availableAt:capturedAt,max:points.length?Math.max(...points.map(r=>r.value)):null,
       min:points.length?Math.min(...points.map(r=>r.value)):null,samples:bins.size,expectedSamples:bounds.bins,
-      hours,expectedHours:bounds.hours,coverage:round(coverage),maxGapMinutes:round(maxGapMinutes),invalid,suspiciousJump,eligible};
+      hours,expectedHours:bounds.hours,coverage:round(coverage),maxGapMinutes:round(maxGapMinutes),invalid,suspiciousJump,eligible,reasons};
   });
 }
 
@@ -126,7 +133,7 @@ export function evaluateFonta(captures,{now=new Date().toISOString()}={}){
   const prospective=frozen.filter(c=>{const day=c.shadowPrediction.date;if(prospectiveDates.has(day))return false;prospectiveDates.add(day);return true;});
   return {schema:1,version:FONTA.version,generatedAt:now,station:FONTA.station,mode:'shadow',productionEnabled:false,
     status:evaluated.length>=FONTA.evaluationDays?'experimental-evaluation':'collecting',latestCaptureAt:latest?.capturedAt??null,
-    captureCount:archive.length,eligibleObservedDays:observations.size,pairedDays:pairs.length,evaluatedDays:evaluated.length,
+    captureCount:archive.length,eligibleObservedDays:observations.size,pairedDays:pairs.length,evaluatedDays:evaluated.length,trainingAvailableDays:training.length,
     targetDate,forecast,scores,candidate,prospective:{days:prospective.length,
       max:errorMetrics(prospective.map(c=>c.shadowPrediction.max),prospective.map(c=>observations.get(c.shadowPrediction.date).max)),
       min:errorMetrics(prospective.map(c=>c.shadowPrediction.min),prospective.map(c=>observations.get(c.shadowPrediction.date).min))},

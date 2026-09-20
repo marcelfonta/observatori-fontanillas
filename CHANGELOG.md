@@ -1,5 +1,13 @@
 # Changelog
 
+## Preparació — Fonta, seguiment i protocol de validació · 2026-09-20
+
+- Diagnòstic additiu a l'informe: fonts i hores de recepció, qualitat i motius de descartament, captures fora de finestra, pressupost i dies reals d'entrenament disponibles.
+- Panell amb caducitat, franges recents sense captura i marges explícits, compatibilitat amb informes antics i neteja segura d'estats després d'errors. Backtest separat dels resultats de prediccions congelades.
+- Activació autoritzada del PR 162 documentada; estació declarada a 1 m sobre teules vermelles, revisió fotogràfica pendent. Sense correcció instrumental inferida.
+- Protocol de validació proposat i estudi Single Runs real: l'API rebutja agregats diaris per al run UTC en Europe/Madrid; sèries horàries disponibles però amb absències a AROME. No s'ha canviat la font activa.
+- Algoritme 0.1.0 preservat. Cap nou secret, servei contractat, consulta periòdica, canvi de Worker, D1 o publicacions.
+
 ## Preparació — Fonta, laboratori de previsió local · 2026-09-20
 
 - Nova pàgina experimental, integrada al menú, amb metodologia, comparadors, errors i estat de l'arxiu; sense afirmar superioritat ni extrapolar una estació a tot el Montseny.
