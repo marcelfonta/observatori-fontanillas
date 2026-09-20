@@ -24,7 +24,13 @@ for(const width of [360,390,1280])test(`Fonta: laboratori ${width}`,async({page}
   await page.getByText('Qualitat dels darrers dies observats (màxim 14)',{exact:true}).click();
   await expect(page.locator('#fonta-monitor')).toContainText('buit superior a 20 min');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-  if(width<700){await page.locator('#portal-menu-button').click();await expect(page.locator('[data-page-link="fonta"]')).toBeVisible();await page.screenshot({path:info.outputPath('fonta-menu.png')});await page.keyboard.press('Escape');}
+  if(width<700){
+    await page.locator('#portal-menu-button').click();
+    await expect.poll(async()=>Math.round((await page.locator('#portal-sidebar').boundingBox()).x)).toBeGreaterThanOrEqual(0);
+    await page.locator('[data-page-link="fonta"]').scrollIntoViewIfNeeded();
+    await expect(page.locator('[data-page-link="fonta"]')).toBeInViewport();
+    await page.screenshot({path:info.outputPath('fonta-menu.png')});await page.keyboard.press('Escape');
+  }
   await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo({top:0,behavior:'instant'});});
   await page.screenshot({path:info.outputPath('fonta-lab.png'),fullPage:true});
   expect(errors).toEqual([]);
