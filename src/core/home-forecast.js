@@ -4,5 +4,11 @@ export function homeForecast(data,now=new Date()){
   const date=`${parts.year}-${parts.month}-${parts.day}`;
   const fromHour=Number(parts.hour)+Number(parts.minute)/60;
   if(!data?.hourly?.time?.some(time=>time.startsWith(date+'T')&&Number(time.slice(11,13))>=Math.floor(fromHour)))return {date,periods:[],available:false};
-  return {date,available:true,periods:summarizeForecastDayparts(data.hourly,date,{fromHour})};
+  const periods=summarizeForecastDayparts(data.hourly,date,{fromHour}).map(period=>{
+    const light=data.hourly.time.flatMap((time,i)=>time.startsWith(date+'T')&&Number(time.slice(11,13))>=period.startHour&&Number(time.slice(11,13))<period.endHour?[data.hourly.is_day?.[i]]:[]);
+    const complete=light.length===period.hours;
+    const illumination=complete&&light.every(n=>n===0)?'night':complete&&light.every(n=>n===1)?'day':'unknown';
+    return {...period,illumination};
+  });
+  return {date,available:true,periods};
 }

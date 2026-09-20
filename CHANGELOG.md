@@ -1,5 +1,12 @@
 # Changelog
 
+## Preparació — portada per franges i fitxa YT60234 · 2026-09-20
+
+- Targetes de portada adaptables a una, dues o tres franges, símbols SVG segons codi meteorològic, data local llegible, temperatura sense duplicats arrodonits i pluja/ratxa amb absències explícites.
+- Símbol nocturn només quan totes les hores de la franja indiquen nit; motiu neutre en transicions o absència d'aquesta dada. La lluna és una icona meteorològica, no la fase lunar.
+- Estils coherents amb la portada, controls accessibles, quatre idiomes i nova revisió de cache PWA `home-dayparts-v2`. Sense noves peticions, canvis al càlcul compartit de previsió ni publicadors.
+- Model YT60234 identificat per etiqueta i manual correcte; precisions nominals separades de les comprovades. Protocol tèrmic i checklist de muntatge pendents d'execució física, sense correccions, compres, fotos publicades ni canvi d'època instrumental.
+
 ## Preparació — còpies automàtiques Fonta R2 · 2026-09-20
 
 - Workflow independent dues vegades al dia, restringit a main i activació explícita; GitHub només lectura i credencials S3 pròpies del bucket.

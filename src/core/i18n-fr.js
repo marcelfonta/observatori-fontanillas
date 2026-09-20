@@ -1,6 +1,9 @@
 // Catàleg francès separat per mantenir i auditar la quarta llengua sense
 // barrejar-la amb la font catalana i les traduccions castellana i anglesa.
 export const FRENCH_PHRASES={
+  'Previsió per franges':'Prévisions par période',
+  'El que queda d’avui':'Le reste de la journée',
+  'Ratxa màxima':'Rafale maximale',
   "Hora local · Sant Celoni":"Heure locale · Sant Celoni",
   "Carregant la previsió horària…":"Chargement des prévisions horaires…",
   "Open-Meteo · símbol del fenomen més destacat. Pluja: màxim horari, no probabilitat de tota la franja.":"Open-Meteo · symbole du phénomène dominant. Pluie : maximum horaire, pas probabilité de toute la période.",

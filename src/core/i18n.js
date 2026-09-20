@@ -4,6 +4,9 @@ const STORAGE_KEY='fontanillas-language-v1';
 export const SUPPORTED_LANGUAGES=['ca','es','en','fr'];
 
 export const PHRASES={
+  'Previsió per franges':{es:'Previsión por franjas',en:'Forecast by time of day'},
+  'El que queda d’avui':{es:'Lo que queda de hoy',en:'The rest of today'},
+  'Ratxa màxima':{es:'Racha máxima',en:'Maximum gust'},
   "Hora local · Sant Celoni":{"es":"Hora local · Sant Celoni","en":"Local time · Sant Celoni"},
   "Carregant la previsió horària…":{"es":"Cargando la previsión horaria…","en":"Loading hourly forecast…"},
   "Open-Meteo · símbol del fenomen més destacat. Pluja: màxim horari, no probabilitat de tota la franja.":{"es":"Open-Meteo · símbolo del fenómeno más destacado. Lluvia: máximo horario, no probabilidad de toda la franja.","en":"Open-Meteo · most significant weather symbol. Rain: hourly maximum, not probability for the whole period."},
