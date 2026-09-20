@@ -49,13 +49,14 @@ for(const width of [360,390,768]){
 }
 test('Meteo IA: quatre preguntes i desplegable accessible',async({page})=>{
   await page.goto('/?page=meteo-ia');
-  await expect(page.locator('.meteo-ai-intro > .meteo-ai-suggestions > button')).toHaveCount(4);
+  await expect(page.locator('.meteo-ai-guide > .meteo-ai-suggestions > button')).toHaveCount(4);
   await expect(page.locator('.meteo-ai-more')).not.toHaveAttribute('open');
   await page.locator('.meteo-ai-more summary').click();
   await expect(page.locator('.meteo-ai-more button')).toHaveCount(10);
   await expect(page.locator('.meteo-ai-more button').first()).toBeVisible();
 });
 test('portada: franges amb dades de prova i errors sense zeros inventats',async({page},info)=>{
+  await page.clock.install({time:new Date('2026-09-20T05:00:00Z')});
   await page.setViewportSize({width:390,height:844});
   await page.goto('/?page=inici');
   await page.evaluate(async()=>{
