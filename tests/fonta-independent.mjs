@@ -10,6 +10,7 @@ import {exportArchive} from '../scripts/fonta/export-archive.mjs';
 import {uploadExport,restoreExport,r2Transport,REMOTE_BUDGET} from '../scripts/fonta/remote-archive.mjs';
 import {sha256,checkSource,publicSource} from '../scripts/fonta/io.mjs';
 import {readRunDirectory} from '../scripts/fonta/hourly-report.mjs';
+import {backupArchive} from '../scripts/fonta/backup.mjs';
 
 // Entirely synthetic data: never used as scientific evidence or published scores.
 function observed(date){
@@ -88,6 +89,9 @@ try{
   const mixed=join(temp,'mixed');assert.equal((await exportArchive(source,mixed)).runDays,1);
   const mixedUpload=await uploadExport(mixed,transport,{commit:true});
   assert.equal((await restoreExport(mixedUpload.manifestId,join(temp,'mixed-restored'),transport)).runDays,1);
+  const backup=await backupArchive({source,workspace:join(temp,'mixed-backup'),sourceCommit:'f'.repeat(40),
+    snapshotAt:'2026-09-20T08:20:00Z',transport,commit:true});
+  assert(backup.restored);assert.equal(backup.verified.runDays,1);assert.equal(backup.hourly.promotionAllowed,false);
   s.raw.hourly.temperature_2m[0]=3;await writeFile(join(v2,model+'.json'),JSON.stringify({schema:2,policy,source:s}));
   await assert.rejects(()=>readRunDirectory(v2),/Integritat/);
 }finally{await rm(temp,{recursive:true});}

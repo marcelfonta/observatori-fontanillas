@@ -84,7 +84,8 @@ obstacles llunyans visibles no permeten mesurar distàncies ni certificar tot
 l'horitzó. Precisió del responsable: **0,70 m de teules a sensor**, no 1 m.
 És una precisió documental, no una reubicació: conservar l'època instrumental.
 
-Pendents model exacte/manual, ventilació, altura sobre terreny, altitud
+Actualització posterior del responsable: marca/família **VEVOR 7 en 1**.
+Pendents referència exacta/manual, ventilació, altura sobre terreny, altitud
 verificada i historial de manteniment/calibratge. No deduir un biaix quantitatiu
 de fotos ni restar graus. L'objectiu continua sent la temperatura d'aquesta
 estació, no una temperatura oficial representativa de tot el Baix Montseny.
@@ -99,6 +100,10 @@ desplegat Worker, migrat D1 ni activat validació territorial.
 Verificació d'aquesta entrega documental: `npm run test:quick`, `npm run check`,
 `npm run worker:dry-run` i `git diff --check` superats. El dry-run utilitza la
 configuració d'exemple i no desplega res ni acredita l'estat remot.
+
+Continuació de les còpies automàtiques: [`FONTA-R2-BACKUPS.md`](FONTA-R2-BACKUPS.md).
+El transport restringit definitiu és S3; la credencial d'objectes limitada al
+bucket no és compatible amb el transport REST inicial.
 
 Fonts operatives: [R2](https://developers.cloudflare.com/r2/pricing/),
 [GitHub Actions](https://docs.github.com/en/billing/concepts/product-billing/github-actions),
