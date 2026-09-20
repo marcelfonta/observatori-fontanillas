@@ -1,7 +1,15 @@
 # Fonta · laboratori de previsió local
 
-Versió 0.1.0, 20-09-2026. Implementació experimental, **no desplegada ni activada**
-en aquesta entrega. La previsió operativa, els avisos i les xarxes no canvien.
+Algoritme 0.1.0, 20-09-2026. Pilot **desplegat i activat amb autorització** després
+del PR 162. Primera captura manual correcta: execució 35509945260, 20/09 a les
+12:12 UTC. La primera execució programada encara queda pendent de verificar.
+La previsió operativa, els avisos i les xarxes no canvien.
+
+Següent paquet: diagnòstic de fonts, cobertura, motius de descartament,
+franges sense captura, pressupost i progrés tècnic; no altera l'algoritme ni
+relaxa els filtres. Separació visible de backtest i prospectiu. Estat operatiu,
+declaració instrumental, protocol proposat i estudi Single Runs a
+[`FONTA-VALIDATION-PLAN.md`](FONTA-VALIDATION-PLAN.md).
 
 ## Fita i límits
 
@@ -14,11 +22,11 @@ un resultat favorable.
 | Fase | Entrega | Condició pendent |
 | --- | --- | --- |
 | 0 · auditoria | Arxiu i defecte de cobertura analitzats; contracte de qualitat | Revisar abric, emplaçament, altura i calibratge del sensor |
-| 1 · arxiu | Quatre fonts, sèries horàries i diàries, originals i SHA-256, primera captura local real | Fusionar, revisar configuració i activar pilot independent |
+| 1 · arxiu | Quatre fonts, sèries horàries i diàries, originals i SHA-256; pilot activat i primera captura remota real | Comprovar execució programada real |
 | 2 · experiment | Mitjana de tres models, correcció limitada, avaluació cronològica i prediccions congelades | Acumular dies vàlids i executar seguiment prospectiu |
-| 3 · web | Pàgina Fonta, navegació, comparadors, caducitat i metodologia | Revisió del PR i previsualització Pages |
+| 3 · web | Pàgina Fonta desplegada, navegació, comparadors, caducitat i metodologia | Revisar el nou diagnòstic abans de fusionar |
 | 4 · promoció | Bloqueig explícit de qualsevol promoció operativa | Prova independent, estacions/extrems, revisió humana |
-| 5 · autonomia | Workflow, límits de recursos, arxiu independent, detecció de fallades | Activació després del merge; no hi ha autoreescriptura ni autodesplegament |
+| 5 · autonomia | Workflow activat, límits de recursos, arxiu independent, detecció de fallades | No hi ha autoreescriptura ni autodesplegament |
 | Evolució regional | Pla de variables i estacions | Fonts, llicències, representativitat i evidència espacial |
 
 ## Auditoria de dades reals
@@ -157,7 +165,7 @@ laboratori. No cal revertir Worker, migrar D1 ni tocar publicacions.
   només després de criteris explícits i revisió humana. Ni avisos ni xarxes
   automàtiques noves en aquest pilot.
 
-## Comprovacions d'aquesta entrega
+## Comprovacions de l'entrega inicial (abans de l'activació)
 
 - `npm run check`: 80 fitxers de proves Node superats.
 - `npm run test:browser`: 31 proves Chromium superades, incloent Fonta a

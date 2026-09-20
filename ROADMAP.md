@@ -1,12 +1,16 @@
 # Roadmap oficial
 
-## Fonta · laboratori independent — Preparat per revisar
+## Fonta · laboratori independent — Pilot actiu, seguiment en revisió
 
 - [x] Auditar l'arxiu real i detectar el recompte insuficient causat per caselles de cinc minuts i jitter; substituir-lo al nou circuit per instants i cobertura temporal.
 - [x] Capturador multimodel, dades originals immutables, integritat, qualitat, DST i embargament temporal; primera captura real local sense enviaments.
 - [x] Comparadors, correcció limitada, backtest cronològic i congelació de candidats futurs; promoció operativa bloquejada.
 - [x] Pàgina Fonta amb abast local, caducitat, dades absents i mètriques honestes; workflow independent amb activació explícita i límits.
-- [ ] Revisar/fusionar, validar Pages, excloure branca de dades dels builds i activar el pilot amb comprovació real. Detall a `docs/FONTA-LAB.md`.
+- [x] PR 162 fusionat, Pages verificat, branca de dades exclosa dels builds i pilot activat amb autorització; primera captura manual remota 35509945260 correcta.
+- [ ] Comprovar el primer inici real per cron, separat de la prova manual.
+- [x] Preparar seguiment detallat: fonts, captures no aptes, cobertura, límits de recursos i progrés, sense modificar l'algoritme ni els publicadors.
+- [x] Registrar emplaçament declarat i preparar protocol de validació; estudiar Single Runs amb sis peticions reals, detectant incompatibilitat d'agregats diaris i hores nul·les.
+- [ ] Revisar/fusionar el panell i acordar el protocol abans del holdout. Single Runs necessita arxiu v2 separat, no una substitució silenciosa. Detall a `docs/FONTA-VALIDATION-PLAN.md`.
 - [ ] Revisar l'estació, acumular dies suficients i validar prospectivament abans d'ampliar variables, territori o ús operatiu.
 
 ## Manteniment obert — En curs

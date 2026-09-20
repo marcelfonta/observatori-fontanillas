@@ -1,12 +1,16 @@
-import {writeFile,mkdir} from 'node:fs/promises';
+import {writeFile,mkdir,stat,readdir} from 'node:fs/promises';
 import {resolve,join,dirname} from 'node:path';
 import {evaluateFonta} from '../../src/core/fonta-model.js';
 import {readArchive} from './archive.mjs';
+import {diagnoseArchive,executionMetadata} from '../../src/core/fonta-diagnostics.js';
 const directory=resolve(process.argv[2]||'build/fonta-archive');
 const output=resolve(process.argv[3]||join(directory,'status.json'));
 const captures=await readArchive(directory);
 const report=evaluateFonta(captures);
 report.codeRevision=process.env.GITHUB_SHA||null;
+const names=(await readdir(directory)).filter(n=>/^\d{4}-\d{2}-\d{2}-(am|pm)\.json$/.test(n));
+const bytes=(await Promise.all(names.map(n=>stat(join(directory,n))))).reduce((sum,s)=>sum+s.size,0);
+report.diagnostics=diagnoseArchive(captures,report,{bytes,execution:executionMetadata(process.env)});
 await mkdir(dirname(output),{recursive:true});
 await writeFile(output,JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify({status:report.status,captures:report.captureCount,pairedDays:report.pairedDays,evaluatedDays:report.evaluatedDays,productionEnabled:false}));
