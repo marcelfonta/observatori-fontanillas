@@ -10,12 +10,12 @@ const [worker,push,index,admin,adminFeature,serviceWorker,project]=await Promise
   read('src/features/admin.js'),read('service-worker.js'),read('project.json')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.31.6');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-6-morning-publication-0645'));
+assert.equal(JSON.parse(project).version,'22.31.7');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-7-morning-publication-0645'));
 for(const token of ['socialSlotProfile','Balanç del dia','Actualització del migdia','MeteoCatalunya','afterTomorrow'])assert.ok(worker.includes(token),`Falta la millora social ${token}`);
 assert.ok(index.includes('id="push-device-diagnostic"')&&push.includes('renderDeviceDiagnostic'),'Falta la diagnosi push per dispositiu.');
 assert.ok(index.includes('Enviar prova real')&&push.includes('/push-test'),'La prova ha d’explicar que usa el servei real.');
 assert.ok(admin.includes('YouTube Shorts · flux separat')&&admin.includes('Veure automatitzacions'),'YouTube no és visible al panell.');
-assert.ok(adminFeature.includes('Credencials preparades'),'El panell no interpreta l’estat de YouTube.');
+assert.ok(adminFeature.includes('Disparador configurat · OAuth pendent de verificar'),'El panell no ha de confondre el disparador amb OAuth verificat.');
 
 console.log('Test V22.3: diagnosi push, publicacions contextuals i YouTube visibles');

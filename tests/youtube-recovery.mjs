@@ -24,6 +24,7 @@ const request=(path,body,token=env.ADMIN_TOKEN)=>worker.fetch(new Request('https
 try{
   assert.equal((await request('/admin/youtube-recovery',{confirm:true,localDate:date,slot:'mati'},'wrong')).status,401);
   assert.equal((await request('/admin/youtube-recovery',{confirm:false,localDate:date,slot:'mati'})).status,400);
+  assert.equal((await request('/admin/youtube-recovery',null)).status,400);
   const response=await request('/admin/youtube-recovery',{confirm:true,localDate:date,slot:'mati'});
   assert.equal(response.status,202,JSON.stringify(await response.json()));
   assert.equal(calls,1);assert.equal(dispatch.inputs.recovery,'true');assert.equal(dispatch.inputs.recovery_date,date);
@@ -31,9 +32,12 @@ try{
   assert.equal((await request('/admin/youtube-recovery',{confirm:true,localDate:date,slot:'mati'})).status,409);
   assert.equal(calls,1);
   const path='/admin/youtube-short-runs/'+date+'/mati';
+  assert.equal((await (await request(path,{action:'start'},env.SOCIAL_VIDEO_UPLOAD_TOKEN)).json()).shouldRun,false);
   const first=await request(path,{action:'start',recover:true},env.SOCIAL_VIDEO_UPLOAD_TOKEN);
   assert.equal((await first.json()).shouldRun,true);
   assert.equal((await (await request(path,{action:'start',recover:true},env.SOCIAL_VIDEO_UPLOAD_TOKEN)).json()).shouldRun,false);
+  await request(path,{action:'fail',stage:'video-render'},env.SOCIAL_VIDEO_UPLOAD_TOKEN);
+  assert.equal((await (await request(path,{action:'start'},env.SOCIAL_VIDEO_UPLOAD_TOKEN)).json()).shouldRun,false);
   await request(path,{action:'complete',youtubeId:'abcdefghijk',privacy:'public'},env.SOCIAL_VIDEO_UPLOAD_TOKEN);
   const result=JSON.parse(sqlite.prepare('SELECT detail FROM monitor_state WHERE service_key=?').get(key).detail);
   assert.equal(result.youtubeId,'abcdefghijk');assert.equal(result.privacy,'public');

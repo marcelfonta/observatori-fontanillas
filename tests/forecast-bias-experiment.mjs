@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {readFile} from 'node:fs/promises';
 import {evaluateTemperatureBias as evaluate} from '../src/core/forecast-bias-experiment.js';
 const rows=Array.from({length:70},(_,i)=>{
   const d=new Date(Date.UTC(2026,0,2+i)),date=d.toISOString().slice(0,10),previous=new Date(d-86400000).toISOString().slice(0,10);
@@ -18,3 +20,10 @@ assert.ok(bad.max.corrected.mae>bad.max.baseline.mae);
 for(const patch of [{temperature_max:null},{observed_samples:20},{observed_hours:5},{horizon_day:0},{model:'another'},{issued_at:rows[0].target_date+'T06:00Z'},{observed_available_at:'2027-01-01T00:00Z'}])assert.equal(evaluate([{...rows[0],...patch}],{now}).sampleDays,0);
 assert.equal(evaluate(rows.map(r=>({...r,observed_available_at:'2026-08-01T00:00Z'})),{now}).status,'collecting');
 console.log('Correcció experimental: holdout independent, cobertura, duplicats i retard de dades correctes');
+// Validate the read-only export against the real schema, not an invented format.
+const db=new DatabaseSync(':memory:');
+const worker=await readFile(new URL('../worker/index.js',import.meta.url),'utf8');
+for(const match of worker.matchAll(/const CREATE_(?:OBSERVATIONS|FORECAST_SNAPSHOTS) = `([\s\S]*?)`;/g))db.exec(match[1]);
+const sql=await readFile(new URL('../ops/forecast-bias-export.sql',import.meta.url),'utf8');
+assert.deepEqual(db.prepare(sql).all(),[]);
+db.close();

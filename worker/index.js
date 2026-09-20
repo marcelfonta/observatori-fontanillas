@@ -9,8 +9,8 @@ import { youtubeRecoveryEligibility } from '../src/core/youtube-recovery.js';
 import { DAYPART_HOURLY_VARIABLES, normalizeSocialForecast, summarizeForecastDayparts, daypartCaption } from '../src/core/forecast-dayparts.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.18";
-const WORKER_BUILT = "2026-09-18";
+const WORKER_VERSION = "22.29.19";
+const WORKER_BUILT = "2026-09-20";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -3617,11 +3617,12 @@ function youtubeShortRunKey(localDate, slot) {
 }
 
 function parseYoutubeShortRunDetail(value) {
-  try { return JSON.parse(value || '{}'); } catch { return {}; }
+  try { const parsed=JSON.parse(value || '{}');return parsed&&typeof parsed==='object'?parsed:{}; } catch { return {}; }
 }
 
 function youtubeShortRetryBlockReason(previous, detail = {}) {
   if (previous?.status !== 'down') return null;
+  if (detail.recoveryRequestedAt || Number(detail.recoveryCount||0)>=1) return 'manual_recovery_pending_or_exhausted';
   if (detail.terminal === true) return 'terminal_failure';
   const attempts=Math.max(Number(detail.attempt)||0,Number(previous?.consecutive_failures)||0);
   return attempts >= YOUTUBE_SHORT_MAX_ATTEMPTS ? 'max_attempts' : null;
@@ -3651,6 +3652,7 @@ async function adminYoutubeRecovery(request,env) {
   const auth=await authorizeAdminRequest(request,env);
   if(auth.response)return auth.response;
   const body=await adminJsonBody(request);
+  if(!body || typeof body!=='object')return json({error:'Cal un objecte JSON.'},400,'no-store',auth.origin);
   if(body.confirm!==true)return json({error:'Cal confirmar la recuperació i la publicació d’aquesta franja.'},400,'no-store',auth.origin);
   if(!(await ensureOperationsSchema(env)))return json({error:'Coordinació no disponible.'},503,'no-store',auth.origin);
   const key=youtubeShortRunKey(body.localDate,body.slot);
@@ -6037,7 +6039,7 @@ export default {
       if (request.method === "POST" && socialWhatsAppMatch) return adminPrepareWhatsApp(request, env, Number(socialWhatsAppMatch[1]));
       const socialDraftMatch = url.pathname.match(/^\/admin\/social-drafts\/(\d+)$/);
       if (request.method === "POST" && socialDraftMatch) return adminUpdateSocialDraft(request, env, Number(socialDraftMatch[1]));
-      if (request.method === 'POST' && url.pathname === '/admin/youtube-recovery') return adminYoutubeRecovery(request,env);
+      if (request.method === 'POST' && url.pathname === '/admin/youtube-recovery') return await adminYoutubeRecovery(request,env);
       if (request.method !== "GET") return json({ error:"Mètode no permès" }, 405);
       if (url.pathname === "/" || url.pathname === "") {
         const observation = await resilientCurrentObservation(env);
