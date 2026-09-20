@@ -1,10 +1,12 @@
 import SwiftUI
 import WidgetKit
+import OSLog
 
 struct MeteoEntry: TimelineEntry {
     let date: Date
     let snapshot: MeteoSnapshot?
     let failed: Bool
+    let cached: Bool
 
     static let placeholder = MeteoEntry(
         date: Date(),
@@ -31,11 +33,33 @@ struct MeteoEntry: TimelineEntry {
             ),
             fetchedAt: Date()
         ),
-        failed: false
+        failed: false,
+        cached: false
     )
 }
 
+private enum WidgetSnapshotCache {
+    private static let key = "meteo-fontanillas-widget-snapshot-v1"
+    private static let maximumAge: TimeInterval = 90 * 60
+
+    static func save(_ snapshot: MeteoSnapshot) {
+        guard let data = try? JSONEncoder().encode(snapshot) else { return }
+        UserDefaults.standard.set(data, forKey: key)
+    }
+
+    static func load(now: Date = Date()) -> MeteoSnapshot? {
+        guard
+            let data = UserDefaults.standard.data(forKey: key),
+            let snapshot = try? JSONDecoder().decode(MeteoSnapshot.self, from: data),
+            now.timeIntervalSince(snapshot.fetchedAt) <= maximumAge
+        else { return nil }
+        return snapshot
+    }
+}
+
 struct MeteoProvider: TimelineProvider {
+    private let logger = Logger(subsystem: "cat.fontanillas.meteo.widget", category: "timeline")
+
     func placeholder(in context: Context) -> MeteoEntry { .placeholder }
 
     func getSnapshot(in context: Context, completion: @escaping (MeteoEntry) -> Void) {
@@ -48,26 +72,29 @@ struct MeteoProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<MeteoEntry>) -> Void) {
         Task {
-            let entry: MeteoEntry
-            do {
-                let snapshot = try await MeteoService.shared.loadSnapshot()
-                entry = MeteoEntry(date: Date(), snapshot: snapshot, failed: false)
-            } catch {
-                entry = MeteoEntry(date: Date(), snapshot: nil, failed: true)
-            }
-            let nextUpdate = Calendar.current.date(byAdding: .minute, value: entry.failed ? 10 : 20, to: Date())!
+            let entry = await loadEntry()
+            let nextUpdate = Calendar.current.date(byAdding: .minute, value: entry.failed || entry.cached ? 5 : 20, to: Date())!
             completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
         }
     }
 
     private func load(completion: @escaping (MeteoEntry) -> Void) {
         Task {
-            do {
-                let snapshot = try await MeteoService.shared.loadSnapshot()
-                completion(MeteoEntry(date: Date(), snapshot: snapshot, failed: false))
-            } catch {
-                completion(MeteoEntry(date: Date(), snapshot: nil, failed: true))
+            completion(await loadEntry())
+        }
+    }
+
+    private func loadEntry() async -> MeteoEntry {
+        do {
+            let snapshot = try await MeteoService.shared.loadWidgetSnapshot()
+            WidgetSnapshotCache.save(snapshot)
+            return MeteoEntry(date: Date(), snapshot: snapshot, failed: false, cached: false)
+        } catch {
+            logger.error("No s'ha pogut actualitzar el widget: \(error.localizedDescription, privacy: .public)")
+            if let cached = WidgetSnapshotCache.load() {
+                return MeteoEntry(date: Date(), snapshot: cached, failed: false, cached: true)
             }
+            return MeteoEntry(date: Date(), snapshot: nil, failed: true, cached: false)
         }
     }
 }
@@ -98,7 +125,9 @@ struct MeteoWidgetView: View {
 
     private func inline(_ snapshot: MeteoSnapshot) -> some View {
         Label {
-            Text("Sant Celoni \(MeteoFormatting.temperature(snapshot.observation.temperature)) · \(MeteoFormatting.condition(for: snapshot.forecast?.weatherCode))")
+            Text(entry.cached
+                 ? "Sant Celoni \(MeteoFormatting.temperature(snapshot.observation.temperature)) · lectura desada"
+                 : "Sant Celoni \(MeteoFormatting.temperature(snapshot.observation.temperature)) · \(MeteoFormatting.condition(for: snapshot.forecast?.weatherCode))")
         } icon: {
             Image(systemName: MeteoFormatting.symbol(for: snapshot.forecast?.weatherCode))
         }
@@ -121,12 +150,12 @@ struct MeteoWidgetView: View {
                 Image(systemName: MeteoFormatting.symbol(for: snapshot.forecast?.weatherCode))
                 Text(MeteoFormatting.temperature(snapshot.observation.temperature)).font(.headline)
                 Spacer(minLength: 2)
-                if snapshot.isDegraded {
+                if snapshot.isDegraded || entry.cached {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .accessibilityLabel("Lectura degradada")
                 }
             }
-            Text(MeteoFormatting.condition(for: snapshot.forecast?.weatherCode))
+            Text(entry.cached ? "Darrera lectura guardada" : MeteoFormatting.condition(for: snapshot.forecast?.weatherCode))
                 .font(.caption)
                 .lineLimit(1)
             HStack(spacing: 8) {
@@ -144,7 +173,7 @@ struct MeteoWidgetView: View {
                 Image(systemName: MeteoFormatting.symbol(for: snapshot.forecast?.weatherCode))
                     .symbolRenderingMode(.multicolor)
                 Spacer()
-                if snapshot.isDegraded {
+                if snapshot.isDegraded || entry.cached {
                     Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
                 }
             }

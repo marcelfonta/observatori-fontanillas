@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 @MainActor
 final class MeteoViewModel: ObservableObject {
@@ -13,6 +14,7 @@ final class MeteoViewModel: ObservableObject {
         do {
             snapshot = try await MeteoService.shared.loadSnapshot()
             errorMessage = nil
+            WidgetCenter.shared.reloadTimelines(ofKind: "MeteoFontanillasWidget")
         } catch {
             errorMessage = error.localizedDescription
         }

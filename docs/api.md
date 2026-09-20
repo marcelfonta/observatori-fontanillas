@@ -5,6 +5,7 @@ The Worker returns JSON. Its base URL is configured in `src/core/config.js`. The
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET | `/` | Current station observation; persisted asynchronously when appropriate. |
+| GET | `/widget-observation` | Lightweight latest stored observation for the private iPhone widget, with live fallback when the archive is empty. |
 | GET | `/history?days=&resolution=` | Historical observations. |
 | GET | `/quality` | Data-quality information. |
 | GET | `/health` | Service health. |

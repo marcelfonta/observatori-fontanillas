@@ -1,6 +1,6 @@
 import Foundation
 
-struct StationObservation: Decodable, Equatable {
+struct StationObservation: Codable, Equatable {
     let station: String
     let location: String
     let updated: String?
@@ -14,8 +14,8 @@ struct StationObservation: Decodable, Equatable {
     let ageMinutes: Int?
 }
 
-struct OpenMeteoForecast: Decodable, Equatable {
-    struct Daily: Decodable, Equatable {
+struct OpenMeteoForecast: Codable, Equatable {
+    struct Daily: Codable, Equatable {
         let time: [String]
         let weatherCode: [Int?]
         let temperatureMax: [Double?]
@@ -34,7 +34,7 @@ struct OpenMeteoForecast: Decodable, Equatable {
     let daily: Daily
 }
 
-struct DailyForecast: Equatable {
+struct DailyForecast: Codable, Equatable {
     let date: String
     let weatherCode: Int?
     let temperatureMax: Double?
@@ -42,7 +42,7 @@ struct DailyForecast: Equatable {
     let precipitationProbability: Int?
 }
 
-struct MeteoSnapshot: Equatable {
+struct MeteoSnapshot: Codable, Equatable {
     let observation: StationObservation
     let forecast: DailyForecast?
     let fetchedAt: Date

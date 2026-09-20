@@ -1,5 +1,15 @@
 # Changelog
 
+## Correcció — Widget d'iPhone resilient · 2026-09-20
+
+- El widget consulta `/widget-observation`, una ruta pública lleugera basada en
+  l'última observació desada a D1, i conserva el fallback en directe si encara
+  no hi ha cap captura disponible.
+- L'app força la renovació de la línia temporal després d'una lectura correcta;
+  l'extensió desa l'últim snapshot vàlid durant noranta minuts i el marca com a
+  lectura guardada si una actualització posterior falla.
+- Worker 22.29.21. Sense canvis de D1, secrets, horaris ni publicacions.
+
 ## Preparació — franges corregides i primer tall de verificació · 2026-09-20
 
 - Separació real entre la portada i «El que queda d'avui», targeta única centrada i acotada, i contenidor visual propi per als símbols.

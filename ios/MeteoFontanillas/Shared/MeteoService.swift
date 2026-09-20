@@ -17,8 +17,27 @@ actor MeteoService {
         return MeteoSnapshot(observation: observation, forecast: forecast, fetchedAt: Date())
     }
 
+    func loadWidgetSnapshot() async throws -> MeteoSnapshot {
+        let observation: StationObservation
+        do {
+            observation = try await loadObservation(
+                from: URL(string: "https://fonta-meteo.marcelfonta.workers.dev/widget-observation")!
+            )
+        } catch {
+            // Compatible amb una instal·lació nova de l'app abans del desplegament del Worker.
+            observation = try await loadObservation()
+        }
+        let forecast = try? await loadForecast()
+        return MeteoSnapshot(observation: observation, forecast: forecast, fetchedAt: Date())
+    }
+
     func loadObservation() async throws -> StationObservation {
-        let url = URL(string: "https://fonta-meteo.marcelfonta.workers.dev/")!
+        try await loadObservation(
+            from: URL(string: "https://fonta-meteo.marcelfonta.workers.dev/")!
+        )
+    }
+
+    private func loadObservation(from url: URL) async throws -> StationObservation {
         let data = try await request(url)
         let observation = try decoder.decode(StationObservation.self, from: data)
         guard observation.temperature?.isFinite == true else {
