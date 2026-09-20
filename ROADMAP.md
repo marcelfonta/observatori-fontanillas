@@ -4,7 +4,8 @@
 
 - [x] Preparar control de vigència ambiental, UV amb hora pròpia, proves de caducitat i cobertura del pol·len explícita.
 - [x] Preparar pilots socials de matí, vespre i migdia amb fonts ambientals separades, fase lunar datada, mapa de pluja sempre present i UV discret (revisió 05).
-- [ ] Revisar visualment els pilots i integrar el format aprovat als programadors; staging i desplegament autoritzat abans d'activació. No confondre el merge de la correcció frontend amb l'activació dels pilots.
+- [x] Integrar el format social 05 aprovat als programadors, amb snapshot fresc, tres edicions d'imatges, dos vídeos complets i proves de dades/maquetació. Worker 22.29.20 verificat a staging sense enviaments.
+- [ ] Revisió humana i merge, desplegar format social 05 a producció i comprovar els primers lliuraments reals de matí/migdia/vespre en cada canal. No confondre proves de render amb publicacions confirmades.
 - [ ] Per al pol·len social: acordar l'estació de referència XAC, reutilització i nivells verificats abans de qualsevol automatització.
 
 - [x] Preparar vídeos diaris amb matí, tarda i vespre i targeta del migdia amb les franges restants, mantenint el límit de 30 segons, les dades reals i les animacions existents.

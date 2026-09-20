@@ -6,6 +6,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      social_preview:
+        description: Genera vídeos i imatges amb dades actuals sense publicar
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -15,6 +20,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  social-preview:
+    name: Prova social sense enviaments (${{ matrix.slot }})
+    if: github.event_name == 'workflow_dispatch' && inputs.social_preview == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        slot: [mati, vespre]
+    env:
+      SHORT_SLOT: ${{ matrix.slot }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          pnpm exec playwright install --with-deps chromium
+      - name: Recull dades i renderitza sense secrets socials
+        run: |
+          node scripts/social-production.mjs
+          node scripts/youtube-music.mjs
+          node scripts/social-pilot/render.mjs --production
+          node scripts/social-production-preview.mjs
+          ffprobe -v error -show_entries format=duration,size -of json build/youtube-short/short.mp4
+      - uses: actions/upload-artifact@v7
+        with:
+          name: social-v5-${{ matrix.slot }}-NO-PUBLICAT
+          path: |
+            build/youtube-short/short.mp4
+            build/youtube-short/scene-*.png
+            build/youtube-short/image-*.png
+            build/youtube-short/validation.json
+          retention-days: 7
   tests:
     name: Proves Node 22
     runs-on: ubuntu-latest

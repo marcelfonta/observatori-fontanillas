@@ -1,4 +1,5 @@
 import { CATALONIA_COUNTY_PATHS } from '../worker/catalonia-counties.js';
+import { nonNegative } from '../src/core/environment-freshness.js';
 
 const AROME_ENDPOINT='https://api.open-meteo.com/v1/meteofrance';
 const BEST_MATCH_ENDPOINT='https://api.open-meteo.com/v1/forecast';
@@ -78,7 +79,7 @@ async function requestRainGrid(endpoint,points,times,options={}){
     time,
     values:locations.map(location=>{
       const index=Array.isArray(location.hourly?.time)?location.hourly.time.indexOf(time):-1;
-      return index>=0?Math.max(0,finite(location.hourly?.precipitation?.[index])||0):null;
+      return index>=0?nonNegative(location.hourly?.precipitation?.[index]):null;
     }),
   }));
   if(frames.every(frame=>frame.values.every(value=>value===null)))throw new Error(`${options.label||'Model de pluja'} sense hores compatibles.`);
@@ -88,7 +89,7 @@ async function requestRainGrid(endpoint,points,times,options={}){
 function pointFallback(times,hourly){
   const values=times.map(time=>{
     const index=Array.isArray(hourly?.time)?hourly.time.indexOf(time):-1;
-    return index>=0?Math.max(0,finite(hourly?.precipitation?.[index])||0):null;
+    return index>=0?nonNegative(hourly?.precipitation?.[index]):null;
   });
   const points=rainMapGrid();
   return {

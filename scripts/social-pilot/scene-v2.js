@@ -18,7 +18,7 @@ function backdrop(t,index){
 function identity(t,i){
  ctx.save();ctx.beginPath();ctx.roundRect(88,200,70,70,18);ctx.clip();ctx.drawImage(logo,88,200,70,70);ctx.restore();
  text('Meteo Fontanillas',180,230,34);text('SANT CELONI · BAIX MONTSENY',180,265,21,C.muted,'DM Sans');
- text(data.environmentEnabled?'PILOT 05':data.lunarEnabled?'PILOT 03':'PILOT 02',925,232,19,C.muted,'DM Sans',110,'right');
+ text(data.pilot===false?(data.edition==='evening'?'VESPRE':'MATÍ'):data.environmentEnabled?'PILOT 05':data.lunarEnabled?'PILOT 03':'PILOT 02',925,232,19,C.muted,'DM Sans',110,'right');
  const shownDate=i===3?String(data.current.updated).slice(0,10):data.date;
  const date=new Intl.DateTimeFormat('ca-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Madrid'}).format(new Date(shownDate+'T12:00Z'));
  text((data.edition==='evening'&&i!==3?'DEMÀ · ':'')+date.charAt(0).toUpperCase()+date.slice(1),88,341,29,C.mint,'DM Sans');
@@ -139,10 +139,19 @@ function nextDays(t,local){
 function mapScene(t,local){
  badge('PRECIPITACIÓ  /  MODEL, NO RADAR');
  const r=data.rain;
- const available=r.available&&r.frames?.length===4&&r.points?.length>0;
+ const available=r.available&&r.spatial!==false&&r.frames?.length===4&&r.points?.length>0;
  const allZero=available&&r.frames.every(f=>f.values.length===r.points.length&&f.values.every(v=>valid(v)&&v===0));
  headline(allZero?['El model no marca','pluja en aquests punts.']:['La pluja,','situada al mapa.'],515,73);
- if(!available){text('Mapa temporalment no disponible',88,910,40,C.muted);text('Consulta la previsió actualitzada a la web.',88,1080,30);return;}
+ if(!available){
+  text('Mapa temporalment no disponible',88,910,40,C.muted);
+  const f=r.frames?.[Math.min(3,Math.floor(local/1.25))];
+  if(r.spatial===false&&valid(f?.values?.[0])){
+   text(`Només Sant Celoni · ${f.time.slice(11,16)} h`,88,990,30,C.blue);
+   text(`${num(f.values[0],1)} mm · acumulació de l’hora anterior`,88,1050,30);
+   text('Open-Meteo · reserva puntual, no mapa territorial',88,1110,25,C.muted,'DM Sans');
+  }else text('Consulta la previsió actualitzada a la web.',88,1080,30);
+  return;
+ }
  const fi=Math.min(3,Math.floor(local/1.25)),f=r.frames[fi];
  const bx=88,by=756,bw=838,bh=427,scale=2.15,ox=210,oy=80;
  text(f.time.slice(11,16)+' h',88,714,58,C.blue);text('Acumulació de l’hora anterior',370,707,26,C.muted,'DM Sans',550);
@@ -157,7 +166,7 @@ function mapScene(t,local){
  text(`Sant Celoni: ${num(f.values[0],1)} mm / 1 h`,88,1310,33,C.paper,'Manrope',838);
  if(allZero)text('Punts mostrats: 0 mm en les quatre hores seleccionades.',88,1350,25,C.muted,'DM Sans');
  else {['<1','1–5','5–10','≥10'].forEach((label,i)=>{circle(98+i*175,1341,5,[C.blue,C.mint,C.sun,'#ed985c'][i]);text(label,115+i*175,1350,24,C.muted,'DM Sans',140);});text('mm / 1 h',926,1350,23,C.muted,'DM Sans',160,'right');}
- text('AROME HD via Open-Meteo · graella mostrejada · mapa ICGC',88,1391,23,C.muted,'DM Sans');
+ text(`${r.source||'AROME France HD'} · Open-Meteo · graella · mapa ICGC`,88,1391,23,C.muted,'DM Sans',838);
  text('El temps canvia. Segueix-ne l’evolució amb nosaltres.',88,1460,29,C.mint,'Manrope',838);
 }
 function verify(){

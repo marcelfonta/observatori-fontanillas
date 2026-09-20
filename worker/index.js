@@ -7,9 +7,11 @@ import { summarizeTemperatureTrend, temperatureTrendGeometry } from '../src/core
 import { finiteNumber } from '../src/core/numeric.js';
 import { youtubeRecoveryEligibility } from '../src/core/youtube-recovery.js';
 import { DAYPART_HOURLY_VARIABLES, normalizeSocialForecast, summarizeForecastDayparts, daypartCaption } from '../src/core/forecast-dayparts.js';
+import { fetchSocialEnvironment } from '../src/core/social-environment.js';
+import { dailySocialCardV5 } from './social-daily-v5.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.19";
+const WORKER_VERSION = "22.29.20";
 const WORKER_BUILT = "2026-09-20";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -2343,10 +2345,13 @@ export async function createDailySocialDraft(observation, env, slot = null) {
   const today=forecast[0];const tomorrow=forecast[1];
   const focus=profile.period==='vespre'?tomorrow:today;
   const detail=focus?daypartCaption(focus.dayparts):'';
+  const socialFormat=env.SOCIAL_CARD_FORMAT==='legacy'?'legacy':'cinematic-v5';
+  const environment=socialFormat==='cinematic-v5'&&focus?.date
+    ? await fetchSocialEnvironment({date:focus.date,startHour:profile.period==='migdia'?14:6}) : null;
   const forecastText=focus?` ${profile.forecastLead}, ${focus.date}: ${detail||focus.condition}.${profile.period==='mati'&&tomorrow?` Demà, ${tomorrow.date}: ${tomorrow.condition}, ${socialNumber(tomorrow.max,0)}°/${socialNumber(tomorrow.min,0)}°.`:''}`:'';
   const title = `${profile.eyebrow} a Sant Celoni · ${localDate}`;
   const body = `${profile.greeting} des de Meteo Fontanillas. ${profile.lead} a les ${String(observation.updated || '').slice(11,16)}: ${facts.join(' · ')}.${forecastText} Consulta l’evolució i la predicció a meteo.fontanillas.cat.\n\n${socialHashtags()}`;
-  const payload = JSON.stringify({ localDate, slot, period:profile.period, eyebrow:profile.eyebrow, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv), forecast, temperatureTrend });
+  const payload = JSON.stringify({ socialFormat, environment, localDate, slot, period:profile.period, eyebrow:profile.eyebrow, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv), forecast, temperatureTrend });
   const initialStatus = socialAutomationEnabled(env) ? 'approved' : 'draft';
   const result = await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
     (dedupe_key, kind, status, channels, title, body, source_url, payload)
@@ -4517,6 +4522,7 @@ export function dailyDaypartsCardMarkup(data) {
 export function socialCardHtml(draft) {
   let data = {};
   try { data = JSON.parse(draft.payload || '{}'); } catch {}
+  if(draft.kind==='daily_observation'&&data.socialFormat==='cinematic-v5')return dailySocialCardV5(data,socialWeatherGlyphSvg);
   const display = (value, suffix = '', digits = 1) => finite(value) === null ? '—' : `${Number(value).toFixed(digits).replace('.',',')}${suffix}`;
   const time = cleanText(String(data.observationUpdated || '').slice(11,16), 10) || '—';
   const date = cleanText(data.localDate || '', 20);
@@ -4597,6 +4603,7 @@ async function renderSocialCard(draft, env, format = 'png') {
   const rendered = await env.BROWSER.quickAction('screenshot', {
     html:socialCardHtml(draft),
     viewport:{ width:1080,height:1350 },
+    gotoOptions:{ waitUntil:'networkidle0', timeout:20000 },
     ...(jpeg ? { screenshotOptions:{ type:'jpeg', quality:90 } } : {}),
   });
   if (!rendered.ok) {
