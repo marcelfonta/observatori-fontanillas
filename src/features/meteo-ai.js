@@ -1,5 +1,6 @@
 import { fetchAdvancedMeteoAI, fetchAlertHistory, fetchAlerts, fetchCurrentWeather, fetchForecast, fetchLocalityWeather, fetchNearbyStations } from '../services/weather-api.js';
 import { ephemerisDateLabel, meteorologicalEphemeridesForDate } from '../data/meteorological-ephemerides.js';
+import { finiteNumber } from '../core/numeric.js';
 
 const state={current:null,history:[],forecast:null,alerts:null,environment:null};
 let initialized=false;
@@ -283,10 +284,12 @@ function sourceGuideAnswer(){
 function environmentAnswer(context){
   const env=context.environment;
   if(!env)return response('Medi ambient pendent','Els indicadors ambientals encara no s’han carregat. Obre o espera uns instants a la pàgina de Medi Ambient.',{sources:[source('CAMS · Sensor Fontanillas','Dades pendents')]});
-  const aqi=n(env.european_aqi),uv=n(env.uv),pollen=env.pollenMain||'no disponible';
+  const environmentalValue=value=>{const v=finiteNumber(value);return v!==null&&v>=0?v:null;};
+  const aqi=environmentalValue(env.european_aqi),uv=environmentalValue(env.uv),pollen=env.pollenMain||'no disponible';
   const quality=aqi===null?'no disponible':aqi<=20?'bona':aqi<=40?'raonablement bona':aqi<=60?'moderada':aqi<=80?'dolenta':'molt dolenta';
-  const level=(aqi??0)>60||(uv??0)>=8?'warning':(aqi??0)>40||(uv??0)>=6?'caution':'safe';
-  return response('Lectura ambiental',`La qualitat de l’aire estimada és ${quality}${aqi===null?'':` (índex europeu ${fmt(aqi,0)})`}. L’índex UV és ${fmt(uv,0)} i el pol·len dominant és ${pollen}.`,{level,facts:[`PM2,5 · ${fmt(env.pm25)} µg/m³`,`PM10 · ${fmt(env.pm10)} µg/m³`,`UV · ${fmt(uv,0)} · ${env.uvSource||'font no indicada'}`],sources:[source('CAMS via Open‑Meteo',`Actualitzat a les ${timeLabel(env.time)}`),source(env.uvSource||'Sensor Fontanillas','Índex UV')],followups:['Puc sortir a córrer?','Quin temps farà avui?']});
+  const level=(aqi??0)>60||(uv??0)>=8?'warning':(aqi??0)>40||(uv??0)>=6?'caution':aqi===null||uv===null?'info':'safe';
+  const modelTime=timeLabel(env.time);
+  return response('Lectura ambiental',`La qualitat de l’aire estimada és ${quality}${aqi===null?'':` (índex europeu ${fmt(aqi,0)})`}. L’índex UV és ${fmt(uv,0)} i el pol·len dominant és ${pollen}.`,{level,facts:[`PM2,5 · ${fmt(environmentalValue(env.pm25))} µg/m³`,`PM10 · ${fmt(environmentalValue(env.pm10))} µg/m³`,`UV · ${fmt(uv,0)} · ${env.uvSource||'font no indicada'}`],sources:[source('CAMS via Open‑Meteo',modelTime==='hora no disponible'?'Hora del model no disponible':`Hora de validesa del model: ${modelTime}`),source(env.uvSource||'Font UV no indicada','Índex UV')],followups:['Puc sortir a córrer?','Quin temps farà avui?']});
 }
 
 function assistantGuideAnswer(){

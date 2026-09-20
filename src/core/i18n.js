@@ -96,6 +96,7 @@ export const PHRASES={
   'mesurat al moment.':{es:'medido al momento.',en:'measured live.'},
   'Lectura en directe des de l’estació Fontanillas. Una mirada precisa al temps que fa i al que està canviant.':{es:'Lectura en directo desde la estación Fontanillas. Una mirada precisa al tiempo actual y a cómo está cambiando.',en:'Live readings from the Fontanillas station. A precise view of current weather and how it is changing.'},
   'Actualitzat':{es:'Actualizado',en:'Updated'},
+  'Hora del model no disponible':{es:'Hora del modelo no disponible',en:'Model time unavailable'},
   'ara mateix':{es:'ahora mismo',en:'just now'},
   'Webcam · ara':{es:'Webcam · ahora',en:'Webcam · now'},
   'Observació en directe':{es:'Observación en directo',en:'Live observation'},
@@ -367,6 +368,7 @@ export const PHRASES={
 
 const DYNAMIC_REPLACEMENTS={
   es:[
+    [/^Validesa del model: (.+) · hora local$/,'Validez del modelo: $1 · hora local'],
     [/^Comprovat a les\s+/,'Comprobado a las '],
     [/^Actualitzat a les\s+/,'Actualizado a las '],
     [/^Vigent fins a les\s+/,'Vigente hasta las '],
@@ -385,6 +387,7 @@ const DYNAMIC_REPLACEMENTS={
     ,[/^([\d,.]+)% de nuvolositat mitjana · ([\d,.]+)% màxim de pluja · Lluna ([\d,.]+)%$/,'$1% de nubosidad media · $2% máximo de lluvia · Luna $3%']
   ],
   en:[
+    [/^Validesa del model: (.+) · hora local$/,'Model valid at: $1 · local time'],
     [/^Comprovat a les\s+/,'Checked at '],
     [/^Actualitzat a les\s+/,'Updated at '],
     [/^Vigent fins a les\s+/,'Valid until '],
@@ -403,6 +406,7 @@ const DYNAMIC_REPLACEMENTS={
     ,[/^([\d,.]+)% de nuvolositat mitjana · ([\d,.]+)% màxim de pluja · Lluna ([\d,.]+)%$/,'$1% average cloud · $2% maximum rain · Moon $3%']
   ],
   fr:[
+    [/^Validesa del model: (.+) · hora local$/,'Validité du modèle : $1 · heure locale'],
     [/^Comprovat a les\s+/,'Vérifié à '],
     [/^Actualitzat a les\s+/,'Mis à jour à '],
     [/^Vigent fins a les\s+/,'Valable jusqu’à '],
