@@ -21,8 +21,12 @@ revisades en privat: muntatge sobre teulada i abric blanc de plats visibles;
 no permeten certificar distàncies, ventilació, anivellament ni calibratge.
 El responsable declara absència d'obstacles al sol/vent en uns 50 m; les fotos
 no acrediten aquesta distància en tot l'horitzó. Marca/família declarada:
-**VEVOR 7 en 1**. Referència exacta de fabricant (SKU/manual), ventilació,
-altura sobre el terreny, altitud verificada i calibratge continuen pendents.
+**VEVOR 7 en 1, model YT60234**, identificat amb l'etiqueta aportada el 20/09.
+Manual europeu del mateix model contrastat; el primer article facilitat era
+del YT60231 i no s'utilitza per atribuir especificacions. Fitxa, limitacions,
+protocol independent i checklist a [`STATION-YT60234.md`](STATION-YT60234.md).
+Ventilació efectiva, altura sobre el terreny, altitud verificada i calibratge
+continuen pendents.
 No s'ha deduït cap correcció numèrica ni cap canvi físic d'emplaçament d'aquesta
 precisió; es conserva l'època instrumental existent. Qualsevol canvi real de
 sensor o ubicació obre una nova època instrumental; no barrejar-la silenciosament.

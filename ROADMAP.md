@@ -23,9 +23,12 @@
 - [ ] Aclarir reutilització XEMA amb la resposta; comprovar dades validades i períodes observacionals compatibles abans d'integrar-la automàticament.
 - [x] Revisar sis fotos en privat i precisar altura declarada: 0,70 m entre teules i sensor. Sense publicar fotos ni deduir correccions instrumentals.
 - [x] Registrar marca/família declarada: VEVOR 7 en 1, sense atribuir-li especificacions d'una variant no identificada.
-- [ ] Completar referència exacta/manual, ventilació, altura sobre el terreny, altitud i calibratge; acordar el protocol independent abans del holdout, acumular dies suficients i validar abans d'ampliar variables, territori o ús operatiu.
+- [x] Identificar YT60234 amb l'etiqueta i contrastar manual europeu; preparar fitxa, protocol de comparació i checklist segura a `docs/STATION-YT60234.md`, sense corregir lectures ni canviar època instrumental.
+- [ ] Comprovar ventilació, nivell/orientació, altura sobre el terreny, altitud i calibratge; executar el protocol independent quan hi hagi referència i accés segur. Acumular dies i validar abans d'ampliar variables, territori o ús operatiu.
 
 ## Manteniment obert — En curs
+
+- [x] Redissenyar les franges de portada: graella adaptable, icones meteorològiques, data local llegible i absències explícites; càlculs compartits i publicadors preservats. Pendent de merge/desplegament.
 
 - [x] Preparar control de vigència ambiental, UV amb hora pròpia, proves de caducitat i cobertura del pol·len explícita.
 - [x] Preparar pilots socials de matí, vespre i migdia amb fonts ambientals separades, fase lunar datada, mapa de pluja sempre present i UV discret (revisió 05).
