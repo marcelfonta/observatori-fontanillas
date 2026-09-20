@@ -3,7 +3,7 @@
 ## Manteniment obert — En curs
 
 - [x] Preparar control de vigència ambiental, UV amb hora pròpia, proves de caducitat i cobertura del pol·len explícita.
-- [x] Preparar pilots socials de matí, vespre i migdia amb fonts ambientals separades, fase lunar datada i prioritat meteorològica conservadora.
+- [x] Preparar pilots socials de matí, vespre i migdia amb fonts ambientals separades, fase lunar datada, mapa de pluja sempre present i UV discret (revisió 05).
 - [ ] Revisar visualment els pilots i integrar el format aprovat als programadors; staging i desplegament autoritzat abans d'activació. No confondre el merge de la correcció frontend amb l'activació dels pilots.
 - [ ] Per al pol·len social: acordar l'estació de referència XAC, reutilització i nivells verificats abans de qualsevol automatització.
 

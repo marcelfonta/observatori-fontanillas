@@ -39,13 +39,18 @@ les peces. Les publicacions actuals continuen amb el format anterior.
   90 minuts no són candidats. L'hora de consulta queda desada, sense inventar
   una hora d'emissió. Les instantànies locals es reprodueixen amb el seu rellotge
   original: no s'han d'usar per publicar dies després.
-- Regla de l'última escena: avisos o estat desconegut → mapa; previsió
-  incompleta o precipitació >0, probabilitat ≥30% o codi de precipitació → mapa;
-  després AQI >60, UV ≥3, AQI >40. Llindars de selecció **editorials**, no avisos
-  oficials. La precipitació es comprova hora a hora incloent l'hora que acaba a
-  mitjanit, no a partir de les quatre mostres del mapa.
-- L'endpoint d'avisos públic actual és d'avui: no s'utilitza per declarar demà
-  sense avisos. Per això la variant de vespre conserva prudentment el mapa.
+- Revisió 05, a petició de Marcel: **l'última escena sempre és el mapa de
+  pluja**, també en dies secs. Substitueix la selecció adaptativa UV/aire de
+  la revisió 04. Si no hi ha mapa, mostra absència, no una previsió seca.
+  Els zeros del mapa només descriuen els punts i les quatre hores seleccionades.
+- L'UV queda com a nota secundària a l'escena de tarda: màxim horari previst
+  del dia, hora i font CAMS via Open-Meteo. Només amb cobertura completa,
+  consulta vigent i data coincident amb l'edició. Zero real visible; dada absent
+  omesa. No ocupa una escena ni allarga el vídeo. Al migdia també es redueix
+  la mida i el contrast de l'UV, conservant l'aire i la pluja per franges.
+- No s'infereix absència d'avisos a partir del mapa ni d'un endpoint d'avui
+  per parlar de demà. El render recalcula les dues edicions, incloses
+  instantànies antigues que tenien una selecció UV desada.
 - `environment.json` conserva respostes originals, dates, cobertura, motiu de
   selecció i text coherent amb la peça. Dades i imatges no van al repositori.
 
@@ -109,10 +114,15 @@ maquetació del navegador s'ha comprovat a 360, 390 i 1280 px. Cal revisió huma
 del ritme, llegibilitat i estil abans d'adoptar el format.
 
 Resultat local: `npm run check` — 77 fitxers superats; `npm run test:browser` —
-18 proves superades. Vídeo de matí: 900 fotogrames i 39 casos de maquetació;
-vespre: 900 fotogrames i 37 casos. Tots dos 30,000 s, 1080×1920, H.264/AAC,
+18 proves superades a la revisió 04 del frontend (sense canvis de web a la 05).
+Vídeo de matí revisió 05: 900 fotogrames i 44 casos de maquetació;
+vespre: 900 fotogrames i 42 casos. Tots dos 30,000 s, 1080×1920, H.264/AAC,
 sense errors de pàgina ni de text detectats. Revisió visual de les peces feta;
 no equival a una validació editorial en un dia real de temps sever.
+
+Exports 05: `build/social-pilot-environment/v5-rain-priority/` i `v5-evening/`.
+La comparació de disseny reutilitza la instantània del 20/09 a les 09:40 locals;
+no és una nova consulta en directe ni material llest per publicar dies després.
 
 Rollback frontend: revertir el commit i renovar la memòria cau. Els pilots
 estan aïllats dels programadors: eliminar-ne la integració futura no ha de

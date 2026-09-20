@@ -1,10 +1,10 @@
 # Changelog
 
-## Preparació — vigència ambiental i pilot social 04 · 2026-09-20
+## Preparació — vigència ambiental i pilot social 05 · 2026-09-20
 
 - UV del sensor amb límit de 30 minuts i hora visible; estimacions actuals caducades als 90 minuts. Reavaluació cada minut i consulta de model cada quinze minuts amb la pàgina visible.
 - Pol·len: abast de les cinc espècies explícit; no descarta altres al·lèrgens. Incorporació social ajornada fins a verificar referència territorial, nivells i llicència.
-- Pilots locals de matí i vespre de 30 segons, fase lunar datada, mapa prioritari davant pluja o avisos desconeguts, escena UV/aire amb cobertura completa; imatge del migdia amb lectura real, gràfica i franges restants.
+- Pilots locals de matí i vespre de 30 segons, fase lunar datada i mapa de pluja sempre a l'última escena. Revisió 05: UV com a nota discreta a la tarda, amb hora i font; no substitueix el mapa. Imatge del migdia amb lectura real, gràfica, franges restants, aire i UV de menor pes visual.
 - UV global i aire regional separats, sense zeros ficticis. Proves de temps/DST, caducitat, errors i maquetació. Detall i fonts a `docs/SOCIAL-ENVIRONMENT-IMPLEMENTATION-2026-09-20.md`.
 - Sense modificar Worker, D1, secrets, horaris ni publicacions. Format social nou no integrat al programador ni activat; pendent de revisió visual humana. Rollback frontend per reversió i renovació de memòria cau.
 
