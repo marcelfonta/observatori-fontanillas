@@ -1,5 +1,13 @@
 # Changelog
 
+## Preparació — còpies automàtiques Fonta R2 · 2026-09-20
+
+- Workflow independent dues vegades al dia, restringit a main i activació explícita; GitHub només lectura i credencials S3 pròpies del bucket.
+- Exportació estable per snapshot, transport S3 amb SDK fixat, pujada condicional sense sobreescriure, hashes, restauració completa i reconstrucció dels informes abans d'emetre el rebut.
+- Límit de 100 MiB i menys de 1.000 objectes, avís al 80%, sense esborrat ni caducitat automàtica. Cap modificació a observacions, publicacions o Worker.
+- Proves de serialització/signatura S3, absències, inventari incomplet, corrupció, interrupció/reintent i pressupost. Prova remota amb credencial restringida i activació encara pendents.
+- Estació declarada VEVOR 7 en 1; referència exacta i especificacions no inferides.
+
 ## Operació — Fonta, activació i recuperació real · 2026-09-20
 
 - Single Runs activat amb autorització; primera execució programada pendent, separada de les proves manuals.

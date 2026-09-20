@@ -17,11 +17,13 @@
 - [x] Implementar transport/restauració R2, exportació mixta v1/v2, comparació horària Single Runs i workflow separat desactivat; auditar sis candidates XEMA amb dades reals. Detall a `docs/FONTA-INDEPENDENT-2026-09-20.md`.
 - [x] PR 165 fusionat; activació autoritzada de Single Runs (tres GET i un job/dia), variable verificada el 20/09. Primera execució prevista el 21/09 a les 10:20 Europe/Madrid, encara no observada.
 - [x] Crear bucket R2 privat separat i provar pujada/descàrrega reals, hashes i reconstrucció de l'informe; 413.002 bytes preservats. Detall a `docs/FONTA-ACTIVATION-2026-09-20.md`.
-- [ ] Configurar credencial R2 dedicada i verificar el transport REST amb aquests permisos abans de programar còpies automàtiques. La còpia actual és manual.
+- [x] Preparar còpies R2 amb transport S3 restringit al bucket, snapshot coherent, pla previ, restauració completa, rebut, límits i execució serialitzada. Detall a `docs/FONTA-R2-BACKUPS.md`.
+- [ ] Fusionar el workflow, configurar credencial R2 dedicada, verificar pla i primera còpia remots, i activar el cron. L'accés disponible no permet crear tokens (9109); no reutilitzar el token general del Worker. La còpia remota verificada continua sent manual.
 - [x] Enviar consulta XEMA a Meteocat des d'Outlook (20/09, 16:09); enviament verificat, sense activar extracció.
 - [ ] Aclarir reutilització XEMA amb la resposta; comprovar dades validades i períodes observacionals compatibles abans d'integrar-la automàticament.
 - [x] Revisar sis fotos en privat i precisar altura declarada: 0,70 m entre teules i sensor. Sense publicar fotos ni deduir correccions instrumentals.
-- [ ] Completar model/ventilació, altura sobre el terreny, altitud i calibratge; acordar el protocol independent abans del holdout, acumular dies suficients i validar abans d'ampliar variables, territori o ús operatiu.
+- [x] Registrar marca/família declarada: VEVOR 7 en 1, sense atribuir-li especificacions d'una variant no identificada.
+- [ ] Completar referència exacta/manual, ventilació, altura sobre el terreny, altitud i calibratge; acordar el protocol independent abans del holdout, acumular dies suficients i validar abans d'ampliar variables, territori o ús operatiu.
 
 ## Manteniment obert — En curs
 

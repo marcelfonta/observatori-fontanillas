@@ -50,7 +50,8 @@ export async function verifyExport(directory){
   await readArchive(directory);
   return {verified:true,captures:names.filter(n=>capture.test(n)).length,runDays:new Set(names.filter(n=>runFile.test(n)).map(n=>n.split('/')[1])).size,bytes};
 }
-export async function exportArchive(source,destination){
+export async function exportArchive(source,destination,{createdAt=new Date().toISOString()}={}){
+  if(typeof createdAt!=='string'||!Number.isFinite(Date.parse(createdAt)))throw new Error('Data d’exportació invàlida');
   source=resolve(source);destination=resolve(destination);
   const names=await sourceNames(source);
   if(!names.length||names.filter(n=>capture.test(n)).length>180)throw new Error('Nombre de captures invàlid');
@@ -67,7 +68,7 @@ export async function exportArchive(source,destination){
   }
   if(JSON.stringify(await sourceNames(source))!==JSON.stringify(names))throw new Error('Arxiu modificat durant exportació');
   const research=names.some(n=>runFile.test(n));
-  await writeFile(join(destination,'manifest.json'),JSON.stringify({schema:research?2:1,kind:research?'fonta-portable-research':'fonta-portable-captures',createdAt:new Date().toISOString(),
+  await writeFile(join(destination,'manifest.json'),JSON.stringify({schema:research?2:1,kind:research?'fonta-portable-research':'fonta-portable-captures',createdAt,
     bytes,files,excluded:['status.json','single-runs-status.json','.git','secrets'],restore:'Verify first; regenerate status with the reviewed reporting code.'},null,2)+'\n',{flag:'wx'});
   return verifyExport(destination);
 }

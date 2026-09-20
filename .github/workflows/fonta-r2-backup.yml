@@ -1,0 +1,59 @@
+name: Fonta · còpia privada R2 i recuperació verificada
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Pla sense escriptures o còpia amb restauració completa
+        type: choice
+        options: [plan, run]
+        default: plan
+  schedule:
+    # After the morning/hourly and evening collectors; UTC, not local time.
+    - cron: '45 8,20 * * *'
+
+permissions:
+  contents: read
+concurrency:
+  group: fonta-r2-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    # Explicit manual validation is possible while the scheduled circuit is OFF.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.FONTA_R2_BACKUP_ENABLED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Snapshot coherent només de lectura
+        run: git clone --depth=1 --single-branch --branch fonta-data "https://github.com/${GITHUB_REPOSITORY}.git" build/fonta-backup-source
+      - name: Exporta, puja només objectes nous i recupera en un directori separat
+        env:
+          FONTA_R2_ACCOUNT_ID: ${{ vars.FONTA_R2_ACCOUNT_ID }}
+          FONTA_R2_ACCESS_KEY_ID: ${{ secrets.FONTA_R2_ACCESS_KEY_ID }}
+          FONTA_R2_SECRET_ACCESS_KEY: ${{ secrets.FONTA_R2_SECRET_ACCESS_KEY }}
+          BACKUP_MODE: ${{ github.event_name == 'schedule' && 'run' || inputs.mode }}
+        run: node scripts/fonta/backup.mjs "$BACKUP_MODE" build/fonta-backup-source build/fonta-backup
+      - name: Resum de la comprovació (sense dades ni secrets)
+        if: success()
+        run: |
+          echo '## Fonta R2 — resultat verificable' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat build/fonta-backup/receipt.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        if: success()
+        with:
+          name: fonta-r2-receipt-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/fonta-backup/receipt.json
+          if-no-files-found: error
+          retention-days: 30

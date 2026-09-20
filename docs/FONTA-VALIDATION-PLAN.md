@@ -20,7 +20,8 @@ i el sensor**, en substitució de l'aproximació inicial d'1 m. Sis fotografies
 revisades en privat: muntatge sobre teulada i abric blanc de plats visibles;
 no permeten certificar distàncies, ventilació, anivellament ni calibratge.
 El responsable declara absència d'obstacles al sol/vent en uns 50 m; les fotos
-no acrediten aquesta distància en tot l'horitzó. Model exacte, ventilació,
+no acrediten aquesta distància en tot l'horitzó. Marca/família declarada:
+**VEVOR 7 en 1**. Referència exacta de fabricant (SKU/manual), ventilació,
 altura sobre el terreny, altitud verificada i calibratge continuen pendents.
 No s'ha deduït cap correcció numèrica ni cap canvi físic d'emplaçament d'aquesta
 precisió; es conserva l'època instrumental existent. Qualsevol canvi real de
