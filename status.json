@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "version": "0.1.0",
-  "generatedAt": "2026-09-20T12:41:44.996Z",
+  "generatedAt": "2026-09-20T13:10:00.766Z",
   "station": "ISANTC198",
   "mode": "shadow",
   "productionEnabled": false,
@@ -172,13 +172,124 @@
     ]
   },
   "evaluation": [],
-  "codeRevision": "f2f45976180174c96207f4d93790b92a7ae32a52",
+  "pairedProspective": {
+    "schema": 1,
+    "protocol": "fonta-paired-daily-v1",
+    "holdout": false,
+    "promotionAllowed": false,
+    "frozenDays": 0,
+    "days": 0,
+    "invalidPackets": 0,
+    "dates": [],
+    "scores": {
+      "best_match": {
+        "max": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        },
+        "min": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        }
+      },
+      "ecmwf_ifs025": {
+        "max": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        },
+        "min": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        }
+      },
+      "icon_eu": {
+        "max": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        },
+        "min": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        }
+      },
+      "meteofrance_arome_france": {
+        "max": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        },
+        "min": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        }
+      },
+      "blend": {
+        "max": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        },
+        "min": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        }
+      },
+      "persistence": {
+        "max": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        },
+        "min": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        }
+      },
+      "fonta": {
+        "max": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        },
+        "min": {
+          "samples": 0,
+          "mae": null,
+          "bias": null,
+          "rmse": null
+        }
+      }
+    },
+    "rows": []
+  },
+  "codeRevision": "f6cc5ed7eca83f688f0344ccf59c35d4278a195d",
   "diagnostics": {
     "schema": 1,
-    "asOf": "2026-09-20T12:41:44.996Z",
+    "asOf": "2026-09-20T13:10:00.766Z",
     "execution": {
       "event": "workflow_dispatch",
-      "runId": "35511348263"
+      "runId": "35512695300"
     },
     "firstCaptureAt": "2026-09-20T12:12:22.031Z",
     "budget": {
