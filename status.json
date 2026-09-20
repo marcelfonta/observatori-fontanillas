@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "version": "0.1.0",
-  "generatedAt": "2026-09-20T13:10:00.766Z",
+  "generatedAt": "2026-09-20T22:24:30.449Z",
   "station": "ISANTC198",
   "mode": "shadow",
   "productionEnabled": false,
@@ -283,13 +283,13 @@
     },
     "rows": []
   },
-  "codeRevision": "f6cc5ed7eca83f688f0344ccf59c35d4278a195d",
+  "codeRevision": "12454a5b614f70f6e4ab78af2d766d7fa34f7d05",
   "diagnostics": {
     "schema": 1,
-    "asOf": "2026-09-20T13:10:00.766Z",
+    "asOf": "2026-09-20T22:24:30.449Z",
     "execution": {
-      "event": "workflow_dispatch",
-      "runId": "35512695300"
+      "event": "schedule",
+      "runId": "35541588524"
     },
     "firstCaptureAt": "2026-09-20T12:12:22.031Z",
     "budget": {
