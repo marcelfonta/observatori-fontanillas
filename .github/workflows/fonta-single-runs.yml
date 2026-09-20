@@ -1,0 +1,54 @@
+name: Fonta · Single Runs horaris (pilot separat)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 8 * * *'
+
+permissions:
+  contents: write
+concurrency:
+  # Serialize all writers of fonta-data, including the original v1 workflow.
+  group: fonta-shadow-archive
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    if: vars.FONTA_SINGLE_RUNS_ENABLED == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Obre l'arxiu existent (no inicialitza ni substitueix el pilot)
+        run: git clone --depth=1 --single-branch --branch fonta-data "https://github.com/${GITHUB_REPOSITORY}.git" build/fonta-data
+      - name: Tres consultes com a màxim, sense reintents ni nova consulta d'observacions
+        id: collect
+        continue-on-error: true
+        run: node scripts/fonta/collect-single-runs.mjs build/fonta-data/single-runs
+      - name: Compara només hores aparellades i publica un informe separat
+        id: report
+        continue-on-error: true
+        run: node scripts/fonta/hourly-report.mjs build/fonta-data build/fonta-data/single-runs build/fonta-data/single-runs-status.json
+      - name: Conserva també les proves incompletes; no toca status.json ni captures v1
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh auth setup-git
+          git -C build/fonta-data config user.name 'Fonta hourly archive'
+          git -C build/fonta-data config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C build/fonta-data add -- single-runs
+          if [ -f build/fonta-data/single-runs-status.json ]; then
+            git -C build/fonta-data add -- single-runs-status.json
+          fi
+          if ! git -C build/fonta-data diff --cached --quiet; then
+            git -C build/fonta-data commit -m 'Archive independent Fonta hourly evidence'
+            git -C build/fonta-data push origin HEAD:fonta-data
+          fi
+      - name: Assenyala qualsevol degradació
+        if: steps.collect.outcome == 'failure' || steps.report.outcome == 'failure'
+        run: exit 1

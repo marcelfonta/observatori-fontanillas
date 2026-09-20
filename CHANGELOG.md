@@ -1,5 +1,12 @@
 # Changelog
 
+## Preparació — Fonta, tres circuits independents · 2026-09-20
+
+- Transport R2 acotat, claus per contingut, verificació després de pujar i restauració en destí nou; exportació compatible v1 i mixta v1/v2. Recurs remot, permisos i prova real encara pendents d'autorització.
+- Comparació Single Runs hora a hora amb observacions properes ±150 s, filtre diari, DST i mateixos dies per als comparadors. Workflow propi desactivat; no canvia el pilot 0.1.0 ni les publicacions.
+- Auditoria XEMA real de sis candidates: cinc amb cobertura completa però provisional, una sense temperatures al dia consultat. Condicions específiques ambigües: consulta preparada, sense activació ni redistribució.
+- Proves de restauració, integritat, límits, hores i qualitat; evidència i activació a `docs/FONTA-INDEPENDENT-2026-09-20.md`.
+
 ## Preparació — Fonta, comparació aparellada i arxiu portable · 2026-09-20
 
 - Fonta passa al final de «Previsió i risc», després d'Avisos, sense augmentar-ne la prominència. Cache PWA `fonta-lab-v3`.

@@ -13,8 +13,11 @@
 - [x] PR 163 fusionat i desplegat, panell real verificat en mòbil/escriptori i informe actualitzat amb l'execució manual 35511348263.
 - [x] Preparar ordre discret al menú, comparadors prospectius aparellats, prova horària Single Runs separada, auditoria de cron i exportació portable amb integritat.
 - [x] Provar tres fonts Single Runs amb 24/24 hores per al dia objectiu i exportar/verificar la captura real sense alterar-la; identificar candidates oficials XEMA.
-- [ ] Revisar/fusionar aquest paquet; acordar el protocol independent abans del holdout. Detall a `docs/FONTA-FOUNDATIONS-2026-09-20.md`.
-- [ ] Activar Single Runs només amb objectiu observacional coherent i pressupost revisat; confirmar reutilització/cobertura de candidates XEMA i escollir arxiu remot durable abans del límit pilot.
+- [x] PR 164 fusionat i Pages verificat el 20/09; informe aparellat regenerat sense promoció ni noves consultes de fonts.
+- [x] Implementar transport/restauració R2, exportació mixta v1/v2, comparació horària Single Runs i workflow separat desactivat; auditar sis candidates XEMA amb dades reals. Detall a `docs/FONTA-INDEPENDENT-2026-09-20.md`.
+- [ ] Revisar/fusionar el nou paquet i autoritzar activació de Single Runs (tres GET i un job/dia addicionals). Acordar el protocol independent abans del holdout.
+- [ ] Autoritzar bucket R2 privat i permisos dedicats, provar recuperació real i només després programar còpies. Encara no hi ha còpia remota R2.
+- [ ] Aclarir reutilització XEMA amb la consulta preparada (no enviada); comprovar dades validades i períodes observacionals compatibles abans d'integrar-la automàticament.
 - [ ] Revisar l'estació, acumular dies suficients i validar prospectivament abans d'ampliar variables, territori o ús operatiu.
 
 ## Manteniment obert — En curs
