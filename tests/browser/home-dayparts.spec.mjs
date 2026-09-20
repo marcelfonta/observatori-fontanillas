@@ -24,21 +24,31 @@ for(const scenario of [
         weather_code:time.map((_,h)=>missing?null:h<12?66:h<19?2:0),
         precipitation_probability:time.map((_,h)=>missing?null:h<13?85:0),
         wind_gusts_10m:time.map(()=>missing?null:18),
-        is_day:time.map((_,h)=>h>=7&&h<19?1:0),
+        is_day:time.map((_,h)=>h>=7&&h<20?1:0),
       }});
     },!!scenario.missing);
     const block=page.locator('.home-dayparts'),cards=block.locator('article');
     await expect(cards).toHaveCount(scenario.count);
+    await expect(block.locator('.home-dayparts__grid')).toHaveAttribute('data-count',String(scenario.count));
     await expect(block.locator('svg')).toHaveCount(scenario.count);
     await expect(block).not.toContainText('Europe/Madrid');
     if(scenario.missing){await expect(cards.first()).toContainText('Dades incompletes');await expect(block).not.toContainText('0%');}
-    else if(scenario.hour===18)await expect(cards.first().locator('.home-daypart__temperature')).toHaveText('25°');
+    else if(scenario.hour===18){
+      await expect(cards.first().locator('.home-daypart__temperature')).toHaveText('25°');
+      await expect(cards.last()).toHaveAttribute('data-light','twilight');
+      await expect(cards.last().locator('svg')).toHaveAttribute('data-light','twilight');
+    }
     await block.scrollIntoViewIfNeeded();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(scenario.width);
     expect(await block.evaluate(el=>[...el.querySelectorAll('h2,h3,p,dt,dd,strong,a')].filter(n=>n.scrollWidth>n.clientWidth+2).map(n=>n.textContent))).toEqual([]);
     if(scenario.width===1440){
       const grid=await block.locator('.home-dayparts__grid').boundingBox(),last=await cards.last().boundingBox();
-      expect(Math.abs(grid.x+grid.width-last.x-last.width)).toBeLessThan(2);
+      if(scenario.count===1){
+        expect(last.width).toBeLessThanOrEqual(762);
+        expect(Math.abs(last.x+last.width/2-grid.x-grid.width/2)).toBeLessThan(2);
+      }else expect(Math.abs(grid.x+grid.width-last.x-last.width)).toBeLessThan(2);
+      const gap=await block.evaluate(el=>el.getBoundingClientRect().top-el.previousElementSibling.getBoundingClientRect().bottom);
+      expect(gap).toBeGreaterThanOrEqual(15);
     }
     await block.screenshot({path:info.outputPath('dayparts.png')});
     for(const lang of ['es','en','fr','ca']){

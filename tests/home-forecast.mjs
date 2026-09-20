@@ -13,7 +13,7 @@ assert.equal(homeForecast({hourly},now).periods[0].rainProbability,null);
 assert.equal(homeForecast({hourly},now).periods[1].illumination,'unknown');
 hourly.is_day=time.map((_,h)=>h<20?1:0);
 assert.equal(homeForecast({hourly},now).periods[0].illumination,'day');
-assert.equal(homeForecast({hourly},now).periods[1].illumination,'unknown');
+assert.equal(homeForecast({hourly},now).periods[1].illumination,'twilight');
 assert.equal(homeForecast({hourly},new Date('2026-09-20T19:00Z')).periods[0].illumination,'night');
 hourly.is_day[22]=null;
 assert.equal(homeForecast({hourly},new Date('2026-09-20T19:00Z')).periods[0].illumination,'unknown');
@@ -32,4 +32,7 @@ for(const [kind,codes] of Object.entries({clear:[0],partly:[1,2],cloudy:[3],fog:
 }
 assert.notEqual(weatherSymbol(0,'day'),weatherSymbol(0,'night'));
 assert.notEqual(weatherSymbol(0,'unknown'),weatherSymbol(0,'night'));
+assert.match(weatherSymbol(0,'twilight'),/data-light="twilight"/);
+assert.match(weatherSymbol(0,'twilight'),/M14 39a18 18/);
+assert.doesNotMatch(weatherSymbol(0,'unknown'),/<circle cx="29" cy="26"/);
 console.log('Portada: franges locals, absència de dades i hores passades correctes');

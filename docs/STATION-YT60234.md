@@ -9,10 +9,13 @@ calibratge, una correcció instrumental ni una autorització per moure el sensor
 - Instal·lació sobre teules vermelles; **0,70 m entre teules i sensor**, segons
   el responsable. Substitueix l'aproximació anterior d'1 m; no és altura sobre terra.
 - Sis fotos revisades en privat: abric blanc de plats visible. No acrediten
-  ventilació efectiva, anivellament, orientació ni calibratge.
+  ventilació efectiva ni calibratge.
 - Absència d'obstacles al sol/vent en 50 m declarada pel responsable, no mesurada.
+- El 20/09 el responsable confirma que la referència nord del conjunt està
+  orientada al nord i que la bombolla de nivell incorporada queda centrada.
+  És una comprovació directa declarada, no una certificació de calibratge.
 - Pendents: revisió exacta de la unitat/manual inclòs, altura sobre el terreny,
-  altitud verificada, distàncies a superfícies, nivell, orientació i historial de manteniment.
+  altitud verificada, distàncies a superfícies i historial de manteniment.
 - Les fotografies originals, ubicació privada detallada i metadades EXIF no
   s'incorporen al repositori ni es publiquen.
 
@@ -103,10 +106,10 @@ des d'un lloc segur, deixar «pendent» i encarregar-ho a una persona qualificad
 
 ### Només quan hi hagi accés segur
 
-- [ ] Verificar bombolla centrada i captador de pluja anivellat.
+- [x] Bombolla centrada i conjunt anivellat, confirmat pel responsable el 20/09.
 - [ ] Comprovar fixació ferma: vibracions poden causar recomptes de pluja falsos.
-- [ ] Seguir l'orientació del manual per a l'hemisferi nord: referència nord del
-  conjunt i panell solar cap al sud; verificar la marca física, no deduir-ho de la foto.
+- [x] Referència nord del conjunt orientada al nord segons les instruccions,
+  confirmat pel responsable el 20/09; no s'ha deduït de la fotografia.
 - [ ] Revisar desguassos/embut, brutícia de l'abric i llibertat dels elements del vent.
 - [ ] Mesurar separacions i estudiar una ubicació compatible amb el manual,
   sense improvisar una elevació del màstil ni comprometre l'ancoratge.
@@ -114,5 +117,6 @@ des d'un lloc segur, deixar «pendent» i encarregar-ho a una persona qualificad
 El manual cita dos mesos en les indicacions d'ubicació i tres mesos en manteniment
 per revisar el pluviòmetre. Adoptar una **revisió conservadora cada dos mesos**,
 i després d'incidències, és una proposta local, no una cita única inequívoca.
-Planificar-la amb accés segur. La checklist és pendent de comprovació: cap casella
-marcada implica que la instal·lació ja compleixi el manual.
+Planificar-la amb accés segur. Les caselles marcades recullen només les
+comprovacions declarades; no impliquen que tota la instal·lació compleixi el
+manual ni que l'instrument estigui calibrat.

@@ -24,11 +24,15 @@
 - [x] Revisar sis fotos en privat i precisar altura declarada: 0,70 m entre teules i sensor. Sense publicar fotos ni deduir correccions instrumentals.
 - [x] Registrar marca/família declarada: VEVOR 7 en 1, sense atribuir-li especificacions d'una variant no identificada.
 - [x] Identificar YT60234 amb l'etiqueta i contrastar manual europeu; preparar fitxa, protocol de comparació i checklist segura a `docs/STATION-YT60234.md`, sense corregir lectures ni canviar època instrumental.
-- [ ] Comprovar ventilació, nivell/orientació, altura sobre el terreny, altitud i calibratge; executar el protocol independent quan hi hagi referència i accés segur. Acumular dies i validar abans d'ampliar variables, territori o ús operatiu.
+- [x] Confirmar amb el responsable la bombolla centrada i la referència nord orientada al nord (20/09); són comprovacions declarades, no un calibratge independent.
+- [ ] Comprovar ventilació, altura sobre el terreny, altitud i calibratge; executar el protocol independent quan hi hagi referència i accés segur. Acumular dies i validar abans d'ampliar variables, territori o ús operatiu.
 
 ## Manteniment obert — En curs
 
-- [x] Redissenyar les franges de portada: graella adaptable, icones meteorològiques, data local llegible i absències explícites; càlculs compartits i publicadors preservats. Pendent de merge/desplegament.
+- [x] Redissenyar les franges de portada: graella adaptable, icones meteorològiques, data local llegible i absències explícites; càlculs compartits i publicadors preservats.
+- [x] Corregir la separació visual, acotar la targeta única i substituir el símbol ambigu de transició per una posta recognoscible; cache PWA v3.
+- [x] Preparar el primer tall de «Predicció vs realitat» a 30 dies amb lectura prudent, composició de mostra i canvi d'estat automàtic, sense calibratge automàtic.
+- [ ] Revisar de nou a 60 i 90 dies, separar l'error de màxima i mínima i acumular més dies plujosos abans de valorar qualsevol ajust.
 
 - [x] Preparar control de vigència ambiental, UV amb hora pròpia, proves de caducitat i cobertura del pol·len explícita.
 - [x] Preparar pilots socials de matí, vespre i migdia amb fonts ambientals separades, fase lunar datada, mapa de pluja sempre present i UV discret (revisió 05).

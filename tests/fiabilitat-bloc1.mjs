@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { classifyAlertWindows } from '../src/modules/avisos.js';
 import { groupAlertEpisodes } from '../src/core/alert-episodes.js';
-import { rainSampleCopy } from '../src/features/forecast-verification.js';
+import { rainSampleCopy, verificationMilestoneCopy } from '../src/features/forecast-verification.js';
 import { stationIdentity, pressureComparisonNote } from '../src/features/stations-comparison.js';
 import { sunHeightLabel } from '../src/modules/astronomia.js';
 
@@ -37,6 +37,11 @@ assert.equal(grouped.find(item=>item.source==='Meteocat').updates,2);
 assert.equal(grouped.find(item=>item.source==='Meteocat').level,'orange','L’episodi conserva el nivell màxim.');
 
 assert.equal(rainSampleCopy({wetDays:0,dryDays:14}),'14 dies secs · encara cap dia amb pluja');
+assert.match(verificationMilestoneCopy({sampleDays:29}),/Demà.*30 dies/);
+assert.equal(verificationMilestoneCopy({sampleDays:28}),'');
+assert.match(verificationMilestoneCopy({sampleDays:30,summary:{wetDays:3}}),/Primer tall de 30 dies assolit/);
+assert.match(verificationMilestoneCopy({sampleDays:30,summary:{wetDays:3}}),/3 dies plujosos/);
+assert.doesNotMatch(verificationMilestoneCopy({sampleDays:30,summary:{wetDays:6}}),/més varietat/);
 assert.match(stationIdentity({stationId:'ISANTC198'}),/ISANTC198 · altitud no facilitada/);
 assert.match(pressureComparisonNote({}),/orientativa/);
 assert.equal(sunHeightLabel(10.4),'Sol baix');

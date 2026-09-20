@@ -17,12 +17,14 @@ export function renderHomeForecast(data){
   const view=homeForecast(data);
   if(date)date.textContent=new Intl.DateTimeFormat(getLocale(),{timeZone:'Europe/Madrid',weekday:'long',day:'numeric',month:'long'}).format(new Date(view.date+'T12:00:00Z'))+' · Sant Celoni';
   host.replaceChildren();
+  host.dataset.count=String(view.periods.length);
   if(!view.available||!view.periods.length){
     host.append(element('p','home-dayparts__empty',t(view.available?'Jornada gairebé acabada':'Predicció temporalment no disponible')));return;
   }
   for(const part of view.periods){
     const card=element('article','home-daypart');
     card.dataset.weather=weatherSymbolKind(part.weatherCode);
+    card.dataset.light=part.illumination;
     const top=element('div','home-daypart__top'),heading=element('div');
     heading.append(element('h3',null,t(part.label)),element('small','home-daypart__hours',part.timeLabel));
     const icon=element('div','home-daypart__symbol');

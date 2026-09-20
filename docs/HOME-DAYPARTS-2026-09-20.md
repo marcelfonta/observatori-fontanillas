@@ -7,10 +7,11 @@ No hi ha endpoint, consulta periòdica, llindar ni publicador nou. Es conserva
 `summarizeForecastDayparts`: franges futures locals, absències explícites i
 probabilitat màxima horària, no probabilitat acumulada del període.
 
-- Una, dues o tres targetes ocupen la graella disponible sense reservar una tercera columna buida.
+- Una, dues o tres targetes ocupen la graella disponible sense reservar una tercera columna buida; una sola franja queda centrada i amb amplada acotada.
 - Símbols SVG locals per tots els codis WMO acceptats; codi desconegut mai representa sol.
-- Nit només amb `is_day=0` a totes les hores esperades. Transicions i absències
-  mostren un motiu neutre per al cel serè. La icona de lluna no és la fase lunar.
+- Nit només amb `is_day=0` a totes les hores esperades. Una transició real
+  dia/nit mostra una posta recognoscible; una absència mostra un cel genèric,
+  no l'antic cercle ambigu. La icona de lluna no és la fase lunar.
 - Temperatures arrodonides iguals es mostren un sol cop; una absència no és 0° ni 0%.
 - Data segons idioma i dia Europe/Madrid; pluja i ratxa mantenen qualificadors.
 - Informació textual accessible al costat d'icones decoratives; botons de 44 px
@@ -32,7 +33,7 @@ probabilitat màxima horària, no probabilitat acumulada del període.
 ## Lliurament i retorn enrere
 
 Preparat per PR, sense desplegament en aquesta entrega. Nova cache PWA
-`home-dayparts-v2`, amb el mòdul SVG al precache; cap canvi de dades persistents.
+`home-dayparts-v3`, amb el mòdul SVG al precache; cap canvi de dades persistents.
 Després del merge, verificar preview abans d'autoritzar producció. Si cal
 revertir, revertir el commit de presentació i publicar amb una nova clau de
 cache PWA perquè els dispositius instal·lats també rebin el retorn enrere.
