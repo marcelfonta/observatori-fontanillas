@@ -125,8 +125,14 @@
         </div>
       </section>
 
-      <a class="home-records-link panel" href="./?page=centre-dades#records" data-portal-page="inici"><span aria-hidden="true">↗</span><div><b>Rècords de l’Observatori</b><small>Màximes i mínimes de tot l’arxiu disponible, amb data i hora.</small></div><strong>Veure rècords històrics →</strong></a>
 
+      <section class="home-dayparts panel" data-portal-page="inici" aria-labelledby="home-dayparts-title">
+        <header><h2 id="home-dayparts-title">El que queda d’avui</h2><small id="home-dayparts-date">Hora local · Sant Celoni</small></header>
+        <div id="home-dayparts" class="home-dayparts__grid"><p>Carregant la previsió horària…</p></div>
+        <p class="home-dayparts__note">Open-Meteo · símbol del fenomen més destacat. Pluja: màxim horari, no probabilitat de tota la franja.</p>
+        <nav aria-label="Consulta la previsió"><a href="./?page=prediccio">Previsió completa →</a><a href="./?page=radar">Veure radar →</a><a href="./?page=avisos">Avisos oficials →</a></nav>
+      </section>
+      <a class="home-records-link panel" href="./?page=centre-dades#records" data-portal-page="inici"><span aria-hidden="true">↗</span><div><b>Rècords de l’Observatori</b><small>Màximes i mínimes de tot l’arxiu disponible, amb data i hora.</small></div><strong>Veure rècords històrics →</strong></a>
       <section class="portal-view-header panel" aria-labelledby="station-page-title" data-portal-page="estacio"><div><p class="eyebrow">Estació Fontanillas</p><h1 id="station-page-title">L’estació, sensor a sensor.</h1><p>Lectures actuals, valors calculats i resum del dia des de Sant Celoni.</p></div><span class="tag">Cada 5 minuts</span></section>
 
       <section class="station-records-summary panel" aria-labelledby="station-records-summary-title" data-portal-page="estacio">
@@ -429,7 +435,7 @@
         </div>
       </section>
 
-      <section id="prediccio" class="forecast-section section-block" aria-labelledby="forecast-title" data-portal-page="inici prediccio">
+      <section id="prediccio" class="forecast-section section-block" aria-labelledby="forecast-title" data-portal-page="prediccio">
         <div class="section-heading forecast-heading">
           <div><p class="eyebrow">Previsió fàcil de llegir</p><h2 id="forecast-title">Què passarà avui, demà i els pròxims dies?</h2><p class="forecast-heading__intro" id="forecast-risk-context">Una lectura ràpida del que queda d’avui i de com canviarà el temps després.</p></div>
           <div class="forecast-source"><span id="forecast-status">Actualitzant models…</span><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Dades de model: Open-Meteo ↗</a></div>

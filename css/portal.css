@@ -788,3 +788,19 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
 @media(max-width:780px){.forecast-videos__intro{align-items:flex-start;flex-direction:column;padding:24px}.forecast-videos__layout{grid-template-columns:1fr}.forecast-video-sources{display:flex;overflow-x:auto;scroll-snap-type:x mandatory}.forecast-video-sources :is(button,a){flex:0 0 min(78vw,270px);scroll-snap-align:start}.forecast-video-player{min-height:360px}.forecast-video-player__empty{min-height:330px}.forecast-video-player>footer{align-items:flex-start;flex-direction:column}.forecast-video-player>footer a{align-self:stretch;padding:10px;border:1px solid var(--line);border-radius:10px;text-align:center}.global-forecast-directory__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .admin-social-publications button{box-sizing:border-box;max-width:100%;min-height:44px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(137,214,163,.08);color:var(--text);font:inherit;font-size:12px;line-height:1.5;white-space:normal;cursor:pointer}
 .admin-social-publications button:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.home-dayparts { padding:24px; min-width:0; }
+.home-dayparts header { display:flex; flex-wrap:wrap; align-items:baseline; gap:12px; justify-content:space-between; }
+.home-dayparts__grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:20px 0; }
+.home-dayparts__grid article { min-width:0; padding:16px; border:1px solid #497663; border-radius:16px; }
+.home-dayparts__grid h3,.home-dayparts__grid p { margin:0 0 10px; }
+.home-dayparts__grid strong,.home-dayparts__grid span,.home-dayparts__grid small { display:block; margin-bottom:8px; }
+.home-dayparts__grid strong { font-size:1.5rem; }
+.home-dayparts__note { color:var(--muted,#adc4b9); font-size:.85rem; line-height:1.5; }
+.home-dayparts nav { display:flex; flex-wrap:wrap; gap:16px; }
+.home-dayparts nav a { display:inline-flex; min-height:44px; align-items:center; }
+@media(max-width:600px) {
+  .home-dayparts { padding:20px; }
+  .home-dayparts__grid { grid-template-columns:1fr; gap:10px; }
+  .home-dayparts__grid article { display:grid; grid-template-columns:1fr 1fr; column-gap:16px; padding:12px; }
+  .home-dayparts__grid p { grid-column:1/-1; }
+}

@@ -2,6 +2,9 @@ const CACHE = 'observatori-fontanillas-v22-31-6-morning-publication-0645-frances
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
+  '/src/core/forecast-dayparts.js',
+  '/src/core/home-forecast.js',
+  '/src/features/home-forecast.js',
   '/src/core/numeric.js',
   '/src/core/statistics.js',
   '/src/core/history-data.js',
