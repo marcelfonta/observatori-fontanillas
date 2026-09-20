@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {validDate,validity,parseXacPollen,pollenPreviewHtml} from '../scripts/lib/xac-pollen.mjs';
+for(const bad of ['2026-02-30','2026-13-01','2026-9-20',null,'',true])assert.equal(validDate(bad),false);
+assert.equal(validDate('2028-02-29'),true);
+assert.equal(validity('2026-09-21','2026-09-27','2026-09-20'),'future');
+for(const date of ['2026-09-21','2026-09-27'])assert.equal(validity('2026-09-21','2026-09-27',date),'in-period');
+assert.equal(validity('2026-09-21','2026-09-27','2026-09-28'),'expired');
+assert.throws(()=>validity('2026-09-27','2026-09-21','2026-09-22'));
+assert.throws(()=>parseXacPollen('',{station:'sant-celoni',targetDate:'2026-09-20'}));
+assert.throws(()=>parseXacPollen('<!DOCTYPE x>',{station:'bellaterra',targetDate:'2026-09-20'}));
+const html=pollenPreviewHtml({stationName:'<script>bad</script>',status:'future',pollens:[{name:'Xiprers',levelLabel:null,trendLabel:'Augment'}],spores:[],license:'CC BY-NC-SA 4.0'});
+assert.ok(!html.includes('<script>'));
+assert.match(html,/NO PUBLICADA/);
+assert.match(html,/Encara no correspon/);
+assert.match(html,/<td>—<\/td>/);
+console.log('XAC: dates, límits, absències i previsualització aïllada correctes');

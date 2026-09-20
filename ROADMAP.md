@@ -5,8 +5,12 @@
 - [x] Preparar control de vigència ambiental, UV amb hora pròpia, proves de caducitat i cobertura del pol·len explícita.
 - [x] Preparar pilots socials de matí, vespre i migdia amb fonts ambientals separades, fase lunar datada, mapa de pluja sempre present i UV discret (revisió 05).
 - [x] Integrar el format social 05 aprovat als programadors, amb snapshot fresc, tres edicions d'imatges, dos vídeos complets i proves de dades/maquetació. Worker 22.29.20 verificat a staging sense enviaments.
-- [ ] Revisió humana i merge, desplegar format social 05 a producció i comprovar els primers lliuraments reals de matí/migdia/vespre en cada canal. No confondre proves de render amb publicacions confirmades.
+- [x] PR 160 revisat i fusionat; Worker 22.29.20 i Pages desplegats i verificats el 20/09/2026. Horaris i secrets preservats, sense repetir publicacions.
+- [ ] Comprovar els primers lliuraments reals del format 05: 20/09 a les 14:00 i 20:30, i 21/09 a les 06:45, inclosos retalls/superposicions en apps reals. No confondre proves de render amb publicacions confirmades.
+- [x] Preparar lector XAC només local, dates/escala/absències comprovades, pòl·lens separats d'espores i atribució. Ús no comercial confirmat; Bellaterra és una mostra tècnica, no una referència aprovada.
 - [ ] Per al pol·len social: acordar l'estació de referència XAC, reutilització i nivells verificats abans de qualsevol automatització.
+- [x] Preparar consulta a la XAC (no enviada) i plantilla de mesura d'impacte amb dades natives, sense inventar mètriques. Detall a `docs/SOCIAL-FOLLOWUP-2026-09-20.md`.
+- [ ] Recollir estadístiques reals comparables i validar editorialment un episodi real de mal temps.
 
 - [x] Preparar vídeos diaris amb matí, tarda i vespre i targeta del migdia amb les franges restants, mantenint el límit de 30 segons, les dades reals i les animacions existents.
 - [ ] Revisar i integrar la previsió per franges; validar a staging i desplegar el Worker 22.29.17 amb autorització abans de comprovar les següents publicacions programades.
