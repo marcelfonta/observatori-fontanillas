@@ -56,6 +56,12 @@ El pol·len queda explícitament fora d'aquest paquet.
 - Les captures deterministes i els renders locals no demostren un lliurament
   real a cap xarxa. Tampoc validen OAuth ni l'acceptació externa del fitxer.
 
+Evidència remota: [renders matí/vespre i imatges](https://github.com/marcelfonta/observatori-fontanillas/actions/runs/35500018164)
+i [desplegament/validació staging](https://github.com/marcelfonta/observatori-fontanillas/actions/runs/35500019494),
+completats correctament. La revisió visual posterior afegeix marge entre
+valors i separadors, prova d'aquest marge i titular del vespre que distingeix
+«Ara» de «la previsió de demà»; no modifica el render de vídeo validat.
+
 ## Activació i comprovació pendent
 
 1. Revisió humana i merge del PR. El workflow nou entra a `main`; desplegar
