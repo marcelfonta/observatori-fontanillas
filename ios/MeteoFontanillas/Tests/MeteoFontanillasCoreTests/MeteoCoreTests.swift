@@ -70,3 +70,24 @@ import Testing
     #expect(MeteoFormatting.precipitation(140) == "100%")
     #expect(MeteoFormatting.precipitation(nil) == "—")
 }
+
+@Test func snapshotCanBeStoredForWidgetFallback() throws {
+    let observation = StationObservation(
+        station: "Observatori Meteorològic Fontanillas",
+        location: "Sant Celoni · Montseny",
+        updated: nil,
+        updatedUtc: "2026-09-20T17:01:23Z",
+        epoch: 1_789_923_683,
+        temperature: 27.5,
+        feelsLike: 27.6,
+        humidity: 46,
+        degraded: false,
+        stale: false,
+        ageMinutes: 0
+    )
+    let original = MeteoSnapshot(observation: observation, forecast: nil, fetchedAt: Date(timeIntervalSince1970: 1_789_923_700))
+    let data = try JSONEncoder().encode(original)
+    let restored = try JSONDecoder().decode(MeteoSnapshot.self, from: data)
+
+    #expect(restored == original)
+}

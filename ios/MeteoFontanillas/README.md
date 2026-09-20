@@ -15,6 +15,12 @@ Inclou widgets en línia, circular i rectangular per a la pantalla bloquejada i
 un widget petit per a la pantalla d'inici. El widget demana una actualització
 cada vint minuts, però iOS decideix el moment efectiu de refresc.
 
+Per evitar una targeta buida quan iOS dona poc temps a l'extensió, el widget
+consulta una ruta lleugera amb l'última observació desada. Després d'una lectura
+correcta també conserva localment durant un màxim de noranta minuts l'últim
+snapshot vàlid. L'app principal demana explícitament a WidgetKit una renovació
+quan acaba d'actualitzar-se correctament.
+
 ## Instal·lació privada
 
 Cal un Mac amb la versió completa d'Xcode instal·lada i l'iPhone connectat:

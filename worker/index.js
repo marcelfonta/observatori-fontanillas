@@ -11,7 +11,7 @@ import { fetchSocialEnvironment } from '../src/core/social-environment.js';
 import { dailySocialCardV5 } from './social-daily-v5.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.20";
+const WORKER_VERSION = "22.29.21";
 const WORKER_BUILT = "2026-09-20";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -1472,6 +1472,23 @@ async function resilientCurrentObservation(env) {
     if (fallback) return fallback;
     throw error;
   }
+}
+
+async function widgetObservation(env) {
+  const stored = await latestStoredObservation(env).catch(() => null);
+  if (stored) {
+    const ageMinutes = Math.max(0, Number(stored.ageMinutes) || 0);
+    return {
+      ...stored,
+      source:"d1-widget-cache",
+      degraded:ageMinutes >= 15,
+      stale:ageMinutes >= 30,
+      sourceMessage:ageMinutes >= 15
+        ? "El widget mostra l’última lectura fiable desada per l’Observatori."
+        : undefined,
+    };
+  }
+  return resilientCurrentObservation(env);
 }
 
 function nonnegativeRain(value) {
@@ -6055,6 +6072,9 @@ export default {
         }
         return json(observation, 200, "public, max-age=60");
       }
+      if (url.pathname === "/widget-observation") {
+        return json(await widgetObservation(env), 200, "public, max-age=60");
+      }
       if (url.pathname === "/history") return history(url, env, ctx);
       if (url.pathname === "/temperature-trend") return temperatureTrend(env);
       if (url.pathname === "/records") return stationRecords(request,env,ctx);
@@ -6071,7 +6091,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);
