@@ -1,5 +1,13 @@
 # Changelog
 
+## Preparació — seguiment social i pol·len XAC local · 2026-09-20
+
+- Desplegament PR 160 documentat, separat de les comprovacions futures dels lliuraments reals.
+- Lector/previsualització XAC fora dels publicadors, amb dates explícites, pòl·lens i espores separats, escala original, absències i atribució CC BY-NC-SA 4.0. Detectada en la resposta real una setmana futura respecte del dia de consulta.
+- Ús no comercial confirmat. Referència territorial pendent; consulta a la XAC preparada, no enviada. No s'activa cap nova font social.
+- Plantilla de seguiment de retenció, comparticions, desats i seguiments amb dades natives i comparacions homogènies. Sense mètriques inventades ni API d'analítica nova.
+- Sense canvis de Worker, horaris, secrets, D1, publicacions ni desplegament.
+
 ## Preparació — format social 05 als publicadors · 2026-09-20
 
 - Worker 22.29.20: noves imatges diàries amb franges, lectura i gràfica observades, pluja prominent, aire i UV secundari; esborranys i imatges antics preservats.
