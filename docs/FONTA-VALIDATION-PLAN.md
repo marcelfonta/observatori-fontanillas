@@ -15,11 +15,19 @@ L'objectiu observat actual són extrems de lectures d'uns cinc minuts, no extrem
 continus instrumentals. Un model pot aprendre l'emplaçament sense representar
 millor la temperatura de l'aire regional: això s'ha d'explicar, no amagar.
 
-Declaració del responsable, 20/09: sensor a aproximadament 1 m sobre teules
-vermelles; sense obstacles que tapin sol/vent en uns 50 m. Fotografia, model
-exacte, abric/ventilació, altura sobre el terreny, altitud i calibratge pendents.
-No s'ha deduït cap correcció numèrica d'aquesta declaració. Qualsevol canvi de
+Declaració precisada pel responsable, 20/09: **0,70 m entre les teules vermelles
+i el sensor**, en substitució de l'aproximació inicial d'1 m. Sis fotografies
+revisades en privat: muntatge sobre teulada i abric blanc de plats visibles;
+no permeten certificar distàncies, ventilació, anivellament ni calibratge.
+El responsable declara absència d'obstacles al sol/vent en uns 50 m; les fotos
+no acrediten aquesta distància en tot l'horitzó. Model exacte, ventilació,
+altura sobre el terreny, altitud verificada i calibratge continuen pendents.
+No s'ha deduït cap correcció numèrica ni cap canvi físic d'emplaçament d'aquesta
+precisió; es conserva l'època instrumental existent. Qualsevol canvi real de
 sensor o ubicació obre una nova època instrumental; no barrejar-la silenciosament.
+
+Estat operatiu posterior a aquest protocol:
+[`FONTA-ACTIVATION-2026-09-20.md`](FONTA-ACTIVATION-2026-09-20.md).
 
 ## 2. Pilot vigent i evidència
 

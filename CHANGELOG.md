@@ -1,5 +1,13 @@
 # Changelog
 
+## Operació — Fonta, activació i recuperació real · 2026-09-20
+
+- Single Runs activat amb autorització; primera execució programada pendent, separada de les proves manuals.
+- Bucket R2 privat separat, captura i manifest pujats i recuperats amb integritat; informe reconstruït sense promoció. Còpies automàtiques pendents de credencial dedicada i validació del transport.
+- Consulta XEMA enviada des d'Outlook i comprovada a Enviats; integració automàtica encara desactivada a l'espera de resposta.
+- Fotos revisades en privat i altura declarada precisada a 0,70 m sobre teules. Sense canvi d'època instrumental, correcció tèrmica ni publicació de fotografies.
+- Evidència, límits i passos pendents a `docs/FONTA-ACTIVATION-2026-09-20.md`; no modifica Worker, D1 ni publicadors.
+
 ## Preparació — Fonta, tres circuits independents · 2026-09-20
 
 - Transport R2 acotat, claus per contingut, verificació després de pujar i restauració en destí nou; exportació compatible v1 i mixta v1/v2. Recurs remot, permisos i prova real encara pendents d'autorització.

@@ -15,10 +15,13 @@
 - [x] Provar tres fonts Single Runs amb 24/24 hores per al dia objectiu i exportar/verificar la captura real sense alterar-la; identificar candidates oficials XEMA.
 - [x] PR 164 fusionat i Pages verificat el 20/09; informe aparellat regenerat sense promoció ni noves consultes de fonts.
 - [x] Implementar transport/restauració R2, exportació mixta v1/v2, comparació horària Single Runs i workflow separat desactivat; auditar sis candidates XEMA amb dades reals. Detall a `docs/FONTA-INDEPENDENT-2026-09-20.md`.
-- [ ] Revisar/fusionar el nou paquet i autoritzar activació de Single Runs (tres GET i un job/dia addicionals). Acordar el protocol independent abans del holdout.
-- [ ] Autoritzar bucket R2 privat i permisos dedicats, provar recuperació real i només després programar còpies. Encara no hi ha còpia remota R2.
-- [ ] Aclarir reutilització XEMA amb la consulta preparada (no enviada); comprovar dades validades i períodes observacionals compatibles abans d'integrar-la automàticament.
-- [ ] Revisar l'estació, acumular dies suficients i validar prospectivament abans d'ampliar variables, territori o ús operatiu.
+- [x] PR 165 fusionat; activació autoritzada de Single Runs (tres GET i un job/dia), variable verificada el 20/09. Primera execució prevista el 21/09 a les 10:20 Europe/Madrid, encara no observada.
+- [x] Crear bucket R2 privat separat i provar pujada/descàrrega reals, hashes i reconstrucció de l'informe; 413.002 bytes preservats. Detall a `docs/FONTA-ACTIVATION-2026-09-20.md`.
+- [ ] Configurar credencial R2 dedicada i verificar el transport REST amb aquests permisos abans de programar còpies automàtiques. La còpia actual és manual.
+- [x] Enviar consulta XEMA a Meteocat des d'Outlook (20/09, 16:09); enviament verificat, sense activar extracció.
+- [ ] Aclarir reutilització XEMA amb la resposta; comprovar dades validades i períodes observacionals compatibles abans d'integrar-la automàticament.
+- [x] Revisar sis fotos en privat i precisar altura declarada: 0,70 m entre teules i sensor. Sense publicar fotos ni deduir correccions instrumentals.
+- [ ] Completar model/ventilació, altura sobre el terreny, altitud i calibratge; acordar el protocol independent abans del holdout, acumular dies suficients i validar abans d'ampliar variables, territori o ús operatiu.
 
 ## Manteniment obert — En curs
 

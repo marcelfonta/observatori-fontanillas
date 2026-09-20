@@ -1,4 +1,9 @@
-# Esborrany de consulta a Meteocat — no enviat
+# Consulta a Meteocat — enviada, resposta pendent
+
+Enviada des d'Outlook el 20/09/2026 a les 16:09 (Europe/Madrid), amb el compte
+del projecte. Enviament comprovat a la carpeta Enviats. Text de referència a
+continuació; no repetir l'enviament. Encara no s'ha rebut ni verificat una
+resposta: l'extracció automàtica XEMA continua desactivada.
 
 Destinatari: smc.meteocat@gencat.cat (adreça de contacte de l'avís legal).
 
