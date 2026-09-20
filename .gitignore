@@ -11,3 +11,5 @@ dist/
 build/
 *.log
 ops/wrangler.production.jsonc
+test-results/
+playwright-report/
