@@ -1,11 +1,11 @@
 {
   "schema": 2,
   "protocol": "fonta-hourly-nearest-150s-v1",
-  "generatedAt": "2026-09-22T13:27:02.356Z",
+  "generatedAt": "2026-09-23T13:41:09.683Z",
   "station": "ISANTC198",
   "forecastDays": 0,
   "pairedDays": 0,
-  "excludedGroups": 2,
+  "excludedGroups": 3,
   "scores": {
     "ecmwf_ifs025": {
       "hourly": {
@@ -140,6 +140,22 @@
     {
       "date": "2026-09-21",
       "receivedAt": "2026-09-22T13:23:13.523Z",
+      "complete": true,
+      "validHours": 24,
+      "expectedHours": 24,
+      "reasons": []
+    },
+    {
+      "date": "2026-09-21",
+      "receivedAt": "2026-09-23T13:36:39.059Z",
+      "complete": true,
+      "validHours": 24,
+      "expectedHours": 24,
+      "reasons": []
+    },
+    {
+      "date": "2026-09-22",
+      "receivedAt": "2026-09-23T13:36:39.059Z",
       "complete": true,
       "validHours": 24,
       "expectedHours": 24,
