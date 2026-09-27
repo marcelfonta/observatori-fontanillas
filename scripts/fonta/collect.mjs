@@ -4,11 +4,12 @@ import {createHash} from 'node:crypto';
 import {FONTA,normalizeForecast,observedDays,evaluateFonta} from '../../src/core/fonta-model.js';
 import {readArchive} from './archive.mjs';
 import {freezeComparison} from '../../src/core/fonta-prospective.js';
+import {FONTA_ISSUE_POLICY,fontaArchiveSlot} from '../../src/core/fonta-issue-policy.js';
 
 // One capture per UTC half-day, create-only files, no D1 or social writes.
 const directory=resolve(process.argv[2]||'build/fonta-archive');
 await mkdir(directory,{recursive:true});
-const startedAt=new Date().toISOString(),id=startedAt.slice(0,10)+'-'+(new Date().getUTCHours()<12?'am':'pm');
+const startedAt=new Date().toISOString(),id=startedAt.slice(0,10)+'-'+fontaArchiveSlot(startedAt);
 const path=join(directory,id+'.json');
 try{await stat(path);console.log('Fonta: franja ja arxivada, no es repeteix.');process.exit(0);}catch(e){if(e.code!=='ENOENT')throw e;}
 const names=(await readdir(directory)).filter(n=>/^\d{4}-\d{2}-\d{2}-(am|pm)\.json$/.test(n));
@@ -33,7 +34,8 @@ let observed=[];
 try{const source=await get('https://fonta-meteo.marcelfonta.workers.dev/history?days=3&resolution=raw');observed=observedDays(source.raw,source.receivedAt);sources.push({kind:'observations',...source});}
 catch(error){failures.push({source:'observations',message:error.message});}
 if(!forecasts.length&&!observed.length)throw new Error('Cap font disponible; no es crea una captura buida.');
-const capture={schema:1,id,station:FONTA.station,version:FONTA.version,startedAt,capturedAt:new Date().toISOString(),forecasts,observed,sources,failures};
+const capture={schema:1,id,station:FONTA.station,version:FONTA.version,issuePolicy:FONTA_ISSUE_POLICY.id,
+  startedAt,capturedAt:new Date().toISOString(),forecasts,observed,sources,failures};
 capture.codeRevision=process.env.GITHUB_SHA||null;
 // Freeze any candidate before the target day. Never replace it after observing truth.
 const previous=await readArchive(directory);
