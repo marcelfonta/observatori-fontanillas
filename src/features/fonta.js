@@ -8,7 +8,10 @@ const date=x=>new Intl.DateTimeFormat('ca-ES',{dateStyle:'medium',timeStyle:'sho
 const cell=(tag,value)=>{const el=document.createElement(tag);el.textContent=value;return el;};
 const safeDate=value=>typeof value==='string'&&Number.isFinite(Date.parse(value))?date(value):'desconeguda';
 const qcLabels={coverage:'cobertura inferior al 90%',samples:'lectures insuficients',hours:'hores sense lectures',gap:'buit superior a 20 min',jump:'salt tèrmic per revisar',invalid:'valors invàlids o contradictoris','unknown-quality':'qualitat pendent de detall'};
-const issueLabels={'outside-window':'Fora de la finestra D+1 (08–10 UTC)','incomplete-models':'Models incomplets per a D+1','duplicate-day':'Ja hi havia una emissió per a aquest dia','eligible-issue':'Emissió apta; encara cal l’observació posterior'};
+const issueLabels={'outside-window':'Captura de la política inicial, conservada però no reutilitzada',
+  'outside-current-policy':'Fora de la política prospectiva vigent (08–18 UTC)',
+  'incomplete-models':'Models incomplets per a D+1','duplicate-day':'Ja hi havia una emissió per a aquest dia',
+  'eligible-issue':'Emissió apta; encara cal l’observació posterior'};
 const url='https://raw.githubusercontent.com/marcelfonta/observatori-fontanillas/fonta-data/status.json';
 let displayedReport=null,displayedStale=false;
 function detailTable(title,headers,rows){
@@ -31,7 +34,7 @@ function renderDiagnostics(report,age){
   box.append(cell('p',`Diagnòstic de l’informe: ${safeDate(d.asOf)}. No certifica que totes les execucions programades s’hagin fet.`));
   if(degraded)box.append(cell('p','Hi ha fonts absents o incompletes. No s’han substituït per zeros ni per una altra font.'));
   if(observationRejected)box.append(cell('p','L’últim dia observat no supera els filtres tècnics. Els motius es detallen a la taula de qualitat.'));
-  if(missing?.length)box.append(cell('p',`${missing.length} franges sense captura a la finestra recent (màxim 7 dies), amb 2 h de marge. Cal consultar Actions: això no identifica la causa.`));
+  if(missing?.length)box.append(cell('p',`${missing.length} franges sense captura a la finestra recent (màxim 7 dies), després del marge operatiu. Cal consultar Actions: això no identifica la causa.`));
   const event=d.execution?.event==='schedule'?'programada':d.execution?.event==='workflow_dispatch'?'manual':'local o no identificada';
   box.append(cell('p',`Generació de l’informe: ${event}. Horari previst: 08:10 i 20:10 UTC; GitHub pot endarrerir-lo. Una franja ja conservada no es torna a capturar.`));
   const actions=document.createElement('a');actions.textContent='Consultar execucions a GitHub →';actions.href='https://github.com/marcelfonta/observatori-fontanillas/actions/workflows/fonta-shadow.yml';box.append(actions);
@@ -61,7 +64,7 @@ function render(report){
   $('fonta-prospective').replaceChildren(cell('strong','Prediccions congelades abans dels fets'));
   $('fonta-prospective').append(cell('p',Number.isInteger(p?.days)&&p.days>0?`${p.days} dies verificats · MAE màxima: ${number(p.max?.mae)} °C · MAE mínima: ${number(p.min?.mae)} °C. Sèrie exploratòria separada: no comparar-la directament amb la taula si els dies o les hores són diferents.`:'Encara no hi ha resultats prospectius disponibles. No equival a un error de zero graus.'));
   const paired=report.pairedProspective;
-  if(paired?.schema===1&&paired.protocol==='fonta-paired-daily-v1'&&paired.holdout===false&&paired.promotionAllowed===false){
+  if(paired?.schema===1&&['fonta-paired-daily-v1','fonta-paired-daily-v2'].includes(paired.protocol)&&paired.holdout===false&&paired.promotionAllowed===false){
     const box=$('fonta-prospective');
     box.append(cell('p',`Comparació aparellada: ${number(paired.frozenDays)} dies amb tots els comparadors congelats; ${number(paired.days)} dies amb observació posterior. Mateixa finestra d’emissió i mateixos dies per a tots els mètodes. Encara no és una prova independent de promoció.`));
     if(paired.invalidPackets>0)box.append(cell('p','Hi ha paquets prospectius invàlids, exclosos i pendents de revisió.'));

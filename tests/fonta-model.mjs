@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {readArchive} from '../scripts/fonta/archive.mjs';
 import {FONTA,dayBounds,localDay,nextDay,normalizeForecast,observedDays,evaluateFonta} from '../src/core/fonta-model.js';
 import {diagnoseArchive,executionMetadata,missingCaptureSlots} from '../src/core/fonta-diagnostics.js';
+import {FONTA_ISSUE_POLICY,fontaArchiveSlot,fontaIssueState} from '../src/core/fonta-issue-policy.js';
 
 assert.equal(dayBounds('2026-03-29').hours,23);assert.equal(dayBounds('2026-10-25').hours,25);
 assert.equal(nextDay('2026-12-31'),'2027-01-01');assert.throws(()=>dayBounds('2026-02-30'));
@@ -43,7 +44,7 @@ assert.throws(()=>normalizeForecast(raw,{...options,model:'fake'}));
 const captures=[];
 for(let i=0;i<65;i++){
   const day=nextDay('2026-05-01',i),capturedAt=day+'T08:10:00Z';
-  captures.push({schema:1,id:day+'-am',station:FONTA.station,capturedAt,
+  captures.push({schema:1,id:day+'-am',station:FONTA.station,version:FONTA.version,issuePolicy:FONTA.issuePolicy,capturedAt,
     observed:[{date:nextDay(day,-1),availableAt:day+'T08:09:59Z',max:25,min:15,eligible:true}],
     forecasts:FONTA.models.map(model=>({model,availableAt:capturedAt,daily:[{date:nextDay(day),max:23,min:13,complete:true}]}))});
 }
@@ -60,7 +61,12 @@ const initial=evaluateFonta(captures.slice(0,12),{now:'2026-08-01T00:00:00Z'});a
 const delayed=structuredClone(captures);delayed.forEach(c=>c.observed.forEach(o=>o.availableAt='2026-09-01T00:00:00Z'));
 assert.equal(evaluateFonta(delayed,{now:'2026-08-01T00:00:00Z'}).evaluatedDays,0);
 const noModels=structuredClone(captures);noModels.forEach(c=>c.forecasts.pop());assert.equal(evaluateFonta(noModels,{now:'2026-08-01T00:00:00Z'}).pairedDays,0);
-const wrongWindow=structuredClone(captures);wrongWindow.forEach(c=>c.capturedAt=c.capturedAt.replace('08:10','15:10'));assert.equal(evaluateFonta(wrongWindow,{now:'2026-08-01T00:00:00Z'}).pairedDays,0);
+const delayedWindow=structuredClone(captures);delayedWindow.forEach(c=>c.capturedAt=c.capturedAt.replace('08:10','13:10'));
+assert.equal(evaluateFonta(delayedWindow,{now:'2026-08-01T00:00:00Z'}).pairedDays,result.pairedDays);
+const wrongWindow=structuredClone(captures);wrongWindow.forEach(c=>c.capturedAt=c.capturedAt.replace('08:10','18:10'));assert.equal(evaluateFonta(wrongWindow,{now:'2026-08-01T00:00:00Z'}).pairedDays,0);
+const legacyPolicy=structuredClone(captures);legacyPolicy.forEach(c=>{c.version='0.1.0';delete c.issuePolicy;});assert.equal(evaluateFonta(legacyPolicy,{now:'2026-08-01T00:00:00Z'}).pairedDays,0);
+assert.equal(fontaIssueState('2026-09-20T13:10:00Z').eligible,true);assert.equal(fontaIssueState('2026-09-20T18:00:00Z').eligible,false);
+assert.equal(fontaArchiveSlot('2026-09-20T13:10:00Z'),'am');assert.equal(FONTA.issuePolicy,FONTA_ISSUE_POLICY.id);
 const before=evaluateFonta(captures,{now:'2026-05-15T23:00:00Z'});assert.equal(before.captureCount,15);
 assert.deepEqual(evaluateFonta([...captures,...captures],{now:'2026-08-01T00:00:00Z'}).scores,result.scores);
 const changed=structuredClone(captures);changed.at(-1).observed[0].max=40;
@@ -76,20 +82,21 @@ assert(diagnostic.sources.slice(0,4).every(s=>s.modelRunAt===null));
 assert.equal(diagnoseArchive(captures,result,{bytes:81*1024*1024}).budget.reviewNeeded,true);
 assert.equal(diagnoseArchive([],evaluateFonta([])).budget.bytes,null);
 assert.equal(diagnoseArchive([],evaluateFonta([])).progress.trainingDays,0);
-assert.equal(diagnoseArchive(wrongWindow,evaluateFonta(wrongWindow,{now:'2026-08-01T00:00:00Z'})).recentCaptures[0].issueState,'outside-window');
+assert.equal(diagnoseArchive(wrongWindow,evaluateFonta(wrongWindow,{now:'2026-08-01T00:00:00Z'})).recentCaptures[0].issueState,'outside-current-policy');
 assert.equal(diagnoseArchive(noModels,evaluateFonta(noModels,{now:'2026-08-01T00:00:00Z'})).recentCaptures[0].issueState,'incomplete-models');
 assert.deepEqual(executionMetadata({GITHUB_EVENT_NAME:'secret-value',GITHUB_RUN_ID:'https://evil.example'}),{event:'local-or-unknown',runId:null});
 const cadence={firstCaptureAt:'2026-09-20T12:12:00Z',recentCaptures:[{capturedAt:'2026-09-20T12:12:00Z'}]};
 assert.deepEqual(missingCaptureSlots(cadence,'2026-09-20T23:00:00Z'),[]); // manual pm fills its slot
-assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T10:09:59Z'),[]);
-assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T10:10:00Z'),['2026-09-21-am']);
+assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T10:09:59Z'),['2026-09-20-pm']);
+assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T18:09:59Z'),['2026-09-20-pm']);
+assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T18:10:00Z'),['2026-09-20-pm','2026-09-21-am']);
 assert.equal(missingCaptureSlots({},'2026-09-21T10:10:00Z'),null);
 assert(missingCaptureSlots(cadence,'2026-10-29T12:00:00Z').length<=14); // bounded and UTC across DST
 
 // Idempotent collector must exit before making any network call.
 const temp=await mkdtemp(join(tmpdir(),'fonta-test-'));
 try{
-  const now=new Date(),id=now.toISOString().slice(0,10)+'-'+(now.getUTCHours()<12?'am':'pm')+'.json';
+  const now=new Date(),id=now.toISOString().slice(0,10)+'-'+fontaArchiveSlot(now.toISOString())+'.json';
   await writeFile(join(temp,id),'existing');
   const run=spawnSync(process.execPath,['scripts/fonta/collect.mjs',temp],{encoding:'utf8'});
   assert.equal(run.status,0,run.stderr);assert.equal(await readFile(join(temp,id),'utf8'),'existing');

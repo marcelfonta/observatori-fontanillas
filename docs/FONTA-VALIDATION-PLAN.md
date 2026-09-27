@@ -1,5 +1,10 @@
 # Fonta: protocol i següents fases
 
+> La finestra 0.1 descrita en aquest document es conserva com a registre històric.
+> A partir de les captures noves posteriors a la integració, regeix la política
+> prospectiva 0.2 documentada a
+> [`FONTA-ISSUE-POLICY-V2-2026-09-27.md`](FONTA-ISSUE-POLICY-V2-2026-09-27.md).
+
 20/09/2026 · Proposta v1 per revisió. **No autoritza promocions ni publicacions.**
 
 Continuació tècnica posterior al PR 163 a

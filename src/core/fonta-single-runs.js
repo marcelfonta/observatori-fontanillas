@@ -1,7 +1,10 @@
 import {FONTA,dayBounds,nextDay} from './fonta-model.js';
+import {FONTA_ISSUE_POLICY} from './fonta-issue-policy.js';
 
 // Separate research contract: HOURLY sample extrema, not v1 daily extrema.
 export const SINGLE_RUN_MODELS=FONTA.models.filter(m=>m!=='best_match');
+export const SINGLE_RUN_ISSUE_POLICY=FONTA_ISSUE_POLICY.id;
+export const LEGACY_SINGLE_RUN_ISSUE_POLICY='fonta-single-run-08-10z-v1';
 const isTime=x=>typeof x==='string'&&Number.isFinite(Date.parse(x));
 function checkRun(run){
   if(!/^\d{4}-\d{2}-\d{2}T00:00$/.test(run)||!isTime(run+'Z')||new Date(run+'Z').toISOString().slice(0,16)!==run)throw new Error('Run UTC de les 00:00 requis');
@@ -33,5 +36,10 @@ export function normalizeSingleRun(raw,{model,run,receivedAt,targetDate,url}){
 export function probePolicy(receivedAt){
   if(!isTime(receivedAt))throw new Error('Data invàlida');
   const day=receivedAt.slice(0,10);
-  return {run:day+'T00:00',targetDate:nextDay(day),maxRequests:3,retries:0};
+  return {issuePolicy:SINGLE_RUN_ISSUE_POLICY,run:day+'T00:00',targetDate:nextDay(day),maxRequests:3,retries:0};
+}
+
+export function legacyProbePolicy(receivedAt){
+  const {issuePolicy,...policy}=probePolicy(receivedAt);
+  return policy;
 }

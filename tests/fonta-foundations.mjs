@@ -4,7 +4,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {FONTA,dayBounds,nextDay,evaluateFonta} from '../src/core/fonta-model.js';
-import {freezeComparison,evaluateFrozenComparisons,validFrozenComparison,PAIRED_METHODS} from '../src/core/fonta-prospective.js';
+import {freezeComparison,evaluateFrozenComparisons,validFrozenComparison,validStoredFrozenComparison,PAIRED_METHODS} from '../src/core/fonta-prospective.js';
 import {singleRunRequest,normalizeSingleRun,probePolicy} from '../src/core/fonta-single-runs.js';
 import {exportArchive,verifyExport} from '../scripts/fonta/export-archive.mjs';
 import {readArchive} from '../scripts/fonta/archive.mjs';
@@ -22,7 +22,7 @@ assert.equal(scheduleEvidence([scheduled],'2026-09-19T13:00:00Z').scheduledRunsO
 const captures=[];
 for(let i=0;i<65;i++){
   const day=nextDay('2026-05-01',i),at=day+'T08:10:00Z';
-  const c={schema:1,id:day+'-am',station:FONTA.station,capturedAt:at,
+  const c={schema:1,id:day+'-am',station:FONTA.station,version:FONTA.version,issuePolicy:FONTA.issuePolicy,capturedAt:at,
     observed:[{date:nextDay(day,-1),availableAt:day+'T08:09:59Z',max:25,min:15,eligible:true}],
     forecasts:FONTA.models.map(model=>({model,availableAt:at,daily:[{date:nextDay(day),max:23,min:13,complete:true}]}))};
   c.shadowPrediction=evaluateFonta([...captures,c],{now:at}).candidate;
@@ -36,6 +36,10 @@ assert.equal(report.scores.fonta.max.mae,0);assert.equal(report.scores.blend.max
 assert.equal(report.scores.persistence.max.mae,0);
 const c=captures.at(-1),p=c.frozenComparison;
 assert(validFrozenComparison(p,c));assert(p.persistenceAvailableAt<p.issuedAt);
+const legacyCapture={...c,version:'0.1.0'};delete legacyCapture.issuePolicy;
+const legacyPacket={...p,protocol:'fonta-paired-daily-v1',algorithm:'0.1.0'};
+assert(!validFrozenComparison(legacyPacket,legacyCapture));assert(validStoredFrozenComparison(legacyPacket,legacyCapture));
+assert.equal(evaluateFrozenComparisons([{...legacyCapture,frozenComparison:legacyPacket}],{now:'2026-08-01T00:00:00Z'}).legacyPackets,1);
 assert.equal(freezeComparison(captures,{...c,capturedAt:c.capturedAt.replace('08:10','20:10')},c.shadowPrediction),null);
 assert.equal(freezeComparison(captures,c,null),null);
 assert.equal(freezeComparison(captures,{...c,forecasts:[]},c.shadowPrediction),null);
@@ -63,7 +67,7 @@ for(const day of ['2026-03-29','2026-10-25','2026-09-21']){
   assert.equal(normalizeSingleRun(raw,{...options,receivedAt:'2027-01-01T00:00:00Z'}).prospective,false);
 }
 assert.throws(()=>singleRunRequest('best_match',run));assert.throws(()=>singleRunRequest(model,'2026-02-30T00:00'));
-assert.deepEqual(probePolicy('2026-12-31T08:10:00Z'),{run:'2026-12-31T00:00',targetDate:'2027-01-01',maxRequests:3,retries:0});
+assert.deepEqual(probePolicy('2026-12-31T08:10:00Z'),{issuePolicy:FONTA.issuePolicy,run:'2026-12-31T00:00',targetDate:'2027-01-01',maxRequests:3,retries:0});
 
 const temp=await mkdtemp(join(tmpdir(),'fonta-portable-'));
 try{

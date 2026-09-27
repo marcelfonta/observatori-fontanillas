@@ -1,5 +1,10 @@
 # Fonta · arxiu recuperable, Single Runs i XEMA
 
+> Actualització 27/09/2026: els paquets Single Runs d'aquesta fase es conserven,
+> però la nova sèrie comparable usa la política 0.2 descrita a
+> [`FONTA-ISSUE-POLICY-V2-2026-09-27.md`](FONTA-ISSUE-POLICY-V2-2026-09-27.md).
+> No es recalculen ni es reclassifiquen retroactivament les captures 0.1.
+
 20/09/2026. Implementació separada; **no substitueix el pilot v1 ni activa
 cap publicador**. No hi ha nova versió del Worker, migració D1 ni canvi de PWA.
 

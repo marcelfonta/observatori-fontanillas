@@ -1,5 +1,6 @@
 import {FONTA,dayBounds,localDay,nextDay,observedDays,errorMetrics} from './fonta-model.js';
-import {SINGLE_RUN_MODELS} from './fonta-single-runs.js';
+import {SINGLE_RUN_MODELS,SINGLE_RUN_ISSUE_POLICY} from './fonta-single-runs.js';
+import {fontaIssueState} from './fonta-issue-policy.js';
 
 export const HOURLY_PROTOCOL='fonta-hourly-nearest-150s-v1';
 const validTemp=v=>typeof v==='number'&&Number.isFinite(v)&&v>=-40&&v<=55;
@@ -48,8 +49,9 @@ export function evaluateHourly(runs,observations,{now=new Date().toISOString()}=
   }
   const selected=new Map();let excluded=0;
   for(const group of [...runs].sort((a,b)=>Date.parse(a.receivedAt)-Date.parse(b.receivedAt))){
-    const at=Date.parse(group.receivedAt),hour=new Date(at).getUTCHours(),date=group.targetDate;
-    if(!Number.isFinite(at)||at>deadline||hour<8||hour>=10||date!==nextDay(localDay(at))){excluded++;continue;}
+    const at=Date.parse(group.receivedAt),date=group.targetDate;
+    if(!Number.isFinite(at)||at>deadline||group.issuePolicy!==SINGLE_RUN_ISSUE_POLICY||
+      !fontaIssueState(group.receivedAt).eligible||date!==nextDay(group.receivedAt.slice(0,10))){excluded++;continue;}
     const models=SINGLE_RUN_MODELS.map(m=>group.forecasts.find(f=>f.model===m));
     if(models.some(f=>!f||!f.complete||!f.prospective||f.targetDate!==date||Date.parse(f.receivedAt)>at||
       f.modelRunAt!==localDay(at)+'T00:00Z')){excluded++;continue;}

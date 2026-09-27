@@ -1,11 +1,12 @@
 import {FONTA,localDay,nextDay,errorMetrics} from './fonta-model.js';
+import {isCurrentFontaIssue} from './fonta-issue-policy.js';
 
-// Additive v1 packet. Freeze ALL comparators at collection, never backfill old captures.
-export const PAIRED_PROTOCOL='fonta-paired-daily-v1';
+// Freeze ALL comparators at collection, never backfill old captures.
+export const PAIRED_PROTOCOL='fonta-paired-daily-v2';
+export const LEGACY_PAIRED_PROTOCOL='fonta-paired-daily-v1';
 export const PAIRED_METHODS=[...FONTA.models,'blend','persistence','fonta'];
 const validTime=x=>typeof x==='string'&&Number.isFinite(Date.parse(x));
 const validPair=x=>x&&['max','min'].every(k=>Number.isFinite(x[k])&&x[k]>=-40&&x[k]<=55)&&x.max>=x.min;
-const inWindow=at=>new Date(at).getUTCHours()>=8&&new Date(at).getUTCHours()<10;
 const eligibleObservation=(o,at)=>o?.eligible===true&&validTime(o.availableAt)&&o.availableAt<=at&&o.date<localDay(o.availableAt)&&validPair(o);
 function firstObservations(captures){
   const observations=new Map();
@@ -15,7 +16,8 @@ function firstObservations(captures){
 const archiveBefore=(captures,now)=>captures.filter(c=>c.schema===1&&c.station===FONTA.station&&validTime(c.capturedAt)&&c.capturedAt<=now).sort((a,b)=>a.capturedAt.localeCompare(b.capturedAt));
 
 export function freezeComparison(captures,capture,candidate){
-  if(capture?.schema!==1||capture.station!==FONTA.station||!validTime(capture.capturedAt)||!inWindow(capture.capturedAt))return null;
+  if(capture?.schema!==1||capture.station!==FONTA.station||capture.version!==FONTA.version||
+    !validTime(capture.capturedAt)||!isCurrentFontaIssue(capture))return null;
   const at=capture.capturedAt,date=nextDay(localDay(at));
   if(candidate?.version!==FONTA.version||candidate.issuedAt!==at||candidate.date!==date||!validPair(candidate)||candidate.trainingDays<FONTA.trainingDays||!Array.isArray(candidate.trainingDates))return null;
   const predictions={};
@@ -39,9 +41,9 @@ export function freezeComparison(captures,capture,candidate){
   return validFrozenComparison(packet,capture)?packet:null;
 }
 
-export function validFrozenComparison(p,c){
-  if(!p||p.schema!==1||p.protocol!==PAIRED_PROTOCOL||p.algorithm!==FONTA.version||p.station!==FONTA.station||p.captureId!==c.id||
-    p.issuedAt!==c.capturedAt||!validTime(p.issuedAt)||!inWindow(p.issuedAt)||p.date!==nextDay(localDay(p.issuedAt))||
+function validFrozenCore(p,c,{protocol,algorithm,validIssue}){
+  if(!p||p.schema!==1||p.protocol!==protocol||p.algorithm!==algorithm||p.station!==FONTA.station||p.captureId!==c.id||
+    p.issuedAt!==c.capturedAt||c.version!==algorithm||!validTime(p.issuedAt)||!validIssue(c)||p.date!==nextDay(localDay(p.issuedAt))||
     p.target!=='daily-extrema-vs-five-minute-observations'||p.instrumentEpoch!=='roof-red-tiles-2026-09-unreviewed'||
     p.persistenceDate!==nextDay(localDay(p.issuedAt),-1)||!validTime(p.persistenceAvailableAt)||p.persistenceAvailableAt>=p.issuedAt||
     !Number.isInteger(p.trainingDays)||p.trainingDays<FONTA.trainingDays||p.trainingDays>FONTA.windowDays||!Array.isArray(p.trainingDates)||
@@ -51,13 +53,28 @@ export function validFrozenComparison(p,c){
   return true;
 }
 
+export function validFrozenComparison(p,c){
+  return validFrozenCore(p,c,{protocol:PAIRED_PROTOCOL,algorithm:FONTA.version,validIssue:isCurrentFontaIssue});
+}
+
+// Historical packets stay hash-verifiable and readable, but are never promoted
+// into the new experiment or scored together with v2.
+export function validStoredFrozenComparison(p,c){
+  if(validFrozenComparison(p,c))return true;
+  return validFrozenCore(p,c,{protocol:LEGACY_PAIRED_PROTOCOL,algorithm:'0.1.0',validIssue:capture=>{
+    const hour=new Date(capture.capturedAt).getUTCHours();
+    return hour>=8&&hour<10;
+  }});
+}
+
 export function evaluateFrozenComparisons(captures,{now=new Date().toISOString()}={}){
   if(!validTime(now))throw new Error('Data prospectiva invàlida');
   const archive=archiveBefore(captures,now),truth=firstObservations(archive),seen=new Set(),rows=[];
-  let frozenDays=0,invalidPackets=0;
+  let frozenDays=0,invalidPackets=0,legacyPackets=0;
   for(const c of archive){
     const p=c.frozenComparison;
     if(!p)continue; // Absence is not permission to reconstruct a historical forecast.
+    if(p.protocol===LEGACY_PAIRED_PROTOCOL&&validStoredFrozenComparison(p,c)){legacyPackets++;continue;}
     if(!validFrozenComparison(p,c)){invalidPackets++;continue;}
     if(seen.has(p.date))continue;
     seen.add(p.date);frozenDays++;
@@ -67,6 +84,6 @@ export function evaluateFrozenComparisons(captures,{now=new Date().toISOString()
       predictions:p.predictions,observed:{max:o.max,min:o.min}});
   }
   const scores=Object.fromEntries(PAIRED_METHODS.map(model=>[model,Object.fromEntries(['max','min'].map(k=>[k,errorMetrics(rows.map(r=>r.predictions[model][k]),rows.map(r=>r.observed[k]))]))]));
-  return {schema:1,protocol:PAIRED_PROTOCOL,holdout:false,promotionAllowed:false,frozenDays,days:rows.length,invalidPackets,
+  return {schema:1,protocol:PAIRED_PROTOCOL,holdout:false,promotionAllowed:false,frozenDays,days:rows.length,invalidPackets,legacyPackets,
     dates:rows.map(r=>r.date),scores,rows};
 }

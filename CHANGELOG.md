@@ -1,5 +1,20 @@
 # Changelog
 
+## Preparació — Fonta 0.2 i retards reals de GitHub · 2026-09-27
+
+- Detectat amb l'arxiu real que els crons, Single Runs i R2 funcionen, però les
+  captures del matí arriben sovint cap a les 13 UTC i la finestra 08–10 les
+  deixava permanentment fora de l'avaluació: set captures i zero dies comparables.
+- Nova política prospectiva `fonta-first-prospective-08-18z-v2`, aplicada només
+  a captures noves; les 0.1 es conserven però no es reclassifiquen ni es puntuen
+  retroactivament. Fonta passa a 0.2.0 i els paquets aparellats a v2.
+- El fitxer diürn queda reservat fins a les 18 UTC perquè un cron retardat no
+  ocupi la franja nocturna. Single Runs conserva els paquets antics com a llegibles
+  però inicia una sèrie nova amb la mateixa política.
+- Diagnòstic i web expliquen la política vigent i les exclusions. Sense XEMA,
+  publicacions, Worker, D1, secrets, promoció ni canvi dels mínims científics.
+- Evidència i rollback a `docs/FONTA-ISSUE-POLICY-V2-2026-09-27.md`.
+
 ## Correcció — Widget d'iPhone resilient · 2026-09-20
 
 - El widget consulta `/widget-observation`, una ruta pública lleugera basada en
