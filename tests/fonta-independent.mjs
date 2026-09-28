@@ -4,7 +4,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {FONTA,dayBounds,nextDay} from '../src/core/fonta-model.js';
 import {hourlyObservations,evaluateHourly} from '../src/core/fonta-hourly.js';
-import {SINGLE_RUN_MODELS,singleRunRequest,normalizeSingleRun} from '../src/core/fonta-single-runs.js';
+import {SINGLE_RUN_MODELS,SINGLE_RUN_ISSUE_POLICY,LEGACY_SINGLE_RUN_ISSUE_POLICY,singleRunRequest,normalizeSingleRun} from '../src/core/fonta-single-runs.js';
 import {auditXema,xemaRequest,XEMA_CANDIDATES} from '../src/core/fonta-xema.js';
 import {exportArchive} from '../scripts/fonta/export-archive.mjs';
 import {uploadExport,restoreExport,r2Transport,REMOTE_BUDGET} from '../scripts/fonta/remote-archive.mjs';
@@ -28,12 +28,14 @@ for(const date of ['2026-03-29','2026-10-25','2026-09-21']){
   assert(!hourlyObservations(raw,date+'T12:00:00Z',date).complete);
   const day=nextDay(date,-1),run=day+'T00:00',issuedAt=day+'T08:20:00Z';
   const forecasts=SINGLE_RUN_MODELS.map(model=>normalizeSingleRun(fixture(date),{model,run,receivedAt:issuedAt,targetDate:date,url:singleRunRequest(model,run)}));
-  const group={receivedAt:issuedAt,targetDate:date,forecasts},report=evaluateHourly([group],[truth],{now:received});
+  const group={receivedAt:issuedAt,targetDate:date,issuePolicy:SINGLE_RUN_ISSUE_POLICY,forecasts},report=evaluateHourly([group],[truth],{now:received});
   assert.equal(report.pairedDays,1);assert.equal(report.promotionAllowed,false);assert.equal(report.trainedFonta,false);
   for(const score of Object.values(report.scores)){assert.equal(score.hourly.samples,truth.expectedHours);assert.equal(score.hourly.mae,1);assert.equal(score.max.samples,1);}
   assert.equal(evaluateHourly([group,group],[truth],{now:received}).pairedDays,1);
   assert.equal(evaluateHourly([{...group,forecasts:forecasts.slice(1)}],[truth],{now:received}).pairedDays,0);
-  assert.equal(evaluateHourly([{...group,receivedAt:day+'T12:00:00Z'}],[truth],{now:received}).pairedDays,0);
+  assert.equal(evaluateHourly([{...group,receivedAt:day+'T13:00:00Z'}],[truth],{now:received}).pairedDays,1);
+  assert.equal(evaluateHourly([{...group,receivedAt:day+'T18:00:00Z'}],[truth],{now:received}).pairedDays,0);
+  assert.equal(evaluateHourly([{...group,issuePolicy:'fonta-single-run-08-10z-v1'}],[truth],{now:received}).pairedDays,0);
   assert.equal(evaluateHourly([group],[truth],{now:issuedAt}).pairedDays,0);
   assert.equal(evaluateHourly([group],[{...truth,complete:false}],{now:received}).pairedDays,0);
 }
@@ -79,11 +81,17 @@ try{
   const wrongManifest=Buffer.from(JSON.stringify({schema:1,kind:'fonta-portable-captures',files:[{name:'../bad'}]}));
   await assert.rejects(()=>restoreExport(sha256(wrongManifest),join(temp,'traversal'),{get:async()=>wrongManifest}),/Noms/);
 
-  const v2=join(temp,'v2');await mkdir(v2);const run='2026-09-20T00:00',policy={run,targetDate:'2026-09-21',maxRequests:3,retries:0};
+  const v2=join(temp,'v2');await mkdir(v2);const run='2026-09-20T00:00',policy={issuePolicy:SINGLE_RUN_ISSUE_POLICY,run,targetDate:'2026-09-21',maxRequests:3,retries:0};
   await writeFile(join(v2,'probe.json'),JSON.stringify({startedAt:'2026-09-20T08:10:00Z',finishedAt:'2026-09-20T08:20:00Z',policy}));
   const model=SINGLE_RUN_MODELS[0],forecast=fixture(policy.targetDate),s={raw:forecast,url:singleRunRequest(model,run),receivedAt:'2026-09-20T08:15:00Z',hashFormat:'JSON.stringify',sha256:sha256(JSON.stringify(forecast))};
   await writeFile(join(v2,model+'.json'),JSON.stringify({schema:2,policy,source:s,normalized:{max:999}}));
   assert.equal((await readRunDirectory(v2)).forecasts[0].max,1); // ignores mutable derived fields
+  const {issuePolicy,...legacyPolicy}=policy;
+  await writeFile(join(v2,'probe.json'),JSON.stringify({startedAt:'2026-09-20T08:10:00Z',finishedAt:'2026-09-20T08:20:00Z',policy:legacyPolicy}));
+  await writeFile(join(v2,model+'.json'),JSON.stringify({schema:2,policy:legacyPolicy,source:s}));
+  assert.equal((await readRunDirectory(v2)).issuePolicy,LEGACY_SINGLE_RUN_ISSUE_POLICY); // readable, never reclassified
+  await writeFile(join(v2,'probe.json'),JSON.stringify({startedAt:'2026-09-20T08:10:00Z',finishedAt:'2026-09-20T08:20:00Z',policy}));
+  await writeFile(join(v2,model+'.json'),JSON.stringify({schema:2,policy,source:s,normalized:{max:999}}));
   await mkdir(join(source,'single-runs'));
   await cp(v2,join(source,'single-runs','2026-09-20'),{recursive:true});
   const mixed=join(temp,'mixed');assert.equal((await exportArchive(source,mixed)).runDays,1);

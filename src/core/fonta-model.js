@@ -1,7 +1,9 @@
 import {finiteNumber} from './numeric.js';
+import {FONTA_ISSUE_POLICY,isCurrentFontaIssue} from './fonta-issue-policy.js';
 
 // Research contract v1. No production publisher imports this module.
-export const FONTA = Object.freeze({version:'0.1.0',station:'ISANTC198',latitude:41.6906,longitude:2.489,
+export const FONTA = Object.freeze({version:'0.2.0',station:'ISANTC198',latitude:41.6906,longitude:2.489,
+  issuePolicy:FONTA_ISSUE_POLICY.id,
   models:['best_match','ecmwf_ifs025','icon_eu','meteofrance_arome_france'],
   trainingDays:30,windowDays:60,evaluationDays:14,correctionCap:3});
 const dateFormat=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'});
@@ -93,8 +95,7 @@ export function evaluateFonta(captures,{now=new Date().toISOString()}={}){
   for(const c of archive){
     for(const o of c.observed||[])if(o.eligible&&iso(o.availableAt)&&o.availableAt<=c.capturedAt&&o.date<localDay(o.availableAt)&&temp(o.max)!==null&&temp(o.min)!==null&&o.max>=o.min&&!observations.has(o.date))observations.set(o.date,o);
     // Fixed UTC issue window; DST only affects the target calendar day, not selection.
-    const hour=new Date(c.capturedAt).getUTCHours();
-    if(hour<8||hour>=10)continue;
+    if(c.version!==FONTA.version||!isCurrentFontaIssue(c))continue;
     const date=nextDay(localDay(c.capturedAt));
     if(issues.has(date))continue;
     const models=FONTA.models.map(id=>c.forecasts?.find(f=>f.model===id&&iso(f.availableAt)&&f.availableAt<=c.capturedAt)?.daily.find(d=>d.date===date&&d.complete&&temp(d.max)!==null&&temp(d.min)!==null&&d.max>=d.min));

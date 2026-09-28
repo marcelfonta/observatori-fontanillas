@@ -1,5 +1,10 @@
 # Fonta · laboratori de previsió local
 
+> Actualització 27/09/2026: la política 0.1 queda preservada com a antecedent.
+> Les captures noves passen a Fonta 0.2, amb finestra prospectiva 08–18 UTC per
+> tolerar els retards reals del cron sense reconstruir ni reclassificar el passat.
+> Vegeu [`FONTA-ISSUE-POLICY-V2-2026-09-27.md`](FONTA-ISSUE-POLICY-V2-2026-09-27.md).
+
 Algoritme 0.1.0, 20-09-2026. Pilot **desplegat i activat amb autorització** després
 del PR 162. Primera captura manual correcta: execució 35509945260, 20/09 a les
 12:12 UTC. La primera execució programada encara queda pendent de verificar.

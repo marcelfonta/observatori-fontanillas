@@ -3,15 +3,19 @@ import {join,resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {readArchive} from './archive.mjs';
 import {checkSource} from './io.mjs';
-import {normalizeSingleRun,SINGLE_RUN_MODELS,probePolicy} from '../../src/core/fonta-single-runs.js';
+import {normalizeSingleRun,SINGLE_RUN_MODELS,probePolicy,legacyProbePolicy,
+  SINGLE_RUN_ISSUE_POLICY,LEGACY_SINGLE_RUN_ISSUE_POLICY} from '../../src/core/fonta-single-runs.js';
 import {hourlyObservations,evaluateHourly} from '../../src/core/fonta-hourly.js';
 
 export async function readRunDirectory(directory){
   const probeStat=await lstat(join(directory,'probe.json'));
   if(!probeStat.isFile()||probeStat.isSymbolicLink()||probeStat.size>1024*1024)throw new Error('Manifest v2 invàlid');
   const probe=JSON.parse(await readFile(join(directory,'probe.json'),'utf8'));
-  const policy=probePolicy(probe.startedAt);
-  if(JSON.stringify(policy)!==JSON.stringify(probe.policy)||Date.parse(probe.finishedAt)<Date.parse(probe.startedAt)||!Number.isFinite(Date.parse(probe.finishedAt)))throw new Error('Política de captura invàlida');
+  const current=probePolicy(probe.startedAt),legacy=legacyProbePolicy(probe.startedAt);
+  const issuePolicy=JSON.stringify(current)===JSON.stringify(probe.policy)?SINGLE_RUN_ISSUE_POLICY:
+    JSON.stringify(legacy)===JSON.stringify(probe.policy)?LEGACY_SINGLE_RUN_ISSUE_POLICY:null;
+  if(!issuePolicy||Date.parse(probe.finishedAt)<Date.parse(probe.startedAt)||!Number.isFinite(Date.parse(probe.finishedAt)))throw new Error('Política de captura invàlida');
+  const policy=probe.policy;
   const forecasts=[];
   for(const model of SINGLE_RUN_MODELS){
     const path=join(directory,model+'.json');
@@ -22,7 +26,7 @@ export async function readRunDirectory(directory){
       forecasts.push(normalizeSingleRun(c.source.raw,{model,run:policy.run,receivedAt:c.source.receivedAt,targetDate:policy.targetDate,url:c.source.url}));
     }catch(e){if(e.code!=='ENOENT')throw e;}
   }
-  return {receivedAt:probe.finishedAt,targetDate:policy.targetDate,forecasts};
+  return {receivedAt:probe.finishedAt,targetDate:policy.targetDate,issuePolicy,forecasts};
 }
 export async function hourlyReport(archiveDirectory,runsDirectory){
   const captures=await readArchive(archiveDirectory),observations=[],runs=[];

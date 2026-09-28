@@ -7,7 +7,8 @@
 - [x] Comparadors, correcció limitada, backtest cronològic i congelació de candidats futurs; promoció operativa bloquejada.
 - [x] Pàgina Fonta amb abast local, caducitat, dades absents i mètriques honestes; workflow independent amb activació explícita i límits.
 - [x] PR 162 fusionat, Pages verificat, branca de dades exclosa dels builds i pilot activat amb autorització; primera captura manual remota 35509945260 correcta.
-- [ ] Comprovar el primer inici real per cron, separat de la prova manual.
+- [x] Comprovar inicis reals per cron, separats de la prova manual: captures
+  principals, Single Runs i còpies R2 programades acaben correctament.
 - [x] Preparar seguiment detallat: fonts, captures no aptes, cobertura, límits de recursos i progrés, sense modificar l'algoritme ni els publicadors.
 - [x] Registrar emplaçament declarat i preparar protocol de validació; estudiar Single Runs amb sis peticions reals, detectant incompatibilitat d'agregats diaris i hores nul·les.
 - [x] PR 163 fusionat i desplegat, panell real verificat en mòbil/escriptori i informe actualitzat amb l'execució manual 35511348263.
@@ -18,9 +19,15 @@
 - [x] PR 165 fusionat; activació autoritzada de Single Runs (tres GET i un job/dia), variable verificada el 20/09. Primera execució prevista el 21/09 a les 10:20 Europe/Madrid, encara no observada.
 - [x] Crear bucket R2 privat separat i provar pujada/descàrrega reals, hashes i reconstrucció de l'informe; 413.002 bytes preservats. Detall a `docs/FONTA-ACTIVATION-2026-09-20.md`.
 - [x] Preparar còpies R2 amb transport S3 restringit al bucket, snapshot coherent, pla previ, restauració completa, rebut, límits i execució serialitzada. Detall a `docs/FONTA-R2-BACKUPS.md`.
-- [ ] Fusionar el workflow, configurar credencial R2 dedicada, verificar pla i primera còpia remots, i activar el cron. L'accés disponible no permet crear tokens (9109); no reutilitzar el token general del Worker. La còpia remota verificada continua sent manual.
+- [x] Fusionar el workflow, configurar credencial R2 dedicada, verificar i activar
+  el cron; diverses còpies i recuperacions programades consten correctes fins al
+  27/09. Mantenir el token restringit al bucket i els límits del pilot.
 - [x] Enviar consulta XEMA a Meteocat des d'Outlook (20/09, 16:09); enviament verificat, sense activar extracció.
 - [ ] Aclarir reutilització XEMA amb la resposta; comprovar dades validades i períodes observacionals compatibles abans d'integrar-la automàticament.
+- [x] Detectar que els retards reals de GitHub deixaven totes les captures fora
+  de la finestra 0.1 i preparar Fonta 0.2 amb política prospectiva 08–18 UTC,
+  separació correcta de fitxers diürn/nocturn i cap reclassificació retroactiva.
+  Detall a `docs/FONTA-ISSUE-POLICY-V2-2026-09-27.md`.
 - [x] Revisar sis fotos en privat i precisar altura declarada: 0,70 m entre teules i sensor. Sense publicar fotos ni deduir correccions instrumentals.
 - [x] Registrar marca/família declarada: VEVOR 7 en 1, sense atribuir-li especificacions d'una variant no identificada.
 - [x] Identificar YT60234 amb l'etiqueta i contrastar manual europeu; preparar fitxa, protocol de comparació i checklist segura a `docs/STATION-YT60234.md`, sense corregir lectures ni canviar època instrumental.

@@ -7,6 +7,20 @@
 - Llindar editorial conservador: verd i groc no publiquen; només taronja o vermell poden preparar una targeta. Formats desconeguts, dates caducades o colors no reconeguts s'aturen sense crear publicació.
 - Targeta 1080 × 1350 amb mapa oficial sense recolorir, marcador local, franja, nivell, font i advertiment que és risc de Protecció Civil, no probabilitat de pluja. El text es presenta com a complement del possible avís comarcal Meteocat, mai com un duplicat.
 - Dedupe per situació material —data, franja, fenomen i nivell— encara que el CECAT renovi el document; PNG/JPEG privats a R2 i lliurament per la cua social existent. Detecció i autopublicació separades i desactivades per defecte. Sense desplegament, activació, migració D1 ni publicació real en aquest paquet.
+## Preparació — Fonta 0.2 i retards reals de GitHub · 2026-09-27
+
+- Detectat amb l'arxiu real que els crons, Single Runs i R2 funcionen, però les
+  captures del matí arriben sovint cap a les 13 UTC i la finestra 08–10 les
+  deixava permanentment fora de l'avaluació: set captures i zero dies comparables.
+- Nova política prospectiva `fonta-first-prospective-08-18z-v2`, aplicada només
+  a captures noves; les 0.1 es conserven però no es reclassifiquen ni es puntuen
+  retroactivament. Fonta passa a 0.2.0 i els paquets aparellats a v2.
+- El fitxer diürn queda reservat fins a les 18 UTC perquè un cron retardat no
+  ocupi la franja nocturna. Single Runs conserva els paquets antics com a llegibles
+  però inicia una sèrie nova amb la mateixa política.
+- Diagnòstic i web expliquen la política vigent i les exclusions. Sense XEMA,
+  publicacions, Worker, D1, secrets, promoció ni canvi dels mínims científics.
+- Evidència i rollback a `docs/FONTA-ISSUE-POLICY-V2-2026-09-27.md`.
 
 ## Correcció — Widget d'iPhone resilient · 2026-09-20
 
