@@ -11,7 +11,7 @@ import { fetchSocialEnvironment } from '../src/core/social-environment.js';
 import { dailySocialCardV5 } from './social-daily-v5.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.22";
+const WORKER_VERSION = "22.29.23";
 const WORKER_BUILT = "2026-09-28";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -3749,19 +3749,28 @@ function validCecatResult(raw,date=new Date()) {
   const issuedAt=Date.parse(String(raw.issuedAt||''));
   const validUntil=Date.parse(String(raw.validUntil||''));
   const checkedAt=Date.parse(String(raw.checkedAt||''));
-  const startHourUtc=Number(raw.startHourUtc);
-  const endHourUtc=Number(raw.endHourUtc);
   if(!documentUrl||!documentKey||!documentSha256||!level||!targetDate||!Number.isFinite(issuedAt)||!Number.isFinite(validUntil)||!Number.isFinite(checkedAt))return null;
-  if(!Number.isInteger(startHourUtc)||!Number.isInteger(endHourUtc)||startHourUtc<0||startHourUtc>18||endHourUtc<6||endHourUtc>24||endHourUtc-startHourUtc!==6)return null;
   if(validUntil<=date.getTime()||validUntil>date.getTime()+4*86400000||Math.abs(date.getTime()-checkedAt)>2*3600000)return null;
-  const riskCounts=raw.riskCounts&&typeof raw.riskCounts==='object'?raw.riskCounts:{};
-  if(Number(riskCounts[level]||0)<5||raw.analysisMethod!=='official-raster-local-patch-v1')return null;
+  const levelRank={green:1,yellow:2,orange:3,red:4};
+  const expectedStarts=[0,6,12,18];
+  const windows=(Array.isArray(raw.windows)?raw.windows:[]).map((item,index)=>{
+    const startHourUtc=Number(item?.startHourUtc);
+    const endHourUtc=Number(item?.endHourUtc);
+    const windowLevel=Object.hasOwn(levelRank,item?.level)?item.level:'';
+    const endAt=Date.parse(String(item?.endAt||''));
+    const riskCounts=item?.riskCounts&&typeof item.riskCounts==='object'?item.riskCounts:{};
+    if(startHourUtc!==expectedStarts[index]||endHourUtc!==startHourUtc+6||!windowLevel||!Number.isFinite(endAt)||Number(riskCounts[windowLevel]||0)<5)return null;
+    return {startHourUtc,endHourUtc,windowLabel:cleanText(item.windowLabel,60),endAt:new Date(endAt).toISOString(),level:windowLevel,levelLabel:{green:'Verd',yellow:'Groc',orange:'Taronja',red:'Vermell'}[windowLevel],riskCounts};
+  });
+  if(windows.length!==4||windows.some(item=>!item)||Date.parse(windows[3].endAt)!==validUntil)return null;
+  const strongest=windows.reduce((best,item)=>levelRank[item.level]>levelRank[best.level]?item:best,windows[0]);
+  if(strongest.level!==level||!windows.some(item=>levelRank[item.level]>=3&&Date.parse(item.endAt)>date.getTime())||raw.analysisMethod!=='official-raster-local-patch-v1')return null;
   return {
     source:'CECAT',plan:'INUNCAT',phase:cleanText(raw.phase,40),description:cleanText(raw.description,300),officialIssueLabel:cleanText(raw.officialIssueLabel,40),
     documentKey,documentUrl,documentSha256,issuedAt:new Date(issuedAt).toISOString(),targetDate,
-    dateLabel:cleanText(raw.dateLabel,30),windowLabel:cleanText(raw.windowLabel,60),startHourUtc,endHourUtc,validUntil:new Date(validUntil).toISOString(),
+    dateLabel:cleanText(raw.dateLabel,30),windows,validUntil:new Date(validUntil).toISOString(),
     phenomenon:cleanText(raw.phenomenon,100),level,levelLabel:level==='red'?'Vermell':'Taronja',
-    locality:'Sant Celoni i entorn proper',radiusKm:12,riskCounts,analysisMethod:raw.analysisMethod,checkedAt:new Date(checkedAt).toISOString(),
+    locality:'Sant Celoni i entorn proper',radiusKm:12,analysisMethod:raw.analysisMethod,checkedAt:new Date(checkedAt).toISOString(),
   };
 }
 
@@ -3776,7 +3785,7 @@ function cecatLocalRiskCopy(data,hasMeteocatContext) {
     ? "És el detall local de risc de Protecció Civil que complementa l’avís comarcal de Meteocat; no és un segon avís ni una probabilitat de pluja."
     : "És una actualització local del mapa de risc de Protecció Civil; no és una probabilitat de pluja ni substitueix els avisos meteorològics.";
   const title=`Actualització de Protecció Civil · risc ${level} · Sant Celoni`;
-  const body=`🌧️ Protecció Civil situa Sant Celoni i l’entorn proper en risc ${level} per ${data.phenomenon.toLowerCase()}, el ${data.dateLabel} de ${data.windowLabel}. ${context} Consulta el comunicat vigent i segueix les indicacions oficials.\n\n${socialHashtags('cecat_local_risk')}`;
+  const body=`🌧️ El perfil local de Protecció Civil per al ${data.dateLabel} arriba a risc ${level} a Sant Celoni i l’entorn proper per ${data.phenomenon.toLowerCase()}. La targeta mostra les quatre franges oficials del dia en hora local. ${context} Consulta el comunicat vigent i segueix les indicacions oficials.\n\n${socialHashtags('cecat_local_risk')}`;
   return {title,body};
 }
 
@@ -3804,7 +3813,8 @@ async function uploadCecatLocalRisk(request,env) {
   const jpegTail=new Uint8Array(jpegBytes,Math.max(0,jpegBytes.byteLength-2),Math.min(2,jpegBytes.byteLength));
   if([...pngHeader].join(',')!=='137,80,78,71,13,10,26,10'||jpegHeader[0]!==0xff||jpegHeader[1]!==0xd8||jpegTail[0]!==0xff||jpegTail[1]!==0xd9)return json({error:'Les signatures de les imatges no són vàlides.'},422,'no-store');
   const phenomenonKey=data.phenomenon.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60);
-  const dedupeKey=`cecat-local:${data.targetDate}:${data.startHourUtc}-${data.endHourUtc}:${data.level}:${phenomenonKey}`;
+  const riskProfile=data.windows.map(item=>item.level).join('-');
+  const dedupeKey=`cecat-local:${data.targetDate}:${phenomenonKey}:${riskProfile}`;
   let draft=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key=?').bind(dedupeKey).first();
   let created=false;
   if(!draft){

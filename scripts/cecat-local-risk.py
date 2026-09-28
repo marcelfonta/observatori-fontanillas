@@ -194,7 +194,9 @@ def cover_logo(canvas: Image.Image, logo_path: Path, xy: tuple[int, int], size: 
     canvas.alpha_composite(logo, (xy[0] + (size - logo.width) // 2, xy[1] + (size - logo.height) // 2))
 
 
-def render_card(item: MapRisk, metadata: dict, output_png: Path, output_jpg: Path, logo_path: Path) -> None:
+def render_card(items: list[MapRisk], metadata: dict, output_png: Path, output_jpg: Path, logo_path: Path) -> None:
+    if len(items) != 4 or len(metadata.get("windows", [])) != 4:
+        raise ValueError("Calen exactament les quatre franges oficials per generar la targeta.")
     width, height = 1080, 1350
     canvas = Image.new("RGBA", (width, height), "#061f18")
     draw = ImageDraw.Draw(canvas)
@@ -205,29 +207,33 @@ def render_card(item: MapRisk, metadata: dict, output_png: Path, output_jpg: Pat
     draw.rounded_rectangle((780, 78, 988, 124), 23, fill="#173f32", outline="#5f9c83", width=2)
     draw.text((884, 101), "PROTECCIÓ CIVIL", anchor="mm", font=font(18, True), fill="#9fe3bd")
 
-    draw.text((72, 205), "ACTUALITZACIÓ DE RISC LOCAL", font=font(22, True), fill="#86d8a7")
-    draw.text((72, 245), "Risc de pluja a Sant Celoni", font=font(47, True), fill="#ffffff")
-    level_colour = {"orange": "#f4a340", "red": "#ff6663"}[item.level]
-    level_label = RISK_COLOURS[item.level][2].upper()
-    date_label, window, _ = local_window_label(item)
-    draw.text((72, 315), f"{level_label} · {date_label} · {window} (hora local)", font=font(29, True), fill=level_colour)
+    draw.text((72, 192), "ACTUALITZACIÓ DE RISC LOCAL", font=font(22, True), fill="#86d8a7")
+    draw.text((72, 232), "Risc de pluja · evolució del dia", font=font(43, True), fill="#ffffff")
+    draw.text((72, 294), f"{metadata['dateLabel']} · Sant Celoni i entorn · hora local", font=font(25, True), fill="#c6d8d0")
 
-    panel = (72, 382, 1008, 1088)
-    draw.rounded_rectangle(panel, 30, fill="#f4f1e9", outline="#77b796", width=3)
-    official = item.image.copy()
-    marker = ImageDraw.Draw(official)
-    x, y = item.station_xy
-    marker.ellipse((x - 10, y - 10, x + 10, y + 10), outline="white", width=5)
-    marker.ellipse((x - 6, y - 6, x + 6, y + 6), outline="#073329", width=3)
-    official = official.resize((650, 650), Image.Resampling.LANCZOS)
-    canvas.alpha_composite(official, (215, 408))
-    draw.rounded_rectangle((98, 925, 414, 1052), 20, fill="#ffffffdd")
-    draw.text((122, 948), "Àrea analitzada", font=font(18, True), fill="#174434")
-    draw.text((122, 978), "Sant Celoni + entorn", font=font(24, True), fill="#08271d")
-    draw.text((122, 1014), "radi aproximat de 12 km", font=font(17), fill="#49665b")
+    positions = [(72, 350), (552, 350), (72, 710), (552, 710)]
+    level_colours = {"green": "#8ab82d", "yellow": "#e5c100", "orange": "#e59400", "red": "#e50000"}
+    for item, (panel_x, panel_y), window in zip(items, positions, metadata["windows"]):
+        panel = (panel_x, panel_y, panel_x + 456, panel_y + 326)
+        draw.rounded_rectangle(panel, 25, fill="#f4f1e9", outline="#77b796", width=3)
+        draw.text((panel_x + 24, panel_y + 22), window["windowLabel"], font=font(22, True), fill="#173b2f")
+        badge_colour = level_colours[item.level]
+        badge_text = RISK_COLOURS[item.level][2].upper()
+        draw.rounded_rectangle((panel_x + 317, panel_y + 17, panel_x + 432, panel_y + 53), 18, fill=badge_colour)
+        badge_text_colour = "#ffffff" if item.level in {"orange", "red"} else "#173025"
+        draw.text((panel_x + 374, panel_y + 35), badge_text, anchor="mm", font=font(15, True), fill=badge_text_colour)
 
-    draw.text((72, 1122), "Mapa oficial de risc · no és probabilitat de pluja", font=font(24, True), fill="#f5faf7")
-    draw.text((72, 1162), "Comprova el comunicat vigent i segueix les indicacions de Protecció Civil.", font=font(20), fill="#c6d8d0")
+        official = item.image.copy()
+        marker = ImageDraw.Draw(official)
+        x, y = item.station_xy
+        marker.ellipse((x - 11, y - 11, x + 11, y + 11), outline="white", width=6)
+        marker.ellipse((x - 6, y - 6, x + 6, y + 6), outline="#073329", width=3)
+        official = official.resize((264, 264), Image.Resampling.LANCZOS)
+        canvas.alpha_composite(official, (panel_x + 96, panel_y + 58))
+
+    draw.text((72, 1082), "Quatre franges oficials · colors del mapa preservats", font=font(24, True), fill="#f5faf7")
+    draw.text((72, 1122), "El marcador situa l’àrea de Sant Celoni. No és probabilitat de pluja.", font=font(20), fill="#c6d8d0")
+    draw.text((72, 1160), "Consulta el comunicat vigent i segueix Protecció Civil.", font=font(20), fill="#c6d8d0")
     draw.line((72, 1230, 1008, 1230), fill="#376f5b", width=2)
     draw.text((72, 1260), "Font: CECAT · Protecció Civil · Generalitat de Catalunya", font=font(17), fill="#a9c0b6")
     draw.text((1008, 1260), "meteo.fontanillas.cat", anchor="ra", font=font(18, True), fill="#8fe0ad")
@@ -237,21 +243,50 @@ def render_card(item: MapRisk, metadata: dict, output_png: Path, output_jpg: Pat
     canvas.convert("RGB").save(output_jpg, "JPEG", quality=92, optimize=True, progressive=True)
 
 
-def build_result(pdf: bytes, args: argparse.Namespace) -> tuple[dict, MapRisk | None]:
+def window_end(item: MapRisk) -> datetime:
+    base = datetime.fromisoformat(item.target_date).replace(tzinfo=timezone.utc)
+    return base + timedelta(hours=item.end_hour_utc)
+
+
+def build_result(pdf: bytes, args: argparse.Namespace) -> tuple[dict, list[MapRisk]]:
     risks = extract_map_risks(pdf)
     now = datetime.now(timezone.utc)
     allowed_dates = {(now.astimezone(TIME_ZONE).date() + timedelta(days=offset)).isoformat() for offset in range(4)}
-    severe = [item for item in risks if item.target_date in allowed_dates and item.rank >= 3]
-    if not severe:
+    groups: dict[tuple[str, str], list[MapRisk]] = {}
+    for item in risks:
+        groups.setdefault((item.target_date, item.phenomenon), []).append(item)
+    candidates: list[tuple[int, str, str, list[MapRisk]]] = []
+    for (target_date, phenomenon), items in groups.items():
+        ordered = sorted(items, key=lambda item: item.start_hour_utc)
+        if target_date not in allowed_dates or len(ordered) != 4 or [item.start_hour_utc for item in ordered] != [0, 6, 12, 18]:
+            continue
+        future_severe = [item for item in ordered if item.rank >= 3 and window_end(item) > now]
+        if future_severe:
+            candidates.append((max(item.rank for item in future_severe), target_date, phenomenon, ordered))
+    if not candidates:
         return {
             "publishable": False,
             "reason": "no_local_orange_red_risk",
             "documentKey": args.document_key,
             "documentUrl": args.document_url,
             "checkedAt": now.isoformat(),
-        }, None
-    selected = sorted(severe, key=lambda item: (-item.rank, item.target_date, item.start_hour_utc, -int("3 hores" in item.phenomenon)))[0]
-    date_label, window, valid_until = local_window_label(selected)
+        }, []
+    _, _, _, selected = sorted(candidates, key=lambda item: (item[1], -item[0], -int("3 hores" in item[2])))[0]
+    strongest = max(selected, key=lambda item: item.rank)
+    date_label = datetime.fromisoformat(strongest.target_date).strftime("%d/%m/%Y")
+    _, _, valid_until = local_window_label(selected[-1])
+    windows = []
+    for item in selected:
+        _, window_label, end_at = local_window_label(item)
+        windows.append({
+            "startHourUtc": item.start_hour_utc,
+            "endHourUtc": item.end_hour_utc,
+            "windowLabel": window_label,
+            "endAt": end_at,
+            "level": item.level,
+            "levelLabel": RISK_COLOURS[item.level][2],
+            "riskCounts": item.counts,
+        })
     issued_at = now.isoformat()
     result = {
         "publishable": True,
@@ -264,18 +299,15 @@ def build_result(pdf: bytes, args: argparse.Namespace) -> tuple[dict, MapRisk | 
         "documentUrl": args.document_url,
         "documentSha256": hashlib.sha256(pdf).hexdigest(),
         "issuedAt": issued_at,
-        "targetDate": selected.target_date,
+        "targetDate": strongest.target_date,
         "dateLabel": date_label,
-        "windowLabel": window,
-        "startHourUtc": selected.start_hour_utc,
-        "endHourUtc": selected.end_hour_utc,
+        "windows": windows,
         "validUntil": valid_until,
-        "phenomenon": selected.phenomenon,
-        "level": selected.level,
-        "levelLabel": RISK_COLOURS[selected.level][2],
+        "phenomenon": strongest.phenomenon,
+        "level": strongest.level,
+        "levelLabel": RISK_COLOURS[strongest.level][2],
         "locality": "Sant Celoni i entorn proper",
         "radiusKm": LOCAL_RADIUS_KM,
-        "riskCounts": selected.counts,
         "analysisMethod": "official-raster-local-patch-v1",
         "checkedAt": now.isoformat(),
     }
