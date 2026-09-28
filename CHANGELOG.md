@@ -1,5 +1,12 @@
 # Changelog
 
+## Preparació — risc local CECAT complementari · 2026-09-28
+
+- Consulta programada cada 30 minuts del conjunt oficial de plans actius del CECAT, limitada a INUNCAT i amb reserva persistent per franja i comunicat.
+- Processament aïllat a GitHub Actions: PDF oficial, mapes incrustats sense captures externes, conversió UTC a hora local i filtre geogràfic de Sant Celoni més un entorn aproximat de 12 km.
+- Llindar editorial conservador: verd i groc no publiquen; només taronja o vermell poden preparar una targeta. Formats desconeguts, dates caducades o colors no reconeguts s'aturen sense crear publicació.
+- Targeta 1080 × 1350 amb mapa oficial sense recolorir, marcador local, franja, nivell, font i advertiment que és risc de Protecció Civil, no probabilitat de pluja. El text es presenta com a complement del possible avís comarcal Meteocat, mai com un duplicat.
+- Dedupe per situació material —data, franja, fenomen i nivell— encara que el CECAT renovi el document; PNG/JPEG privats a R2 i lliurament per la cua social existent. Detecció i autopublicació separades i desactivades per defecte. Sense desplegament, activació, migració D1 ni publicació real en aquest paquet.
 ## Preparació — Fonta 0.2 i retards reals de GitHub · 2026-09-27
 
 - Detectat amb l'arxiu real que els crons, Single Runs i R2 funcionen, però les

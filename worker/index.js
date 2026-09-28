@@ -11,8 +11,8 @@ import { fetchSocialEnvironment } from '../src/core/social-environment.js';
 import { dailySocialCardV5 } from './social-daily-v5.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.21";
-const WORKER_BUILT = "2026-09-20";
+const WORKER_VERSION = "22.29.22";
+const WORKER_BUILT = "2026-09-28";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -61,6 +61,10 @@ const METEOCAT_ALERT_POLL_SLOTS = [
   { time:'12:30', targetOffset:1 },
   { time:'18:30', targetOffset:2 },
 ];
+const CECAT_ACTIVE_PLANS_ENDPOINT = 'https://analisi.transparenciacatalunya.cat/resource/wj9c-j6vf.json?$limit=20';
+const CECAT_DOCUMENT_HOST = 'documents.dadesobertes.gencat.cat';
+const CECAT_POLL_INTERVAL_MINUTES = 30;
+const CECAT_UPLOAD_MAX_BYTES = 12 * 1024 * 1024;
 const THREECAT_SEARCH_URL = "https://www.3cat.cat/cercador/";
 const FORECAST_VIDEO_HTML_LIMIT = 900_000;
 const COMPARISON_STATIONS = [
@@ -1030,6 +1034,125 @@ async function checkMeteocatAlertsAndPublish(env,date=new Date()) {
   }
 }
 
+function cecatLocalRiskEnabled(env) {
+  return String(env.SOCIAL_CECAT_LOCAL_RISK_ENABLED || '').trim().toLowerCase() === 'true';
+}
+
+function cecatLocalRiskAutopublishEnabled(env) {
+  return String(env.SOCIAL_CECAT_LOCAL_RISK_AUTOPUBLISH_ENABLED || '').trim().toLowerCase() === 'true';
+}
+
+export function cecatPollSlot(date=new Date()) {
+  const clock=localClockParts(date);
+  const minute=Number(clock.minute);
+  if(!Number.isInteger(minute)||minute%CECAT_POLL_INTERVAL_MINUTES>=STORAGE_INTERVAL_MINUTES)return null;
+  return `${localIsoDate(date)}:${clock.hour}:${String(Math.floor(minute/CECAT_POLL_INTERVAL_MINUTES)*CECAT_POLL_INTERVAL_MINUTES).padStart(2,'0')}`;
+}
+
+function cecatOfficialDocumentUrl(value) {
+  try{
+    const url=new URL(String(value||''));
+    if(url.protocol!=='https:'||url.hostname!==CECAT_DOCUMENT_HOST||!url.pathname.toLowerCase().endsWith('.pdf'))return '';
+    return url.toString();
+  }catch{return '';}
+}
+
+export function parseCecatActivePlans(records) {
+  return (Array.isArray(records)?records:[]).flatMap(item=>{
+    const plan=cleanText(item?.plaacronim||item?.planom,40).toUpperCase();
+    const active=cleanText(item?.plaactivat,10).toUpperCase()==='SI';
+    const documentUrl=cecatOfficialDocumentUrl(item?.comunicatpdf?.url);
+    if(!active||plan!=='INUNCAT'||!documentUrl)return [];
+    return [{
+      plan,phase:cleanText(item?.plafase,40).toUpperCase(),description:cleanText(item?.descripcio,300),
+      issuedLabel:cleanText(item?.fasedatahora,40),documentUrl,
+    }];
+  });
+}
+
+async function cecatDocumentKey(documentUrl) {
+  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(documentUrl));
+  return [...new Uint8Array(digest)].slice(0,12).map(byte=>byte.toString(16).padStart(2,'0')).join('');
+}
+
+async function claimCecatPoll(env,slot) {
+  if(!(await ensureOperationsSchema(env)))return false;
+  const result=await env.DB.prepare(`INSERT OR IGNORE INTO monitor_state
+    (service_key,status,consecutive_failures,last_checked_at,detail) VALUES (?,'running',0,?,?)`)
+    .bind(`cecat-poll:${slot}`,new Date().toISOString(),JSON.stringify({slot})).run();
+  return Number(result?.meta?.changes)>0;
+}
+
+async function claimCecatDocument(env,documentKey,plan) {
+  const key=`cecat-document:${documentKey}`;
+  const now=new Date().toISOString();
+  const detail=JSON.stringify({documentKey,documentUrl:plan.documentUrl,plan:plan.plan,phase:plan.phase,attempt:1});
+  const inserted=await env.DB.prepare(`INSERT OR IGNORE INTO monitor_state
+    (service_key,status,consecutive_failures,last_checked_at,detail) VALUES (?,'running',0,?,?)`)
+    .bind(key,now,detail).run();
+  if(Number(inserted?.meta?.changes)>0)return {claimed:true,key,attempt:1};
+  const previous=await env.DB.prepare('SELECT status,consecutive_failures,last_checked_at,detail FROM monitor_state WHERE service_key=?').bind(key).first();
+  if(previous?.status!=='down'||Number(previous?.consecutive_failures||0)>=3)return {claimed:false,key,reason:previous?.status||'already_claimed'};
+  const elapsed=Date.now()-Date.parse(String(previous.last_checked_at||''));
+  if(!Number.isFinite(elapsed)||elapsed<CECAT_POLL_INTERVAL_MINUTES*60000)return {claimed:false,key,reason:'retry_cooldown'};
+  const attempt=Number(previous.consecutive_failures||0)+1;
+  const updated=await env.DB.prepare("UPDATE monitor_state SET status='running',last_checked_at=?,detail=? WHERE service_key=? AND status='down' AND last_checked_at=?")
+    .bind(now,JSON.stringify({documentKey,documentUrl:plan.documentUrl,plan:plan.plan,phase:plan.phase,attempt}),key,previous.last_checked_at).run();
+  return {claimed:Number(updated?.meta?.changes)===1,key,attempt,reason:'retry'};
+}
+
+async function dispatchCecatDocument(env,plan,documentKey) {
+  const claim=await claimCecatDocument(env,documentKey,plan);
+  if(!claim.claimed)return {dispatched:false,reason:claim.reason,documentKey};
+  const token=String(env.GITHUB_SHORTS_DISPATCH_TOKEN||'');
+  const repository=cleanText(env.GITHUB_SHORTS_REPOSITORY||'marcelfonta/observatori-fontanillas',160);
+  if(token.length<24||!/^[\w.-]+\/[\w.-]+$/.test(repository)){
+    await recordOperationalState(env,claim.key,'down',{documentKey,stage:'not_configured'});
+    return {dispatched:false,reason:'not_configured',documentKey};
+  }
+  try{
+    const response=await fetch(`https://api.github.com/repos/${repository}/actions/workflows/cecat-local-risk.yml/dispatches`,{
+      method:'POST',signal:AbortSignal.timeout(15000),
+      headers:{Accept:'application/vnd.github+json',Authorization:`Bearer ${token}`,'Content-Type':'application/json','X-GitHub-Api-Version':'2026-03-10','User-Agent':'fonta-meteo-worker'},
+      body:JSON.stringify({ref:'main',inputs:{
+        document_url:plan.documentUrl,document_key:documentKey,plan:plan.plan,phase:plan.phase||'ACTIU',
+        issued_label:plan.issuedLabel||'',description:plan.description||'',
+      }}),
+    });
+    if(response.status!==204){
+      const error=cleanText(await response.text().catch(()=>''),500)||`GitHub ha respost ${response.status}.`;
+      await recordOperationalState(env,claim.key,'down',{documentKey,stage:'dispatch_failed',responseCode:response.status,error,attempt:claim.attempt});
+      return {dispatched:false,reason:'dispatch_failed',responseCode:response.status,documentKey};
+    }
+    await recordOperationalState(env,claim.key,'dispatching',{documentKey,stage:'dispatched',attempt:claim.attempt,documentUrl:plan.documentUrl});
+    return {dispatched:true,documentKey};
+  }catch(error){
+    await recordOperationalState(env,claim.key,'uncertain',{documentKey,stage:'dispatch_uncertain',error:cleanText(error.message,500),attempt:claim.attempt});
+    throw error;
+  }
+}
+
+async function checkCecatLocalRisk(env,date=new Date()) {
+  if(!cecatLocalRiskEnabled(env))return {skipped:'automation_disabled'};
+  const slot=cecatPollSlot(date);
+  if(!slot)return {skipped:'outside_schedule'};
+  if(!(await claimCecatPoll(env,slot)))return {skipped:'already_polled',slot};
+  try{
+    const response=await fetch(CECAT_ACTIVE_PLANS_ENDPOINT,{headers:{Accept:'application/json'},cf:{cacheEverything:false},signal:AbortSignal.timeout(15000)});
+    if(!response.ok)throw Object.assign(new Error(`CECAT ha respost ${response.status}`),{responseCode:response.status});
+    const plans=parseCecatActivePlans(await response.json());
+    const outcomes=[];
+    for(const plan of plans)outcomes.push(await dispatchCecatDocument(env,plan,await cecatDocumentKey(plan.documentUrl)));
+    await recordOperationalState(env,`cecat-poll:${slot}`,'healthy',{slot,activePlans:plans.length,dispatched:outcomes.filter(item=>item.dispatched).length});
+    await recordOperationalState(env,'cecat-local-risk','healthy',{slot,activePlans:plans.length,outcomes});
+    return {slot,activePlans:plans.length,outcomes};
+  }catch(error){
+    await recordOperationalState(env,`cecat-poll:${slot}`,'down',{slot,error:cleanText(error.message,500),responseCode:error.responseCode||null}).catch(()=>{});
+    await recordOperationalState(env,'cecat-local-risk','down',{slot,error:cleanText(error.message,500),responseCode:error.responseCode||null}).catch(()=>{});
+    throw error;
+  }
+}
+
 async function weatherRequest(path, params, env, cacheTtl) {
   if (!env.WU_API_KEY) throw new Error("Falta la variable secreta WU_API_KEY");
   const query = new URLSearchParams({
@@ -1796,6 +1919,8 @@ async function createForecastEpisodeDraft(env,date=new Date()){
 function socialHashtags(kind='daily_observation'){
   return kind==='official_alert'
     ? '#MeteoFontanillas #SantCeloni #VallesOriental #AvisMeteorologic #Meteocat #ProteccioCivil'
+    : kind==='cecat_local_risk'
+      ? '#MeteoFontanillas #SantCeloni #BaixMontseny #INUNCAT #ProteccioCivil'
     : PERIODIC_SOCIAL_KINDS.has(kind)
       ? '#MeteoFontanillas #SantCeloni #BaixMontseny #ResumMeteo #Climatologia'
       : kind==='astronomical_event'
@@ -2206,7 +2331,7 @@ const SAME_DAY_SOCIAL_KINDS=new Set([
 // Read-only editorial guard. No migration or extra upstream alert request:
 // dated copy is never replayed on another local day, even if an episode lasts longer.
 export function socialDraftTemporalEligibility(draft,date=new Date()) {
-  if(!['official_alert','astronomical_event'].includes(draft?.kind)&&!SAME_DAY_SOCIAL_KINDS.has(draft?.kind))return true;
+  if(!['official_alert','cecat_local_risk','astronomical_event'].includes(draft?.kind)&&!SAME_DAY_SOCIAL_KINDS.has(draft?.kind))return true;
   if(!Number.isFinite(date.getTime()))return false;
   let data;
   try{data=JSON.parse(draft.payload);}catch{return false;}
@@ -2219,6 +2344,13 @@ export function socialDraftTemporalEligibility(draft,date=new Date()) {
     if(data.eventType==='season_change')return Number.isFinite(instant(data.observationUpdated));
     const end=instant(data.forecastEnd);
     return Number.isFinite(end)&&date.getTime()<end;
+  }
+  if(draft.kind==='cecat_local_risk'){
+    const expiry=instant(data.validUntil);
+    const checked=instant(data.checkedAt);
+    return data.source==='CECAT'&&data.plan==='INUNCAT'&&['orange','red'].includes(data.level)&&
+      /^\d{4}-\d{2}-\d{2}$/.test(data.targetDate||'')&&data.targetDate>=today&&
+      Number.isFinite(expiry)&&date.getTime()<expiry&&Number.isFinite(checked)&&date.getTime()-checked<48*3600000;
   }
   if(data.source!=='Meteocat')return false;
   const issued=data.issuedAt|| (typeof draft.created_at==='string'?`${draft.created_at.replace(' ','T').replace(/Z$/,'')}Z`:null);
@@ -3456,7 +3588,7 @@ async function socialCardSignature(draftId, env) {
 async function socialCardUrl(draft, env, format = 'png') {
   const signature = await socialCardSignature(draft.id, env);
   const extension = format === 'jpeg' ? 'jpg' : 'png';
-  const source = [draft.id, draft.title, draft.body, draft.channels, draft.status, ...(draft.kind==='official_alert'?['validity-v2',draft.payload]:[])].map(value => String(value || '')).join('\u0000');
+  const source = [draft.id, draft.title, draft.body, draft.channels, draft.status, ...(['official_alert','cecat_local_risk'].includes(draft.kind)?['validity-v2',draft.payload]:[])].map(value => String(value || '')).join('\u0000');
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source));
   const revision = [...new Uint8Array(digest)].slice(0, 6).map(byte => byte.toString(16).padStart(2, '0')).join('');
   return `${publicWorkerBaseUrl(env)}/social-card/${draft.id}.${extension}?sig=${signature}&v=${WORKER_VERSION}&r=${revision}`;
@@ -3605,6 +3737,109 @@ async function uploadSocialVideo(request, env, key) {
     customMetadata:{ uploadedAt:new Date().toISOString(), source:safeKey.startsWith('episodes/')?'forecast-episode':'youtube-short' },
   });
   return json({ ok:true, key:safeKey, url:await socialVideoUrl(safeKey, env) }, 201, 'no-store');
+}
+
+function validCecatResult(raw,date=new Date()) {
+  if(!raw||typeof raw!=='object'||raw.publishable!==true||raw.source!=='CECAT'||raw.plan!=='INUNCAT')return null;
+  const documentUrl=cecatOfficialDocumentUrl(raw.documentUrl);
+  const documentKey=/^[a-f0-9]{24}$/.test(String(raw.documentKey||''))?String(raw.documentKey):'';
+  const documentSha256=/^[a-f0-9]{64}$/.test(String(raw.documentSha256||''))?String(raw.documentSha256):'';
+  const level=['orange','red'].includes(raw.level)?raw.level:'';
+  const targetDate=/^\d{4}-\d{2}-\d{2}$/.test(String(raw.targetDate||''))?String(raw.targetDate):'';
+  const issuedAt=Date.parse(String(raw.issuedAt||''));
+  const validUntil=Date.parse(String(raw.validUntil||''));
+  const checkedAt=Date.parse(String(raw.checkedAt||''));
+  const startHourUtc=Number(raw.startHourUtc);
+  const endHourUtc=Number(raw.endHourUtc);
+  if(!documentUrl||!documentKey||!documentSha256||!level||!targetDate||!Number.isFinite(issuedAt)||!Number.isFinite(validUntil)||!Number.isFinite(checkedAt))return null;
+  if(!Number.isInteger(startHourUtc)||!Number.isInteger(endHourUtc)||startHourUtc<0||startHourUtc>18||endHourUtc<6||endHourUtc>24||endHourUtc-startHourUtc!==6)return null;
+  if(validUntil<=date.getTime()||validUntil>date.getTime()+4*86400000||Math.abs(date.getTime()-checkedAt)>2*3600000)return null;
+  const riskCounts=raw.riskCounts&&typeof raw.riskCounts==='object'?raw.riskCounts:{};
+  if(Number(riskCounts[level]||0)<5||raw.analysisMethod!=='official-raster-local-patch-v1')return null;
+  return {
+    source:'CECAT',plan:'INUNCAT',phase:cleanText(raw.phase,40),description:cleanText(raw.description,300),officialIssueLabel:cleanText(raw.officialIssueLabel,40),
+    documentKey,documentUrl,documentSha256,issuedAt:new Date(issuedAt).toISOString(),targetDate,
+    dateLabel:cleanText(raw.dateLabel,30),windowLabel:cleanText(raw.windowLabel,60),startHourUtc,endHourUtc,validUntil:new Date(validUntil).toISOString(),
+    phenomenon:cleanText(raw.phenomenon,100),level,levelLabel:level==='red'?'Vermell':'Taronja',
+    locality:'Sant Celoni i entorn proper',radiusKm:12,riskCounts,analysisMethod:raw.analysisMethod,checkedAt:new Date(checkedAt).toISOString(),
+  };
+}
+
+async function hasMeteocatAlertContext(env,targetDate) {
+  const rows=await env.DB.prepare("SELECT payload FROM social_drafts WHERE kind='official_alert' AND created_at >= datetime('now','-4 days') ORDER BY id DESC LIMIT 20").all();
+  return (rows?.results||[]).some(row=>{try{return JSON.parse(row.payload||'{}').targetDate===targetDate;}catch{return false;}});
+}
+
+function cecatLocalRiskCopy(data,hasMeteocatContext) {
+  const level=data.levelLabel.toUpperCase();
+  const context=hasMeteocatContext
+    ? "És el detall local de risc de Protecció Civil que complementa l’avís comarcal de Meteocat; no és un segon avís ni una probabilitat de pluja."
+    : "És una actualització local del mapa de risc de Protecció Civil; no és una probabilitat de pluja ni substitueix els avisos meteorològics.";
+  const title=`Actualització de Protecció Civil · risc ${level} · Sant Celoni`;
+  const body=`🌧️ Protecció Civil situa Sant Celoni i l’entorn proper en risc ${level} per ${data.phenomenon.toLowerCase()}, el ${data.dateLabel} de ${data.windowLabel}. ${context} Consulta el comunicat vigent i segueix les indicacions oficials.\n\n${socialHashtags('cecat_local_risk')}`;
+  return {title,body};
+}
+
+async function uploadCecatLocalRisk(request,env) {
+  if(!cecatLocalRiskEnabled(env))return json({error:'La integració CECAT està desactivada.'},409,'no-store');
+  if(!env.SOCIAL_VIDEO_BUCKET)return json({error:'L’emmagatzematge de targetes no està configurat.'},503,'no-store');
+  if(!(await authorizeYoutubeShortRequest(request,env)))return json({error:'No autoritzat.'},401,'no-store');
+  if(!(await ensureSocialDraftSchema(env))||!(await ensureOperationsSchema(env)))return json({error:'La coordinació no està disponible.'},503,'no-store');
+  const contentLength=Number(request.headers.get('Content-Length')||0);
+  if(!Number.isFinite(contentLength)||contentLength<1||contentLength>CECAT_UPLOAD_MAX_BYTES)return json({error:'La càrrega ha de tenir una mida declarada i inferior a 12 MB.'},413,'no-store');
+  let form;
+  try{form=await request.formData();}catch{return json({error:'La càrrega multipart no és vàlida.'},400,'no-store');}
+  const metadataText=String(form.get('metadata')||'');
+  if(metadataText.length<20||metadataText.length>16000)return json({error:'Les metadades no són vàlides.'},400,'no-store');
+  let raw;try{raw=JSON.parse(metadataText);}catch{return json({error:'Les metadades no són JSON vàlid.'},400,'no-store');}
+  const data=validCecatResult(raw);
+  if(!data)return json({error:'El resultat CECAT és caducat, incomplet o no supera el llindar local.'},422,'no-store');
+  const png=form.get('image_png');
+  const jpeg=form.get('image_jpeg');
+  if(!(png instanceof Blob)||!(jpeg instanceof Blob)||png.type!=='image/png'||jpeg.type!=='image/jpeg')return json({error:'Calen les targetes PNG i JPEG.'},415,'no-store');
+  if(png.size<1000||jpeg.size<1000||png.size+jpeg.size>CECAT_UPLOAD_MAX_BYTES)return json({error:'Les imatges no tenen una mida admissible.'},413,'no-store');
+  const [pngBytes,jpegBytes]=await Promise.all([png.arrayBuffer(),jpeg.arrayBuffer()]);
+  const pngHeader=new Uint8Array(pngBytes,0,Math.min(8,pngBytes.byteLength));
+  const jpegHeader=new Uint8Array(jpegBytes,0,Math.min(2,jpegBytes.byteLength));
+  const jpegTail=new Uint8Array(jpegBytes,Math.max(0,jpegBytes.byteLength-2),Math.min(2,jpegBytes.byteLength));
+  if([...pngHeader].join(',')!=='137,80,78,71,13,10,26,10'||jpegHeader[0]!==0xff||jpegHeader[1]!==0xd8||jpegTail[0]!==0xff||jpegTail[1]!==0xd9)return json({error:'Les signatures de les imatges no són vàlides.'},422,'no-store');
+  const phenomenonKey=data.phenomenon.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60);
+  const dedupeKey=`cecat-local:${data.targetDate}:${data.startHourUtc}-${data.endHourUtc}:${data.level}:${phenomenonKey}`;
+  let draft=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key=?').bind(dedupeKey).first();
+  let created=false;
+  if(!draft){
+    const hasMeteocatContext=await hasMeteocatAlertContext(env,data.targetDate);
+    const copy=cecatLocalRiskCopy(data,hasMeteocatContext);
+    const payload=JSON.stringify({...data,hasMeteocatContext,preRenderedCard:true});
+    const inserted=await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
+      (dedupe_key,kind,status,channels,title,body,source_url,payload)
+      VALUES (?,'cecat_local_risk','review',?,?,?,?,?)`)
+      .bind(dedupeKey,JSON.stringify(['facebook','instagram','bluesky','telegram','threads','x']),copy.title,copy.body,data.documentUrl,payload).run();
+    draft=await env.DB.prepare('SELECT * FROM social_drafts WHERE dedupe_key=?').bind(dedupeKey).first();
+    created=Number(inserted?.meta?.changes)===1;
+  }
+  if(!draft||draft.kind!=='cecat_local_risk')return json({error:'No s’ha pogut reservar l’esborrany.'},409,'no-store');
+  try{
+    await Promise.all([
+      env.SOCIAL_VIDEO_BUCKET.put(socialCardCacheKey(draft.id,'png',draft.kind),pngBytes,{
+        httpMetadata:{contentType:'image/png',cacheControl:'public, max-age=31536000, immutable'},
+        customMetadata:{draftId:String(draft.id),source:'cecat-official-map',documentKey:data.documentKey},
+      }),
+      env.SOCIAL_VIDEO_BUCKET.put(socialCardCacheKey(draft.id,'jpeg',draft.kind),jpegBytes,{
+        httpMetadata:{contentType:'image/jpeg',cacheControl:'public, max-age=31536000, immutable'},
+        customMetadata:{draftId:String(draft.id),source:'cecat-official-map',documentKey:data.documentKey},
+      }),
+    ]);
+  }catch(error){
+    await recordOperationalState(env,`cecat-document:${data.documentKey}`,'down',{stage:'card_upload_failed',draftId:draft.id,error:cleanText(error.message,500)}).catch(()=>{});
+    return json({error:'L’esborrany s’ha conservat en revisió, però no s’han pogut desar les targetes.'},502,'no-store');
+  }
+  const autoPublish=cecatLocalRiskAutopublishEnabled(env);
+  if(autoPublish)await env.DB.prepare("UPDATE social_drafts SET status='approved' WHERE id=? AND status='review'").bind(draft.id).run();
+  const ready=await findSocialDraft(env,draft.id);
+  const publication=autoPublish?await publishAutomaticSocialDraft({created:true,draft:ready,localDate:data.targetDate,slot:'cecat-local-risk'},env):{published:false,reason:'review_mode'};
+  await recordOperationalState(env,`cecat-document:${data.documentKey}`,'healthy',{stage:autoPublish?'publication_processed':'review_ready',draftId:draft.id,autoPublish,published:publication.published===true,targetDate:data.targetDate,level:data.level});
+  return json({ok:true,created,draftId:draft.id,status:(await findSocialDraft(env,draft.id))?.status,autoPublish,publication},created?201:200,'no-store');
 }
 
 async function cleanupSocialVideos(env, date = new Date()) {
@@ -5587,7 +5822,7 @@ export async function recoverIncompleteDailySocialDraft(env, date = new Date()) 
 export async function recoverIncompleteOfficialAlertDraft(env) {
   if (!socialAutomationEnabled(env) || !(await ensureSocialDraftSchema(env))) return null;
   const result=await env.DB.prepare(`SELECT * FROM social_drafts
-    WHERE kind = 'official_alert' AND status IN ('approved','partially_published')
+    WHERE kind IN ('official_alert','cecat_local_risk') AND status IN ('approved','partially_published')
       AND created_at >= datetime('now','-4 days')
       AND created_at <= datetime('now','-2 minutes')
     ORDER BY id DESC LIMIT 10`).all();
@@ -6038,6 +6273,7 @@ export default {
       if ((request.method === 'GET' || request.method === 'HEAD') && bufferVideoMatch) return serveBufferVideo(request, env, bufferVideoMatch[1], url);
       const socialVideoUploadMatch = url.pathname.match(/^\/admin\/social-video-upload\/((?:shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)|episodes\/\d+)\.mp4)$/);
       if (request.method === 'POST' && socialVideoUploadMatch) return uploadSocialVideo(request, env, socialVideoUploadMatch[1]);
+      if(request.method==='POST'&&url.pathname==='/admin/cecat-local-risk')return uploadCecatLocalRisk(request,env);
       const youtubeShortRunMatch = url.pathname.match(/^\/admin\/youtube-short-runs\/(\d{4}-\d{2}-\d{2})\/(mati|vespre)$/);
       if (request.method === 'POST' && youtubeShortRunMatch) return youtubeShortRunControl(request, env, youtubeShortRunMatch[1], youtubeShortRunMatch[2]);
       const forecastEpisodeMatch=url.pathname.match(/^\/admin\/forecast-episodes\/(\d+)$/);
@@ -6126,7 +6362,8 @@ export default {
       .then(result=>publishAutomaticSocialDraft(result,env));
     const aemetAlerts=checkAlertsAndNotify(env);
     const meteocatAlerts=checkMeteocatAlertsAndPublish(env);
-    const officialAlertRecovery=Promise.allSettled([aemetAlerts,meteocatAlerts])
+    const cecatLocalRisk=checkCecatLocalRisk(env);
+    const officialAlertRecovery=Promise.allSettled([aemetAlerts,meteocatAlerts,cecatLocalRisk])
       .then(()=>recoverIncompleteOfficialAlertDraft(env))
       .then(result=>publishAutomaticSocialDraft(result,env));
     const forecastEpisode=createForecastEpisodeDraft(env)
@@ -6147,6 +6384,7 @@ export default {
       observedJob('meta-video',runAutomaticMetaVideos(env)),
       observedJob('alerts',aemetAlerts),
       observedJob('meteocat-alert-social',meteocatAlerts),
+      observedJob('cecat-local-risk',cecatLocalRisk),
       observedJob('official-alert-social-recovery',officialAlertRecovery),
       observedJob('forecast-episodes',forecastEpisode),
       observedJob('forecast-episode-publish',recoverForecastEpisodeVideos(env)),
