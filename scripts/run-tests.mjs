@@ -17,6 +17,7 @@ if (quick && !selected.includes('audit-rain-coverage.mjs')) selected.push('audit
 if (quick && !selected.includes('audit-history-charts.mjs')) selected.push('audit-history-charts.mjs');
 if (quick && !selected.includes('audit-seo-video.mjs')) selected.push('audit-seo-video.mjs');
 if (quick && !selected.includes('forecast-dayparts.mjs')) selected.push('forecast-dayparts.mjs');
+if (quick && !selected.includes('cecat-local-risk.mjs')) selected.push('cecat-local-risk.mjs');
 if (quick && !selected.includes('fonta-model.mjs')) selected.push('fonta-model.mjs');
 if (quick && !selected.includes('fonta-foundations.mjs')) selected.push('fonta-foundations.mjs');
 if (quick && !selected.includes('fonta-independent.mjs')) selected.push('fonta-independent.mjs');

@@ -47,6 +47,8 @@ Portal meteorologic local de Sant Celoni i el Baix Montseny amb dades reals, avi
 - TikTok queda diferenciat entre compte connectat i direct post aprovat per la plataforma.
 - X publica mitjançant el canal connectat a Buffer: vídeo a les 06:45, targeta a les 14:00 i vídeo a les 20:30, amb estat remot, deduplicació i reintents al Worker.
 - YouTube Shorts va per GitHub Actions, no pel mateix boto de publicacio social.
+- Els avisos meteorologics socials continuen sortint de Meteocat. Els mapes CECAT/INUNCAT formen una familia separada d'actualitzacio de risc local: es consulten cada 30 minuts, nomes generen peça amb risc taronja o vermell a Sant Celoni o l'entorn proper i no es presenten com un segon avis.
+- La deteccio CECAT i la publicacio tenen interruptors independents, desactivats per defecte. El primer desplegament ha de quedar en revisio fins que una mostra real validi mapa, municipi, franja local i text.
 
 ### D1 i limits
 

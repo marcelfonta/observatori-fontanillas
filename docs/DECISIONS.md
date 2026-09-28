@@ -1,5 +1,15 @@
 # Registre de decisions
 
+## ADR — CECAT com a actualització de risc local complementària (2026-09-28)
+
+- Meteocat continua sent l'única font de les publicacions anomenades «avís meteorològic». CECAT/Protecció Civil s'incorpora com una família diferent: «actualització de risc local», mai com un segon avís ni com una probabilitat de pluja. Aquesta decisió precisa i amplia l'ADR de baixa freqüència del 31 d'agost.
+- El Worker consulta cada 30 minuts el conjunt oficial de plans actius i només accepta INUNCAT actiu amb PDF al domini oficial `documents.dadesobertes.gencat.cat`. D1 reclama cada franja i cada comunicat abans de disparar cap processament.
+- GitHub Actions extreu els mapes incrustats del PDF oficial, converteix UTC a `Europe/Madrid` i avalua Sant Celoni amb un entorn aproximat de 12 km. Verd i groc no generen peça; només taronja o vermell. Estructura, colors, dates o mapes desconeguts fallen de manera tancada.
+- La targeta conserva el mapa oficial sense recolorir-lo, marca l'àrea local, acredita CECAT/Protecció Civil i indica que el mapa és de risc, no de probabilitat. Si ja existeix un avís comarcal Meteocat per a la data, el text diu explícitament que el detall local el complementa.
+- La deduplicació combina el hash del PDF, la data i el nivell. Un dispatch acceptat o incert no es repeteix automàticament; els errors confirmats tenen com a màxim tres intents espaiats. La cua social conserva la deduplicació i la recuperació per canal existents.
+- `SOCIAL_CECAT_LOCAL_RISK_ENABLED` controla detecció i processament; `SOCIAL_CECAT_LOCAL_RISK_AUTOPUBLISH_ENABLED` controla l'enviament. Tots dos neixen desactivats. El desplegament inicial activa només detecció/revisió; l'autopublicació requereix una segona autorització humana després d'una mostra real correcta.
+- Detall operatiu, riscos, validació i rollback a `docs/CECAT-LOCAL-RISK.md`.
+
 ## ADR — Previsió social per franges sense allargar els vídeos (2026-09-17)
 
 - Objectiu i acceptació: tres escenes consecutives de matí (06–12 h), tarda (12–19 h) i vespre (19–24 h), avui al vídeo matinal i demà al del vespre. Conservar les sis escenes i el límit de 30 segons; mantenir observació, gràfica tèrmica, tendència i animació de pluja. La targeta del migdia omet el matí i comença a les 14 h.

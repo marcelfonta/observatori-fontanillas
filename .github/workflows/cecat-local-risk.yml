@@ -1,0 +1,98 @@
+name: Risc local CECAT · Sant Celoni
+
+on:
+  workflow_dispatch:
+    inputs:
+      document_url:
+        description: PDF oficial del comunicat CECAT
+        required: true
+        type: string
+      document_key:
+        description: Identificador immutable reservat pel Worker
+        required: true
+        type: string
+      plan:
+        description: Pla de Protecció Civil
+        required: true
+        type: string
+      phase:
+        description: Fase declarada pel CECAT
+        required: true
+        type: string
+      issued_label:
+        description: Data d'actualització publicada pel CECAT
+        required: false
+        type: string
+      description:
+        description: Resum públic del pla actiu
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cecat-local-risk-${{ inputs.document_key }}
+  cancel-in-progress: false
+
+jobs:
+  analyse-and-return:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SOCIAL_VIDEO_UPLOAD_URL: ${{ secrets.SOCIAL_VIDEO_UPLOAD_URL }}
+      SOCIAL_VIDEO_UPLOAD_TOKEN: ${{ secrets.SOCIAL_VIDEO_UPLOAD_TOKEN }}
+      OUTPUT_DIR: build/cecat-local-risk
+      CECAT_DOCUMENT_URL: ${{ inputs.document_url }}
+      CECAT_DOCUMENT_KEY: ${{ inputs.document_key }}
+      CECAT_PLAN: ${{ inputs.plan }}
+      CECAT_PHASE: ${{ inputs.phase }}
+      CECAT_ISSUED_LABEL: ${{ inputs.issued_label }}
+      CECAT_DESCRIPTION: ${{ inputs.description }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Valida la petició
+        run: |
+          set -euo pipefail
+          [[ "$CECAT_DOCUMENT_KEY" =~ ^[a-f0-9]{24}$ ]]
+          test "$CECAT_PLAN" = "INUNCAT"
+          test -n "$SOCIAL_VIDEO_UPLOAD_URL"
+          test -n "$SOCIAL_VIDEO_UPLOAD_TOKEN"
+      - name: Instal·la el lector PDF i d'imatges
+        run: python -m pip install --disable-pip-version-check pypdf==6.1.1 Pillow==11.3.0
+      - name: Analitza el comunicat i prepara la targeta
+        id: analysis
+        run: |
+          set -euo pipefail
+          python scripts/cecat-local-risk.py \
+            --document-url "$CECAT_DOCUMENT_URL" \
+            --document-key "$CECAT_DOCUMENT_KEY" \
+            --plan "$CECAT_PLAN" \
+            --phase "$CECAT_PHASE" \
+            --issued-label "$CECAT_ISSUED_LABEL" \
+            --description "$CECAT_DESCRIPTION" \
+            --output-dir "$OUTPUT_DIR"
+          publishable="$(jq -r '.publishable == true' "$OUTPUT_DIR/metadata.json")"
+          echo "publishable=$publishable" >> "$GITHUB_OUTPUT"
+      - name: Conserva l'auditoria privada
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cecat-local-risk-${{ inputs.document_key }}
+          path: build/cecat-local-risk/
+          retention-days: 14
+      - name: Retorna només una peça local validada
+        if: steps.analysis.outputs.publishable == 'true'
+        run: |
+          set -euo pipefail
+          base_url="${SOCIAL_VIDEO_UPLOAD_URL%/admin/social-video-upload}"
+          curl --fail --silent --show-error --retry 3 --retry-all-errors \
+            --request POST \
+            --header "Authorization: Bearer $SOCIAL_VIDEO_UPLOAD_TOKEN" \
+            --form-string "metadata=$(cat "$OUTPUT_DIR/metadata.json")" \
+            --form "image_png=@$OUTPUT_DIR/card.png;type=image/png" \
+            --form "image_jpeg=@$OUTPUT_DIR/card.jpg;type=image/jpeg" \
+            "$base_url/admin/cecat-local-risk"

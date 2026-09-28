@@ -133,6 +133,11 @@
 - [x] Desar `METEOCAT_API_KEY` com a secret de Cloudflare sense exposar-ne el valor.
 - [x] Limitar persistentment les consultes SMP a un màxim planificat de 93 al mes i fer-ne visible el recompte al panell administratiu.
 - [x] Desplegar conjuntament el secret i la protecció de quota, i verificar el cicle d’avisos de Meteocat.
+- [x] Preparar la consulta CECAT cada 30 minuts, amb detecció de comunicats INUNCAT nous i reserva persistent per evitar processaments duplicats.
+- [x] Extreure els mapes oficials del PDF, convertir-ne les franges UTC a hora local i filtrar només risc taronja o vermell a Sant Celoni i l'entorn proper.
+- [x] Preparar una targeta específica de Protecció Civil, diferenciada dels avisos Meteocat, amb mapa oficial, atribució, deduplicació i degradació segura.
+- [ ] Desplegar amb detecció en mode revisió, validar el primer comunicat real i comprovar visualment municipi, nivell, franja i enllaç oficial.
+- [ ] Autoritzar en un segon pas l'autopublicació CECAT, només després de la validació real i sense modificar els avisos Meteocat existents.
 
 - [x] Crear una publicació de presentació de les nou xarxes i una pàgina oficial única amb tots els enllaços clicables.
 
