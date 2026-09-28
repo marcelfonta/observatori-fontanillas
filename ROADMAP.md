@@ -142,7 +142,7 @@
 - [x] Desplegar conjuntament el secret i la protecció de quota, i verificar el cicle d’avisos de Meteocat.
 - [x] Preparar la consulta CECAT cada 30 minuts, amb detecció de comunicats INUNCAT nous i reserva persistent per evitar processaments duplicats.
 - [x] Extreure els mapes oficials del PDF, convertir-ne les franges UTC a hora local i filtrar només risc taronja o vermell a Sant Celoni i l'entorn proper.
-- [x] Preparar una targeta específica de Protecció Civil, diferenciada dels avisos Meteocat, amb mapa oficial, atribució, deduplicació i degradació segura.
+- [x] Preparar una targeta específica de Protecció Civil, diferenciada dels avisos Meteocat, amb els quatre mapes oficials del dia, hores locals, atribució, deduplicació pel perfil complet i degradació segura.
 - [ ] Desplegar amb detecció en mode revisió, validar el primer comunicat real i comprovar visualment municipi, nivell, franja i enllaç oficial.
 - [ ] Autoritzar en un segon pas l'autopublicació CECAT, només després de la validació real i sense modificar els avisos Meteocat existents.
 

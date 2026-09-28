@@ -54,12 +54,17 @@ const uploadToken='u'.repeat(32);
 const checkedAt=new Date();
 const validUntil=new Date(checkedAt.getTime()+6*3600000);
 const localTarget=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid'}).format(validUntil);
+const windows=[
+  {startHourUtc:0,endHourUtc:6,windowLabel:'02:00–08:00 h',endAt:new Date(checkedAt.getTime()+1*3600000).toISOString(),level:'green',levelLabel:'Verd',riskCounts:{green:40,yellow:0,orange:0,red:0}},
+  {startHourUtc:6,endHourUtc:12,windowLabel:'08:00–14:00 h',endAt:new Date(checkedAt.getTime()+2*3600000).toISOString(),level:'yellow',levelLabel:'Groc',riskCounts:{green:10,yellow:30,orange:0,red:0}},
+  {startHourUtc:12,endHourUtc:18,windowLabel:'14:00–20:00 h',endAt:new Date(checkedAt.getTime()+4*3600000).toISOString(),level:'orange',levelLabel:'Taronja',riskCounts:{green:20,yellow:0,orange:40,red:0}},
+  {startHourUtc:18,endHourUtc:24,windowLabel:'20:00–02:00 h',endAt:validUntil.toISOString(),level:'orange',levelLabel:'Taronja',riskCounts:{green:20,yellow:0,orange:40,red:0}},
+];
 const metadata={
   publishable:true,source:'CECAT',plan:'INUNCAT',phase:'ALERTA',documentKey:'a'.repeat(24),
   documentUrl:official,documentSha256:'b'.repeat(64),issuedAt:checkedAt.toISOString(),checkedAt:checkedAt.toISOString(),
-  targetDate:localTarget,dateLabel:'29/09/2026',windowLabel:'08:00–14:00 h',validUntil:validUntil.toISOString(),
-  startHourUtc:6,endHourUtc:12,
-  phenomenon:'Intensitat de pluja',level:'orange',levelLabel:'Taronja',riskCounts:{green:20,yellow:0,orange:40,red:0},
+  targetDate:localTarget,dateLabel:'29/09/2026',windows,validUntil:validUntil.toISOString(),
+  phenomenon:'Intensitat de pluja',level:'orange',levelLabel:'Taronja',
   analysisMethod:'official-raster-local-patch-v1',
 };
 const multipart=async(overrides={})=>{
@@ -74,14 +79,19 @@ const multipart=async(overrides={})=>{
   return new Request('https://worker.example/admin/cecat-local-risk',{method:'POST',headers:{Authorization:`Bearer ${uploadToken}`,'Content-Type':encoded.headers.get('Content-Type'),'Content-Length':String(body.byteLength)},body});
 };
 const env={DB,SOCIAL_VIDEO_BUCKET:bucket,SOCIAL_VIDEO_UPLOAD_TOKEN:uploadToken,SOCIAL_CECAT_LOCAL_RISK_ENABLED:'true',SOCIAL_CECAT_LOCAL_RISK_AUTOPUBLISH_ENABLED:'false'};
+const incomplete=await handler.fetch(await multipart({windows:windows.slice(0,3)}),env,{waitUntil(){}});
+assert.equal(incomplete.status,422);
 const first=await handler.fetch(await multipart(),env,{waitUntil(){}});
 const firstPayload=await first.json();
 assert.equal(first.status,201,JSON.stringify(firstPayload));
 assert.equal(firstPayload.created,true);assert.equal(firstPayload.autoPublish,false);assert.equal(firstPayload.status,'review');
 const second=await handler.fetch(await multipart({documentKey:'c'.repeat(24),documentSha256:'d'.repeat(64)}),env,{waitUntil(){}});
 assert.equal(second.status,200);assert.equal((await second.json()).created,false);
-assert.equal(sqlite.prepare("SELECT COUNT(*) AS total FROM social_drafts WHERE kind='cecat_local_risk'").get().total,1);
-assert.equal(objects.size,2);
+const redWindows=windows.map((item,index)=>index===3?{...item,level:'red',levelLabel:'Vermell',riskCounts:{green:0,yellow:0,orange:0,red:40}}:item);
+const changed=await handler.fetch(await multipart({documentKey:'e'.repeat(24),documentSha256:'f'.repeat(64),level:'red',levelLabel:'Vermell',windows:redWindows}),env,{waitUntil(){}});
+assert.equal(changed.status,201);assert.equal((await changed.json()).created,true);
+assert.equal(sqlite.prepare("SELECT COUNT(*) AS total FROM social_drafts WHERE kind='cecat_local_risk'").get().total,2);
+assert.equal(objects.size,4);
 sqlite.close();
 
 console.log('CECAT local complementari: correcte');

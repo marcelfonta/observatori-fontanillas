@@ -1,5 +1,12 @@
 # Changelog
 
+## Millora — quatre franges CECAT completes · 2026-09-28
+
+- La targeta local deixa de resumir només la franja més crítica i mostra els quatre mapes oficials del dia en una graella 2 × 2, convertits a hora de Sant Celoni.
+- La publicació continua exigint almenys una franja activa o futura taronja o vermella, però conserva també verd i groc per explicar l'evolució completa.
+- La deduplicació utilitza el perfil de les quatre franges: un comunicat nou idèntic no repeteix la peça i qualsevol canvi material pot preparar una actualització.
+- Worker 22.29.23. Sense canvi d'esquema D1 ni secrets nous; detecció i autopublicació continuen desactivades per defecte.
+
 ## Preparació — risc local CECAT complementari · 2026-09-28
 
 - Consulta programada cada 30 minuts del conjunt oficial de plans actius del CECAT, limitada a INUNCAT i amb reserva persistent per franja i comunicat.

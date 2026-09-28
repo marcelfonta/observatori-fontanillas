@@ -15,8 +15,8 @@ Aportar una informació oficial addicional quan Protecció Civil publica un mapa
 
 - Pla actiu: només INUNCAT.
 - Àrea: punt de l'estació de Sant Celoni i radi aproximat de 12 km sobre el mapa municipal oficial.
-- Llindar: taronja o vermell. Verd i groc queden registrats només a l'auditoria del workflow i no creen esborrany.
-- Vigència: avui i els tres dies següents; la peça caduca al final de la franja oficial convertida a hora local.
+- Llindar: cal almenys una franja activa o futura taronja o vermella. La targeta conserva igualment les quatre franges del dia —també les verdes i grogues— per mostrar-ne l'evolució completa.
+- Vigència: avui i els tres dies següents; la peça caduca al final de l'última franja oficial del dia convertida a hora local.
 - El mapa es conserva amb els colors oficials. Només s'hi afegeix un marcador local i la capa de marca/explicació.
 - El text sempre diu «actualització de risc local», identifica CECAT/Protecció Civil i explica que no és probabilitat de pluja.
 
@@ -24,7 +24,7 @@ Aportar una informació oficial addicional quan Protecció Civil publica un mapa
 
 - Una reserva D1 per cada franja impedeix repetir la consulta dins la mateixa mitja hora.
 - Una reserva per URL oficial impedeix disparar repetidament el mateix comunicat.
-- L'esborrany social es deduplica per data, franja, fenomen i nivell local. Un comunicat nou amb la mateixa situació no repeteix la publicació; un canvi material de franja o nivell sí que pot generar una actualització.
+- L'esborrany social es deduplica per data, fenomen i perfil complet de les quatre franges. Un comunicat nou amb la mateixa situació no repeteix la publicació; un canvi material d'alguna franja sí que pot generar una actualització.
 - Si hi ha un avís Meteocat per a la mateixa data, el text declara que el mapa CECAT és el detall local complementari.
 - La recuperació per canal reutilitza les mateixes reserves i límits del sistema social principal.
 
@@ -40,7 +40,7 @@ Aportar una informació oficial addicional quan Protecció Civil publica un mapa
 
 1. Desplegar el codi amb els dos interruptors a `false`.
 2. Activar `SOCIAL_CECAT_LOCAL_RISK_ENABLED=true` i mantenir `SOCIAL_CECAT_LOCAL_RISK_AUTOPUBLISH_ENABLED=false`.
-3. Validar almenys una mostra real: document, marcador, nivell, franja local, text, font, PNG i JPEG.
+3. Validar almenys una mostra real: document, quatre mapes, marcadors, nivells, quatre franges locals, text, font, PNG i JPEG.
 4. Només amb una nova autorització humana, activar `SOCIAL_CECAT_LOCAL_RISK_AUTOPUBLISH_ENABLED=true`.
 
 ## Rollback
