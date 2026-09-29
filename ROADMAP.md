@@ -44,6 +44,9 @@
 
 ## Manteniment obert — En curs
 
+- [x] Distingir els comunicats CECAT textuals sense mapes d'una avaria real:
+  auditoria i no-publicació segures, sense correus de fallada innecessaris.
+
 - [x] Crear una app i un giny realment natius per a macOS, amb formats petit,
   mitjà i gran, obertura local i actualització independent de l'iPhone.
 
