@@ -11,7 +11,7 @@ import { fetchSocialEnvironment } from '../src/core/social-environment.js';
 import { dailySocialCardV5 } from './social-daily-v5.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.24";
+const WORKER_VERSION = "22.29.25";
 const WORKER_BUILT = "2026-09-29";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -65,6 +65,9 @@ const CECAT_ACTIVE_PLANS_ENDPOINT = 'https://analisi.transparenciacatalunya.cat/
 const CECAT_DOCUMENT_HOST = 'documents.dadesobertes.gencat.cat';
 const CECAT_POLL_INTERVAL_MINUTES = 30;
 const CECAT_UPLOAD_MAX_BYTES = 12 * 1024 * 1024;
+const XAC_POLLEN_STATIONS = new Set(['bellaterra','girona','manresa']);
+const XAC_POLLEN_LICENSE = 'CC BY-NC-SA 4.0';
+const XAC_POLLEN_MAX_BYTES = 300_000;
 const THREECAT_SEARCH_URL = "https://www.3cat.cat/cercador/";
 const FORECAST_VIDEO_HTML_LIMIT = 900_000;
 const COMPARISON_STATIONS = [
@@ -294,6 +297,27 @@ function json(data, status = 200, cacheControl = "no-store", origin = "*") {
       "Cache-Control": cacheControl,
     },
   });
+}
+
+async function xacPollenProxy(url) {
+  const station=String(url.searchParams.get('station')||'').toLowerCase();
+  if(!XAC_POLLEN_STATIONS.has(station))return json({error:'Estació XAC no admesa',code:'XAC_STATION_NOT_ALLOWED'},400,'no-store');
+  const sourceUrl=`https://aerobiologia.cat/api/v0/forecast/${station}/ca/xml`;
+  const response=await fetch(sourceUrl,{
+    headers:{Accept:'application/xml,text/xml'},redirect:'error',
+    signal:AbortSignal.timeout(12_000),cf:{cacheEverything:true,cacheTtl:21_600},
+  });
+  if(!response.ok)return json({error:'La predicció XAC no està disponible temporalment',code:'XAC_UPSTREAM_ERROR'},502,'public, max-age=60');
+  const declaredLength=Number(response.headers.get('content-length'));
+  if(Number.isFinite(declaredLength)&&declaredLength>XAC_POLLEN_MAX_BYTES)throw new Error('Resposta XAC massa gran');
+  const xml=await response.text();
+  const stationPage=`https://aerobiologia.cat/pia/ca/forecast/${station}`;
+  if(xml.length>XAC_POLLEN_MAX_BYTES||/<!DOCTYPE|<!ENTITY/i.test(xml)||!xml.includes('<reports>')||!xml.includes(`<license>${XAC_POLLEN_LICENSE}</license>`)||!xml.includes(stationPage))throw new Error('Contracte XAC inesperat');
+  return new Response(xml,{status:200,headers:{
+    ...corsHeaders('*'),'Content-Type':'application/xml;charset=UTF-8',
+    'Cache-Control':'public, max-age=1800, stale-while-revalidate=21600',
+    'X-XAC-Station':station,'X-Data-License':XAC_POLLEN_LICENSE,
+  }});
 }
 
 function dateKey(date = new Date()) {
@@ -6335,6 +6359,7 @@ export default {
       if (url.pathname === "/widget-observation") {
         return json(await widgetObservation(env), 200, "public, max-age=60");
       }
+      if (url.pathname === "/pollen-xac") return xacPollenProxy(url);
       if (url.pathname === "/history") return history(url, env, ctx);
       if (url.pathname === "/temperature-trend") return temperatureTrend(env);
       if (url.pathname === "/records") return stationRecords(request,env,ctx);
@@ -6351,7 +6376,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

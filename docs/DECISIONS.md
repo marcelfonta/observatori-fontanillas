@@ -1,5 +1,25 @@
 # Registre de decisions
 
+## ADR — Referència aerobiològica XAC per a Sant Celoni (2026-09-29)
+
+- La recomanació directa de la XAC/UAB estableix Bellaterra com a referència
+  principal per a Sant Celoni i Girona —o Manresa— com a senyal complementari
+  de vegetació més humida. El producte usa Girona per defecte i Manresa només
+  com a reserva identificada si Girona no està disponible.
+- No es calcula cap mitjana ni un nivell sintètic entre estacions. Cada valor
+  conserva estació, tàxon, tipus, nivell, tendència i període. La interfície diu
+  que és una referència territorial, no una mesura feta a Sant Celoni.
+- Només s’automatitza la predicció setmanal publicada a l’API oficial. Les
+  gràfiques de dades reals no s’extreuen automàticament perquè les condicions
+  d’ús ho exclouen. Llicència i atribució: CC BY-NC-SA 4.0, PIA–XAC / UAB.
+- El Worker només actua de proxy restringit per Bellaterra, Girona i Manresa:
+  valida mida, llicència i estructura mínima, aplica memòria cau i no desa
+  dades a D1. El navegador aplica el parser estricte compartit amb les proves.
+- La capa web pot activar-se després de staging. Les publicacions socials
+  romanen bloquejades fins a revisar una mostra real i acordar llindar,
+  freqüència, text i composició visual; no es pot interpretar un nivell com a
+  diagnòstic ni com a risc homogeni per a tota la població.
+
 ## ADR — CECAT com a actualització de risc local complementària (2026-09-28)
 
 - Meteocat continua sent l'única font de les publicacions anomenades «avís meteorològic». CECAT/Protecció Civil s'incorpora com una família diferent: «actualització de risc local», mai com un segon avís ni com una probabilitat de pluja. Aquesta decisió precisa i amplia l'ADR de baixa freqüència del 31 d'agost.

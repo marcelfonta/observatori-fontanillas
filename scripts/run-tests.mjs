@@ -25,6 +25,8 @@ if (quick && !selected.includes('fonta-r2-backup.mjs')) selected.push('fonta-r2-
 if (quick && !selected.includes('fonta-xema-daily.mjs')) selected.push('fonta-xema-daily.mjs');
 if (quick && !selected.includes('environment-missing-values.mjs')) selected.push('environment-missing-values.mjs');
 if (quick && !selected.includes('environment-freshness.mjs')) selected.push('environment-freshness.mjs');
+if (quick && !selected.includes('xac-integration.mjs')) selected.push('xac-integration.mjs');
+if (quick && !selected.includes('xac-pollen.mjs')) selected.push('xac-pollen.mjs');
 if (quick && !selected.includes('social-production.mjs')) selected.push('social-production.mjs');
 if (quick) for(const name of ['publication-state.mjs','youtube-recovery.mjs','home-forecast.mjs','forecast-bias-experiment.mjs']) if(!selected.includes(name))selected.push(name);
 

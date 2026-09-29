@@ -55,13 +55,17 @@ de setembre**. El lector marca `future` per a una consulta del dia 20, no
 impossibles, tàxons duplicats, estació diferent i canvis d'escala/llicència.
 Una fila incompleta conserva `null` i marca tot el resultat `incomplete`.
 
-Bellaterra és només la mostra tècnica, no una selecció aprovada ni una
-equivalència amb Sant Celoni. La integració requereix confirmar la referència
-territorial amb la XAC; la proximitat no garanteix representativitat.
+**Actualització 29/09/2026:** la XAC/UAB ha recomanat Bellaterra com a
+referència principal per a Sant Celoni i Girona —o Manresa— com a complement
+de vegetació més humida. La integració web usa Girona per defecte i Manresa
+només com a reserva explícita. No es promitgen estacions ni es presenta cap
+valor com una mesura local de Sant Celoni. La publicació social continua
+pendent de revisar una mostra real i d'acordar-ne el llindar editorial.
 
 La previsualització inclou autoria, enllaç, adaptació i CC BY-NC-SA 4.0, sense
 logotip PIA ni aparença de suport institucional. Cal comunicar l'ús als
-autors segons la seva petició; no s'ha enviat cap missatge. Si l'ús canvia a
+autors segons la seva petició; l'intercanvi de correus del 29/09/2026 deixa
+comunicada la finalitat no comercial. Si l'ús canvia a
 comercial, reobrir la revisió de condicions abans de reutilitzar les dades.
 
 ### Reproduir localment

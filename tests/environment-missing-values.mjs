@@ -50,7 +50,7 @@ try{
   assert.equal(f.events.at(-1).uv,0);assert.equal((await answer(f.events.at(-1))).level,'safe');
  }
  const f=await fixture({...all(null),uv_index:4,olive_pollen:30,time:'2026-09-20T10:00'});
- assert.equal(f.text('environment-uv'),'4,0');assert.equal(f.text('environment-pollen-main'),'Olivera · Moderat');
+ assert.equal(f.text('environment-uv'),'4,0');assert.equal(f.text('environment-pollen-main'),'No disponible');
  assert.equal((await answer(f.events.at(-1))).level,'info');
  f.module.updateEnvironmentStation({uv:0,updatedUtc:'2026-09-20T08:05:00Z'});assert.equal(f.text('environment-uv'),'0,0');assert.equal(f.text('environment-uv-source'),'Sensor Fontanillas');
  f.module.updateEnvironmentStation({uv:null});assert.equal(f.text('environment-uv'),'4,0');assert.equal(f.text('environment-uv-source'),'Estimació CAMS');

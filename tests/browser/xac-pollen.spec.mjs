@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 import {xacFixture} from '../fixtures/xac-pollen.js';
-const moduleUrl=`data:text/javascript;base64,${Buffer.from(await readFile(new URL('../../scripts/lib/xac-pollen.mjs',import.meta.url),'utf8')).toString('base64')}`;
+const moduleUrl=`data:text/javascript;base64,${Buffer.from(await readFile(new URL('../../src/core/xac-pollen.js',import.meta.url),'utf8')).toString('base64')}`;
 test('XAC: XML, dates, pòl·lens separats d’espores i absències',async({page})=>{
   const result=await page.evaluate(async({moduleUrl,xml})=>{
     const {parseXacPollen}=await import(moduleUrl);
@@ -14,7 +14,7 @@ test('XAC: XML, dates, pòl·lens separats d’espores i absències',async({page
   },{moduleUrl,xml:xacFixture});
   expect(result.original.status).toBe('future');
   expect(result.original.publishing).toBe(false);
-  expect(result.original.referenceApproved).toBe(false);
+  expect(result.original.referenceApproved).toBe(true);
   expect(result.original.pollens[1]).toMatchObject({level:0,levelLabel:'Nul',trend:'A',trendLabel:'Augment'});
   expect(result.original.spores[0]).toMatchObject({level:4,name:'Alternària'});
   expect(result.original.pollens).toHaveLength(2);
@@ -30,4 +30,30 @@ for(const width of [360,390])test(`XAC: previsualització mòbil ${width}`,async
   await expect(page.getByText('PREVISUALITZACIÓ LOCAL',{exact:false})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
   await page.screenshot({path:info.outputPath('xac-preview.png'),fullPage:true});
+});
+
+for(const width of [390,1280])test(`XAC: integració web Bellaterra i Girona ${width}`,async({page},info)=>{
+  await page.clock.install({time:new Date('2026-09-22T10:00:00Z')});
+  await page.setViewportSize({width,height:1000});
+  await page.route('**/*',route=>{
+    const url=new URL(route.request().url());
+    if(url.pathname==='/src/app.js'||url.hostname!=='127.0.0.1')return route.abort();
+    return route.continue();
+  });
+  await page.goto('/');
+  const girona=xacFixture.replaceAll('Bellaterra','Girona').replaceAll('bellaterra','girona').replace('<URTI>1</URTI>','<URTI>3</URTI>');
+  await page.evaluate(async({bellaterra,girona})=>{
+    const section=document.getElementById('medi-ambient');document.body.replaceChildren(section);section.style.display='grid';
+    window.fetch=async url=>String(url).includes('/pollen-xac')
+      ? {ok:true,text:async()=>String(url).includes('girona')?girona:bellaterra}
+      : {ok:true,json:async()=>({current:{time:'2026-09-22T12:00',european_aqi:18,uv_index:4}})};
+    const module=await import('/src/features/environment.js');await module.initEnvironment();
+  },{bellaterra:xacFixture,girona});
+  await expect(page.locator('#xac-status')).toHaveText('Butlletí setmanal vigent');
+  await expect(page.locator('[data-xac-station="primary"]')).toContainText('Bellaterra');
+  await expect(page.locator('[data-xac-station="complement"]')).toContainText('Girona');
+  await expect(page.locator('#xac-summary-title')).toContainText('Alternària');
+  await expect(page.locator('.xac-method')).toContainText('Els nivells mai no es promitgen');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  await page.screenshot({path:info.outputPath('xac-web.png'),fullPage:true});
 });
