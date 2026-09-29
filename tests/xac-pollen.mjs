@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {validDate,validity,parseXacPollen,pollenPreviewHtml} from '../scripts/lib/xac-pollen.mjs';
+import {validDate,validity,parseXacPollen,pollenPreviewHtml,buildXacReference,rankXacTaxa} from '../src/core/xac-pollen.js';
 for(const bad of ['2026-02-30','2026-13-01','2026-9-20',null,'',true])assert.equal(validDate(bad),false);
 assert.equal(validDate('2028-02-29'),true);
 assert.equal(validity('2026-09-21','2026-09-27','2026-09-20'),'future');
@@ -13,4 +13,10 @@ assert.ok(!html.includes('<script>'));
 assert.match(html,/NO PUBLICADA/);
 assert.match(html,/Encara no correspon/);
 assert.match(html,/<td>—<\/td>/);
+const station={station:'bellaterra',stationName:'Bellaterra',targetDate:'2026-09-22',start:'2026-09-21',end:'2026-09-27',status:'in-period',incomplete:false,pollens:[{name:'Gramínies',group:'pollens',level:2,levelLabel:'Mig',trend:'A',trendLabel:'Augment'}],spores:[{name:'Alternària',group:'spores',level:4,levelLabel:'Màxim',trend:'=',trendLabel:'Estable'}]};
+const complement={...station,station:'girona',stationName:'Girona',pollens:[{name:'Parietària',group:'pollens',level:3,levelLabel:'Alt',trend:'D',trendLabel:'Descens'}],spores:[]};
+const reference=buildXacReference(station,complement);
+assert.equal(reference.status,'current');assert.equal(reference.highest.name,'Alternària');assert.equal(reference.highest.stationName,'Bellaterra');
+assert.deepEqual(rankXacTaxa(complement).map(item=>item.name),['Parietària']);
+assert.throws(()=>buildXacReference(station,{...complement,station:'lleida'}));
 console.log('XAC: dates, límits, absències i previsualització aïllada correctes');

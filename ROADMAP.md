@@ -72,8 +72,14 @@
 - [x] Integrar el format social 05 aprovat als programadors, amb snapshot fresc, tres edicions d'imatges, dos vídeos complets i proves de dades/maquetació. Worker 22.29.20 verificat a staging sense enviaments.
 - [x] PR 160 revisat i fusionat; Worker 22.29.20 i Pages desplegats i verificats el 20/09/2026. Horaris i secrets preservats, sense repetir publicacions.
 - [ ] Comprovar els primers lliuraments reals del format 05: 20/09 a les 14:00 i 20:30, i 21/09 a les 06:45, inclosos retalls/superposicions en apps reals. No confondre proves de render amb publicacions confirmades.
-- [x] Preparar lector XAC només local, dates/escala/absències comprovades, pòl·lens separats d'espores i atribució. Ús no comercial confirmat; Bellaterra és una mostra tècnica, no una referència aprovada.
-- [ ] Per al pol·len social: acordar l'estació de referència XAC, reutilització i nivells verificats abans de qualsevol automatització.
+- [x] Preparar lector XAC només local, dates/escala/absències comprovades, pòl·lens separats d'espores i atribució.
+- [x] Confirmar l’ús no comercial i la referència territorial amb la XAC/UAB:
+  Bellaterra principal i Girona com a complement humit, amb Manresa de reserva.
+- [x] Integrar la predicció setmanal oficial XAC al web amb proxy restringit,
+  memòria cau, vigència, espores, atribució i degradació segura, sense mitjanes
+  entre estacions ni falsa mesura local.
+- [ ] Revisar una mostra real del bloc XAC en mòbil i escriptori després del
+  desplegament; només després definir llindar i freqüència del pol·len social.
 - [x] Preparar consulta a la XAC (no enviada) i plantilla de mesura d'impacte amb dades natives, sense inventar mètriques. Detall a `docs/SOCIAL-FOLLOWUP-2026-09-20.md`.
 - [ ] Recollir estadístiques reals comparables i validar editorialment un episodi real de mal temps.
 

@@ -6,17 +6,14 @@ import { fileURLToPath } from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=path=>readFile(resolve(root,path),'utf8');
 
-const [html,environment,config,footerSocial,portalShell,portalCss,styleCss,logo,backend,adminPage,adminFeature,serviceWorker]=await Promise.all([
-  read('index.html'),read('src/features/environment.js'),read('src/core/config.js'),read('src/features/footer-social.js'),read('src/features/portal-shell.js'),read('css/portal.css'),read('css/style.css'),read('assets/logos/observatori-symbol.svg'),read('worker/index.js'),read('administracio.html'),read('src/features/admin.js'),read('service-worker.js')
+const [html,environment,xac,config,footerSocial,portalShell,portalCss,styleCss,logo,backend,adminPage,adminFeature,serviceWorker]=await Promise.all([
+  read('index.html'),read('src/features/environment.js'),read('src/core/xac-pollen.js'),read('src/core/config.js'),read('src/features/footer-social.js'),read('src/features/portal-shell.js'),read('css/portal.css'),read('css/style.css'),read('assets/logos/observatori-symbol.svg'),read('worker/index.js'),read('administracio.html'),read('src/features/admin.js'),read('service-worker.js')
 ]);
 
-for(const token of ['POLLEN_LIMITS','grass:[1,10,50,150]','birch:[1,10,80,200]','olive:[1,10,100,200]','renderPollenSummary','Nul o residual','Moderat','Molt alt'])assert.ok(environment.includes(token),`Pol·len V21: falta ${token}.`);
-for(const species of ['grass','olive','birch','mugwort','ragweed']){
-  assert.ok(html.includes(`id="pollen-${species}-level"`),`Pol·len V21: falta el nivell de ${species}.`);
-  assert.ok(html.includes(`id="pollen-${species}-meter"`),`Pol·len V21: falta el mesurador de ${species}.`);
-}
-assert.ok(html.includes('id="pollen-summary-title"')&&html.includes('https://aerobiologia.cat/pia/ca/nivells'),'Pol·len V21: falta el resum o la font XAC.');
-assert.ok(portalCss.includes('.pollen-summary')&&portalCss.includes('.environment-level.is-extreme'),'Pol·len V21: falten els estils interpretatius.');
+for(const token of ["fetchXacStation('bellaterra'","fetchXacStation('girona'","fetchXacStation('manresa'",'renderXacReference','No és una mesura feta a Sant Celoni'])assert.ok(environment.includes(token),`Pol·len XAC: falta ${token}.`);
+for(const token of ['XAC_PRIMARY_STATION','XAC_COMPLEMENT_STATIONS','referenceApproved:true','Els nivells no es promitgen','publishing:false'])assert.ok(xac.includes(token),`Contracte XAC: falta ${token}.`);
+for(const token of ['data-xac-station="primary"','data-xac-station="complement"','id="xac-summary-title"','PIA–XAC / UAB','CC BY-NC-SA 4.0'])assert.ok(html.includes(token),`Pol·len XAC: falta ${token}.`);
+assert.ok(portalCss.includes('.xac-stations')&&portalCss.includes('.pollen-summary')&&portalCss.includes('.environment-level.is-extreme'),'Pol·len XAC: falten els estils interpretatius.');
 
 for(const url of ['https://www.instagram.com/meteo_fontanillas/','https://www.facebook.com/meteofontanillas','https://x.com/meteo_fonta','https://bsky.app/profile/meteofontanillas.bsky.social','https://t.me/meteofontanillas','https://www.threads.com/@meteo_fontanillas','https://www.tiktok.com/@meteo_fontanillas','https://whatsapp.com/channel/0029VbD9jmL4CrfajJnZIi25'])assert.ok(config.includes(url),`Xarxes V22.0.2: falta ${url}.`);
 for(const token of ['header-social','footer-social','noopener noreferrer',"['instagram','Instagram']","['facebook','Facebook']","['bluesky','Bluesky']","['telegram','Telegram']",'Meteo Fontanillas (s’obre en una pestanya nova)'])assert.ok(footerSocial.includes(token),`Xarxes V22.0.0: falta ${token}.`);
@@ -39,10 +36,10 @@ for(const token of ['graph.facebook.com','media_publish','publishFacebook','publ
 for(const id of ['admin-social-pill','admin-social-mode','admin-social-facebook','admin-social-instagram','admin-social-bluesky','admin-social-telegram','admin-social-drafts','admin-social-last','admin-social-list','admin-social-diagnose','admin-social-diagnostic-list'])assert.ok(adminPage.includes(`id="${id}"`),`Administració V22.0.0: falta ${id}.`);
 for(const token of ['renderSocialEditor','fetchSocialDrafts','runSocialDiagnostics','channelCredentials'])assert.ok(adminFeature.includes(token),`Administració V22.0.0: falta ${token}.`);
 
-assert.ok(serviceWorker.includes("observatori-fontanillas-v22-31-7-morning-publication-0645")&&serviceWorker.includes("'/src/features/footer-social.js'")&&serviceWorker.includes("'/assets/images/observatori-fontanillas-avatar-v21.png'"),'PWA V22.30: versió, mòdul social o avatar absents.');
+assert.ok(serviceWorker.includes("observatori-fontanillas-v22-31-8-xac-pollen-v1")&&serviceWorker.includes("'/src/features/footer-social.js'")&&serviceWorker.includes("'/assets/images/observatori-fontanillas-avatar-v21.png'"),'PWA V22.30: versió, mòdul social o avatar absents.');
 const avatar=await readFile(resolve(root,'assets/images/observatori-fontanillas-avatar-v21.png'));
 assert.equal(avatar.toString('ascii',1,4),'PNG','Marca V22.0.0: l’avatar no és PNG.');
 assert.deepEqual([avatar.readUInt32BE(16),avatar.readUInt32BE(20)],[1024,1024],'Marca V22.0.0: l’avatar no és quadrat a 1024 px.');
-assert.equal(JSON.parse(await read('project.json')).version,'22.31.7');
+assert.equal(JSON.parse(await read('project.json')).version,'22.31.8');
 
 console.log('Test V21: pol·len, marca, xarxes i cua segura correctes');

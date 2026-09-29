@@ -1,5 +1,24 @@
 # Changelog
 
+## Millora — referència aerobiològica XAC per al Baix Montseny · 2026-09-29
+
+- La pàgina de Medi Ambient substitueix el resum parcial de cinc pòl·lens CAMS
+  per la predicció setmanal oficial PIA–XAC / UAB de pòl·lens i espores.
+- Bellaterra és la referència principal recomanada per a Sant Celoni i Girona
+  aporta el contrast de vegetació més humida; Manresa només actua com a reserva
+  explícita quan Girona no respon. Els nivells no es promitgen.
+- Un proxy públic restringit del Worker valida estació, mida, estructura bàsica
+  i llicència abans de lliurar l’XML, amb memòria cau per no carregar l’origen.
+- La interfície mostra període, vigència, nivell 0–4, tendència, tots els tàxons,
+  font i limitació territorial. Dades absents o caduques no es converteixen en
+  zeros ni en una falsa mesura local de Sant Celoni.
+- Reutilització no comercial `CC BY-NC-SA 4.0`, amb atribució i enllaç al PIA.
+  No s’utilitzen logotips ni les gràfiques de dades reals, que no admeten
+  extracció automatitzada pública.
+- La publicació social continua bloquejada (`publishing:false`) fins que una
+  mostra real sigui revisada visualment i editorialment. Sense D1, secrets,
+  horaris ni publicacions noves.
+
 ## Correcció — comunicats CECAT textuals sense falsa avaria · 2026-09-29
 
 - Les actualitzacions oficials INUNCAT sense els quatre mapes municipals es

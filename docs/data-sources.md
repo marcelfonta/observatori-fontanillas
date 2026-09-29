@@ -7,6 +7,7 @@ The portal labels sources and keeps source-specific limits visible. It does not 
 | Fontanillas station via Weather Underground | Current station observations, stored history and nearby-station comparison. |
 | Meteocat and AEMET | Official weather-warning context; they take precedence over portal interpretation. |
 | Open-Meteo | Forecasts, geocoding, selected environmental indicators and model comparisons. |
+| PIA–XAC / UAB | Weekly pollen and allergenic spore forecast. Bellaterra is the primary territorial reference for Sant Celoni; Girona is the humid-vegetation complement and Manresa is an explicit fallback. CC BY-NC-SA 4.0, non-commercial use with attribution. These are not local measurements. |
 | MET Norway | Forecast access through the Worker proxy. |
 | RainViewer / Blitzortung and embedded official viewers | Radar/lightning and visual context, identified in the interface. |
 | Cloudflare Pages, Workers and D1 | Hosting, Worker execution and project persistence. |

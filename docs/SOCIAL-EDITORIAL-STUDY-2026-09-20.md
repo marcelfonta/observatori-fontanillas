@@ -113,6 +113,6 @@ lectura mòbil i comprensió, no com a canvi automàtic inicial.
 - Open-Meteo / CAMS: https://open-meteo.com/en/docs/air-quality-api
 - EEA, índex i metodologia: https://airindex.eea.europa.eu/AQI/
 - XAC-UAB, cobertura i butlletins: https://aerobiologia.cat/pia/ca/forecast/catalunya
-- XAC API (integració pendent): https://aerobiologia.cat/pia/en/api
+- XAC API (integrada al web el 29/09/2026; social pendent de mostra real): https://aerobiologia.cat/pia/en/api
 - OMS, índex UV i protecció a partir de 3: https://www.who.int/news-room/fact-sheets/detail/ultraviolet-radiation
 - USNO, fase/il·luminació a migdia local: https://aa.usno.navy.mil/data/api

@@ -10,7 +10,7 @@ if(!response.ok)throw Error(`XAC HTTP ${response.status}`);
 const xml=await response.text();
 if(xml.length>300_000)throw Error('Resposta XAC massa gran');
 const fetchedAt=new Date().toISOString();
-const source=await readFile(new URL('./lib/xac-pollen.mjs',import.meta.url),'utf8');
+const source=await readFile(new URL('../src/core/xac-pollen.js',import.meta.url),'utf8');
 const moduleUrl=`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
 const browser=await chromium.launch({headless:true});
 try {

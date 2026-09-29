@@ -1,6 +1,7 @@
 import { CONFIG } from '../core/config.js';
 import { finiteNumber } from '../core/numeric.js';
 import { stationUvReading, currentEnvironment, environmentalTimestamp } from '../core/environment-freshness.js';
+import { parseXacPollen, buildXacReference, rankXacTaxa } from '../core/xac-pollen.js';
 
 const AIR_API='https://air-quality-api.open-meteo.com/v1/air-quality';
 let loaded=false;
@@ -11,6 +12,8 @@ let stationCurrent=null;
 let modelPayload={};
 let refreshInFlight=null;
 let lastAttempt=0;
+let xacReference=null;
+let xacLoadedAt=0;
 
 function put(id,value){
   const node=document.getElementById(id);
@@ -72,7 +75,7 @@ function notifyEnvironment(current=modelCurrent){
   document.dispatchEvent(new CustomEvent('observatori:environment-updated',{detail:{
     european_aqi:finiteValue(current.european_aqi),pm10:finiteValue(current.pm10),pm25:finiteValue(current.pm2_5),
     no2:finiteValue(current.nitrogen_dioxide),o3:finiteValue(current.ozone),uv:stationUv??modelUv,
-    uvSource:stationUv!==null?'Sensor Fontanillas':modelUv!==null?'Estimació CAMS':'No disponible',pollenMain:pollenName(current),time:environmentTime(current.time)?.value??null
+    uvSource:stationUv!==null?'Sensor Fontanillas':modelUv!==null?'Estimació CAMS':'No disponible',pollenMain:xacPollenName()||pollenName(current),time:environmentTime(current.time)?.value??null
   }}));
 }
 export function updateEnvironmentStation(current){
@@ -85,6 +88,74 @@ function pollenName(current){
   if(!entries.length)return 'No disponible';
   const [name,key,value]=entries.sort((a,b)=>pollenReading(b[1],b[2]).rank-pollenReading(a[1],a[2]).rank||Number(b[2])-Number(a[2]))[0];
   return `${name} · ${pollenReading(key,value).label}`;
+}
+function xacPollenName(){const highest=xacReference?.highest;return highest?`${highest.name} · ${highest.levelLabel} · ${highest.stationName}`:null;}
+
+const xacLevelClass=level=>level>=4?'is-extreme':level===3?'is-poor':level===2?'is-moderate':level===1?'is-good':'is-none';
+const xacTrendSymbol=trend=>({A:'↑','D':'↓','=':'→','!':'!'})[trend]||'—';
+const xacDate=value=>validXacDate(value)?new Intl.DateTimeFormat(CONFIG.locale,{day:'numeric',month:'short',timeZone:'Europe/Madrid'}).format(new Date(`${value}T12:00:00Z`)):'—';
+const validXacDate=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value);
+function appendXacTaxon(container,taxon){
+  const item=document.createElement('div');item.className='xac-taxon';
+  const title=document.createElement('span');title.textContent=taxon.name;
+  const value=document.createElement('strong');value.textContent=taxon.levelLabel??'No disponible';
+  const trend=document.createElement('em');trend.className=`environment-level ${xacLevelClass(taxon.level)}`;trend.textContent=`${xacTrendSymbol(taxon.trend)} ${taxon.trendLabel??'Sense tendència'}`;
+  const type=document.createElement('small');type.textContent=taxon.group==='spores'?'Espora de fong':'Pol·len';
+  item.append(title,value,trend,type);container.append(item);
+}
+function renderXacStation(role,station){
+  const card=document.querySelector(`[data-xac-station="${role}"]`);if(!card)return;
+  card.hidden=!station;if(!station)return;
+  const name=card.querySelector('[data-xac-name]'),meta=card.querySelector('[data-xac-period]'),grid=card.querySelector('[data-xac-taxa]'),body=card.querySelector('tbody');
+  if(name)name.textContent=station.stationName;
+  if(meta)meta.textContent=`${xacDate(station.start)} – ${xacDate(station.end)} · ${station.status==='in-period'?'vigent':'fora del període actual'}`;
+  grid?.replaceChildren();body?.replaceChildren();
+  const featured=rankXacTaxa(station,{limit:6});
+  if(!featured.length){const empty=document.createElement('p');empty.className='xac-empty';empty.textContent='Cap nivell positiu disponible en aquest butlletí.';grid?.append(empty);}
+  else featured.forEach(taxon=>appendXacTaxon(grid,taxon));
+  for(const taxon of [...station.pollens,...station.spores]){
+    const row=document.createElement('tr');
+    for(const value of [taxon.name,taxon.group==='spores'?'Espora':'Pol·len',taxon.levelLabel??'—',`${xacTrendSymbol(taxon.trend)} ${taxon.trendLabel??'—'}`]){const cell=document.createElement('td');cell.textContent=value;row.append(cell);}
+    body?.append(row);
+  }
+}
+function renderXacReference(reference){
+  xacReference=reference;
+  const status=document.getElementById('xac-status'),period=document.getElementById('xac-period');
+  if(status){status.textContent=reference.status==='current'?'Butlletí setmanal vigent':reference.status==='partial'?'Referència principal vigent · complement pendent':'Butlletí fora del període actual';status.className=`tag ${reference.status==='stale'?'is-warning':''}`.trim();}
+  if(period)period.textContent=`Del ${xacDate(reference.primary.start)} al ${xacDate(reference.primary.end)} · actualització XAC`;
+  renderXacStation('primary',reference.primary);renderXacStation('complement',reference.complement);
+  const highest=reference.highest;
+  put('xac-summary-title',highest?`${highest.name}: nivell ${highest.levelLabel.toLowerCase()}`:'Sense nivells positius disponibles');
+  put('xac-summary-copy',highest?`${highest.stationName} · ${highest.group==='spores'?'espora de fong':'pol·len'} · tendència ${highest.trendLabel.toLowerCase()}. No és una mesura feta a Sant Celoni.`:'El butlletí no aporta ara cap nivell positiu interpretable; consulta igualment la font si tens símptomes.');
+  put('environment-pollen-main',xacPollenName()||'Sense nivell destacat');
+  notifyEnvironment(modelCurrent);
+}
+function renderXacUnavailable(){
+  xacReference=null;
+  const status=document.getElementById('xac-status');if(status){status.textContent='XAC temporalment no disponible';status.className='tag is-warning';}
+  put('xac-summary-title','No s’ha pogut carregar el butlletí XAC');
+  put('xac-summary-copy','No substituïm les dades absents per una estimació. Pots consultar la font oficial directament.');
+  document.querySelectorAll('[data-xac-station]').forEach(card=>{card.hidden=true;});
+  put('environment-pollen-main','No disponible');
+}
+async function fetchXacStation(station,targetDate){
+  const response=await fetch(`${CONFIG.apiUrl}/pollen-xac?station=${encodeURIComponent(station)}`,{cache:'no-store'});
+  if(!response.ok)throw new Error(`XAC ${station}: ${response.status}`);
+  return parseXacPollen(await response.text(),{station,targetDate});
+}
+async function loadXacReference(){
+  if(xacLoadedAt&&Date.now()-xacLoadedAt<6*60*60_000)return;
+  xacLoadedAt=Date.now();
+  const parts=Object.fromEntries(new Intl.DateTimeFormat('en',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).map(part=>[part.type,part.value]));
+  const targetDate=`${parts.year}-${parts.month}-${parts.day}`;
+  try{
+    const primary=await fetchXacStation('bellaterra',targetDate);
+    let complement=null;
+    try{complement=await fetchXacStation('girona',targetDate);}
+    catch(error){console.warn('Complement XAC Girona no disponible; provant Manresa.',error);try{complement=await fetchXacStation('manresa',targetDate);}catch(fallbackError){console.warn('Complement XAC alternatiu no disponible.',fallbackError);}}
+    renderXacReference(buildXacReference(primary,complement));
+  }catch(error){xacLoadedAt=0;console.warn('Referència XAC temporalment no disponible.',error);renderXacUnavailable();}
 }
 
 const POLLEN_LIMITS={
@@ -125,7 +196,7 @@ function render(payload){
   const reading=aqiReading(current.european_aqi);
   put('environment-aqi',number(current.european_aqi,0));put('environment-aqi-label',reading.label);put('environment-aqi-copy',reading.copy);
   put('environment-health-title',reading.health);put('environment-health-copy',reading.advice);
-  modelUv=finiteValue(current.uv_index);renderUv();put('environment-pollen-main',pollenName(current));
+  modelUv=finiteValue(current.uv_index);renderUv();put('environment-pollen-main',xacPollenName()||'Carregant referència XAC');
   [['environment-pm10','pm10'],['environment-pm25','pm2_5'],['environment-no2','nitrogen_dioxide'],['environment-o3','ozone'],['environment-co','carbon_monoxide'],['environment-so2','sulphur_dioxide'],['pollen-grass','grass_pollen'],['pollen-olive','olive_pollen'],['pollen-birch','birch_pollen'],['pollen-mugwort','mugwort_pollen'],['pollen-ragweed','ragweed_pollen']].forEach(([id,key])=>put(id,number(current[key])));
   [['pm10','european_aqi_pm10'],['pm25','european_aqi_pm2_5'],['no2','european_aqi_nitrogen_dioxide'],['o3','european_aqi_ozone'],['so2','european_aqi_sulphur_dioxide']].forEach(([prefix,key])=>renderComponent(prefix,current[key]));
   [['grass','grass',current.grass_pollen],['olive','olive',current.olive_pollen],['birch','birch',current.birch_pollen],['mugwort','mugwort',current.mugwort_pollen],['ragweed','ragweed',current.ragweed_pollen]].forEach(args=>renderPollen(...args));
@@ -176,7 +247,7 @@ export async function initEnvironment(){
 function refreshEnvironment(){
   if(refreshInFlight)return refreshInFlight;
   lastAttempt=Date.now();
-  const pending=loadEnvironment().finally(()=>{if(refreshInFlight===pending)refreshInFlight=null;});
+  const pending=Promise.allSettled([loadEnvironment(),loadXacReference()]).finally(()=>{if(refreshInFlight===pending)refreshInFlight=null;});
   refreshInFlight=pending;
   return pending;
 }
