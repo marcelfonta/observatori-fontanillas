@@ -1,5 +1,24 @@
 # Fonta · contrast regional diari XEMA
 
+## Autorització i activació · 29/09/2026
+
+Meteocat ha confirmat per correu l'ús no comercial per treballar les dades de
+les sis estacions, conservar l'arxiu de recerca i calcular errors. Els originals
+no es redistribueixen. Qualsevol dada original visible ha de mantenir-se sense
+alteració i amb atribució explícita al Servei Meteorològic de Catalunya.
+
+La variable horària 32 només es considera validada amb estat `V`. El conjunt
+diari obert emprat per aquest pilot exposa extrems i pluja amb estat
+`Representatiu`; el sistema conserva aquesta denominació i no la rebateja com
+si fos validació horària. KX és exclusivament pluviomètrica i queda exclosa de
+qualsevol comparació de temperatura.
+
+El workflow diari està activat (`FONTA_XEMA_DAILY_ENABLED=true`) i la primera
+captura real privada es va conservar a R2 el 29/09/2026. La web rep únicament
+un `regional-status.json` sanititzat amb comptadors operatius, codis i
+capacitats. No publica originals, valors meteorològics ni mètriques d'error fins
+que Meteocat aclareixi explícitament la difusió de resultats derivats.
+
 29/09/2026. Primera fase executable per aprofitar el catàleg meteorològic de
 dades d'alt valor sense convertir una font nova en una correcció automàtica.
 És un circuit de recerca privat, additiu i reversible: **no modifica la previsió

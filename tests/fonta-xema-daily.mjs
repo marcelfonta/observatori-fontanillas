@@ -5,7 +5,8 @@ import {join} from 'node:path';
 import {sha256} from '../scripts/fonta/io.mjs';
 import {runRegionalCollection} from '../scripts/fonta/collect-xema-daily.mjs';
 import {readRegionalCaptures,uploadRegionalEvidence} from '../scripts/fonta/regional-archive.mjs';
-import {XEMA_DAILY_MODELS,XEMA_DAILY_STATIONS,evaluateRegionalDaily,normalizeRegionalForecast,normalizeXemaDaily,normalizeXemaStations,regionalCapture,regionalForecastRequest,xemaDailyRequest,xemaStationMetadataRequest} from '../src/core/fonta-xema-daily.js';
+import {XEMA_DAILY_MODELS,XEMA_DAILY_STATIONS,XEMA_DAILY_STATION_CAPABILITIES,evaluateRegionalDaily,normalizeRegionalForecast,normalizeXemaDaily,normalizeXemaStations,publicRegionalStatus,regionalCapture,regionalForecastRequest,xemaDailyRequest,xemaStationMetadataRequest} from '../src/core/fonta-xema-daily.js';
+import {regionalStatusFromReceipt} from '../scripts/fonta/publish-regional-status.mjs';
 
 const metadata=XEMA_DAILY_STATIONS.map((code,index)=>({codi_estacio:code,nom_estacio:'Estació '+code,nom_estat_ema:'Operativa',latitud:String(41.6+index/100),longitud:String(2.4+index/100),altitud:String(100+index*200)}));
 const stations=normalizeXemaStations(metadata);
@@ -23,7 +24,8 @@ function rows(date){
 }
 const normalized=normalizeXemaDaily(rows('2026-09-21'),{receivedAt:'2026-09-22T08:30:00Z'});
 assert.equal(normalized.observations.length,6);assert.equal(normalized.observations.find(x=>x.station==='KX').temperatureComplete,false);
-assert.equal(normalized.observations.find(x=>x.station==='KX').rain,0);
+assert.equal(normalized.observations.find(x=>x.station==='KX').rain,0);assert.equal(normalized.observations.find(x=>x.station==='KX').validationScope,'daily-representative');
+assert.deepEqual(XEMA_DAILY_STATION_CAPABILITIES.KX,{temperature:false,rain:true});
 assert.equal(normalizeXemaDaily([{...rows('2026-09-21')[0],estat:'No representatiu'}],{receivedAt:'2026-09-22T08:30:00Z'}).observations.length,0);
 assert.equal(normalizeXemaDaily([...rows('2026-09-21'),rows('2026-09-21')[0]],{receivedAt:'2026-09-22T08:30:00Z'}).observations.find(x=>x.station==='UQ').temperatureComplete,false);
 assert.throws(()=>normalizeXemaDaily(rows('2026-09-21').map(x=>({...x,unitat:x.codi_variable==='1300'?'l':'°C'})),{receivedAt:'bad'}));
@@ -53,6 +55,11 @@ assert.equal(report.productionEnabled,false);assert.equal(report.promotion.allow
 assert.equal(report.metrics.max.best_match.samples,5);assert.equal(report.metrics.rain.best_match.samples,6);
 assert.equal(report.metrics.rain.best_match.events.rain.correctNegatives,6);
 assert.equal(report.coverage.KX.temperature,0);assert.equal(report.coverage.KX.rain,1);
+assert.equal(report.coverage.KX.supportsTemperature,false);assert.equal(report.coverage.KX.supportsRain,true);
+const publicStatus=publicRegionalStatus(report);
+assert.equal(publicStatus.progress.captureCount,2);assert.equal(publicStatus.stations.find(x=>x.code==='KX').temperature,false);
+assert.equal(publicStatus.safeguards.rawDataPublished,false);assert.equal(publicStatus.safeguards.weatherValuesPublished,false);assert.equal(publicStatus.safeguards.errorMetricsPublished,false);
+for(const forbidden of ['metrics','coverage','observations','forecasts','value','max','min','rainScore'])assert(!JSON.stringify(publicStatus).includes(`\"${forbidden}\"`),forbidden);
 const tampered=structuredClone(issue);tampered.sources.daily.raw.push({bad:true});assert.throws(()=>evaluateRegionalDaily([tampered]));
 
 const objects=new Map(),writes=[];
@@ -64,8 +71,8 @@ assert.equal((await readRegionalCaptures(transport)).captures.length,1);
 const key=writes[0],valid=objects.get(key);objects.set(key,Buffer.from('bad'));await assert.rejects(()=>readRegionalCaptures(transport),/Integritat|Mida/);objects.set(key,valid);
 
 const workflow=await readFile('.github/workflows/fonta-xema-daily.yml','utf8');
-for(const required of ["cron: '35 8 * * *'","github.event_name == 'workflow_dispatch' || vars.FONTA_XEMA_DAILY_ENABLED == 'true'",'contents: read','group: fonta-r2-archive','persist-credentials: false','default: plan','retention-days: 30'])assert(workflow.includes(required),required);
-for(const forbidden of ['contents: write','git push','wrangler deploy','CLOUDFLARE_API_TOKEN'])assert(!workflow.includes(forbidden),forbidden);
+for(const required of ["cron: '35 8 * * *'","github.event_name == 'workflow_dispatch' || vars.FONTA_XEMA_DAILY_ENABLED == 'true'",'contents: write','group: fonta-r2-archive','persist-credentials: false','default: plan','regional-status.json','publish-regional-status.mjs','retention-days: 30'])assert(workflow.includes(required),required);
+for(const forbidden of ['wrangler deploy','CLOUDFLARE_API_TOKEN','regional/captures/','regional/reports/'])assert(!workflow.includes(forbidden),forbidden);
 assert((await readFile('.github/workflows/fonta-r2-backup.yml','utf8')).includes('group: fonta-r2-archive'));
 
 const temp=await mkdtemp(join(tmpdir(),'fonta-regional-parent-')),nested=join(temp,'missing-parent','receipt');
@@ -74,7 +81,9 @@ try{
   const duplicateTransport={inventory:async()=>[{key:captureKey,size:body.length}],get:async()=>body,
     put:async()=>{throw new Error('unexpected write')}};
   const duplicate=await runRegionalCollection({mode:'plan',workspace:nested,transport:duplicateTransport,now:'2026-09-20T12:00:00Z'});
-  assert(duplicate.duplicateDay);await access(join(nested,'receipt.json'));
+  assert(duplicate.duplicateDay);assert.equal(duplicate.report.captureCount,1);assert.equal(duplicate.report.pairedStationDays,0);
+  const duplicateStatus=regionalStatusFromReceipt(duplicate);assert.equal(duplicateStatus.progress.captureCount,1);assert.equal(duplicateStatus.safeguards.rawDataPublished,false);
+  await access(join(nested,'receipt.json'));
 }finally{await rm(temp,{recursive:true,force:true});}
 
 console.log('Fonta XEMA diari: dates, representativitat, zeros, mostres aparellades, R2 immutable i workflow opt-in correctes.');

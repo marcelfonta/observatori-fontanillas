@@ -13,7 +13,7 @@ on:
     - cron: '35 8 * * *'
 
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: fonta-r2-archive
   cancel-in-progress: false
@@ -24,6 +24,8 @@ jobs:
     if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.FONTA_XEMA_DAILY_ENABLED == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -47,6 +49,26 @@ jobs:
           echo '```json' >> "$GITHUB_STEP_SUMMARY"
           cat build/fonta-xema-daily/receipt.json >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+      - name: Obre la branca pública de seguiment sense copiar originals XEMA
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth=1 --single-branch --branch fonta-data "https://github.com/${GITHUB_REPOSITORY}.git" build/fonta-public
+      - name: Publica només comptadors operatius i salvaguardes
+        run: node scripts/fonta/publish-regional-status.mjs build/fonta-xema-daily/receipt.json build/fonta-public/regional-status.json
+      - name: Conserva l'estat públic sanititzat
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh auth setup-git
+          git -C build/fonta-public config user.name 'Fonta regional status'
+          git -C build/fonta-public config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C build/fonta-public add -- regional-status.json
+          if ! git -C build/fonta-public diff --cached --quiet; then
+            git -C build/fonta-public commit -m 'Update sanitized Fonta regional status'
+            git -C build/fonta-public pull --rebase origin fonta-data
+            git -C build/fonta-public push origin HEAD:fonta-data
+          fi
       - uses: actions/upload-artifact@v7
         with:
           name: fonta-xema-daily-receipt-${{ github.run_id }}-${{ github.run_attempt }}

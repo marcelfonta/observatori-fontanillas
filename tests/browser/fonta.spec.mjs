@@ -1,5 +1,9 @@
 import {test,expect} from '@playwright/test';
 const url='https://raw.githubusercontent.com/marcelfonta/observatori-fontanillas/fonta-data/status.json';
+const regionalUrl='https://raw.githubusercontent.com/marcelfonta/observatori-fontanillas/fonta-data/regional-status.json';
+const regional=()=>({schema:1,kind:'fonta-xema-public-status',policy:'fonta-xema-daily-regional-shadow-v1',publishedAt:new Date().toISOString(),mode:'regional-shadow',productionEnabled:false,promotionAllowed:false,
+  source:'Generalitat de Catalunya · Servei Meteorològic de Catalunya (Meteocat)',terms:'https://www.meteo.cat/wpweb/avis-legal/',progress:{captureCount:1,pairedStationDays:0,status:'collecting'},
+  stations:['UQ','XK','KX','VX','WS','KP'].map(code=>({code,temperature:code!=='KX',rain:true})),safeguards:{rawDataPublished:false,weatherValuesPublished:false,errorMetricsPublished:false,noRedistribution:true}});
 const sample=()=>({schema:1,station:'ISANTC198',mode:'shadow',productionEnabled:false,latestCaptureAt:new Date().toISOString(),captureCount:12,pairedDays:8,evaluatedDays:0,targetDate:'2026-09-21',forecast:[{model:'icon_eu',max:27.5,min:16}],scores:{}});
 const detailed=()=>{const report=sample(),at=report.latestCaptureAt;return {...report,prospective:{days:0},diagnostics:{schema:1,asOf:at,firstCaptureAt:at,execution:{event:'workflow_dispatch'},
   budget:{captureCount:12,captureLimit:180,bytes:1234567,byteLimit:104857600,reviewNeeded:false},
@@ -11,6 +15,7 @@ for(const width of [360,390,1280])test(`Fonta: laboratori ${width}`,async({page}
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.setViewportSize({width,height:900});
   await page.route(url,r=>r.fulfill({json:detailed()}));
+  await page.route(regionalUrl,r=>r.fulfill({json:regional()}));
   await page.goto('/fonta.html');
   await expect(page.getByRole('heading',{level:1})).toContainText('Fonta');
   const group=page.locator('.portal-nav-group').filter({has:page.locator('p',{hasText:'Previsió i risc'})});
@@ -21,6 +26,10 @@ for(const width of [360,390,1280])test(`Fonta: laboratori ${width}`,async({page}
   await expect(page.locator('#fonta-forecasts')).toContainText('27,5° / 16°');
   await expect(page.locator('#fonta-monitor')).toContainText('Entrenament disponible: 7 / 30 dies');
   await expect(page.locator('#fonta-prospective')).toContainText('Encara no hi ha resultats');
+  await expect(page.locator('#fonta-regional-captures')).toHaveText('1');
+  await expect(page.locator('#fonta-regional-status')).toContainText('Primera captura regional');
+  await expect(page.locator('#fonta-regional-station-list')).toContainText('KX');
+  await expect(page.locator('#fonta-regional-station-list')).toContainText('Només precipitació');
   await page.getByText('Qualitat dels darrers dies observats (màxim 14)',{exact:true}).click();
   await expect(page.locator('#fonta-monitor')).toContainText('buit superior a 20 min');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);

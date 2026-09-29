@@ -31,13 +31,15 @@ export async function runRegionalCollection({mode='plan',workspace,transport,now
   if(existing.captures.length>=REGIONAL_CAPTURE_LIMIT)throw new Error('Pilot regional complet: revisar abans de continuar');
   const today=localDay(now);
   if(existing.captures.some(capture=>localDay(capture.capturedAt)===today)){
-    const receipt={schema:1,kind:'fonta-xema-daily-receipt',committed:false,uploaded:0,duplicateDay:true,productionEnabled:false};
+    const report=evaluateRegionalDaily(existing.captures,{now});
+    const receipt={schema:1,kind:'fonta-xema-daily-receipt',committed:false,uploaded:0,duplicateDay:true,productionEnabled:false,
+      report:{generatedAt:report.generatedAt,captureCount:report.captureCount,pairedStationDays:report.pairedStationDays,productionEnabled:false,promotionAllowed:false}};
     await writeFile(join(workspace,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});return receipt;
   }
   const capture=await collectRegionalSources({now,fetcher});
   const report=evaluateRegionalDaily([...existing.captures,capture],{now:capture.capturedAt});
   const receipt=await uploadRegionalEvidence(capture,report,transport,{commit:mode==='run',inventory:existing.inventory});
-  receipt.report={captureCount:report.captureCount,pairedStationDays:report.pairedStationDays,productionEnabled:false,promotionAllowed:false};
+  receipt.report={generatedAt:report.generatedAt,captureCount:report.captureCount,pairedStationDays:report.pairedStationDays,productionEnabled:false,promotionAllowed:false};
   await writeFile(join(workspace,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
   return receipt;
 }

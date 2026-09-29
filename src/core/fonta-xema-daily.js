@@ -5,6 +5,9 @@ export const XEMA_DAILY_DATASET='7bvh-jvq2';
 export const XEMA_STATIONS_DATASET='yqwd-vj5e';
 export const XEMA_DAILY_VARIABLES=Object.freeze({max:'1001',min:'1002',rain:'1300'});
 export const XEMA_DAILY_STATIONS=Object.freeze(['UQ','XK','KX','VX','WS','KP']);
+export const XEMA_DAILY_STATION_CAPABILITIES=Object.freeze(Object.fromEntries(XEMA_DAILY_STATIONS.map(code=>[code,Object.freeze({
+  temperature:code!=='KX',rain:true,
+})])));
 export const XEMA_DAILY_MODELS=Object.freeze([...FONTA.models]);
 export const XEMA_DAILY_POLICY='fonta-xema-daily-regional-shadow-v1';
 export const XEMA_DAILY_ATTRIBUTION='Generalitat de Catalunya · Servei Meteorològic de Catalunya (Meteocat)';
@@ -81,8 +84,8 @@ export function normalizeXemaDaily(rows,{receivedAt}){
     const item=grouped.get(key);item[record.kind]=record.value;if(record.kind!=='rain')item.hoursUtc[record.kind]=record.hourUtc;
   }
   const observations=[...grouped.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.station.localeCompare(b.station)).map(item=>({
-    ...item,temperatureComplete:item.max!==null&&item.min!==null&&item.max>=item.min,rainComplete:item.rain!==null,
-    trainingAllowed:false,representative:true
+    ...item,temperatureComplete:XEMA_DAILY_STATION_CAPABILITIES[item.station].temperature&&item.max!==null&&item.min!==null&&item.max>=item.min,
+    rainComplete:item.rain!==null,trainingAllowed:false,representative:true,validationScope:'daily-representative'
   }));
   return {observations,rejected:{count:rejected.length,reasons:Object.fromEntries([...new Set(rejected)].sort().map(reason=>[reason,rejected.filter(x=>x===reason).length]))}};
 }
@@ -150,7 +153,7 @@ export function evaluateRegionalDaily(captures,{now=new Date().toISOString()}={}
     predictions.blend=comparable.map(pair=>XEMA_DAILY_MODELS.filter(model=>model!=='best_match').reduce((sum,model)=>sum+pair.models[model][variable],0)/(XEMA_DAILY_MODELS.length-1));
     metrics[variable]=Object.fromEntries(Object.entries(predictions).map(([model,values])=>[model,{...errorMetrics(values,truth),...(variable==='rain'?{events:{rain:rainScore(values,truth,.2),heavy:rainScore(values,truth,20)}}:{})}]));
   }
-  const coverage=Object.fromEntries(XEMA_DAILY_STATIONS.map(station=>[station,{issues:[...issues.values()].filter(x=>x.station===station).length,
+  const coverage=Object.fromEntries(XEMA_DAILY_STATIONS.map(station=>[station,{supportsTemperature:XEMA_DAILY_STATION_CAPABILITIES[station].temperature,supportsRain:true,issues:[...issues.values()].filter(x=>x.station===station).length,
     paired:[...new Set(pairs.filter(x=>x.station===station).map(x=>x.date))].length,
     temperature:[...new Set(pairs.filter(x=>x.station===station&&x.observation.temperatureComplete).map(x=>x.date))].length,
     rain:[...new Set(pairs.filter(x=>x.station===station&&x.observation.rainComplete).map(x=>x.date))].length}]));
@@ -158,6 +161,17 @@ export function evaluateRegionalDaily(captures,{now=new Date().toISOString()}={}
     captureCount:decoded.length,issueCount:issues.size,pairedStationDays:pairs.length,coverage,metrics,
     science:{forecastFrozenBeforeTargetDay:true,identicalSamplesPerComparator:true,rawRedistribution:false,regionalTrainingEnabled:false},
     promotion:{allowed:false,reasons:['Regional series is still collecting','No leave-one-station-out validation yet','Meteocat reuse clarification is still pending','Human approval is mandatory']}};
+}
+
+export function publicRegionalStatus(report,{publishedAt=report?.generatedAt}={}){
+  if(report?.schema!==1||report.kind!=='fonta-xema-daily-report'||report.policy!==XEMA_DAILY_POLICY||report.productionEnabled!==false||report.mode!=='private-shadow'||!iso(publishedAt))throw new Error('Informe regional no publicable');
+  return {schema:1,kind:'fonta-xema-public-status',policy:XEMA_DAILY_POLICY,publishedAt,
+    mode:'regional-shadow',productionEnabled:false,promotionAllowed:false,
+    source:XEMA_DAILY_ATTRIBUTION,terms:XEMA_DAILY_TERMS,
+    progress:{captureCount:report.captureCount,pairedStationDays:report.pairedStationDays,status:report.pairedStationDays>0?'contrasting':'collecting'},
+    stations:XEMA_DAILY_STATIONS.map(code=>({code,temperature:XEMA_DAILY_STATION_CAPABILITIES[code].temperature,rain:true})),
+    safeguards:{rawDataPublished:false,weatherValuesPublished:false,errorMetricsPublished:false,noRedistribution:true,
+      note:'Només es publica l’estat operatiu del pilot. Les lectures originals i les mètriques meteorològiques romanen privades.'}};
 }
 
 export function regionalCapture({capturedAt,sources}){
