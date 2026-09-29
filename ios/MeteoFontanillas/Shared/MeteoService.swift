@@ -13,8 +13,13 @@ actor MeteoService {
 
     func loadSnapshot() async throws -> MeteoSnapshot {
         let observation = try await loadObservation()
-        let forecast = try? await loadForecast()
-        return MeteoSnapshot(observation: observation, forecast: forecast, fetchedAt: Date())
+        let forecasts = (try? await loadForecasts()) ?? []
+        return MeteoSnapshot(
+            observation: observation,
+            forecast: forecasts.first,
+            forecasts: forecasts,
+            fetchedAt: Date()
+        )
     }
 
     func loadWidgetSnapshot() async throws -> MeteoSnapshot {
@@ -27,8 +32,13 @@ actor MeteoService {
             // Compatible amb una instal·lació nova de l'app abans del desplegament del Worker.
             observation = try await loadObservation()
         }
-        let forecast = try? await loadForecast()
-        return MeteoSnapshot(observation: observation, forecast: forecast, fetchedAt: Date())
+        let forecasts = (try? await loadForecasts()) ?? []
+        return MeteoSnapshot(
+            observation: observation,
+            forecast: forecasts.first,
+            forecasts: forecasts,
+            fetchedAt: Date()
+        )
     }
 
     func loadObservation() async throws -> StationObservation {
@@ -47,25 +57,34 @@ actor MeteoService {
     }
 
     func loadForecast() async throws -> DailyForecast {
+        guard let forecast = try await loadForecasts(days: 1).first else {
+            throw MeteoError.invalidResponse
+        }
+        return forecast
+    }
+
+    func loadForecasts(days: Int = 5) async throws -> [DailyForecast] {
         var components = URLComponents(string: "https://api.open-meteo.com/v1/forecast")!
         components.queryItems = [
             URLQueryItem(name: "latitude", value: "41.6906"),
             URLQueryItem(name: "longitude", value: "2.489"),
             URLQueryItem(name: "daily", value: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"),
             URLQueryItem(name: "timezone", value: "Europe/Madrid"),
-            URLQueryItem(name: "forecast_days", value: "1")
+            URLQueryItem(name: "forecast_days", value: String(max(1, min(7, days))))
         ]
         guard let url = components.url else { throw MeteoError.invalidResponse }
         let data = try await request(url)
         let response = try decoder.decode(OpenMeteoForecast.self, from: data)
-        guard let date = response.daily.time.first else { throw MeteoError.invalidResponse }
-        return DailyForecast(
-            date: date,
-            weatherCode: response.daily.weatherCode.first ?? nil,
-            temperatureMax: response.daily.temperatureMax.first ?? nil,
-            temperatureMin: response.daily.temperatureMin.first ?? nil,
-            precipitationProbability: response.daily.precipitationProbability.first ?? nil
-        )
+        guard !response.daily.time.isEmpty else { throw MeteoError.invalidResponse }
+        return response.daily.time.enumerated().map { index, date in
+            DailyForecast(
+                date: date,
+                weatherCode: response.daily.weatherCode[safe: index] ?? nil,
+                temperatureMax: response.daily.temperatureMax[safe: index] ?? nil,
+                temperatureMin: response.daily.temperatureMin[safe: index] ?? nil,
+                precipitationProbability: response.daily.precipitationProbability[safe: index] ?? nil
+            )
+        }
     }
 
     private func request(_ url: URL) async throws -> Data {
@@ -77,5 +96,11 @@ actor MeteoService {
         guard let http = response as? HTTPURLResponse else { throw MeteoError.invalidResponse }
         guard (200..<300).contains(http.statusCode) else { throw MeteoError.httpStatus(http.statusCode) }
         return data
+    }
+}
+
+private extension Array {
+    subscript(safe index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }

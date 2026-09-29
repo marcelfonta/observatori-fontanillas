@@ -1,5 +1,14 @@
 # Changelog
 
+## Millora — giny gran amb previsió de quatre dies · 2026-09-29
+
+- Nou format gran per al Mac i la pantalla d'inici de l'iPhone: lectura real,
+  sensació, humitat, màxima, mínima i pluja d'avui, més quatre dies de previsió.
+- Cada dia futur conserva el seu símbol, màxima, mínima i probabilitat màxima
+  de pluja d'Open-Meteo; respostes parcials o absents no generen valors ficticis.
+- La memòria cau antiga continua sent compatible i els formats bloquejat,
+  petit i mitjà es mantenen sense canvis.
+
 ## Millora — giny mitjà per a l'escriptori del Mac · 2026-09-29
 
 - El giny privat d'iPhone ofereix també un format mitjà reutilitzable al Mac

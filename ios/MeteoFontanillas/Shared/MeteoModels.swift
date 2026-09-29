@@ -45,7 +45,25 @@ struct DailyForecast: Codable, Equatable {
 struct MeteoSnapshot: Codable, Equatable {
     let observation: StationObservation
     let forecast: DailyForecast?
+    let forecasts: [DailyForecast]?
     let fetchedAt: Date
+
+    init(
+        observation: StationObservation,
+        forecast: DailyForecast?,
+        forecasts: [DailyForecast]? = nil,
+        fetchedAt: Date
+    ) {
+        self.observation = observation
+        self.forecast = forecast
+        self.forecasts = forecasts
+        self.fetchedAt = fetchedAt
+    }
+
+    var forecastDays: [DailyForecast] {
+        if let forecasts, !forecasts.isEmpty { return forecasts }
+        return forecast.map { [$0] } ?? []
+    }
 
     var isDegraded: Bool {
         observation.degraded == true || observation.stale == true

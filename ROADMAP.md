@@ -44,6 +44,9 @@
 
 ## Manteniment obert — En curs
 
+- [x] Afegir un giny gran amb la lectura de l'estació, el detall d'avui i quatre
+  dies de previsió, amb degradació segura i compatibilitat amb la memòria cau.
+
 - [x] Afegir un giny mitjà més complet per reutilitzar l'app privada d'iPhone
   a l'escriptori del Mac, sense duplicar dades ni crear un segon backend.
 

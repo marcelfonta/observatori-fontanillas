@@ -45,6 +45,27 @@ import Testing
     #expect(MeteoFormatting.precipitation(70) == "70%")
 }
 
+@Test func decodesSeveralForecastDaysSafely() throws {
+    let json = """
+    {
+      "daily": {
+        "time": ["2026-09-15", "2026-09-16", "2026-09-17"],
+        "weather_code": [2, 61, 0],
+        "temperature_2m_max": [24.0, 22.5, 25.1],
+        "temperature_2m_min": [14.0, 15.2, 12.8],
+        "precipitation_probability_max": [20, 70, 5]
+      }
+    }
+    """.data(using: .utf8)!
+
+    let result = try JSONDecoder().decode(OpenMeteoForecast.self, from: json)
+
+    #expect(result.daily.time.count == 3)
+    #expect(result.daily.weatherCode[1] == 61)
+    #expect(MeteoFormatting.shortDay("2026-09-16") == "Dc")
+    #expect(MeteoFormatting.shortDay("data-incorrecta") == "—")
+}
+
 @Test func marksFallbackAsDegraded() {
     let observation = StationObservation(
         station: "Observatori Meteorològic Fontanillas",
@@ -97,4 +118,30 @@ import Testing
     let restored = try JSONDecoder().decode(MeteoSnapshot.self, from: data)
 
     #expect(restored == original)
+}
+
+@Test func legacySnapshotWithoutSeveralDaysStillDecodes() throws {
+    let json = """
+    {
+      "observation": {
+        "station": "Observatori Meteorològic Fontanillas",
+        "location": "Sant Celoni · Montseny",
+        "temperature": 18.6
+      },
+      "forecast": {
+        "date": "2026-09-15",
+        "weatherCode": 2,
+        "temperatureMax": 24,
+        "temperatureMin": 14,
+        "precipitationProbability": 20
+      },
+      "fetchedAt": 1789453800
+    }
+    """.data(using: .utf8)!
+
+    let restored = try JSONDecoder().decode(MeteoSnapshot.self, from: json)
+
+    #expect(restored.forecasts == nil)
+    #expect(restored.forecastDays.count == 1)
+    #expect(restored.forecastDays.first?.date == "2026-09-15")
 }

@@ -31,6 +31,13 @@ struct MeteoEntry: TimelineEntry {
                 temperatureMin: 14,
                 precipitationProbability: 20
             ),
+            forecasts: [
+                DailyForecast(date: "2026-09-15", weatherCode: 2, temperatureMax: 24, temperatureMin: 14, precipitationProbability: 20),
+                DailyForecast(date: "2026-09-16", weatherCode: 1, temperatureMax: 25, temperatureMin: 13, precipitationProbability: 10),
+                DailyForecast(date: "2026-09-17", weatherCode: 61, temperatureMax: 22, temperatureMin: 15, precipitationProbability: 70),
+                DailyForecast(date: "2026-09-18", weatherCode: 3, temperatureMax: 21, temperatureMin: 14, precipitationProbability: 35),
+                DailyForecast(date: "2026-09-19", weatherCode: 0, temperatureMax: 24, temperatureMin: 12, precipitationProbability: 5)
+            ],
             fetchedAt: Date()
         ),
         failed: false,
@@ -115,6 +122,8 @@ struct MeteoWidgetView: View {
                     rectangular(snapshot)
                 case .systemMedium:
                     medium(snapshot)
+                case .systemLarge:
+                    large(snapshot)
                 default:
                     small(snapshot)
                 }
@@ -267,6 +276,138 @@ struct MeteoWidgetView: View {
         }
     }
 
+    private func large(_ snapshot: MeteoSnapshot) -> some View {
+        let nextDays = Array(snapshot.forecastDays.dropFirst().prefix(4))
+
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 18) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("SANT CELONI · ARA")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .tracking(1.1)
+
+                    HStack(spacing: 10) {
+                        Image(systemName: MeteoFormatting.symbol(for: snapshot.forecast?.weatherCode))
+                            .font(.system(size: 36))
+                            .symbolRenderingMode(.multicolor)
+                        Text(MeteoFormatting.temperature(snapshot.observation.temperature))
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .minimumScaleFactor(0.75)
+                    }
+
+                    Text(MeteoFormatting.condition(for: snapshot.forecast?.weatherCode))
+                        .font(.headline)
+                        .lineLimit(1)
+
+                    Label {
+                        Text(entry.cached ? "Lectura guardada" : MeteoFormatting.freshness(for: snapshot.observation))
+                    } icon: {
+                        Image(systemName: entry.cached ? "clock.arrow.circlepath" : "dot.radiowaves.left.and.right")
+                    }
+                    .font(.caption2)
+                    .foregroundStyle(entry.cached || snapshot.isDegraded ? .orange : .secondary)
+                    .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                VStack(spacing: 10) {
+                    HStack(spacing: 10) {
+                        compactMetric(
+                            title: "Sensació",
+                            value: MeteoFormatting.temperature(snapshot.observation.feelsLike),
+                            symbol: "thermometer.medium"
+                        )
+                        compactMetric(
+                            title: "Humitat",
+                            value: MeteoFormatting.humidity(snapshot.observation.humidity),
+                            symbol: "humidity.fill"
+                        )
+                    }
+                    HStack(spacing: 10) {
+                        compactMetric(
+                            title: "Màx. / mín.",
+                            value: "\(MeteoFormatting.temperature(snapshot.forecast?.temperatureMax)) / \(MeteoFormatting.temperature(snapshot.forecast?.temperatureMin))",
+                            symbol: "calendar"
+                        )
+                        compactMetric(
+                            title: "Pluja",
+                            value: MeteoFormatting.precipitation(snapshot.forecast?.precipitationProbability),
+                            symbol: "umbrella.fill"
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+
+            Divider()
+
+            Text("PROPERS 4 DIES")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .tracking(1.1)
+
+            if nextDays.isEmpty {
+                Label("Previsió dels pròxims dies no disponible", systemImage: "calendar.badge.exclamationmark")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                HStack(spacing: 8) {
+                    ForEach(nextDays, id: \.date) { forecast in
+                        forecastCard(forecast)
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func compactMetric(title: String, value: String, symbol: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Label(title, systemImage: symbol)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Text(value)
+                .font(.subheadline.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(9)
+        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func forecastCard(_ forecast: DailyForecast) -> some View {
+        VStack(spacing: 7) {
+            Text(MeteoFormatting.shortDay(forecast.date))
+                .font(.caption.weight(.semibold))
+            Image(systemName: MeteoFormatting.symbol(for: forecast.weatherCode))
+                .font(.title2)
+                .symbolRenderingMode(.multicolor)
+            Text("↑\(MeteoFormatting.temperature(forecast.temperatureMax))")
+                .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text("↓\(MeteoFormatting.temperature(forecast.temperatureMin))")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Label(MeteoFormatting.precipitation(forecast.precipitationProbability), systemImage: "umbrella.fill")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 13))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "\(MeteoFormatting.shortDay(forecast.date)), \(MeteoFormatting.condition(for: forecast.weatherCode)), màxima \(MeteoFormatting.temperature(forecast.temperatureMax)), mínima \(MeteoFormatting.temperature(forecast.temperatureMin)), pluja \(MeteoFormatting.precipitation(forecast.precipitationProbability))"
+        )
+    }
+
     private var unavailable: some View {
         Label("Dades no disponibles", systemImage: "wifi.exclamationmark")
             .font(.caption)
@@ -287,8 +428,8 @@ struct MeteoFontanillasWidget: Widget {
             }
         }
         .configurationDisplayName("Meteo Fontanillas")
-        .description("Temperatura de l’estació i previsió d’avui a Sant Celoni.")
-        .supportedFamilies([.accessoryInline, .accessoryCircular, .accessoryRectangular, .systemSmall, .systemMedium])
+        .description("Dades de l’estació i previsió fins als pròxims quatre dies a Sant Celoni.")
+        .supportedFamilies([.accessoryInline, .accessoryCircular, .accessoryRectangular, .systemSmall, .systemMedium, .systemLarge])
     }
 }
 
