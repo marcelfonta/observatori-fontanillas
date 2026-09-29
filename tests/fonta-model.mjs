@@ -111,5 +111,5 @@ try{
 }finally{await rm(temp,{recursive:true});}
 const worker=await readFile('worker/index.js','utf8');assert(!worker.includes('fonta-model.js'));
 const workflow=await readFile('.github/workflows/fonta-shadow.yml','utf8');
-assert(workflow.includes("vars.FONTA_SHADOW_ENABLED == 'true'"));assert(workflow.includes('HEAD:fonta-data'));assert(!/\$\{\{\s*secrets\./.test(workflow));assert(!workflow.includes('--force'));
+assert(workflow.includes("vars.FONTA_SHADOW_ENABLED == 'true'"));assert(workflow.includes('push-fonta-data-with-retry.sh'));assert(!/\$\{\{\s*secrets\./.test(workflow));assert(!workflow.includes('--force'));
 console.log('Fonta: dates/DST, absències, jitter, qualitat, embargament, comparadors, idempotència i aïllament OK.');

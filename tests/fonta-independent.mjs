@@ -106,5 +106,5 @@ try{
 
 const r2=r2Transport({accountId:'a'.repeat(32),token:'test-only',fetcher:async()=>new Response(JSON.stringify({success:true,result:[],result_info:{is_truncated:true}}))});
 await assert.rejects(()=>r2.inventory(),/incomplet/);
-const workflow=await readFile('.github/workflows/fonta-single-runs.yml','utf8');assert(workflow.includes("vars.FONTA_SINGLE_RUNS_ENABLED == 'true'"));assert(workflow.includes('group: fonta-shadow-archive'));assert(!workflow.includes('secrets.'));
+const workflow=await readFile('.github/workflows/fonta-single-runs.yml','utf8');assert(workflow.includes("vars.FONTA_SINGLE_RUNS_ENABLED == 'true'"));assert(workflow.includes('group: fonta-shadow-archive'));assert(workflow.includes('push-fonta-data-with-retry.sh'));assert(!workflow.includes('secrets.'));
 console.log('Fonta independent: hourly pairing/DST/missing/QC, XEMA provisional/UTC, archive roundtrip/conflicts/budgets and opt-in workflow OK.');

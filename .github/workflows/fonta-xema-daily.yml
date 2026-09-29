@@ -67,7 +67,7 @@ jobs:
           if ! git -C build/fonta-public diff --cached --quiet; then
             git -C build/fonta-public commit -m 'Update sanitized Fonta regional status'
             git -C build/fonta-public pull --rebase origin fonta-data
-            git -C build/fonta-public push origin HEAD:fonta-data
+            bash scripts/ci/push-fonta-data-with-retry.sh build/fonta-public
           fi
       - uses: actions/upload-artifact@v7
         with:
