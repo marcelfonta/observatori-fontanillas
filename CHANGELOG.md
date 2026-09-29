@@ -1,5 +1,16 @@
 # Changelog
 
+## Correcció — comunicats CECAT textuals sense falsa avaria · 2026-09-29
+
+- Les actualitzacions oficials INUNCAT sense els quatre mapes municipals es
+  registren ara com a no publicables i finalitzen correctament, sense generar
+  targetes ni correus de fallada.
+- Un PDF amb mapes però amb plantilla desconeguda, colors insegurs o geometria
+  insuficient continua fallant tancat perquè un canvi real de format no passi
+  desapercebut.
+- El comunicat `I-127696` s'ha confirmat com una actualització textual vàlida;
+  no hi havia cap peça visual que el sistema pogués publicar amb seguretat.
+
 ## Millora — app i giny natius per a macOS · 2026-09-29
 
 - El mateix projecte genera ara una app i una extensió WidgetKit pròpies de

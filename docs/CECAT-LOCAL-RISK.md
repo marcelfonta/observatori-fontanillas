@@ -31,6 +31,9 @@ Aportar una informació oficial addicional quan Protecció Civil publica un mapa
 ## Seguretat i degradació
 
 - Domini PDF, tipus, mida, capçalera, dates, estructura d'imatges i paleta es validen abans de generar res.
+- Els comunicats oficials només textuals són un resultat normal sense peça: es
+  conserven a l'auditoria com a `no_supported_risk_maps`, no publiquen i no
+  provoquen una falsa alarma de GitHub Actions.
 - Qualsevol canvi de plantilla o resultat geogràfic insuficientment segur falla tancat.
 - El workflow no rep credencials de xarxes; només el token de retorn ja utilitzat per les automatitzacions socials.
 - El Worker torna a validar totes les metadades, la vigència, el nivell i les dues imatges abans de crear l'esborrany.

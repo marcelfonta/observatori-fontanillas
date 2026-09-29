@@ -63,6 +63,10 @@ class MapRisk:
     station_xy: tuple[int, int]
 
 
+class NoSupportedRiskMaps(Exception):
+    """The communiqué is valid but does not carry the four map panels we publish."""
+
+
 def safe_official_url(value: str) -> str:
     parsed = urllib.parse.urlparse(value)
     if parsed.scheme != "https" or parsed.hostname != "documents.dadesobertes.gencat.cat":
@@ -159,7 +163,7 @@ def extract_map_risks(pdf: bytes) -> list[MapRisk]:
             level, rank, counts, station_xy = local_patch_risk(images[key])
             risks.append(MapRisk(target_date, phenomenon, start_hour, end_hour, level, rank, counts, images[key], station_xy))
     if not risks:
-        raise ValueError("El comunicat no conté mapes municipals de risc de pluja reconeguts.")
+        raise NoSupportedRiskMaps("El comunicat no conté mapes municipals de risc de pluja reconeguts.")
     return risks
 
 
@@ -334,6 +338,23 @@ def main() -> int:
         if selected:
             render_card(selected, metadata, output / "card.png", output / "card.jpg", Path(args.logo))
         print(json.dumps(metadata, ensure_ascii=False))
+        return 0
+    except NoSupportedRiskMaps as error:
+        # CECAT also publishes perfectly valid text-only updates. They are not
+        # suitable for this visual product, but their absence of maps is an
+        # expected no-op rather than an operational failure.
+        output.mkdir(parents=True, exist_ok=True)
+        skipped = {
+            "publishable": False,
+            "reason": "no_supported_risk_maps",
+            "message": str(error),
+            "documentKey": args.document_key,
+            "documentUrl": args.document_url,
+            "documentSha256": hashlib.sha256(pdf).hexdigest(),
+            "checkedAt": datetime.now(timezone.utc).isoformat(),
+        }
+        (output / "metadata.json").write_text(json.dumps(skipped, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(json.dumps(skipped, ensure_ascii=False))
         return 0
     except Exception as error:  # fail closed and leave a machine-readable audit
         output.mkdir(parents=True, exist_ok=True)
