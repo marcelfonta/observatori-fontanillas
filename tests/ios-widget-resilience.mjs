@@ -8,6 +8,9 @@ const service=await readFile(resolve(root,'ios/MeteoFontanillas/Shared/MeteoServ
 const app=await readFile(resolve(root,'ios/MeteoFontanillas/MeteoFontanillas/ContentView.swift'),'utf8');
 const widget=await readFile(resolve(root,'ios/MeteoFontanillas/MeteoFontanillasWidget/MeteoFontanillasWidget.swift'),'utf8');
 const formatting=await readFile(resolve(root,'ios/MeteoFontanillas/Shared/MeteoFormatting.swift'),'utf8');
+const project=await readFile(resolve(root,'ios/MeteoFontanillas/MeteoFontanillas.xcodeproj/project.pbxproj'),'utf8');
+const macAppInfo=await readFile(resolve(root,'ios/MeteoFontanillas/MeteoFontanillas/Info-macOS.plist'),'utf8');
+const macWidgetInfo=await readFile(resolve(root,'ios/MeteoFontanillas/MeteoFontanillasWidget/Info-macOS.plist'),'utf8');
 
 assert.match(worker,/async function widgetObservation\(env\)/);
 assert.match(worker,/url\.pathname === "\/widget-observation"/);
@@ -26,8 +29,15 @@ assert.match(widget,/MeteoFormatting\.humidity\(snapshot\.observation\.humidity\
 assert.match(widget,/snapshot\.forecastDays\.dropFirst\(\)\.prefix\(4\)/);
 assert.match(widget,/\.frame\(minWidth: 126, maxWidth: \.infinity, alignment: \.leading\)/);
 assert.match(widget,/\.font\(\.system\(size: 44, weight: \.bold, design: \.rounded\)\)[\s\S]*?\.lineLimit\(1\)[\s\S]*?\.minimumScaleFactor\(0\.58\)/);
+assert.match(widget,/#if os\(macOS\)[\s\S]*?case \.systemMedium:[\s\S]*?case \.systemLarge:/);
+assert.match(widget,/#if os\(macOS\)[\s\S]*?\.supportedFamilies\(\[\.systemSmall, \.systemMedium, \.systemLarge\]\)/);
 assert.match(formatting,/static func humidity\(_ value: Double\?\) -> String/);
 assert.match(service,/func loadForecasts\(days: Int = 5\) async throws/);
 assert.match(service,/forecast_days[^\n]*String\(max\(1, min\(7, days\)\)\)/);
+assert.match(project,/SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";/);
+assert.match(project,/"INFOPLIST_FILE\[sdk=macosx\*\]" = MeteoFontanillas\/Info-macOS\.plist;/);
+assert.match(project,/"INFOPLIST_FILE\[sdk=macosx\*\]" = MeteoFontanillasWidget\/Info-macOS\.plist;/);
+assert.match(macAppInfo,/public\.app-category\.weather/);
+assert.match(macWidgetInfo,/com\.apple\.widgetkit-extension/);
 
-console.log('Widget Apple: memòria cau segura, formats mitjà i gran i temperatura principal adaptable');
+console.log('Widget Apple: memòria cau segura, formats complets i targets natius iPhone/macOS');

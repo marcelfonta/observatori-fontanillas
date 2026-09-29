@@ -44,6 +44,9 @@
 
 ## Manteniment obert — En curs
 
+- [x] Crear una app i un giny realment natius per a macOS, amb formats petit,
+  mitjà i gran, obertura local i actualització independent de l'iPhone.
+
 - [x] Evitar que la temperatura principal del giny gran quedi truncada quan es
   reutilitza al Mac, preservant decimals, unitat i la resta de mètriques.
 

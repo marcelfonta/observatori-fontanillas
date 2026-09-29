@@ -53,24 +53,34 @@ struct ContentView: View {
             }
             .foregroundStyle(.white)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        Task { await model.refresh() }
-                    } label: {
-                        if model.isLoading {
-                            ProgressView().tint(.white)
-                        } else {
-                            Image(systemName: "arrow.clockwise")
-                        }
-                    }
-                    .accessibilityLabel("Actualitza les dades")
+#if os(macOS)
+                ToolbarItem(placement: .primaryAction) {
+                    refreshButton
                 }
+#else
+                ToolbarItem(placement: .topBarTrailing) {
+                    refreshButton
+                }
+#endif
             }
         }
         .task { await model.refresh() }
         .onChange(of: scenePhase) { phase in
             if phase == .active { Task { await model.refresh() } }
         }
+    }
+
+    private var refreshButton: some View {
+        Button {
+            Task { await model.refresh() }
+        } label: {
+            if model.isLoading {
+                ProgressView().tint(.white)
+            } else {
+                Image(systemName: "arrow.clockwise")
+            }
+        }
+        .accessibilityLabel("Actualitza les dades")
     }
 
     private var brand: some View {
@@ -146,9 +156,17 @@ struct ContentView: View {
     private var widgetGuide: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Afegeix el widget").font(.headline)
-            Text("Mantén premuda la pantalla bloquejada, toca Personalitza → Pantalla bloquejada → Afegeix widgets i tria Meteo Fontanillas.")
+            Text(widgetGuideDescription)
                 .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.78))
         }
+    }
+
+    private var widgetGuideDescription: String {
+#if os(macOS)
+        "Fes clic dret a l’escriptori, tria Edita els ginys, cerca Meteo Fontanillas i afegeix el format que prefereixis."
+#else
+        "Mantén premuda la pantalla bloquejada, toca Personalitza → Pantalla bloquejada → Afegeix widgets i tria Meteo Fontanillas."
+#endif
     }
 }

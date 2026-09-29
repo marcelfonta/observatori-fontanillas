@@ -1,5 +1,17 @@
 # Changelog
 
+## Millora — app i giny natius per a macOS · 2026-09-29
+
+- El mateix projecte genera ara una app i una extensió WidgetKit pròpies de
+  macOS, sense dependre dels «Ginys de l'iPhone» ni de la Duplicació de l'iPhone.
+- El giny del Mac conserva els formats petit, mitjà i gran, les dades en directe,
+  la memòria cau segura i la previsió de quatre dies; en tocar-lo obre l'app
+  nativa del Mac.
+- L'app adapta les instruccions i la barra d'eines a cada sistema. Els formats
+  de pantalla bloquejada de l'iPhone i la compilació iOS queden preservats.
+- Compilacions macOS signada i iPhone Simulator correctes; vuit proves Swift i
+  control automàtic de la configuració multiplataforma superats.
+
 ## Correcció — lectura completa al giny gran · 2026-09-29
 
 - La temperatura actual conserva espai prioritari i redueix la mida abans de

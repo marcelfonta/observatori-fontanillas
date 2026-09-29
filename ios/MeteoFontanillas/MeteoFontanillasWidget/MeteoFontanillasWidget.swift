@@ -113,6 +113,16 @@ struct MeteoWidgetView: View {
     var body: some View {
         Group {
             if let snapshot = entry.snapshot {
+#if os(macOS)
+                switch family {
+                case .systemMedium:
+                    medium(snapshot)
+                case .systemLarge:
+                    large(snapshot)
+                default:
+                    small(snapshot)
+                }
+#else
                 switch family {
                 case .accessoryInline:
                     inline(snapshot)
@@ -127,6 +137,7 @@ struct MeteoWidgetView: View {
                 default:
                     small(snapshot)
                 }
+#endif
             } else {
                 unavailable
             }
@@ -424,7 +435,7 @@ struct MeteoFontanillasWidget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: MeteoProvider()) { entry in
-            if #available(iOS 17.0, *) {
+            if #available(iOS 17.0, macOS 14.0, *) {
                 MeteoWidgetView(entry: entry)
                     .containerBackground(.fill.tertiary, for: .widget)
             } else {
@@ -434,7 +445,11 @@ struct MeteoFontanillasWidget: Widget {
         }
         .configurationDisplayName("Meteo Fontanillas")
         .description("Dades de l’estació i previsió fins als pròxims quatre dies a Sant Celoni.")
+#if os(macOS)
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+#else
         .supportedFamilies([.accessoryInline, .accessoryCircular, .accessoryRectangular, .systemSmall, .systemMedium, .systemLarge])
+#endif
     }
 }
 
