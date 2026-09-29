@@ -1,7 +1,7 @@
 {
   "schema": 2,
   "protocol": "fonta-hourly-nearest-150s-v1",
-  "generatedAt": "2026-09-29T14:56:05.251Z",
+  "generatedAt": "2026-09-29T15:13:17.555Z",
   "station": "ISANTC198",
   "forecastDays": 3,
   "pairedDays": 1,
