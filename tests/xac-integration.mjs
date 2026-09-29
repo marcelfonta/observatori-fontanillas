@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
 const [worker,feature,core,html,css]=await Promise.all([read('worker/index.js'),read('src/features/environment.js'),read('src/core/xac-pollen.js'),read('index.html'),read('css/portal.css')]);
-for(const token of ["new Set(['bellaterra','girona','manresa'])",'XAC_POLLEN_MAX_BYTES','redirect:\'error\'','cacheTtl:21_600','X-Data-License','/pollen-xac?station=bellaterra'])assert.ok(worker.includes(token),`Proxy XAC: falta ${token}`);
+for(const token of ["new Set(['bellaterra','girona','manresa'])",'XAC_POLLEN_MAX_BYTES','redirect:\'manual\'','XAC_UPSTREAM_REDIRECT','cacheTtl:21_600','X-Data-License','/pollen-xac?station=bellaterra'])assert.ok(worker.includes(token),`Proxy XAC: falta ${token}`);
 assert.ok(!worker.includes('SOCIAL_XAC_POLLEN_ENABLED'),'La integració no ha d’activar publicacions socials abans de revisar una mostra real.');
 for(const token of ['referenceApproved:true','publishing:false','Bellaterra és la referència principal','Els nivells no es promitgen'])assert.ok(core.includes(token),`Contracte científic XAC: falta ${token}`);
 for(const token of ["fetchXacStation('bellaterra'","fetchXacStation('girona'","fetchXacStation('manresa'",'loadXacReference','renderXacUnavailable'])assert.ok(feature.includes(token),`Client XAC: falta ${token}`);

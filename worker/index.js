@@ -304,10 +304,14 @@ async function xacPollenProxy(url) {
   if(!XAC_POLLEN_STATIONS.has(station))return json({error:'Estació XAC no admesa',code:'XAC_STATION_NOT_ALLOWED'},400,'no-store');
   const sourceUrl=`https://aerobiologia.cat/api/v0/forecast/${station}/ca/xml`;
   const response=await fetch(sourceUrl,{
-    headers:{Accept:'application/xml,text/xml'},redirect:'error',
+    headers:{Accept:'*/*'},redirect:'manual',
     signal:AbortSignal.timeout(12_000),cf:{cacheEverything:true,cacheTtl:21_600},
   });
-  if(!response.ok)return json({error:'La predicció XAC no està disponible temporalment',code:'XAC_UPSTREAM_ERROR'},502,'public, max-age=60');
+  if(response.status>=300&&response.status<400)return json({error:'Redirecció XAC no admesa',code:'XAC_UPSTREAM_REDIRECT'},502,'public, max-age=60');
+  if(!response.ok){
+    console.warn('XAC upstream error',{station,status:response.status});
+    return json({error:'La predicció XAC no està disponible temporalment',code:'XAC_UPSTREAM_ERROR'},502,'public, max-age=60');
+  }
   const declaredLength=Number(response.headers.get('content-length'));
   if(Number.isFinite(declaredLength)&&declaredLength>XAC_POLLEN_MAX_BYTES)throw new Error('Resposta XAC massa gran');
   const xml=await response.text();
