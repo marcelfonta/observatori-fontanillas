@@ -23,7 +23,15 @@
   el cron; diverses còpies i recuperacions programades consten correctes fins al
   27/09. Mantenir el token restringit al bucket i els límits del pilot.
 - [x] Enviar consulta XEMA a Meteocat des d'Outlook (20/09, 16:09); enviament verificat, sense activar extracció.
-- [ ] Aclarir reutilització XEMA amb la resposta; comprovar dades validades i períodes observacionals compatibles abans d'integrar-la automàticament.
+- [x] Preparar un contrast regional diari XEMA privat amb màxima, mínima i pluja
+  representatives, prediccions per estació congelades i comparadors aparellats.
+  Originals només a R2, circuit opt-in i entrenament/promoció bloquejats. Detall
+  a `docs/FONTA-XEMA-DAILY-2026-09-29.md`.
+- [ ] Activar el pilot regional només després d'un pla i una captura manual
+  verificats; acumular mostra i aplicar validació temporal i deixant una estació
+  fora abans de permetre cap correcció.
+- [ ] Aclarir reutilització XEMA amb la resposta de Meteocat abans de redistribuir
+  originals, mostrar lectures per estació o derivar un producte públic.
 - [x] Detectar que els retards reals de GitHub deixaven totes les captures fora
   de la finestra 0.1 i preparar Fonta 0.2 amb política prospectiva 08–18 UTC,
   separació correcta de fitxers diürn/nocturn i cap reclassificació retroactiva.

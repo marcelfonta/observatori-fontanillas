@@ -1,5 +1,11 @@
 # Fonta · arxiu recuperable, Single Runs i XEMA
 
+> Actualització 29/09/2026: la cautela d'aquest document es manté íntegra per
+> a les lectures **subdiàries** provisionals. El conjunt oficial **diari** de
+> dades d'alt valor disposa ara d'un pilot privat separat, sense redistribució,
+> entrenament ni ús públic, descrit a
+> [`FONTA-XEMA-DAILY-2026-09-29.md`](FONTA-XEMA-DAILY-2026-09-29.md).
+
 > Actualització 27/09/2026: els paquets Single Runs d'aquesta fase es conserven,
 > però la nova sèrie comparable usa la política 0.2 descrita a
 > [`FONTA-ISSUE-POLICY-V2-2026-09-27.md`](FONTA-ISSUE-POLICY-V2-2026-09-27.md).
@@ -159,9 +165,10 @@ també dona prioritat a les condicions específiques. Per tant, **no s'ha assign
 una llicència Creative Commons ni s'ha donat per autoritzada una extracció
 sistemàtica**. Aquesta és una cautela operativa, no una conclusió jurídica.
 
-Consulta preparada, **no enviada**: [`FONTA-XEMA-CONSULTA.md`](FONTA-XEMA-CONSULTA.md).
-Fins a aclarir-ho: sense workflow XEMA, sense entrenament, sense redistribució
-de lectures a GitHub/web/R2 i sense missatges a tercers.
+Consulta preparada i enviada: [`FONTA-XEMA-CONSULTA.md`](FONTA-XEMA-CONSULTA.md).
+Fins a aclarir-ho: sense entrenament subdiari, sense redistribució de lectures
+a GitHub/web i sense presentació pública. El pilot diari posterior és privat a
+R2, opt-in i conserva aquesta restricció editorial.
 
 ## Verificació i rollback
 

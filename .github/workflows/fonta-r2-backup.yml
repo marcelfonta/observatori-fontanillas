@@ -15,7 +15,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: fonta-r2-backup
+  # One writer for the whole private bucket, including regional XEMA evidence.
+  group: fonta-r2-archive
   cancel-in-progress: false
 
 jobs:

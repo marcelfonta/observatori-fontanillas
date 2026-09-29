@@ -13,10 +13,13 @@ export function s3Config({accountId,accessKeyId,secretAccessKey,jurisdiction='de
     requestHandler:{connectionTimeout:5000,requestTimeout:25000}};
 }
 
-export function s3Transport(options,{client}={}){
+export function s3Transport(options,{client,scope='archive'}={}){
   const config=s3Config(options);
   const s3=client||new S3Client(config);
-  const key=k=>{if(!/^(captures|manifests)\/[a-f0-9]{64}\.json$/.test(k))throw new Error('Clau R2 invàlida');return k;};
+  const patterns={archive:/^(captures|manifests)\/[a-f0-9]{64}\.json$/,
+    regional:/^regional\/(captures|reports)\/[a-f0-9]{64}\.json$/};
+  if(!patterns[scope])throw new Error('Àmbit R2 invàlid');
+  const key=k=>{if(!patterns[scope].test(k))throw new Error('Clau R2 invàlida');return k;};
   async function send(command){
     try{return await s3.send(command,{abortSignal:AbortSignal.timeout(25000)});}
     catch(error){

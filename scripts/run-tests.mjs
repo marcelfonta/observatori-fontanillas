@@ -22,6 +22,7 @@ if (quick && !selected.includes('fonta-model.mjs')) selected.push('fonta-model.m
 if (quick && !selected.includes('fonta-foundations.mjs')) selected.push('fonta-foundations.mjs');
 if (quick && !selected.includes('fonta-independent.mjs')) selected.push('fonta-independent.mjs');
 if (quick && !selected.includes('fonta-r2-backup.mjs')) selected.push('fonta-r2-backup.mjs');
+if (quick && !selected.includes('fonta-xema-daily.mjs')) selected.push('fonta-xema-daily.mjs');
 if (quick && !selected.includes('environment-missing-values.mjs')) selected.push('environment-missing-values.mjs');
 if (quick && !selected.includes('environment-freshness.mjs')) selected.push('environment-freshness.mjs');
 if (quick && !selected.includes('social-production.mjs')) selected.push('social-production.mjs');
