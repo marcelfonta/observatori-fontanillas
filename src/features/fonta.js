@@ -13,6 +13,7 @@ const issueLabels={'outside-window':'Captura de la política inicial, conservada
   'incomplete-models':'Models incomplets per a D+1','duplicate-day':'Ja hi havia una emissió per a aquest dia',
   'eligible-issue':'Emissió apta; encara cal l’observació posterior'};
 const url='https://raw.githubusercontent.com/marcelfonta/observatori-fontanillas/fonta-data/status.json';
+const regionalUrl='https://raw.githubusercontent.com/marcelfonta/observatori-fontanillas/fonta-data/regional-status.json';
 let displayedReport=null,displayedStale=false;
 function detailTable(title,headers,rows){
   const details=document.createElement('details');details.append(cell('summary',title));
@@ -89,11 +90,48 @@ function render(report){
   }
   displayedReport=report;displayedStale=age>30*3600000;
 }
+function renderRegional(status){
+  if(status?.schema!==1||status.kind!=='fonta-xema-public-status'||status.mode!=='regional-shadow'||status.productionEnabled!==false||status.promotionAllowed!==false||
+    !Number.isFinite(Date.parse(status.publishedAt))||!Number.isInteger(status.progress?.captureCount)||status.progress.captureCount<0||
+    !Number.isInteger(status.progress?.pairedStationDays)||status.progress.pairedStationDays<0||!Array.isArray(status.stations)||status.stations.length!==6||
+    status.safeguards?.rawDataPublished!==false||status.safeguards?.weatherValuesPublished!==false||status.safeguards?.errorMetricsPublished!==false)throw new Error('Contracte regional desconegut');
+  const age=Date.now()-Date.parse(status.publishedAt);if(age< -300000)throw new Error('Data regional invàlida');
+  $('fonta-regional-captures').textContent=number(status.progress.captureCount);
+  $('fonta-regional-pairs').textContent=number(status.progress.pairedStationDays);
+  $('fonta-regional-stations').textContent=number(status.stations.length);
+  $('fonta-regional-status').textContent=age>48*3600000
+    ? `Seguiment regional desactualitzat des del ${date(status.publishedAt)}. No es mostren resultats meteorològics.`
+    : status.progress.pairedStationDays>0
+      ? `Contrast regional en curs · actualitzat el ${date(status.publishedAt)}. Els resultats meteorològics continuen en revisió privada.`
+      : `Primera captura regional conservada · ${date(status.publishedAt)}. Encara cal acumular dies posteriors per poder contrastar-la.`;
+  const list=$('fonta-regional-station-list');list.replaceChildren();
+  for(const station of status.stations){
+    if(!/^[A-Z0-9]{2}$/.test(station.code)||station.rain!==true||typeof station.temperature!=='boolean')throw new Error('Capacitat XEMA invàlida');
+    const item=document.createElement('article');item.append(cell('strong',station.code),cell('span',station.temperature?'Temperatura · precipitació':'Només precipitació'),cell('small',station.code==='KX'?'Pluviòmetre; no entra a l’avaluació tèrmica.':'Contrast independent en mode ombra.'));list.append(item);
+  }
+}
+function resetRegional(){
+  $('fonta-regional-status').textContent='No s’ha pogut confirmar el seguiment regional. Les dades originals continuen privades i no es reutilitza cap estat anterior.';
+  for(const id of ['fonta-regional-captures','fonta-regional-pairs'])$(id).textContent='—';$('fonta-regional-stations').textContent='6';
+  $('fonta-regional-station-list').replaceChildren(cell('p','Seguiment regional temporalment no disponible.'));
+}
+function resetLocal(){
+  displayedReport=null;displayedStale=false;
+  $('fonta-status').textContent='No s’ha pogut confirmar l’arxiu automàtic. Pot estar pendent d’activació o temporalment inaccessible. No es mostren previsions ni resultats no verificats.';
+  $('fonta-forecasts').replaceChildren();$('fonta-scores').replaceChildren(cell('p','Resultats no disponibles.'));
+  for(const id of ['fonta-captures','fonta-pairs','fonta-evaluated'])$(id).textContent='—';
+  $('fonta-forecast-date').textContent='Sense previsió verificada disponible.';
+  $('fonta-monitor').replaceChildren(cell('p','Diagnòstic no disponible; no es conserva un estat anterior com si fos actual.'));delete $('fonta-monitor').dataset.state;
+  $('fonta-prospective').replaceChildren(cell('p','Resultats prospectius no disponibles.'));
+}
+async function loadJson(endpoint){const response=await fetch(endpoint,{cache:'no-store',signal:AbortSignal.timeout(12000),credentials:'omit'});if(!response.ok)throw new Error('Arxiu no disponible');return response.json();}
 // Expire a page left open without another HTTP request. Never resurrect a failed read.
 setInterval(()=>{if(displayedReport&&!displayedStale&&Date.now()-Date.parse(displayedReport.latestCaptureAt)>30*3600000)render(displayedReport);},60000);
 $('fonta-refresh').addEventListener('click',async()=>{
   $('fonta-refresh').disabled=true;
-  try{const response=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(12000),credentials:'omit'});if(!response.ok)throw new Error('Arxiu no disponible');render(await response.json());}
-  catch{displayedReport=null;displayedStale=false;$('fonta-status').textContent='No s’ha pogut confirmar l’arxiu automàtic. Pot estar pendent d’activació o temporalment inaccessible. No es mostren previsions ni resultats no verificats.';$('fonta-forecasts').replaceChildren();$('fonta-scores').replaceChildren(cell('p','Resultats no disponibles.'));for(const id of ['fonta-captures','fonta-pairs','fonta-evaluated'])$(id).textContent='—';$('fonta-forecast-date').textContent='Sense previsió verificada disponible.';$('fonta-monitor').replaceChildren(cell('p','Diagnòstic no disponible; no es conserva un estat anterior com si fos actual.'));delete $('fonta-monitor').dataset.state;$('fonta-prospective').replaceChildren(cell('p','Resultats prospectius no disponibles.'));}
-  finally{$('fonta-refresh').disabled=false;}
+  try{
+    const [local,regional]=await Promise.allSettled([loadJson(url),loadJson(regionalUrl)]);
+    if(local.status==='fulfilled')try{render(local.value);}catch{resetLocal();}else resetLocal();
+    if(regional.status==='fulfilled')try{renderRegional(regional.value);}catch{resetRegional();}else resetRegional();
+  }finally{$('fonta-refresh').disabled=false;}
 });

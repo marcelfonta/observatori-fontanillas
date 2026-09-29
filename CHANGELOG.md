@@ -1,5 +1,18 @@
 # Changelog
 
+## Millora — Fonta inicia el contrast regional privat amb XEMA · 2026-09-29
+
+- La recollida diària XEMA ja activa conserva en R2 originals privats i
+  previsió congelada abans dels fets per a sis referències regionals.
+- KX queda formalment restringida a precipitació: no participa en cap
+  avaluació tèrmica perquè Meteocat confirma que és un pluviòmetre.
+- La pàgina Fonta incorpora un panell regional amb nombre de captures,
+  estació-dies contrastables i capacitats de cada codi XEMA.
+- El resum públic no conté lectures, originals, errors meteorològics ni
+  paràmetres entrenats. Només informa del progrés operatiu i les salvaguardes.
+- Fonta continua en mode ombra, sense alimentar la previsió operativa, els
+  avisos ni les xarxes socials.
+
 ## Millora — referència aerobiològica XAC per al Baix Montseny · 2026-09-29
 
 - La pàgina de Medi Ambient substitueix el resum parcial de cinc pòl·lens CAMS

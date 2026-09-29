@@ -158,6 +158,11 @@ laboratori. No cal revertir Worker, migrar D1 ni tocar publicacions.
 
 ## Següents fases, no presentades com a fetes
 
+- El contrast regional XEMA diari ja recull en privat sis referències i publica
+  només el progrés sanititzat. KX és només pluviomètrica. Cal acumular dies
+  aparellats abans d'interpretar errors i aclarir amb Meteocat la publicació de
+  mètriques derivades abans de mostrar-les.
+
 - Revisió instrumental i estacions XEMA/PWS representatives amb permisos.
 - Identitat real de runs i disponibilitat, arxiu durable escalable, recuperació
   de captures perdudes només amb dates de disponibilitat verificables.
