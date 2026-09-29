@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdtemp,rm,access} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {sha256} from '../scripts/fonta/io.mjs';
+import {runRegionalCollection} from '../scripts/fonta/collect-xema-daily.mjs';
 import {readRegionalCaptures,uploadRegionalEvidence} from '../scripts/fonta/regional-archive.mjs';
 import {XEMA_DAILY_MODELS,XEMA_DAILY_STATIONS,evaluateRegionalDaily,normalizeRegionalForecast,normalizeXemaDaily,normalizeXemaStations,regionalCapture,regionalForecastRequest,xemaDailyRequest,xemaStationMetadataRequest} from '../src/core/fonta-xema-daily.js';
 
@@ -61,8 +64,17 @@ assert.equal((await readRegionalCaptures(transport)).captures.length,1);
 const key=writes[0],valid=objects.get(key);objects.set(key,Buffer.from('bad'));await assert.rejects(()=>readRegionalCaptures(transport),/Integritat|Mida/);objects.set(key,valid);
 
 const workflow=await readFile('.github/workflows/fonta-xema-daily.yml','utf8');
-for(const required of ["cron: '35 8 * * *'","vars.FONTA_XEMA_DAILY_ENABLED == 'true'",'contents: read','group: fonta-r2-archive','persist-credentials: false','default: plan','retention-days: 30'])assert(workflow.includes(required),required);
+for(const required of ["cron: '35 8 * * *'","github.event_name == 'workflow_dispatch' || vars.FONTA_XEMA_DAILY_ENABLED == 'true'",'contents: read','group: fonta-r2-archive','persist-credentials: false','default: plan','retention-days: 30'])assert(workflow.includes(required),required);
 for(const forbidden of ['contents: write','git push','wrangler deploy','CLOUDFLARE_API_TOKEN'])assert(!workflow.includes(forbidden),forbidden);
 assert((await readFile('.github/workflows/fonta-r2-backup.yml','utf8')).includes('group: fonta-r2-archive'));
+
+const temp=await mkdtemp(join(tmpdir(),'fonta-regional-parent-')),nested=join(temp,'missing-parent','receipt');
+try{
+  const body=Buffer.from(JSON.stringify(issue)+'\n'),captureKey='regional/captures/'+sha256(body)+'.json';
+  const duplicateTransport={inventory:async()=>[{key:captureKey,size:body.length}],get:async()=>body,
+    put:async()=>{throw new Error('unexpected write')}};
+  const duplicate=await runRegionalCollection({mode:'plan',workspace:nested,transport:duplicateTransport,now:'2026-09-20T12:00:00Z'});
+  assert(duplicate.duplicateDay);await access(join(nested,'receipt.json'));
+}finally{await rm(temp,{recursive:true,force:true});}
 
 console.log('Fonta XEMA diari: dates, representativitat, zeros, mostres aparellades, R2 immutable i workflow opt-in correctes.');

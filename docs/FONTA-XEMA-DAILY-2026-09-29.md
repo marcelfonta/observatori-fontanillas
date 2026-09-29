@@ -60,9 +60,10 @@ totals; en assolir un límit s'atura i no elimina res.
 
 L'activació futura requereix, després de fusionar i revisar:
 
-1. Executar manualment `plan` i comprovar el rebut sense escriptures.
+1. Amb `FONTA_XEMA_DAILY_ENABLED=false`, executar manualment `plan` i comprovar
+   el rebut sense escriptures.
 2. Executar manualment `run` i comprovar pujada i lectura completa.
-3. Només amb confirmació humana, crear `FONTA_XEMA_DAILY_ENABLED=true`.
+3. Només amb confirmació humana, canviar `FONTA_XEMA_DAILY_ENABLED=true`.
 
 Per aturar-lo n'hi ha prou amb posar la variable a `false`. Les proves ja
 guardades es preserven; no s'han d'esborrar per forçar un nou resultat.

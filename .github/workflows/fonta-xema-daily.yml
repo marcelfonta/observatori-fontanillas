@@ -20,7 +20,8 @@ concurrency:
 
 jobs:
   regional-shadow:
-    if: github.ref == 'refs/heads/main' && vars.FONTA_XEMA_DAILY_ENABLED == 'true'
+    # Manual validation stays available while the scheduled circuit is OFF.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || vars.FONTA_XEMA_DAILY_ENABLED == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
