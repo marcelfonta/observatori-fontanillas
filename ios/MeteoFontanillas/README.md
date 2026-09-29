@@ -8,14 +8,16 @@ Meteo Fontanillas a la pantalla bloquejada de l'iPhone.
 - Temperatura observada per l'estació Fontanillas.
 - Condició prevista per a avui amb Open-Meteo.
 - Màxima, mínima i probabilitat màxima de pluja prevista.
+- Previsió dels quatre dies següents al format gran, amb símbol, màxima, mínima
+  i probabilitat màxima de pluja de cada dia.
 - Indicació explícita quan el Worker retorna l'última lectura fiable en mode
   degradat.
 
 Inclou widgets en línia, circular i rectangular per a la pantalla bloquejada i
-ginys petit i mitjà per a la pantalla d'inici. El format mitjà està pensat també
-per a l'escriptori del Mac i afegeix sensació tèrmica, humitat, màxima, mínima i
-probabilitat de pluja. El widget demana una actualització cada vint minuts, però
-iOS decideix el moment efectiu de refresc.
+ginys petit, mitjà i gran per a la pantalla d'inici. Els formats mitjà i gran
+estan pensats també per a l'escriptori del Mac. El gran combina l'estació en
+directe, el detall d'avui i els quatre dies següents. El widget demana una
+actualització cada vint minuts, però iOS decideix el moment efectiu de refresc.
 
 Per evitar una targeta buida quan iOS dona poc temps a l'extensió, el widget
 consulta una ruta lleugera amb l'última observació desada. Després d'una lectura
@@ -41,8 +43,9 @@ Cal un Mac amb la versió completa d'Xcode instal·lada i l'iPhone connectat:
 
 Amb el mateix compte d'Apple als dos dispositius, activa **Ginys de l'iPhone**
 al Mac. Després fes clic dret a l'escriptori, obre **Edita els ginys**, cerca
-**Meteo Fontanillas** i escull el format mitjà. Després d'actualitzar el codi cal
-tornar a executar l'app a l'iPhone des d'Xcode perquè el Mac rebi la nova versió.
+**Meteo Fontanillas** i escull el format mitjà o gran. Després d'actualitzar el
+codi cal tornar a executar l'app a l'iPhone des d'Xcode perquè el Mac rebi la
+nova versió.
 
 No cal cap secret ni es modifica D1. Totes les peticions són GET a serveis
 públics HTTPS.

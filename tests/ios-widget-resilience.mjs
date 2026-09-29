@@ -19,8 +19,13 @@ assert.match(widget,/WidgetSnapshotCache\.save\(snapshot\)/);
 assert.match(widget,/WidgetSnapshotCache\.load\(\)/);
 assert.match(widget,/Darrera lectura guardada/);
 assert.match(widget,/case \.systemMedium:/);
+assert.match(widget,/case \.systemLarge:/);
 assert.match(widget,/\.supportedFamilies\(\[[^\]]*\.systemMedium/);
+assert.match(widget,/\.supportedFamilies\(\[[^\]]*\.systemLarge/);
 assert.match(widget,/MeteoFormatting\.humidity\(snapshot\.observation\.humidity\)/);
+assert.match(widget,/snapshot\.forecastDays\.dropFirst\(\)\.prefix\(4\)/);
 assert.match(formatting,/static func humidity\(_ value: Double\?\) -> String/);
+assert.match(service,/func loadForecasts\(days: Int = 5\) async throws/);
+assert.match(service,/forecast_days[^\n]*String\(max\(1, min\(7, days\)\)\)/);
 
-console.log('Widget Apple: ruta ràpida, memòria cau segura i format mitjà complet');
+console.log('Widget Apple: memòria cau segura i formats mitjà i gran amb previsió');

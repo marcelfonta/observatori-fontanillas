@@ -22,6 +22,22 @@ enum MeteoFormatting {
         return "\(Int(max(0, min(100, value)).rounded()))%"
     }
 
+    static func shortDay(_ isoDate: String) -> String {
+        let parser = DateFormatter()
+        parser.calendar = Calendar(identifier: .gregorian)
+        parser.locale = Locale(identifier: "en_US_POSIX")
+        parser.timeZone = TimeZone(identifier: "Europe/Madrid")
+        parser.dateFormat = "yyyy-MM-dd"
+        guard let date = parser.date(from: isoDate) else { return "—" }
+
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = catalanLocale
+        formatter.timeZone = TimeZone(identifier: "Europe/Madrid")
+        formatter.dateFormat = "EEE"
+        return formatter.string(from: date).replacingOccurrences(of: ".", with: "").capitalized
+    }
+
     static func condition(for code: Int?) -> String {
         guard let code else { return "Previsió no disponible" }
         switch code {
