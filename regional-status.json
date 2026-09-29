@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "kind": "fonta-xema-public-status",
+  "policy": "fonta-xema-daily-regional-shadow-v1",
+  "publishedAt": "2026-09-29T14:38:32.820Z",
+  "mode": "regional-shadow",
+  "productionEnabled": false,
+  "promotionAllowed": false,
+  "source": "Generalitat de Catalunya · Servei Meteorològic de Catalunya (Meteocat)",
+  "terms": "https://www.meteo.cat/wpweb/avis-legal/",
+  "progress": {
+    "captureCount": 1,
+    "pairedStationDays": 0,
+    "status": "collecting"
+  },
+  "stations": [
+    {
+      "code": "UQ",
+      "temperature": true,
+      "rain": true
+    },
+    {
+      "code": "XK",
+      "temperature": true,
+      "rain": true
+    },
+    {
+      "code": "KX",
+      "temperature": false,
+      "rain": true
+    },
+    {
+      "code": "VX",
+      "temperature": true,
+      "rain": true
+    },
+    {
+      "code": "WS",
+      "temperature": true,
+      "rain": true
+    },
+    {
+      "code": "KP",
+      "temperature": true,
+      "rain": true
+    }
+  ],
+  "safeguards": {
+    "rawDataPublished": false,
+    "weatherValuesPublished": false,
+    "errorMetricsPublished": false,
+    "noRedistribution": true,
+    "note": "Només es publica l’estat operatiu del pilot. Les lectures originals i les mètriques meteorològiques romanen privades."
+  }
+}
