@@ -71,6 +71,13 @@ import Testing
     #expect(MeteoFormatting.precipitation(nil) == "—")
 }
 
+@Test func formatsHumidityForTheExpandedWidget() {
+    #expect(MeteoFormatting.humidity(63.6) == "64%")
+    #expect(MeteoFormatting.humidity(-5) == "0%")
+    #expect(MeteoFormatting.humidity(140) == "100%")
+    #expect(MeteoFormatting.humidity(nil) == "—")
+}
+
 @Test func snapshotCanBeStoredForWidgetFallback() throws {
     let observation = StationObservation(
         station: "Observatori Meteorològic Fontanillas",

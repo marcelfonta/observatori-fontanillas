@@ -1,5 +1,14 @@
 # Changelog
 
+## Millora — giny mitjà per a l'escriptori del Mac · 2026-09-29
+
+- El giny privat d'iPhone ofereix també un format mitjà reutilitzable al Mac
+  mitjançant «Ginys de l'iPhone», sense crear cap servei ni credencial nous.
+- La composició amplia la lectura real amb sensació tèrmica, humitat, condició,
+  màxima, mínima, probabilitat de pluja i estat de vigència o memòria cau.
+- Els formats petit i de pantalla bloquejada es mantenen intactes; la humitat
+  absent continua mostrant-se com a dada no disponible, mai com a zero.
+
 ## Correcció — coherència del mapa d'avisos Meteocat · 2026-09-29
 
 - Cada targeta oficial agrega el nivell comarcal només per al mateix fenomen
