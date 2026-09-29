@@ -1,5 +1,20 @@
 # Changelog
 
+## Preparació — contrast regional diari Fonta · 2026-09-29
+
+- Nou lector estricte del conjunt XEMA diari de dades d'alt valor: màxima,
+  mínima i precipitació només amb estat representatiu, dies tancats, unitats i
+  rangs verificats; zeros reals preservats i duplicats descartats.
+- Previsions de quatre models congelades per a sis estacions i comparació sobre
+  les mateixes estacions/dies, amb errors de temperatura i pluja i taula de
+  contingència per episodis. Sense entrenament ni correcció de Fontanillas.
+- Originals i procedència només al bucket R2 privat, objectes immutables,
+  verificació de lectura i límits compartits. Cap dada XEMA crua a GitHub o web.
+- Workflow diari opt-in desactivat, GitHub de només lectura i concurrència única
+  per al bucket. Sense Worker, D1, publicacions, desplegament ni activació.
+- Metodologia, cauteles de reutilització i fases a
+  `docs/FONTA-XEMA-DAILY-2026-09-29.md`.
+
 ## Millora — quatre franges CECAT completes · 2026-09-28
 
 - La targeta local deixa de resumir només la franja més crítica i mostra els quatre mapes oficials del dia en una graella 2 × 2, convertits a hora de Sant Celoni.

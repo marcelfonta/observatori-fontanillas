@@ -98,6 +98,12 @@ node scripts/fonta/backup.mjs run SNAPSHOT_GIT UN_ALTRE_DIRECTORI_NOU
 
 ## Rollback
 
+Des del 29/09, el mateix bucket pot contenir també captures i informes regionals
+privats sota `regional/`. Els dos workflows comparteixen el grup de concurrència
+`fonta-r2-archive`: continua havent-hi un sol escriptor, i els límits de 100 MiB
+i menys de 1.000 objectes es calculen sobre tot el bucket. Detall a
+`FONTA-XEMA-DAILY-2026-09-29.md`.
+
 `FONTA_R2_BACKUP_ENABLED=false` atura pròximes execucions, però no un job ja en
 marxa: cancel·lar-lo explícitament si cal. Conservar objectes i rebuts. Revocar
 només el token dedicat si se sospita filtració. Cap esborrat de bucket o captures.

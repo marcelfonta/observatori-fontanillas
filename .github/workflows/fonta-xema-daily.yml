@@ -1,0 +1,54 @@
+name: Fonta · contrast regional XEMA diari privat
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Pla sense escriptures o captura privada real
+        type: choice
+        options: [plan, run]
+        default: plan
+  schedule:
+    # Forecast for tomorrow is frozen before the target day; UTC, not local time.
+    - cron: '35 8 * * *'
+
+permissions:
+  contents: read
+concurrency:
+  group: fonta-r2-archive
+  cancel-in-progress: false
+
+jobs:
+  regional-shadow:
+    if: github.ref == 'refs/heads/main' && vars.FONTA_XEMA_DAILY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Congela previsió regional i contrasta només dies representatius
+        env:
+          FONTA_R2_ACCOUNT_ID: ${{ vars.FONTA_R2_ACCOUNT_ID }}
+          FONTA_R2_ACCESS_KEY_ID: ${{ secrets.FONTA_R2_ACCESS_KEY_ID }}
+          FONTA_R2_SECRET_ACCESS_KEY: ${{ secrets.FONTA_R2_SECRET_ACCESS_KEY }}
+          REGIONAL_MODE: ${{ github.event_name == 'schedule' && 'run' || inputs.mode }}
+        run: node scripts/fonta/collect-xema-daily.mjs "$REGIONAL_MODE" build/fonta-xema-daily
+      - name: Resum sense lectures XEMA crues
+        run: |
+          echo '## Fonta regional — mode ombra privat' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat build/fonta-xema-daily/receipt.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: fonta-xema-daily-receipt-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/fonta-xema-daily/receipt.json
+          if-no-files-found: error
+          retention-days: 30

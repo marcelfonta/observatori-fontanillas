@@ -35,6 +35,9 @@ for(const size of [2,13*1024*1024,undefined]){
 }
 response={};await transport.put(key,Buffer.from('abc'));
 assert.equal(commands.at(-1).input.IfNoneMatch,'*');assert.equal(commands.at(-1).input.StorageClass,'STANDARD');
+const regional=s3Transport(credentials,{client,scope:'regional'}),regionalKey='regional/captures/'+'e'.repeat(64)+'.json';
+response={};await regional.put(regionalKey,Buffer.from('abc'));
+await assert.rejects(()=>regional.get(key),/Clau/);
 const before=commands.length;
 await assert.rejects(()=>transport.get('../secret'),/Clau/);
 await assert.rejects(()=>transport.put(key,Buffer.alloc(0)),/invàlid/);assert.equal(commands.length,before);
@@ -90,7 +93,7 @@ try{
 
 const workflow=await readFile('.github/workflows/fonta-r2-backup.yml','utf8');
 for(const required of ["cron: '45 8,20 * * *'","vars.FONTA_R2_BACKUP_ENABLED == 'true'","github.ref == 'refs/heads/main'",
-  'contents: read','group: fonta-r2-backup','cancel-in-progress: false','--ignore-scripts','--frozen-lockfile','persist-credentials: false',
+  'contents: read','group: fonta-r2-archive','cancel-in-progress: false','--ignore-scripts','--frozen-lockfile','persist-credentials: false',
   'secrets.FONTA_R2_ACCESS_KEY_ID','secrets.FONTA_R2_SECRET_ACCESS_KEY','default: plan','timeout-minutes: 15'])assert(workflow.includes(required),required);
 for(const forbidden of ['contents: write','CLOUDFLARE_API_TOKEN','workflow_run:','pull_request:','git push','collect.mjs','wrangler deploy'])assert(!workflow.includes(forbidden));
 console.log('Fonta R2 backup: least-privilege S3, real SDK parsing/signing, dry-run, restore, retry, integrity and budget OK (no remote writes).');
