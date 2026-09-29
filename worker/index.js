@@ -11,8 +11,8 @@ import { fetchSocialEnvironment } from '../src/core/social-environment.js';
 import { dailySocialCardV5 } from './social-daily-v5.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.23";
-const WORKER_BUILT = "2026-09-28";
+const WORKER_VERSION = "22.29.24";
+const WORKER_BUILT = "2026-09-29";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -866,10 +866,16 @@ export function meteocatDangerLevel(perill) {
   return {key:'none',label:'Sense avís',rank:1};
 }
 
-export function meteocatCountyWarningsByDay(episodes) {
+function meteocatPhenomenonKey(value) {
+  return String(value||'').normalize('NFKC').trim().toLocaleLowerCase('ca-ES');
+}
+
+export function meteocatCountyWarningsByDay(episodes,{phenomenon=null}={}) {
+  const requestedPhenomenon=meteocatPhenomenonKey(phenomenon);
   const days=new Map();
   for(const episode of Array.isArray(episodes)?episodes:[]){
     if(String(episode?.estat?.nom||'').toLowerCase()!=='obert')continue;
+    if(requestedPhenomenon&&meteocatPhenomenonKey(episode?.meteor?.nom)!==requestedPhenomenon)continue;
     for(const warning of Array.isArray(episode?.avisos)?episode.avisos:[]){
       const warningState=String(warning?.estat||'').toLowerCase();
       if(warningState&&!['vigent','ampliat'].includes(warningState))continue;
@@ -910,10 +916,18 @@ function meteocatPeriodLabel(day, period) {
 
 export function parseMeteocatSmpEpisodes(episodes) {
   const normalized=new Map();
-  const countyWarningsByDay=meteocatCountyWarningsByDay(episodes);
+  const countyWarningsByPhenomenon=new Map();
+  const countyWarningsFor=phenomenon=>{
+    const key=meteocatPhenomenonKey(phenomenon);
+    if(!countyWarningsByPhenomenon.has(key)){
+      countyWarningsByPhenomenon.set(key,meteocatCountyWarningsByDay(episodes,{phenomenon}));
+    }
+    return countyWarningsByPhenomenon.get(key);
+  };
   for(const episode of Array.isArray(episodes)?episodes:[]){
     if(String(episode?.estat?.nom||'').toLowerCase()!=='obert')continue;
     const phenomenon=cleanText(episode?.meteor?.nom||'Fenomen meteorològic',100);
+    const countyWarningsByDay=countyWarningsFor(phenomenon);
     for(const warning of Array.isArray(episode?.avisos)?episode.avisos:[]){
       const warningState=String(warning?.estat||'').toLowerCase();
       if(warningState && !['vigent','ampliat'].includes(warningState))continue;
@@ -4679,7 +4693,7 @@ function meteocatCountyAlertMapSvg(warnings){
     const fill=warning?officialAlertColor(warning.level):'#173c31';
     return `<path d="${county.path}" fill="${fill}" stroke="${focus?'#f8fff9':'#55796b'}" stroke-width="${focus?'4':'1.2'}" vector-effect="non-scaling-stroke"><title>${escapeHtml(county.name)}${warning?` · ${escapeHtml(warning.level)}`:''}</title></path>`;
   }).join('');
-  return `<div class="map-panel"><svg class="county-map" viewBox="0 20 500 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa de Catalunya amb el nivell màxim d'avís per comarca">${paths}</svg><div class="map-meta"><span>CATALUNYA</span><b>${levels.size} ${levels.size===1?'comarca amb avís':'comarques amb avís'}</b><small>Nivell màxim per comarca per al dia indicat</small><div class="legend"><i class="yellow"></i>Groc<i class="orange"></i>Taronja<i class="red"></i>Vermell</div><em>Contorn blanc: Vallès Oriental</em></div></div>`;
+  return `<div class="map-panel"><svg class="county-map" viewBox="0 20 500 380" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa de Catalunya amb el nivell màxim d'avís per comarca per al mateix fenomen">${paths}</svg><div class="map-meta"><span>CATALUNYA</span><b>${levels.size} ${levels.size===1?'comarca amb avís':'comarques amb avís'}</b><small>Nivell màxim per comarca · mateix fenomen</small><div class="legend"><i class="yellow"></i>Groc<i class="orange"></i>Taronja<i class="red"></i>Vermell</div><em>Contorn blanc: Vallès Oriental</em></div></div>`;
 }
 
 function reportMetric(value, suffix='', digits=1) {

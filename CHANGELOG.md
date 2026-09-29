@@ -1,5 +1,15 @@
 # Changelog
 
+## Correcció — coherència del mapa d'avisos Meteocat · 2026-09-29
+
+- Cada targeta oficial agrega el nivell comarcal només per al mateix fenomen
+  meteorològic que explica el titular; un avís vermell de pluja en 30 minuts ja
+  no pot tenyir de vermell el mapa d'un avís taronja de pluja en 3 hores.
+- El peu del mapa explicita que els colors corresponen al mateix fenomen i una
+  prova de regressió cobreix la coexistència real de dos avisos amb nivells
+  diferents al Vallès Oriental.
+- Worker 22.29.24. Sense canvis de D1, secrets, horaris ni criteris de publicació.
+
 ## Preparació — contrast regional diari Fonta · 2026-09-29
 
 - Nou lector estricte del conjunt XEMA diari de dades d'alt valor: màxima,

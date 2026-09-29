@@ -23,8 +23,8 @@ assert.equal(meteocatDangerLevel(4).key,'orange');
 assert.equal(meteocatDangerLevel(5).key,'red');
 assert.equal(meteocatDangerLevel(6).key,'red');
 
-const warning=(idComarca,perill,estat='Vigent')=>({
-  estat:{nom:'Obert'},meteor:{nom:'Intensitat de pluja'},avisos:[{
+const warning=(idComarca,perill,estat='Vigent',phenomenon='Intensitat de pluja')=>({
+  estat:{nom:'Obert'},meteor:{nom:phenomenon},avisos:[{
     estat,dataEmisio:'2026-08-30T08:15Z',dataInici:'2026-08-30T12:00Z',dataFi:'2026-08-30T23:59Z',
     evolucions:[{dia:'2026-08-30T00:00Z',comentari:'Xàfecs amb tempesta.',distribucioGeografica:'LOCAL',periodes:[
       {nom:'12-18',afectacions:[{idComarca,perill,llindar:'Intensitat > 20 mm / 30 minuts',auxiliar:false}]},
@@ -55,6 +55,26 @@ assert.match(parsed[0].description,/local/);
 
 const warningMap=meteocatCountyWarningsByDay([warning(41,2),warning(13,5)]);
 assert.equal(warningMap['2026-08-30'].length,2);
+const mixedPhenomena=[
+  warning(41,4,'Vigent','Intensitat de pluja en 3 hores'),
+  warning(13,5,'Vigent','Intensitat de pluja en 3 hores'),
+  warning(41,6,'Vigent','Intensitat de pluja en 30 minuts'),
+];
+const threeHourWarnings=meteocatCountyWarningsByDay(mixedPhenomena,{phenomenon:'Intensitat de pluja en 3 hores'});
+assert.deepEqual(threeHourWarnings['2026-08-30'],[
+  {countyId:13,level:'red',rank:4},
+  {countyId:41,level:'orange',rank:3},
+]);
+const mixedParsed=parseMeteocatSmpEpisodes(mixedPhenomena);
+const threeHourAlert=mixedParsed.find(entry=>entry.phenomenon==='Intensitat de pluja en 3 hores');
+const thirtyMinuteAlert=mixedParsed.find(entry=>entry.phenomenon==='Intensitat de pluja en 30 minuts');
+assert.equal(threeHourAlert.level,'orange');
+assert.equal(threeHourAlert.countyWarnings.find(entry=>entry.countyId===41)?.level,'orange','El mapa d’un avís de 3 hores no pot heretar el vermell d’un fenomen de 30 minuts.');
+assert.equal(thirtyMinuteAlert.level,'red');
+assert.equal(thirtyMinuteAlert.countyWarnings.find(entry=>entry.countyId===41)?.level,'red');
+const threeHourCard=socialCardHtml({kind:'official_alert',body:'',payload:JSON.stringify(threeHourAlert)});
+assert.match(threeHourCard,/fill="#ff9f43" stroke="#f8fff9"/,'El contorn del Vallès Oriental ha de quedar taronja en la targeta taronja.');
+assert.doesNotMatch(threeHourCard,/fill="#ff625f" stroke="#f8fff9"/,'El vermell d’un altre fenomen no pot aparèixer al Vallès Oriental.');
 assert.equal(CATALONIA_COUNTY_PATHS.length,43,'El mapa ha de contenir totes les comarques oficials de l’ICGC.');
 assert.equal(CATALONIA_COUNTY_PATHS.find(county=>county.id===41)?.name,'Vallès Oriental');
 
@@ -88,6 +108,7 @@ assert.match(card,/METEOCAT/);
 assert.match(card,/Vallès Oriental/);
 assert.match(card,/2 comarques amb avís/);
 assert.match(card,/Contorn blanc: Vallès Oriental/);
+assert.match(card,/Nivell màxim per comarca · mateix fenomen/);
 assert.match(card,/viewBox="0 20 500 380" preserveAspectRatio="xMidYMid meet"/);
 assert.doesNotMatch(card,/AEMET/);
 assert.doesNotMatch(card,/Prelitoral de Barcelona/);
