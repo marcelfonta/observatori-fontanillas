@@ -24,8 +24,10 @@ assert.match(widget,/\.supportedFamilies\(\[[^\]]*\.systemMedium/);
 assert.match(widget,/\.supportedFamilies\(\[[^\]]*\.systemLarge/);
 assert.match(widget,/MeteoFormatting\.humidity\(snapshot\.observation\.humidity\)/);
 assert.match(widget,/snapshot\.forecastDays\.dropFirst\(\)\.prefix\(4\)/);
+assert.match(widget,/\.frame\(minWidth: 126, maxWidth: \.infinity, alignment: \.leading\)/);
+assert.match(widget,/\.font\(\.system\(size: 44, weight: \.bold, design: \.rounded\)\)[\s\S]*?\.lineLimit\(1\)[\s\S]*?\.minimumScaleFactor\(0\.58\)/);
 assert.match(formatting,/static func humidity\(_ value: Double\?\) -> String/);
 assert.match(service,/func loadForecasts\(days: Int = 5\) async throws/);
 assert.match(service,/forecast_days[^\n]*String\(max\(1, min\(7, days\)\)\)/);
 
-console.log('Widget Apple: memòria cau segura i formats mitjà i gran amb previsió');
+console.log('Widget Apple: memòria cau segura, formats mitjà i gran i temperatura principal adaptable');

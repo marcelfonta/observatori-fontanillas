@@ -1,5 +1,13 @@
 # Changelog
 
+## Correcció — lectura completa al giny gran · 2026-09-29
+
+- La temperatura actual conserva espai prioritari i redueix la mida abans de
+  truncar-se, també quan el giny de l'iPhone es mostra a l'escriptori del Mac.
+- El bloc de mètriques té una amplada estable i etiquetes adaptables perquè la
+  composició no amagui decimals, unitats ni valors meteorològics.
+- No canvien les fonts, els càlculs, el refresc ni els altres formats del giny.
+
 ## Millora — giny gran amb previsió de quatre dies · 2026-09-29
 
 - Nou format gran per al Mac i la pantalla d'inici de l'iPhone: lectura real,
