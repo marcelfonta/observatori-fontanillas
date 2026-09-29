@@ -1,5 +1,5 @@
 import {mkdir,writeFile} from 'node:fs/promises';
-import {resolve,join} from 'node:path';
+import {resolve,join,dirname} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {publicSource} from './io.mjs';
 import {s3Transport} from './r2-s3.mjs';
@@ -23,6 +23,9 @@ export async function collectRegionalSources({now=new Date().toISOString(),fetch
 
 export async function runRegionalCollection({mode='plan',workspace,transport,now=new Date().toISOString(),fetcher=fetch}){
   if(!['plan','run'].includes(mode)||!workspace)throw new Error('Execució regional invàlida');
+  // Preserve a create-only workspace while supporting a clean Actions checkout
+  // where the conventional build/ parent has not been created yet.
+  await mkdir(dirname(workspace),{recursive:true});
   await mkdir(workspace);
   const existing=await readRegionalCaptures(transport);
   if(existing.captures.length>=REGIONAL_CAPTURE_LIMIT)throw new Error('Pilot regional complet: revisar abans de continuar');

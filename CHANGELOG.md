@@ -12,6 +12,8 @@
   verificació de lectura i límits compartits. Cap dada XEMA crua a GitHub o web.
 - Workflow diari opt-in desactivat, GitHub de només lectura i concurrència única
   per al bucket. Sense Worker, D1, publicacions, desplegament ni activació.
+- La prova manual funciona amb el cron desactivat i crea de manera segura el
+  directori pare absent en un checkout nou, mantenint el rebut create-only.
 - Metodologia, cauteles de reutilització i fases a
   `docs/FONTA-XEMA-DAILY-2026-09-29.md`.
 
