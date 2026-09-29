@@ -44,6 +44,9 @@
 
 ## Manteniment obert — En curs
 
+- [x] Afegir un giny mitjà més complet per reutilitzar l'app privada d'iPhone
+  a l'escriptori del Mac, sense duplicar dades ni crear un segon backend.
+
 - [x] Separar per fenomen els colors del mapa de les targetes Meteocat perquè
   el nivell del Vallès Oriental coincideixi sempre amb el titular i el detall.
 

@@ -7,6 +7,7 @@ const worker=await readFile(resolve(root,'worker/index.js'),'utf8');
 const service=await readFile(resolve(root,'ios/MeteoFontanillas/Shared/MeteoService.swift'),'utf8');
 const app=await readFile(resolve(root,'ios/MeteoFontanillas/MeteoFontanillas/ContentView.swift'),'utf8');
 const widget=await readFile(resolve(root,'ios/MeteoFontanillas/MeteoFontanillasWidget/MeteoFontanillasWidget.swift'),'utf8');
+const formatting=await readFile(resolve(root,'ios/MeteoFontanillas/Shared/MeteoFormatting.swift'),'utf8');
 
 assert.match(worker,/async function widgetObservation\(env\)/);
 assert.match(worker,/url\.pathname === "\/widget-observation"/);
@@ -17,5 +18,9 @@ assert.match(app,/WidgetCenter\.shared\.reloadTimelines\(ofKind: "MeteoFontanill
 assert.match(widget,/WidgetSnapshotCache\.save\(snapshot\)/);
 assert.match(widget,/WidgetSnapshotCache\.load\(\)/);
 assert.match(widget,/Darrera lectura guardada/);
+assert.match(widget,/case \.systemMedium:/);
+assert.match(widget,/\.supportedFamilies\(\[[^\]]*\.systemMedium/);
+assert.match(widget,/MeteoFormatting\.humidity\(snapshot\.observation\.humidity\)/);
+assert.match(formatting,/static func humidity\(_ value: Double\?\) -> String/);
 
-console.log('Widget iPhone: ruta ràpida, recàrrega explícita i darrera lectura segura');
+console.log('Widget Apple: ruta ràpida, memòria cau segura i format mitjà complet');

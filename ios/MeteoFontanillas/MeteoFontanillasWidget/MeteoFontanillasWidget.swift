@@ -113,6 +113,8 @@ struct MeteoWidgetView: View {
                     circular(snapshot)
                 case .accessoryRectangular:
                     rectangular(snapshot)
+                case .systemMedium:
+                    medium(snapshot)
                 default:
                     small(snapshot)
                 }
@@ -188,6 +190,83 @@ struct MeteoWidgetView: View {
         }
     }
 
+    private func medium(_ snapshot: MeteoSnapshot) -> some View {
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 7) {
+                Text("SANT CELONI")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .tracking(1.1)
+
+                HStack(alignment: .center, spacing: 9) {
+                    Image(systemName: MeteoFormatting.symbol(for: snapshot.forecast?.weatherCode))
+                        .font(.system(size: 29))
+                        .symbolRenderingMode(.multicolor)
+                    Text(MeteoFormatting.temperature(snapshot.observation.temperature))
+                        .font(.system(size: 42, weight: .bold, design: .rounded))
+                        .minimumScaleFactor(0.75)
+                }
+
+                Text(MeteoFormatting.condition(for: snapshot.forecast?.weatherCode))
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+
+                Label {
+                    Text(entry.cached ? "Lectura guardada" : MeteoFormatting.freshness(for: snapshot.observation))
+                } icon: {
+                    Image(systemName: entry.cached ? "clock.arrow.circlepath" : "dot.radiowaves.left.and.right")
+                }
+                .font(.caption2)
+                .foregroundStyle(entry.cached || snapshot.isDegraded ? .orange : .secondary)
+                .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Divider()
+
+            VStack(spacing: 8) {
+                metricRow(
+                    title: "Sensació",
+                    value: MeteoFormatting.temperature(snapshot.observation.feelsLike),
+                    symbol: "thermometer.medium"
+                )
+                metricRow(
+                    title: "Humitat",
+                    value: MeteoFormatting.humidity(snapshot.observation.humidity),
+                    symbol: "humidity.fill"
+                )
+                metricRow(
+                    title: "Avui",
+                    value: "↑\(MeteoFormatting.temperature(snapshot.forecast?.temperatureMax))  ↓\(MeteoFormatting.temperature(snapshot.forecast?.temperatureMin))",
+                    symbol: "calendar"
+                )
+                metricRow(
+                    title: "Pluja",
+                    value: MeteoFormatting.precipitation(snapshot.forecast?.precipitationProbability),
+                    symbol: "umbrella.fill"
+                )
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func metricRow(title: String, value: String, symbol: String) -> some View {
+        HStack(spacing: 7) {
+            Image(systemName: symbol)
+                .frame(width: 17)
+                .foregroundStyle(.secondary)
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 4)
+            Text(value)
+                .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+        }
+    }
+
     private var unavailable: some View {
         Label("Dades no disponibles", systemImage: "wifi.exclamationmark")
             .font(.caption)
@@ -209,7 +288,7 @@ struct MeteoFontanillasWidget: Widget {
         }
         .configurationDisplayName("Meteo Fontanillas")
         .description("Temperatura de l’estació i previsió d’avui a Sant Celoni.")
-        .supportedFamilies([.accessoryInline, .accessoryCircular, .accessoryRectangular, .systemSmall])
+        .supportedFamilies([.accessoryInline, .accessoryCircular, .accessoryRectangular, .systemSmall, .systemMedium])
     }
 }
 

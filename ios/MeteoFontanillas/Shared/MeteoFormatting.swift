@@ -17,6 +17,11 @@ enum MeteoFormatting {
         return "\(max(0, min(100, value)))%"
     }
 
+    static func humidity(_ value: Double?) -> String {
+        guard let value, value.isFinite else { return "—" }
+        return "\(Int(max(0, min(100, value)).rounded()))%"
+    }
+
     static func condition(for code: Int?) -> String {
         guard let code else { return "Previsió no disponible" }
         switch code {

@@ -12,8 +12,10 @@ Meteo Fontanillas a la pantalla bloquejada de l'iPhone.
   degradat.
 
 Inclou widgets en línia, circular i rectangular per a la pantalla bloquejada i
-un widget petit per a la pantalla d'inici. El widget demana una actualització
-cada vint minuts, però iOS decideix el moment efectiu de refresc.
+ginys petit i mitjà per a la pantalla d'inici. El format mitjà està pensat també
+per a l'escriptori del Mac i afegeix sensació tèrmica, humitat, màxima, mínima i
+probabilitat de pluja. El widget demana una actualització cada vint minuts, però
+iOS decideix el moment efectiu de refresc.
 
 Per evitar una targeta buida quan iOS dona poc temps a l'extensió, el widget
 consulta una ruta lleugera amb l'última observació desada. Després d'una lectura
@@ -34,6 +36,13 @@ Cal un Mac amb la versió completa d'Xcode instal·lada i l'iPhone connectat:
 4. Connecta l'iPhone, selecciona'l com a destinació i prem **Run**.
 5. A l'iPhone, mantén premuda la pantalla bloquejada i entra a
    **Personalitza → Pantalla bloquejada → Afegeix widgets → Meteo Fontanillas**.
+
+## Ús al Mac mitjançant l'iPhone
+
+Amb el mateix compte d'Apple als dos dispositius, activa **Ginys de l'iPhone**
+al Mac. Després fes clic dret a l'escriptori, obre **Edita els ginys**, cerca
+**Meteo Fontanillas** i escull el format mitjà. Després d'actualitzar el codi cal
+tornar a executar l'app a l'iPhone des d'Xcode perquè el Mac rebi la nova versió.
 
 No cal cap secret ni es modifica D1. Totes les peticions són GET a serveis
 públics HTTPS.
