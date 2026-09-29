@@ -47,7 +47,7 @@ jobs:
           fi
           if ! git -C build/fonta-data diff --cached --quiet; then
             git -C build/fonta-data commit -m 'Archive independent Fonta hourly evidence'
-            git -C build/fonta-data push origin HEAD:fonta-data
+            bash scripts/ci/push-fonta-data-with-retry.sh build/fonta-data
           fi
       - name: Assenyala qualsevol degradació
         if: steps.collect.outcome == 'failure' || steps.report.outcome == 'failure'

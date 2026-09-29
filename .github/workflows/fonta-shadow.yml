@@ -53,7 +53,7 @@ jobs:
           git -C build/fonta-data add -- '*.json'
           if ! git -C build/fonta-data diff --cached --quiet; then
             git -C build/fonta-data commit -m 'Archive Fonta shadow capture and evaluation'
-            git -C build/fonta-data push origin HEAD:fonta-data
+            bash scripts/ci/push-fonta-data-with-retry.sh build/fonta-data
           fi
       - name: Assenyala una captura degradada o pressupost esgotat
         if: steps.collect.outcome == 'failure'
