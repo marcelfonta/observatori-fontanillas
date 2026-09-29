@@ -44,6 +44,9 @@
 
 ## Manteniment obert — En curs
 
+- [x] Separar per fenomen els colors del mapa de les targetes Meteocat perquè
+  el nivell del Vallès Oriental coincideixi sempre amb el titular i el detall.
+
 - [x] Redissenyar les franges de portada: graella adaptable, icones meteorològiques, data local llegible i absències explícites; càlculs compartits i publicadors preservats.
 - [x] Corregir la separació visual, acotar la targeta única i substituir el símbol ambigu de transició per una posta recognoscible; cache PWA v3.
 - [x] Preparar el primer tall de «Predicció vs realitat» a 30 dies amb lectura prudent, composició de mostra i canvi d'estat automàtic, sense calibratge automàtic.
