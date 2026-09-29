@@ -280,20 +280,23 @@ struct MeteoWidgetView: View {
         let nextDays = Array(snapshot.forecastDays.dropFirst().prefix(4))
 
         return VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top, spacing: 18) {
+            HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("SANT CELONI · ARA")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .tracking(1.1)
 
-                    HStack(spacing: 10) {
+                    HStack(spacing: 8) {
                         Image(systemName: MeteoFormatting.symbol(for: snapshot.forecast?.weatherCode))
-                            .font(.system(size: 36))
+                            .font(.system(size: 32))
                             .symbolRenderingMode(.multicolor)
                         Text(MeteoFormatting.temperature(snapshot.observation.temperature))
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .minimumScaleFactor(0.75)
+                            .font(.system(size: 44, weight: .bold, design: .rounded))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.58)
+                            .allowsTightening(true)
+                            .layoutPriority(2)
                     }
 
                     Text(MeteoFormatting.condition(for: snapshot.forecast?.weatherCode))
@@ -309,7 +312,8 @@ struct MeteoWidgetView: View {
                     .foregroundStyle(entry.cached || snapshot.isDegraded ? .orange : .secondary)
                     .lineLimit(1)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(minWidth: 126, maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
 
                 VStack(spacing: 10) {
                     HStack(spacing: 10) {
@@ -337,7 +341,7 @@ struct MeteoWidgetView: View {
                         )
                     }
                 }
-                .frame(maxWidth: .infinity)
+                .frame(width: 148)
             }
 
             Divider()
@@ -366,9 +370,10 @@ struct MeteoWidgetView: View {
     private func compactMetric(title: String, value: String, symbol: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Label(title, systemImage: symbol)
-                .font(.caption2)
+                .font(.system(size: 10))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
+                .minimumScaleFactor(0.72)
             Text(value)
                 .font(.subheadline.weight(.semibold))
                 .lineLimit(1)

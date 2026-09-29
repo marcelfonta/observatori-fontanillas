@@ -44,6 +44,9 @@
 
 ## Manteniment obert — En curs
 
+- [x] Evitar que la temperatura principal del giny gran quedi truncada quan es
+  reutilitza al Mac, preservant decimals, unitat i la resta de mètriques.
+
 - [x] Afegir un giny gran amb la lectura de l'estació, el detall d'avui i quatre
   dies de previsió, amb degradació segura i compatibilitat amb la memòria cau.
 
