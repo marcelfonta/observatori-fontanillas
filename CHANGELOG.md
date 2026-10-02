@@ -1,5 +1,15 @@
 # Changelog
 
+## Correcció — el mapa estacional segueix el mes del calendari · 2026-10-02
+
+- Abans de l'actualització Meteocat del dia 5, el bloc mensual mostra el mes
+  actual a partir del segon horitzó de l'edició anterior, en lloc de continuar
+  ensenyant el primer mapa amb el nom del mes acabat.
+- Quan arriba la nova edició, el mes actual passa automàticament al primer
+  horitzó i es recuperen els quatre mesos disponibles. Els mesos sense mapa
+  oficial queden ocults, mai inventats ni duplicats.
+- El text identifica alhora el mes representat i l'edició Meteocat d'origen.
+
 ## Correcció — llarg termini llegible i edició mensual inequívoca · 2026-10-02
 
 - Les dates, descripcions, anomalies, fonts i notes de la tendència de sis
