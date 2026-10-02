@@ -1,5 +1,15 @@
 # Changelog
 
+## Correcció — llarg termini llegible i edició mensual inequívoca · 2026-10-02
+
+- Les dates, descripcions, anomalies, fonts i notes de la tendència de sis
+  setmanes augmenten de mida i deixen de truncar informació rellevant.
+- El bloc estacional indica quina edició mensual de Meteocat està realment
+  disponible i quan s'espera la següent. Abans de l'actualització oficial del
+  dia 5 a la tarda, no presenta el mapa del mes anterior com si fos l'actual.
+- Les imatges oficials incorporen una clau de l'edició disponible per evitar
+  que el navegador o la PWA conservin una còpia d'un mes anterior.
+
 ## Millora — Fonta inicia el contrast regional privat amb XEMA · 2026-09-29
 
 - La recollida diària XEMA ja activa conserva en R2 originals privats i
