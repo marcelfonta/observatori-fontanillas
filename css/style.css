@@ -229,6 +229,8 @@ body{font-size:var(--type-body)}
   .mobile-more__sheet>a b,.mobile-more__sheet>a small{display:block}.mobile-more__sheet>a b{font-size:var(--type-body)}.mobile-more__sheet>a small{margin-top:3px;color:var(--muted);font-size:var(--type-caption)}
   .source-tabs{width:100%;flex-wrap:nowrap;overflow-x:auto;padding-bottom:7px;scroll-snap-type:x proximity}
   .source-tabs button{flex:0 0 128px;min-height:44px;scroll-snap-align:start}
+  .radar-mode-tabs{width:100%;max-width:100%;flex-wrap:nowrap;overflow-x:auto;padding-bottom:7px;scroll-snap-type:x proximity;overscroll-behavior-inline:contain}
+  .radar-mode-tabs button{flex:0 0 auto;scroll-snap-align:start}
   .source-horizon button,.radar-mode-tabs button,.segmented button{min-height:42px}
   .source-viewer,.source-panel,.source-official,.source-eltiempo{width:100%;overflow:hidden}
   .source-official__frame{max-width:100%;overscroll-behavior-inline:contain}
