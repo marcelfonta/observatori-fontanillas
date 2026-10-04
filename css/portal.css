@@ -333,6 +333,36 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .lightning-integrated__facts b,.lightning-integrated__facts small { display: block; }
 .lightning-integrated__facts b { font-size: 13px; }
 .lightning-integrated__facts small { margin-top: 3px; color: var(--muted); font-size: 10px; }
+.hydrology-integrated { padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(145deg,rgba(82,182,201,.09),rgba(255,255,255,.018)); }
+.hydrology-integrated > header { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:18px; }
+.hydrology-integrated h3 { margin:5px 0 8px; font:700 clamp(23px,3vw,36px)/1.08 var(--font-display); }
+.hydrology-integrated header p:last-child { max-width:760px; margin:0; color:var(--muted); line-height:1.55; }
+.hydrology-layout { display:grid; grid-template-columns:minmax(300px,.85fr) minmax(380px,1.15fr); gap:16px; }
+#hydrology-map { min-height:480px; overflow:hidden; border:1px solid var(--line); border-radius:16px; background:#0b211b; }
+#hydrology-stations { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+#hydrology-stations button { min-width:0; padding:14px; border:1px solid var(--line); border-radius:14px; background:#091813; color:var(--text); text-align:left; cursor:pointer; }
+#hydrology-stations button.is-active { border-color:var(--green); background:rgba(69,145,104,.15); box-shadow:inset 0 0 0 1px rgba(143,224,173,.22); }
+#hydrology-stations span,#hydrology-stations small,#hydrology-stations b { display:block; }
+#hydrology-stations span { font-weight:800; }
+#hydrology-stations small { min-height:28px; margin:4px 0 9px; color:var(--muted); font-size:11px; }
+#hydrology-stations b { color:#8fe0ad; font-size:18px; }
+#hydrology-detail { padding:18px; border:1px solid var(--line); border-radius:16px; background:#091813; }
+#hydrology-detail > header { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+#hydrology-detail h3 { margin:3px 0 0; font-size:24px; }
+#hydrology-detail time { color:var(--muted); font-size:12px; }
+.hydrology-readings { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px; }
+.hydrology-readings article { min-width:0; padding:14px; border-radius:13px; background:rgba(255,255,255,.035); }
+.hydrology-readings span,.hydrology-readings strong,.hydrology-readings em { display:block; }
+.hydrology-readings span { color:var(--muted); font-size:12px; }
+.hydrology-readings strong { margin:6px 0 2px; font-size:clamp(25px,3vw,34px); }
+.hydrology-readings strong small { color:var(--muted); font-size:13px; }
+.hydrology-readings em { color:#b8cbc2; font-size:11px; font-style:normal; }
+.hydrology-readings em.is-up { color:#7ed7ed; }
+.hydrology-readings em.is-down { color:#8fe0ad; }
+.hydrology-readings svg { display:block; width:100%; height:54px; margin-top:8px; overflow:visible; }
+.hydrology-readings polyline { fill:none; stroke:#7ed7ed; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.hydrology-caveat { margin:14px 0 0; color:var(--muted); font-size:11px; line-height:1.5; }
+.hydrology-loading,.hydrology-error,.hydrology-empty { color:var(--muted); font-size:12px; }
 
 .environment-section { display: grid; gap: 14px; }
 .environment-status { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 4px 4px; color: var(--muted); font-size: 11px; }
@@ -693,6 +723,9 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .nearby-webcams > div:first-child > p:last-child { text-align: left; }
   .nearby-webcams__links { grid-template-columns: 1fr 1fr; }
   .lightning-integrated > header { flex-direction: column; }
+  .hydrology-integrated > header { flex-direction:column; }
+  .hydrology-layout { grid-template-columns:1fr; }
+  #hydrology-map { min-height:390px; }
   .environment-overview { grid-template-columns: 1fr; }
   .lightning-integrated__frame iframe { height: 500px; }
   .environment-metrics { grid-template-columns: repeat(3,1fr); }
@@ -745,6 +778,9 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .push-level-preferences { grid-template-columns: 1fr; }
   .nearby-webcams__links, .lightning-integrated__facts { grid-template-columns: 1fr; }
   .lightning-integrated { padding: 15px; }
+  .hydrology-integrated { padding:15px; }
+  #hydrology-stations,.hydrology-readings { grid-template-columns:1fr; }
+  #hydrology-map { min-height:340px; }
   .lightning-integrated__fallback { align-items: flex-start; flex-wrap: wrap; }
   .lightning-integrated__fallback a { width: 100%; margin-left: 28px; }
   #comparison-map-list { grid-template-columns: 1fr; }

@@ -38,6 +38,11 @@ const ASTRONOMY_SEASON_DEFAULT_TIME = '09:00';
 const ASTRONOMY_ADVANCE_DEFAULT_TIME = '18:00';
 const ASTRONOMY_REMINDER_DEFAULT_TIME = '17:00';
 const ACA_DROUGHT_DATASET_URL = 'https://analisi.transparenciacatalunya.cat/resource/i5n8-43cw.json';
+const ACA_HYDROLOGY_DATA_URL = 'https://aplicacions.aca.gencat.cat/sdim2/apirest/data/AFORAMENT-EST';
+const ACA_HYDROLOGY_STATIONS = [
+  { id:'sant-celoni', name:'Sant Celoni', detail:'Tordera · TO-10', latitude:41.680341221, longitude:2.488976096, levelSensor:'082021-001-ANA002', flowSensor:'CALC001210' },
+  { id:'montseny', name:'Montseny', detail:'Tordera · La Llavina · TO-05', latitude:41.752629836, longitude:2.39745801, levelSensor:'081379-001-ANA01', flowSensor:'CALC001554' },
+];
 const runtimeStateCache = new Map();
 const STATION_LATITUDE = 41.6906;
 const STATION_LONGITUDE = 2.4890;
@@ -322,6 +327,41 @@ async function xacPollenProxy(url) {
     'Cache-Control':'public, max-age=1800, stale-while-revalidate=21600',
     'X-XAC-Station':station,'X-Data-License':XAC_POLLEN_LICENSE,
   }});
+}
+
+function normalizeAcaObservations(payload) {
+  return (Array.isArray(payload?.observations) ? payload.observations : [])
+    .map(item=>({ value:finiteNumber(item?.value), observedAt:Number(item?.time)||null }))
+    .filter(item=>item.value!==null&&Number.isFinite(item.observedAt))
+    .sort((a,b)=>a.observedAt-b.observedAt);
+}
+
+async function acaSensorHistory(sensor) {
+  const response=await fetch(`${ACA_HYDROLOGY_DATA_URL}/${encodeURIComponent(sensor)}?limit=25`,{
+    headers:{Accept:'application/json'},signal:AbortSignal.timeout(12_000),
+    cf:{cacheEverything:true,cacheTtl:300},
+  });
+  if(!response.ok)throw new Error(`ACA ${sensor}: ${response.status}`);
+  return normalizeAcaObservations(await response.json());
+}
+
+async function acaHydrology() {
+  const stations=await Promise.all(ACA_HYDROLOGY_STATIONS.map(async station=>{
+    const [level,flow]=await Promise.all([acaSensorHistory(station.levelSensor),acaSensorHistory(station.flowSensor)]);
+    return {
+      id:station.id,name:station.name,detail:station.detail,
+      latitude:station.latitude,longitude:station.longitude,
+      level:{unit:'cm',current:level.at(-1)?.value??null,series:level},
+      flow:{unit:'m³/s',current:flow.at(-1)?.value??null,series:flow},
+      observedAt:Math.max(level.at(-1)?.observedAt||0,flow.at(-1)?.observedAt||0)||null,
+    };
+  }));
+  return json({
+    source:'Agència Catalana de l’Aigua',sourceType:'Dades obertes en temps real',
+    sourceUrl:'https://aplicacions.aca.gencat.cat/aetr/vishid/',
+    caveat:'Dades automàtiques en temps real, encara no revisades ni validades per l’ACA.',
+    fetchedAt:Date.now(),stations,
+  },200,'public, max-age=300, stale-while-revalidate=900');
 }
 
 function dateKey(date = new Date()) {
@@ -6364,6 +6404,7 @@ export default {
         return json(await widgetObservation(env), 200, "public, max-age=60");
       }
       if (url.pathname === "/pollen-xac") return xacPollenProxy(url);
+      if (url.pathname === "/aca-hydrology") return acaHydrology();
       if (url.pathname === "/history") return history(url, env, ctx);
       if (url.pathname === "/temperature-trend") return temperatureTrend(env);
       if (url.pathname === "/records") return stationRecords(request,env,ctx);
@@ -6380,7 +6421,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

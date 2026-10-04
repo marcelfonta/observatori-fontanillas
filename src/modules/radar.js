@@ -137,6 +137,11 @@ export function initRadar() {
     buttons.forEach(item=>{const selected=item===button;item.classList.toggle('is-active',selected);item.setAttribute('aria-selected',String(selected));item.tabIndex=selected?0:-1;});
     document.querySelectorAll('[data-radar-panel]').forEach(panel=>{const selected=panel.dataset.radarPanel===mode;panel.classList.toggle('is-active',selected);panel.hidden=!selected;if(selected)panel.querySelectorAll('iframe[data-src]').forEach(frame=>{if(!frame.getAttribute('src'))frame.src=frame.dataset.src;});});
     if(mode==='interactive')ensureLeaflet().then(startInteractiveRadar).catch(()=>{setText('radar-status','Mapa no disponible');setText('radar-loader','No s’ha pogut iniciar el mapa interactiu.');});
+    else if(mode==='hydrology'){
+      stopPlayback();
+      setText('radar-status','ACA · Tordera');
+      ensureLeaflet().then(initHydrology).catch(()=>setText('hydrology-status','Temporalment no disponible'));
+    }
     else {
       stopPlayback();
       setText('radar-status', mode==='lightning' ? 'Llamps · Blitzortung' : 'Meteocat oficial');
@@ -155,3 +160,4 @@ export function initRadar() {
     loadFrames().catch(error=>console.warn('No s’ha pogut actualitzar el radar.',error));
   },5*60*1000);
 }
+import { initHydrology } from './hydrology.js';
