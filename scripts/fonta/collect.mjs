@@ -23,19 +23,19 @@ async function get(url){
   const raw=JSON.parse(text);
   return {raw,sha256:createHash('sha256').update(JSON.stringify(raw)).digest('hex'),hashFormat:'JSON.stringify',receivedAt:new Date().toISOString(),url};
 }
-const forecasts=[],sources=[],failures=[];
-for(const model of FONTA.models){
+const forecasts=[],sources=[],failures=[],experimentalFailures=[];
+for(const model of [...FONTA.models,...FONTA.experimentalModels]){
   const params=new URLSearchParams({latitude:String(FONTA.latitude),longitude:String(FONTA.longitude),models:model,
     timezone:'Europe/Madrid',timeformat:'unixtime',forecast_days:'3',hourly:'temperature_2m',daily:'temperature_2m_max,temperature_2m_min'});
   try{const source=await get('https://api.open-meteo.com/v1/forecast?'+params);forecasts.push(normalizeForecast(source.raw,{model,capturedAt:source.receivedAt}));sources.push({kind:model,...source});}
-  catch(error){failures.push({source:model,message:error.message});}
+  catch(error){(FONTA.experimentalModels.includes(model)?experimentalFailures:failures).push({source:model,message:error.message});}
 }
 let observed=[];
 try{const source=await get('https://fonta-meteo.marcelfonta.workers.dev/history?days=3&resolution=raw');observed=observedDays(source.raw,source.receivedAt);sources.push({kind:'observations',...source});}
 catch(error){failures.push({source:'observations',message:error.message});}
 if(!forecasts.length&&!observed.length)throw new Error('Cap font disponible; no es crea una captura buida.');
 const capture={schema:1,id,station:FONTA.station,version:FONTA.version,issuePolicy:FONTA_ISSUE_POLICY.id,
-  startedAt,capturedAt:new Date().toISOString(),forecasts,observed,sources,failures};
+  startedAt,capturedAt:new Date().toISOString(),forecasts,observed,sources,failures,experimentalFailures};
 capture.codeRevision=process.env.GITHUB_SHA||null;
 // Freeze any candidate before the target day. Never replace it after observing truth.
 const previous=await readArchive(directory);
@@ -43,5 +43,5 @@ capture.shadowPrediction=evaluateFonta([...previous,capture]).candidate;
 capture.frozenComparison=freezeComparison(previous,capture,capture.shadowPrediction);
 if(capture.frozenComparison)capture.frozenComparisonSha256=createHash('sha256').update(JSON.stringify(capture.frozenComparison)).digest('hex');
 await writeFile(path,JSON.stringify(capture)+'\n',{flag:'wx'});
-console.log(JSON.stringify({id,forecasts:forecasts.length,observedDays:observed.length,failures}));
+console.log(JSON.stringify({id,forecasts:forecasts.length,observedDays:observed.length,failures,experimentalFailures}));
 if(failures.length)process.exitCode=2; // Archive partial evidence, signal a degraded job.

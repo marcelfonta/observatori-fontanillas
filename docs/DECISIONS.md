@@ -98,6 +98,18 @@ Ollama és el servidor local principal perquè facilita gestionar models i integ
 **Estat:** acceptada, 2026-08-30.
 
 Els vídeos del matí i del vespre utilitzen AROME France HD per representar quatre franges de precipitació sobre el nord-est de Catalunya. La resolució espacial no s'ha de presentar com una certesa local: la peça indica sempre que és una estimació orientativa del model. Si AROME falla, s'utilitza Open-Meteo Best Match i, si tampoc hi ha graella, una reserva exclusivament puntual per a Sant Celoni; mai no s'extrapola una dada puntual com si fos un mapa territorial.
+
+## ADR-007 — AROME HD públic i candidat Fonta sense trencar la sèrie
+
+**Estat:** acceptada, 2026-10-04.
+
+La previsió pública compara AROME France HD amb ECMWF, GFS i ICON només dins
+del seu horitzó disponible. AROME France continua dins l'algoritme Fonta 0.2.0
+per preservar la comparabilitat de les captures ja congelades. AROME HD es
+recull com a candidat experimental addicional, però queda exclòs del blend,
+de la correcció i de qualsevol promoció fins a disposar de prou dies
+prospectius aparellats. Canviar el model base exigirà una nova versió del
+protocol, llindars previs i revisió humana.
 # ADR — Automatització editorial de baixa freqüència i episodis locals (2026-08-31)
 
 - Les noves publicacions no s’activen amb el desplegament: cada família té un interruptor explícit i es valida gradualment.

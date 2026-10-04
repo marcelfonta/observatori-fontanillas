@@ -1,7 +1,7 @@
 import {mountPortalShell} from './portal-shell.js';
 import {missingCaptureSlots} from '../core/fonta-diagnostics.js';
 mountPortalShell('fonta');
-const names={best_match:'Open-Meteo · Best Match',ecmwf_ifs025:'ECMWF · IFS 0,25°',icon_eu:'DWD · ICON-EU',meteofrance_arome_france:'Météo-France · AROME',blend:'Mitjana dels tres models',persistence:'Persistència',fonta:'Fonta · correcció experimental'};
+const names={best_match:'Open-Meteo · Best Match',ecmwf_ifs025:'ECMWF · IFS 0,25°',icon_eu:'DWD · ICON-EU',meteofrance_arome_france:'Météo-France · AROME',meteofrance_arome_france_hd:'Météo-France · AROME HD (candidat)',blend:'Mitjana dels tres models',persistence:'Persistència',fonta:'Fonta · correcció experimental'};
 const $=id=>document.getElementById(id);
 const number=x=>typeof x==='number'&&Number.isFinite(x)?x.toLocaleString('ca-ES',{maximumFractionDigits:1}):'—';
 const date=x=>new Intl.DateTimeFormat('ca-ES',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/Madrid'}).format(new Date(x));

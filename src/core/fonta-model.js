@@ -5,6 +5,7 @@ import {FONTA_ISSUE_POLICY,isCurrentFontaIssue} from './fonta-issue-policy.js';
 export const FONTA = Object.freeze({version:'0.2.0',station:'ISANTC198',latitude:41.6906,longitude:2.489,
   issuePolicy:FONTA_ISSUE_POLICY.id,
   models:['best_match','ecmwf_ifs025','icon_eu','meteofrance_arome_france'],
+  experimentalModels:['meteofrance_arome_france_hd'],
   trainingDays:30,windowDays:60,evaluationDays:14,correctionCap:3});
 const dateFormat=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'});
 export const localDay=instant=>dateFormat.format(new Date(instant));
@@ -23,7 +24,7 @@ export function dayBounds(day){
 }
 
 export function normalizeForecast(raw,{model,capturedAt}){
-  if(!FONTA.models.includes(model)||!iso(capturedAt))throw new Error('Origen de previsió invàlid');
+  if(![...FONTA.models,...FONTA.experimentalModels].includes(model)||!iso(capturedAt))throw new Error('Origen de previsió invàlid');
   if(raw?.timezone!=='Europe/Madrid'||raw?.hourly_units?.time!=='unixtime'||raw?.daily_units?.time!=='unixtime'||
     raw?.hourly_units?.temperature_2m!=='°C'||raw?.daily_units?.temperature_2m_max!=='°C'||raw?.daily_units?.temperature_2m_min!=='°C')throw new Error('Unitats o fus inesperats');
   if(!Array.isArray(raw.hourly?.time)||!Array.isArray(raw.daily?.time))throw new Error('Sèrie absent');

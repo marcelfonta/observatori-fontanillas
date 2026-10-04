@@ -37,7 +37,7 @@ jobs:
             git -C build/fonta-data init -b fonta-data
             git -C build/fonta-data remote add origin "$remote"
           fi
-      - name: Captura dades públiques (màxim cinc consultes)
+      - name: Captura dades públiques (màxim sis consultes; AROME HD només en ombra)
         id: collect
         continue-on-error: true
         run: node scripts/fonta/collect.mjs build/fonta-data
