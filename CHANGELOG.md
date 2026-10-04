@@ -1568,3 +1568,9 @@ Rollback: revertir aquest paquet i desplegar versions prèvies autoritzades. Els
 ### Abast ajornat
 
 - No s’han implementat funcions dels milestones 2–10. Medi Ambient només disposa de la nova ubicació estructural.
+# V22.32.0 — Aigua i rius de la Tordera
+
+- Nova pestanya «Aigua i rius» al costat del radar i els llamps, centrada en la conca de la Tordera.
+- Lectures oficials de l’ACA de cabal i nivell a Sant Celoni i Montseny, amb hora, evolució recent i mapa propi.
+- Nou proxy normalitzat al Worker amb memòria cau de cinc minuts, degradació segura i atribució explícita.
+- Les dades automàtiques es presenten com a provisionals i no es converteixen en avisos ni llindars de perill inventats.

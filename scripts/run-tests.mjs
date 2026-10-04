@@ -28,6 +28,7 @@ if (quick && !selected.includes('environment-freshness.mjs')) selected.push('env
 if (quick && !selected.includes('xac-integration.mjs')) selected.push('xac-integration.mjs');
 if (quick && !selected.includes('xac-pollen.mjs')) selected.push('xac-pollen.mjs');
 if (quick && !selected.includes('social-production.mjs')) selected.push('social-production.mjs');
+if (quick && !selected.includes('aca-hydrology.mjs')) selected.push('aca-hydrology.mjs');
 if (quick) for(const name of ['publication-state.mjs','youtube-recovery.mjs','home-forecast.mjs','forecast-bias-experiment.mjs']) if(!selected.includes(name))selected.push(name);
 
 for (const file of selected) {

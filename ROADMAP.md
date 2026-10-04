@@ -44,6 +44,10 @@
 
 ## Manteniment obert — En curs
 
+- [x] Integrar al costat del radar i els llamps un visor propi de cabal i nivell
+  de la Tordera amb les estacions ACA de Sant Celoni i Montseny, historial curt,
+  font oficial i advertiment explícit que les lectures automàtiques no són avisos.
+
 - [x] Distingir els comunicats CECAT textuals sense mapes d'una avaria real:
   auditoria i no-publicació segures, sense correus de fallada innecessaris.
 
