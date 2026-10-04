@@ -110,6 +110,19 @@ recull com a candidat experimental addicional, però queda exclòs del blend,
 de la correcció i de qualsevol promoció fins a disposar de prou dies
 prospectius aparellats. Canviar el model base exigirà una nova versió del
 protocol, llindars previs i revisió humana.
+
+## ADR-008 — Visor AROME local mostrejat, no raster natiu
+
+**Estat:** acceptada, 2026-10-04.
+
+El visor públic consulta AROME France HD a través d’Open-Meteo en una graella
+regular de 49 punts sobre el Baix Montseny i presenta temperatura, precipitació,
+vent i nuvolositat amb pas horari i un màxim de 48 hores. Les cel·les només
+representen el valor del punt mostrejat: no s’interpolen ni es presenten com el
+raster complet d’1,5 km de Météo-France. La interfície mostra font, escala,
+instant i nombre de punts; si la graella falla, manté disponibles la comparació
+numèrica i els visors globals. El símbol diari d’AROME, quan falta a l’origen, és
+una síntesi explícitament derivada de la pluja acumulada i la nuvolositat mitjana.
 # ADR — Automatització editorial de baixa freqüència i episodis locals (2026-08-31)
 
 - Les noves publicacions no s’activen amb el desplegament: cada família té un interruptor explícit i es valida gradualment.

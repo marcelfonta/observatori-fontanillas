@@ -46,6 +46,10 @@
 
 - [x] Mostrar AROME France HD en la comparació pública de 0–48 h, mantenint
   ECMWF, GFS i ICON per a l'horitzó complet.
+- [x] Afegir un visor local AROME de 49 punts i 48 hores, amb temperatura,
+  pluja, vent i núvols, animació temporal i limitació de mostreig visible.
+- [x] Derivar el símbol AROME absent a partir de pluja i nuvolositat i
+  identificar-lo sempre com una síntesi pròpia, no com un codi oficial.
 - [x] Començar a conservar AROME HD com a candidat Fonta en ombra sense
   modificar l'algoritme 0.2.0 ni reescriure captures prospectives.
 - [ ] Avaluar AROME HD sobre els mateixos dies que AROME France abans de

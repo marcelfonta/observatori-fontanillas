@@ -151,7 +151,7 @@ export function renderForecast(data) {
 function modelRow(name,data,index) {
   const daily=data?.daily||{}; const [symbol,label]=weather(daily.weather_code?.[index]);
   if(!daily.time?.[index])return `<div class="model-row is-unavailable"><strong>${name}<small>Fora de l’horitzó</small></strong><span class="model-row__unavailable">Disponible només a molt curt termini</span></div>`;
-  const condition=daily.weather_code?.[index]===null||daily.weather_code?.[index]===undefined?'Símbol no disponible':`${symbol} ${label}`;
+  const condition=daily.weather_code?.[index]===null||daily.weather_code?.[index]===undefined?'Símbol no disponible':`${symbol} ${label}${daily.weather_code_derived?' · síntesi derivada':''}`;
   return `<div class="model-row"><strong>${name}<small>${condition}</small></strong><span><small>Màxima</small><b>${format(daily.temperature_2m_max?.[index],1)} °C</b></span><span><small>Mínima</small><b>${format(daily.temperature_2m_min?.[index],1)} °C</b></span><span><small>Pluja</small><b>${format(daily.precipitation_sum?.[index],1)} mm</b></span><span><small>Ratxa màxima</small><b>${format(daily.wind_gusts_10m_max?.[index],0)} km/h</b></span></div>`;
 }
 

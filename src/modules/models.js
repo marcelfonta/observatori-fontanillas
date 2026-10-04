@@ -1,67 +1,26 @@
 import { setText } from '../core/dom.js';
+import { fetchAromeLocalGrid } from '../services/weather-api.js';
 
-const layerNames = {
-  rain:'precipitació',
-  temp:'temperatura a 2 metres',
-  wind:'vent a 10 metres',
-  clouds:'nuvolositat',
-  pressure:'pressió atmosfèrica'
+const layerNames={rain:'precipitació',temp:'temperatura a 2 metres',wind:'vent a 10 metres',clouds:'nuvolositat',pressure:'pressió atmosfèrica'};
+const modelNames={ecmwf:'ECMWF',gfs:'GFS',iconEu:'ICON-EU',arome:'AROME HD'};
+const scales={
+  rain:{key:'precipitation',unit:'mm/h',stops:[[0,'#264b45'],[.2,'#4f9fb8'],[1,'#58c879'],[3,'#e2ca57'],[8,'#ef795f'],[20,'#c84bb5']]},
+  temp:{key:'temperature_2m',unit:'°C',stops:[[-5,'#6b7fe5'],[5,'#5ab8d4'],[12,'#70c79a'],[20,'#e4cb62'],[28,'#ec8a58'],[36,'#cc5264']]},
+  wind:{key:'wind_speed_10m',unit:'km/h',stops:[[0,'#31544c'],[10,'#59aa8a'],[25,'#e1c45a'],[45,'#ed8058'],[70,'#c84b78']]},
+  clouds:{key:'cloud_cover',unit:'%',stops:[[0,'#213b39'],[20,'#50716f'],[50,'#8ea4a2'],[80,'#c8d3d1'],[100,'#f0f4f3']]}
 };
+let model='ecmwf';let layer='rain';let loadTimer;let aromeMap;let aromeCells=[];let aromeGrid;let aromeIndex=0;let playback;let leafletPromise;
 
-const modelNames = { ecmwf:'ECMWF', gfs:'GFS', iconEu:'ICON-EU' };
-let model = 'ecmwf';
-let layer = 'rain';
-let loadTimer;
-
-function windyUrl() {
-  const query=new URLSearchParams({
-    lat:'41.691',lon:'2.489',detailLat:'41.691',detailLon:'2.489',width:'1200',height:'560',zoom:'6',
-    level:'surface',overlay:layer,product:model,menu:'true',message:'true',marker:'true',calendar:'now',pressure:'true',
-    type:'map',location:'coordinates',detail:'',metricWind:'km/h',metricTemp:'°C',radarRange:'-1'
-  });
-  return `https://embed.windy.com/embed2.html?${query}`;
-}
-
-function markLoading() {
-  const shell=document.getElementById('model-viewer-shell');
-  const fallback=document.getElementById('model-viewer-fallback');
-  shell?.classList.add('is-loading'); shell?.classList.remove('is-ready','has-error');
-  if(fallback)fallback.hidden=true;
-  setText('model-viewer-state','Carregant el visor temporal de Windy…');
-  clearTimeout(loadTimer);
-  loadTimer=setTimeout(()=>{
-    if(shell?.classList.contains('is-ready'))return;
-    shell?.classList.remove('is-loading'); shell?.classList.add('has-error');
-    if(fallback)fallback.hidden=false;
-    setText('model-viewer-state','El mapa extern no ha respost; utilitza l’accés directe.');
-  },15000);
-}
-
-function updateViewer() {
-  const frame=document.getElementById('model-viewer-frame');
-  markLoading();
-  if(frame)frame.src=windyUrl();
-  setText('model-viewer-caption',`${modelNames[model]} · ${layerNames[layer]}`);
-}
-
-export function initModelViewer() {
-  const frame=document.getElementById('model-viewer-frame');
-  const shell=document.getElementById('model-viewer-shell');
-  frame?.addEventListener('load',()=>{
-    clearTimeout(loadTimer);
-    shell?.classList.remove('is-loading','has-error'); shell?.classList.add('is-ready');
-    const fallback=document.getElementById('model-viewer-fallback'); if(fallback)fallback.hidden=true;
-    setText('model-viewer-state','Visor temporal de Windy centrat a Sant Celoni.');
-  });
-  if(frame&&!frame.getAttribute('src')&&frame.dataset.src){ markLoading(); frame.src=frame.dataset.src; }
-  document.querySelectorAll('[data-viewer-model]').forEach(button=>button.addEventListener('click',()=>{
-    model=button.dataset.viewerModel;
-    document.querySelectorAll('[data-viewer-model]').forEach(item=>item.classList.toggle('is-active',item===button));
-    updateViewer();
-  }));
-  document.querySelectorAll('[data-viewer-layer]').forEach(button=>button.addEventListener('click',()=>{
-    layer=button.dataset.viewerLayer;
-    document.querySelectorAll('[data-viewer-layer]').forEach(item=>item.classList.toggle('is-active',item===button));
-    updateViewer();
-  }));
-}
+function windyUrl(){const query=new URLSearchParams({lat:'41.691',lon:'2.489',detailLat:'41.691',detailLon:'2.489',width:'1200',height:'560',zoom:'6',level:'surface',overlay:layer,product:model,menu:'true',message:'true',marker:'true',calendar:'now',pressure:'true',type:'map',location:'coordinates',detail:'',metricWind:'km/h',metricTemp:'°C',radarRange:'-1'});return `https://embed.windy.com/embed2.html?${query}`;}
+function markLoading(message='Carregant el visor temporal de Windy…'){const shell=document.getElementById('model-viewer-shell');const fallback=document.getElementById('model-viewer-fallback');shell?.classList.add('is-loading');shell?.classList.remove('is-ready','has-error');if(fallback)fallback.hidden=true;setText('model-viewer-state',message);clearTimeout(loadTimer);loadTimer=setTimeout(()=>{if(shell?.classList.contains('is-ready'))return;shell?.classList.remove('is-loading');shell?.classList.add('has-error');if(fallback)fallback.hidden=false;setText('model-viewer-state','El mapa no ha respost; utilitza la comparació numèrica.');},15000);}
+function ensureLeaflet(){if(window.L)return Promise.resolve();if(leafletPromise)return leafletPromise;leafletPromise=new Promise((resolve,reject)=>{if(!document.getElementById('leaflet-styles')){const styles=document.createElement('link');styles.id='leaflet-styles';styles.rel='stylesheet';styles.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';styles.crossOrigin='';document.head.appendChild(styles);}const existing=document.getElementById('leaflet-script');if(existing){existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',reject,{once:true});return;}const script=document.createElement('script');script.id='leaflet-script';script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';script.crossOrigin='';script.async=true;script.addEventListener('load',resolve,{once:true});script.addEventListener('error',reject,{once:true});document.head.appendChild(script);});return leafletPromise;}
+function colorFor(value,scale){let color=scale.stops[0][1];for(const [limit,next] of scale.stops)if(value>=limit)color=next;return color;}
+function formatValue(value,scale){return Number.isFinite(Number(value))?`${Number(value).toFixed(scale.key==='precipitation'?1:0)} ${scale.unit}`:'—';}
+function renderLegend(scale){const target=document.getElementById('arome-legend');if(!target)return;target.innerHTML=`<span>${layerNames[layer]}</span>${scale.stops.map(([value,color])=>`<i style="--legend-color:${color}"><b>${value}</b></i>`).join('')}<em>${scale.unit}</em>`;}
+function renderAromeFrame(index){if(!aromeGrid?.length)return;aromeIndex=Math.max(0,Math.min(47,Number(index)||0));const scale=scales[layer]||scales.rain;aromeCells.forEach((cell,position)=>{const point=aromeGrid[position];const value=point?.hourly?.[scale.key]?.[aromeIndex];cell.setStyle({fillColor:colorFor(Number(value)||0,scale)});cell.unbindTooltip();cell.bindTooltip(`<strong>${formatValue(value,scale)}</strong><br>${Number(point.latitude).toFixed(2)}, ${Number(point.longitude).toFixed(2)}`);});const instant=aromeGrid[0]?.hourly?.time?.[aromeIndex];setText('arome-time-label',instant?new Intl.DateTimeFormat('ca-ES',{weekday:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(instant)):'Hora no disponible');const slider=document.getElementById('arome-time');if(slider)slider.value=String(aromeIndex);renderLegend(scale);setText('model-viewer-caption',`AROME HD · ${layerNames[layer]}`);}
+function stopPlayback(){if(playback)clearInterval(playback);playback=null;const button=document.getElementById('arome-play');if(button)button.textContent='▶';}
+function togglePlayback(){if(playback){stopPlayback();return;}const button=document.getElementById('arome-play');if(button)button.textContent='Ⅱ';playback=setInterval(()=>renderAromeFrame((aromeIndex+1)%48),750);}
+async function showArome(){const frame=document.getElementById('model-viewer-frame');const viewer=document.getElementById('arome-viewer');const shell=document.getElementById('model-viewer-shell');if(frame)frame.hidden=true;if(viewer)viewer.hidden=false;clearTimeout(loadTimer);shell?.classList.remove('has-error');markLoading('Carregant la graella AROME HD del Baix Montseny…');try{await ensureLeaflet();if(!aromeGrid)aromeGrid=await fetchAromeLocalGrid();if(!aromeMap){aromeMap=window.L.map('arome-map',{zoomControl:true,scrollWheelZoom:false}).setView([41.69,2.49],9);window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap · AROME HD via Open-Meteo / Météo-France'}).addTo(aromeMap);aromeCells=aromeGrid.map(point=>window.L.rectangle([[Number(point.latitude)-.035,Number(point.longitude)-.05],[Number(point.latitude)+.035,Number(point.longitude)+.05]],{stroke:false,fillOpacity:.62,fillColor:'#31544c'}).addTo(aromeMap));window.L.circleMarker([41.6906,2.489],{radius:6,color:'#fff',weight:2,fillColor:'#89d6a3',fillOpacity:1}).addTo(aromeMap).bindTooltip('Sant Celoni · Estació Fontanillas');}setTimeout(()=>aromeMap.invalidateSize(),50);clearTimeout(loadTimer);shell?.classList.remove('is-loading');shell?.classList.add('is-ready');renderAromeFrame(aromeIndex);setText('model-viewer-state',`${aromeGrid.length} punts AROME HD · pas horari · horitzó de 48 h.`);}catch(error){clearTimeout(loadTimer);console.warn('Visor AROME no disponible.',error);shell?.classList.remove('is-loading');shell?.classList.add('has-error');const fallback=document.getElementById('model-viewer-fallback');if(fallback)fallback.hidden=false;setText('model-viewer-state','AROME no ha respost; els models globals continuen disponibles.');}}
+function showWindy(){stopPlayback();const frame=document.getElementById('model-viewer-frame');const viewer=document.getElementById('arome-viewer');if(viewer)viewer.hidden=true;if(frame){frame.hidden=false;frame.src=windyUrl();}markLoading();setText('model-viewer-caption',`${modelNames[model]} · ${layerNames[layer]}`);}
+function selectModel(button){model=button.dataset.viewerModel;document.querySelectorAll('[data-viewer-model]').forEach(item=>item.classList.toggle('is-active',item.dataset.viewerModel===model));const pressure=document.getElementById('model-layer-pressure');if(pressure){pressure.disabled=model==='arome';pressure.title=model==='arome'?'AROME HD no ofereix aquesta capa en aquest visor':'';}const source=document.getElementById('model-viewer-source');if(source){source.href=model==='arome'?'https://open-meteo.com/en/docs/meteofrance-api':'https://www.windy.com/?41.691,2.489,6';source.textContent=model==='arome'?'Dades: Open-Meteo · Météo-France ↗':'Font: Windy ↗';}setText('model-viewer-title',model==='arome'?'AROME local · Baix Montseny':'Mapa temporal interactiu');if(model==='arome'){if(layer==='pressure'){layer='rain';document.querySelectorAll('[data-viewer-layer]').forEach(item=>item.classList.toggle('is-active',item.dataset.viewerLayer===layer));}showArome();}else showWindy();}
+export function initModelViewer(){const frame=document.getElementById('model-viewer-frame');const shell=document.getElementById('model-viewer-shell');frame?.addEventListener('load',()=>{if(model==='arome')return;clearTimeout(loadTimer);shell?.classList.remove('is-loading','has-error');shell?.classList.add('is-ready');const fallback=document.getElementById('model-viewer-fallback');if(fallback)fallback.hidden=true;setText('model-viewer-state','Visor temporal de Windy centrat a Sant Celoni.');});if(frame&&!frame.getAttribute('src')&&frame.dataset.src){markLoading();frame.src=frame.dataset.src;}document.querySelectorAll('[data-viewer-model]').forEach(button=>button.addEventListener('click',()=>selectModel(button)));document.querySelectorAll('[data-viewer-layer]').forEach(button=>button.addEventListener('click',()=>{if(model==='arome'&&button.dataset.viewerLayer==='pressure')return;layer=button.dataset.viewerLayer;document.querySelectorAll('[data-viewer-layer]').forEach(item=>item.classList.toggle('is-active',item===button));if(model==='arome')renderAromeFrame(aromeIndex);else showWindy();}));document.getElementById('arome-time')?.addEventListener('input',event=>{stopPlayback();renderAromeFrame(event.target.value);});document.getElementById('arome-play')?.addEventListener('click',togglePlayback);}
