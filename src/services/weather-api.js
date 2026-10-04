@@ -82,9 +82,30 @@ async function fetchModel(endpoint, options = {}) {
     forecast_days: String(options.forecastDays || 7)
   });
   if (options.model) params.set('models', options.model);
+  if (options.hourly) params.set('hourly', options.hourly);
   const response = await request(`https://api.open-meteo.com${endpoint}?${params}`, { cache: 'no-store' },15000);
   if (!response.ok) throw new Error(`Model API ${response.status}`);
-  return response.json();
+  const payload=await response.json();
+  if(options.deriveWeatherCode)deriveAromeWeatherCodes(payload);
+  return payload;
+}
+
+function deriveAromeWeatherCodes(payload){
+  const hourly=payload?.hourly; const daily=payload?.daily;
+  if(!hourly?.time?.length||!daily?.time?.length)return;
+  daily.weather_code=daily.time.map(day=>{
+    const values=hourly.time.map((time,index)=>String(time).startsWith(String(day).slice(0,10))?index:-1).filter(index=>index>=0);
+    const rain=values.reduce((sum,index)=>sum+(Number(hourly.precipitation?.[index])||0),0);
+    const clouds=values.map(index=>Number(hourly.cloud_cover?.[index])).filter(Number.isFinite);
+    const meanCloud=clouds.length?clouds.reduce((sum,value)=>sum+value,0)/clouds.length:0;
+    if(rain>=10)return 63;
+    if(rain>=2)return 61;
+    if(rain>=.2)return 51;
+    if(meanCloud>=80)return 3;
+    if(meanCloud>=35)return 2;
+    return meanCloud>=15?1:0;
+  });
+  daily.weather_code_derived=true;
 }
 
 export async function fetchModelComparison() {
@@ -94,9 +115,31 @@ export async function fetchModelComparison() {
     fetchModel('/v1/dwd-icon'),
     // AROME HD is valuable at very short range, but it must never take down the
     // established global-model comparison if the regional feed is unavailable.
-    fetchModel('/v1/meteofrance', { model:'meteofrance_arome_france_hd', forecastDays:2 }).catch(()=>null)
+    fetchModel('/v1/meteofrance', {
+      model:'meteofrance_arome_france_hd', forecastDays:2,
+      hourly:'precipitation,cloud_cover', deriveWeatherCode:true
+    }).catch(()=>null)
   ]);
   return { ecmwf, gfs, icon, arome };
+}
+
+export async function fetchAromeLocalGrid(){
+  const latitudes=[]; const longitudes=[];
+  for(let row=0;row<7;row+=1){
+    for(let column=0;column<7;column+=1){
+      latitudes.push((41.48+(row*.07)).toFixed(3));
+      longitudes.push((2.20+(column*.10)).toFixed(3));
+    }
+  }
+  const params=new URLSearchParams({
+    latitude:latitudes.join(','),longitude:longitudes.join(','),
+    hourly:'temperature_2m,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m',
+    models:'meteofrance_arome_france_hd',timezone:'Europe/Madrid',forecast_hours:'48'
+  });
+  const response=await request(`https://api.open-meteo.com/v1/meteofrance?${params}`,{cache:'no-store'},22000);
+  if(!response.ok)throw new Error(`AROME grid API ${response.status}`);
+  const payload=await response.json();
+  return Array.isArray(payload)?payload:[payload];
 }
 
 export async function fetchForecastVerification(days = 45) {

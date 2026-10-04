@@ -4,10 +4,13 @@
 
 - La comparació pública afegeix AROME France HD (~1,5 km) durant les primeres
   48 hores, sense fingir un horitzó de set dies ni substituir ECMWF, GFS o ICON.
-- La confiança es recalcula amb els models realment disponibles a cada dia i
-  tracta els símbols i probabilitats absents d’AROME com a dades no disponibles.
-- El visor de Windy continua identificat com una eina separada limitada als
-  tres productes que permet inserir; AROME no es presenta falsament dins seu.
+- Quan el proveïdor no lliura un codi meteorològic diari, la comparació mostra
+  una síntesi identificada com a derivada a partir de pluja i nuvolositat.
+- El nou visor AROME local mostra 49 punts del Baix Montseny, quatre capes i
+  una animació horària de 48 hores. La interfície l’identifica com una graella
+  mostrejada i no com el raster natiu complet de Météo-France.
+- El visor de Windy continua separat i limitat als tres productes globals que
+  permet inserir; AROME usa Open-Meteo i atribueix també Météo-France i OSM.
 - Fonta conserva AROME HD com a candidat en ombra, però manté AROME France en
   l’algoritme vigent per no reiniciar ni contaminar la sèrie prospectiva.
 - La renovació de la memòria cau PWA garanteix que la nova comparació arribi
