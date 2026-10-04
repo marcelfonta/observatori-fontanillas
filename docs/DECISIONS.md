@@ -1,5 +1,16 @@
 # Registre de decisions
 
+## ADR — Un únic avís social i vídeo només si aporta evolució (2026-10-04)
+
+- La targeta estàtica Meteocat és la publicació automàtica canònica de cada
+  avís. El mapa comarcal és l’element visual principal i el text llarg queda a
+  la descripció social.
+- No es genera un Reel a partir d’una sola fotografia ni es repeteix la mateixa
+  alerta en un segon format. Un vídeo futur exigirà canvis verificables entre
+  franges oficials, nivell taronja o vermell, i una clau de deduplicació pròpia.
+- Qualsevol animació territorial haurà de representar les dades de cada franja
+  de Meteocat, no interpolacions ni trajectòries inventades.
+
 ## ADR — Referència aerobiològica XAC per a Sant Celoni (2026-09-29)
 
 - La recomanació directa de la XAC/UAB estableix Bellaterra com a referència
