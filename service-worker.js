@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v22-31-9-fonta-regional-v1-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup-environment-freshness-v2-fonta-lab-v3-home-dayparts-v3-long-range-readability-v2-aca-hydrology-v1';
+const CACHE = 'observatori-fontanillas-v22-31-9-fonta-regional-v1-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup-environment-freshness-v2-fonta-lab-v3-home-dayparts-v3-long-range-readability-v2-aca-hydrology-v1-civil-protection-v1';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
@@ -22,7 +22,7 @@ const APP_SHELL = [
   '/src/modules/contacte.js', '/src/modules/estacio.js', '/src/modules/extrems.js',
   '/src/modules/grafiques.js', '/src/modules/historics.js', '/src/modules/models.js', '/src/features/station-records.js',
   '/src/modules/navigation.js', '/src/modules/prediccio.js', '/src/modules/qualitat.js',
-  '/src/modules/radar.js', '/src/modules/hydrology.js', '/src/modules/resum.js', '/src/modules/situacio.js', '/src/modules/webcams.js',
+  '/src/modules/radar.js', '/src/modules/hydrology.js', '/src/modules/civil-protection.js', '/src/modules/resum.js', '/src/modules/situacio.js', '/src/modules/webcams.js',
   '/assets/icons/favicon-16.png', '/assets/icons/favicon-32.png', '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png', '/assets/icons/icon-maskable-192.png', '/assets/icons/icon-maskable-512.png',
   '/assets/icons/apple-touch-icon.png', '/assets/icons/apple-touch-icon-v21.png', '/assets/logos/observatori-symbol.svg', '/assets/logos/observatori-lockup.svg',

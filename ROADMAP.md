@@ -44,6 +44,10 @@
 
 ## Manteniment obert — En curs
 
+- [x] Incorporar a Avisos el registre oficial de plans actius del CECAT, amb
+  consulta periòdica, abast català per defecte i afectació local només quan
+  existeix una verificació vigent del circuit de risc local.
+
 - [x] Integrar al costat del radar i els llamps un visor propi de cabal i nivell
   de la Tordera amb les estacions ACA de Sant Celoni i Montseny, historial curt,
   font oficial i advertiment explícit que les lectures automàtiques no són avisos.

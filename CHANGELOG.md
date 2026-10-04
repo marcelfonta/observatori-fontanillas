@@ -1,5 +1,16 @@
 # Changelog
 
+## V22.33.0 — Plans actius de Protecció Civil · 2026-10-04
+
+- La pàgina d’Avisos incorpora un bloc propi del CECAT amb tots els plans de
+  protecció civil actius, la fase, l’actualització, la descripció i el comunicat
+  oficial, actualitzat cada 30 minuts.
+- El registre general es presenta com «Actiu a Catalunya» i mai com una
+  afectació local. Només una anàlisi CECAT vigent, taronja o vermella, pot
+  mostrar «Afectació confirmada a Sant Celoni o entorn».
+- Meteocat continua sent la font dels avisos meteorològics. Aquesta capa és
+  informativa, complementària i no genera notificacions ni publicacions noves.
+
 ## Correcció — el mapa estacional segueix el mes del calendari · 2026-10-02
 
 - Abans de l'actualització Meteocat del dia 5, el bloc mensual mostra el mes

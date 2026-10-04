@@ -29,6 +29,10 @@
 - La reserva de processament identifica cada PDF oficial; l'esborrany social es deduplica per data, fenomen i perfil complet de les quatre franges. Un dispatch acceptat o incert no es repeteix automàticament; els errors confirmats tenen com a màxim tres intents espaiats. La cua social conserva la deduplicació i la recuperació per canal existents.
 - `SOCIAL_CECAT_LOCAL_RISK_ENABLED` controla detecció i processament; `SOCIAL_CECAT_LOCAL_RISK_AUTOPUBLISH_ENABLED` controla l'enviament. Tots dos neixen desactivats. El desplegament inicial activa només detecció/revisió; l'autopublicació requereix una segona autorització humana després d'una mostra real correcta.
 - Detall operatiu, riscos, validació i rollback a `docs/CECAT-LOCAL-RISK.md`.
+- El registre de plans actius també es pot consultar públicament a la pàgina
+  d’Avisos. Per defecte només acredita «Actiu a Catalunya»; la menció de Sant
+  Celoni exigeix una verificació local vigent del circuit anterior. Aquest bloc
+  no activa notificacions ni publicacions i no canvia l’avís Meteocat.
 
 ## ADR — Previsió social per franges sense allargar els vídeos (2026-09-17)
 
