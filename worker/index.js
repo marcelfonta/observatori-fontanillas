@@ -1152,6 +1152,47 @@ export function parseCecatActivePlans(records) {
   });
 }
 
+function civilProtectionPhase(value) {
+  const phase=cleanText(value,40).toUpperCase();
+  if(phase.includes('EMERG'))return 'emergency';
+  if(phase.includes('PREALERTA'))return 'prealert';
+  if(phase.includes('ALERTA'))return 'alert';
+  return 'active';
+}
+
+export function normalizeCivilProtectionPlans(records) {
+  return (Array.isArray(records)?records:[]).flatMap(item=>{
+    if(cleanText(item?.plaactivat,10).toUpperCase()!=='SI')return [];
+    const acronym=cleanText(item?.plaacronim,40).toUpperCase();
+    const name=cleanText(item?.planom,120);
+    if(!acronym&&!name)return [];
+    const phaseLabel=cleanText(item?.plafase,40)||'Actiu';
+    return [{acronym,name:name||acronym,phase:phaseLabel,phaseKey:civilProtectionPhase(phaseLabel),updatedLabel:cleanText(item?.fasedatahora,40),description:cleanText(item?.descripcio,400),documentUrl:cecatOfficialDocumentUrl(item?.comunicatpdf?.url)||null,scope:{kind:'catalonia',localImpact:'unverified',label:'Actiu a Catalunya'}}];
+  });
+}
+
+async function activeLocalCivilProtectionRisk(env,plans,date=new Date()) {
+  if(!env.DB||!plans.some(plan=>plan.acronym==='INUNCAT'))return null;
+  try{
+    const rows=await env.DB.prepare("SELECT payload FROM social_drafts WHERE kind='cecat_local_risk' ORDER BY id DESC LIMIT 12").all();
+    for(const row of rows?.results||[]){
+      let raw;try{raw=JSON.parse(row.payload||'{}');}catch{continue;}
+      const validUntil=Date.parse(String(raw.validUntil||''));
+      if(raw.source==='CECAT'&&raw.plan==='INUNCAT'&&raw.publishable===true&&['orange','red'].includes(raw.level)&&Number.isFinite(validUntil)&&validUntil>date.getTime())return {plan:'INUNCAT',level:raw.level,levelLabel:raw.level==='red'?'Vermell':'Taronja',validUntil:new Date(validUntil).toISOString(),locality:'Sant Celoni i entorn proper'};
+    }
+  }catch(error){console.error(JSON.stringify({event:'civil_protection_local_check_error',error:String(error?.message||error)}));}
+  return null;
+}
+
+async function civilProtectionPlans(env) {
+  const response=await fetch(CECAT_ACTIVE_PLANS_ENDPOINT,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(15000),cf:{cacheEverything:true,cacheTtl:300}});
+  if(!response.ok)return json({ok:false,error:'La font oficial de Protecció Civil no està disponible ara mateix.'},502,'public, max-age=60');
+  const plans=normalizeCivilProtectionPlans(await response.json());
+  const localRisk=await activeLocalCivilProtectionRisk(env,plans);
+  if(localRisk){const plan=plans.find(item=>item.acronym===localRisk.plan);if(plan)plan.scope={kind:'local',localImpact:'confirmed',label:'Afectació confirmada a Sant Celoni o entorn',...localRisk};}
+  return json({ok:true,checkedAt:new Date().toISOString(),plans,source:{name:'CECAT · Protecció Civil',datasetId:'wj9c-j6vf',url:'https://analisi.transparenciacatalunya.cat/d/wj9c-j6vf'},caveat:'El registre general confirma que el pla és actiu a Catalunya, però no implica per si sol afectació a Sant Celoni.'},200,'public, max-age=300');
+}
+
 async function cecatDocumentKey(documentUrl) {
   const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(documentUrl));
   return [...new Uint8Array(digest)].slice(0,12).map(byte=>byte.toString(16).padStart(2,'0')).join('');
@@ -6405,6 +6446,7 @@ export default {
       }
       if (url.pathname === "/pollen-xac") return xacPollenProxy(url);
       if (url.pathname === "/aca-hydrology") return acaHydrology();
+      if (url.pathname === "/civil-protection-plans") return civilProtectionPlans(env);
       if (url.pathname === "/history") return history(url, env, ctx);
       if (url.pathname === "/temperature-trend") return temperatureTrend(env);
       if (url.pathname === "/records") return stationRecords(request,env,ctx);
