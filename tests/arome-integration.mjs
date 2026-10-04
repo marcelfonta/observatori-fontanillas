@@ -20,13 +20,15 @@ assert.match(prediction,/if\(code===null\|\|code===undefined\|\|code===''\)retur
 assert.match(index,/AROME HD aporta detall local durant les primeres 48 hores/);
 assert.match(index,/data-viewer-model="arome"/);
 assert.match(index,/id="arome-map"/);
+assert.match(index,/id="arome-complete-link"[^>]+meteologix\.com\/es\/model-charts\/french-hd\/catalua/);
 assert.match(models,/aromeGrid\.length\} punts AROME HD/);
 assert.match(models,/OpenStreetMap · AROME HD via Open-Meteo \/ Météo-France/);
+assert.match(models,/completeLink\.hidden=model!==['"]arome['"]/);
 assert.deepEqual((await import('../src/core/fonta-model.js')).FONTA.experimentalModels,['meteofrance_arome_france_hd']);
 assert.match(collector,/\.\.\.FONTA\.models,\.\.\.FONTA\.experimentalModels/);
 assert.match(collector,/FONTA\.experimentalModels\.includes\(model\)\?experimentalFailures:failures/);
 assert.match(workflow,/AROME HD només en ombra/);
-assert.match(sw,/arome-local-v1/);
+assert.match(sw,/arome-local-v2/);
 assert.match(fontaCore,/experimentalModels:\['meteofrance_arome_france_hd'\]/);
 assert.match(fontaPage,/AROME HD es conserva en paral·lel com a candidat[^<]*no modifica la previsió experimental[^<]*fins que acumuli prou contrast prospectiu[^<]*\./i);
 
