@@ -523,9 +523,9 @@
           <p class="source-comparison__note"><span>i</span> Meteocat permet alternar directament entre previsió horària i diària. AEMET i eltiempo.es conserven els ginys oficials; Yr aporta la previsió de MET Norway i Meteoblue afegeix detall cada tres hores durant quatre dies.</p>
         </section>
         <article id="models" class="model-comparison panel" data-mobile-advanced>
-          <header><div><p class="eyebrow">Convergència de models</p><h3>ECMWF · GFS · ICON</h3></div><div class="model-day-nav"><button type="button" id="model-day-prev" aria-label="Dia anterior">←</button><span id="model-day-label">Demà</span><button type="button" id="model-day-next" aria-label="Dia següent">→</button><span class="tag" id="model-status">Connectant models</span></div></header>
-          <div class="model-table" id="model-table"><div class="forecast-loading">Comparant tres models globals…</div></div>
-          <p class="model-reading" id="model-reading">La coincidència entre tres models ajuda a entendre la confiança de la predicció.</p>
+          <header><div><p class="eyebrow">Convergència de models</p><h3>ECMWF · GFS · ICON · AROME</h3><p class="model-horizon-note">AROME HD aporta detall local durant les primeres 48 hores; després continuen els tres models globals.</p></div><div class="model-day-nav"><button type="button" id="model-day-prev" aria-label="Dia anterior">←</button><span id="model-day-label">Demà</span><button type="button" id="model-day-next" aria-label="Dia següent">→</button><span class="tag" id="model-status">Connectant models</span></div></header>
+          <div class="model-table" id="model-table"><div class="forecast-loading">Comparant models globals i AROME HD…</div></div>
+          <p class="model-reading" id="model-reading">La coincidència entre models ajuda a entendre la confiança de la predicció.</p>
           <div class="model-agreement-grid" id="model-agreement" aria-label="Coincidència dels models per variable">
             <article><span>Temperatura</span><strong>Calculant</strong><small>Dispersió entre models</small></article>
             <article><span>Pluja</span><strong>Calculant</strong><small>Quantitat i probabilitat</small></article>
@@ -547,7 +547,7 @@
             </div>
             <footer><span id="model-viewer-caption">ECMWF · precipitació</span><small id="model-viewer-state">Visor temporal de Windy centrat a Sant Celoni.</small></footer>
           </section>
-          <p class="model-license-note">La taula superior compara ECMWF, GFS i ICON. El visor cartogràfic utilitza la inserció pública de Windy per animar ECMWF, GFS i ICON-EU sense reproduir imatges de tercers.</p>
+          <p class="model-license-note">La taula superior afegeix AROME France HD via Open-Meteo a ECMWF, GFS i ICON. AROME té un horitzó més curt i pot no oferir símbol ni probabilitat de pluja. El visor cartogràfic de Windy continua limitat als tres models que permet la seva inserció pública.</p>
         </article>
         <a class="forecast-horizon-link panel" href="./?page=llarg-termini"><span aria-hidden="true">↗</span><div><p class="eyebrow">Més enllà de set dies</p><h3>Consulta la predicció a llarg termini</h3><p>Sis setmanes d’ECMWF i mapes mensuals oficials del Meteocat, amb la incertesa explicada.</p></div><strong>Obrir tendències →</strong></a>
         <p class="forecast-disclaimer">La predicció descriu un escenari de model per a Sant Celoni, no una certesa. L’observació real de l’estació és la referència del temps que està fent.</p>

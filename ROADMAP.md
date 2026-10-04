@@ -44,6 +44,13 @@
 
 ## Manteniment obert — En curs
 
+- [x] Mostrar AROME France HD en la comparació pública de 0–48 h, mantenint
+  ECMWF, GFS i ICON per a l'horitzó complet.
+- [x] Començar a conservar AROME HD com a candidat Fonta en ombra sense
+  modificar l'algoritme 0.2.0 ni reescriure captures prospectives.
+- [ ] Avaluar AROME HD sobre els mateixos dies que AROME France abans de
+  decidir una nova versió del model Fonta.
+
 - [x] Incorporar a Avisos el registre oficial de plans actius del CECAT, amb
   consulta periòdica, abast català per defecte i afectació local només quan
   existeix una verificació vigent del circuit de risc local.

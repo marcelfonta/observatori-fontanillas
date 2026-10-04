@@ -73,22 +73,30 @@ export async function fetchLongRangeForecast() {
   return response.json();
 }
 
-async function fetchModel(endpoint) {
+async function fetchModel(endpoint, options = {}) {
   const { latitude, longitude } = CONFIG.station;
   const params = new URLSearchParams({
     latitude, longitude,
     daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max',
     timezone: 'Europe/Madrid',
-    forecast_days: '7'
+    forecast_days: String(options.forecastDays || 7)
   });
+  if (options.model) params.set('models', options.model);
   const response = await request(`https://api.open-meteo.com${endpoint}?${params}`, { cache: 'no-store' },15000);
   if (!response.ok) throw new Error(`Model API ${response.status}`);
   return response.json();
 }
 
 export async function fetchModelComparison() {
-  const [ecmwf, gfs, icon] = await Promise.all([fetchModel('/v1/ecmwf'), fetchModel('/v1/gfs'), fetchModel('/v1/dwd-icon')]);
-  return { ecmwf, gfs, icon };
+  const [ecmwf, gfs, icon, arome] = await Promise.all([
+    fetchModel('/v1/ecmwf'),
+    fetchModel('/v1/gfs'),
+    fetchModel('/v1/dwd-icon'),
+    // AROME HD is valuable at very short range, but it must never take down the
+    // established global-model comparison if the regional feed is unavailable.
+    fetchModel('/v1/meteofrance', { model:'meteofrance_arome_france_hd', forecastDays:2 }).catch(()=>null)
+  ]);
+  return { ecmwf, gfs, icon, arome };
 }
 
 export async function fetchForecastVerification(days = 45) {

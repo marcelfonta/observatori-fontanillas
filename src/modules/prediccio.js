@@ -150,7 +150,9 @@ export function renderForecast(data) {
 
 function modelRow(name,data,index) {
   const daily=data?.daily||{}; const [symbol,label]=weather(daily.weather_code?.[index]);
-  return `<div class="model-row"><strong>${name}<small>${symbol} ${label}</small></strong><span><small>Màxima</small><b>${format(daily.temperature_2m_max?.[index],1)} °C</b></span><span><small>Mínima</small><b>${format(daily.temperature_2m_min?.[index],1)} °C</b></span><span><small>Pluja</small><b>${format(daily.precipitation_sum?.[index],1)} mm</b></span><span><small>Ratxa màxima</small><b>${format(daily.wind_gusts_10m_max?.[index],0)} km/h</b></span></div>`;
+  if(!daily.time?.[index])return `<div class="model-row is-unavailable"><strong>${name}<small>Fora de l’horitzó</small></strong><span class="model-row__unavailable">Disponible només a molt curt termini</span></div>`;
+  const condition=daily.weather_code?.[index]===null||daily.weather_code?.[index]===undefined?'Símbol no disponible':`${symbol} ${label}`;
+  return `<div class="model-row"><strong>${name}<small>${condition}</small></strong><span><small>Màxima</small><b>${format(daily.temperature_2m_max?.[index],1)} °C</b></span><span><small>Mínima</small><b>${format(daily.temperature_2m_min?.[index],1)} °C</b></span><span><small>Pluja</small><b>${format(daily.precipitation_sum?.[index],1)} mm</b></span><span><small>Ratxa màxima</small><b>${format(daily.wind_gusts_10m_max?.[index],0)} km/h</b></span></div>`;
 }
 
 function numeric(models,key,index){return models.map(model=>Number(model?.daily?.[key]?.[index])).filter(Number.isFinite);}
@@ -161,6 +163,7 @@ function agreement(level,detail){
   return {level,label:labels[level],score:scores[level],detail};
 }
 function skyFamily(code){
+  if(code===null||code===undefined||code==='')return null;
   const value=Number(code);
   if([0,1].includes(value))return 'serè';
   if([2,3,45,48].includes(value))return 'núvols';
@@ -171,25 +174,26 @@ function skyFamily(code){
 }
 
 function modelAgreements(models,index){
+  const expected=models.length;
   const maxima=numeric(models,'temperature_2m_max',index);
   const minima=numeric(models,'temperature_2m_min',index);
   const tempRange=Math.max(range(maxima)??99,range(minima)??99);
-  const temperature=agreement(maxima.length<3||minima.length<3?'unknown':tempRange<=2?'high':tempRange<=4?'moderate':'low',tempRange<99?`rang màxim de ${format(tempRange,1)} °C`:'dades incompletes');
+  const temperature=agreement(maxima.length<expected||minima.length<expected?'unknown':tempRange<=2?'high':tempRange<=4?'moderate':'low',tempRange<99?`rang màxim de ${format(tempRange,1)} °C`:'dades incompletes');
 
   const rain=numeric(models,'precipitation_sum',index);
   const rainChance=numeric(models,'precipitation_probability_max',index);
   const rainRange=range(rain); const chanceRange=range(rainChance);
-  const wet=rain.map(value=>value>=0.5); const occurrenceAgreement=wet.length===3&&(wet.every(Boolean)||wet.every(value=>!value));
-  const rainLevel=rain.length<3?'unknown':occurrenceAgreement&&(rainRange??99)<=2.5&&(chanceRange??0)<=25?'high':(rainRange??99)<=6&&(chanceRange??0)<=50?'moderate':'low';
+  const wet=rain.map(value=>value>=0.5); const occurrenceAgreement=wet.length===expected&&(wet.every(Boolean)||wet.every(value=>!value));
+  const rainLevel=rain.length<expected?'unknown':occurrenceAgreement&&(rainRange??99)<=2.5&&(chanceRange??0)<=25?'high':(rainRange??99)<=6&&(chanceRange??0)<=50?'moderate':'low';
   const precipitation=agreement(rainLevel,rainRange===null?'dades incompletes':`${format(Math.min(...rain),1)}–${format(Math.max(...rain),1)} mm`);
 
   const gusts=numeric(models,'wind_gusts_10m_max',index); const gustRange=range(gusts);
-  const wind=agreement(gusts.length<3?'unknown':gustRange<=10?'high':gustRange<=20?'moderate':'low',gustRange===null?'dades incompletes':`${format(Math.min(...gusts),0)}–${format(Math.max(...gusts),0)} km/h`);
+  const wind=agreement(gusts.length<expected?'unknown':gustRange<=10?'high':gustRange<=20?'moderate':'low',gustRange===null?'dades incompletes':`${format(Math.min(...gusts),0)}–${format(Math.max(...gusts),0)} km/h`);
 
-  const families=models.map(model=>skyFamily(model?.daily?.weather_code?.[index]));
+  const families=models.map(model=>skyFamily(model?.daily?.weather_code?.[index])).filter(Boolean);
   const counts=families.reduce((result,family)=>({...result,[family]:(result[family]||0)+1}),{});
-  const largest=Math.max(...Object.values(counts));
-  const sky=agreement(families.length<3?'unknown':largest===3?'high':largest===2?'moderate':'low',families.join(' · '));
+  const largest=families.length?Math.max(...Object.values(counts)):0;
+  const sky=agreement(families.length<Math.min(3,expected)?'unknown':largest===families.length?'high':largest>=Math.ceil(families.length/2)?'moderate':'low',families.length?families.join(' · '):'símbols no disponibles');
   return {temperature,precipitation,wind,sky};
 }
 
@@ -201,12 +205,13 @@ function renderAgreementCards(items){
 
 function renderModelDay() {
   if(!modelPayload)return;
-  const {ecmwf,gfs,icon}=modelPayload;
+  const {ecmwf,gfs,icon,arome}=modelPayload;
   const table=document.getElementById('model-table'); if(!table) return;
-  table.innerHTML=`<div class="model-row model-row--head"><strong>Model</strong><span>Temperatura</span><span>Temperatura</span><span>Precipitació</span><span>Vent</span></div>${modelRow('ECMWF',ecmwf,modelDayIndex)}${modelRow('GFS',gfs,modelDayIndex)}${modelRow('ICON',icon,modelDayIndex)}`;
+  table.innerHTML=`<div class="model-row model-row--head"><strong>Model</strong><span>Temperatura</span><span>Temperatura</span><span>Precipitació</span><span>Vent</span></div>${modelRow('ECMWF',ecmwf,modelDayIndex)}${modelRow('GFS',gfs,modelDayIndex)}${modelRow('ICON',icon,modelDayIndex)}${modelRow('AROME HD · 1,5 km',arome,modelDayIndex)}`;
   const selectedDate=new Date(ecmwf?.daily?.time?.[modelDayIndex]||Date.now());
   setText('model-day-label',modelDayIndex===0?`Avui · ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(selectedDate)}`:modelDayIndex===1?`Demà · ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(selectedDate)}`:`${dayName(selectedDate)} · ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'short'}).format(selectedDate)}`);
-  const items=modelAgreements([ecmwf,gfs,icon],modelDayIndex);
+  const activeModels=[ecmwf,gfs,icon,arome].filter(model=>model?.daily?.time?.[modelDayIndex]);
+  const items=modelAgreements(activeModels,modelDayIndex);
   renderAgreementCards(items);
   const available=Object.values(items).filter(item=>item.score>0);
   const mean=available.length?available.reduce((total,item)=>total+item.score,0)/available.length:0;
@@ -215,7 +220,8 @@ function renderModelDay() {
   const weakest=available.sort((a,b)=>a.score-b.score)[0];
   const weakestName=Object.entries(items).find(([,item])=>item===weakest)?.[0];
   const names={temperature:'la temperatura',precipitation:'la pluja',wind:'el vent',sky:'l’estat del cel'};
-  setText('model-reading',overall==='alta'?'Els tres models dibuixen un escenari consistent en totes les variables principals.':`La confiança conjunta és ${overall}. El punt amb més diferències és ${names[weakestName] || 'una de les variables'} (${weakest?.detail || 'dades incompletes'}).`);
+  const modelCount=activeModels.length;
+  setText('model-reading',overall==='alta'?`${modelCount===4?'Els quatre models':'Els tres models globals'} dibuixen un escenari consistent en les variables disponibles.`:`La confiança conjunta de ${modelCount} models és ${overall}. El punt amb més diferències és ${names[weakestName] || 'una de les variables'} (${weakest?.detail || 'dades incompletes'}).`);
   const previous=document.getElementById('model-day-prev'); const next=document.getElementById('model-day-next');
   if(previous)previous.disabled=modelDayIndex<=0; if(next)next.disabled=modelDayIndex>=6;
 }
@@ -322,4 +328,4 @@ export function renderForecastError() {
   const daily=document.getElementById('daily-forecast'); if(daily) daily.innerHTML='<div class="forecast-loading">No s’ha pogut carregar la previsió diària.</div>';
 }
 
-export function renderModelError() { setText('model-status','Models no disponibles'); setText('model-reading','La comparació ECMWF/GFS/ICON tornarà a intentar-se en la pròxima actualització.'); const agreement=document.getElementById('model-agreement'); if(agreement)agreement.innerHTML='<article class="is-unknown"><span>Comparació multivariable</span><strong>Temporalment no disponible</strong><small>Nou intent en la pròxima actualització</small></article>'; }
+export function renderModelError() { setText('model-status','Models no disponibles'); setText('model-reading','La comparació ECMWF/GFS/ICON/AROME tornarà a intentar-se en la pròxima actualització.'); const agreement=document.getElementById('model-agreement'); if(agreement)agreement.innerHTML='<article class="is-unknown"><span>Comparació multivariable</span><strong>Temporalment no disponible</strong><small>Nou intent en la pròxima actualització</small></article>'; }
