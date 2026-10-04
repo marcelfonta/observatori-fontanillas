@@ -1,5 +1,12 @@
 # Changelog
 
+## Millora — accés al visor AROME complet · 2026-10-04
+
+- Quan se selecciona AROME, el peu del visor local ofereix un accés directe a
+  les cartes completes del model sobre Catalunya a Meteologix.
+- L’enllaç queda ocult amb ECMWF, GFS i ICON per evitar barrejar fonts i només
+  complementa la graella local; no substitueix les dades d’Open-Meteo.
+
 ## Millora — AROME HD entra a la previsió i al laboratori · 2026-10-04
 
 - La comparació pública afegeix AROME France HD (~1,5 km) durant les primeres
