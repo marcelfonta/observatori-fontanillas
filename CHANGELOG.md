@@ -1,5 +1,17 @@
 # Changelog
 
+## Millora — avisos Meteocat amb mapa protagonista · 2026-10-04
+
+- Les targetes automàtiques d’avisos abandonen la composició lateral que
+  comprimia Catalunya i converteixen el mapa comarcal en l’element principal.
+- El Vallès Oriental conserva el contorn blanc i guanya una identificació
+  directa; recompte, llegenda i atribució queden ordenats sota el mapa.
+- El detall local separa nivell, franges, distribució i llindar oficial. El
+  comentari extens continua al text de la publicació i ja no satura la imatge.
+- No s’afegeix una segona publicació automàtica ni un Reel redundant. Un futur
+  format animat només serà admissible quan les franges oficials mostrin una
+  evolució territorial rellevant i disposi de deduplicació pròpia.
+
 ## V22.33.0 — Plans actius de Protecció Civil · 2026-10-04
 
 - La pàgina d’Avisos incorpora un bloc propi del CECAT amb tots els plans de
