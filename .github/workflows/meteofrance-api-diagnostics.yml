@@ -1,0 +1,43 @@
+name: Diagnòstic API Météo-France
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/meteofrance-api-diagnostics.yml
+      - scripts/meteofrance-api-diagnostics.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: meteofrance-api-diagnostics-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verifica claus i permisos
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      METEOFRANCE_AROME_API_KEY: ${{ secrets.METEOFRANCE_AROME_API_KEY }}
+      METEOFRANCE_AROME_NOWCAST_API_KEY: ${{ secrets.METEOFRANCE_AROME_NOWCAST_API_KEY }}
+      METEOFRANCE_AROME_ENSEMBLE_API_KEY: ${{ secrets.METEOFRANCE_AROME_ENSEMBLE_API_KEY }}
+      METEOFRANCE_ARPEGE_API_KEY: ${{ secrets.METEOFRANCE_ARPEGE_API_KEY }}
+      METEOFRANCE_ARPEGE_ENSEMBLE_API_KEY: ${{ secrets.METEOFRANCE_ARPEGE_ENSEMBLE_API_KEY }}
+      METEOFRANCE_PIAF_API_KEY: ${{ secrets.METEOFRANCE_PIAF_API_KEY }}
+    steps:
+      - name: Descarrega el repositori
+        uses: actions/checkout@v7
+
+      - name: Comprova cada API sense mostrar les claus
+        run: node scripts/meteofrance-api-diagnostics.mjs
+
+      - name: Conserva l’informe segur
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: meteofrance-api-diagnostics
+          path: build/meteofrance-api-diagnostics.json
+          if-no-files-found: warn
+          retention-days: 7
