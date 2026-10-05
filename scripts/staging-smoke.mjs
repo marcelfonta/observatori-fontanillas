@@ -38,7 +38,7 @@ if (alerts.ok !== true || !Array.isArray(alerts.alerts) || !alerts.source?.name)
   throw new Error('/alerts: contracte d’avisos invàlid.');
 }
 
-const meteofrance = await getJson('/meteofrance/models');
+const meteofrance = await getJson(`/meteofrance/models?fresh=${Math.floor(Date.now() / 60_000)}`);
 if (meteofrance.ok !== true || !Array.isArray(meteofrance.products) || meteofrance.products.length !== 6) {
   throw new Error('/meteofrance/models: no retorna els sis productes esperats.');
 }
@@ -51,8 +51,8 @@ if (directMeteofrance.some(product => product.available !== true)) {
   throw new Error('/meteofrance/models: almenys un dels tres productes directes principals no respon.');
 }
 const ensembles = meteofrance.products.filter(product => ['pe-arome', 'pe-arpege'].includes(product.id));
-if (ensembles.some(product => !product.available && !/HTTP 429/.test(product.note || ''))) {
-  throw new Error('/meteofrance/models: un ensemble falla per un motiu diferent del límit temporal HTTP 429.');
+if (!ensembles.some(product => product.available && Number(product.coverages) > 0)) {
+  throw new Error('/meteofrance/models: cap ensemble no retorna encara un catàleg WCS real.');
 }
 
 async function validateMeteofranceMap(model, layer) {
