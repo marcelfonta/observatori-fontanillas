@@ -9,10 +9,11 @@ import { youtubeRecoveryEligibility } from '../src/core/youtube-recovery.js';
 import { DAYPART_HOURLY_VARIABLES, normalizeSocialForecast, summarizeForecastDayparts, daypartCaption } from '../src/core/forecast-dayparts.js';
 import { fetchSocialEnvironment } from '../src/core/social-environment.js';
 import { dailySocialCardV5 } from './social-daily-v5.js';
+import { meteofranceMap, meteofranceModels } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.26";
-const WORKER_BUILT = "2026-09-29";
+const WORKER_VERSION = "22.29.27";
+const WORKER_BUILT = "2026-10-05";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -6473,11 +6474,13 @@ export default {
       if (url.pathname === "/webcams-nearby") return nearbyWebcams(url, env);
       if (url.pathname === "/forecast-videos") return forecastVideos(request, ctx);
       if (url.pathname === "/forecast-verification") return forecastVerification(url, env);
+      if (url.pathname === "/meteofrance/models") return meteofranceModels(env);
+      if (url.pathname === "/meteofrance/map") return meteofranceMap(url, env);
       if (url.pathname === "/admin/status") return adminStatus(request, env);
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/meteofrance/models", "/meteofrance/map?model=arome&layer=precipitation", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

@@ -38,6 +38,19 @@ if (alerts.ok !== true || !Array.isArray(alerts.alerts) || !alerts.source?.name)
   throw new Error('/alerts: contracte d’avisos invàlid.');
 }
 
+const meteofrance = await getJson('/meteofrance/models');
+if (meteofrance.ok !== true || !Array.isArray(meteofrance.products) || meteofrance.products.length !== 6) {
+  throw new Error('/meteofrance/models: no retorna els sis productes esperats.');
+}
+const missingMeteofrance = meteofrance.products.filter(product => product.configured !== true);
+if (missingMeteofrance.length) {
+  throw new Error(`/meteofrance/models: credencials no configurades per ${missingMeteofrance.map(product => product.id).join(', ')}.`);
+}
+const coreMeteofrance = meteofrance.products.filter(product => product.id !== 'piaf');
+if (coreMeteofrance.some(product => product.available !== true)) {
+  throw new Error('/meteofrance/models: almenys un dels cinc productes principals no respon.');
+}
+
 async function validateWeatherHistory(resolution, days) {
   const payload = await getJson(`/history?days=${days}&resolution=${resolution}`);
   const validEnvelope = payload.interval === resolution

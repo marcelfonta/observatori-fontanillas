@@ -1,5 +1,17 @@
 # Changelog
 
+## V22.31.10 — Laboratori directe de Météo-France · 2026-10-05
+
+- Nou gateway segur al Worker per consultar els catàlegs oficials sense exposar
+  cap clau al navegador, amb memòria cau, llistes blanques i degradació separada.
+- Nova pàgina visual per a AROME, AROME previsió immediata, PE-AROME, ARPEGE,
+  PE-ARPEGE i PIAF. Els productes WMS ofereixen mapa directe sobre Catalunya.
+- Els ensembles indiquen membres, protocol i disponibilitat sense fingir un
+  mapa raster: la seva ingestió WCS/GRIB queda separada de la interfície.
+- PIAF pot fallar sense afectar cap altre model ni la previsió principal.
+- El desplegament de staging sincronitza les sis credencials de GitHub amb el
+  Worker de proves sense imprimir-ne els valors ni generar configuracions parcials.
+
 ## Millora — accés al visor AROME complet · 2026-10-04
 
 - Quan se selecciona AROME, el peu del visor local ofereix un accés directe a

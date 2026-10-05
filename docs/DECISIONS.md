@@ -123,6 +123,22 @@ raster complet d’1,5 km de Météo-France. La interfície mostra font, escala,
 instant i nombre de punts; si la graella falla, manté disponibles la comparació
 numèrica i els visors globals. El símbol diari d’AROME, quan falta a l’origen, és
 una síntesi explícitament derivada de la pluja acumulada i la nuvolositat mitjana.
+
+## ADR-009 — Gateway segur per als productes directes de Météo-France
+
+**Estat:** acceptada, 2026-10-05.
+
+Les claus de Météo-France només existeixen com a secrets de GitHub i del Worker;
+mai no s'envien al navegador ni formen part de les claus públiques de memòria cau.
+El Worker valida models, variables, dimensions i capes mitjançant llistes blanques,
+i cada producte pot degradar-se sense fer caure la previsió principal.
+
+AROME, AROME-PI, ARPEGE i PIAF es poden visualitzar quan ofereixen WMS. PE-AROME
+i PE-ARPEGE són productes WCS/GRIB i es presenten com a fonts probabilístiques,
+no com a mapes equivalents. No entren al pes del model Fonta fins que existeixi
+una ingestió numèrica privada, predicció congelada, verificació prospectiva i
+una decisió de versió separada. PIAF continua sent experimental i la seva
+indisponibilitat no s'interpreta com una absència de fenomen meteorològic.
 # ADR — Automatització editorial de baixa freqüència i episodis locals (2026-08-31)
 
 - Les noves publicacions no s’activen amb el desplegament: cada família té un interruptor explícit i es valida gradualment.
