@@ -1620,3 +1620,12 @@ Rollback: revertir aquest paquet i desplegar versions prèvies autoritzades. Els
 - Lectures oficials de l’ACA de cabal i nivell a Sant Celoni i Montseny, amb hora, evolució recent i mapa propi.
 - Nou proxy normalitzat al Worker amb memòria cau de cinc minuts, degradació segura i atribució explícita.
 - Les dades automàtiques es presenten com a provisionals i no es converteixen en avisos ni llindars de perill inventats.
+# V22.32.1 — Compatibilitat amb annexos parcials CECAT
+
+### Corregit
+
+- El lector de risc local ignora de manera segura les pàgines inicials que
+  només contenen les dues franges restants del dia anterior i continua fins al
+  següent bloc oficial complet de quatre mapes.
+- Els canvis desconeguts en una pàgina que hauria de contenir quatre mapes
+  continuen fallant de manera tancada i no poden generar publicacions.

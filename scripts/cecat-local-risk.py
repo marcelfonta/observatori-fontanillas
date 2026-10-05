@@ -158,6 +158,15 @@ def extract_map_risks(pdf: bytes) -> list[MapRisk]:
         phenomenon = "Intensitat de pluja en 3 hores" if "en 3 hores" in text else "Intensitat de pluja"
         images = {xobject_key(item.name): item.image.convert("RGBA") for item in page.images if item.image.mode == "RGBA"}
         if not set(WINDOW_BY_XOBJECT).issubset(images):
+            # Some CECAT updates start the annex with a carry-over page that
+            # only contains the remaining two panels from the previous day.
+            # Its local XObject names are reused from zero, so those panels
+            # cannot be mapped to time windows safely. Ignore that incomplete
+            # page and continue until a complete, unambiguous four-panel page.
+            # A page that claims to contain four maps but changes their
+            # structure must still fail closed.
+            if 0 < len(images) < len(WINDOW_BY_XOBJECT):
+                continue
             raise ValueError(f"Estructura de mapes oficials no reconeguda per al {target_date}.")
         for key, (start_hour, end_hour) in WINDOW_BY_XOBJECT.items():
             level, rank, counts, station_xy = local_patch_risk(images[key])

@@ -43,6 +43,8 @@ assert.match(script,/no_local_orange_red_risk/);
 assert.match(script,/class NoSupportedRiskMaps\(Exception\):/);
 assert.match(script,/"reason": "no_supported_risk_maps"/);
 assert.match(script,/except NoSupportedRiskMaps as error:[\s\S]*?return 0/);
+assert.match(script,/if 0 < len\(images\) < len\(WINDOW_BY_XOBJECT\):\s+continue/);
+assert.match(script,/A page that claims to contain four maps[\s\S]*?must still fail closed/);
 assert.match(script,/official-raster-local-patch-v1/);
 assert.match(script,/documents\.dadesobertes\.gencat\.cat/);
 assert.match(wrangler,/"SOCIAL_CECAT_LOCAL_RISK_ENABLED": "false"/);
