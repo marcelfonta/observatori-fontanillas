@@ -81,26 +81,35 @@ function valueFor(parameter) {
   return undefined;
 }
 
+function resolveParameter(swagger, parameter) {
+  if (!parameter?.$ref) return parameter;
+  const name = parameter.$ref.split('/').pop();
+  return swagger.components?.parameters?.[name] || parameter;
+}
+
 function operationCandidates(swagger) {
   const candidates = [];
   for (const [path, pathItem] of Object.entries(swagger.paths || {})) {
     const operation = pathItem.get;
     if (!operation) continue;
-    const parameters = [...(pathItem.parameters || []), ...(operation.parameters || [])];
+    const parameters = [...(pathItem.parameters || []), ...(operation.parameters || [])]
+      .map(parameter => resolveParameter(swagger, parameter));
     const query = new URLSearchParams();
+    let resolvedPath = path;
     let usable = true;
     for (const parameter of parameters) {
-      if (parameter.in !== 'query' || !parameter.required) continue;
+      if (!parameter.required) continue;
       const value = valueFor(parameter);
       if (value === undefined) {
         usable = false;
         break;
       }
-      query.set(parameter.name, String(value));
+      if (parameter.in === 'path') resolvedPath = resolvedPath.replace(`{${parameter.name}}`, encodeURIComponent(String(value)));
+      if (parameter.in === 'query') query.set(parameter.name, String(value));
     }
     if (!usable) continue;
     const score = /GetCapabilities/i.test(path) ? 0 : parameters.some((item) => item.required) ? 2 : 1;
-    candidates.push({ path, query, score });
+    candidates.push({ path:resolvedPath, query, score });
   }
   return candidates.sort((a, b) => a.score - b.score || a.path.localeCompare(b.path));
 }
@@ -179,10 +188,10 @@ async function diagnose(check) {
     if (response.status === 400) {
       return {
         ...check,
-        status: 'ok',
+        status: 'inconclusive',
         expiresAt,
         httpStatus: response.status,
-        detail: 'Clau acceptada per la passarel·la; la consulta mínima no aporta tots els paràmetres del producte.',
+        detail: 'La passarel·la ha rebut la consulta però l’ha rebutjada per paràmetres; cal revisar el contracte abans d’usar-la.',
       };
     }
 

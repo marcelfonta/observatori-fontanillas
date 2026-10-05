@@ -138,8 +138,9 @@ export async function meteofranceModels(env){
     try{
       const parsed=await capabilities(product,key);
       return publicProduct(id,product,true,true,parsed,null);
-    }catch{
-      return publicProduct(id,product,true,false,null,'El proveïdor no respon ara mateix; la resta de models continuen disponibles.');
+    }catch(error){
+      const suffix=Number.isFinite(error?.status)?` (HTTP ${error.status})`:'';
+      return publicProduct(id,product,true,false,null,`El proveïdor no respon ara mateix${suffix}; la resta de models continuen disponibles.`);
     }
   }));
   return payload({ok:true,source:'Météo-France',checkedAt,products:entries},200,300);
