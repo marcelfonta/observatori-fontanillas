@@ -1,5 +1,14 @@
 # Changelog
 
+## Correcció — validació real dels ensembles Météo-France · 2026-10-05
+
+- El diagnòstic substitueix el membre obligatori `{run}` abans de consultar
+  PE-AROME i PE-ARPEGE; una resposta de paràmetres invàlids ja no compta com a èxit.
+- Staging diferencia la limitació temporal HTTP 429 d'una clau absent o una
+  ruta incorrecta i valida imatges PNG reals d'AROME, AROME-PI i ARPEGE.
+- L'estat públic conserva només el codi HTTP segur de la incidència i no revela
+  mai la credencial ni el cos privat de la resposta del proveïdor.
+
 ## V22.31.10 — Laboratori directe de Météo-France · 2026-10-05
 
 - Nou gateway segur al Worker per consultar els catàlegs oficials sense exposar
