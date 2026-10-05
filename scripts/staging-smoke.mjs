@@ -38,7 +38,20 @@ if (alerts.ok !== true || !Array.isArray(alerts.alerts) || !alerts.source?.name)
   throw new Error('/alerts: contracte d’avisos invàlid.');
 }
 
-const meteofrance = await getJson(`/meteofrance/models?fresh=${Math.floor(Date.now() / 60_000)}`);
+async function getMeteofranceCatalog() {
+  let latest = null;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    latest = await getJson(`/meteofrance/models?fresh=${Date.now()}-${attempt}`);
+    const ensemblesReady = latest.products?.some(product =>
+      ['pe-arome', 'pe-arpege'].includes(product.id) && product.available && Number(product.coverages) > 0
+    );
+    if (ensemblesReady) return latest;
+    if (attempt < 3) await new Promise(resolve => setTimeout(resolve, 7_000));
+  }
+  return latest;
+}
+
+const meteofrance = await getMeteofranceCatalog();
 if (meteofrance.ok !== true || !Array.isArray(meteofrance.products) || meteofrance.products.length !== 6) {
   throw new Error('/meteofrance/models: no retorna els sis productes esperats.');
 }
