@@ -9,6 +9,7 @@
   <link rel="icon" href="/assets/icons/favicon-32.png">
   <link rel="stylesheet" href="/css/variables.css">
   <link rel="stylesheet" href="/css/models-franca.css">
+  <link rel="stylesheet" href="/css/models-franca-map.css">
   <title>Models francesos en directe · Meteo Fontanillas</title>
 </head>
 <body>
@@ -28,7 +29,7 @@
         <div id="model-controls" role="group" aria-label="Model"><button class="active" data-model="arome">AROME</button><button data-model="arome-pi">AROME-PI</button><button data-model="arpege">ARPEGE</button><button data-model="piaf">PIAF</button></div>
         <div id="layer-controls" role="group" aria-label="Variable"><button class="active" data-layer="precipitation">Pluja</button><button data-layer="temperature">Temperatura</button><button data-layer="wind">Vent</button><button data-layer="clouds">Núvols</button></div>
       </div>
-      <div class="map-shell" id="map-shell"><img id="model-map" alt="Mapa del model meteorològic seleccionat sobre Catalunya"><div class="map-message" id="map-message"><span class="spinner"></span><strong>Preparant el mapa oficial…</strong></div></div>
+      <div class="map-shell" id="map-shell" role="region" aria-label="Mapa del model meteorològic seleccionat sobre Catalunya"><div id="model-map" aria-hidden="true"></div><div class="map-message" id="map-message" aria-live="polite"><span class="spinner"></span><strong>Preparant el mapa oficial…</strong></div></div>
       <footer><span id="map-caption">AROME directe · Catalunya</span><button id="map-refresh" type="button">Actualitzar mapa ↻</button></footer>
     </section>
 

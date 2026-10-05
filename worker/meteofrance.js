@@ -1,6 +1,7 @@
 const PORTAL_BASE = 'https://public-api.meteofrance.fr';
 const CATALOG_CACHE_SECONDS = 30 * 60;
 const MAP_CACHE_SECONDS = 10 * 60;
+const RETRYABLE_STATUS = new Set([429,500,502,503,504]);
 
 export const METEOFRANCE_PRODUCTS = Object.freeze({
   arome: {
@@ -100,7 +101,12 @@ async function cachedFetch(request,ttl,cacheKeyUrl=request.url){
   const cacheKey=new Request(cacheKeyUrl,{method:'GET'});
   const cached=cache?await cache.match(cacheKey):null;
   if(cached)return cached;
-  const response=await fetch(request);
+  let response;
+  for(let attempt=0;attempt<3;attempt+=1){
+    response=await fetch(request.clone());
+    if(!RETRYABLE_STATUS.has(response.status)||attempt===2)break;
+    await new Promise(resolve=>setTimeout(resolve,150*(attempt+1)));
+  }
   if(response.ok&&cache){
     const stored=new Response(response.body,{status:response.status,statusText:response.statusText,headers:response.headers});
     stored.headers.set('Cache-Control',`public, max-age=${ttl}`);
@@ -171,7 +177,9 @@ export async function meteofranceMap(url,env){
     if(!layer)return payload({error:'La capa demanada no està disponible en aquesta edició del model.'},404,300);
     const width=Math.min(1600,Math.max(480,Number(url.searchParams.get('width'))||1200));
     const height=Math.min(1000,Math.max(320,Number(url.searchParams.get('height'))||700));
-    const upstream=new Request(buildMapUrl(product,layer,width,height,parsed.times?.[0]),{headers:{Accept:'image/png,*/*',apikey:key}});
+    // Sense `time`, el WMS aplica l'instant per defecte de l'edició activa; evita
+    // demanar accidentalment el primer instant (sovint antic) del catàleg.
+    const upstream=new Request(buildMapUrl(product,layer,width,height),{headers:{Accept:'image/png,*/*',apikey:key}});
     const response=await cachedFetch(upstream,MAP_CACHE_SECONDS);
     if(!response.ok)return payload({error:'Météo-France no ha pogut generar el mapa ara mateix.'},response.status>=500?502:response.status,120);
     const headers=safeHeaders(response.headers.get('Content-Type')||'image/png',MAP_CACHE_SECONDS);
