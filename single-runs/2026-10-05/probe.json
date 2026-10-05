@@ -1,0 +1,35 @@
+{
+  "startedAt": "2026-10-05T17:10:57.262Z",
+  "finishedAt": "2026-10-05T17:10:58.272Z",
+  "policy": {
+    "issuePolicy": "fonta-first-prospective-08-18z-v2",
+    "run": "2026-10-05T00:00",
+    "targetDate": "2026-10-06",
+    "maxRequests": 3,
+    "retries": 0
+  },
+  "results": [
+    {
+      "model": "ecmwf_ifs025",
+      "complete": true,
+      "validHours": 24,
+      "expectedHours": 24,
+      "prospective": true
+    },
+    {
+      "model": "icon_eu",
+      "complete": true,
+      "validHours": 24,
+      "expectedHours": 24,
+      "prospective": true
+    },
+    {
+      "model": "meteofrance_arome_france",
+      "complete": true,
+      "validHours": 24,
+      "expectedHours": 24,
+      "prospective": true
+    }
+  ],
+  "activated": false
+}
