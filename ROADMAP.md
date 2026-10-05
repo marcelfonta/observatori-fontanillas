@@ -44,6 +44,13 @@
 
 ## Manteniment obert — En curs
 
+- [x] Crear un gateway segur i un laboratori públic per als sis productes
+  Météo-France configurats: AROME, AROME-PI, PE-AROME, ARPEGE, PE-ARPEGE i PIAF.
+- [ ] Validar els sis catàlegs a staging i confirmar les capes WMS reals abans
+  d'autoritzar el pas del Worker a producció.
+- [ ] Construir la ingestió numèrica WCS/GRIB dels ensembles en un circuit
+  privat, congelar prediccions i acumular verificació abans de donar-los pes a Fonta.
+
 - [x] Mostrar AROME France HD en la comparació pública de 0–48 h, mantenint
   ECMWF, GFS i ICON per a l'horitzó complet.
 - [x] Afegir un visor local AROME de 49 punts i 48 hores, amb temperatura,

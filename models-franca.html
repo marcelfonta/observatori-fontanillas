@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#071b16">
+  <meta name="description" content="Laboratori de models francesos AROME, AROME-PI, ARPEGE, ensembles i PIAF per a Sant Celoni.">
+  <link rel="canonical" href="https://meteo.fontanillas.cat/models-franca.html">
+  <link rel="icon" href="/assets/icons/favicon-32.png">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/models-franca.css">
+  <title>Models francesos en directe · Meteo Fontanillas</title>
+</head>
+<body>
+  <header class="lab-topbar">
+    <a class="brand" href="./?page=prediccio"><img src="/assets/logos/observatori-symbol.svg" alt=""><span><strong>Meteo Fontanillas</strong><small>Observatori meteorològic · Sant Celoni</small></span></a>
+    <a class="back" href="./?page=prediccio">← Tornar a la previsió</a>
+  </header>
+  <main>
+    <section class="hero">
+      <div><p class="eyebrow">Laboratori de modelització directa</p><h1>França, a escala local.</h1><p class="lead">Sis productes oficials de Météo-France per observar el curt termini, la previsió immediata i la incertesa. Aquesta és una capa experimental: complementa la previsió operativa, no la substitueix.</p></div>
+      <div class="live-stamp"><span id="global-dot"></span><strong id="global-state">Connectant amb Météo-France…</strong><small id="checked-at">Credencials protegides pel servidor</small></div>
+    </section>
+
+    <section class="viewer" aria-labelledby="viewer-title">
+      <header><div><p class="eyebrow">Mapa oficial directe</p><h2 id="viewer-title">AROME · precipitació</h2><p id="viewer-subtitle">Detall determinista local per a Catalunya i el Baix Montseny.</p></div><span class="source">Météo-France</span></header>
+      <div class="viewer-controls">
+        <div id="model-controls" role="group" aria-label="Model"><button class="active" data-model="arome">AROME</button><button data-model="arome-pi">AROME-PI</button><button data-model="arpege">ARPEGE</button><button data-model="piaf">PIAF</button></div>
+        <div id="layer-controls" role="group" aria-label="Variable"><button class="active" data-layer="precipitation">Pluja</button><button data-layer="temperature">Temperatura</button><button data-layer="wind">Vent</button><button data-layer="clouds">Núvols</button></div>
+      </div>
+      <div class="map-shell" id="map-shell"><img id="model-map" alt="Mapa del model meteorològic seleccionat sobre Catalunya"><div class="map-message" id="map-message"><span class="spinner"></span><strong>Preparant el mapa oficial…</strong></div></div>
+      <footer><span id="map-caption">AROME directe · Catalunya</span><button id="map-refresh" type="button">Actualitzar mapa ↻</button></footer>
+    </section>
+
+    <section class="catalog" aria-labelledby="catalog-title">
+      <header><div><p class="eyebrow">Sis aplicacions, una lectura coherent</p><h2 id="catalog-title">Què aporta cada producte?</h2></div><p>Verd indica que el servidor ha pogut llegir el catàleg oficial. Si un producte falla, els altres continuen actius.</p></header>
+      <div class="product-grid" id="product-grid" aria-live="polite">
+        <article class="product-card skeleton"></article><article class="product-card skeleton"></article><article class="product-card skeleton"></article>
+        <article class="product-card skeleton"></article><article class="product-card skeleton"></article><article class="product-card skeleton"></article>
+      </div>
+    </section>
+
+    <section class="method">
+      <div><p class="eyebrow">Com s’aplicaran al model Fonta</p><h2>Primer contrast, després pes.</h2></div>
+      <ol><li><strong>Deterministes</strong><span>AROME, AROME-PI i ARPEGE permeten mapes directes i una comparació visual immediata.</span></li><li><strong>Conjunts</strong><span>PE-AROME i PE-ARPEGE aporten 25 i 35 escenaris per calcular probabilitats i confiança.</span></li><li><strong>Aprenentatge</strong><span>Només després d’acumular verificació local podran modificar el pes del model Fonta.</span></li></ol>
+      <p class="method-note">Els ensembles arriben en format WCS/GRIB. En aquesta primera fase se’n valida la disponibilitat i estructura; la ingestió numèrica i l’avaluació prospectiva es faran en una fase separada per no introduir falsa precisió.</p>
+    </section>
+  </main>
+  <footer class="page-footer"><span>Dades i mapes: Météo-France · lectura experimental de Meteo Fontanillas</span><a href="https://portail-api.meteofrance.fr/" target="_blank" rel="noreferrer">Portal oficial d’API ↗</a></footer>
+  <script type="module" src="/src/features/models-franca.js"></script>
+</body>
+</html>

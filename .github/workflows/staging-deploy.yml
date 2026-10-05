@@ -42,6 +42,23 @@ jobs:
           STAGING_D1_DATABASE_ID: ${{ vars.STAGING_D1_DATABASE_ID }}
         run: node scripts/render-staging-wrangler-config.mjs "$GITHUB_WORKSPACE/.wrangler-staging.generated.jsonc"
 
+      - name: Prepara les credencials Météo-France sense mostrar-les
+        env:
+          METEOFRANCE_AROME_API_KEY: ${{ secrets.METEOFRANCE_AROME_API_KEY }}
+          METEOFRANCE_AROME_NOWCAST_API_KEY: ${{ secrets.METEOFRANCE_AROME_NOWCAST_API_KEY }}
+          METEOFRANCE_AROME_ENSEMBLE_API_KEY: ${{ secrets.METEOFRANCE_AROME_ENSEMBLE_API_KEY }}
+          METEOFRANCE_ARPEGE_API_KEY: ${{ secrets.METEOFRANCE_ARPEGE_API_KEY }}
+          METEOFRANCE_ARPEGE_ENSEMBLE_API_KEY: ${{ secrets.METEOFRANCE_ARPEGE_ENSEMBLE_API_KEY }}
+          METEOFRANCE_PIAF_API_KEY: ${{ secrets.METEOFRANCE_PIAF_API_KEY }}
+        run: node scripts/write-meteofrance-secrets.mjs "$RUNNER_TEMP/meteofrance-secrets.json"
+
+      - name: Sincronitza les credencials només amb staging
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          command: secret bulk ${{ runner.temp }}/meteofrance-secrets.json --config .wrangler-staging.generated.jsonc
+
       - name: Desplega a l'entorn de proves
         uses: cloudflare/wrangler-action@v4
         with:
@@ -53,3 +70,7 @@ jobs:
         env:
           STAGING_URL: ${{ inputs.staging_url }}
         run: node scripts/staging-smoke.mjs
+
+      - name: Elimina el fitxer temporal de credencials
+        if: always()
+        run: rm -f "$RUNNER_TEMP/meteofrance-secrets.json"

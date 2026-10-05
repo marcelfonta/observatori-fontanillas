@@ -10,8 +10,8 @@ const [worker,push,index,admin,adminFeature,serviceWorker,project]=await Promise
   read('src/features/admin.js'),read('service-worker.js'),read('project.json')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.31.9');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-9-fonta-regional-v1'));
+assert.equal(JSON.parse(project).version,'22.31.10');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-10-fonta-regional-v1'));
 for(const token of ['socialSlotProfile','Balanç del dia','Actualització del migdia','MeteoCatalunya','afterTomorrow'])assert.ok(worker.includes(token),`Falta la millora social ${token}`);
 assert.ok(index.includes('id="push-device-diagnostic"')&&push.includes('renderDeviceDiagnostic'),'Falta la diagnosi push per dispositiu.');
 assert.ok(index.includes('Enviar prova real')&&push.includes('/push-test'),'La prova ha d’explicar que usa el servei real.');

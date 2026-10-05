@@ -9,8 +9,8 @@ const [project,meteoAI,worker,serviceWorker,roadmap]=await Promise.all([
   readFile(new URL('../ROADMAP.md',import.meta.url),'utf8')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.31.9');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-9-fonta-regional-v1'));
+assert.equal(JSON.parse(project).version,'22.31.10');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-10-fonta-regional-v1'));
 assert.ok(meteoAI.includes('everydayAdviceAnswer')&&meteoAI.includes('hourlyRainAnswer'));
 assert.ok(meteoAI.includes("hourly.time?.slice(0,48)"));
 assert.ok(worker.includes('preguntes quotidianes molt senzilles'));
