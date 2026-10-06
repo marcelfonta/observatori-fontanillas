@@ -3815,6 +3815,25 @@ async function bufferVideoUrl(key, env) {
   return `${publicWorkerBaseUrl(env)}/buffer-video/${safeKey}?sig=${await bufferVideoSignature(safeKey, env)}`;
 }
 
+async function validateBufferAssetUrl(url, expectedType, maxBytes) {
+  const response = await fetch(url, { method:'HEAD', redirect:'follow' });
+  const contentType = String(response.headers.get('Content-Type') || '').toLowerCase();
+  const contentLength = Number(response.headers.get('Content-Length'));
+  if (!response.ok) {
+    throw Object.assign(new Error(`L’adjunt d’X no és accessible (HTTP ${response.status}).`), { status:502, responseCode:response.status });
+  }
+  if (!contentType.startsWith(expectedType)) {
+    throw Object.assign(new Error(`L’adjunt d’X té un format inesperat (${contentType || 'desconegut'}).`), { status:422, responseCode:response.status });
+  }
+  if (!Number.isFinite(contentLength) || contentLength < 1) {
+    throw Object.assign(new Error('L’adjunt d’X no informa d’una mida vàlida.'), { status:422, responseCode:response.status });
+  }
+  if (contentLength > maxBytes) {
+    throw Object.assign(new Error(`L’adjunt d’X és massa gran (${Math.ceil(contentLength / 1024 / 1024)} MB).`), { status:413, responseCode:response.status });
+  }
+  return { contentType, contentLength };
+}
+
 async function socialVideoUrl(key, env, lifetimeSeconds = 1800) {
   const safeKey = socialVideoKey(key);
   if (!safeKey) throw new Error('La clau del vídeo social no és vàlida.');
@@ -3855,18 +3874,46 @@ async function serveBufferVideo(request, env, key, url) {
   if (!safeKey) return json({ error:'Vídeo temporal no vàlid.' }, 403, 'no-store');
   const expected = await bufferVideoSignature(safeKey, env);
   if (!(await secureTokenMatch(String(url.searchParams.get('sig') || ''), expected))) return json({ error:'Signatura de vídeo no vàlida.' }, 403, 'no-store');
-  const object = await env.SOCIAL_VIDEO_BUCKET.get(safeKey);
+  const rangeHeader = String(request.headers.get('Range') || '');
+  const metadata = await env.SOCIAL_VIDEO_BUCKET.head(safeKey);
+  if (!metadata) return json({ error:'Vídeo temporal no trobat.' }, 404, 'no-store');
+  const totalSize = Number(metadata.size);
+  let range = null;
+  if (rangeHeader) {
+    const match = rangeHeader.match(/^bytes=(\d*)-(\d*)$/i);
+    if (!match || !Number.isFinite(totalSize) || totalSize < 1) return new Response(null, { status:416 });
+    let start = match[1] === '' ? null : Number(match[1]);
+    let end = match[2] === '' ? null : Number(match[2]);
+    if (start === null) {
+      const suffixLength = end;
+      if (!Number.isSafeInteger(suffixLength) || suffixLength < 1) return new Response(null, { status:416 });
+      start = Math.max(0, totalSize - suffixLength);
+      end = totalSize - 1;
+    } else {
+      if (!Number.isSafeInteger(start) || start < 0 || start >= totalSize) return new Response(null, { status:416 });
+      end = end === null ? totalSize - 1 : Math.min(end, totalSize - 1);
+      if (!Number.isSafeInteger(end) || end < start) return new Response(null, { status:416 });
+    }
+    range = { offset:start, length:end - start + 1 };
+  }
+  const object = request.method === 'HEAD'
+    ? metadata
+    : await env.SOCIAL_VIDEO_BUCKET.get(safeKey, range ? { range } : undefined);
   if (!object) return json({ error:'Vídeo temporal no trobat.' }, 404, 'no-store');
   const headers = new Headers();
   if (typeof object.writeHttpMetadata === 'function') object.writeHttpMetadata(headers);
   headers.set('Content-Type', headers.get('Content-Type') || 'video/mp4');
-  headers.set('Cache-Control', 'private, no-store, max-age=0');
+  headers.set('Cache-Control', 'public, max-age=3600');
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('Content-Disposition', 'inline');
-  if (Number.isFinite(Number(object.size))) headers.set('Content-Length', String(object.size));
+  headers.set('Accept-Ranges', 'bytes');
+  if (range) {
+    headers.set('Content-Length', String(range.length));
+    headers.set('Content-Range', `bytes ${range.offset}-${range.offset + range.length - 1}/${totalSize}`);
+  } else if (Number.isFinite(totalSize)) headers.set('Content-Length', String(totalSize));
   if (object.etag) headers.set('ETag', object.etag);
   if (request.method === 'HEAD') return new Response(null, { headers });
-  return new Response(object.body, { headers });
+  return new Response(object.body, { status:range ? 206 : 200, headers });
 }
 
 async function uploadSocialVideo(request, env, key) {
@@ -4475,12 +4522,16 @@ async function createBufferXPost(env, { localDate, slot, draft = null }) {
     draft = socialDraft;
     // Buffer comprova la URL abans d'acceptar la imatge. Materialitzar-la a R2
     // evita que aquesta comprovació depengui d'una captura generada al moment.
-    assets = [{ image:{ url:await ensureSocialCardUrl(socialDraft, env) } }];
+    const imageUrl = await ensureSocialCardUrl(socialDraft, env, 'jpeg');
+    await validateBufferAssetUrl(imageUrl, 'image/jpeg', 5 * 1024 * 1024);
+    assets = [{ image:{ url:imageUrl } }];
   } else {
     if (!env.SOCIAL_VIDEO_BUCKET) throw Object.assign(new Error('L’emmagatzematge temporal de vídeo no està configurat.'), { status:503 });
     const key = `shorts/${localDate}/${slot}.mp4`;
     if (!await env.SOCIAL_VIDEO_BUCKET.head(key)) throw Object.assign(new Error('El vídeo d’X encara no està preparat.'), { status:409, pending:true });
-    assets = [{ video:{ url:await bufferVideoUrl(key, env) } }];
+    const videoUrl = await bufferVideoUrl(key, env);
+    await validateBufferAssetUrl(videoUrl, 'video/mp4', SOCIAL_VIDEO_MAX_BYTES);
+    assets = [{ video:{ url:videoUrl } }];
   }
   const shareNow = delay <= 0;
   const forecast=slot==='midday'?[]:await socialForecast().catch(()=>[]);
@@ -4520,12 +4571,14 @@ async function createBufferXPost(env, { localDate, slot, draft = null }) {
 async function publishBufferXImage(draft, env, beforeSend) {
   if(!bufferXConfigured(env))throw Object.assign(new Error('Falta la connexió d’X a Buffer.'),{status:503});
   const channel=await bufferXChannel(env);
+  const imageUrl=await ensureSocialCardUrl(draft,env,'jpeg');
+  await validateBufferAssetUrl(imageUrl,'image/jpeg',5 * 1024 * 1024);
   const input={
     text:bufferXSpecialCaption(draft),
     channelId:channel.id,
     schedulingType:'automatic',
     mode:'shareNow',
-    assets:[{image:{url:await ensureSocialCardUrl(draft,env)}}],
+    assets:[{image:{url:imageUrl}}],
   };
   await beforeSend();
   const data=await bufferGraphql(env,`mutation CreatePost($input: CreatePostInput!) {

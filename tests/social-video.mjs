@@ -10,9 +10,16 @@ const bufferSignature = [...new Uint8Array(await crypto.subtle.sign('HMAC', hmac
 const objects = new Map();
 const bucket = {
   async put(objectKey, body) { objects.set(objectKey, new Uint8Array(await new Response(body).arrayBuffer())); },
-  async get(objectKey) {
+  async head(objectKey) {
     const body = objects.get(objectKey);
-    return body ? { body:new Blob([body]).stream(), etag:'test-etag' } : null;
+    return body ? { size:body.byteLength, etag:'test-etag' } : null;
+  },
+  async get(objectKey, options = {}) {
+    const body = objects.get(objectKey);
+    if (!body) return null;
+    const offset=options.range?.offset || 0;
+    const length=options.range?.length || body.byteLength;
+    return { body:new Blob([body.slice(offset,offset+length)]).stream(), size:body.byteLength, etag:'test-etag' };
   },
 };
 const env = { SOCIAL_VIDEO_BUCKET:bucket, SOCIAL_VIDEO_UPLOAD_TOKEN:secret, SOCIAL_VIDEO_SIGNING_SECRET:secret, PUBLIC_WORKER_URL:'https://fonta-meteo.example' };
@@ -36,7 +43,15 @@ assert.equal(invalid.status, 403);
 const bufferServed = await worker.fetch(new Request(`https://fonta-meteo.example/buffer-video/${key}?sig=${bufferSignature}`), env, context);
 assert.equal(bufferServed.status, 200);
 assert.equal(bufferServed.headers.get('Content-Type'), 'video/mp4');
+assert.equal(bufferServed.headers.get('Accept-Ranges'), 'bytes');
 assert.deepEqual([...new Uint8Array(await bufferServed.arrayBuffer())], [1,2,3,4]);
+
+const rangedBuffer = await worker.fetch(new Request(`https://fonta-meteo.example/buffer-video/${key}?sig=${bufferSignature}`, {
+  headers:{ Range:'bytes=1-2' },
+}), env, context);
+assert.equal(rangedBuffer.status, 206);
+assert.equal(rangedBuffer.headers.get('Content-Range'), 'bytes 1-2/4');
+assert.deepEqual([...new Uint8Array(await rangedBuffer.arrayBuffer())], [2,3]);
 
 const invalidBuffer = await worker.fetch(new Request(`https://fonta-meteo.example/buffer-video/${key}?sig=bad`), env, context);
 assert.equal(invalidBuffer.status, 403);
