@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "version": "0.2.0",
-  "generatedAt": "2026-10-06T01:17:15.586Z",
+  "generatedAt": "2026-10-06T15:06:32.899Z",
   "station": "ISANTC198",
   "mode": "shadow",
   "productionEnabled": false,
@@ -284,13 +284,13 @@
     },
     "rows": []
   },
-  "codeRevision": "c84c2b2d5ca36fb43103cc00b67416c055d7ba6b",
+  "codeRevision": "2f0d243cb81384e038f58126bc10414e0967b68c",
   "diagnostics": {
     "schema": 1,
-    "asOf": "2026-10-06T01:17:15.586Z",
+    "asOf": "2026-10-06T15:06:32.899Z",
     "execution": {
       "event": "schedule",
-      "runId": "37398373123"
+      "runId": "37484572327"
     },
     "firstCaptureAt": "2026-09-20T12:12:22.031Z",
     "budget": {
