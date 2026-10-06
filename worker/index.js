@@ -939,8 +939,10 @@ function meteocatPhenomenonKey(value) {
   return String(value||'').normalize('NFKC').trim().toLocaleLowerCase('ca-ES');
 }
 
-export function meteocatCountyWarningsByDay(episodes,{phenomenon=null}={}) {
+export function meteocatCountyWarningsByDay(episodes,{phenomenon=null,at=null}={}) {
   const requestedPhenomenon=meteocatPhenomenonKey(phenomenon);
+  const cutoff=at instanceof Date?at:new Date(at||0);
+  const filterExpired=Number.isFinite(cutoff.getTime())&&cutoff.getTime()>0;
   const days=new Map();
   for(const episode of Array.isArray(episodes)?episodes:[]){
     if(String(episode?.estat?.nom||'').toLowerCase()!=='obert')continue;
@@ -953,6 +955,8 @@ export function meteocatCountyWarningsByDay(episodes,{phenomenon=null}={}) {
         if(!day)continue;
         const counties=days.get(day)||new Map();
         for(const period of Array.isArray(evolution?.periodes)?evolution.periodes:[]){
+          const window=meteocatPeriodWindow(day,period?.nom);
+          if(filterExpired&&window&&window.end.getTime()<=cutoff.getTime())continue;
           for(const impact of Array.isArray(period?.afectacions)?period.afectacions:[]){
             const countyId=Number(impact?.idComarca);
             const danger=meteocatDangerLevel(impact?.perill);
@@ -983,13 +987,27 @@ function meteocatPeriodLabel(day, period) {
   return `${label(start)}–${label(end)} h`;
 }
 
-export function parseMeteocatSmpEpisodes(episodes) {
+function meteocatPeriodWindow(day,period) {
+  const date=String(day||'').slice(0,10);
+  const match=String(period||'').match(/^(\d{2})-(\d{2})$/);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!match)return null;
+  const [year,month,dateDay]=date.split('-').map(Number);
+  const startHour=Number(match[1]);
+  const endHour=Number(match[2]);
+  const start=new Date(Date.UTC(year,month-1,dateDay,startHour));
+  const end=new Date(Date.UTC(year,month-1,dateDay+(endHour<=startHour?1:0),endHour));
+  return Number.isFinite(start.getTime())&&Number.isFinite(end.getTime())?{start,end}:null;
+}
+
+export function parseMeteocatSmpEpisodes(episodes,{at=new Date()}={}) {
+  const cutoff=at instanceof Date?at:new Date(at);
+  const cutoffEpoch=Number.isFinite(cutoff.getTime())?cutoff.getTime():Date.now();
   const normalized=new Map();
   const countyWarningsByPhenomenon=new Map();
   const countyWarningsFor=phenomenon=>{
     const key=meteocatPhenomenonKey(phenomenon);
     if(!countyWarningsByPhenomenon.has(key)){
-      countyWarningsByPhenomenon.set(key,meteocatCountyWarningsByDay(episodes,{phenomenon}));
+      countyWarningsByPhenomenon.set(key,meteocatCountyWarningsByDay(episodes,{phenomenon,at:new Date(cutoffEpoch)}));
     }
     return countyWarningsByPhenomenon.get(key);
   };
@@ -1003,6 +1021,8 @@ export function parseMeteocatSmpEpisodes(episodes) {
       for(const evolution of Array.isArray(warning?.evolucions)?warning.evolucions:[]){
         const affected=[];
         for(const period of Array.isArray(evolution?.periodes)?evolution.periodes:[]){
+          const window=meteocatPeriodWindow(evolution?.dia||warning?.dataInici,period?.nom);
+          if(window&&window.end.getTime()<=cutoffEpoch)continue;
           for(const impact of Array.isArray(period?.afectacions)?period.afectacions:[]){
             if(Number(impact?.idComarca)!==METEOCAT_VALLES_ORIENTAL_ID)continue;
             const danger=meteocatDangerLevel(impact?.perill);
@@ -1011,6 +1031,7 @@ export function parseMeteocatSmpEpisodes(episodes) {
               period:meteocatPeriodLabel(evolution?.dia||impact?.dia,period?.nom),
               danger:Number(impact?.perill),level:danger.key,levelLabel:danger.label,
               threshold:cleanText(impact?.llindar||'',180),auxiliary:Boolean(impact?.auxiliar),
+              startsAt:window?.start||null,expiresAt:window?.end||null,
             });
           }
         }
@@ -1018,6 +1039,8 @@ export function parseMeteocatSmpEpisodes(episodes) {
         const highest=affected.sort((a,b)=>b.danger-a.danger)[0];
         const periods=[...new Set(affected.map(item=>item.period).filter(Boolean))].sort();
         const thresholds=[...new Set(affected.map(item=>item.threshold).filter(Boolean))];
+        const startsAt=affected.map(item=>item.startsAt?.getTime()).filter(Number.isFinite);
+        const expiresAt=affected.map(item=>item.expiresAt?.getTime()).filter(Number.isFinite);
         const distribution=cleanText(evolution?.distribucioGeografica||'',30).toUpperCase();
         const comment=cleanText(evolution?.comentari||'',500);
         const day=String(evolution?.dia||warning?.dataInici||'').slice(0,10);
@@ -1031,7 +1054,9 @@ export function parseMeteocatSmpEpisodes(episodes) {
           source:'Meteocat',sourceUrl:METEOCAT_ALERTS_PAGE,
           title:`Avís ${highest.levelLabel} de ${phenomenon} al ${METEOCAT_VALLES_ORIENTAL_NAME}`,
           description,phenomenon,level:highest.level,levelLabel:highest.levelLabel,rank:highest.danger,
-          published:warning?.dataEmisio||null,starts:warning?.dataInici||null,expires:warning?.dataFi||null,
+          published:warning?.dataEmisio||null,
+          starts:startsAt.length?new Date(Math.min(...startsAt)).toISOString():warning?.dataInici||null,
+          expires:expiresAt.length?new Date(Math.max(...expiresAt)).toISOString():warning?.dataFi||null,
           targetDate:day||null,
           active:true,scopeKind:'comarca',scopeName:METEOCAT_VALLES_ORIENTAL_NAME,
           municipality:'Sant Celoni',distribution:distribution||null,periods,
@@ -6175,6 +6200,23 @@ function parseAemetFeed(xml) {
   return { channelUpdated, activeAlerts, maxLevel:highest?.level || "none" };
 }
 
+export function storedMeteocatAlertStillRelevant(entry,date=new Date()) {
+  const matches=[...String(entry?.description||'').matchAll(/(\d{2})\/(\d{2}) \d{2}:\d{2}–(\d{2})\/(\d{2}) \d{2}:\d{2}/g)];
+  if(!matches.length)return true;
+  const today=localIsoDate(date);
+  const currentYear=Number(today.slice(0,4));
+  const referenceEpoch=date instanceof Date?date.getTime():new Date(date).getTime();
+  const latest=matches.reduce((maximum,match)=>{
+    const candidates=[currentYear-1,currentYear,currentYear+1].map(year=>{
+      const iso=`${year}-${match[4]}-${match[3]}`;
+      return {iso,distance:Math.abs(new Date(`${iso}T12:00:00Z`).getTime()-referenceEpoch)};
+    });
+    const candidate=candidates.sort((a,b)=>a.distance-b.distance)[0]?.iso||'';
+    return candidate>maximum?candidate:maximum;
+  },'');
+  return latest>=today;
+}
+
 async function alerts(env) {
   const started = Date.now();
   try {
@@ -6192,7 +6234,7 @@ async function alerts(env) {
         FROM alert_events
         WHERE source = 'Meteocat' AND (expires_at IS NULL OR expires_at > ?)
         ORDER BY started_at ASC`).bind(new Date().toISOString()).all();
-      meteocatAlerts=(stored?.results||[]).map(entry=>({
+      meteocatAlerts=(stored?.results||[]).filter(entry=>storedMeteocatAlertStillRelevant(entry)).map(entry=>({
         source:'Meteocat',level:entry.level||'unknown',
         levelLabel:entry.level==='red'?'Vermell':entry.level==='orange'?'Taronja':entry.level==='yellow'?'Groc':'Oficial',
         phenomenon:entry.phenomenon||'Fenomen meteorològic',title:entry.title||'',description:entry.description||'',

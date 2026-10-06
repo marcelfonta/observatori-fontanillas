@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { CATALONIA_COUNTY_PATHS } from '../worker/catalonia-counties.js';
-import { meteocatAlertPollPlan, meteocatCountyWarningsByDay, meteocatDangerLevel, officialAlertCardDate, officialAlertSocialCopy, officialAlertTiming, parseMeteocatSmpEpisodes, socialCardHtml } from '../worker/index.js';
+import { meteocatAlertPollPlan, meteocatCountyWarningsByDay, meteocatDangerLevel, officialAlertCardDate, officialAlertSocialCopy, officialAlertTiming, parseMeteocatSmpEpisodes, socialCardHtml, storedMeteocatAlertStillRelevant } from '../worker/index.js';
 import { classifyAlertWindows } from '../src/modules/avisos.js';
 
 assert.deepEqual(meteocatAlertPollPlan(new Date('2026-08-31T04:30:00Z')),{time:'06:30',localDate:'2026-08-31',targetDate:'2026-08-31',targetOffset:0});
@@ -31,12 +31,13 @@ const warning=(idComarca,perill,estat='Vigent',phenomenon='Intensitat de pluja')
     ]}],
   }],
 });
+const fixtureAt=new Date('2026-08-30T11:00:00Z');
 
 const parsed=parseMeteocatSmpEpisodes([
   warning(41,4),
   warning(13,6),
   warning(41,6,'Esborrany'),
-]);
+],{at:fixtureAt});
 
 assert.equal(parsed.length,1,'Només s’ha de publicar l’avís taronja o vermell vigent del Vallès Oriental.');
 assert.equal(parsed[0].source,'Meteocat');
@@ -65,7 +66,7 @@ assert.deepEqual(threeHourWarnings['2026-08-30'],[
   {countyId:13,level:'red',rank:4},
   {countyId:41,level:'orange',rank:3},
 ]);
-const mixedParsed=parseMeteocatSmpEpisodes(mixedPhenomena);
+const mixedParsed=parseMeteocatSmpEpisodes(mixedPhenomena,{at:fixtureAt});
 const threeHourAlert=mixedParsed.find(entry=>entry.phenomenon==='Intensitat de pluja en 3 hores');
 const thirtyMinuteAlert=mixedParsed.find(entry=>entry.phenomenon==='Intensitat de pluja en 30 minuts');
 assert.equal(threeHourAlert.level,'orange');
@@ -78,12 +79,40 @@ assert.doesNotMatch(threeHourCard,/fill="#ff625f" stroke="#f8fff9"/,'El vermell 
 assert.equal(CATALONIA_COUNTY_PATHS.length,43,'El mapa ha de contenir totes les comarques oficials de l’ICGC.');
 assert.equal(CATALONIA_COUNTY_PATHS.find(county=>county.id===41)?.name,'Vallès Oriental');
 
-const yellow=parseMeteocatSmpEpisodes([warning(41,2)]);
+const yellow=parseMeteocatSmpEpisodes([warning(41,2)],{at:fixtureAt});
 assert.equal(yellow.length,1,'Els avisos grocs vigents del Vallès Oriental també s’han de publicar.');
 assert.equal(yellow[0].level,'yellow');
 
-const red=parseMeteocatSmpEpisodes([warning(41,5)]);
+const red=parseMeteocatSmpEpisodes([warning(41,5)],{at:fixtureAt});
 assert.equal(red[0].level,'red');
+
+const rolloverEpisode={
+  estat:{nom:'Obert'},meteor:{nom:'Intensitat de pluja en 30 minuts'},avisos:[{
+    estat:'Vigent',dataEmisio:'2026-10-05T06:00Z',dataInici:'2026-10-05T06:00Z',dataFi:'2026-10-06T23:59Z',
+    evolucions:[
+      {dia:'2026-10-05T00:00Z',comentari:'Tempesta local.',distribucioGeografica:'LOCAL',periodes:[
+        {nom:'06-12',afectacions:[{idComarca:41,perill:5,llindar:'Intensitat > 40 mm / 30 minuts'}]},
+        {nom:'12-18',afectacions:[{idComarca:41,perill:5,llindar:'Intensitat > 40 mm / 30 minuts'}]},
+      ]},
+      {dia:'2026-10-06T00:00Z',comentari:'Xàfecs locals.',distribucioGeografica:'LOCAL',periodes:[
+        {nom:'12-18',afectacions:[{idComarca:41,perill:2,llindar:'Intensitat > 20 mm / 30 minuts'}]},
+        {nom:'18-00',afectacions:[{idComarca:41,perill:2,llindar:'Intensitat > 20 mm / 30 minuts'}]},
+      ]},
+    ],
+  }],
+};
+const rollover=parseMeteocatSmpEpisodes([rolloverEpisode],{at:new Date('2026-10-06T09:30:00Z')});
+assert.equal(rollover.length,1,'Les franges caducades no poden continuar com a avisos actius.');
+assert.equal(rollover[0].level,'yellow','El vermell d’ahir no pot dominar el nivell vigent d’avui.');
+assert.equal(rollover[0].targetDate,'2026-10-06');
+assert.equal(rollover[0].starts,'2026-10-06T12:00:00.000Z');
+assert.equal(rollover[0].expires,'2026-10-07T00:00:00.000Z');
+assert.doesNotMatch(rollover[0].description,/05\/10/);
+
+const storedRed={description:'Llindar: Intensitat > 40 mm / 30 minuts. Franges: 05/10 08:00–05/10 14:00 h, 05/10 14:00–05/10 20:00 h.'};
+assert.equal(storedMeteocatAlertStillRelevant(storedRed,new Date('2026-10-06T09:30:00Z')),false,'Un avís antic ja desat també s’ha de retirar del resum públic.');
+const newYearWarning={description:'Franges: 31/12 20:00–01/01 02:00 h.'};
+assert.equal(storedMeteocatAlertStillRelevant(newYearWarning,new Date('2026-12-31T20:30:00Z')),true,'Una franja que travessa Cap d’Any no es pot confondre amb una franja caducada.');
 
 assert.deepEqual(officialAlertTiming({targetDate:'2026-09-09'},new Date('2026-09-07T10:30:00Z')),{
   targetDate:'2026-09-09',offset:2,isFuture:true,
