@@ -60,7 +60,9 @@ jobs:
           retention-days: 7
   tests:
     name: Proves Node 22
-    runs-on: ubuntu-latest
+    # Evita incidències del pool `ubuntu-latest` durant les migracions d'imatge
+    # dels runners allotjats de GitHub.
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Descarrega el repositori

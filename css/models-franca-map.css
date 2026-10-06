@@ -1,0 +1,52 @@
+.map-shell #model-map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity .35s;
+}
+
+.map-shell #model-map.loaded {
+  opacity: 1;
+}
+
+.map-shell .leaflet-container {
+  background: #10241c;
+  font-family: inherit;
+}
+
+.map-shell .leaflet-control-attribution {
+  background: rgba(3, 17, 12, .82);
+  color: #b8c9bf;
+}
+
+.map-shell .leaflet-control-attribution a {
+  color: #8fe0ad;
+}
+
+.map-shell .leaflet-control-zoom a {
+  background: #0b211a;
+  border-color: rgba(156, 224, 190, .22);
+  color: #edf8f1;
+}
+
+.fonta-place-marker {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #75d59e;
+  box-shadow: 0 0 0 5px rgba(117, 213, 158, .24), 0 2px 12px rgba(0, 0, 0, .55);
+}
+
+.map-message {
+  z-index: 500;
+  max-width: min(560px, calc(100% - 36px));
+  line-height: 1.35;
+}
+
+.map-message .spinner {
+  flex: 0 0 auto;
+}
