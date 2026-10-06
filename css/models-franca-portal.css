@@ -1,0 +1,24 @@
+/* Ajustos perquè el laboratori comparteixi la navegació principal del portal. */
+.models-franca-page {
+  max-width: 1500px;
+  margin: auto;
+  padding: 30px 40px 80px;
+}
+
+.models-franca-return {
+  display: inline-flex;
+  margin-top: 4px;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.models-franca-return:hover { text-decoration: underline; }
+.models-franca-page > .hero { padding-top: 46px; }
+body.has-portal-shell > .page-footer { max-width: 1500px; color: var(--muted); }
+
+@media (max-width: 620px) {
+  .models-franca-page { padding-right: 18px; padding-left: 18px; }
+  .models-franca-page > .hero { padding-top: 34px; }
+}

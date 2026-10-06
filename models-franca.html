@@ -8,16 +8,23 @@
   <link rel="canonical" href="https://meteo.fontanillas.cat/models-franca.html">
   <link rel="icon" href="/assets/icons/favicon-32.png">
   <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/portal.css">
   <link rel="stylesheet" href="/css/models-franca.css">
   <link rel="stylesheet" href="/css/models-franca-map.css">
+  <link rel="stylesheet" href="/css/models-franca-portal.css">
+  <script type="module" src="/src/features/portal-static.js"></script>
   <title>Models francesos en directe · Meteo Fontanillas</title>
 </head>
-<body>
-  <header class="lab-topbar">
-    <a class="brand" href="./?page=prediccio"><img src="/assets/logos/observatori-symbol.svg" alt=""><span><strong>Meteo Fontanillas</strong><small>Observatori meteorològic · Sant Celoni</small></span></a>
-    <a class="back" href="./?page=prediccio">← Tornar a la previsió</a>
+<body data-portal-static="models-franca">
+  <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
+  <header class="site-header shell">
+    <div class="live-pill"><span></span><b id="connection-label">En directe</b><time id="header-time"></time></div>
+    <p class="header-context">Models francesos</p>
   </header>
-  <main>
+  <main class="shell models-franca-page" id="top">
+    <a class="models-franca-return" href="./?page=prediccio">← Tornar a la previsió</a>
     <section class="hero">
       <div><p class="eyebrow">Laboratori de modelització directa</p><h1>França, a escala local.</h1><p class="lead">Sis productes oficials de Météo-France per observar el curt termini, la previsió immediata i la incertesa. Aquesta és una capa experimental: complementa la previsió operativa, no la substitueix.</p></div>
       <div class="live-stamp"><span id="global-dot"></span><strong id="global-state">Connectant amb Météo-France…</strong><small id="checked-at">Credencials protegides pel servidor</small></div>
@@ -47,7 +54,7 @@
       <p class="method-note">Els ensembles arriben en format WCS/GRIB. En aquesta primera fase se’n valida la disponibilitat i estructura; la ingestió numèrica i l’avaluació prospectiva es faran en una fase separada per no introduir falsa precisió.</p>
     </section>
   </main>
-  <footer class="page-footer"><span>Dades i mapes: Météo-France · lectura experimental de Meteo Fontanillas</span><a href="https://portail-api.meteofrance.fr/" target="_blank" rel="noreferrer">Portal oficial d’API ↗</a></footer>
+  <footer class="page-footer shell"><span>Dades i mapes: Météo-France · lectura experimental de Meteo Fontanillas</span><a href="https://portail-api.meteofrance.fr/" target="_blank" rel="noreferrer">Portal oficial d’API ↗</a></footer>
   <script type="module" src="/src/features/models-franca.js"></script>
 </body>
 </html>

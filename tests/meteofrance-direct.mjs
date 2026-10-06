@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {METEOFRANCE_PRODUCTS,parseCapabilities,chooseLayer,buildMapUrl} from '../worker/meteofrance.js';
 
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
-const [worker,meteofrance,index,page,client,sw]=await Promise.all([read('worker/index.js'),read('worker/meteofrance.js'),read('index.html'),read('models-franca.html'),read('src/features/models-franca.js'),read('service-worker.js')]);
+const [worker,meteofrance,index,page,client,sw,portal]=await Promise.all([read('worker/index.js'),read('worker/meteofrance.js'),read('index.html'),read('models-franca.html'),read('src/features/models-franca.js'),read('service-worker.js'),read('src/features/portal-shell.js')]);
 assert.deepEqual(Object.keys(METEOFRANCE_PRODUCTS),['arome','arome-pi','pe-arome','arpege','pe-arpege','piaf']);
 assert.equal(METEOFRANCE_PRODUCTS.arome.protocol,'wms');
 assert.equal(METEOFRANCE_PRODUCTS['pe-arome'].protocol,'wcs');
@@ -22,6 +22,10 @@ assert.match(buildMapUrl(METEOFRANCE_PRODUCTS.arome,'TOTAL_PRECIPITATION',1200,7
 assert.match(worker,/pathname === ['"]\/meteofrance\/models['"]/);
 assert.match(worker,/pathname === ['"]\/meteofrance\/map['"]/);
 assert.match(index,/models-franca\.html/);
+assert.match(page,/data-portal-static="models-franca"/);
+assert.match(page,/src\/features\/portal-static\.js/);
+assert.match(page,/css\/models-franca-portal\.css/);
+assert.match(portal,/\['models-franca','Models francesos','\.\/models-franca\.html'\]/);
 for(const label of ['AROME','AROME-PI','PE-AROME','ARPEGE','PE-ARPEGE','PIAF'])assert.ok(page.includes(label),`${label} no apareix al laboratori`);
 assert.match(client,/CONFIG\.apiUrl/);
 assert.match(client,/L\.imageOverlay\(mapUrl\(\),CATALUNYA_BOUNDS/);
