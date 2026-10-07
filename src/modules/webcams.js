@@ -58,4 +58,13 @@ export function initWebcam() {
     if(image.getClientRects().length)image.src=webcamUrl;
   });
   refreshCameraMetadata();
+  const dialog=document.querySelector('#webcam-dialog');
+  const dialogImage=document.querySelector('#webcam-dialog-image');
+  document.querySelector('#webcam-expand')?.addEventListener('click',()=>{
+    if(!dialog || !dialogImage)return;
+    dialogImage.src=`${CONFIG.cameraUrl}?t=${Date.now()}`;
+    if(typeof dialog.showModal==='function')dialog.showModal();
+  });
+  document.querySelector('#webcam-dialog-close')?.addEventListener('click',()=>dialog?.close());
+  dialog?.addEventListener('click',event=>{if(event.target===dialog)dialog.close();});
 }

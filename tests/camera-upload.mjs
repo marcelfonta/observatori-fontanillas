@@ -64,6 +64,19 @@ assert.equal(served.headers.get('Access-Control-Allow-Origin'), '*');
 assert.equal(served.headers.get('X-Captured-At'), capturedAt);
 assert.deepEqual(new Uint8Array(await served.arrayBuffer()), jpeg);
 
+const branded = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/upload-branded', {
+  method:'PUT',
+  headers:{ Authorization:`Bearer ${secret}`, 'Content-Type':'image/jpeg', 'Content-Length':String(jpeg.byteLength), 'X-Captured-At':capturedAt },
+  body:jpeg,
+}), env, context);
+assert.equal(branded.status, 201);
+assert.equal((await branded.json()).url, 'https://fonta-meteo.example/camera/nord/latest-branded.jpg');
+const servedBranded = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/latest-branded.jpg'), env, context);
+assert.equal(servedBranded.status, 200);
+assert.match(servedBranded.headers.get('Content-Disposition'), /-marca\.jpg/);
+assert.ok(objects.has('nord/latest.jpg'));
+assert.ok(objects.has('nord/latest-branded.jpg'));
+
 const invalid = new Uint8Array(2048).fill(1);
 const rejected = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/upload', {
   method:'PUT',
