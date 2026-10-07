@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v22-31-10-fonta-regional-v1-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup-environment-freshness-v2-fonta-lab-v3-home-dayparts-v3-long-range-readability-v2-aca-hydrology-v1-civil-protection-v1-arome-local-v2-meteofrance-direct-v1-camera-homepage-v1';
+const CACHE = 'observatori-fontanillas-v22-31-10-fonta-regional-v1-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup-environment-freshness-v2-fonta-lab-v3-home-dayparts-v3-long-range-readability-v2-aca-hydrology-v1-civil-protection-v1-arome-local-v2-meteofrance-direct-v2-camera-homepage-v1';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
@@ -13,7 +13,7 @@ const APP_SHELL = [
   '/src/core/history-data.js',
   '/src/core/archive-coverage.js',
   '/', '/index.html', '/models-franca.html', '/metodologia.html', '/comparativa.html', '/municipis.html', '/historial-avisos.html', '/privacitat.html', '/condicions.html', '/xarxes.html', '/colaboracions.html', '/site.webmanifest',
-  '/css/variables.css', '/css/layout.css', '/css/style.css', '/css/portal.css', '/css/models-franca.css',
+  '/css/variables.css', '/css/layout.css', '/css/style.css', '/css/portal.css', '/css/models-franca.css', '/css/models-franca-map.css', '/css/models-franca-portal.css', '/css/models-franca-ux.css',
   '/src/app.js', '/src/core/page-bootstrap.js', '/src/core/config.js', '/src/core/dom.js', '/src/core/i18n.js', '/src/core/i18n-fr.js', '/src/core/alert-episodes.js', '/src/core/notification-preferences.js', '/src/data/meteorological-ephemerides.js', '/src/data/astronomical-calendar.js', '/src/data/learning-resources.js', '/src/services/weather-api.js',
   '/src/features/analytics.js', '/src/features/push.js', '/src/features/pwa.js', '/src/features/share.js', '/src/features/models-franca.js',
   '/src/features/share-page.js', '/src/features/stations-comparison.js', '/src/features/municipality-explorer.js', '/src/features/alert-history-init.js', '/src/features/alert-history-page.js',

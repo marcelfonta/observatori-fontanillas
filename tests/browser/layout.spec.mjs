@@ -55,6 +55,25 @@ test('Meteo IA: quatre preguntes i desplegable accessible',async({page})=>{
   await expect(page.locator('.meteo-ai-more button')).toHaveCount(10);
   await expect(page.locator('.meteo-ai-more button').first()).toBeVisible();
 });
+
+for(const width of [390,1280]){
+  test(`models francesos: visor estable i línia temporal ${width}`,async({page})=>{
+    await page.setViewportSize({width,height:900});
+    await page.route('**/meteofrance/models',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+      checkedAt:'2026-10-07T18:00:00Z',products:[{id:'arome',label:'AROME directe',shortLabel:'AROME',horizon:'0–48 h',purpose:'Detall determinista local',configured:true,available:true,protocol:'wms',visualizable:true,layers:['precipitation','temperature','wind','clouds'],times:['2026-10-07T18:00:00.000Z','2026-10-07T19:00:00.000Z','2026-10-07T20:00:00.000Z']}]
+    })}));
+    await page.goto('/models-franca.html');
+    await expect(page.getByText('Tornar a la previsió')).toHaveCount(0);
+    await expect(page.locator('#time-range')).toHaveAttribute('max','2');
+    await expect(page.locator('#time-label')).toContainText('7');
+    expect(parseFloat(await page.locator('.hero h1').evaluate(node=>getComputedStyle(node).fontSize))).toBeLessThanOrEqual(68);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    const before=await page.locator('#map-shell').evaluate(node=>node.getBoundingClientRect().height);
+    await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));
+    const after=await page.locator('#map-shell').evaluate(node=>node.getBoundingClientRect().height);
+    expect(after).toBe(before);
+  });
+}
 test('portada: franges amb dades de prova i errors sense zeros inventats',async({page},info)=>{
   await page.clock.install({time:new Date('2026-09-20T05:00:00Z')});
   await page.setViewportSize({width:390,height:844});

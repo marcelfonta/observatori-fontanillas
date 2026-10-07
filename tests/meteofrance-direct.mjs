@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {METEOFRANCE_PRODUCTS,parseCapabilities,chooseLayer,buildMapUrl} from '../worker/meteofrance.js';
+import {METEOFRANCE_PRODUCTS,parseCapabilities,chooseLayer,buildMapUrl,expandCapabilityTimes} from '../worker/meteofrance.js';
 
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
 const [worker,meteofrance,index,page,client,sw,portal]=await Promise.all([read('worker/index.js'),read('worker/meteofrance.js'),read('index.html'),read('models-franca.html'),read('src/features/models-franca.js'),read('service-worker.js'),read('src/features/portal-shell.js')]);
@@ -13,6 +13,9 @@ assert.match(METEOFRANCE_PRODUCTS.arpege.service,/ARPEGE-01-EUROPE-WMS/);
 const parsed=parseCapabilities('<WMS_Capabilities><Layer><Name>TOTAL_PRECIPITATION</Name></Layer><Dimension name="time">2026-10-05T10:00:00Z,2026-10-05T11:00:00Z</Dimension></WMS_Capabilities>');
 assert.deepEqual(parsed.layers,['TOTAL_PRECIPITATION']);
 assert.equal(parsed.times.length,2);
+assert.deepEqual(expandCapabilityTimes(['2026-10-05T10:00:00Z/2026-10-05T13:00:00Z/PT1H']),[
+  '2026-10-05T10:00:00.000Z','2026-10-05T11:00:00.000Z','2026-10-05T12:00:00.000Z','2026-10-05T13:00:00.000Z'
+]);
 assert.equal(chooseLayer(parsed.layers,'precipitation'),'TOTAL_PRECIPITATION');
 const wcs=parseCapabilities('<wcs:Capabilities><wcs:CoverageId>TEMPERATURE__SPECIFIC_HEIGHT</wcs:CoverageId></wcs:Capabilities>');
 assert.deepEqual(wcs.coverages,['TEMPERATURE__SPECIFIC_HEIGHT']);
@@ -25,6 +28,8 @@ assert.match(index,/models-franca\.html/);
 assert.match(page,/data-portal-static="models-franca"/);
 assert.match(page,/src\/features\/portal-static\.js/);
 assert.match(page,/css\/models-franca-portal\.css/);
+assert.match(page,/css\/models-franca-ux\.css/);
+assert.match(page,/id="time-range"/);
 assert.match(portal,/\['models-franca','Models francesos','\.\/models-franca\.html'\]/);
 for(const label of ['AROME','AROME-PI','PE-AROME','ARPEGE','PE-ARPEGE','PIAF'])assert.ok(page.includes(label),`${label} no apareix al laboratori`);
 assert.match(client,/CONFIG\.apiUrl/);
@@ -32,11 +37,14 @@ assert.match(client,/L\.imageOverlay\(mapUrl\(\),CATALUNYA_BOUNDS/);
 assert.match(client,/fitBounds\(DISPLAY_BOUNDS/);
 assert.match(client,/tile\.openstreetmap\.org/);
 assert.match(client,/mapElement\.classList\.add\(['"]loaded['"]\)/);
+assert.match(client,/selectedTime\(\)/);
+assert.match(client,/ResizeObserver/);
 assert.match(client,/button\.disabled=Boolean\(item&&!item\.available\)/);
 assert.doesNotMatch(page+client,/METEOFRANCE_[A-Z_]+_API_KEY/);
 assert.match(page,/id="model-map" aria-hidden="true"/);
 assert.match(meteofrance,/RETRYABLE_STATUS/);
-assert.match(meteofrance,/buildMapUrl\(product,layer,width,height\)/);
-assert.match(sw,/meteofrance-direct-v1/);
+assert.match(meteofrance,/buildMapUrl\(product,layer,width,height,time\)/);
+assert.match(meteofrance,/parsed\.times\.includes\(requestedTime\)/);
+assert.match(sw,/meteofrance-direct-v2/);
 assert.match(await read('css/models-franca.css'),/\[hidden\]\{display:none!important\}/);
 console.log('Météo-France directe: gateway segur, sis productes i laboratori visual.');
