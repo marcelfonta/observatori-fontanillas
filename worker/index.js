@@ -21,6 +21,8 @@ const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
 });
 const STORAGE_INTERVAL_MINUTES = 5;
 const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
+const CAMERA_IMAGE_MAX_BYTES = 16 * 1024 * 1024;
+const CAMERA_LATEST_KEY = 'nord/latest.jpg';
 const HISTORY_EDGE_CACHE_SECONDS = 5 * 60;
 const HISTORY_EDGE_CACHE_VERSION = "history-v1";
 const SOCIAL_AUTOMATIC_MAX_ATTEMPTS = 4;
@@ -3934,6 +3936,74 @@ async function uploadSocialVideo(request, env, key) {
   return json({ ok:true, key:safeKey, url:await socialVideoUrl(safeKey, env) }, 201, 'no-store');
 }
 
+function cameraUploadToken(request) {
+  const authorization = String(request.headers.get('Authorization') || '');
+  return authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() || '';
+}
+
+function cameraCapturedAt(request) {
+  const value = String(request.headers.get('X-Captured-At') || '').trim();
+  if (!value) return new Date().toISOString();
+  const parsed = Date.parse(value);
+  if (!Number.isFinite(parsed)) throw Object.assign(new Error("L'hora de captura no és vàlida."), { status:400 });
+  const now = Date.now();
+  if (parsed > now + 10 * 60 * 1000 || parsed < now - 24 * 60 * 60 * 1000) {
+    throw Object.assign(new Error("L'hora de captura queda fora de la finestra permesa."), { status:400 });
+  }
+  return new Date(parsed).toISOString();
+}
+
+function jpegSignatureIsValid(bytes) {
+  return bytes.byteLength >= 1024 && bytes[0] === 0xff && bytes[1] === 0xd8 &&
+    bytes[bytes.byteLength - 2] === 0xff && bytes[bytes.byteLength - 1] === 0xd9;
+}
+
+async function uploadCameraImage(request, env) {
+  if (!env.CAMERA_BUCKET) return json({ error:"L'emmagatzematge de la càmera encara no està configurat." }, 503, 'no-store');
+  const expected = String(env.CAMERA_UPLOAD_TOKEN || '');
+  if (expected.length < 32) return json({ error:'La càrrega de la càmera encara no està configurada.' }, 503, 'no-store');
+  if (!(await secureTokenMatch(cameraUploadToken(request), expected))) return json({ error:'No autoritzat.' }, 401, 'no-store');
+  if (!String(request.headers.get('Content-Type') || '').toLowerCase().startsWith('image/jpeg')) {
+    return json({ error:"Només s'accepten imatges JPEG." }, 415, 'no-store');
+  }
+  const contentLength = Number(request.headers.get('Content-Length') || 0);
+  if (!Number.isFinite(contentLength) || contentLength < 1024 || contentLength > CAMERA_IMAGE_MAX_BYTES) {
+    return json({ error:"La imatge ha de tenir entre 1 kB i 16 MB." }, 413, 'no-store');
+  }
+  const capturedAt = cameraCapturedAt(request);
+  const image = new Uint8Array(await request.arrayBuffer());
+  if (image.byteLength !== contentLength || image.byteLength > CAMERA_IMAGE_MAX_BYTES || !jpegSignatureIsValid(image)) {
+    return json({ error:'La càrrega no és un JPEG complet i vàlid.' }, 422, 'no-store');
+  }
+  await env.CAMERA_BUCKET.put(CAMERA_LATEST_KEY, image, {
+    httpMetadata:{ contentType:'image/jpeg', cacheControl:'public, max-age=60, stale-while-revalidate=300' },
+    customMetadata:{ capturedAt, uploadedAt:new Date().toISOString(), camera:'nord' },
+  });
+  return json({ ok:true, camera:'nord', capturedAt, url:`${publicWorkerBaseUrl(env)}/camera/nord/latest.jpg` }, 201, 'no-store');
+}
+
+async function serveLatestCameraImage(request, env) {
+  if (!env.CAMERA_BUCKET) return json({ error:"L'emmagatzematge de la càmera encara no està configurat." }, 503, 'no-store');
+  const object = await env.CAMERA_BUCKET.get(CAMERA_LATEST_KEY);
+  if (!object) return json({ error:'Encara no hi ha cap captura pública.' }, 404, 'no-store');
+  const headers = new Headers();
+  if (typeof object.writeHttpMetadata === 'function') object.writeHttpMetadata(headers);
+  headers.set('Content-Type', 'image/jpeg');
+  headers.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+  headers.set('Access-Control-Allow-Origin', '*');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('Content-Disposition', 'inline; filename="meteo-fontanillas-nord.jpg"');
+  const capturedAt = object.customMetadata?.capturedAt;
+  if (capturedAt) {
+    headers.set('X-Captured-At', capturedAt);
+    headers.set('Last-Modified', new Date(capturedAt).toUTCString());
+  }
+  if (Number.isFinite(Number(object.size))) headers.set('Content-Length', String(object.size));
+  if (object.etag) headers.set('ETag', object.etag);
+  if (request.method === 'HEAD') return new Response(null, { headers });
+  return new Response(object.body, { headers });
+}
+
 function validCecatResult(raw,date=new Date()) {
   if(!raw||typeof raw!=='object'||raw.publishable!==true||raw.source!=='CECAT'||raw.plan!=='INUNCAT')return null;
   const documentUrl=cecatOfficialDocumentUrl(raw.documentUrl);
@@ -6515,6 +6585,8 @@ export default {
       if ((request.method === 'GET' || request.method === 'HEAD') && bufferVideoMatch) return serveBufferVideo(request, env, bufferVideoMatch[1], url);
       const socialVideoUploadMatch = url.pathname.match(/^\/admin\/social-video-upload\/((?:shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)|episodes\/\d+)\.mp4)$/);
       if (request.method === 'POST' && socialVideoUploadMatch) return uploadSocialVideo(request, env, socialVideoUploadMatch[1]);
+      if (request.method === 'PUT' && url.pathname === '/camera/nord/upload') return uploadCameraImage(request, env);
+      if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest.jpg') return serveLatestCameraImage(request, env);
       if(request.method==='POST'&&url.pathname==='/admin/cecat-local-risk')return uploadCecatLocalRisk(request,env);
       const youtubeShortRunMatch = url.pathname.match(/^\/admin\/youtube-short-runs\/(\d{4}-\d{2}-\d{2})\/(mati|vespre)$/);
       if (request.method === 'POST' && youtubeShortRunMatch) return youtubeShortRunControl(request, env, youtubeShortRunMatch[1], youtubeShortRunMatch[2]);
@@ -6574,7 +6646,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/forecast-videos", "/forecast-verification?days=45", "/meteofrance/models", "/meteofrance/map?model=arome&layer=precipitation", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/camera/nord/latest.jpg", "/forecast-videos", "/forecast-verification?days=45", "/meteofrance/models", "/meteofrance/map?model=arome&layer=precipitation", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

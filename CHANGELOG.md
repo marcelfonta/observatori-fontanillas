@@ -1,5 +1,17 @@
 # Changelog
 
+## Desplegament — pujada segura de la càmera nord · 2026-10-07
+
+- El Worker accepta exclusivament JPEG autenticats amb una credencial dedicada,
+  comprova tipus, mida, integritat bàsica i hora de captura, i no rep mai les
+  credencials ni l'adreça local de la càmera.
+- L'última captura queda en un bucket R2 privat separat i es publica en una URL
+  estable de només lectura amb metadades de frescor i memòria cau curta.
+- Una prova aïllada cobreix denegació sense token, pujada correcta, lectura
+  pública i rebuig d'un fitxer que no és JPEG.
+- La Raspberry Pi ja publica automàticament les captures i la credencial inicial
+  s'ha rotat després de la configuració; només la credencial nova és vàlida.
+
 ## Correcció — validació real dels ensembles Météo-France · 2026-10-05
 
 - El diagnòstic substitueix el membre obligatori `{run}` abans de consultar
