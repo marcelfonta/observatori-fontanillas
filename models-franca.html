@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="/css/models-franca.css">
   <link rel="stylesheet" href="/css/models-franca-map.css">
   <link rel="stylesheet" href="/css/models-franca-portal.css">
+  <link rel="stylesheet" href="/css/models-franca-ux.css">
   <script type="module" src="/src/features/portal-static.js"></script>
   <title>Models francesos en directe · Meteo Fontanillas</title>
 </head>
@@ -24,7 +25,6 @@
     <p class="header-context">Models francesos</p>
   </header>
   <main class="shell models-franca-page" id="top">
-    <a class="models-franca-return" href="./?page=prediccio">← Tornar a la previsió</a>
     <section class="hero">
       <div><p class="eyebrow">Laboratori de modelització directa</p><h1>França, a escala local.</h1><p class="lead">Sis productes oficials de Météo-France per observar el curt termini, la previsió immediata i la incertesa. Aquesta és una capa experimental: complementa la previsió operativa, no la substitueix.</p></div>
       <div class="live-stamp"><span id="global-dot"></span><strong id="global-state">Connectant amb Météo-France…</strong><small id="checked-at">Credencials protegides pel servidor</small></div>
@@ -37,7 +37,13 @@
         <div id="layer-controls" role="group" aria-label="Variable"><button class="active" data-layer="precipitation">Pluja</button><button data-layer="temperature">Temperatura</button><button data-layer="wind">Vent</button><button data-layer="clouds">Núvols</button></div>
       </div>
       <div class="map-shell" id="map-shell" role="region" aria-label="Mapa del model meteorològic seleccionat sobre Catalunya"><div id="model-map" aria-hidden="true"></div><div class="map-message" id="map-message" aria-live="polite"><span class="spinner"></span><strong>Preparant el mapa oficial…</strong></div></div>
-      <footer><span id="map-caption">AROME directe · Catalunya</span><button id="map-refresh" type="button">Actualitzar mapa ↻</button></footer>
+      <div class="model-timeline" id="model-timeline" aria-label="Evolució temporal del model">
+        <div class="model-timeline__transport"><button id="time-prev" type="button" aria-label="Instant anterior">←</button><button id="time-play" type="button" aria-label="Reproduir l’evolució" aria-pressed="false">▶</button><button id="time-next" type="button" aria-label="Instant següent">→</button></div>
+        <label for="time-range"><span id="time-date">Edició activa</span><strong id="time-label">Instant més recent</strong></label>
+        <input id="time-range" type="range" min="0" max="0" value="0" step="1" aria-label="Seleccionar instant de la predicció">
+        <div class="model-timeline__ends"><span id="time-start">Ara</span><span id="time-end">Horitzó disponible</span></div>
+      </div>
+      <footer><span id="map-caption">AROME directe · Catalunya</span><span id="map-status">Mapa oficial · previsió orientativa</span><button id="map-refresh" type="button">Actualitzar mapa ↻</button></footer>
     </section>
 
     <section class="catalog" aria-labelledby="catalog-title">

@@ -1,5 +1,13 @@
 # Roadmap oficial
 
+## Laboratori de models francesos — Revisió funcional
+
+- [x] Estabilitzar el visor durant l’scroll i els canvis de mida en escriptori i mòbil.
+- [x] Publicar i validar els instants temporals oficials sense exposar credencials.
+- [x] Afegir línia temporal, reproducció, pausa i navegació fotograma a fotograma.
+- [x] Mantenir la degradació independent per producte i un missatge d’estat explícit.
+- [ ] Incorporar els ensembles numèrics quan hi hagi una ingestió GRIB/WCS validada.
+
 ## Càmera meteorològica pròpia — Captura, web i difusió
 
 - [x] Preparar la Raspberry Pi, fixar l'adreça local de la Reolink i validar captures automàtiques abans i després d'un reinici.

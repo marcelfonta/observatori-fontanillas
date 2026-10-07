@@ -1,0 +1,94 @@
+/* Visor estable i evolució temporal real dels models francesos. */
+.models-franca-page .eyebrow { font-size: var(--type-caption, 11px); }
+.models-franca-page > .hero { gap: 36px; }
+.models-franca-page > .hero h1 {
+  max-width: 760px;
+  margin-bottom: 22px;
+  font-size: clamp(38px, 4.4vw, 68px);
+  line-height: 1.02;
+}
+.models-franca-page > .hero .lead {
+  max-width: 760px;
+  font-size: clamp(15px, 1.3vw, 18px);
+  line-height: 1.65;
+}
+.models-franca-page :is(.viewer h2, .catalog h2, .method h2) {
+  font-size: clamp(27px, 2.7vw, 40px);
+}
+.models-franca-page .product-card h3 { font-size: 20px; }
+
+.map-shell {
+  width: 100%;
+  height: clamp(430px, 60vh, 720px);
+  min-height: 0;
+  contain: layout paint;
+}
+
+.model-timeline {
+  display: grid;
+  grid-template-columns: auto minmax(170px, .42fr) minmax(260px, 1fr);
+  align-items: center;
+  gap: 14px 22px;
+  padding: 18px 32px;
+  border-top: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(13, 43, 32, .96), rgba(6, 24, 18, .98));
+}
+
+.model-timeline__transport { display: flex; gap: 7px; }
+.model-timeline button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .025);
+  color: var(--text);
+  cursor: pointer;
+}
+.model-timeline button:hover:not(:disabled),
+.model-timeline button[aria-pressed="true"] { border-color: #4c9a6a; background: #163e2e; color: #a4edbf; }
+.model-timeline button:disabled { opacity: .3; cursor: not-allowed; }
+.model-timeline label span,
+.model-timeline label strong { display: block; }
+.model-timeline label span { color: var(--muted); font-size: 12px; }
+.model-timeline label strong { margin-top: 4px; font-size: 15px; font-variant-numeric: tabular-nums; }
+.model-timeline input { width: 100%; accent-color: var(--green); cursor: pointer; }
+.model-timeline input:disabled { opacity: .35; }
+.model-timeline__ends {
+  grid-column: 3;
+  display: flex;
+  justify-content: space-between;
+  margin-top: -12px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.model-timeline.is-unavailable { grid-template-columns: auto 1fr; }
+.model-timeline.is-unavailable .model-timeline__ends { grid-column: auto; }
+.viewer footer { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; }
+.viewer footer #map-status { text-align: center; }
+.map-shell .leaflet-map-pane,
+.map-shell .leaflet-tile-pane,
+.map-shell .leaflet-overlay-pane { will-change: transform; }
+
+@media (max-width: 900px) {
+  .map-shell { height: clamp(400px, 58vh, 620px); min-height: 0; }
+  .model-timeline { grid-template-columns: auto 1fr; }
+  .model-timeline input,
+  .model-timeline__ends { grid-column: 1 / -1; }
+  .model-timeline__ends { margin-top: -8px; }
+}
+
+@media (max-width: 620px) {
+  .models-franca-page > .hero h1 { font-size: clamp(38px, 12vw, 52px); }
+  .map-shell { height: 410px; min-height: 0; }
+  .viewer-controls { overscroll-behavior-inline: contain; }
+  .model-timeline { grid-template-columns: 1fr; padding: 16px; }
+  .model-timeline__transport { justify-content: center; }
+  .model-timeline label { text-align: center; }
+  .model-timeline input,
+  .model-timeline__ends { grid-column: auto; }
+  .model-timeline__ends { margin-top: -7px; }
+  .viewer footer { grid-template-columns: 1fr auto; }
+  .viewer footer #map-status { grid-column: 1 / -1; grid-row: 2; text-align: left; }
+}

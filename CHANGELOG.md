@@ -1,5 +1,16 @@
 # Changelog
 
+## V22.31.11 — Models francesos estables i amb línia temporal · 2026-10-07
+
+- El Worker publica els instants vàlids de cada edició WMS i valida l’hora
+  seleccionada abans de demanar el mapa oficial a Météo-France.
+- El laboratori incorpora reproducció, pausa, passos anterior/següent i una
+  línia temporal amb data local per veure l’evolució real del model.
+- El mapa conserva una alçada estable, recalcula Leaflet quan canvia el
+  contenidor i deixa d’alterar la composició en fer scroll o canviar d’amplada.
+- La seqüència s’atura quan la pestanya queda oculta i cada producte falla de
+  manera independent sense inutilitzar la resta del laboratori.
+
 ## En preparació — càmera pròpia a la portada · 2026-10-07
 
 - La portada i la pàgina de webcams utilitzen la captura pròpia de la càmera

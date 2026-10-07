@@ -48,6 +48,22 @@ const xmlText = value => String(value || '')
   .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&')
   .replace(/&quot;/g,'"').replace(/&#39;/g,"'").trim();
 
+export function expandCapabilityTimes(values,maxItems=192){
+  const result=[];
+  const add=value=>{const date=new Date(value);if(Number.isFinite(date.getTime()))result.push(date.toISOString());};
+  for(const raw of values){
+    const value=String(raw||'').trim();
+    const [startText,endText,stepText]=value.split('/');
+    if(!endText||!stepText){add(startText);continue;}
+    const start=new Date(startText);const end=new Date(endText);
+    const match=String(stepText).match(/^PT(?:(\d+)H)?(?:(\d+)M)?$/i);
+    const step=((Number(match?.[1])||0)*60+(Number(match?.[2])||0))*60_000;
+    if(!Number.isFinite(start.getTime())||!Number.isFinite(end.getTime())||!step){add(startText);continue;}
+    for(let instant=start.getTime();instant<=end.getTime()&&result.length<maxItems;instant+=step)add(instant);
+  }
+  return [...new Set(result)].sort().slice(-maxItems);
+}
+
 export function parseCapabilities(xml) {
   const names=[];
   for(const match of String(xml||'').matchAll(/<(?:\w+:)?Name>([^<]+)<\/(?:\w+:)?Name>/gi)){
@@ -63,7 +79,7 @@ export function parseCapabilities(xml) {
     const coverage=xmlText(match[1]);
     if(coverage&&!coverages.includes(coverage))coverages.push(coverage);
   }
-  return { layers:names, coverages, times:times.slice(-192) };
+  return { layers:names, coverages, times:expandCapabilityTimes(times) };
 }
 
 export function chooseLayer(layers, semantic) {
@@ -131,6 +147,7 @@ function publicProduct(id,product,configured,available,parsed,error){
     configured,available,experimental:Boolean(product.experimental),protocol:product.protocol,
     visualizable:product.protocol==='wms',members:product.members||null,layers:product.layers,
     layerAvailability,steps:parsed?.times?.length||null,coverages:parsed?.coverages?.length||null,
+    times:product.protocol==='wms'?(parsed?.times||[]):[],
     status:available?'available':configured?'temporarily-unavailable':'not-configured',
     note:error||null,
   };
@@ -177,9 +194,11 @@ export async function meteofranceMap(url,env){
     if(!layer)return payload({error:'La capa demanada no està disponible en aquesta edició del model.'},404,300);
     const width=Math.min(1600,Math.max(480,Number(url.searchParams.get('width'))||1200));
     const height=Math.min(1000,Math.max(320,Number(url.searchParams.get('height'))||700));
-    // Sense `time`, el WMS aplica l'instant per defecte de l'edició activa; evita
-    // demanar accidentalment el primer instant (sovint antic) del catàleg.
-    const upstream=new Request(buildMapUrl(product,layer,width,height),{headers:{Accept:'image/png,*/*',apikey:key}});
+    const requestedTime=String(url.searchParams.get('time')||'');
+    const time=requestedTime&&parsed.times.includes(requestedTime)?requestedTime:'';
+    if(requestedTime&&!time)return payload({error:'Instant temporal no disponible per a aquesta edició.'},400,60);
+    // Sense `time`, el WMS aplica l'instant per defecte de l'edició activa.
+    const upstream=new Request(buildMapUrl(product,layer,width,height,time),{headers:{Accept:'image/png,*/*',apikey:key}});
     const response=await cachedFetch(upstream,MAP_CACHE_SECONDS);
     if(!response.ok)return payload({error:'Météo-France no ha pogut generar el mapa ara mateix.'},response.status>=500?502:response.status,120);
     const headers=safeHeaders(response.headers.get('Content-Type')||'image/png',MAP_CACHE_SECONDS);
