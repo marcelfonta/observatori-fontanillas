@@ -326,6 +326,18 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .nearby-webcams__links span { color: var(--green); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
 .nearby-webcams__links b { margin: 8px 0; font-size: 12px; line-height: 1.35; }
 .nearby-webcams__links small { margin-top: auto; color: var(--muted); font-size: 10px; }
+.webcam-expand { position: absolute; z-index: 3; top: 14px; right: 14px; min-height: 42px; padding: 0 14px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(8,20,17,.76); color: #fff; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; backdrop-filter: blur(10px); }
+.webcam-expand:hover,.webcam-expand:focus-visible { background: rgba(28,91,65,.92); border-color: rgba(137,214,163,.75); }
+.webcam-actions { display: flex; justify-content: flex-end; gap: 16px; margin-top: 10px; }
+.webcam-actions a { color: var(--green); font-size: 11px; font-weight: 750; }
+.webcam-dialog { width: min(96vw, 1500px); max-width: none; padding: 0; border: 1px solid rgba(137,214,163,.35); border-radius: 20px; background: #081511; color: var(--text); box-shadow: 0 30px 100px rgba(0,0,0,.65); }
+.webcam-dialog::backdrop { background: rgba(0,0,0,.82); backdrop-filter: blur(4px); }
+.webcam-dialog__header,.webcam-dialog__footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 20px; }
+.webcam-dialog__header h2 { margin: 3px 0 0; font-size: clamp(18px,3vw,28px); }
+.webcam-dialog__header button { width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: rgba(255,255,255,.05); color: #fff; font-size: 28px; cursor: pointer; }
+.webcam-dialog img { display: block; width: 100%; max-height: 76vh; object-fit: contain; background: #020604; }
+.webcam-dialog__footer { color: var(--muted); font-size: 11px; }
+.webcam-dialog__footer a { color: var(--green); font-weight: 750; }
 
 .lightning-integrated { padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(145deg,rgba(137,214,163,.06),rgba(255,255,255,.018)); }
 .lightning-integrated > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 18px; }

@@ -1670,3 +1670,12 @@ Rollback: revertir aquest paquet i desplegar versions prèvies autoritzades. Els
   següent bloc oficial complet de quatre mapes.
 - Els canvis desconeguts en una pàgina que hauria de contenir quatre mapes
   continuen fallant de manera tancada i no poden generar publicacions.
+
+# V22.32.2 — Càmera pròpia completada
+
+### Afegit
+
+- Ampliació accessible de la càmera nord des de la vista Webcams.
+- Ruta separada per a la còpia amb marca pròpia, mantenint `latest.jpg` com a original net.
+- Monitor periòdic que avisa per correu després de dues comprovacions amb una captura de més de 30 minuts i informa de la recuperació.
+- Accessos directes a l'original i a la versió amb marca.

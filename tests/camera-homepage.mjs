@@ -5,6 +5,7 @@ const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const config=fs.readFileSync(new URL('../src/core/config.js',import.meta.url),'utf8');
 const webcam=fs.readFileSync(new URL('../src/modules/webcams.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../css/portal.css',import.meta.url),'utf8');
+const worker=fs.readFileSync(new URL('../worker/index.js',import.meta.url),'utf8');
 
 assert.match(config,/cameraUrl:\s*'https:\/\/fonta-meteo\.marcelfonta\.workers\.dev\/camera\/nord\/latest\.jpg'/);
 assert.match(html,/id="hero-webcam-image"[^>]+Vista actual cap al nord/);
@@ -18,5 +19,12 @@ assert.match(webcam,/STALE_MAX_MINUTES = 30/);
 assert.match(webcam,/setState\('unavailable'\)/);
 assert.match(css,/\.hero-webcam-preview\.is-stale/);
 assert.match(css,/\.webcam-frame\.is-unavailable/);
+assert.match(html,/id="webcam-expand"/);
+assert.match(html,/id="webcam-dialog"/);
+assert.match(html,/latest-branded\.jpg/);
+assert.match(webcam,/dialog\.showModal/);
+assert.match(worker,/CAMERA_STALE_MAX_MS = 30 \* 60 \* 1000/);
+assert.match(worker,/observedJob\('camera-nord',monitorCameraFreshness\(env\)\)/);
+assert.match(worker,/camera_nord_stale/);
 
 console.log('Portada de la càmera: imatge pròpia, frescor i reserva correctes');
