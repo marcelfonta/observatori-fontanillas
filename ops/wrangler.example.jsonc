@@ -53,6 +53,10 @@
   ],
   "r2_buckets": [
     {
+      "binding": "CAMERA_BUCKET",
+      "bucket_name": "meteo-fontanillas-camera"
+    },
+    {
       "binding": "SOCIAL_VIDEO_BUCKET",
       "bucket_name": "meteo-fontanillas-social-video"
     }

@@ -1,5 +1,18 @@
 # Registre de decisions
 
+## ADR — Càmera local amb pujada sortint i original privat (2026-10-07)
+
+- La Raspberry inicia totes les comunicacions cap al Worker. No s'obren ports
+  del router ni es publiquen RTSP, IP local o credencials de la Reolink.
+- La pujada usa una credencial pròpia revocable, diferent de l'administració i
+  de les xarxes socials. El Worker només accepta JPEG complets dins del límit
+  acordat i valida una hora de captura recent.
+- R2 és privat. L'únic recurs públic inicial és l'últim JPEG de la càmera nord;
+  la marca, les retallades, els timelapses i l'arxiu públic seran derivats i no
+  substituiran la imatge mestra neta.
+- Rollback: eliminar la ruta del Worker, revocar `CAMERA_UPLOAD_TOKEN` i retirar
+  el binding `CAMERA_BUCKET`; la captura local de la Raspberry continua intacta.
+
 ## ADR — Un únic avís social i vídeo només si aporta evolució (2026-10-04)
 
 - La targeta estàtica Meteocat és la publicació automàtica canònica de cada
