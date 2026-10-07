@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
-const [html,layout,portal,style,header,seasonal,longRange,i18n,french,worker,headers,app,station,alerts,shell]=await Promise.all([
+const [html,layout,portal,style,header,seasonal,longRange,i18n,french,worker,headers,app,station,alerts,shell,webcams]=await Promise.all([
   read('index.html'),read('css/layout.css'),read('css/portal.css'),
   read('css/style.css'),read('src/features/header-tools.js'),read('src/features/seasonal-outlook.js'),read('src/features/long-range.js'),
   read('src/core/i18n.js'),read('src/core/i18n-fr.js'),read('service-worker.js'),read('_headers'),
-  read('src/app.js'),read('src/modules/estacio.js'),read('src/modules/avisos.js'),read('src/features/portal-shell.js')
+  read('src/app.js'),read('src/modules/estacio.js'),read('src/modules/avisos.js'),read('src/features/portal-shell.js'),read('src/modules/webcams.js')
 ]);
 
 assert.ok(html.includes('src/core/page-bootstrap.js'), 'La selecció inicial de pàgina ha de carregar-se des d’un fitxer propi.');
@@ -41,6 +41,6 @@ assert.ok(shell.includes("Més: obrir totes les seccions"), 'El botó mòbil ha 
 assert.ok(style.includes('.radar-sources a{display:inline-flex;align-items:center;min-height:28px'), 'Els enllaços de fonts del radar han de tenir una zona tàctil suficient.');
 assert.ok(html.includes('name="mobile-web-app-capable"'), 'La portada ha d’incloure la metaetiqueta PWA vigent.');
 assert.ok(app.includes('let loadInFlight = null')&&app.includes('if(loadInFlight)return loadInFlight'), 'La càrrega inicial no s’ha de duplicar en recuperar el focus.');
-assert.ok(station.includes('webcam.getClientRects().length')&&station.includes('const webcamUrl='), 'Només s’ha de descarregar la webcam visible i tots els usos han de compartir URL.');
+assert.ok(webcams.includes('image.getClientRects().length')&&webcams.includes('const webcamUrl='), 'Només s’ha de descarregar la webcam visible i tots els usos han de compartir URL.');
 
 console.log('Auditoria mòbil: llarg termini, idiomes, controls tàctils i CSP');

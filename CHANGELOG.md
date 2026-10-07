@@ -1,5 +1,13 @@
 # Changelog
 
+## En preparació — càmera pròpia a la portada · 2026-10-07
+
+- La portada i la pàgina de webcams utilitzen la captura pròpia de la càmera
+  nord, amb hora real obtinguda de les metadades del servidor.
+- La interfície diferencia imatge recent, retardada, desactualitzada i no
+  disponible, amb text alternatiu i una reserva visual que manté accessibles
+  les dades meteorològiques.
+
 ## Desplegament — pujada segura de la càmera nord · 2026-10-07
 
 - El Worker accepta exclusivament JPEG autenticats amb una credencial dedicada,
