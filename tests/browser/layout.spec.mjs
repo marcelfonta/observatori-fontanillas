@@ -66,7 +66,8 @@ for(const width of [390,1280]){
     await expect(page.getByText('Tornar a la previsió')).toHaveCount(0);
     await expect(page.locator('#time-range')).toHaveAttribute('max','2');
     await expect(page.locator('#time-label')).toContainText('7');
-    expect(parseFloat(await page.locator('.hero h1').evaluate(node=>getComputedStyle(node).fontSize))).toBeLessThanOrEqual(68);
+    expect(parseFloat(await page.locator('.hero h1').evaluate(node=>getComputedStyle(node).fontSize))).toBeLessThanOrEqual(52);
+    expect(await page.locator('.hero').evaluate(node=>getComputedStyle(node).borderRadius)).not.toBe('0px');
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     const before=await page.locator('#map-shell').evaluate(node=>node.getBoundingClientRect().height);
     await page.evaluate(()=>scrollTo(0,document.body.scrollHeight));
