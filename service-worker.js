@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v22-31-10-fonta-regional-v1-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup-environment-freshness-v2-fonta-lab-v3-home-dayparts-v3-long-range-readability-v2-aca-hydrology-v1-civil-protection-v1-arome-local-v2-meteofrance-direct-v1';
+const CACHE = 'observatori-fontanillas-v22-31-10-fonta-regional-v1-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup-environment-freshness-v2-fonta-lab-v3-home-dayparts-v3-long-range-readability-v2-aca-hydrology-v1-civil-protection-v1-arome-local-v2-meteofrance-direct-v1-camera-homepage-v1';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [

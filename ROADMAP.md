@@ -6,7 +6,7 @@
 - [x] Desactivar el logotip Reolink i conservar una imatge mestra neta.
 - [x] Desplegar una entrada autenticada al Worker, un bucket R2 privat separat i la URL pública estable de l'última captura.
 - [x] Configurar la Raspberry perquè pugi cada JPEG amb una credencial exclusiva, reintents limitats i registre d'errors sense secrets.
-- [ ] Adaptar la portada perquè mostri la captura pròpia amb hora, frescor, text alternatiu i reserva si queda desactualitzada.
+- [x] Adaptar la portada perquè mostri la captura pròpia amb hora, frescor, text alternatiu i reserva si queda desactualitzada.
 - [ ] Presentar la càmera pròpia com a principal a Webcams i conservar l'externa actual com a alternativa atribuïda.
 - [ ] Generar derivats amb marca «Meteo Fontanillas · Sant Celoni · Càmera nord» sense modificar l'original.
 - [ ] Preparar arxiu, timelapses i una futura segona càmera sincronitzada.

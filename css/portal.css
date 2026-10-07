@@ -139,6 +139,15 @@ html[data-portal-page] .site-header {
 .hero-webcam-preview img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .hero-webcam-preview span { position: absolute; right: 9px; bottom: 8px; display: flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; background: rgba(5, 15, 12, .86); font-size: 8px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; backdrop-filter: blur(8px); }
 .hero-webcam-preview i { width: 5px; height: 5px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px rgba(137, 214, 163, .13); }
+.hero-webcam-preview span b { font: inherit; }
+.webcam-fallback { position: absolute; z-index: 1; inset: 0; display: none; place-items: center; padding: 22px; color: var(--muted); font-size: 12px; font-style: normal; line-height: 1.5; text-align: center; background: radial-gradient(circle at 50% 30%,rgba(137,214,163,.1),transparent 55%),#07130f; }
+.hero-webcam-preview.is-unavailable .webcam-fallback,.webcam-frame.is-unavailable .webcam-fallback { display: grid; }
+.hero-webcam-preview.is-unavailable img,.webcam-frame.is-unavailable img { opacity: 0; }
+.hero-webcam-preview.is-delayed,.webcam-frame.is-delayed { border-color: rgba(255,193,92,.48); }
+.hero-webcam-preview.is-delayed i { background: var(--amber); }
+.hero-webcam-preview.is-stale,.webcam-frame.is-stale { border-color: rgba(255,112,112,.55); }
+.hero-webcam-preview.is-stale img,.webcam-frame.is-stale img { opacity: .55; filter: grayscale(.25); }
+.hero-webcam-preview.is-stale i { background: #ff7070; }
 
 .data-center-overview { display: grid; gap: 16px; }
 .data-center-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: 36px; align-items: end; padding: 42px; }
