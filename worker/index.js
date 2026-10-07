@@ -3815,21 +3815,20 @@ async function bufferVideoUrl(key, env) {
   return `${publicWorkerBaseUrl(env)}/buffer-video/${safeKey}?sig=${await bufferVideoSignature(safeKey, env)}`;
 }
 
-async function validateBufferAssetUrl(url, expectedType, maxBytes) {
-  const response = await fetch(url, { method:'HEAD', redirect:'follow' });
-  const contentType = String(response.headers.get('Content-Type') || '').toLowerCase();
-  const contentLength = Number(response.headers.get('Content-Length'));
-  if (!response.ok) {
-    throw Object.assign(new Error(`L’adjunt d’X no és accessible (HTTP ${response.status}).`), { status:502, responseCode:response.status });
-  }
+async function validateBufferStoredAsset(env, key, expectedType, maxBytes) {
+  if (!env.SOCIAL_VIDEO_BUCKET) throw Object.assign(new Error('L’emmagatzematge temporal d’X no està configurat.'), { status:503 });
+  const object = await env.SOCIAL_VIDEO_BUCKET.head(key);
+  if (!object) throw Object.assign(new Error('L’adjunt d’X no és al magatzem temporal.'), { status:404, responseCode:404 });
+  const contentType = String(object.httpMetadata?.contentType || '').toLowerCase();
+  const contentLength = Number(object.size);
   if (!contentType.startsWith(expectedType)) {
-    throw Object.assign(new Error(`L’adjunt d’X té un format inesperat (${contentType || 'desconegut'}).`), { status:422, responseCode:response.status });
+    throw Object.assign(new Error(`L’adjunt d’X té un format inesperat (${contentType || 'desconegut'}).`), { status:422 });
   }
   if (!Number.isFinite(contentLength) || contentLength < 1) {
-    throw Object.assign(new Error('L’adjunt d’X no informa d’una mida vàlida.'), { status:422, responseCode:response.status });
+    throw Object.assign(new Error('L’adjunt d’X no informa d’una mida vàlida.'), { status:422 });
   }
   if (contentLength > maxBytes) {
-    throw Object.assign(new Error(`L’adjunt d’X és massa gran (${Math.ceil(contentLength / 1024 / 1024)} MB).`), { status:413, responseCode:response.status });
+    throw Object.assign(new Error(`L’adjunt d’X és massa gran (${Math.ceil(contentLength / 1024 / 1024)} MB).`), { status:413 });
   }
   return { contentType, contentLength };
 }
@@ -4523,14 +4522,14 @@ async function createBufferXPost(env, { localDate, slot, draft = null }) {
     // Buffer comprova la URL abans d'acceptar la imatge. Materialitzar-la a R2
     // evita que aquesta comprovació depengui d'una captura generada al moment.
     const imageUrl = await ensureSocialCardUrl(socialDraft, env, 'jpeg');
-    await validateBufferAssetUrl(imageUrl, 'image/jpeg', 5 * 1024 * 1024);
+    await validateBufferStoredAsset(env, socialCardCacheKey(socialDraft.id,'jpeg',socialDraft.kind), 'image/jpeg', 5 * 1024 * 1024);
     assets = [{ image:{ url:imageUrl } }];
   } else {
     if (!env.SOCIAL_VIDEO_BUCKET) throw Object.assign(new Error('L’emmagatzematge temporal de vídeo no està configurat.'), { status:503 });
     const key = `shorts/${localDate}/${slot}.mp4`;
     if (!await env.SOCIAL_VIDEO_BUCKET.head(key)) throw Object.assign(new Error('El vídeo d’X encara no està preparat.'), { status:409, pending:true });
     const videoUrl = await bufferVideoUrl(key, env);
-    await validateBufferAssetUrl(videoUrl, 'video/mp4', SOCIAL_VIDEO_MAX_BYTES);
+    await validateBufferStoredAsset(env, key, 'video/mp4', SOCIAL_VIDEO_MAX_BYTES);
     assets = [{ video:{ url:videoUrl } }];
   }
   const shareNow = delay <= 0;
@@ -4572,7 +4571,7 @@ async function publishBufferXImage(draft, env, beforeSend) {
   if(!bufferXConfigured(env))throw Object.assign(new Error('Falta la connexió d’X a Buffer.'),{status:503});
   const channel=await bufferXChannel(env);
   const imageUrl=await ensureSocialCardUrl(draft,env,'jpeg');
-  await validateBufferAssetUrl(imageUrl,'image/jpeg',5 * 1024 * 1024);
+  await validateBufferStoredAsset(env,socialCardCacheKey(draft.id,'jpeg',draft.kind),'image/jpeg',5 * 1024 * 1024);
   const input={
     text:bufferXSpecialCaption(draft),
     channelId:channel.id,
