@@ -48,8 +48,8 @@ printf "file '%s'\n" "$LAST_FRAME" >> "$LIST"
 
 FONT="$(fc-match -f '%{file}' 'DejaVu Sans:style=Bold' 2>/dev/null || true)"
 [[ -f "$FONT" ]] || FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-FILTER='scale=1920:-2'
-if ffmpeg -hide_banner -filters 2>/dev/null | grep -q ' drawtext '; then
+FILTER='scale=960:-2'
+if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
   FILTER+=",drawbox=x=0:y=ih-70:w=iw:h=70:color=black@0.58:t=fill,drawtext=fontfile='$FONT':text='Meteo Fontanillas · Sant Celoni · Càmera nord':fontcolor=white:fontsize=30:x=28:y=h-th-22"
 else
   echo "Avís: aquest ffmpeg no inclou drawtext; la prova es crea sense rètol." >&2
@@ -57,7 +57,7 @@ fi
 
 ffmpeg -nostdin -hide_banner -loglevel error -y \
   -f concat -safe 0 -i "$LIST" \
-  -vf "$FILTER" -r 25 -an -c:v libx264 -preset medium -crf 22 \
+  -vf "$FILTER" -r 20 -an -c:v libx264 -threads 1 -preset ultrafast -crf 22 \
   -pix_fmt yuv420p -movflags +faststart "$OUTPUT"
 
 echo "Timelapse creat: $OUTPUT"
@@ -65,7 +65,7 @@ echo "Fotogrames: $FRAME_COUNT"
 echo "Publicació automàtica: desactivada"
 
 if [[ "$UPLOAD" == "--upload-preview" ]]; then
-  ENV_FILE="${CAMERA_UPLOAD_ENV:-$HOME/.config/meteo-camera/camera-upload.env}"
+  ENV_FILE="${CAMERA_UPLOAD_ENV:-$HOME/.config/meteo-camera/upload.env}"
   [[ -r "$ENV_FILE" ]] || { echo "No es pot llegir $ENV_FILE" >&2; exit 1; }
   # shellcheck disable=SC1090
   source "$ENV_FILE"
