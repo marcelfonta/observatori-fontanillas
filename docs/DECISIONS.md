@@ -1,5 +1,16 @@
 # Registre de decisions
 
+## ADR — Timelapses manuals fins a la ubicació definitiva (2026-10-08)
+
+- Els timelapses es generen manualment des de l'arxiu original de la Raspberry;
+  no hi ha cron ni selecció automàtica de dies entre setmana.
+- La prova MP4 usa la mateixa credencial revocable de pujada de la càmera i
+  substitueix una única previsualització al bucket privat. No modifica els JPEG.
+- La URL de prova no està connectada a la cua social, Buffer, Meta, TikTok ni
+  YouTube, i respon explícitament `X-Automatic-Publication: disabled`.
+- La programació i la publicació continuen bloquejades fins que la càmera tingui
+  la posició definitiva i una mostra real sigui aprovada manualment.
+
 ## ADR — Càmera local amb pujada sortint i original privat (2026-10-07)
 
 - La Raspberry inicia totes les comunicacions cap al Worker. No s'obren ports

@@ -22,8 +22,10 @@ const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
 const STORAGE_INTERVAL_MINUTES = 5;
 const STORAGE_SUMMARY_CACHE_MS = 5 * 60 * 1000;
 const CAMERA_IMAGE_MAX_BYTES = 16 * 1024 * 1024;
+const CAMERA_TIMELAPSE_MAX_BYTES = 40 * 1024 * 1024;
 const CAMERA_LATEST_KEY = 'nord/latest.jpg';
 const CAMERA_BRANDED_KEY = 'nord/latest-branded.jpg';
+const CAMERA_TIMELAPSE_KEY = 'nord/timelapses/latest-preview.mp4';
 const CAMERA_STALE_MAX_MS = 30 * 60 * 1000;
 const HISTORY_EDGE_CACHE_SECONDS = 5 * 60;
 const HISTORY_EDGE_CACHE_VERSION = "history-v1";
@@ -3987,6 +3989,62 @@ async function uploadCameraImage(request, env, variant = 'original') {
   return json({ ok:true, camera:'nord', variant, capturedAt, url:`${publicWorkerBaseUrl(env)}${publicPath}` }, 201, 'no-store');
 }
 
+function mp4SignatureIsValid(bytes) {
+  return bytes.byteLength >= 12 && String.fromCharCode(...bytes.slice(4, 8)) === 'ftyp';
+}
+
+async function uploadCameraTimelapse(request, env) {
+  if (!env.CAMERA_BUCKET) return json({ error:"L'emmagatzematge de la càmera encara no està configurat." }, 503, 'no-store');
+  const expected = String(env.CAMERA_UPLOAD_TOKEN || '');
+  if (expected.length < 32) return json({ error:'La càrrega de la càmera encara no està configurada.' }, 503, 'no-store');
+  if (!(await secureTokenMatch(cameraUploadToken(request), expected))) return json({ error:'No autoritzat.' }, 401, 'no-store');
+  if (!String(request.headers.get('Content-Type') || '').toLowerCase().startsWith('video/mp4')) {
+    return json({ error:'Només s’accepten timelapses MP4.' }, 415, 'no-store');
+  }
+  const contentLength = Number(request.headers.get('Content-Length') || 0);
+  if (!Number.isFinite(contentLength) || contentLength < 1024 || contentLength > CAMERA_TIMELAPSE_MAX_BYTES) {
+    return json({ error:'El timelapse ha de tenir entre 1 kB i 40 MB.' }, 413, 'no-store');
+  }
+  const video = new Uint8Array(await request.arrayBuffer());
+  if (video.byteLength !== contentLength || video.byteLength > CAMERA_TIMELAPSE_MAX_BYTES || !mp4SignatureIsValid(video)) {
+    return json({ error:'La càrrega no és un MP4 complet i vàlid.' }, 422, 'no-store');
+  }
+  const date = String(request.headers.get('X-Timelapse-Date') || '').trim();
+  const frameCount = Number(request.headers.get('X-Timelapse-Frames') || 0);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isSafeInteger(frameCount) || frameCount < 6 || frameCount > 1000) {
+    return json({ error:'La data o el nombre de fotogrames del timelapse no és vàlid.' }, 400, 'no-store');
+  }
+  const createdAt = new Date().toISOString();
+  await env.CAMERA_BUCKET.put(CAMERA_TIMELAPSE_KEY, video, {
+    httpMetadata:{ contentType:'video/mp4', cacheControl:'public, max-age=60' },
+    customMetadata:{ createdAt, date, frameCount:String(frameCount), camera:'nord', variant:'timelapse-preview', publication:'disabled' },
+  });
+  return json({
+    ok:true, camera:'nord', variant:'timelapse-preview', date, frameCount, createdAt,
+    publication:'disabled', url:`${publicWorkerBaseUrl(env)}/camera/nord/timelapse-preview.mp4`,
+  }, 201, 'no-store');
+}
+
+async function serveCameraTimelapse(request, env) {
+  if (!env.CAMERA_BUCKET) return json({ error:"L'emmagatzematge de la càmera encara no està configurat." }, 503, 'no-store');
+  const object = await env.CAMERA_BUCKET.get(CAMERA_TIMELAPSE_KEY);
+  if (!object) return json({ error:'Encara no hi ha cap prova de timelapse.' }, 404, 'no-store');
+  const headers = new Headers();
+  if (typeof object.writeHttpMetadata === 'function') object.writeHttpMetadata(headers);
+  headers.set('Content-Type', 'video/mp4');
+  headers.set('Cache-Control', 'public, max-age=60');
+  headers.set('Access-Control-Allow-Origin', '*');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('Content-Disposition', 'inline; filename="meteo-fontanillas-nord-timelapse.mp4"');
+  headers.set('X-Automatic-Publication', 'disabled');
+  if (object.customMetadata?.date) headers.set('X-Timelapse-Date', object.customMetadata.date);
+  if (object.customMetadata?.frameCount) headers.set('X-Timelapse-Frames', object.customMetadata.frameCount);
+  if (Number.isFinite(Number(object.size))) headers.set('Content-Length', String(object.size));
+  if (object.etag) headers.set('ETag', object.etag);
+  if (request.method === 'HEAD') return new Response(null, { headers });
+  return new Response(object.body, { headers });
+}
+
 async function serveLatestCameraImage(request, env, variant = 'original') {
   if (!env.CAMERA_BUCKET) return json({ error:"L'emmagatzematge de la càmera encara no està configurat." }, 503, 'no-store');
   const branded = variant === 'branded';
@@ -6624,8 +6682,10 @@ export default {
       if (request.method === 'POST' && socialVideoUploadMatch) return uploadSocialVideo(request, env, socialVideoUploadMatch[1]);
       if (request.method === 'PUT' && url.pathname === '/camera/nord/upload') return uploadCameraImage(request, env);
       if (request.method === 'PUT' && url.pathname === '/camera/nord/upload-branded') return uploadCameraImage(request, env, 'branded');
+      if (request.method === 'PUT' && url.pathname === '/camera/nord/timelapse-upload') return uploadCameraTimelapse(request, env);
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest.jpg') return serveLatestCameraImage(request, env);
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest-branded.jpg') return serveLatestCameraImage(request, env, 'branded');
+      if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/timelapse-preview.mp4') return serveCameraTimelapse(request, env);
       if(request.method==='POST'&&url.pathname==='/admin/cecat-local-risk')return uploadCecatLocalRisk(request,env);
       const youtubeShortRunMatch = url.pathname.match(/^\/admin\/youtube-short-runs\/(\d{4}-\d{2}-\d{2})\/(mati|vespre)$/);
       if (request.method === 'POST' && youtubeShortRunMatch) return youtubeShortRunControl(request, env, youtubeShortRunMatch[1], youtubeShortRunMatch[2]);
@@ -6685,7 +6745,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/camera/nord/latest.jpg", "/forecast-videos", "/forecast-verification?days=45", "/meteofrance/models", "/meteofrance/map?model=arome&layer=precipitation", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/camera/nord/latest.jpg", "/camera/nord/timelapse-preview.mp4", "/forecast-videos", "/forecast-verification?days=45", "/meteofrance/models", "/meteofrance/map?model=arome&layer=precipitation", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

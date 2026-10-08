@@ -17,7 +17,9 @@
 - [x] Adaptar la portada perquè mostri la captura pròpia amb hora, frescor, text alternatiu i reserva si queda desactualitzada.
 - [x] Presentar la càmera pròpia com a principal a Webcams i conservar l'externa actual com a alternativa atribuïda.
 - [x] Preparar l'ampliació a pantalla completa, el derivat amb marca «Meteo Fontanillas · Sant Celoni · Càmera nord» sense modificar l'original i l'avís si la captura queda desactualitzada.
-- [ ] Preparar arxiu, timelapses i una futura segona càmera sincronitzada.
+- [x] Preparar timelapses manuals des de l'arxiu local, amb previsualització MP4 separada i publicació automàtica bloquejada.
+- [ ] Automatitzar o programar timelapses només quan la càmera sigui a la posició definitiva i després d'aprovar una prova real.
+- [ ] Preparar una futura segona càmera sincronitzada.
 - [ ] Donar d'alta l'estació a Meteoclimatic i, amb la URL estable, sol·licitar i vincular la webcam.
 - [ ] Confirmar si la segona xarxa configurada és Weathercloud i, si ho és, afegir-hi la URL directa de la webcam.
 - [ ] Publicar-la a Windy Webcams quan estigui en la ubicació definitiva i després de revisar privacitat, atribució i monitoratge.
