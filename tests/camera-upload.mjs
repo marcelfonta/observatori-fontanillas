@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 import worker from '../worker/index.js';
+
+const timelapseScript = await readFile(new URL('../scripts/camera-timelapse.sh', import.meta.url), 'utf8');
+assert.match(timelapseScript,/arxiu\/\$YEAR\/\$MONTH\/\$DAY/);
+assert.match(timelapseScript,/--upload-preview/);
+assert.match(timelapseScript,/Publicació automàtica: desactivada/);
+assert.doesNotMatch(timelapseScript,/systemctl|crontab|buffer-video|social-video/);
 
 const secret = 'camera-upload-secret-'.padEnd(48, 'x');
 const objects = new Map();
@@ -76,6 +83,30 @@ assert.equal(servedBranded.status, 200);
 assert.match(servedBranded.headers.get('Content-Disposition'), /-marca\.jpg/);
 assert.ok(objects.has('nord/latest.jpg'));
 assert.ok(objects.has('nord/latest-branded.jpg'));
+
+const mp4 = new Uint8Array(4096).fill(0);
+mp4.set([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]);
+const timelapse = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/timelapse-upload', {
+  method:'PUT',
+  headers:{
+    Authorization:`Bearer ${secret}`,
+    'Content-Type':'video/mp4',
+    'Content-Length':String(mp4.byteLength),
+    'X-Timelapse-Date':'2026-10-07',
+    'X-Timelapse-Frames':'96',
+  },
+  body:mp4,
+}), env, context);
+assert.equal(timelapse.status, 201);
+const timelapsePayload = await timelapse.json();
+assert.equal(timelapsePayload.publication, 'disabled');
+assert.equal(timelapsePayload.url, 'https://fonta-meteo.example/camera/nord/timelapse-preview.mp4');
+const servedTimelapse = await worker.fetch(new Request(timelapsePayload.url), env, context);
+assert.equal(servedTimelapse.status, 200);
+assert.equal(servedTimelapse.headers.get('Content-Type'), 'video/mp4');
+assert.equal(servedTimelapse.headers.get('X-Automatic-Publication'), 'disabled');
+assert.deepEqual(new Uint8Array(await servedTimelapse.arrayBuffer()), mp4);
+assert.ok(objects.has('nord/timelapses/latest-preview.mp4'));
 
 const invalid = new Uint8Array(2048).fill(1);
 const rejected = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/upload', {

@@ -1,5 +1,13 @@
 # Changelog
 
+## En preparació — Timelapses manuals de la càmera nord · 2026-10-08
+
+- La Raspberry pot crear una previsualització MP4 a partir de les captures
+  originals d'un dia, sense cron ni cap publicació social automàtica.
+- El Worker accepta la prova amb la credencial exclusiva de la càmera, valida
+  mida, format, data i fotogrames, i publica només una URL de previsualització.
+- L'original JPEG, l'arxiu local i els fluxos socials existents no es modifiquen.
+
 ## V22.31.11 — Models francesos estables i amb línia temporal · 2026-10-07
 
 - El Worker publica els instants vàlids de cada edició WMS i valida l’hora
