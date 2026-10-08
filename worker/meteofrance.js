@@ -177,7 +177,9 @@ export function buildMapUrl(product,layer,width=1200,height=700,time=''){
     // WMS 1.3.0 + EPSG:4326 utilitza ordre latitud,longitud.
     bbox:'40.4,0.0,43.6,4.5',width:String(width),height:String(height),language:'eng',
   });
-  if(time)params.set('time',String(time).split('/')[0]);
+  // El catàleg es normalitza amb Date#toISOString (inclou `.000Z`), però el
+  // WMS de Météo-France només accepta la representació ISO sense mil·lisegons.
+  if(time)params.set('time',String(time).split('/')[0].replace(/\.000Z$/,'Z'));
   return `${PORTAL_BASE}${product.context}/wms/${product.service}/GetMap?${params}`;
 }
 

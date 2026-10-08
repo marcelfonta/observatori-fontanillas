@@ -10,6 +10,8 @@
   contenidor i deixa d’alterar la composició en fer scroll o canviar d’amplada.
 - La seqüència s’atura quan la pestanya queda oculta i cada producte falla de
   manera independent sense inutilitzar la resta del laboratori.
+- Els instants normalitzats es converteixen al format ISO estricte que accepta
+  el WMS oficial abans de generar cada fotograma de la seqüència.
 
 ## En preparació — càmera pròpia a la portada · 2026-10-07
 

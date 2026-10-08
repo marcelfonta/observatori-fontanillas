@@ -5,10 +5,8 @@
   padding: 30px 40px 80px;
 }
 
-.models-franca-page > .hero { padding-top: 34px; }
 body.has-portal-shell > .page-footer { max-width: 1500px; color: var(--muted); }
 
 @media (max-width: 620px) {
   .models-franca-page { padding-right: 18px; padding-left: 18px; }
-  .models-franca-page > .hero { padding-top: 28px; }
 }

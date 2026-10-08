@@ -17,6 +17,7 @@ assert.deepEqual(expandCapabilityTimes(['2026-10-05T10:00:00Z/2026-10-05T13:00:0
   '2026-10-05T10:00:00.000Z','2026-10-05T11:00:00.000Z','2026-10-05T12:00:00.000Z','2026-10-05T13:00:00.000Z'
 ]);
 assert.equal(chooseLayer(parsed.layers,'precipitation'),'TOTAL_PRECIPITATION');
+assert.equal(new URL(buildMapUrl(METEOFRANCE_PRODUCTS.arome,'TOTAL_PRECIPITATION',1200,700,'2026-10-07T20:00:00.000Z')).searchParams.get('time'),'2026-10-07T20:00:00Z');
 const wcs=parseCapabilities('<wcs:Capabilities><wcs:CoverageId>TEMPERATURE__SPECIFIC_HEIGHT</wcs:CoverageId></wcs:Capabilities>');
 assert.deepEqual(wcs.coverages,['TEMPERATURE__SPECIFIC_HEIGHT']);
 assert.match(buildMapUrl(METEOFRANCE_PRODUCTS.arome,'TOTAL_PRECIPITATION',1200,700,'2026-10-05T10:00:00Z'),/GetMap\?/);

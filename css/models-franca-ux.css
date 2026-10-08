@@ -1,16 +1,32 @@
 /* Visor estable i evolució temporal real dels models francesos. */
 .models-franca-page .eyebrow { font-size: var(--type-caption, 11px); }
-.models-franca-page > .hero { gap: 36px; }
+.models-franca-page > .hero {
+  display: flex;
+  min-height: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 18px;
+  padding: 30px 34px;
+}
 .models-franca-page > .hero h1 {
-  max-width: 760px;
-  margin-bottom: 22px;
-  font-size: clamp(38px, 4.4vw, 68px);
+  max-width: 940px;
+  margin: 6px 0 10px;
+  font-size: clamp(32px, 3.8vw, 52px);
   line-height: 1.02;
+  letter-spacing: -.045em;
 }
 .models-franca-page > .hero .lead {
   max-width: 760px;
-  font-size: clamp(15px, 1.3vw, 18px);
-  line-height: 1.65;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.models-franca-page > .hero .live-stamp {
+  min-width: 240px;
+  padding: 13px 16px;
+  border-radius: 16px;
+  box-shadow: none;
 }
 .models-franca-page :is(.viewer h2, .catalog h2, .method h2) {
   font-size: clamp(27px, 2.7vw, 40px);
@@ -80,7 +96,14 @@
 }
 
 @media (max-width: 620px) {
-  .models-franca-page > .hero h1 { font-size: clamp(38px, 12vw, 52px); }
+  .models-franca-page > .hero {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 18px;
+    padding: 23px 24px;
+  }
+  .models-franca-page > .hero h1 { font-size: 32px; }
+  .models-franca-page > .hero .live-stamp { width: 100%; min-width: 0; }
   .map-shell { height: 410px; min-height: 0; }
   .viewer-controls { overscroll-behavior-inline: contain; }
   .model-timeline { grid-template-columns: 1fr; padding: 16px; }
