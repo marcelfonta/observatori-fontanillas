@@ -2549,7 +2549,7 @@ const SOCIAL_SCHEDULE_BLUEPRINT=[
 const DEFAULT_SOCIAL_AUTO_TIMES='06:45,14:00,20:30';
 const DEFAULT_SOCIAL_PREFLIGHT_TIMES='06:30,13:45,20:15';
 const DEFAULT_META_VIDEO_AUTO_TIMES='06:45,20:30';
-const META_VIDEO_SLOT_BY_TIME={ '06:45':'morning', '20:30':'evening' };
+const META_VIDEO_SLOT_BY_TIME={ '06:45':'morning', '07:00':'morning', '20:30':'evening' };
 const META_VIDEO_AUTOMATIC_MAX_ATTEMPTS=4;
 const META_VIDEO_AUTOMATIC_WINDOW_MINUTES=90;
 // Cloudflare és el rellotge principal dels Shorts perquè el cron de GitHub pot

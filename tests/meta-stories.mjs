@@ -41,6 +41,7 @@ assert.deepEqual(dueMetaVideoSlots({}, new Date('2026-08-29T18:30:00Z')), ['even
 assert.deepEqual(dueMetaVideoSlots({}, new Date('2026-08-29T19:31:00Z')), ['evening'], 'La franja del matí no s’ha de recuperar moltes hores tard.');
 assert.deepEqual(dueMetaVideoSlots({}, new Date('2026-08-29T20:01:00Z')), [], 'Cap franja no s’ha de publicar quan la finestra segura ja ha passat.');
 assert.deepEqual(dueMetaVideoSlots({ META_VIDEO_AUTO_TIMES:'20:30' }, new Date('2026-08-29T18:30:00Z')), ['evening'], 'La configuració ha de poder desactivar una franja concreta.');
+assert.deepEqual(dueMetaVideoSlots({ META_VIDEO_AUTO_TIMES:'07:00,20:30' }, new Date('2026-10-08T05:15:00Z')), ['morning'], 'La franja de producció de les 07:00 ha d’activar el vídeo del matí.');
 assert.deepEqual(dailySocialChannelsForSlot('06:45'), ['bluesky','telegram','threads'], 'Facebook i Instagram no han de duplicar el Reel del matí amb una imatge.');
 assert.deepEqual(dailySocialChannelsForSlot('14:00'), ['facebook','instagram','bluesky','telegram','threads'], 'La imatge del migdia ha d’arribar a les cinc xarxes.');
 assert.deepEqual(dailySocialChannelsForSlot('20:30'), ['bluesky','telegram','threads'], 'Facebook i Instagram no han de duplicar el Reel del vespre amb una imatge.');
