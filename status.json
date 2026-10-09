@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "version": "0.2.0",
-  "generatedAt": "2026-10-09T00:19:48.705Z",
+  "generatedAt": "2026-10-09T15:15:38.110Z",
   "station": "ISANTC198",
   "mode": "shadow",
   "productionEnabled": false,
@@ -287,10 +287,10 @@
   "codeRevision": "9c04f045acecc1a12ecfc7178f5596adb5ed6ad4",
   "diagnostics": {
     "schema": 1,
-    "asOf": "2026-10-09T00:19:48.705Z",
+    "asOf": "2026-10-09T15:15:38.110Z",
     "execution": {
       "event": "schedule",
-      "runId": "37864196190"
+      "runId": "37950364391"
     },
     "firstCaptureAt": "2026-09-20T12:12:22.031Z",
     "budget": {
