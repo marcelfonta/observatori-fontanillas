@@ -1,90 +1,90 @@
 {
   "schema": 2,
   "protocol": "fonta-hourly-nearest-150s-v1",
-  "generatedAt": "2026-10-09T15:20:28.064Z",
+  "generatedAt": "2026-10-10T14:29:47.091Z",
   "station": "ISANTC198",
-  "forecastDays": 13,
-  "pairedDays": 10,
+  "forecastDays": 14,
+  "pairedDays": 11,
   "excludedGroups": 6,
   "scores": {
     "ecmwf_ifs025": {
       "hourly": {
-        "samples": 240,
-        "mae": 1.456,
-        "bias": -0.166,
-        "rmse": 1.878
+        "samples": 264,
+        "mae": 1.444,
+        "bias": -0.146,
+        "rmse": 1.859
       },
       "max": {
-        "samples": 10,
-        "mae": 1.81,
-        "bias": -0.89,
-        "rmse": 2.228
+        "samples": 11,
+        "mae": 1.873,
+        "bias": -1.036,
+        "rmse": 2.254
       },
       "min": {
-        "samples": 10,
-        "mae": 1.01,
-        "bias": 0.41,
-        "rmse": 1.426
+        "samples": 11,
+        "mae": 1.145,
+        "bias": 0.6,
+        "rmse": 1.554
       }
     },
     "icon_eu": {
       "hourly": {
-        "samples": 240,
-        "mae": 1.225,
-        "bias": 0.126,
-        "rmse": 1.578
+        "samples": 264,
+        "mae": 1.311,
+        "bias": 0.103,
+        "rmse": 1.684
       },
       "max": {
-        "samples": 10,
-        "mae": 1.79,
-        "bias": -1.11,
-        "rmse": 2.138
+        "samples": 11,
+        "mae": 2.064,
+        "bias": -1.445,
+        "rmse": 2.5
       },
       "min": {
-        "samples": 10,
-        "mae": 1.01,
-        "bias": 0.79,
-        "rmse": 1.409
+        "samples": 11,
+        "mae": 1.218,
+        "bias": 1.018,
+        "rmse": 1.672
       }
     },
     "meteofrance_arome_france": {
       "hourly": {
-        "samples": 240,
-        "mae": 1.476,
-        "bias": 0.785,
-        "rmse": 1.94
+        "samples": 264,
+        "mae": 1.425,
+        "bias": 0.674,
+        "rmse": 1.882
       },
       "max": {
-        "samples": 10,
-        "mae": 2.11,
-        "bias": 0.33,
-        "rmse": 2.532
+        "samples": 11,
+        "mae": 2.145,
+        "bias": 0.073,
+        "rmse": 2.529
       },
       "min": {
-        "samples": 10,
-        "mae": 1.21,
-        "bias": 1.21,
-        "rmse": 1.377
+        "samples": 11,
+        "mae": 1.2,
+        "bias": 1.2,
+        "rmse": 1.354
       }
     },
     "blend": {
       "hourly": {
-        "samples": 240,
-        "mae": 1.2,
-        "bias": 0.248,
-        "rmse": 1.577
+        "samples": 264,
+        "mae": 1.213,
+        "bias": 0.21,
+        "rmse": 1.585
       },
       "max": {
-        "samples": 10,
-        "mae": 1.633,
-        "bias": -0.74,
-        "rmse": 2
+        "samples": 11,
+        "mae": 1.782,
+        "bias": -0.97,
+        "rmse": 2.146
       },
       "min": {
-        "samples": 10,
-        "mae": 1.063,
-        "bias": 0.963,
-        "rmse": 1.327
+        "samples": 11,
+        "mae": 1.188,
+        "bias": 1.097,
+        "rmse": 1.463
       }
     }
   },
@@ -158,6 +158,13 @@
       "observedAvailableAt": "2026-10-08T00:10:11.064Z",
       "hours": 24,
       "maxOffsetSeconds": 18
+    },
+    {
+      "date": "2026-10-09",
+      "issuedAt": "2026-10-08T15:41:10.420Z",
+      "observedAvailableAt": "2026-10-10T00:00:55.743Z",
+      "hours": 24,
+      "maxOffsetSeconds": 62
     }
   ],
   "compatibleWithDailyV1": false,
@@ -645,6 +652,26 @@
         "gap",
         "missing-hourly-samples"
       ]
+    },
+    {
+      "date": "2026-10-08",
+      "receivedAt": "2026-10-10T00:00:55.743Z",
+      "complete": false,
+      "validHours": 22,
+      "expectedHours": 24,
+      "reasons": [
+        "coverage",
+        "gap",
+        "missing-hourly-samples"
+      ]
+    },
+    {
+      "date": "2026-10-09",
+      "receivedAt": "2026-10-10T00:00:55.743Z",
+      "complete": true,
+      "validHours": 24,
+      "expectedHours": 24,
+      "reasons": []
     }
   ]
 }
