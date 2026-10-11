@@ -15,6 +15,9 @@ let lastAttempt=0;
 let xacReference=null;
 let xacLoadedAt=0;
 let firmsLoaded=false;
+let firmsMap;
+let firmsMarkers;
+let firmsLeafletPromise;
 
 function put(id,value){
   const node=document.getElementById(id);
@@ -24,6 +27,7 @@ function put(id,value){
   node.removeAttribute('aria-busy');
 }
 function number(value,digits=1){const n=finiteValue(value);return n!==null?new Intl.NumberFormat(CONFIG.locale,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(n):'—';}
+function escapeHtml(value){return String(value??'').replace(/[&<>'"]/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));}
 function aqiReading(value){
   const n=finiteValue(value);
   if(n===null)return {label:'No disponible',copy:'No s’ha pogut calcular l’índex actual.',health:'Dades pendents',advice:'Torna-ho a consultar més tard.',position:null};
@@ -235,6 +239,40 @@ function initEnvironmentViewers(){
   activate(buttons[0].dataset.environmentViewer);
 }
 
+function ensureFirmsLeaflet(){
+  if(window.L)return Promise.resolve();
+  if(firmsLeafletPromise)return firmsLeafletPromise;
+  firmsLeafletPromise=new Promise((resolve,reject)=>{
+    if(!document.getElementById('leaflet-styles')){const styles=document.createElement('link');styles.id='leaflet-styles';styles.rel='stylesheet';styles.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';styles.crossOrigin='';document.head.append(styles);}
+    const existing=document.getElementById('leaflet-script');
+    if(existing){if(window.L){resolve();return;}existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',reject,{once:true});return;}
+    const script=document.createElement('script');script.id='leaflet-script';script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';script.crossOrigin='';script.async=true;script.addEventListener('load',resolve,{once:true});script.addEventListener('error',reject,{once:true});document.head.append(script);
+  });
+  return firmsLeafletPromise;
+}
+
+function firmsDate(value){return new Intl.DateTimeFormat('ca-ES',{timeZone:'Europe/Madrid',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value));}
+function firmsMarkerColor(item){return Date.now()-new Date(item.detectedAt).getTime()<=24*60*60_000?'#ff765f':'#efb56c';}
+
+async function renderFirmsMap(payload){
+  await ensureFirmsLeaflet();
+  const target=document.getElementById('environment-firms-map');if(!target)return;
+  const center=[Number(payload.center?.latitude)||CONFIG.station.latitude,Number(payload.center?.longitude)||CONFIG.station.longitude];
+  if(!firmsMap){
+    firmsMap=window.L.map(target,{zoomControl:true,scrollWheelZoom:false,minZoom:4,maxZoom:15}).setView(center,7);
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap · NASA FIRMS VIIRS'}).addTo(firmsMap);
+    window.L.circleMarker(center,{radius:6,color:'#fff',weight:2,fillColor:'#89d6a3',fillOpacity:1}).addTo(firmsMap).bindTooltip('Sant Celoni · Estació Fontanillas');
+  }
+  if(firmsMarkers)firmsMarkers.clearLayers();else firmsMarkers=window.L.layerGroup().addTo(firmsMap);
+  for(const item of payload.detections||[]){
+    const latitude=Number(item.latitude);const longitude=Number(item.longitude);if(!Number.isFinite(latitude)||!Number.isFinite(longitude))continue;
+    const detail=[`${escapeHtml(firmsDate(item.detectedAt))}`,`${escapeHtml(item.satellite||'VIIRS')} · ${escapeHtml(item.instrument||'VIIRS')}`,`${number(item.distanceKm,1)} km de Fontanillas`,Number.isFinite(Number(item.fireRadiativePower))?`${number(item.fireRadiativePower,1)} MW radiatius`:null].filter(Boolean);
+    window.L.circleMarker([latitude,longitude],{radius:7,color:'#fff2df',weight:1.5,fillColor:firmsMarkerColor(item),fillOpacity:.88}).bindTooltip(`${number(item.distanceKm,1)} km · ${firmsDate(item.detectedAt)}`).bindPopup(`<strong>Anomalia tèrmica observada</strong><br>${detail.join('<br>')}<br><small>No confirma per si sola un incendi.</small>`).addTo(firmsMarkers);
+  }
+  const radius=Math.max(25,Number(payload.radiusKm)||120);const bounds=window.L.latLng(center).toBounds(radius*2000);firmsMap.fitBounds(bounds,{padding:[18,18],maxZoom:8});
+  requestAnimationFrame(()=>firmsMap.invalidateSize({pan:false}));
+}
+
 async function loadFirmsDetections(){
   firmsLoaded=true;const target=document.getElementById('environment-firms-results');if(!target)return;
   target.innerHTML='<p>Consultant les deteccions satel·litàries de les últimes 48 hores…</p>';
@@ -243,8 +281,9 @@ async function loadFirmsDetections(){
     const response=await fetch(`${CONFIG.apiUrl}/fires-nearby?${params}`,{cache:'no-store'});if(!response.ok)throw new Error(`FIRMS ${response.status}`);
     const payload=await response.json();
     if(!payload.configured){target.innerHTML='<p><strong>Integració preparada.</strong> Falta activar la clau gratuïta de NASA FIRMS al servidor. Mentrestant pots obrir el mapa oficial.</p>';return;}
-    if(!payload.detections?.length){target.innerHTML=`<p><strong>Cap anomalia tèrmica detectada</strong> dins de ${payload.radiusKm} km en les últimes 48 hores.</p><small>Això no descarta un incendi recent, petit o ocult pels núvols.</small>`;return;}
-    target.innerHTML=`<header><strong>${payload.detections.length} deteccions satel·litàries</strong><small>Últimes 48 hores · radi de ${payload.radiusKm} km</small></header><div class="environment-firms__list">${payload.detections.slice(0,12).map(item=>`<article><b>${Number(item.distanceKm).toLocaleString('ca-ES',{maximumFractionDigits:1})} km</b><span>${new Date(item.detectedAt).toLocaleString('ca-ES',{timeZone:'Europe/Madrid',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span><small>${item.satellite||'VIIRS'} · confiança ${item.confidence||'no indicada'}${Number.isFinite(item.fireRadiativePower)?` · ${item.fireRadiativePower} MW`:''}</small></article>`).join('')}</div>`;
+    await renderFirmsMap(payload);
+    if(!payload.detections?.length){target.innerHTML=`<header><strong>Cap anomalia tèrmica detectada</strong><small>Últimes 48 hores · radi de ${number(payload.radiusKm,0)} km</small></header><p>Això no descarta un incendi recent, petit o ocult pels núvols. El Pla Alfa continua sent la referència oficial de risc.</p>`;return;}
+    target.innerHTML=`<header><strong>${payload.detections.length} deteccions satel·litàries al mapa</strong><small>Últimes 48 hores · radi de ${number(payload.radiusKm,0)} km</small></header><div class="environment-firms__list">${payload.detections.slice(0,8).map(item=>`<article><b>${number(item.distanceKm,1)} km</b><span>${escapeHtml(firmsDate(item.detectedAt))}</span><small>${escapeHtml(item.satellite||'VIIRS')} · confiança ${escapeHtml(item.confidence||'no indicada')}${Number.isFinite(Number(item.fireRadiativePower))?` · ${number(item.fireRadiativePower,1)} MW`:''}</small></article>`).join('')}</div>`;
   }catch(error){firmsLoaded=false;target.innerHTML='<p><strong>Deteccions temporalment no disponibles.</strong> El Pla Alfa continua accessible i és la referència oficial de risc.</p>';console.warn('NASA FIRMS no disponible.',error);}
 }
 

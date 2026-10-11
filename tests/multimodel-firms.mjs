@@ -18,7 +18,11 @@ assert.match(worker,/env\.FIRMS_MAP_KEY/);
 assert.match(worker,/url\.pathname === "\/fires-nearby"/);
 assert.match(html,/data-environment-viewer="firms"/);
 assert.match(html,/NASA FIRMS · VIIRS/);
+assert.match(html,/id="environment-firms-map"/);
+assert.match(html,/Veure el mapa mundial/);
 assert.match(environment,/loadFirmsDetections/);
+assert.match(environment,/renderFirmsMap/);
+assert.match(environment,/circleMarker/);
 assert.match(verification,/payload\.byModel/);
 
 console.log('Multimodel, pesos locals i NASA FIRMS: contractes preparats');

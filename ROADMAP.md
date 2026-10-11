@@ -1,6 +1,6 @@
 # Roadmap oficial
 
-## Confiança multimodel i observació satel·litària — Implementat, activació controlada
+## Confiança multimodel i observació satel·litària — Implementat i activat
 
 - [x] Afegir l’ensemble ICON d’Open-Meteo a la previsió i mostrar dispersió, rang central i percentatge de membres amb pluja.
 - [x] Combinar acord determinista i dispersió de l’ensemble sense substituir la previsió operativa ni presentar certeses falses.
@@ -8,7 +8,9 @@
 - [x] Calcular pesos locals inversos a l’error només després de set casos comparables reals; no reconstruir prediccions passades.
 - [x] Separar el risc oficial del Pla Alfa de les deteccions tèrmiques observades per NASA FIRMS i oferir accés extern a EUMETSAT.
 - [x] Preparar el gateway FIRMS sense exposar la clau ni activar alertes o publicacions automàtiques.
-- [ ] Afegir la clau gratuïta `FIRMS_MAP_KEY` al Worker i validar una resposta real abans d’activar les deteccions públiques.
+- [x] Afegir la clau gratuïta `FIRMS_MAP_KEY` al Worker i validar una resposta real abans d’activar les deteccions públiques.
+- [x] Situar les deteccions FIRMS en un mapa interactiu de Catalunya i l’entorn, amb les fitxes textuals com a resum secundari i accés separat al mapa mundial.
+- [x] Incorporar el mapa WMS oficial d’AROME per a tota Catalunya al visor principal i conservar AROME HD com a detall local separat.
 
 ## Laboratori de models francesos — Revisió funcional
 
