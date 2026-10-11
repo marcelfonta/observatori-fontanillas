@@ -1,5 +1,17 @@
 # Changelog
 
+## En preparació — Mapes FIRMS i AROME de Catalunya · 2026-10-11
+
+- Les anomalies tèrmiques de NASA FIRMS es representen en un mapa interactiu
+  de Catalunya i l’entorn, amb antiguitat visual, detall en clicar i Fontanillas
+  com a referència; les targetes queden com a resum secundari.
+- El visor principal de models incorpora el WMS oficial d’AROME per a tota
+  Catalunya, amb precipitació, temperatura, vent, núvols i línia temporal.
+- AROME HD d’1,5 km es conserva com a vista separada de detall del Baix
+  Montseny, sense presentar la graella local com si cobrís tot el territori.
+- El mapa mundial de NASA continua disponible com a consulta externa, evitant
+  carregar desenes de milers de deteccions globals dins del portal.
+
 ## En preparació — Confiança multimodel i deteccions satel·litàries · 2026-10-11
 
 - La previsió combina l’acord entre models deterministes amb la dispersió de
