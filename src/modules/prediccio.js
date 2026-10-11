@@ -2,6 +2,7 @@ import { format, setText } from '../core/dom.js';
 import { getLanguage, getLocale, t } from '../core/i18n.js';
 import { initWhenVisible } from './navigation.js';
 import { renderHomeForecast } from '../features/home-forecast.js';
+import { ensembleDayConfidence } from '../core/ensemble-confidence.js';
 
 const codes = {
   0:['☀️','Cel serè'],1:['🌤️','Poc ennuvolat'],2:['⛅','Intervals'],3:['☁️','Cobert'],
@@ -205,7 +206,7 @@ function renderAgreementCards(items){
 
 function renderModelDay() {
   if(!modelPayload)return;
-  const {ecmwf,gfs,icon,arome}=modelPayload;
+  const {ecmwf,gfs,icon,arome,ensemble}=modelPayload;
   const table=document.getElementById('model-table'); if(!table) return;
   table.innerHTML=`<div class="model-row model-row--head"><strong>Model</strong><span>Temperatura</span><span>Temperatura</span><span>Precipitació</span><span>Vent</span></div>${modelRow('ECMWF',ecmwf,modelDayIndex)}${modelRow('GFS',gfs,modelDayIndex)}${modelRow('ICON',icon,modelDayIndex)}${modelRow('AROME HD · 1,5 km',arome,modelDayIndex)}`;
   const selectedDate=new Date(ecmwf?.daily?.time?.[modelDayIndex]||Date.now());
@@ -216,12 +217,16 @@ function renderModelDay() {
   const available=Object.values(items).filter(item=>item.score>0);
   const mean=available.length?available.reduce((total,item)=>total+item.score,0)/available.length:0;
   const overall=mean>=2.5?'alta':mean>=1.75?'moderada':'baixa';
-  setText('model-status',`Confiança general ${overall}`);
+  const targetDate=ecmwf?.daily?.time?.[modelDayIndex];
+  const ensembleConfidence=ensembleDayConfidence(ensemble,targetDate);
+  const combined=ensembleConfidence?.level==='low'&&overall==='alta'?'moderada':ensembleConfidence?.level==='high'&&overall==='baixa'?'moderada':overall;
+  setText('model-status',`Confiança general ${combined}`);
   const weakest=available.sort((a,b)=>a.score-b.score)[0];
   const weakestName=Object.entries(items).find(([,item])=>item===weakest)?.[0];
   const names={temperature:'la temperatura',precipitation:'la pluja',wind:'el vent',sky:'l’estat del cel'};
   const modelCount=activeModels.length;
-  setText('model-reading',overall==='alta'?`${modelCount===4?'Els quatre models':'Els tres models globals'} dibuixen un escenari consistent en les variables disponibles.`:`La confiança conjunta de ${modelCount} models és ${overall}. El punt amb més diferències és ${names[weakestName] || 'una de les variables'} (${weakest?.detail || 'dades incompletes'}).`);
+  const ensembleCopy=ensembleConfidence?` L’ensemble ICON (${ensembleConfidence.members} membres) indica confiança ${ensembleConfidence.label.toLowerCase()}; el 80% central situa la màxima en ${format(ensembleConfidence.ranges.temperature[0],1)}–${format(ensembleConfidence.ranges.temperature[1],1)} °C i ${Math.round(ensembleConfidence.rainWetShare*100)}% dels membres preveuen precipitació.`:' L’ensemble no està disponible ara mateix; la confiança es basa en els models deterministes.';
+  setText('model-reading',(combined==='alta'?`${modelCount===4?'Els quatre models':'Els tres models globals'} dibuixen un escenari consistent en les variables disponibles.`:`La confiança conjunta és ${combined}. El punt amb més diferències és ${names[weakestName] || 'una de les variables'} (${weakest?.detail || 'dades incompletes'}).`)+ensembleCopy);
   const previous=document.getElementById('model-day-prev'); const next=document.getElementById('model-day-next');
   if(previous)previous.disabled=modelDayIndex<=0; if(next)next.disabled=modelDayIndex>=6;
 }

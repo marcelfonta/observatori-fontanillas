@@ -53,6 +53,7 @@ const ACA_HYDROLOGY_STATIONS = [
 const runtimeStateCache = new Map();
 const STATION_LATITUDE = 41.6906;
 const STATION_LONGITUDE = 2.4890;
+const FIRMS_DEFAULT_RADIUS_KM = 120;
 const WEBCAM_URL = "https://www.alvar.cat/WebCam/Imatge-Camera.jpg";
 const BACKGROUND_URL = "https://santceloni.cat/ARXIUS/agenda/2011/made_in_montseny.jpg";
 const DEFAULT_CONTACT_FROM = "Observatori Fontanillas <formulari@fontanillas.cat>";
@@ -1822,35 +1823,75 @@ async function captureObservation(env) {
   return { observation, storage };
 }
 
+function firmsDistanceKm(lat1,lon1,lat2,lon2){
+  const rad=value=>Number(value)*Math.PI/180;const a=Math.sin(rad(lat2-lat1)/2)**2+Math.cos(rad(lat1))*Math.cos(rad(lat2))*Math.sin(rad(lon2-lon1)/2)**2;
+  return 6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function parseFirmsCsv(text){
+  const lines=String(text||'').trim().split(/\r?\n/);if(lines.length<2)return [];
+  const headers=lines[0].split(',').map(value=>value.trim());
+  return lines.slice(1).map(line=>Object.fromEntries(line.split(',').map((value,index)=>[headers[index],value.trim()])));
+}
+
+async function nearbyActiveFires(url,env){
+  if(!env.FIRMS_MAP_KEY)return json({ok:true,configured:false,detections:[],source:'NASA FIRMS · VIIRS'},200,'public, max-age=900');
+  const latitude=finite(url.searchParams.get('lat'))??STATION_LATITUDE;const longitude=finite(url.searchParams.get('lon'))??STATION_LONGITUDE;
+  const radius=Math.min(250,Math.max(25,finite(url.searchParams.get('radius'))??FIRMS_DEFAULT_RADIUS_KM));
+  if(latitude < -90||latitude>90||longitude < -180||longitude>180)return json({error:'Coordenades no vàlides'},400);
+  const latDelta=radius/111;const lonDelta=radius/(111*Math.max(.2,Math.cos(latitude*Math.PI/180)));
+  const area=[longitude-lonDelta,latitude-latDelta,longitude+lonDelta,latitude+latDelta].map(value=>value.toFixed(4)).join(',');
+  const source=cleanText(env.FIRMS_SOURCE||'VIIRS_NOAA21_NRT',40);
+  const response=await fetch(`https://firms.modaps.eosdis.nasa.gov/api/area/csv/${encodeURIComponent(env.FIRMS_MAP_KEY)}/${encodeURIComponent(source)}/${area}/2`,{headers:{Accept:'text/csv'}});
+  if(!response.ok)throw new Error(`NASA FIRMS ${response.status}`);
+  const detections=parseFirmsCsv(await response.text()).map(row=>{
+    const lat=finite(row.latitude);const lon=finite(row.longitude);if(lat===null||lon===null)return null;
+    const distance=firmsDistanceKm(latitude,longitude,lat,lon);if(distance>radius)return null;
+    const rawTime=String(row.acq_time||'').padStart(4,'0');
+    return {latitude:lat,longitude:lon,distanceKm:Number(distance.toFixed(1)),detectedAt:`${row.acq_date}T${rawTime.slice(0,2)}:${rawTime.slice(2)}:00Z`,satellite:cleanText(row.satellite,24),instrument:cleanText(row.instrument,24),confidence:cleanText(row.confidence,16),fireRadiativePower:finite(row.frp),dayNight:row.daynight==='N'?'night':'day'};
+  }).filter(Boolean).sort((a,b)=>a.distanceKm-b.distanceKm).slice(0,40);
+  return json({ok:true,configured:true,generatedAt:new Date().toISOString(),radiusKm:radius,center:{latitude,longitude},source:'NASA FIRMS · VIIRS',note:'Anomalies tèrmiques detectades per satèl·lit; no confirmen per si soles un incendi forestal.',detections},200,'public, max-age=900');
+}
+
 async function captureForecastSnapshot(env) {
   if (!(await ensureForecastSchema(env))) return { stored:false, reason:"D1 no configurat" };
   const issued = new Date();
   const issuedAt = issued.toISOString();
   const issuedEpoch = Math.floor(issued.getTime() / 1000);
   const bucket = `${issuedAt.slice(0,10)}T${String(Math.floor(issued.getUTCHours() / 6) * 6).padStart(2,"0")}`;
-  const existing = await env.DB.prepare("SELECT 1 AS found FROM forecast_snapshots WHERE snapshot_key LIKE ? LIMIT 1").bind(`open-meteo:${bucket}:%`).first();
-  if (existing?.found) return { stored:false, reason:"bucket_exists", bucket };
-  const params = new URLSearchParams({
-    latitude:String(STATION_LATITUDE), longitude:String(STATION_LONGITUDE),
-    daily:"weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max",
-    timezone:TIME_ZONE, forecast_days:"7",
-  });
-  const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, { headers:{ Accept:"application/json" } });
-  if (!response.ok) throw new Error(`Open-Meteo snapshot ${response.status}`);
-  const payload = await response.json();
-  const daily = payload.daily || {};
-  if (!Array.isArray(daily.time) || !daily.time.length) throw new Error("Open-Meteo no ha retornat la previsió diària");
-  const statements = daily.time.slice(0, 7).map((targetDate, index) => env.DB.prepare(`INSERT OR IGNORE INTO forecast_snapshots
+  const definitions=[
+    {model:'best_match',endpoint:'/v1/forecast',days:7},
+    {model:'ecmwf',endpoint:'/v1/ecmwf',days:7},
+    {model:'icon',endpoint:'/v1/dwd-icon',days:7},
+    {model:'gfs',endpoint:'/v1/gfs',days:7},
+    {model:'arome_hd',endpoint:'/v1/meteofrance',days:2,source:'meteofrance_arome_france_hd'},
+  ];
+  const results=await Promise.allSettled(definitions.map(async definition=>{
+    const params=new URLSearchParams({latitude:String(STATION_LATITUDE),longitude:String(STATION_LONGITUDE),daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max',timezone:TIME_ZONE,forecast_days:String(definition.days)});
+    if(definition.source)params.set('models',definition.source);
+    const response=await fetch(`https://api.open-meteo.com${definition.endpoint}?${params}`,{headers:{Accept:'application/json'}});
+    if(!response.ok)throw new Error(`${definition.model} snapshot ${response.status}`);
+    return {definition,payload:await response.json()};
+  }));
+  const statements=[];const captured=[];const failed=[];
+  for(const result of results){
+    if(result.status==='rejected'){failed.push(String(result.reason?.message||result.reason));continue;}
+    const {definition,payload}=result.value;const daily=payload.daily||{};
+    if(!Array.isArray(daily.time)||!daily.time.length){failed.push(`${definition.model}: sense previsió diària`);continue;}
+    captured.push(definition.model);
+    statements.push(...daily.time.slice(0,definition.days).map((targetDate,index)=>env.DB.prepare(`INSERT OR IGNORE INTO forecast_snapshots
     (snapshot_key,issued_at,issued_epoch,target_date,horizon_day,provider,model,weather_code,
      temperature_max,temperature_min,precipitation_probability,precipitation_sum,wind_gust_max)
-    VALUES (?,?,?,?,?,'Open-Meteo','best_match',?,?,?,?,?,?)`).bind(
-      `open-meteo:${bucket}:${targetDate}`, issuedAt, issuedEpoch, targetDate, index,
+    VALUES (?,?,?,?,?,'Open-Meteo',?,?,?,?,?,?,?)`).bind(
+      `open-meteo:${definition.model}:${bucket}:${targetDate}`,issuedAt,issuedEpoch,targetDate,index,definition.model,
       finite(daily.weather_code?.[index]), finite(daily.temperature_2m_max?.[index]),
       finite(daily.temperature_2m_min?.[index]), finite(daily.precipitation_probability_max?.[index]),
       finite(daily.precipitation_sum?.[index]), finite(daily.wind_gusts_10m_max?.[index])
-    ));
-  const results = await env.DB.batch(statements);
-  return { stored:true, inserted:results.reduce((sum,item)=>sum+(Number(item?.meta?.changes)||0),0), issuedAt, bucket };
+    )));
+  }
+  if(!statements.length)throw new Error('Cap model ha retornat una previsió verificable');
+  const inserted=await env.DB.batch(statements);
+  return {stored:true,inserted:inserted.reduce((sum,item)=>sum+(Number(item?.meta?.changes)||0),0),issuedAt,bucket,captured,failed};
 }
 
 function verificationMean(values) {
@@ -1872,10 +1913,10 @@ async function forecastVerification(url, env) {
         COUNT(*) AS observed_samples
       FROM observations WHERE local_date >= ? GROUP BY local_date
     ), ranked AS (
-      SELECT f.*, ROW_NUMBER() OVER (PARTITION BY f.target_date,f.horizon_day ORDER BY f.issued_epoch DESC) AS position
+      SELECT f.*, ROW_NUMBER() OVER (PARTITION BY f.target_date,f.horizon_day,f.model ORDER BY f.issued_epoch DESC) AS position
       FROM forecast_snapshots f WHERE f.target_date >= ? AND f.target_date < ?
     )
-    SELECT r.target_date,r.horizon_day,r.issued_at,r.temperature_max,r.temperature_min,
+    SELECT r.target_date,r.horizon_day,r.issued_at,r.provider,r.model,r.temperature_max,r.temperature_min,
       r.precipitation_probability,r.precipitation_sum,r.wind_gust_max,r.weather_code,
       o.observed_max,o.observed_min,o.observed_rain,o.observed_gust,o.observed_samples
     FROM ranked r JOIN daily_observed o ON o.target_date=r.target_date
@@ -1913,9 +1954,9 @@ async function forecastVerification(url, env) {
   // El resum principal ha de comparar sempre el mateix marge temporal.
   // Barrejar actualitzacions del mateix dia amb horitzons de fins a set dies
   // inflaria la mostra i faria que les mètriques fossin difícils de llegir.
-  const primaryRows = rows.filter(row=>Number(row.horizon_day)===1);
+  const primaryRows = rows.filter(row=>Number(row.horizon_day)===1&&row.model==='best_match');
   const summary = summarize(primaryRows);
-  const horizons = horizonDefinitions.map(definition => ({ ...definition, ...summarize(rows.filter(row=>Number(row.horizon_day)>=definition.min&&Number(row.horizon_day)<=definition.max)) }));
+  const horizons = horizonDefinitions.map(definition => ({ ...definition, ...summarize(rows.filter(row=>row.model==='best_match'&&Number(row.horizon_day)>=definition.min&&Number(row.horizon_day)<=definition.max)) }));
   const detail = primaryRows.slice(0,14).map(row=>({
     date:row.target_date, issuedAt:row.issued_at,
     forecast:{ max:row.temperature_max,min:row.temperature_min,rain:row.precipitation_sum,rainProbability:row.precipitation_probability,gust:row.wind_gust_max,weatherCode:row.weather_code },
@@ -1925,7 +1966,12 @@ async function forecastVerification(url, env) {
   const sampleDays=new Set(primaryRows.map(row=>row.target_date)).size;
   const status = sampleDays >= 7 ? "ready" : "collecting";
   const confidence=sampleDays>=30?{level:'consolidated',label:'Mostra consolidada',note:'30 dies o més verificats'}:sampleDays>=14?{level:'growing',label:'Mostra en creixement',note:'Calen 30 dies per consolidar tendències'}:{level:'preliminary',label:'Resultat preliminar',note:'Menys de 14 dies verificats'};
-  return json({ ok:true,status,requestedDays,generatedAt:new Date().toISOString(),firstIssued:firstSnapshot?.firstIssued||null,storedForecasts:Number(firstSnapshot?.total)||0,sampleDays,totalComparisons:rows.length,summaryScope:"tomorrow",confidence,summary,horizons,detail,method:{ provider:"Open-Meteo · best_match",observation:"Observatori Fontanillas · D1",minimumObservedSamples:72,rainThresholdMillimetres:0.2,rainProbabilityThreshold:40,note:"Els indicadors principals comparen només la previsió de demà guardada el dia anterior. No es reconstrueixen pronòstics passats. L’índex Brier de pluja va de 0 (millor) a 1 (pitjor)." } }, 200, "public, max-age=900");
+  const modelNames={best_match:'Open‑Meteo Best Match',ecmwf:'ECMWF',icon:'ICON',gfs:'GFS',arome_hd:'AROME HD'};
+  const modelOrder=['best_match','ecmwf','icon','gfs','arome_hd'];
+  const byModel=modelOrder.map(model=>{const subset=rows.filter(row=>row.model===model&&Number(row.horizon_day)===1);return {model,label:modelNames[model],...summarize(subset)};}).filter(item=>item.samples);
+  const normalizedWeights=key=>{const eligible=byModel.filter(item=>item.samples>=7&&Number.isFinite(Number(item[key])));const raw=eligible.map(item=>({model:item.model,value:1/(Math.max(.01,Number(item[key]))+(key==='rainBrier'?.04:.15))}));const total=raw.reduce((sum,item)=>sum+item.value,0);return total?Object.fromEntries(raw.map(item=>[item.model,verificationRound(item.value/total,3)])):{};};
+  const weights={temperature:normalizedWeights('temperatureMae'),rain:normalizedWeights('rainBrier'),wind:normalizedWeights('windMae'),minimumSamples:7,note:'Pes invers a l’error observat; només es calcula amb set casos comparables o més i no altera encara la previsió operativa.'};
+  return json({ ok:true,status,requestedDays,generatedAt:new Date().toISOString(),firstIssued:firstSnapshot?.firstIssued||null,storedForecasts:Number(firstSnapshot?.total)||0,sampleDays,totalComparisons:rows.length,summaryScope:"tomorrow",confidence,summary,horizons,detail,byModel,weights,method:{ provider:"Open-Meteo · Best Match, ECMWF, ICON, GFS i AROME HD",observation:"Observatori Fontanillas · D1",minimumObservedSamples:72,rainThresholdMillimetres:0.2,rainProbabilityThreshold:40,note:"Els indicadors principals comparen només la previsió de demà guardada el dia anterior. La comparativa per model i els pesos locals només apareixen amb mostres reals; no es reconstrueixen pronòstics passats. L’índex Brier de pluja va de 0 (millor) a 1 (pitjor)." } }, 200, "public, max-age=900");
 }
 
 function socialNumber(value, digits = 1) {
@@ -6737,6 +6783,7 @@ export default {
       if (url.pathname === "/stations") return comparisonStations(url, env);
       if (url.pathname === "/met-forecast") return metNorwayForecast(url);
       if (url.pathname === "/webcams-nearby") return nearbyWebcams(url, env);
+      if (url.pathname === "/fires-nearby") return nearbyActiveFires(url, env);
       if (url.pathname === "/forecast-videos") return forecastVideos(request, ctx);
       if (url.pathname === "/forecast-verification") return forecastVerification(url, env);
       if (url.pathname === "/meteofrance/models") return meteofranceModels(env);
@@ -6745,7 +6792,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/camera/nord/latest.jpg", "/camera/nord/timelapse-preview.mp4", "/forecast-videos", "/forecast-verification?days=45", "/meteofrance/models", "/meteofrance/map?model=arome&layer=precipitation", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/fires-nearby?lat=41.69&lon=2.49", "/camera/nord/latest.jpg", "/camera/nord/timelapse-preview.mp4", "/forecast-videos", "/forecast-verification?days=45", "/meteofrance/models", "/meteofrance/map?model=arome&layer=precipitation", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

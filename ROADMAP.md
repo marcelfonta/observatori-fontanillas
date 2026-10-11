@@ -1,12 +1,22 @@
 # Roadmap oficial
 
+## Confiança multimodel i observació satel·litària — Implementat, activació controlada
+
+- [x] Afegir l’ensemble ICON d’Open-Meteo a la previsió i mostrar dispersió, rang central i percentatge de membres amb pluja.
+- [x] Combinar acord determinista i dispersió de l’ensemble sense substituir la previsió operativa ni presentar certeses falses.
+- [x] Congelar cada dia Best Match, ECMWF, ICON, GFS i AROME HD per verificar-los separadament amb l’estació local.
+- [x] Calcular pesos locals inversos a l’error només després de set casos comparables reals; no reconstruir prediccions passades.
+- [x] Separar el risc oficial del Pla Alfa de les deteccions tèrmiques observades per NASA FIRMS i oferir accés extern a EUMETSAT.
+- [x] Preparar el gateway FIRMS sense exposar la clau ni activar alertes o publicacions automàtiques.
+- [ ] Afegir la clau gratuïta `FIRMS_MAP_KEY` al Worker i validar una resposta real abans d’activar les deteccions públiques.
+
 ## Laboratori de models francesos — Revisió funcional
 
 - [x] Estabilitzar el visor durant l’scroll i els canvis de mida en escriptori i mòbil.
 - [x] Publicar i validar els instants temporals oficials sense exposar credencials.
 - [x] Afegir línia temporal, reproducció, pausa i navegació fotograma a fotograma.
 - [x] Mantenir la degradació independent per producte i un missatge d’estat explícit.
-- [ ] Incorporar els ensembles numèrics quan hi hagi una ingestió GRIB/WCS validada.
+- [x] Incorporar un ensemble numèric ICON via Open-Meteo per quantificar la dispersió; la ingestió directa GRIB/WCS de Météo-France continua sent una línia separada.
 
 ## Càmera meteorològica pròpia — Captura, web i difusió
 

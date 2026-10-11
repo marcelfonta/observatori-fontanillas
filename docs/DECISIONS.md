@@ -1,5 +1,24 @@
 # Registre de decisions
 
+## ADR — Confiança multimodel, pesos locals i satèl·lit sense duplicacions (2026-10-11)
+
+- Open-Meteo continua sent el gateway numèric públic: s’hi afegeix l’ensemble
+  ICON per mesurar dispersió, no una segona previsió paral·lela ni Meteomatics
+  de pagament. AEMET i Météo-France continuen com a fonts oficials específiques.
+- La confiança visible combina acord determinista i dispersió de membres. El
+  rang mostrat és central i la proporció de membres amb pluja és descriptiva;
+  no es presenta com una certesa ni com un avís oficial.
+- El Worker congela Best Match, ECMWF, ICON, GFS i AROME HD per model i horitzó.
+  Els pesos locals són inversos a l’error i exigeixen almenys set casos reals
+  comparables. No es reconstrueix l’històric ni s’altera la previsió operativa
+  abans d’acumular mostra suficient.
+- El Pla Alfa conserva el significat de risc i restriccions oficials. NASA FIRMS
+  mostra deteccions tèrmiques observades, que poden tenir falsos positius i no
+  confirmen per si soles un incendi. No generen alertes ni publicacions socials.
+- La clau FIRMS és un secret opcional del Worker. La web es degrada amb un
+  missatge explícit mentre no estigui configurada. EUMETSAT es manté com a visor
+  oficial extern per evitar duplicar una ingestió satel·litària sense necessitat.
+
 ## ADR — Timelapses manuals fins a la ubicació definitiva (2026-10-08)
 
 - Els timelapses es generen manualment des de l'arxiu original de la Raspberry;

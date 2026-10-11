@@ -109,7 +109,7 @@ function deriveAromeWeatherCodes(payload){
 }
 
 export async function fetchModelComparison() {
-  const [ecmwf, gfs, icon, arome] = await Promise.all([
+  const [ecmwf, gfs, icon, arome, ensemble] = await Promise.all([
     fetchModel('/v1/ecmwf'),
     fetchModel('/v1/gfs'),
     fetchModel('/v1/dwd-icon'),
@@ -118,9 +118,18 @@ export async function fetchModelComparison() {
     fetchModel('/v1/meteofrance', {
       model:'meteofrance_arome_france_hd', forecastDays:2,
       hourly:'precipitation,cloud_cover', deriveWeatherCode:true
-    }).catch(()=>null)
+    }).catch(()=>null),
+    fetchIconEnsemble().catch(()=>null)
   ]);
-  return { ecmwf, gfs, icon, arome };
+  return { ecmwf, gfs, icon, arome, ensemble };
+}
+
+async function fetchIconEnsemble(){
+  const {latitude,longitude}=CONFIG.station;
+  const params=new URLSearchParams({latitude,longitude,models:'icon_seamless',hourly:'temperature_2m,precipitation,wind_gusts_10m',timezone:'Europe/Madrid',forecast_days:'7'});
+  const response=await request(`https://ensemble-api.open-meteo.com/v1/ensemble?${params}`,{cache:'no-store'},20000);
+  if(!response.ok)throw new Error(`Ensemble API ${response.status}`);
+  return response.json();
 }
 
 export async function fetchAromeLocalGrid(){

@@ -14,6 +14,7 @@ let refreshInFlight=null;
 let lastAttempt=0;
 let xacReference=null;
 let xacLoadedAt=0;
+let firmsLoaded=false;
 
 function put(id,value){
   const node=document.getElementById(id);
@@ -217,6 +218,7 @@ function initEnvironmentViewers(){
   const activate=name=>{
     buttons.forEach(button=>{const active=button.dataset.environmentViewer===name;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});
     panels.forEach(panel=>{const active=panel.dataset.environmentPanel===name;panel.hidden=!active;if(active){const asset=panel.querySelector('[data-src]');const skipEmbeddedJellyfish=name==='jellyfish'&&compactViewer.matches&&asset?.tagName==='IFRAME';if(asset&&!skipEmbeddedJellyfish&&!asset.getAttribute('src')){const suffix=asset.tagName==='IMG'?`?v=${new Date().toISOString().slice(0,13)}`:'';asset.src=`${asset.dataset.src}${suffix}`;}}});
+    if(name==='firms'&&!firmsLoaded)void loadFirmsDetections();
   };
   buttons.forEach((button,index)=>{
     button.addEventListener('click',()=>activate(button.dataset.environmentViewer));
@@ -231,6 +233,19 @@ function initEnvironmentViewers(){
     });
   });
   activate(buttons[0].dataset.environmentViewer);
+}
+
+async function loadFirmsDetections(){
+  firmsLoaded=true;const target=document.getElementById('environment-firms-results');if(!target)return;
+  target.innerHTML='<p>Consultant les deteccions satel·litàries de les últimes 48 hores…</p>';
+  try{
+    const params=new URLSearchParams({lat:String(CONFIG.station.latitude),lon:String(CONFIG.station.longitude),radius:'120'});
+    const response=await fetch(`${CONFIG.apiUrl}/fires-nearby?${params}`,{cache:'no-store'});if(!response.ok)throw new Error(`FIRMS ${response.status}`);
+    const payload=await response.json();
+    if(!payload.configured){target.innerHTML='<p><strong>Integració preparada.</strong> Falta activar la clau gratuïta de NASA FIRMS al servidor. Mentrestant pots obrir el mapa oficial.</p>';return;}
+    if(!payload.detections?.length){target.innerHTML=`<p><strong>Cap anomalia tèrmica detectada</strong> dins de ${payload.radiusKm} km en les últimes 48 hores.</p><small>Això no descarta un incendi recent, petit o ocult pels núvols.</small>`;return;}
+    target.innerHTML=`<header><strong>${payload.detections.length} deteccions satel·litàries</strong><small>Últimes 48 hores · radi de ${payload.radiusKm} km</small></header><div class="environment-firms__list">${payload.detections.slice(0,12).map(item=>`<article><b>${Number(item.distanceKm).toLocaleString('ca-ES',{maximumFractionDigits:1})} km</b><span>${new Date(item.detectedAt).toLocaleString('ca-ES',{timeZone:'Europe/Madrid',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span><small>${item.satellite||'VIIRS'} · confiança ${item.confidence||'no indicada'}${Number.isFinite(item.fireRadiativePower)?` · ${item.fireRadiativePower} MW`:''}</small></article>`).join('')}</div>`;
+  }catch(error){firmsLoaded=false;target.innerHTML='<p><strong>Deteccions temporalment no disponibles.</strong> El Pla Alfa continua accessible i és la referència oficial de risc.</p>';console.warn('NASA FIRMS no disponible.',error);}
 }
 
 export async function initEnvironment(){

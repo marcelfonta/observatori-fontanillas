@@ -1,5 +1,18 @@
 # Changelog
 
+## En preparació — Confiança multimodel i deteccions satel·litàries · 2026-10-11
+
+- La previsió combina l’acord entre models deterministes amb la dispersió de
+  l’ensemble ICON i explica el rang central i els membres que esperen pluja.
+- El Worker conserva prediccions independents de Best Match, ECMWF, ICON, GFS
+  i AROME HD, i calcula l’encert i pesos locals només amb casos futurs reals.
+- El visor ambiental separa el risc oficial del Pla Alfa de les anomalies
+  tèrmiques observades per NASA FIRMS, sense convertir-les en avisos d’incendi.
+- La integració FIRMS queda preparada i degradada de manera segura fins que
+  s’hi configuri una clau gratuïta; no activa notificacions ni publicacions.
+- S’afegeix un accés complementari al visor oficial d’EUMETSAT sense duplicar
+  cap capa meteorològica operativa de la web.
+
 ## En preparació — Timelapses manuals de la càmera nord · 2026-10-08
 
 - La Raspberry pot crear una previsualització MP4 a partir de les captures
