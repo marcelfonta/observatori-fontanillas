@@ -474,6 +474,7 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .environment-viewer-meta strong { color: var(--text); }
 .environment-viewer-meta .environment-viewer-links { display: flex; gap: 12px; margin-left: auto; white-space: nowrap; }
 .environment-viewer-meta a { color: var(--green); text-decoration: none; }
+.environment-firms{background:#07110f}.environment-firms__results{min-height:260px;padding:24px;color:var(--muted)}.environment-firms__results>p{margin:0;line-height:1.6}.environment-firms__results>small{display:block;margin-top:8px}.environment-firms__results>header{display:flex;justify-content:space-between;gap:16px;margin-bottom:16px;color:var(--text)}.environment-firms__results>header small{color:var(--muted)}.environment-firms__list{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.environment-firms__list article{padding:14px;border:1px solid var(--line);border-radius:13px;background:rgba(22,59,46,.45)}.environment-firms__list :is(b,span,small){display:block}.environment-firms__list b{color:#efb56c}.environment-firms__list span{margin:5px 0;color:var(--text)}.environment-firms__list small{line-height:1.45;color:var(--muted)}
 
 .alert-history-panel__actions { display: flex; justify-content: flex-end; margin-top: 14px; }
 .alert-history-panel__actions a { display: inline-flex; min-height: 38px; align-items: center; padding: 8px 13px; border: 1px solid rgba(137,214,163,.35); border-radius: 999px; color: var(--green); font-size: 10px; font-weight: 800; text-decoration: none; }

@@ -12,7 +12,7 @@ assert.match(api,/model:'meteofrance_arome_france_hd', forecastDays:2/);
 assert.match(api,/hourly:'precipitation,cloud_cover', deriveWeatherCode:true/);
 assert.match(api,/export async function fetchAromeLocalGrid/);
 assert.match(api,/forecast_hours:'48'/);
-assert.match(api,/return \{ ecmwf, gfs, icon, arome \}/);
+assert.match(api,/return \{ ecmwf, gfs, icon, arome, ensemble \}/);
 assert.match(prediction,/AROME HD · 1,5 km/);
 assert.match(prediction,/síntesi derivada/);
 assert.match(prediction,/activeModels=\[ecmwf,gfs,icon,arome\]\.filter/);

@@ -5,6 +5,8 @@
   "compatibility_date": "2026-08-22",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
+  // Secret opcional, mai dins d'aquest fitxer: FIRMS_MAP_KEY.
+  // Configura'l amb `wrangler secret put FIRMS_MAP_KEY` per activar NASA FIRMS.
   "vars": {
     "ENVIRONMENT": "local",
     "META_VIDEO_AUTOMATION_ENABLED": "false",
