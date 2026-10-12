@@ -22,6 +22,8 @@ assert.match(css,/\.webcam-frame\.is-unavailable/);
 assert.match(html,/id="webcam-expand"/);
 assert.match(html,/id="webcam-dialog"/);
 assert.match(html,/latest-branded\.jpg/);
+assert.match(html,/Obrir imatge amb privacitat/);
+assert.doesNotMatch(html,/Obrir original net/);
 assert.match(webcam,/dialog\.showModal/);
 assert.match(worker,/CAMERA_STALE_MAX_MS = 30 \* 60 \* 1000/);
 assert.match(worker,/observedJob\('camera-nord',monitorCameraFreshness\(env\)\)/);
