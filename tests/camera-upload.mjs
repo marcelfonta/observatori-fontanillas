@@ -5,7 +5,8 @@ import worker from '../worker/index.js';
 const timelapseScript = await readFile(new URL('../scripts/camera-timelapse.sh', import.meta.url), 'utf8');
 assert.match(timelapseScript,/arxiu\/\$YEAR\/\$MONTH\/\$DAY/);
 assert.match(timelapseScript,/--upload-preview/);
-assert.match(timelapseScript,/Publicació automàtica: desactivada/);
+assert.match(timelapseScript,/Publicació automàtica: prevista/);
+assert.match(timelapseScript,/boxblur/);
 assert.doesNotMatch(timelapseScript,/systemctl|crontab|buffer-video|social-video/);
 
 const secret = 'camera-upload-secret-'.padEnd(48, 'x');
@@ -65,11 +66,7 @@ assert.equal(upload.status, 201);
 assert.equal((await upload.json()).url, 'https://fonta-meteo.example/camera/nord/latest.jpg');
 
 const served = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/latest.jpg'), env, context);
-assert.equal(served.status, 200);
-assert.equal(served.headers.get('Content-Type'), 'image/jpeg');
-assert.equal(served.headers.get('Access-Control-Allow-Origin'), '*');
-assert.equal(served.headers.get('X-Captured-At'), capturedAt);
-assert.deepEqual(new Uint8Array(await served.arrayBuffer()), jpeg);
+assert.equal(served.status, 404, 'L’original net no pot quedar exposat abans de crear la variant pública.');
 
 const branded = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/upload-branded', {
   method:'PUT',
@@ -81,6 +78,12 @@ assert.equal((await branded.json()).url, 'https://fonta-meteo.example/camera/nor
 const servedBranded = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/latest-branded.jpg'), env, context);
 assert.equal(servedBranded.status, 200);
 assert.match(servedBranded.headers.get('Content-Disposition'), /-marca\.jpg/);
+const servedPublic = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/latest.jpg'), env, context);
+assert.equal(servedPublic.status, 200);
+assert.equal(servedPublic.headers.get('Content-Type'), 'image/jpeg');
+assert.equal(servedPublic.headers.get('Access-Control-Allow-Origin'), '*');
+assert.equal(servedPublic.headers.get('X-Captured-At'), capturedAt);
+assert.deepEqual(new Uint8Array(await servedPublic.arrayBuffer()), jpeg);
 assert.ok(objects.has('nord/latest.jpg'));
 assert.ok(objects.has('nord/latest-branded.jpg'));
 
@@ -99,14 +102,15 @@ const timelapse = await worker.fetch(new Request('https://fonta-meteo.example/ca
 }), env, context);
 assert.equal(timelapse.status, 201);
 const timelapsePayload = await timelapse.json();
-assert.equal(timelapsePayload.publication, 'disabled');
+assert.equal(timelapsePayload.publication, 'ready');
 assert.equal(timelapsePayload.url, 'https://fonta-meteo.example/camera/nord/timelapse-preview.mp4');
 const servedTimelapse = await worker.fetch(new Request(timelapsePayload.url), env, context);
 assert.equal(servedTimelapse.status, 200);
 assert.equal(servedTimelapse.headers.get('Content-Type'), 'video/mp4');
-assert.equal(servedTimelapse.headers.get('X-Automatic-Publication'), 'disabled');
+assert.equal(servedTimelapse.headers.get('X-Automatic-Publication'), 'three-times-weekly');
 assert.deepEqual(new Uint8Array(await servedTimelapse.arrayBuffer()), mp4);
 assert.ok(objects.has('nord/timelapses/latest-preview.mp4'));
+assert.ok(objects.has('nord/timelapses/daily/2026-10-07.mp4'));
 
 const invalid = new Uint8Array(2048).fill(1);
 const rejected = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/upload', {

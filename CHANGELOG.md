@@ -1,5 +1,20 @@
 # Changelog
 
+## En preparació — Timelapses diaris i privacitat de la càmera · 2026-10-12
+
+- La Raspberry prepara cada nit el timelapse del dia anterior i en conserva els
+  darrers vídeos diaris per poder-los revisar des de l'administració.
+- Els vídeos de dilluns, dimecres i divendres es publiquen automàticament a
+  Instagram, Facebook, TikTok i YouTube; els altres disposen de publicació
+  manual confirmada des de l'administració.
+- La instal·lació usa un temporitzador systemd d'usuari, persistent i reversible.
+- El registre per data i canal reprèn els processaments pendents de Meta i evita
+  repetir una publicació completada.
+- Les cases immediates queden difuminades per trams seguint la línia urbana,
+  amb una intensitat moderada i sense tapar grans rectangles de cel, abans de
+  qualsevol sortida pública, inclosos JPEG, web, Reels i timelapses. L'original
+  net només roman a l'arxiu local privat de la Raspberry.
+
 ## En preparació — Mapes FIRMS i AROME de Catalunya · 2026-10-11
 
 - Les anomalies tèrmiques de NASA FIRMS es representen en un mapa interactiu

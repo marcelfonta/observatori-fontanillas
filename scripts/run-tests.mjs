@@ -19,6 +19,7 @@ if (quick && !selected.includes('audit-seo-video.mjs')) selected.push('audit-seo
 if (quick && !selected.includes('arome-integration.mjs')) selected.push('arome-integration.mjs');
 if (quick && !selected.includes('ensemble-confidence.mjs')) selected.push('ensemble-confidence.mjs');
 if (quick && !selected.includes('multimodel-firms.mjs')) selected.push('multimodel-firms.mjs');
+if (quick && !selected.includes('camera-timelapse-schedule.mjs')) selected.push('camera-timelapse-schedule.mjs');
 if (quick && !selected.includes('meteofrance-direct.mjs')) selected.push('meteofrance-direct.mjs');
 if (quick && !selected.includes('forecast-dayparts.mjs')) selected.push('forecast-dayparts.mjs');
 if (quick && !selected.includes('cecat-local-risk.mjs')) selected.push('cecat-local-risk.mjs');

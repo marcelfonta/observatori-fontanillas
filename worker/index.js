@@ -12,8 +12,8 @@ import { dailySocialCardV5 } from './social-daily-v5.js';
 import { meteofranceMap, meteofranceModels } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.29.27";
-const WORKER_BUILT = "2026-10-05";
+const WORKER_VERSION = "22.32.1";
+const WORKER_BUILT = "2026-10-12";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -26,6 +26,8 @@ const CAMERA_TIMELAPSE_MAX_BYTES = 40 * 1024 * 1024;
 const CAMERA_LATEST_KEY = 'nord/latest.jpg';
 const CAMERA_BRANDED_KEY = 'nord/latest-branded.jpg';
 const CAMERA_TIMELAPSE_KEY = 'nord/timelapses/latest-preview.mp4';
+const CAMERA_TIMELAPSE_DAILY_PREFIX = 'nord/timelapses/daily/';
+const CAMERA_TIMELAPSE_PUBLICATION_PREFIX = 'nord/timelapses/publications/';
 const CAMERA_STALE_MAX_MS = 30 * 60 * 1000;
 const HISTORY_EDGE_CACHE_SECONDS = 5 * 60;
 const HISTORY_EDGE_CACHE_VERSION = "history-v1";
@@ -4061,19 +4063,26 @@ async function uploadCameraTimelapse(request, env) {
     return json({ error:'La data o el nombre de fotogrames del timelapse no és vàlid.' }, 400, 'no-store');
   }
   const createdAt = new Date().toISOString();
-  await env.CAMERA_BUCKET.put(CAMERA_TIMELAPSE_KEY, video, {
+  const metadata = { createdAt, date, frameCount:String(frameCount), camera:'nord', variant:'timelapse', publication:'ready' };
+  const options = {
     httpMetadata:{ contentType:'video/mp4', cacheControl:'public, max-age=60' },
-    customMetadata:{ createdAt, date, frameCount:String(frameCount), camera:'nord', variant:'timelapse-preview', publication:'disabled' },
-  });
+    customMetadata:metadata,
+  };
+  await Promise.all([
+    env.CAMERA_BUCKET.put(CAMERA_TIMELAPSE_KEY, video, options),
+    env.CAMERA_BUCKET.put(`${CAMERA_TIMELAPSE_DAILY_PREFIX}${date}.mp4`, video, options),
+  ]);
   return json({
     ok:true, camera:'nord', variant:'timelapse-preview', date, frameCount, createdAt,
-    publication:'disabled', url:`${publicWorkerBaseUrl(env)}/camera/nord/timelapse-preview.mp4`,
+    publication:'ready', url:`${publicWorkerBaseUrl(env)}/camera/nord/timelapse-preview.mp4`,
+    dailyUrl:`${publicWorkerBaseUrl(env)}/camera/nord/timelapses/${date}.mp4`,
   }, 201, 'no-store');
 }
 
-async function serveCameraTimelapse(request, env) {
+async function serveCameraTimelapse(request, env, date = '') {
   if (!env.CAMERA_BUCKET) return json({ error:"L'emmagatzematge de la càmera encara no està configurat." }, 503, 'no-store');
-  const object = await env.CAMERA_BUCKET.get(CAMERA_TIMELAPSE_KEY);
+  const key = date ? `${CAMERA_TIMELAPSE_DAILY_PREFIX}${date}.mp4` : CAMERA_TIMELAPSE_KEY;
+  const object = await env.CAMERA_BUCKET.get(key);
   if (!object) return json({ error:'Encara no hi ha cap prova de timelapse.' }, 404, 'no-store');
   const headers = new Headers();
   if (typeof object.writeHttpMetadata === 'function') object.writeHttpMetadata(headers);
@@ -4082,7 +4091,7 @@ async function serveCameraTimelapse(request, env) {
   headers.set('Access-Control-Allow-Origin', '*');
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('Content-Disposition', 'inline; filename="meteo-fontanillas-nord-timelapse.mp4"');
-  headers.set('X-Automatic-Publication', 'disabled');
+  headers.set('X-Automatic-Publication', 'three-times-weekly');
   if (object.customMetadata?.date) headers.set('X-Timelapse-Date', object.customMetadata.date);
   if (object.customMetadata?.frameCount) headers.set('X-Timelapse-Frames', object.customMetadata.frameCount);
   if (Number.isFinite(Number(object.size))) headers.set('Content-Length', String(object.size));
@@ -4091,10 +4100,161 @@ async function serveCameraTimelapse(request, env) {
   return new Response(object.body, { headers });
 }
 
+export function cameraTimelapseAutomaticDate(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) return false;
+  const day = new Date(`${date}T12:00:00Z`).getUTCDay();
+  return day === 1 || day === 3 || day === 5;
+}
+
+function cameraTimelapsePublicationKey(date) {
+  return `${CAMERA_TIMELAPSE_PUBLICATION_PREFIX}${date}.json`;
+}
+
+async function readCameraTimelapsePublication(env, date) {
+  const object = await env.CAMERA_BUCKET?.get(cameraTimelapsePublicationKey(date));
+  if (!object) return null;
+  try {
+    if (typeof object.json === 'function') return await object.json();
+    return JSON.parse(await new Response(object.body).text());
+  } catch { return null; }
+}
+
+async function writeCameraTimelapsePublication(env, date, state) {
+  await env.CAMERA_BUCKET.put(cameraTimelapsePublicationKey(date), JSON.stringify(state), {
+    httpMetadata:{ contentType:'application/json', cacheControl:'no-store' },
+    customMetadata:{ date, status:String(state.status || 'unknown'), updatedAt:new Date().toISOString() },
+  });
+}
+
+function cameraTimelapseCaption(date) {
+  const parsed = new Date(`${date}T12:00:00Z`);
+  const label = new Intl.DateTimeFormat('ca-ES', { day:'numeric', month:'long', year:'numeric', timeZone:'UTC' }).format(parsed);
+  return `El cel sobre Sant Celoni durant el ${label}.\n\n🎥 Timelapse de la càmera nord de Meteo Fontanillas.\n📍 Sant Celoni · Baix Montseny\n🔗 https://meteo.fontanillas.cat/webcams.html\n\n#MeteoFontanillas #SantCeloni #BaixMontseny #Montseny #Timelapse #MeteoCatalunya`;
+}
+
+async function publishCameraTimelapse(env, date, mode = 'manual') {
+  if (!env.CAMERA_BUCKET) return { ok:false, status:503, error:'L’emmagatzematge de la càmera no està configurat.' };
+  if (mode === 'automatic' && !cameraTimelapseAutomaticDate(date)) return { ok:false, status:400, error:'Aquesta data no forma part dels tres dies de publicació automàtica.' };
+  const videoKey = `${CAMERA_TIMELAPSE_DAILY_PREFIX}${date}.mp4`;
+  if (!await env.CAMERA_BUCKET.head(videoKey)) return { ok:false, status:404, error:'No s’ha trobat el timelapse preparat per a aquesta data.' };
+  const previous = await readCameraTimelapsePublication(env, date) || {};
+  const previousOutcomes = Array.isArray(previous.outcomes) ? previous.outcomes : [];
+  if (previous.status === 'published') return { ok:true, date, mode:previous.mode, outcomes:previousOutcomes, alreadyPublished:true };
+  const completed = new Map(previousOutcomes.filter(item => item?.ok && item?.channel).map(item => [item.channel, item]));
+  const videoUrl = `${publicWorkerBaseUrl(env)}/camera/nord/timelapses/${date}.mp4`;
+  const caption = cameraTimelapseCaption(date);
+  const outcomes = [...completed.values()];
+  await writeCameraTimelapsePublication(env, date, { status:'publishing', mode, startedAt:previous.startedAt || new Date().toISOString(), outcomes:previousOutcomes });
+  for (const channel of ['instagram', 'facebook', 'tiktok', 'youtube']) {
+    if (completed.has(channel)) continue;
+    const old = previousOutcomes.find(item => item?.channel === channel) || {};
+    try {
+      let result;
+      if (channel === 'instagram') result = await publishInstagramReel({ videoUrl, caption, containerId:old.reelContainerId || '' }, env);
+      else if (channel === 'facebook') result = await publishFacebookReel({ videoUrl, caption, videoId:old.facebookReelVideoId || '', uploadUrl:old.facebookReelUploadUrl || '', stage:old.facebookReelStage || '' }, env);
+      else if (channel === 'tiktok') result = await publishBufferPublicVideo(env, { service:'tiktok', label:'TikTok', videoUrl, text:caption });
+      else result = await dispatchCameraTimelapseToYoutube(env, { date, videoUrl });
+      outcomes.push({ channel, ok:true, remoteId:result.remoteId });
+    } catch (error) {
+      outcomes.push({
+        channel, ok:false, pending:Boolean(error.pending), error:cleanText(error.message, 500),
+        reelContainerId:cleanText(error.reelContainerId, 100) || undefined,
+        facebookReelVideoId:cleanText(error.facebookReelVideoId, 100) || undefined,
+        facebookReelUploadUrl:cleanText(error.facebookReelUploadUrl, 1000) || undefined,
+        facebookReelStage:cleanText(error.facebookReelStage, 40) || undefined,
+      });
+    }
+  }
+  const failed = outcomes.filter(item => !item.ok);
+  const pending = failed.some(item => item.pending);
+  const state = { date, mode:previous.mode || mode, status:failed.length ? (pending ? 'processing' : 'failed') : 'published', updatedAt:new Date().toISOString(), outcomes };
+  await writeCameraTimelapsePublication(env, date, state);
+  return { ok:failed.length === 0, status:failed.length ? (pending ? 202 : 502) : 200, ...state };
+}
+
+async function publishBufferPublicVideo(env, { service, label, videoUrl, text }) {
+  const channel = await bufferChannel(env, service, label);
+  const input = {
+    text:truncateBufferText(text, 150), channelId:channel.id,
+    schedulingType:'automatic', mode:'shareNow',
+    assets:[{ video:{ url:videoUrl, metadata:{ thumbnailOffset:1200 } } }],
+  };
+  const data = await bufferGraphql(env, `mutation CreatePost($input: CreatePostInput!) {
+    createPost(input: $input) {
+      ... on PostActionSuccess { post { id status sentAt externalLink } }
+      ... on MutationError { message }
+    }
+  }`, { input });
+  const result = data.createPost || {};
+  if (result.message || !result.post?.id) throw Object.assign(new Error(cleanText(result.message || `Buffer no ha creat la publicació de ${label}.`, 500)), { status:502 });
+  return { remoteId:String(result.post.id), remoteStatus:result.post.status || 'sending' };
+}
+
+async function dispatchCameraTimelapseToYoutube(env, { date, videoUrl }) {
+  const token = String(env.GITHUB_SHORTS_DISPATCH_TOKEN || '');
+  const repository = cleanText(env.GITHUB_SHORTS_REPOSITORY || 'marcelfonta/observatori-fontanillas', 160);
+  if (token.length < 24 || !/^[\w.-]+\/[\w.-]+$/.test(repository)) throw Object.assign(new Error('El disparador de YouTube no està configurat.'), { status:503 });
+  const response = await fetch(`https://api.github.com/repos/${repository}/actions/workflows/youtube-camera-timelapse.yml/dispatches`, {
+    method:'POST',
+    headers:{ Accept:'application/vnd.github+json', Authorization:`Bearer ${token}`, 'Content-Type':'application/json', 'X-GitHub-Api-Version':'2026-03-10', 'User-Agent':'fonta-meteo-worker' },
+    body:JSON.stringify({ ref:'main', inputs:{ date, video_url:videoUrl } }),
+  });
+  if (!response.ok) throw Object.assign(new Error(`GitHub no ha acceptat la publicació del timelapse a YouTube (${response.status}).`), { status:502, responseCode:response.status });
+  return { remoteId:`workflow-dispatched:${date}`, responseCode:response.status };
+}
+
+async function cameraTimelapseAutomaticPublish(request, env) {
+  const expected = String(env.CAMERA_UPLOAD_TOKEN || '');
+  if (expected.length < 32) return json({ error:'La publicació de la càmera encara no està configurada.' }, 503, 'no-store');
+  if (!(await secureTokenMatch(cameraUploadToken(request), expected))) return json({ error:'No autoritzat.' }, 401, 'no-store');
+  let body;
+  try { body = await request.json(); } catch { return json({ error:'El contingut JSON no és vàlid.' }, 400, 'no-store'); }
+  const date = cleanText(body.date, 10);
+  const result = await publishCameraTimelapse(env, date, 'automatic');
+  return json(result.ok ? result : { ...result, error:result.error || 'La publicació ha quedat incompleta.' }, result.status || (result.ok ? 200 : 502), 'no-store');
+}
+
+async function adminCameraTimelapses(request, env) {
+  const auth = await authorizeAdminRequest(request, env);
+  if (auth.response) return auth.response;
+  if (!env.CAMERA_BUCKET) return json({ error:'L’emmagatzematge de la càmera no està configurat.' }, 503, 'no-store', auth.origin);
+  const listed = await env.CAMERA_BUCKET.list({ prefix:CAMERA_TIMELAPSE_DAILY_PREFIX, limit:31 });
+  const videos = (listed.objects || []).filter(item => item.key.endsWith('.mp4')).sort((a,b) => b.key.localeCompare(a.key)).slice(0,14);
+  const items = await Promise.all(videos.map(async item => {
+    const date = item.key.slice(CAMERA_TIMELAPSE_DAILY_PREFIX.length, -4);
+    const publication = await readCameraTimelapsePublication(env, date);
+    return { date, size:item.size || null, createdAt:item.uploaded?.toISOString?.() || item.customMetadata?.createdAt || null, automatic:cameraTimelapseAutomaticDate(date), publication:publication || { status:'ready' }, url:`${publicWorkerBaseUrl(env)}/camera/nord/timelapses/${date}.mp4` };
+  }));
+  return json({ ok:true, schedule:'dilluns, dimecres i divendres', items }, 200, 'no-store, private', auth.origin);
+}
+
+async function adminPublishCameraTimelapse(request, env, date) {
+  const auth = await authorizeAdminRequest(request, env);
+  if (auth.response) return auth.response;
+  const body = await adminJsonBody(request, auth.origin);
+  if (body.confirm !== true) return json({ error:'Cal confirmar la publicació real als quatre canals.' }, 400, 'no-store', auth.origin);
+  const result = await publishCameraTimelapse(env, date, 'manual');
+  return json(result.ok ? result : { ...result, error:result.error || 'La publicació ha quedat incompleta; es reprendrà sense duplicar canals.' }, result.status || (result.ok ? 200 : 502), 'no-store, private', auth.origin);
+}
+
+async function recoverCameraTimelapsePublications(env) {
+  if (!env.CAMERA_BUCKET?.list) return { processed:false, reason:'storage_disabled' };
+  const listed = await env.CAMERA_BUCKET.list({ prefix:CAMERA_TIMELAPSE_PUBLICATION_PREFIX, limit:20 });
+  const dates = (listed.objects || []).map(item => item.key.match(/(\d{4}-\d{2}-\d{2})\.json$/)?.[1]).filter(Boolean).sort().reverse();
+  const results = [];
+  for (const date of dates.slice(0, 3)) {
+    const state = await readCameraTimelapsePublication(env, date);
+    if (state && state.status !== 'published') results.push(await publishCameraTimelapse(env, date, state.mode || 'manual'));
+  }
+  return { processed:Boolean(results.length), results };
+}
+
 async function serveLatestCameraImage(request, env, variant = 'original') {
   if (!env.CAMERA_BUCKET) return json({ error:"L'emmagatzematge de la càmera encara no està configurat." }, 503, 'no-store');
   const branded = variant === 'branded';
-  const object = await env.CAMERA_BUCKET.get(branded ? CAMERA_BRANDED_KEY : CAMERA_LATEST_KEY);
+  // L'original net es conserva a R2 només com a còpia privada. Totes les rutes
+  // públiques serveixen la variant filtrada i retolada generada a la Raspberry.
+  const object = await env.CAMERA_BUCKET.get(CAMERA_BRANDED_KEY);
   if (!object) return json({ error:'Encara no hi ha cap captura pública.' }, 404, 'no-store');
   const headers = new Headers();
   if (typeof object.writeHttpMetadata === 'function') object.writeHttpMetadata(headers);
@@ -4102,7 +4262,7 @@ async function serveLatestCameraImage(request, env, variant = 'original') {
   headers.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
   headers.set('Access-Control-Allow-Origin', '*');
   headers.set('X-Content-Type-Options', 'nosniff');
-  headers.set('Content-Disposition', `inline; filename="meteo-fontanillas-nord${branded ? '-marca' : ''}.jpg"`);
+  headers.set('Content-Disposition', `inline; filename="meteo-fontanillas-nord${branded ? '-marca' : '-privacitat'}.jpg"`);
   const capturedAt = object.customMetadata?.capturedAt;
   if (capturedAt) {
     headers.set('X-Captured-At', capturedAt);
@@ -6729,9 +6889,12 @@ export default {
       if (request.method === 'PUT' && url.pathname === '/camera/nord/upload') return uploadCameraImage(request, env);
       if (request.method === 'PUT' && url.pathname === '/camera/nord/upload-branded') return uploadCameraImage(request, env, 'branded');
       if (request.method === 'PUT' && url.pathname === '/camera/nord/timelapse-upload') return uploadCameraTimelapse(request, env);
+      if (request.method === 'POST' && url.pathname === '/camera/nord/timelapse-publish') return cameraTimelapseAutomaticPublish(request, env);
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest.jpg') return serveLatestCameraImage(request, env);
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest-branded.jpg') return serveLatestCameraImage(request, env, 'branded');
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/timelapse-preview.mp4') return serveCameraTimelapse(request, env);
+      const cameraTimelapseMatch = url.pathname.match(/^\/camera\/nord\/timelapses\/(\d{4}-\d{2}-\d{2})\.mp4$/);
+      if ((request.method === 'GET' || request.method === 'HEAD') && cameraTimelapseMatch) return serveCameraTimelapse(request, env, cameraTimelapseMatch[1]);
       if(request.method==='POST'&&url.pathname==='/admin/cecat-local-risk')return uploadCecatLocalRisk(request,env);
       const youtubeShortRunMatch = url.pathname.match(/^\/admin\/youtube-short-runs\/(\d{4}-\d{2}-\d{2})\/(mati|vespre)$/);
       if (request.method === 'POST' && youtubeShortRunMatch) return youtubeShortRunControl(request, env, youtubeShortRunMatch[1], youtubeShortRunMatch[2]);
@@ -6746,6 +6909,9 @@ export default {
       if (request.method === 'POST' && url.pathname === '/admin/buffer-tiktok/diagnostics') return bufferTikTokDiagnosticsControl(request, env);
       if (request.method === 'POST' && url.pathname === '/admin/youtube-short/diagnostics') return youtubeShortDispatchDiagnosticsControl(request, env);
       if (request.method === "GET" && url.pathname === "/admin/social-drafts") return adminSocialDrafts(request, env, url);
+      if (request.method === 'GET' && url.pathname === '/admin/camera-timelapses') return adminCameraTimelapses(request, env);
+      const cameraTimelapsePublishMatch = url.pathname.match(/^\/admin\/camera-timelapses\/(\d{4}-\d{2}-\d{2})\/publish$/);
+      if (request.method === 'POST' && cameraTimelapsePublishMatch) return adminPublishCameraTimelapse(request, env, cameraTimelapsePublishMatch[1]);
       if (request.method === "POST" && url.pathname === "/admin/social-diagnostics") return adminSocialDiagnostics(request, env);
       if (request.method === "POST" && url.pathname === "/admin/social-reels/test") return adminSocialReelTest(request, env);
       if (request.method === "POST" && url.pathname === "/admin/social-stories/test") return adminSocialStoryTest(request, env);
@@ -6861,6 +7027,7 @@ export default {
       observedJob('buffer-tiktok-recovery',recoverBufferTikTokSchedule(env)),
       observedJob('buffer-x-recovery',recoverBufferXSchedule(env)),
       observedJob('camera-nord',monitorCameraFreshness(env)),
+      observedJob('camera-timelapse-publication-recovery',recoverCameraTimelapsePublications(env)),
     ];
     ctx.waitUntil(Promise.allSettled(jobs).then(async results => {
       const rejected=results.filter(item=>item.status==='rejected');
