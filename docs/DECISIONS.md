@@ -19,16 +19,20 @@
   missatge explícit mentre no estigui configurada. EUMETSAT es manté com a visor
   oficial extern per evitar duplicar una ingestió satel·litària sense necessitat.
 
-## ADR — Timelapses manuals fins a la ubicació definitiva (2026-10-08)
+## ADR — Timelapses periòdics des de la ubicació definitiva (2026-10-12)
 
-- Els timelapses es generen manualment des de l'arxiu original de la Raspberry;
-  no hi ha cron ni selecció automàtica de dies entre setmana.
+- Confirmada la ubicació definitiva, la Raspberry genera cada dia a les 00:20
+  el vídeo del dia anterior. El temporitzador és local, persistent i reversible;
+  no depèn d'obrir ports ni d'una entrada des d'Internet.
 - La prova MP4 usa la mateixa credencial revocable de pujada de la càmera i
-  substitueix una única previsualització al bucket privat. No modifica els JPEG.
-- La URL de prova no està connectada a la cua social, Buffer, Meta, TikTok ni
-  YouTube, i respon explícitament `X-Automatic-Publication: disabled`.
-- La programació i la publicació continuen bloquejades fins que la càmera tingui
-  la posició definitiva i una mostra real sigui aprovada manualment.
+  manté una còpia diària i la previsualització més recent al bucket privat.
+- Els vídeos corresponents a dilluns, dimecres i divendres es lliuren a Meta
+  l'endemà; Instagram i Facebook es registren per separat i els intents pendents
+  es reprenen sense duplicar els canals ja confirmats.
+- L'administració permet previsualitzar qualsevol dia i publicar-lo manualment
+  amb confirmació explícita. De moment no s'envia a TikTok, X ni YouTube.
+- Abans de pujar cap derivat públic es difuminen les cases immediates dels dos
+  extrems inferiors. L'original net queda exclusivament a l'arxiu local privat.
 
 ## ADR — Càmera local amb pujada sortint i original privat (2026-10-07)
 
