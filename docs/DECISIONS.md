@@ -26,13 +26,15 @@
   no depèn d'obrir ports ni d'una entrada des d'Internet.
 - La prova MP4 usa la mateixa credencial revocable de pujada de la càmera i
   manté una còpia diària i la previsualització més recent al bucket privat.
-- Els vídeos corresponents a dilluns, dimecres i divendres es lliuren a Meta
-  l'endemà; Instagram i Facebook es registren per separat i els intents pendents
-  es reprenen sense duplicar els canals ja confirmats.
+- Els vídeos corresponents a dilluns, dimecres i divendres es lliuren l'endemà
+  a Instagram, Facebook, TikTok via Buffer i YouTube via un workflow dedicat.
+  Els quatre canals es registren per separat i els intents pendents es reprenen
+  sense repetir els canals ja confirmats.
 - L'administració permet previsualitzar qualsevol dia i publicar-lo manualment
-  amb confirmació explícita. De moment no s'envia a TikTok, X ni YouTube.
-- Abans de pujar cap derivat públic es difuminen les cases immediates dels dos
-  extrems inferiors. L'original net queda exclusivament a l'arxiu local privat.
+  als quatre canals amb confirmació explícita. X queda fora d'aquest format.
+- Abans de pujar cap derivat públic es difuminen les cases immediates amb sis
+  trams moderats que segueixen millor la silueta urbana. L'original net queda
+  exclusivament a l'arxiu local privat.
 
 ## ADR — Càmera local amb pujada sortint i original privat (2026-10-07)
 

@@ -1,0 +1,67 @@
+name: YouTube · timelapse de la càmera nord
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: Data del timelapse (AAAA-MM-DD)
+        required: true
+        type: string
+      video_url:
+        description: URL pública temporal del vídeo protegit
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: youtube-camera-timelapse-${{ inputs.date }}
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+      YOUTUBE_PRIVACY_STATUS: public
+      VIDEO_FILE: /tmp/camera-timelapse.mp4
+      VIDEO_METADATA_FILE: /tmp/camera-timelapse-metadata.json
+      YOUTUBE_UPLOAD_ERROR_FILE: /tmp/youtube-camera-error.json
+      YOUTUBE_RESULT_FILE: /tmp/youtube-camera-result.json
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - name: Valida i baixa el vídeo protegit
+        env:
+          VIDEO_URL: ${{ inputs.video_url }}
+          TIMELAPSE_DATE: ${{ inputs.date }}
+        run: |
+          set -euo pipefail
+          [[ "$TIMELAPSE_DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]
+          expected="https://fonta-meteo.marcelfonta.workers.dev/camera/nord/timelapses/$TIMELAPSE_DATE.mp4"
+          [ "$VIDEO_URL" = "$expected" ]
+          curl --fail --silent --show-error --location --max-time 180 --output "$VIDEO_FILE" "$VIDEO_URL"
+          size="$(wc -c < "$VIDEO_FILE" | tr -d ' ')"
+          [ "$size" -ge 1024 ] && [ "$size" -le 41943040 ]
+          signature="$(dd if="$VIDEO_FILE" bs=1 skip=4 count=4 2>/dev/null)"
+          [ "$signature" = "ftyp" ]
+          node -e 'const fs=require("node:fs");const d=process.env.TIMELAPSE_DATE;fs.writeFileSync(process.env.VIDEO_METADATA_FILE,JSON.stringify({title:`Timelapse del cel · Sant Celoni · ${d}`,description:`Evolució del cel vista des de la càmera nord de Meteo Fontanillas, a Sant Celoni.\n\nhttps://meteo.fontanillas.cat/webcams.html\n\n#SantCeloni #Montseny #Timelapse #MeteoCatalunya`,tags:["Sant Celoni","Montseny","timelapse","meteorologia","Meteo Fontanillas"]}))'
+      - name: Publica a YouTube
+        run: node scripts/youtube-upload.mjs
+      - name: Conserva el resultat de diagnòstic
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: youtube-camera-timelapse-${{ inputs.date }}
+          path: |
+            /tmp/youtube-camera-result.json
+            /tmp/youtube-camera-error.json
+          if-no-files-found: ignore
+          retention-days: 7

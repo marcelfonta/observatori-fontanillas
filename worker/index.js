@@ -4145,13 +4145,15 @@ async function publishCameraTimelapse(env, date, mode = 'manual') {
   const caption = cameraTimelapseCaption(date);
   const outcomes = [...completed.values()];
   await writeCameraTimelapsePublication(env, date, { status:'publishing', mode, startedAt:previous.startedAt || new Date().toISOString(), outcomes:previousOutcomes });
-  for (const channel of ['instagram', 'facebook']) {
+  for (const channel of ['instagram', 'facebook', 'tiktok', 'youtube']) {
     if (completed.has(channel)) continue;
     const old = previousOutcomes.find(item => item?.channel === channel) || {};
     try {
-      const result = channel === 'instagram'
-        ? await publishInstagramReel({ videoUrl, caption, containerId:old.reelContainerId || '' }, env)
-        : await publishFacebookReel({ videoUrl, caption, videoId:old.facebookReelVideoId || '', uploadUrl:old.facebookReelUploadUrl || '', stage:old.facebookReelStage || '' }, env);
+      let result;
+      if (channel === 'instagram') result = await publishInstagramReel({ videoUrl, caption, containerId:old.reelContainerId || '' }, env);
+      else if (channel === 'facebook') result = await publishFacebookReel({ videoUrl, caption, videoId:old.facebookReelVideoId || '', uploadUrl:old.facebookReelUploadUrl || '', stage:old.facebookReelStage || '' }, env);
+      else if (channel === 'tiktok') result = await publishBufferPublicVideo(env, { service:'tiktok', label:'TikTok', videoUrl, text:caption });
+      else result = await dispatchCameraTimelapseToYoutube(env, { date, videoUrl });
       outcomes.push({ channel, ok:true, remoteId:result.remoteId });
     } catch (error) {
       outcomes.push({
@@ -4168,6 +4170,37 @@ async function publishCameraTimelapse(env, date, mode = 'manual') {
   const state = { date, mode:previous.mode || mode, status:failed.length ? (pending ? 'processing' : 'failed') : 'published', updatedAt:new Date().toISOString(), outcomes };
   await writeCameraTimelapsePublication(env, date, state);
   return { ok:failed.length === 0, status:failed.length ? (pending ? 202 : 502) : 200, ...state };
+}
+
+async function publishBufferPublicVideo(env, { service, label, videoUrl, text }) {
+  const channel = await bufferChannel(env, service, label);
+  const input = {
+    text:truncateBufferText(text, 150), channelId:channel.id,
+    schedulingType:'automatic', mode:'shareNow',
+    assets:[{ video:{ url:videoUrl, metadata:{ thumbnailOffset:1200 } } }],
+  };
+  const data = await bufferGraphql(env, `mutation CreatePost($input: CreatePostInput!) {
+    createPost(input: $input) {
+      ... on PostActionSuccess { post { id status sentAt externalLink } }
+      ... on MutationError { message }
+    }
+  }`, { input });
+  const result = data.createPost || {};
+  if (result.message || !result.post?.id) throw Object.assign(new Error(cleanText(result.message || `Buffer no ha creat la publicació de ${label}.`, 500)), { status:502 });
+  return { remoteId:String(result.post.id), remoteStatus:result.post.status || 'sending' };
+}
+
+async function dispatchCameraTimelapseToYoutube(env, { date, videoUrl }) {
+  const token = String(env.GITHUB_SHORTS_DISPATCH_TOKEN || '');
+  const repository = cleanText(env.GITHUB_SHORTS_REPOSITORY || 'marcelfonta/observatori-fontanillas', 160);
+  if (token.length < 24 || !/^[\w.-]+\/[\w.-]+$/.test(repository)) throw Object.assign(new Error('El disparador de YouTube no està configurat.'), { status:503 });
+  const response = await fetch(`https://api.github.com/repos/${repository}/actions/workflows/youtube-camera-timelapse.yml/dispatches`, {
+    method:'POST',
+    headers:{ Accept:'application/vnd.github+json', Authorization:`Bearer ${token}`, 'Content-Type':'application/json', 'X-GitHub-Api-Version':'2026-03-10', 'User-Agent':'fonta-meteo-worker' },
+    body:JSON.stringify({ ref:'main', inputs:{ date, video_url:videoUrl } }),
+  });
+  if (!response.ok) throw Object.assign(new Error(`GitHub no ha acceptat la publicació del timelapse a YouTube (${response.status}).`), { status:502, responseCode:response.status });
+  return { remoteId:`workflow-dispatched:${date}`, responseCode:response.status };
 }
 
 async function cameraTimelapseAutomaticPublish(request, env) {
@@ -4199,7 +4232,7 @@ async function adminPublishCameraTimelapse(request, env, date) {
   const auth = await authorizeAdminRequest(request, env);
   if (auth.response) return auth.response;
   const body = await adminJsonBody(request, auth.origin);
-  if (body.confirm !== true) return json({ error:'Cal confirmar la publicació real a Instagram i Facebook.' }, 400, 'no-store', auth.origin);
+  if (body.confirm !== true) return json({ error:'Cal confirmar la publicació real als quatre canals.' }, 400, 'no-store', auth.origin);
   const result = await publishCameraTimelapse(env, date, 'manual');
   return json(result.ok ? result : { ...result, error:result.error || 'La publicació ha quedat incompleta; es reprendrà sense duplicar canals.' }, result.status || (result.ok ? 200 : 502), 'no-store, private', auth.origin);
 }

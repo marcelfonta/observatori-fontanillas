@@ -165,7 +165,7 @@ function renderCameraTimelapses(items=[]){
     const state=item.publication?.status||'ready';const done=state==='published';const processing=state==='processing'||state==='publishing';
     row.className=`admin-social-diagnostic ${done?'is-ok':state==='failed'?'is-error':''}`;
     label.textContent=new Intl.DateTimeFormat('ca-ES',{dateStyle:'full',timeZone:'UTC'}).format(new Date(`${item.date}T12:00:00Z`));
-    detail.textContent=done?'Publicat a Instagram i Facebook':processing?'Meta l’està processant; es reprendrà automàticament':item.automatic?'Preparat · dia de publicació automàtica':'Preparat · publicació manual opcional';
+    detail.textContent=done?'Publicat als quatre canals':processing?'Publicació en procés; es reprendrà automàticament':item.automatic?'Preparat · dia de publicació automàtica':'Preparat · publicació manual opcional';
     action.type='button';action.dataset.cameraTimelapseDate=item.date;action.textContent=done?'Publicat':processing?'Processant…':'Previsualitzar i publicar';action.disabled=done||processing;
     row.append(label,detail,action);return row;
   }));
@@ -178,9 +178,9 @@ async function handleCameraTimelapseAction(event){
   const button=event.target.closest('[data-camera-timelapse-date]');if(!button)return;
   const date=button.dataset.cameraTimelapseDate;const preview=element('admin-camera-timelapse-preview');
   if(preview){preview.src=`${CONFIG.apiUrl}/camera/nord/timelapses/${date}.mp4?v=${Date.now()}`;preview.hidden=false;preview.scrollIntoView({behavior:'smooth',block:'center'});}
-  if(!window.confirm(`Has revisat la previsualització? Vols publicar ara el timelapse del ${date} a Instagram i Facebook?`))return;
-  button.disabled=true;button.textContent='Publicant…';cameraTimelapseFeedback('Enviant el vídeo a Instagram i Facebook…','warning');
-  try{const result=await adminApi(`/admin/camera-timelapses/${date}/publish`,{method:'POST',body:{confirm:true}});cameraTimelapseFeedback(result.status==='published'?'Publicació completada als dos canals.':'Meta està processant el vídeo. El sistema el reprendrà automàticament sense duplicar-lo.',result.status==='published'?'ok':'warning');await fetchCameraTimelapses();}
+  if(!window.confirm(`Has revisat la previsualització? Vols publicar ara el timelapse del ${date} a Instagram, Facebook, TikTok i YouTube?`))return;
+  button.disabled=true;button.textContent='Publicant…';cameraTimelapseFeedback('Enviant el vídeo als quatre canals…','warning');
+  try{const result=await adminApi(`/admin/camera-timelapses/${date}/publish`,{method:'POST',body:{confirm:true}});cameraTimelapseFeedback(result.status==='published'?'Publicació completada als quatre canals.':'Algun canal encara processa el vídeo. El sistema el reprendrà automàticament sense duplicar els ja completats.',result.status==='published'?'ok':'warning');await fetchCameraTimelapses();}
   catch(error){cameraTimelapseFeedback(`La publicació no s’ha completat: ${error.message}`,'error');recordIncident('Publicació de timelapse',error.message);button.disabled=false;button.textContent='Tornar-ho a provar';}
 }
 function renderSocialDiagnostics(results=[]){

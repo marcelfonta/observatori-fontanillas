@@ -3,8 +3,8 @@ set -Eeuo pipefail
 
 # Instal·la una automatització local i reversible a la Raspberry.
 # Prepara cada nit el vídeo del dia anterior. Els vídeos de dilluns, dimecres
-# i divendres també es publiquen a Instagram i Facebook, amb recuperació
-# idempotent des del Worker si Meta encara els està processant.
+# i divendres també es publiquen a Instagram, Facebook, TikTok i YouTube,
+# amb recuperació idempotent des del Worker si algun canal encara els processa.
 
 SOURCE="${1:-$HOME/bin/camera-timelapse.sh}"
 UNIT_DIR="$HOME/.config/systemd/user"
