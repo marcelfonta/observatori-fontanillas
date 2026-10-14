@@ -24,6 +24,12 @@ Type=oneshot
 ExecStart=$SOURCE yesterday --auto
 Nice=10
 IOSchedulingClass=idle
+Restart=on-failure
+RestartSec=10min
+StartLimitIntervalSec=45min
+StartLimitBurst=3
+StandardOutput=append:%h/meteo-camera/timelapse.log
+StandardError=append:%h/meteo-camera/timelapse.log
 EOF
 
 cat > "$TIMER" <<'EOF'

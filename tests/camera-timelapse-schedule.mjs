@@ -9,9 +9,13 @@ const youtubeWorkflow=readFileSync('.github/workflows/youtube-camera-timelapse.y
 assert.match(generator,/DATE="\$\(date -d yesterday \+%F\)"/);
 assert.match(generator,/1\|3\|5\) AUTO_DAY=true/);
 assert.match(generator,/camera\/nord\/timelapse-publish/);
+assert.match(generator,/OUTPUT_TMP="\$OUTPUT\.part"/);
+assert.match(generator,/mv "\$OUTPUT_TMP" "\$OUTPUT"/);
 assert.match(installer,/OnCalendar=\*-\*-\* 00:20:00 Europe\/Madrid/);
 assert.match(installer,/ExecStart=\$SOURCE yesterday --auto/);
 assert.match(installer,/enable --now meteo-camera-timelapse\.timer/);
+assert.match(installer,/Restart=on-failure/);
+assert.match(installer,/StandardOutput=append:%h\/meteo-camera\/timelapse\.log/);
 assert.match(installer,/publicació dilluns, dimecres i divendres/);
 for(const channel of ["'instagram'", "'facebook'", "'tiktok'", "'youtube'"])assert.match(worker,new RegExp(channel));
 assert.match(worker,/youtube-camera-timelapse\.yml/);
