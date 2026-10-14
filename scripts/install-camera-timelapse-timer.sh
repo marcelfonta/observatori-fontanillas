@@ -18,6 +18,8 @@ cat > "$SERVICE" <<EOF
 [Unit]
 Description=Prepara el timelapse diari de la càmera nord
 After=network-online.target
+StartLimitIntervalSec=45min
+StartLimitBurst=3
 
 [Service]
 Type=oneshot
@@ -26,8 +28,6 @@ Nice=10
 IOSchedulingClass=idle
 Restart=on-failure
 RestartSec=10min
-StartLimitIntervalSec=45min
-StartLimitBurst=3
 StandardOutput=append:%h/meteo-camera/timelapse.log
 StandardError=append:%h/meteo-camera/timelapse.log
 EOF
