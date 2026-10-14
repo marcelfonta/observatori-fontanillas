@@ -1,90 +1,90 @@
 {
   "schema": 2,
   "protocol": "fonta-hourly-nearest-150s-v1",
-  "generatedAt": "2026-10-13T16:04:04.956Z",
+  "generatedAt": "2026-10-14T13:46:58.018Z",
   "station": "ISANTC198",
-  "forecastDays": 17,
-  "pairedDays": 14,
+  "forecastDays": 18,
+  "pairedDays": 15,
   "excludedGroups": 6,
   "scores": {
     "ecmwf_ifs025": {
       "hourly": {
-        "samples": 336,
-        "mae": 1.559,
-        "bias": -0.033,
-        "rmse": 1.985
+        "samples": 360,
+        "mae": 1.545,
+        "bias": -0.111,
+        "rmse": 1.962
       },
       "max": {
-        "samples": 14,
-        "mae": 1.979,
-        "bias": -1.321,
-        "rmse": 2.28
+        "samples": 15,
+        "mae": 2.067,
+        "bias": -1.453,
+        "rmse": 2.362
       },
       "min": {
-        "samples": 14,
-        "mae": 1.486,
-        "bias": 1.057,
-        "rmse": 2.044
+        "samples": 15,
+        "mae": 1.533,
+        "bias": 0.84,
+        "rmse": 2.055
       }
     },
     "icon_eu": {
       "hourly": {
-        "samples": 336,
-        "mae": 1.452,
-        "bias": 0.042,
-        "rmse": 1.816
+        "samples": 360,
+        "mae": 1.431,
+        "bias": -0.031,
+        "rmse": 1.785
       },
       "max": {
-        "samples": 14,
-        "mae": 2.257,
-        "bias": -1.771,
-        "rmse": 2.618
+        "samples": 15,
+        "mae": 2.273,
+        "bias": -1.82,
+        "rmse": 2.611
       },
       "min": {
-        "samples": 14,
-        "mae": 1.521,
-        "bias": 1.364,
-        "rmse": 2.002
+        "samples": 15,
+        "mae": 1.467,
+        "bias": 1.227,
+        "rmse": 1.943
       }
     },
     "meteofrance_arome_france": {
       "hourly": {
-        "samples": 336,
-        "mae": 1.383,
-        "bias": 0.399,
-        "rmse": 1.803
+        "samples": 360,
+        "mae": 1.377,
+        "bias": 0.314,
+        "rmse": 1.791
       },
       "max": {
-        "samples": 14,
-        "mae": 2.207,
-        "bias": -0.464,
-        "rmse": 2.51
+        "samples": 15,
+        "mae": 2.213,
+        "bias": -0.587,
+        "rmse": 2.496
       },
       "min": {
-        "samples": 14,
-        "mae": 1.2,
-        "bias": 1.157,
-        "rmse": 1.358
+        "samples": 15,
+        "mae": 1.233,
+        "bias": 0.967,
+        "rmse": 1.383
       }
     },
     "blend": {
       "hourly": {
-        "samples": 336,
-        "mae": 1.31,
-        "bias": 0.136,
-        "rmse": 1.665
+        "samples": 360,
+        "mae": 1.301,
+        "bias": 0.058,
+        "rmse": 1.649
       },
       "max": {
-        "samples": 14,
-        "mae": 1.974,
-        "bias": -1.336,
-        "rmse": 2.273
+        "samples": 15,
+        "mae": 2.022,
+        "bias": -1.427,
+        "rmse": 2.304
       },
       "min": {
-        "samples": 14,
-        "mae": 1.414,
-        "bias": 1.343,
-        "rmse": 1.776
+        "samples": 15,
+        "mae": 1.42,
+        "bias": 1.153,
+        "rmse": 1.759
       }
     }
   },
@@ -186,6 +186,13 @@
       "observedAvailableAt": "2026-10-13T01:59:39.440Z",
       "hours": 24,
       "maxOffsetSeconds": 27
+    },
+    {
+      "date": "2026-10-13",
+      "issuedAt": "2026-10-12T17:59:38.016Z",
+      "observedAvailableAt": "2026-10-13T23:42:46.899Z",
+      "hours": 24,
+      "maxOffsetSeconds": 22
     }
   ],
   "compatibleWithDailyV1": false,
@@ -777,6 +784,42 @@
     {
       "date": "2026-10-12",
       "receivedAt": "2026-10-13T01:59:39.440Z",
+      "complete": true,
+      "validHours": 24,
+      "expectedHours": 24,
+      "reasons": []
+    },
+    {
+      "date": "2026-10-12",
+      "receivedAt": "2026-10-13T23:42:46.899Z",
+      "complete": false,
+      "validHours": 23,
+      "expectedHours": 24,
+      "reasons": [
+        "missing-hourly-samples"
+      ]
+    },
+    {
+      "date": "2026-10-13",
+      "receivedAt": "2026-10-13T23:42:46.899Z",
+      "complete": true,
+      "validHours": 24,
+      "expectedHours": 24,
+      "reasons": []
+    },
+    {
+      "date": "2026-10-12",
+      "receivedAt": "2026-10-14T13:40:32.867Z",
+      "complete": false,
+      "validHours": 23,
+      "expectedHours": 24,
+      "reasons": [
+        "missing-hourly-samples"
+      ]
+    },
+    {
+      "date": "2026-10-13",
+      "receivedAt": "2026-10-14T13:40:32.867Z",
       "complete": true,
       "validHours": 24,
       "expectedHours": 24,
