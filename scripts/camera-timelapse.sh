@@ -29,11 +29,12 @@ BASE="${CAMERA_BASE:-$HOME/meteo-camera}"
 SOURCE_DIR="$BASE/arxiu/$YEAR/$MONTH/$DAY"
 OUTPUT_DIR="$BASE/timelapses"
 OUTPUT="$OUTPUT_DIR/meteo-fontanillas-nord-$DATE.mp4"
+OUTPUT_TMP="$OUTPUT.part"
 mkdir -p "$OUTPUT_DIR"
 
 [[ -d "$SOURCE_DIR" ]] || { echo "No existeix l'arxiu $SOURCE_DIR" >&2; exit 1; }
 TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "$TMP_DIR"' EXIT
+trap 'rm -rf "$TMP_DIR"; rm -f "$OUTPUT_TMP"' EXIT
 LIST="$TMP_DIR/frames.txt"
 
 while IFS= read -r image; do
@@ -58,10 +59,13 @@ else
   echo "Avís: aquest ffmpeg no inclou drawtext; la prova es crea sense rètol." >&2
 fi
 
+rm -f "$OUTPUT_TMP"
 ffmpeg -nostdin -hide_banner -loglevel error -y \
   -f concat -safe 0 -i "$LIST" \
   -vf "$FILTER" -r 20 -an -c:v libx264 -threads 1 -preset ultrafast -crf 22 \
-  -pix_fmt yuv420p -movflags +faststart "$OUTPUT"
+  -pix_fmt yuv420p -movflags +faststart -f mp4 "$OUTPUT_TMP"
+[[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
+mv "$OUTPUT_TMP" "$OUTPUT"
 
 echo "Timelapse creat: $OUTPUT"
 echo "Fotogrames: $FRAME_COUNT"
