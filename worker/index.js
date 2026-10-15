@@ -12,7 +12,7 @@ import { dailySocialCardV5 } from './social-daily-v5.js';
 import { meteofranceMap, meteofranceModels } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.32.4";
+const WORKER_VERSION = "22.32.5";
 const WORKER_BUILT = "2026-10-15";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {

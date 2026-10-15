@@ -6,7 +6,7 @@ const timelapseScript = await readFile(new URL('../scripts/camera-timelapse.sh',
 assert.match(timelapseScript,/arxiu\/\$YEAR\/\$MONTH\/\$DAY/);
 assert.match(timelapseScript,/--upload-preview/);
 assert.match(timelapseScript,/Publicació automàtica: prevista/);
-assert.match(timelapseScript,/boxblur/);
+assert.doesNotMatch(timelapseScript,/boxblur|gblur/);
 assert.doesNotMatch(timelapseScript,/systemctl|crontab|buffer-video|social-video/);
 
 const secret = 'camera-upload-secret-'.padEnd(48, 'x');
