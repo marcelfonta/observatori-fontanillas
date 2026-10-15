@@ -15,6 +15,8 @@ assert.match(generator,/SOCIAL_OUTPUT="\$OUTPUT_DIR\/meteo-fontanillas-nord-\$DA
 assert.match(generator,/crop=ih\*16\/9:ih:\(iw-ih\*16\/9\)\/2:0,scale=960:540/);
 assert.match(generator,/scale=540:304\[panorama\]/);
 assert.match(generator,/-filter_threads 1/);
+assert.match(generator,/-i "\$OUTPUT"[\s\S]*-vf "\$SOCIAL_FILTER"/);
+assert.equal((generator.match(/-f concat -safe 0 -i "\$LIST"/g) || []).length,1);
 assert.match(generator,/TIMELAPSE DEL CEL/);
 assert.match(generator,/PANORÀMICA COMPLETA/);
 assert.doesNotMatch(generator,/crop=ih\*9\/16:ih/);
