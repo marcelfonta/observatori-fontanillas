@@ -30,11 +30,14 @@ SOURCE_DIR="$BASE/arxiu/$YEAR/$MONTH/$DAY"
 OUTPUT_DIR="$BASE/timelapses"
 OUTPUT="$OUTPUT_DIR/meteo-fontanillas-nord-$DATE.mp4"
 OUTPUT_TMP="$OUTPUT.part"
+SOCIAL_OUTPUT="$OUTPUT_DIR/meteo-fontanillas-nord-$DATE-social.mp4"
+SOCIAL_TMP="$SOCIAL_OUTPUT.part"
+DISPLAY_DATE="${DATE:8:2}/${DATE:5:2}/${DATE:0:4}"
 mkdir -p "$OUTPUT_DIR"
 
 [[ -d "$SOURCE_DIR" ]] || { echo "No existeix l'arxiu $SOURCE_DIR" >&2; exit 1; }
 TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "$TMP_DIR"; rm -f "$OUTPUT_TMP"' EXIT
+trap 'rm -rf "$TMP_DIR"; rm -f "$OUTPUT_TMP" "$SOCIAL_TMP"' EXIT
 LIST="$TMP_DIR/frames.txt"
 
 while IFS= read -r image; do
@@ -54,7 +57,7 @@ FONT="$(fc-match -f '%{file}' 'DejaVu Sans:style=Bold' 2>/dev/null || true)"
 [[ -f "$FONT" ]] || FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 FILTER="scale=960:-2,split=7[base][l1][l2][l3][r1][r2][r3];[l1]crop=iw*0.10:ih*0.28:0:ih*0.55,boxblur=8:2[l1b];[l2]crop=iw*0.09:ih*0.24:iw*0.10:ih*0.62,boxblur=8:2[l2b];[l3]crop=iw*0.06:ih*0.18:iw*0.19:ih*0.70,boxblur=8:2[l3b];[r1]crop=iw*0.08:ih*0.17:iw*0.76:ih*0.77,boxblur=8:2[r1b];[r2]crop=iw*0.08:ih*0.23:iw*0.84:ih*0.69,boxblur=8:2[r2b];[r3]crop=iw*0.08:ih*0.30:iw*0.92:ih*0.60,boxblur=8:2[r3b];[base][l1b]overlay=0:H*0.55[m1];[m1][l2b]overlay=W*0.10:H*0.62[m2];[m2][l3b]overlay=W*0.19:H*0.70[m3];[m3][r1b]overlay=W*0.76:H*0.77[m4];[m4][r2b]overlay=W*0.84:H*0.69[m5];[m5][r3b]overlay=W*0.92:H*0.60"
 if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
-  FILTER+=",drawbox=x=0:y=ih-70:w=iw:h=70:color=black@0.58:t=fill,drawtext=fontfile='$FONT':text='Meteo Fontanillas · Sant Celoni · Càmera nord':fontcolor=white:fontsize=30:x=28:y=h-th-22"
+  FILTER+=",drawbox=x=0:y=ih-42:w=iw:h=42:color=black@0.48:t=fill,drawtext=fontfile='$FONT':text='Meteo Fontanillas · Sant Celoni · Càmera nord':fontcolor=white:fontsize=18:x=20:y=h-th-12"
 else
   echo "Avís: aquest ffmpeg no inclou drawtext; la prova es crea sense rètol." >&2
 fi
@@ -67,7 +70,22 @@ ffmpeg -nostdin -hide_banner -loglevel error -y \
 [[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
 mv "$OUTPUT_TMP" "$OUTPUT"
 
+# Adaptació vertical per a Reels, TikTok i Shorts: conserva tota la panoràmica
+# sobre un fons atmosfèric, sense franges negres ni necessitat de girar el mòbil.
+SOCIAL_FILTER="split=2[bgsrc][fgsrc];[bgsrc]crop=iw*0.18:ih:(iw-iw*0.18)/2:0,scale=720:1280,boxblur=24:2,eq=brightness=-0.22:saturation=0.82[bg];[fgsrc]scale=720:-2[fg];[bg][fg]overlay=0:(H-h)/2"
+if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
+  SOCIAL_FILTER+=",drawbox=x=32:y=56:w=656:h=188:color=black@0.48:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=44:x=58:y=82,drawtext=fontfile='$FONT':text='$DISPLAY_DATE':fontcolor=white:fontsize=31:x=58:y=142,drawtext=fontfile='$FONT':text='Sant Celoni · Càmera nord':fontcolor=white@0.88:fontsize=25:x=58:y=190,drawbox=x=32:y=h-158:w=656:h=102:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='Panoràmica completa':fontcolor=white@0.82:fontsize=24:x=58:y=h-134,drawtext=fontfile='$FONT':text='meteo.fontanillas.cat':fontcolor=white:fontsize=29:x=58:y=h-98"
+fi
+
+rm -f "$SOCIAL_TMP"
+ffmpeg -nostdin -hide_banner -loglevel error -y \
+  -i "$OUTPUT" -vf "$SOCIAL_FILTER" -r 20 -an -c:v libx264 -threads 1 \
+  -preset ultrafast -crf 22 -pix_fmt yuv420p -movflags +faststart -f mp4 "$SOCIAL_TMP"
+[[ -s "$SOCIAL_TMP" ]] || { echo "FFmpeg no ha creat la versió social vertical." >&2; exit 1; }
+mv "$SOCIAL_TMP" "$SOCIAL_OUTPUT"
+
 echo "Timelapse creat: $OUTPUT"
+echo "Versió social 9:16: $SOCIAL_OUTPUT"
 echo "Fotogrames: $FRAME_COUNT"
 AUTO_DAY=false
 case "$(date -d "$DATE" +%u)" in
@@ -91,10 +109,10 @@ if [[ "$UPLOAD" == "--upload-preview" || "$UPLOAD" == "--auto" ]]; then
     -X PUT "$PREVIEW_URL" \
     -H "Authorization: Bearer $CAMERA_UPLOAD_TOKEN" \
     -H 'Content-Type: video/mp4' \
-    -H "Content-Length: $(stat -c %s "$OUTPUT")" \
+    -H "Content-Length: $(stat -c %s "$SOCIAL_OUTPUT")" \
     -H "X-Timelapse-Date: $DATE" \
     -H "X-Timelapse-Frames: $FRAME_COUNT" \
-    --data-binary "@$OUTPUT"
+    --data-binary "@$SOCIAL_OUTPUT"
   echo
   if [[ "$UPLOAD" == "--auto" && "$AUTO_DAY" == true ]]; then
     PUBLISH_URL="${CAMERA_UPLOAD_URL%/camera/nord/upload}/camera/nord/timelapse-publish"

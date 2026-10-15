@@ -10,6 +10,9 @@
 - La instal·lació usa un temporitzador systemd d'usuari, persistent i reversible.
 - El registre per data i canal reprèn els processaments pendents de Meta i evita
   repetir una publicació completada.
+- La còpia social passa a 9:16 per a Reels, TikTok i Shorts: manté la panoràmica
+  completa sobre un fons atmosfèric, elimina les franges negres i presenta data,
+  ubicació i web amb una jerarquia més discreta. La còpia 16:9 continua local.
 - Les cases immediates queden difuminades per trams seguint la línia urbana,
   amb una intensitat moderada i sense tapar grans rectangles de cel, abans de
   qualsevol sortida pública, inclosos JPEG, web, Reels i timelapses. L'original
