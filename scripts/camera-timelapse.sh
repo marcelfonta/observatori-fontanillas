@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 # Genera el timelapse diari des de l'arxiu local de la Raspberry.
-# Amb --auto, només demana publicació per a dilluns, dimecres i divendres.
+# Amb --auto, prepara cada dia i delega al Worker la decisió de publicar.
 
 usage() {
   echo "Ús: $0 [AAAA-MM-DD|yesterday] [--upload-preview|--auto]" >&2
@@ -18,7 +18,7 @@ if [[ ! "$DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || [[ -n "$UPLOAD" && "$UPLOA
   exit 2
 fi
 
-for command in ffmpeg find sort mktemp; do
+for command in ffmpeg find sort mktemp grep; do
   command -v "$command" >/dev/null || { echo "Falta l'ordre $command" >&2; exit 1; }
 done
 
@@ -86,14 +86,22 @@ mv "$SOCIAL_TMP" "$SOCIAL_OUTPUT"
 echo "Timelapse creat: $OUTPUT"
 echo "Versió social 9:16: $SOCIAL_OUTPUT"
 echo "Fotogrames: $FRAME_COUNT"
-AUTO_DAY=false
-case "$(date -d "$DATE" +%u)" in
-  1|3|5) AUTO_DAY=true ;;
-esac
-if [[ "$UPLOAD" == "--auto" && "$AUTO_DAY" == true ]]; then
-  echo "Publicació automàtica: prevista a Instagram, Facebook, TikTok i YouTube"
+MOTION_SCENE_THRESHOLD="${CAMERA_TIMELAPSE_SCENE_THRESHOLD:-0.035}"
+MOTION_MIN_PERMILLE="${CAMERA_TIMELAPSE_MOTION_MIN_PERMILLE:-180}"
+SCENE_CHANGES="$(ffmpeg -nostdin -hide_banner -loglevel info -i "$OUTPUT" \
+  -vf "fps=8,crop=iw*0.70:ih*0.45:iw*0.15:ih*0.18,scale=160:-2,select='gt(scene,$MOTION_SCENE_THRESHOLD)',metadata=print" \
+  -an -f null - 2>&1 | grep -c 'lavfi.scene_score' || true)"
+SCENE_CHANGES="${SCENE_CHANGES:-0}"
+MOTION_PERMILLE=$(( SCENE_CHANGES * 1000 / FRAME_COUNT ))
+STRONG_MOTION=false
+if (( SCENE_CHANGES >= 12 && MOTION_PERMILLE >= MOTION_MIN_PERMILLE )); then
+  STRONG_MOTION=true
+fi
+echo "Moviment meteorològic: $SCENE_CHANGES canvis ($((MOTION_PERMILLE / 10)).$((MOTION_PERMILLE % 10))%) · intens=$STRONG_MOTION"
+if [[ "$UPLOAD" == "--auto" && "$STRONG_MOTION" == true ]]; then
+  echo "Selecció automàtica: el Worker decidirà segons calendari i avisos oficials"
 else
-  echo "Publicació automàtica: no correspon a aquesta data"
+  echo "Selecció automàtica: queda preparat, sense publicació per moviment insuficient"
 fi
 
 if [[ "$UPLOAD" == "--upload-preview" || "$UPLOAD" == "--auto" ]]; then
@@ -124,13 +132,13 @@ if [[ "$UPLOAD" == "--upload-preview" || "$UPLOAD" == "--auto" ]]; then
     -H 'X-Timelapse-Variant: vertical' \
     --data-binary "@$SOCIAL_OUTPUT"
   echo
-  if [[ "$UPLOAD" == "--auto" && "$AUTO_DAY" == true ]]; then
+  if [[ "$UPLOAD" == "--auto" ]]; then
     PUBLISH_URL="${CAMERA_UPLOAD_URL%/camera/nord/upload}/camera/nord/timelapse-publish"
     curl --fail --silent --show-error --max-time 180 --retry 2 --retry-all-errors \
       -X POST "$PUBLISH_URL" \
       -H "Authorization: Bearer $CAMERA_UPLOAD_TOKEN" \
       -H 'Content-Type: application/json' \
-      --data "{\"date\":\"$DATE\"}"
+      --data "{\"date\":\"$DATE\",\"motion\":{\"sceneChanges\":$SCENE_CHANGES,\"frameCount\":$FRAME_COUNT,\"ratioPermille\":$MOTION_PERMILLE}}"
     echo
   fi
 fi

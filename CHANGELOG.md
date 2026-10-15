@@ -1765,3 +1765,10 @@ Rollback: revertir aquest paquet i desplegar versions prèvies autoritzades. Els
 - Substitueix les màscares desenfocades per un retall inferior del 10% que elimina les cases més pròximes.
 - Genera el vertical amb la panoràmica completa centrada sobre un fons fosc estàtic, sense duplicar el vídeo.
 - Redueix el consum de memòria d’FFmpeg perquè la Raspberry de 512 MB pugui completar la versió social.
+
+# V22.32.6 — Selecció autònoma del timelapse · 2026-10-15
+
+- Prepara cada dia les dues versions del timelapse i calcula el moviment meteorològic a la zona central del cel.
+- Els dilluns, dimecres i divendres només publica quan el moviment és prou intens.
+- La resta de dies exigeix alhora moviment intens i un avís oficial actiu groc, taronja o vermell.
+- Manté com a màxim una publicació per data i deixa els vídeos descartats disponibles a l’administració.
