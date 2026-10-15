@@ -1753,3 +1753,9 @@ Rollback: revertir aquest paquet i desplegar versions prèvies autoritzades. Els
 - Desa i serveix les dues variants per separat perquè cap canal degradi l'altre format.
 - Ajusta les sortides a 960×540 i 540×960 i limita els filtres a un sol fil per evitar que la Raspberry es quedi sense memòria.
 - Genera la còpia vertical a partir del panoràmic ja protegit, sense repetir els filtres sobre les 188 captures.
+
+# V22.32.4 — Comprovació social silenciosa i eficient · 2026-10-15
+
+- La comprovació preventiva ignora Bluesky, Telegram i qualsevol altre canal que encara no tingui credencials completes.
+- X i TikTok comparteixen una sola consulta de canals a Buffer, reduint peticions innecessàries i el risc de límits 429.
+- Els avisos idèntics queden agrupats durant sis hores; un límit temporal de Buffer genera un únic avís clar.

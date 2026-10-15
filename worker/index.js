@@ -12,7 +12,7 @@ import { dailySocialCardV5 } from './social-daily-v5.js';
 import { meteofranceMap, meteofranceModels } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.32.3";
+const WORKER_VERSION = "22.32.4";
 const WORKER_BUILT = "2026-10-15";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -4668,16 +4668,25 @@ async function bufferGraphql(env, query, variables = {}) {
 }
 
 async function bufferChannel(env, service, label) {
+  const channels = await bufferActiveChannels(env);
+  const channel = channels.find(item => String(item.service || '').toLowerCase() === service);
+  if (channel?.id) return channel;
+  throw Object.assign(new Error(`Buffer no ha trobat cap canal de ${label} actiu.`), { status:503 });
+}
+
+async function bufferActiveChannels(env) {
   const account = await bufferGraphql(env, 'query { account { organizations { id } } }');
   const organizations = Array.isArray(account.account?.organizations) ? account.account.organizations : [];
+  const active=[];
   for (const organization of organizations) {
     const data = await bufferGraphql(env, `query Channels($organizationId: OrganizationId!) {
       channels(input: { organizationId: $organizationId }) { id service isQueuePaused }
     }`, { organizationId:organization.id });
-    const channel = (Array.isArray(data.channels) ? data.channels : []).find(item => String(item.service || '').toLowerCase() === service && !item.isQueuePaused);
-    if (channel?.id) return { ...channel, organizationId:organization.id };
+    active.push(...(Array.isArray(data.channels) ? data.channels : [])
+      .filter(item => item?.id && !item.isQueuePaused)
+      .map(item => ({ ...item,organizationId:organization.id })));
   }
-  throw Object.assign(new Error(`Buffer no ha trobat cap canal de ${label} actiu.`), { status:503 });
+  return active;
 }
 
 async function bufferTikTokChannel(env) {
@@ -6284,8 +6293,41 @@ async function diagnoseSocialChannel(channel, env) {
     }
     throw new Error('Canal desconegut.');
   } catch (error) {
-    return { channel, ok:false, label:'Cal revisar', detail:cleanText(error.message, 500) };
+    return { channel, ok:false, label:'Cal revisar', detail:cleanText(error.message, 500), rateLimited:Boolean(error.rateLimited), retryAt:error.retryAt || null };
   }
+}
+
+export function socialPreflightChannels(env) {
+  const channels=[];
+  if (env.META_SYSTEM_USER_TOKEN) channels.push('facebook','instagram');
+  if (env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD) channels.push('bluesky');
+  if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHANNEL_ID) channels.push('telegram');
+  if (env.THREADS_ACCESS_TOKEN) channels.push('threads');
+  if (bufferTikTokConfigured(env) && (bufferTikTokEnabled(env) || bufferXEnabled(env))) {
+    if (bufferTikTokEnabled(env)) channels.push('tiktok');
+    if (bufferXEnabled(env)) channels.push('x');
+  } else if (env.TIKTOK_CLIENT_KEY && env.TIKTOK_CLIENT_SECRET && env.TIKTOK_REFRESH_TOKEN) {
+    channels.push('tiktok');
+  }
+  return channels;
+}
+
+async function diagnoseBufferPreflight(channels, env) {
+  try {
+    const active=await bufferActiveChannels(env);
+    const services=new Set(active.map(item=>String(item.service || '').toLowerCase()));
+    const missing=[];
+    if(channels.includes('tiktok')&&!services.has('tiktok'))missing.push('TikTok');
+    if(channels.includes('x')&&!services.has('twitter'))missing.push('X');
+    if(missing.length)throw Object.assign(new Error(`Buffer no ha trobat ${missing.join(' ni ')} amb la cua activa.`),{status:503});
+    return {channel:channels.join(' + '),ok:true,label:'Buffer connectat',detail:`Canals actius: ${channels.join(' i ')}. Una sola comprovació, sense publicar res.`};
+  } catch(error) {
+    return {channel:'buffer',ok:false,label:'Cal revisar',detail:cleanText(error.message,500),rateLimited:Boolean(error.rateLimited),retryAt:error.retryAt || null};
+  }
+}
+
+export function socialPreflightFailureSignature(failed) {
+  return JSON.stringify(failed.map(item=>({channel:item.channel,detail:cleanText(item.detail,240),rateLimited:Boolean(item.rateLimited)})).sort((a,b)=>a.channel.localeCompare(b.channel)));
 }
 
 async function adminSocialDiagnostics(request, env) {
@@ -6306,7 +6348,11 @@ async function runDailyIntegrationPreflight(env, date = new Date()) {
   const serviceKey=`social-preflight:${localDate}:${slot}`;
   const previous=await env.DB.prepare('SELECT last_checked_at FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
   if(previous?.last_checked_at && localIsoDate(new Date(previous.last_checked_at))===localDate)return {checked:false,reason:'already_checked'};
-  const results=await Promise.all([...SOCIAL_DIAGNOSTIC_CHANNELS].map(channel=>diagnoseSocialChannel(channel,env)));
+  const channels=socialPreflightChannels(env);
+  const bufferChannels=channels.filter(channel=>(channel==='tiktok'&&bufferTikTokConfigured(env)&&bufferTikTokEnabled(env))||(channel==='x'&&bufferXConfigured(env)&&bufferXEnabled(env)));
+  const directChannels=channels.filter(channel=>!bufferChannels.includes(channel));
+  const results=await Promise.all(directChannels.map(channel=>diagnoseSocialChannel(channel,env)));
+  if(bufferChannels.length)results.push(await diagnoseBufferPreflight(bufferChannels,env));
   const failed=results.filter(item=>!item.ok);
   const now=new Date().toISOString();
   const detail=JSON.stringify(results.map(item=>({channel:item.channel,ok:item.ok,detail:cleanText(item.detail,240)})));
@@ -6316,7 +6362,21 @@ async function runDailyIntegrationPreflight(env, date = new Date()) {
       last_checked_at=excluded.last_checked_at,last_failure_at=excluded.last_failure_at,last_success_at=excluded.last_success_at,
       last_notified_at=excluded.last_notified_at,detail=excluded.detail`)
     .bind(serviceKey,failed.length?'down':'healthy',failed.length?1:0,now,failed.length?now:null,failed.length?null:now,failed.length?now:null,detail).run();
-  if(failed.length)await sendOperationalEmail(env,'[Observatori] Connexió social no preparada',`La comprovació preventiva de les ${slot} ha detectat ${failed.length} canal(s) amb incidències abans de la publicació automàtica.\n\n${failed.map(item=>`${item.channel}: ${item.detail}`).join('\n')}\n\nLa resta de canals podran continuar publicant de manera independent.`,'social_preflight_failed');
+  if(failed.length){
+    const notificationKey='social-preflight-notification';
+    const signature=socialPreflightFailureSignature(failed);
+    const notice=await env.DB.prepare('SELECT last_notified_at,detail FROM monitor_state WHERE service_key = ?').bind(notificationKey).first();
+    const notifiedAt=Date.parse(notice?.last_notified_at || '');
+    const sameRecent=notice?.detail===signature&&Number.isFinite(notifiedAt)&&date.getTime()-notifiedAt<6*60*60_000;
+    if(!sameRecent){
+      const rateLimitNote=failed.some(item=>item.rateLimited)?' Buffer ha indicat una pausa temporal i no es tornarà a comprovar fins a la franja següent.':'';
+      await sendOperationalEmail(env,'[Observatori] Connexió social no preparada',`La comprovació preventiva de les ${slot} ha detectat ${failed.length} connexió/ns activa/es amb incidències abans de la publicació automàtica.\n\n${failed.map(item=>`${item.channel}: ${item.detail}`).join('\n')}\n\nEls canals no configurats s’han omès i la resta podran continuar publicant de manera independent.${rateLimitNote}`,'social_preflight_failed');
+      await env.DB.prepare(`INSERT INTO monitor_state (service_key,status,consecutive_failures,last_checked_at,last_failure_at,last_success_at,last_notified_at,detail)
+        VALUES (?,?,?,?,?,?,?,?)
+        ON CONFLICT(service_key) DO UPDATE SET status=excluded.status,consecutive_failures=excluded.consecutive_failures,last_checked_at=excluded.last_checked_at,last_failure_at=excluded.last_failure_at,last_notified_at=excluded.last_notified_at,detail=excluded.detail`)
+        .bind(notificationKey,'down',1,now,now,null,now,signature).run();
+    }
+  }
   return {checked:true,ok:failed.length===0,results};
 }
 
