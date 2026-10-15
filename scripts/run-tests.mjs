@@ -21,6 +21,8 @@ if (quick && !selected.includes('ensemble-confidence.mjs')) selected.push('ensem
 if (quick && !selected.includes('multimodel-firms.mjs')) selected.push('multimodel-firms.mjs');
 if (quick && !selected.includes('camera-timelapse-schedule.mjs')) selected.push('camera-timelapse-schedule.mjs');
 if (quick && !selected.includes('meteofrance-direct.mjs')) selected.push('meteofrance-direct.mjs');
+if (quick && !selected.includes('buffer-x.mjs')) selected.push('buffer-x.mjs');
+if (quick && !selected.includes('opera-readiness.mjs')) selected.push('opera-readiness.mjs');
 if (quick && !selected.includes('forecast-dayparts.mjs')) selected.push('forecast-dayparts.mjs');
 if (quick && !selected.includes('cecat-local-risk.mjs')) selected.push('cecat-local-risk.mjs');
 if (quick && !selected.includes('civil-protection-plans.mjs')) selected.push('civil-protection-plans.mjs');
