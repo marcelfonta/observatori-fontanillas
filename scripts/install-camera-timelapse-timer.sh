@@ -2,9 +2,9 @@
 set -Eeuo pipefail
 
 # Instal·la una automatització local i reversible a la Raspberry.
-# Prepara cada nit el vídeo del dia anterior. Els vídeos de dilluns, dimecres
-# i divendres també es publiquen a Instagram, Facebook, TikTok i YouTube,
-# amb recuperació idempotent des del Worker si algun canal encara els processa.
+# Prepara cada nit el vídeo del dia anterior. El Worker valora el moviment del
+# cel i, quan correspon, els avisos oficials abans de decidir si el publica.
+# Els vídeos descartats queden preparats per a publicació manual.
 
 SOURCE="${1:-$HOME/bin/camera-timelapse.sh}"
 UNIT_DIR="$HOME/.config/systemd/user"
@@ -51,5 +51,5 @@ systemctl --user enable --now meteo-camera-timelapse.timer
 systemctl --user status meteo-camera-timelapse.timer --no-pager
 
 echo
-echo "Automatització activada: preparació diària i publicació dilluns, dimecres i divendres."
+echo "Automatització activada: preparació diària i publicació selectiva, màxim una per dia."
 echo "Per retirar-la: systemctl --user disable --now meteo-camera-timelapse.timer"

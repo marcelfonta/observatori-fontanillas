@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { cameraTimelapsePublicationDecision } from '../worker/index.js';
 
 const generator=readFileSync('scripts/camera-timelapse.sh','utf8');
 const installer=readFileSync('scripts/install-camera-timelapse-timer.sh','utf8');
@@ -7,7 +8,11 @@ const worker=readFileSync('worker/index.js','utf8');
 const youtubeWorkflow=readFileSync('.github/workflows/youtube-camera-timelapse.yml','utf8');
 
 assert.match(generator,/DATE="\$\(date -d yesterday \+%F\)"/);
-assert.match(generator,/1\|3\|5\) AUTO_DAY=true/);
+assert.match(generator,/delega al Worker la decisió de publicar/);
+assert.match(generator,/MOTION_MIN_PERMILLE/);
+assert.match(generator,/SCENE_CHANGES >= 12/);
+assert.match(generator,/metadata=print/);
+assert.match(generator,/motion.*sceneChanges/);
 assert.match(generator,/camera\/nord\/timelapse-publish/);
 assert.match(generator,/OUTPUT_TMP="\$OUTPUT\.part"/);
 assert.match(generator,/mv "\$OUTPUT_TMP" "\$OUTPUT"/);
@@ -32,7 +37,7 @@ assert.match(installer,/StandardOutput=append:%h\/meteo-camera\/timelapse\.log/)
 assert.match(installer,/OnCalendar=\*-\*-\* 00:20:00 Europe\/Madrid/);
 assert.match(installer,/ExecStart=\$SOURCE yesterday --auto/);
 assert.match(installer,/enable --now meteo-camera-timelapse\.timer/);
-assert.match(installer,/publicació dilluns, dimecres i divendres/);
+assert.match(installer,/publicació selectiva, màxim una per dia/);
 for(const channel of ["'instagram'", "'facebook'", "'tiktok'", "'youtube'"])assert.match(worker,new RegExp(channel));
 assert.match(worker,/publishInstagramReel\(\{ videoUrl:verticalUrl/);
 assert.match(worker,/publishFacebookReel\(\{ videoUrl:landscapeUrl/);
@@ -40,6 +45,13 @@ assert.match(worker,/service:'tiktok'[\s\S]*videoUrl:verticalUrl/);
 assert.match(worker,/dispatchCameraTimelapseToYoutube\(env, \{ date, videoUrl:landscapeUrl \}\)/);
 assert.match(worker,/youtube-camera-timelapse\.yml/);
 assert.match(worker,/publishBufferPublicVideo/);
+assert.match(worker,/\['processing','failed'\]\.includes\(state\.status\)/);
+assert.match(worker,/\['automatic','extraordinary','manual'\]\.includes\(state\.mode\)/);
+assert.doesNotMatch(worker,/state && state\.status !== 'published'/);
+assert.deepEqual(cameraTimelapsePublicationDecision({date:'2026-10-14',motion:{sceneChanges:40,frameCount:188},official:{ok:true,active:0,maxLevel:'none'}}).publish,true);
+assert.equal(cameraTimelapsePublicationDecision({date:'2026-10-13',motion:{sceneChanges:8,frameCount:188},official:{ok:true,active:1,maxLevel:'orange'}}).reason,'insufficient_motion');
+assert.equal(cameraTimelapsePublicationDecision({date:'2026-10-13',motion:{sceneChanges:40,frameCount:188},official:{ok:true,active:0,maxLevel:'none'}}).reason,'no_official_warning');
+assert.equal(cameraTimelapsePublicationDecision({date:'2026-10-13',motion:{sceneChanges:40,frameCount:188},official:{ok:true,active:1,maxLevel:'yellow'}}).reason,'extraordinary_official_warning_and_motion');
 assert.match(youtubeWorkflow,/YOUTUBE_PRIVACY_STATUS: public/);
 assert.match(youtubeWorkflow,/camera\/nord\/timelapses\/\$TIMELAPSE_DATE\.mp4/);
 

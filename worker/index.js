@@ -12,7 +12,7 @@ import { dailySocialCardV5 } from './social-daily-v5.js';
 import { meteofranceMap, meteofranceModels } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.32.5";
+const WORKER_VERSION = "22.32.6";
 const WORKER_BUILT = "2026-10-15";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -4102,7 +4102,7 @@ async function serveCameraTimelapse(request, env, date = '', variant = 'landscap
   headers.set('Access-Control-Allow-Origin', '*');
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('Content-Disposition', 'inline; filename="meteo-fontanillas-nord-timelapse.mp4"');
-  headers.set('X-Automatic-Publication', 'three-times-weekly');
+  headers.set('X-Automatic-Publication', 'daily-curated-selection');
   if (object.customMetadata?.date) headers.set('X-Timelapse-Date', object.customMetadata.date);
   if (object.customMetadata?.frameCount) headers.set('X-Timelapse-Frames', object.customMetadata.frameCount);
   headers.set('X-Timelapse-Variant',vertical?'vertical':'landscape');
@@ -4116,6 +4116,22 @@ export function cameraTimelapseAutomaticDate(date) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) return false;
   const day = new Date(`${date}T12:00:00Z`).getUTCDay();
   return day === 1 || day === 3 || day === 5;
+}
+
+export function cameraTimelapsePublicationDecision({ date, motion, official } = {}) {
+  const frameCount=Number(motion?.frameCount);
+  const sceneChanges=Number(motion?.sceneChanges);
+  const validMotion=Number.isSafeInteger(frameCount)&&frameCount>=6&&frameCount<=1000&&Number.isSafeInteger(sceneChanges)&&sceneChanges>=0&&sceneChanges<=frameCount;
+  const ratio=validMotion?sceneChanges/frameCount:0;
+  const strongMotion=validMotion&&sceneChanges>=12&&ratio>=0.18;
+  const scheduled=cameraTimelapseAutomaticDate(date);
+  const rank={none:0,unknown:1,yellow:2,orange:3,red:4};
+  const officialLevel=String(official?.maxLevel||'none').toLowerCase();
+  const officialWarning=official?.ok===true&&Number(official?.active)>0&&(rank[officialLevel]||0)>=rank.yellow;
+  if(!strongMotion)return {publish:false,reason:validMotion?'insufficient_motion':'invalid_motion',scheduled,strongMotion:false,ratio,officialWarning,officialLevel};
+  if(scheduled)return {publish:true,reason:'scheduled_with_motion',scheduled,strongMotion:true,ratio,officialWarning,officialLevel};
+  if(officialWarning)return {publish:true,reason:'extraordinary_official_warning_and_motion',scheduled:false,strongMotion:true,ratio,officialWarning:true,officialLevel};
+  return {publish:false,reason:official?.ok===false?'official_alerts_unavailable':'no_official_warning',scheduled:false,strongMotion:true,ratio,officialWarning:false,officialLevel};
 }
 
 function cameraTimelapsePublicationKey(date) {
@@ -4226,7 +4242,25 @@ async function cameraTimelapseAutomaticPublish(request, env) {
   let body;
   try { body = await request.json(); } catch { return json({ error:'El contingut JSON no és vàlid.' }, 400, 'no-store'); }
   const date = cleanText(body.date, 10);
-  const result = await publishCameraTimelapse(env, date, 'automatic');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(`${date}T12:00:00Z`))) return json({ error:'La data del timelapse no és vàlida.' }, 400, 'no-store');
+  const scheduled=cameraTimelapseAutomaticDate(date);
+  let official={ok:true,active:0,maxLevel:'none'};
+  if(!scheduled){
+    try {
+      const response=await alerts(env);
+      official=await response.json();
+    } catch {
+      official={ok:false,active:null,maxLevel:'unknown'};
+    }
+  }
+  const decision=cameraTimelapsePublicationDecision({date,motion:body.motion,official});
+  if(!decision.publish){
+    const previous=await readCameraTimelapsePublication(env,date);
+    if(previous?.status!=='published')await writeCameraTimelapsePublication(env,date,{date,status:'ready',mode:'automatic-selection',updatedAt:new Date().toISOString(),selection:decision,outcomes:previous?.outcomes||[]});
+    return json({ok:true,published:false,date,selection:decision},202,'no-store');
+  }
+  const mode=scheduled?'automatic':'extraordinary';
+  const result = await publishCameraTimelapse(env, date, mode);
   return json(result.ok ? result : { ...result, error:result.error || 'La publicació ha quedat incompleta.' }, result.status || (result.ok ? 200 : 502), 'no-store');
 }
 
@@ -4241,7 +4275,7 @@ async function adminCameraTimelapses(request, env) {
     const publication = await readCameraTimelapsePublication(env, date);
     return { date, size:item.size || null, createdAt:item.uploaded?.toISOString?.() || item.customMetadata?.createdAt || null, automatic:cameraTimelapseAutomaticDate(date), publication:publication || { status:'ready' }, url:`${publicWorkerBaseUrl(env)}/camera/nord/timelapses/${date}.mp4` };
   }));
-  return json({ ok:true, schedule:'dilluns, dimecres i divendres', items }, 200, 'no-store, private', auth.origin);
+  return json({ ok:true, schedule:'selecció diària · base dilluns, dimecres i divendres · extraordinàries amb avís oficial', items }, 200, 'no-store, private', auth.origin);
 }
 
 async function adminPublishCameraTimelapse(request, env, date) {
@@ -4260,7 +4294,12 @@ async function recoverCameraTimelapsePublications(env) {
   const results = [];
   for (const date of dates.slice(0, 3)) {
     const state = await readCameraTimelapsePublication(env, date);
-    if (state && state.status !== 'published') results.push(await publishCameraTimelapse(env, date, state.mode || 'manual'));
+    // Només reprèn publicacions que realment havien començat. Els vídeos en
+    // estat «ready» han estat descartats per la selecció automàtica i han de
+    // quedar disponibles exclusivament per a una publicació manual.
+    if (state && ['processing','failed'].includes(state.status) && ['automatic','extraordinary','manual'].includes(state.mode)) {
+      results.push(await publishCameraTimelapse(env, date, state.mode));
+    }
   }
   return { processed:Boolean(results.length), results };
 }

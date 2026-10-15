@@ -5,7 +5,7 @@ import worker from '../worker/index.js';
 const timelapseScript = await readFile(new URL('../scripts/camera-timelapse.sh', import.meta.url), 'utf8');
 assert.match(timelapseScript,/arxiu\/\$YEAR\/\$MONTH\/\$DAY/);
 assert.match(timelapseScript,/--upload-preview/);
-assert.match(timelapseScript,/Publicació automàtica: prevista/);
+assert.match(timelapseScript,/Selecció automàtica:/);
 assert.doesNotMatch(timelapseScript,/boxblur|gblur/);
 assert.doesNotMatch(timelapseScript,/systemctl|crontab|buffer-video|social-video/);
 
@@ -107,7 +107,7 @@ assert.equal(timelapsePayload.url, 'https://fonta-meteo.example/camera/nord/time
 const servedTimelapse = await worker.fetch(new Request(timelapsePayload.url), env, context);
 assert.equal(servedTimelapse.status, 200);
 assert.equal(servedTimelapse.headers.get('Content-Type'), 'video/mp4');
-assert.equal(servedTimelapse.headers.get('X-Automatic-Publication'), 'three-times-weekly');
+assert.equal(servedTimelapse.headers.get('X-Automatic-Publication'), 'daily-curated-selection');
 assert.deepEqual(new Uint8Array(await servedTimelapse.arrayBuffer()), mp4);
 assert.ok(objects.has('nord/timelapses/latest-preview.mp4'));
 assert.ok(objects.has('nord/timelapses/daily/2026-10-07.mp4'));
