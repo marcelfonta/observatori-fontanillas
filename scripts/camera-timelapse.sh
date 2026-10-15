@@ -70,16 +70,18 @@ ffmpeg -nostdin -hide_banner -loglevel error -y \
 [[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
 mv "$OUTPUT_TMP" "$OUTPUT"
 
-# Adaptació vertical per a Reels, TikTok i Shorts: conserva tota la panoràmica
-# sobre un fons atmosfèric, sense franges negres ni necessitat de girar el mòbil.
-SOCIAL_FILTER="split=2[bgsrc][fgsrc];[bgsrc]crop=iw*0.18:ih:(iw-iw*0.18)/2:0,scale=720:1280,boxblur=24:2,eq=brightness=-0.22:saturation=0.82[bg];[fgsrc]scale=720:-2[fg];[bg][fg]overlay=0:(H-h)/2"
+# Adaptació vertical per a Reels, TikTok i Shorts: es genera directament de les
+# captures originals per conservar nitidesa. L'enquadrament central deixa fora
+# les cases properes dels laterals i omple el 9:16 amb cel i horitzó.
+SOCIAL_FILTER="crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=720:1280"
 if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
-  SOCIAL_FILTER+=",drawbox=x=32:y=56:w=656:h=188:color=black@0.48:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=44:x=58:y=82,drawtext=fontfile='$FONT':text='$DISPLAY_DATE':fontcolor=white:fontsize=31:x=58:y=142,drawtext=fontfile='$FONT':text='Sant Celoni · Càmera nord':fontcolor=white@0.88:fontsize=25:x=58:y=190,drawbox=x=32:y=h-158:w=656:h=102:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='Panoràmica completa':fontcolor=white@0.82:fontsize=24:x=58:y=h-134,drawtext=fontfile='$FONT':text='meteo.fontanillas.cat':fontcolor=white:fontsize=29:x=58:y=h-98"
+  SOCIAL_FILTER+=",drawbox=x=24:y=38:w=672:h=112:color=black@0.38:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=31:x=46:y=58,drawtext=fontfile='$FONT':text='$DISPLAY_DATE · Sant Celoni':fontcolor=white@0.88:fontsize=22:x=46:y=108,drawbox=x=24:y=h-92:w=394:h=54:color=black@0.34:t=fill,drawtext=fontfile='$FONT':text='@meteo_fontanillas':fontcolor=white:fontsize=23:x=46:y=h-76"
 fi
 
 rm -f "$SOCIAL_TMP"
 ffmpeg -nostdin -hide_banner -loglevel error -y \
-  -i "$OUTPUT" -vf "$SOCIAL_FILTER" -r 20 -an -c:v libx264 -threads 1 \
+  -f concat -safe 0 -i "$LIST" \
+  -vf "$SOCIAL_FILTER" -r 20 -an -c:v libx264 -threads 1 \
   -preset ultrafast -crf 22 -pix_fmt yuv420p -movflags +faststart -f mp4 "$SOCIAL_TMP"
 [[ -s "$SOCIAL_TMP" ]] || { echo "FFmpeg no ha creat la versió social vertical." >&2; exit 1; }
 mv "$SOCIAL_TMP" "$SOCIAL_OUTPUT"
