@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { bufferXRecoverySlot, truncateBufferXText, xWeightedLength } from '../worker/index.js';
+import { bufferXRecoverySlot, parseBufferRetryAfter, truncateBufferXText, xWeightedLength } from '../worker/index.js';
 
 const worker = await readFile(new URL('../worker/index.js', import.meta.url), 'utf8');
 const workflow = await readFile(new URL('../.github/workflows/youtube-short-private.yml', import.meta.url), 'utf8');
@@ -13,6 +13,8 @@ assert.match(worker, /BUFFER_X_MAX_ATTEMPTS = 4/);
 assert.match(worker, /observedJob\('buffer-x-recovery'/);
 assert.match(worker, /remote\?\.status === 'sent'/);
 assert.match(worker, /finalAttempts >= BUFFER_X_MAX_ATTEMPTS/);
+assert.match(worker, /detail\.stage === 'rate_limited'/);
+assert.match(worker, /retryInsideWindow/);
 assert.match(worker, /await validateBufferStoredAsset\(env, key, 'video\/mp4', SOCIAL_VIDEO_MAX_BYTES\)/);
 assert.doesNotMatch(worker, /assets = \[\{ video:\{ url:await bufferVideoUrl\(key, env\), metadata/);
 assert.match(worker, /ensureSocialCardUrl\(socialDraft, env, 'jpeg'\)/);
@@ -49,5 +51,10 @@ assert.equal(xWeightedLength('👨‍👩‍👧‍👦'), 2);
 const shortened=truncateBufferXText(`${'Bon dia! '.repeat(40)}https://meteo.fontanillas.cat/`);
 assert.ok(xWeightedLength(shortened)<=240);
 assert.ok(shortened.endsWith('…'));
+
+// Buffer pot indicar el desbloqueig en segons o amb una data HTTP.
+assert.equal(parseBufferRetryAfter('120',Date.parse('2026-10-15T12:00:00Z')),120);
+assert.equal(parseBufferRetryAfter('Thu, 15 Oct 2026 12:05:00 GMT',Date.parse('2026-10-15T12:00:00Z')),300);
+assert.equal(parseBufferRetryAfter('cap valor'),null);
 
 console.log('Automatització X amb Buffer: correcta');

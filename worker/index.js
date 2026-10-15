@@ -4577,6 +4577,7 @@ const BUFFER_X_SLOT_TIMES = { morning:{ hour:6, minute:45 }, midday:{ hour:14, m
 const BUFFER_X_RECOVERY_STARTS = { morning:{ hour:6, minute:5 }, midday:{ hour:14, minute:0 }, evening:{ hour:19, minute:45 } };
 const BUFFER_X_RECOVERY_AFTER_MINUTES = 90;
 const BUFFER_X_MAX_ATTEMPTS = 4;
+const BUFFER_RATE_LIMIT_FALLBACK_SECONDS = 15 * 60;
 
 function bufferTikTokEnabled(env) {
   return String(env.BUFFER_TIKTOK_AUTOMATION_ENABLED || '').trim().toLowerCase() === 'true';
@@ -4615,6 +4616,15 @@ function bufferTikTokPublishAt(localDate, slot) {
   return new Date(nominalUtc - timeZoneOffsetMilliseconds(new Date(nominalUtc)));
 }
 
+export function parseBufferRetryAfter(value, now = Date.now()) {
+  const raw=String(value || '').trim();
+  if (!raw) return null;
+  if (/^\d+(?:\.\d+)?$/.test(raw)) return Math.max(1,Math.ceil(Number(raw)));
+  const retryAt=Date.parse(raw);
+  if (!Number.isFinite(retryAt)) return null;
+  return Math.max(1,Math.ceil((retryAt-Number(now))/1000));
+}
+
 async function bufferGraphql(env, query, variables = {}) {
   const apiKey = String(env.BUFFER_API_KEY || '').trim();
   if (apiKey.length < 24) throw Object.assign(new Error('Falta BUFFER_API_KEY.'), { status:503 });
@@ -4626,7 +4636,17 @@ async function bufferGraphql(env, query, variables = {}) {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || payload.errors?.length) {
     const message = cleanText(payload.errors?.[0]?.message || `Buffer ha respost ${response.status}.`, 500);
-    throw Object.assign(new Error(message), { status:502, responseCode:response.status });
+    const rateLimited=response.status===429;
+    const retryAfterSeconds=rateLimited
+      ? (parseBufferRetryAfter(response.headers.get('Retry-After')) || BUFFER_RATE_LIMIT_FALLBACK_SECONDS)
+      : null;
+    throw Object.assign(new Error(message), {
+      status:rateLimited?429:502,
+      responseCode:response.status,
+      rateLimited,
+      retryAfterSeconds,
+      retryAt:retryAfterSeconds ? new Date(Date.now()+retryAfterSeconds*1000).toISOString() : null,
+    });
   }
   return payload.data || {};
 }
@@ -4972,10 +4992,13 @@ async function notifyBufferXFailure(env, serviceKey, detail) {
   const lastNotified=previous?.last_notified_at ? new Date(previous.last_notified_at).getTime() : 0;
   if (lastNotified && Date.now()-lastNotified < 12*60*60*1000) return { sent:false,reason:'recent_notification' };
   const when=new Date().toISOString();
+  const explanation=detail.rateLimited
+    ? `Buffer ha aplicat un límit temporal a la publicació d’X de ${detail.slot || 'franja desconeguda'} del ${detail.localDate || 'dia desconegut'} i el desbloqueig queda fora de la finestra útil d’aquesta publicació.\n\nNou intent permès a partir de: ${detail.retryAt || 'hora no indicada per Buffer'}`
+    : `Buffer no ha pogut completar la publicació d’X de ${detail.slot || 'franja desconeguda'} del ${detail.localDate || 'dia desconegut'} després de ${detail.attempts || BUFFER_X_MAX_ATTEMPTS} intents.`;
   const result=await sendOperationalEmail(
     env,
     '[Observatori] No s’ha pogut publicar a X amb Buffer',
-    `Buffer no ha pogut completar la publicació d’X de ${detail.slot || 'franja desconeguda'} del ${detail.localDate || 'dia desconegut'} després de ${detail.attempts || BUFFER_X_MAX_ATTEMPTS} intents.\n\nHora: ${when}\nResposta: ${detail.responseCode || '—'}\nError: ${cleanText(detail.error || 'Sense detall',500)}\n\nTikTok i la resta de xarxes continuen funcionant de manera independent.`,
+    `${explanation}\n\nHora: ${when}\nResposta: ${detail.responseCode || '—'}\nError: ${cleanText(detail.error || 'Sense detall',500)}\n\nTikTok i la resta de xarxes continuen funcionant de manera independent.`,
     'buffer_x_publish_failed',
   ).catch(error=>({ sent:false,error:cleanText(error.message,300) }));
   if (result.sent) await env.DB.prepare('UPDATE monitor_state SET last_notified_at = ? WHERE service_key = ?').bind(when,serviceKey).run();
@@ -4991,6 +5014,10 @@ async function scheduleBufferXSlot(env, localDate, slot) {
   const previous = await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
   const detail = parseYoutubeShortRunDetail(previous?.detail);
   const targetTime = bufferXPublishAt(localDate, safeSlot).getTime();
+  const retryAt=Date.parse(detail.retryAt || '');
+  if (detail.stage === 'rate_limited' && Number.isFinite(retryAt) && retryAt > Date.now()) {
+    return { ok:true,pending:true,reused:true,rateLimited:true,retryAt:detail.retryAt };
+  }
   if (previous?.status === 'healthy' && detail.remoteId) {
     if (Date.now() < targetTime + 2 * 60_000) return { ok:true, reused:true, pending:true, remoteId:detail.remoteId, dueAt:detail.dueAt || null };
     try {
@@ -5026,6 +5053,21 @@ async function scheduleBufferXSlot(env, localDate, slot) {
         localDate,slot:safeSlot,attempts:Number(detail.attempts)||0,stage:'waiting_target',reason:cleanText(error.message,300),
       }).catch(()=>{});
       return { ok:true,pending:true,reason:cleanText(error.message,300) };
+    }
+    if (error.rateLimited) {
+      const retryAt=error.retryAt || new Date(Date.now()+BUFFER_RATE_LIMIT_FALLBACK_SECONDS*1000).toISOString();
+      const retryInsideWindow=Date.parse(retryAt) < targetTime + BUFFER_X_RECOVERY_AFTER_MINUTES * 60_000;
+      const rateLimitDetail={
+        localDate,slot:safeSlot,attempts:Number(detail.attempts)||0,
+        stage:retryInsideWindow?'rate_limited':'rate_limit_outside_window',
+        error:cleanText(error.message,500),responseCode:429,rateLimited:true,retryAt,
+      };
+      await recordOperationalState(env,serviceKey,retryInsideWindow?'running':'down',rateLimitDetail).catch(()=>{});
+      if (!retryInsideWindow) await notifyBufferXFailure(env,serviceKey,rateLimitDetail).catch(()=>{});
+      return {
+        ok:retryInsideWindow,pending:retryInsideWindow,rateLimited:true,retryAt,
+        skipped:retryInsideWindow?undefined:'outside_recovery_window',
+      };
     }
     // Si Buffer ja ha creat una entrada, no en creem una altra automàticament:
     // conservar l'identificador evita omplir la cua amb duplicats fallits.
