@@ -32,7 +32,6 @@ OUTPUT="$OUTPUT_DIR/meteo-fontanillas-nord-$DATE.mp4"
 OUTPUT_TMP="$OUTPUT.part"
 SOCIAL_OUTPUT="$OUTPUT_DIR/meteo-fontanillas-nord-$DATE-social.mp4"
 SOCIAL_TMP="$SOCIAL_OUTPUT.part"
-DISPLAY_DATE="${DATE:8:2}/${DATE:5:2}/${DATE:0:4}"
 mkdir -p "$OUTPUT_DIR"
 
 [[ -d "$SOURCE_DIR" ]] || { echo "No existeix l'arxiu $SOURCE_DIR" >&2; exit 1; }
@@ -55,12 +54,11 @@ printf "file '%s'\n" "$LAST_FRAME" >> "$LIST"
 
 FONT="$(fc-match -f '%{file}' 'DejaVu Sans:style=Bold' 2>/dev/null || true)"
 [[ -f "$FONT" ]] || FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-FILTER="scale=960:-2,split=7[base][l1][l2][l3][r1][r2][r3];[l1]crop=iw*0.10:ih*0.28:0:ih*0.55,boxblur=8:2[l1b];[l2]crop=iw*0.09:ih*0.24:iw*0.10:ih*0.62,boxblur=8:2[l2b];[l3]crop=iw*0.06:ih*0.18:iw*0.19:ih*0.70,boxblur=8:2[l3b];[r1]crop=iw*0.08:ih*0.17:iw*0.76:ih*0.77,boxblur=8:2[r1b];[r2]crop=iw*0.08:ih*0.23:iw*0.84:ih*0.69,boxblur=8:2[r2b];[r3]crop=iw*0.08:ih*0.30:iw*0.92:ih*0.60,boxblur=8:2[r3b];[base][l1b]overlay=0:H*0.55[m1];[m1][l2b]overlay=W*0.10:H*0.62[m2];[m2][l3b]overlay=W*0.19:H*0.70[m3];[m3][r1b]overlay=W*0.76:H*0.77[m4];[m4][r2b]overlay=W*0.84:H*0.69[m5];[m5][r3b]overlay=W*0.92:H*0.60"
-if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
-  FILTER+=",drawbox=x=0:y=ih-42:w=iw:h=42:color=black@0.48:t=fill,drawtext=fontfile='$FONT':text='Meteo Fontanillas · Sant Celoni · Càmera nord':fontcolor=white:fontsize=18:x=20:y=h-th-12"
-else
-  echo "Avís: aquest ffmpeg no inclou drawtext; la prova es crea sense rètol." >&2
-fi
+PRIVACY_FILTER="scale=960:-2,split=7[base][l1][l2][l3][r1][r2][r3];[l1]crop=iw*0.10:ih*0.28:0:ih*0.55,boxblur=8:2[l1b];[l2]crop=iw*0.09:ih*0.24:iw*0.10:ih*0.62,boxblur=8:2[l2b];[l3]crop=iw*0.06:ih*0.18:iw*0.19:ih*0.70,boxblur=8:2[l3b];[r1]crop=iw*0.08:ih*0.17:iw*0.76:ih*0.77,boxblur=8:2[r1b];[r2]crop=iw*0.08:ih*0.23:iw*0.84:ih*0.69,boxblur=8:2[r2b];[r3]crop=iw*0.08:ih*0.30:iw*0.92:ih*0.60,boxblur=8:2[r3b];[base][l1b]overlay=0:H*0.55[m1];[m1][l2b]overlay=W*0.10:H*0.62[m2];[m2][l3b]overlay=W*0.19:H*0.70[m3];[m3][r1b]overlay=W*0.76:H*0.77[m4];[m4][r2b]overlay=W*0.84:H*0.69[m5];[m5][r3b]overlay=W*0.92:H*0.60[private]"
+
+# La versió principal selecciona el centre panoràmic en 16:9. Evita el zoom
+# vertical extrem i conserva l'àrea marcada com a mínima a la prova visual.
+FILTER="$PRIVACY_FILTER;[private]crop=ih*16/9:ih:(iw-ih*16/9)/2:0,scale=1280:720"
 
 rm -f "$OUTPUT_TMP"
 ffmpeg -nostdin -hide_banner -loglevel error -y \
@@ -70,12 +68,11 @@ ffmpeg -nostdin -hide_banner -loglevel error -y \
 [[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
 mv "$OUTPUT_TMP" "$OUTPUT"
 
-# Adaptació vertical per a Reels, TikTok i Shorts: es genera directament de les
-# captures originals per conservar nitidesa. L'enquadrament central deixa fora
-# les cases properes dels laterals i omple el 9:16 amb cel i horitzó.
-SOCIAL_FILTER="crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=720:1280"
+# Adaptació vertical per a Reels i TikTok. El mateix enquadrament 16:9 ocupa el
+# centre del llenç sense deformar-se; el fons desenfocat només completa el 9:16.
+SOCIAL_FILTER="$PRIVACY_FILTER;[private]split=2[bg][hero];[bg]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,boxblur=24:6,eq=brightness=-0.24[backdrop];[hero]crop=ih*16/9:ih:(iw-ih*16/9)/2:0,scale=720:405[panorama];[backdrop][panorama]overlay=0:(H-h)/2[composed]"
 if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
-  SOCIAL_FILTER+=",drawbox=x=24:y=38:w=672:h=112:color=black@0.38:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=31:x=46:y=58,drawtext=fontfile='$FONT':text='$DISPLAY_DATE · Sant Celoni':fontcolor=white@0.88:fontsize=22:x=46:y=108,drawbox=x=24:y=h-92:w=394:h=54:color=black@0.34:t=fill,drawtext=fontfile='$FONT':text='@meteo_fontanillas':fontcolor=white:fontsize=23:x=46:y=h-76"
+  SOCIAL_FILTER+=",drawbox=x=24:y=44:w=672:h=88:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=31:x=46:y=70,drawbox=x=24:y=h-122:w=672:h=78:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='PANORÀMICA COMPLETA':fontcolor=white@0.86:fontsize=18:x=46:y=h-101,drawtext=fontfile='$FONT':text='meteo.fontanillas.cat':fontcolor=white:fontsize=24:x=46:y=h-76"
 fi
 
 rm -f "$SOCIAL_TMP"
@@ -111,9 +108,20 @@ if [[ "$UPLOAD" == "--upload-preview" || "$UPLOAD" == "--auto" ]]; then
     -X PUT "$PREVIEW_URL" \
     -H "Authorization: Bearer $CAMERA_UPLOAD_TOKEN" \
     -H 'Content-Type: video/mp4' \
+    -H "Content-Length: $(stat -c %s "$OUTPUT")" \
+    -H "X-Timelapse-Date: $DATE" \
+    -H "X-Timelapse-Frames: $FRAME_COUNT" \
+    -H 'X-Timelapse-Variant: landscape' \
+    --data-binary "@$OUTPUT"
+  echo
+  curl --fail --silent --show-error --max-time 180 --retry 2 --retry-all-errors \
+    -X PUT "$PREVIEW_URL" \
+    -H "Authorization: Bearer $CAMERA_UPLOAD_TOKEN" \
+    -H 'Content-Type: video/mp4' \
     -H "Content-Length: $(stat -c %s "$SOCIAL_OUTPUT")" \
     -H "X-Timelapse-Date: $DATE" \
     -H "X-Timelapse-Frames: $FRAME_COUNT" \
+    -H 'X-Timelapse-Variant: vertical' \
     --data-binary "@$SOCIAL_OUTPUT"
   echo
   if [[ "$UPLOAD" == "--auto" && "$AUTO_DAY" == true ]]; then

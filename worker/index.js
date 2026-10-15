@@ -12,8 +12,8 @@ import { dailySocialCardV5 } from './social-daily-v5.js';
 import { meteofranceMap, meteofranceModels } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.32.1";
-const WORKER_BUILT = "2026-10-12";
+const WORKER_VERSION = "22.32.3";
+const WORKER_BUILT = "2026-10-15";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -27,6 +27,8 @@ const CAMERA_LATEST_KEY = 'nord/latest.jpg';
 const CAMERA_BRANDED_KEY = 'nord/latest-branded.jpg';
 const CAMERA_TIMELAPSE_KEY = 'nord/timelapses/latest-preview.mp4';
 const CAMERA_TIMELAPSE_DAILY_PREFIX = 'nord/timelapses/daily/';
+const CAMERA_TIMELAPSE_VERTICAL_KEY = 'nord/timelapses/latest-vertical-preview.mp4';
+const CAMERA_TIMELAPSE_VERTICAL_DAILY_PREFIX = 'nord/timelapses/daily-vertical/';
 const CAMERA_TIMELAPSE_PUBLICATION_PREFIX = 'nord/timelapses/publications/';
 const CAMERA_STALE_MAX_MS = 30 * 60 * 1000;
 const HISTORY_EDGE_CACHE_SECONDS = 5 * 60;
@@ -4059,29 +4061,38 @@ async function uploadCameraTimelapse(request, env) {
   }
   const date = String(request.headers.get('X-Timelapse-Date') || '').trim();
   const frameCount = Number(request.headers.get('X-Timelapse-Frames') || 0);
+  const variant = String(request.headers.get('X-Timelapse-Variant') || 'landscape').trim().toLowerCase();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isSafeInteger(frameCount) || frameCount < 6 || frameCount > 1000) {
     return json({ error:'La data o el nombre de fotogrames del timelapse no és vàlid.' }, 400, 'no-store');
   }
+  if (!['landscape','vertical'].includes(variant)) return json({ error:'La variant del timelapse no és vàlida.' }, 400, 'no-store');
   const createdAt = new Date().toISOString();
-  const metadata = { createdAt, date, frameCount:String(frameCount), camera:'nord', variant:'timelapse', publication:'ready' };
+  const metadata = { createdAt, date, frameCount:String(frameCount), camera:'nord', variant, publication:'ready' };
   const options = {
     httpMetadata:{ contentType:'video/mp4', cacheControl:'public, max-age=60' },
     customMetadata:metadata,
   };
+  const latestKey=variant==='vertical'?CAMERA_TIMELAPSE_VERTICAL_KEY:CAMERA_TIMELAPSE_KEY;
+  const dailyPrefix=variant==='vertical'?CAMERA_TIMELAPSE_VERTICAL_DAILY_PREFIX:CAMERA_TIMELAPSE_DAILY_PREFIX;
   await Promise.all([
-    env.CAMERA_BUCKET.put(CAMERA_TIMELAPSE_KEY, video, options),
-    env.CAMERA_BUCKET.put(`${CAMERA_TIMELAPSE_DAILY_PREFIX}${date}.mp4`, video, options),
+    env.CAMERA_BUCKET.put(latestKey, video, options),
+    env.CAMERA_BUCKET.put(`${dailyPrefix}${date}.mp4`, video, options),
   ]);
+  const routePrefix=variant==='vertical'?'/camera/nord/timelapses-vertical/':'/camera/nord/timelapses/';
+  const previewPath=variant==='vertical'?'/camera/nord/timelapse-vertical-preview.mp4':'/camera/nord/timelapse-preview.mp4';
   return json({
-    ok:true, camera:'nord', variant:'timelapse-preview', date, frameCount, createdAt,
-    publication:'ready', url:`${publicWorkerBaseUrl(env)}/camera/nord/timelapse-preview.mp4`,
-    dailyUrl:`${publicWorkerBaseUrl(env)}/camera/nord/timelapses/${date}.mp4`,
+    ok:true, camera:'nord', variant, date, frameCount, createdAt,
+    publication:'ready', url:`${publicWorkerBaseUrl(env)}${previewPath}`,
+    dailyUrl:`${publicWorkerBaseUrl(env)}${routePrefix}${date}.mp4`,
   }, 201, 'no-store');
 }
 
-async function serveCameraTimelapse(request, env, date = '') {
+async function serveCameraTimelapse(request, env, date = '', variant = 'landscape') {
   if (!env.CAMERA_BUCKET) return json({ error:"L'emmagatzematge de la càmera encara no està configurat." }, 503, 'no-store');
-  const key = date ? `${CAMERA_TIMELAPSE_DAILY_PREFIX}${date}.mp4` : CAMERA_TIMELAPSE_KEY;
+  const vertical=variant==='vertical';
+  const key = date
+    ? `${vertical?CAMERA_TIMELAPSE_VERTICAL_DAILY_PREFIX:CAMERA_TIMELAPSE_DAILY_PREFIX}${date}.mp4`
+    : vertical?CAMERA_TIMELAPSE_VERTICAL_KEY:CAMERA_TIMELAPSE_KEY;
   const object = await env.CAMERA_BUCKET.get(key);
   if (!object) return json({ error:'Encara no hi ha cap prova de timelapse.' }, 404, 'no-store');
   const headers = new Headers();
@@ -4094,6 +4105,7 @@ async function serveCameraTimelapse(request, env, date = '') {
   headers.set('X-Automatic-Publication', 'three-times-weekly');
   if (object.customMetadata?.date) headers.set('X-Timelapse-Date', object.customMetadata.date);
   if (object.customMetadata?.frameCount) headers.set('X-Timelapse-Frames', object.customMetadata.frameCount);
+  headers.set('X-Timelapse-Variant',vertical?'vertical':'landscape');
   if (Number.isFinite(Number(object.size))) headers.set('Content-Length', String(object.size));
   if (object.etag) headers.set('ETag', object.etag);
   if (request.method === 'HEAD') return new Response(null, { headers });
@@ -4136,12 +4148,16 @@ async function publishCameraTimelapse(env, date, mode = 'manual') {
   if (!env.CAMERA_BUCKET) return { ok:false, status:503, error:'L’emmagatzematge de la càmera no està configurat.' };
   if (mode === 'automatic' && !cameraTimelapseAutomaticDate(date)) return { ok:false, status:400, error:'Aquesta data no forma part dels tres dies de publicació automàtica.' };
   const videoKey = `${CAMERA_TIMELAPSE_DAILY_PREFIX}${date}.mp4`;
-  if (!await env.CAMERA_BUCKET.head(videoKey)) return { ok:false, status:404, error:'No s’ha trobat el timelapse preparat per a aquesta data.' };
+  const verticalVideoKey = `${CAMERA_TIMELAPSE_VERTICAL_DAILY_PREFIX}${date}.mp4`;
+  if (!await env.CAMERA_BUCKET.head(videoKey) || !await env.CAMERA_BUCKET.head(verticalVideoKey)) {
+    return { ok:false, status:404, error:'No s’han trobat les dues versions del timelapse preparades per a aquesta data.' };
+  }
   const previous = await readCameraTimelapsePublication(env, date) || {};
   const previousOutcomes = Array.isArray(previous.outcomes) ? previous.outcomes : [];
   if (previous.status === 'published') return { ok:true, date, mode:previous.mode, outcomes:previousOutcomes, alreadyPublished:true };
   const completed = new Map(previousOutcomes.filter(item => item?.ok && item?.channel).map(item => [item.channel, item]));
-  const videoUrl = `${publicWorkerBaseUrl(env)}/camera/nord/timelapses/${date}.mp4`;
+  const landscapeUrl = `${publicWorkerBaseUrl(env)}/camera/nord/timelapses/${date}.mp4`;
+  const verticalUrl = `${publicWorkerBaseUrl(env)}/camera/nord/timelapses-vertical/${date}.mp4`;
   const caption = cameraTimelapseCaption(date);
   const outcomes = [...completed.values()];
   await writeCameraTimelapsePublication(env, date, { status:'publishing', mode, startedAt:previous.startedAt || new Date().toISOString(), outcomes:previousOutcomes });
@@ -4150,10 +4166,10 @@ async function publishCameraTimelapse(env, date, mode = 'manual') {
     const old = previousOutcomes.find(item => item?.channel === channel) || {};
     try {
       let result;
-      if (channel === 'instagram') result = await publishInstagramReel({ videoUrl, caption, containerId:old.reelContainerId || '' }, env);
-      else if (channel === 'facebook') result = await publishFacebookReel({ videoUrl, caption, videoId:old.facebookReelVideoId || '', uploadUrl:old.facebookReelUploadUrl || '', stage:old.facebookReelStage || '' }, env);
-      else if (channel === 'tiktok') result = await publishBufferPublicVideo(env, { service:'tiktok', label:'TikTok', videoUrl, text:caption });
-      else result = await dispatchCameraTimelapseToYoutube(env, { date, videoUrl });
+      if (channel === 'instagram') result = await publishInstagramReel({ videoUrl:verticalUrl, caption, containerId:old.reelContainerId || '' }, env);
+      else if (channel === 'facebook') result = await publishFacebookReel({ videoUrl:landscapeUrl, caption, videoId:old.facebookReelVideoId || '', uploadUrl:old.facebookReelUploadUrl || '', stage:old.facebookReelStage || '' }, env);
+      else if (channel === 'tiktok') result = await publishBufferPublicVideo(env, { service:'tiktok', label:'TikTok', videoUrl:verticalUrl, text:caption });
+      else result = await dispatchCameraTimelapseToYoutube(env, { date, videoUrl:landscapeUrl });
       outcomes.push({ channel, ok:true, remoteId:result.remoteId });
     } catch (error) {
       outcomes.push({
@@ -6935,8 +6951,11 @@ export default {
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest.jpg') return serveLatestCameraImage(request, env);
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest-branded.jpg') return serveLatestCameraImage(request, env, 'branded');
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/timelapse-preview.mp4') return serveCameraTimelapse(request, env);
+      if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/timelapse-vertical-preview.mp4') return serveCameraTimelapse(request, env, '', 'vertical');
       const cameraTimelapseMatch = url.pathname.match(/^\/camera\/nord\/timelapses\/(\d{4}-\d{2}-\d{2})\.mp4$/);
       if ((request.method === 'GET' || request.method === 'HEAD') && cameraTimelapseMatch) return serveCameraTimelapse(request, env, cameraTimelapseMatch[1]);
+      const cameraTimelapseVerticalMatch = url.pathname.match(/^\/camera\/nord\/timelapses-vertical\/(\d{4}-\d{2}-\d{2})\.mp4$/);
+      if ((request.method === 'GET' || request.method === 'HEAD') && cameraTimelapseVerticalMatch) return serveCameraTimelapse(request, env, cameraTimelapseVerticalMatch[1], 'vertical');
       if(request.method==='POST'&&url.pathname==='/admin/cecat-local-risk')return uploadCecatLocalRisk(request,env);
       const youtubeShortRunMatch = url.pathname.match(/^\/admin\/youtube-short-runs\/(\d{4}-\d{2}-\d{2})\/(mati|vespre)$/);
       if (request.method === 'POST' && youtubeShortRunMatch) return youtubeShortRunControl(request, env, youtubeShortRunMatch[1], youtubeShortRunMatch[2]);

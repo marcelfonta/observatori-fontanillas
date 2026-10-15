@@ -1745,3 +1745,9 @@ Rollback: revertir aquest paquet i desplegar versions prèvies autoritzades. Els
 - Ruta separada per a la còpia amb marca pròpia, mantenint `latest.jpg` com a original net.
 - Monitor periòdic que avisa per correu després de dues comprovacions amb una captura de més de 30 minuts i informa de la recuperació.
 - Accessos directes a l'original i a la versió amb marca.
+# V22.32.3 — Timelapse panoràmic i formats per canal · 2026-10-15
+
+- Manté un enquadrament central 16:9 ampli en lloc del zoom vertical que retallava més de la meitat de la càmera.
+- Genera una versió vertical 9:16 amb la panoràmica completa sobre un fons desenfocat.
+- Publica la versió vertical a Instagram i TikTok, i la panoràmica a la web, Facebook i YouTube.
+- Desa i serveix les dues variants per separat perquè cap canal degradi l'altre format.
