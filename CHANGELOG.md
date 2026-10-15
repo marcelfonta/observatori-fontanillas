@@ -1751,3 +1751,4 @@ Rollback: revertir aquest paquet i desplegar versions prèvies autoritzades. Els
 - Genera una versió vertical 9:16 amb la panoràmica completa sobre un fons desenfocat.
 - Publica la versió vertical a Instagram i TikTok, i la panoràmica a la web, Facebook i YouTube.
 - Desa i serveix les dues variants per separat perquè cap canal degradi l'altre format.
+- Ajusta les sortides a 960×540 i 540×960 i limita els filtres a un sol fil per evitar que la Raspberry es quedi sense memòria.

@@ -58,27 +58,27 @@ PRIVACY_FILTER="scale=960:-2,split=7[base][l1][l2][l3][r1][r2][r3];[l1]crop=iw*0
 
 # La versió principal selecciona el centre panoràmic en 16:9. Evita el zoom
 # vertical extrem i conserva l'àrea marcada com a mínima a la prova visual.
-FILTER="$PRIVACY_FILTER;[private]crop=ih*16/9:ih:(iw-ih*16/9)/2:0,scale=1280:720"
+FILTER="$PRIVACY_FILTER;[private]crop=ih*16/9:ih:(iw-ih*16/9)/2:0,scale=960:540"
 
 rm -f "$OUTPUT_TMP"
 ffmpeg -nostdin -hide_banner -loglevel error -y \
   -f concat -safe 0 -i "$LIST" \
-  -vf "$FILTER" -r 20 -an -c:v libx264 -threads 1 -preset ultrafast -crf 22 \
+  -filter_threads 1 -vf "$FILTER" -r 20 -an -c:v libx264 -threads 1 -preset ultrafast -crf 22 \
   -pix_fmt yuv420p -movflags +faststart -f mp4 "$OUTPUT_TMP"
 [[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
 mv "$OUTPUT_TMP" "$OUTPUT"
 
 # Adaptació vertical per a Reels i TikTok. El mateix enquadrament 16:9 ocupa el
 # centre del llenç sense deformar-se; el fons desenfocat només completa el 9:16.
-SOCIAL_FILTER="$PRIVACY_FILTER;[private]split=2[bg][hero];[bg]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,boxblur=24:6,eq=brightness=-0.24[backdrop];[hero]crop=ih*16/9:ih:(iw-ih*16/9)/2:0,scale=720:405[panorama];[backdrop][panorama]overlay=0:(H-h)/2[composed]"
+SOCIAL_FILTER="$PRIVACY_FILTER;[private]split=2[bg][hero];[bg]scale=540:960:force_original_aspect_ratio=increase,crop=540:960,boxblur=18:4,eq=brightness=-0.24[backdrop];[hero]crop=ih*16/9:ih:(iw-ih*16/9)/2:0,scale=540:304[panorama];[backdrop][panorama]overlay=0:(H-h)/2[composed]"
 if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
-  SOCIAL_FILTER+=",drawbox=x=24:y=44:w=672:h=88:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=31:x=46:y=70,drawbox=x=24:y=h-122:w=672:h=78:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='PANORÀMICA COMPLETA':fontcolor=white@0.86:fontsize=18:x=46:y=h-101,drawtext=fontfile='$FONT':text='meteo.fontanillas.cat':fontcolor=white:fontsize=24:x=46:y=h-76"
+  SOCIAL_FILTER+=",drawbox=x=18:y=33:w=504:h=66:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=24:x=34:y=52,drawbox=x=18:y=h-92:w=504:h=59:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='PANORÀMICA COMPLETA':fontcolor=white@0.86:fontsize=14:x=34:y=h-76,drawtext=fontfile='$FONT':text='meteo.fontanillas.cat':fontcolor=white:fontsize=18:x=34:y=h-56"
 fi
 
 rm -f "$SOCIAL_TMP"
 ffmpeg -nostdin -hide_banner -loglevel error -y \
   -f concat -safe 0 -i "$LIST" \
-  -vf "$SOCIAL_FILTER" -r 20 -an -c:v libx264 -threads 1 \
+  -filter_threads 1 -vf "$SOCIAL_FILTER" -r 20 -an -c:v libx264 -threads 1 \
   -preset ultrafast -crf 22 -pix_fmt yuv420p -movflags +faststart -f mp4 "$SOCIAL_TMP"
 [[ -s "$SOCIAL_TMP" ]] || { echo "FFmpeg no ha creat la versió social vertical." >&2; exit 1; }
 mv "$SOCIAL_TMP" "$SOCIAL_OUTPUT"
