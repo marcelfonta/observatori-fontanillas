@@ -54,11 +54,10 @@ printf "file '%s'\n" "$LAST_FRAME" >> "$LIST"
 
 FONT="$(fc-match -f '%{file}' 'DejaVu Sans:style=Bold' 2>/dev/null || true)"
 [[ -f "$FONT" ]] || FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-PRIVACY_FILTER="scale=960:-2,split=7[base][l1][l2][l3][r1][r2][r3];[l1]crop=iw*0.10:ih*0.28:0:ih*0.55,boxblur=8:2[l1b];[l2]crop=iw*0.09:ih*0.24:iw*0.10:ih*0.62,boxblur=8:2[l2b];[l3]crop=iw*0.06:ih*0.18:iw*0.19:ih*0.70,boxblur=8:2[l3b];[r1]crop=iw*0.08:ih*0.17:iw*0.76:ih*0.77,boxblur=8:2[r1b];[r2]crop=iw*0.08:ih*0.23:iw*0.84:ih*0.69,boxblur=8:2[r2b];[r3]crop=iw*0.08:ih*0.30:iw*0.92:ih*0.60,boxblur=8:2[r3b];[base][l1b]overlay=0:H*0.55[m1];[m1][l2b]overlay=W*0.10:H*0.62[m2];[m2][l3b]overlay=W*0.19:H*0.70[m3];[m3][r1b]overlay=W*0.76:H*0.77[m4];[m4][r2b]overlay=W*0.84:H*0.69[m5];[m5][r3b]overlay=W*0.92:H*0.60[private]"
-
-# La versió principal selecciona el centre panoràmic en 16:9. Evita el zoom
-# vertical extrem i conserva l'àrea marcada com a mínima a la prova visual.
-FILTER="$PRIVACY_FILTER;[private]crop=ih*16/9:ih:(iw-ih*16/9)/2:0,scale=960:540"
+# La versió principal selecciona el centre panoràmic en 16:9 i elimina el 10%
+# inferior, on apareixen les cases més pròximes. El retall substitueix els
+# desenfocaments i redueix fortament el consum de memòria de la Raspberry.
+FILTER="scale=960:-2,crop=ih*0.90*16/9:ih*0.90:(iw-ih*0.90*16/9)/2:0,scale=960:540"
 
 rm -f "$OUTPUT_TMP"
 ffmpeg -nostdin -hide_banner -loglevel error -y \
@@ -68,10 +67,10 @@ ffmpeg -nostdin -hide_banner -loglevel error -y \
 [[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
 mv "$OUTPUT_TMP" "$OUTPUT"
 
-# Adaptació vertical per a Reels i TikTok. Parteix del panoràmic ja acabat i
-# protegit, en lloc de tornar a processar totes les fotografies. Això conserva
-# exactament el mateix enquadrament i evita pics de memòria a la Raspberry.
-SOCIAL_FILTER="[0:v]split=2[bg][hero];[bg]scale=540:960:force_original_aspect_ratio=increase,crop=540:960,boxblur=18:4,eq=brightness=-0.24[backdrop];[hero]scale=540:304[panorama];[backdrop][panorama]overlay=0:(H-h)/2[composed]"
+# Adaptació vertical lleugera per a Reels i TikTok. Reutilitza el panoràmic
+# protegit, el centra sobre un fons fosc estàtic i no duplica ni desenfoca el
+# vídeo. Així només cal una cadena de filtres i molt poca memòria addicional.
+SOCIAL_FILTER="scale=540:304,pad=540:960:0:(oh-ih)/2:color=#101820"
 if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
   SOCIAL_FILTER+=",drawbox=x=18:y=33:w=504:h=66:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=24:x=34:y=52,drawbox=x=18:y=h-92:w=504:h=59:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='PANORÀMICA COMPLETA':fontcolor=white@0.86:fontsize=14:x=34:y=h-76,drawtext=fontfile='$FONT':text='meteo.fontanillas.cat':fontcolor=white:fontsize=18:x=34:y=h-56"
 fi

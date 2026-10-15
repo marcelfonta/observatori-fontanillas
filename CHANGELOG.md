@@ -1759,3 +1759,9 @@ Rollback: revertir aquest paquet i desplegar versions prèvies autoritzades. Els
 - La comprovació preventiva ignora Bluesky, Telegram i qualsevol altre canal que encara no tingui credencials completes.
 - X i TikTok comparteixen una sola consulta de canals a Buffer, reduint peticions innecessàries i el risc de límits 429.
 - Els avisos idèntics queden agrupats durant sis hores; un límit temporal de Buffer genera un únic avís clar.
+
+# V22.32.5 — Timelapse vertical sense desenfocament · 2026-10-15
+
+- Substitueix les màscares desenfocades per un retall inferior del 10% que elimina les cases més pròximes.
+- Genera el vertical amb la panoràmica completa centrada sobre un fons fosc estàtic, sense duplicar el vídeo.
+- Redueix el consum de memòria d’FFmpeg perquè la Raspberry de 512 MB pugui completar la versió social.
