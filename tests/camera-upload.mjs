@@ -112,6 +112,28 @@ assert.deepEqual(new Uint8Array(await servedTimelapse.arrayBuffer()), mp4);
 assert.ok(objects.has('nord/timelapses/latest-preview.mp4'));
 assert.ok(objects.has('nord/timelapses/daily/2026-10-07.mp4'));
 
+const verticalTimelapse = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/timelapse-upload', {
+  method:'PUT',
+  headers:{
+    Authorization:`Bearer ${secret}`,
+    'Content-Type':'video/mp4',
+    'Content-Length':String(mp4.byteLength),
+    'X-Timelapse-Date':'2026-10-07',
+    'X-Timelapse-Frames':'96',
+    'X-Timelapse-Variant':'vertical',
+  },
+  body:mp4,
+}), env, context);
+assert.equal(verticalTimelapse.status, 201);
+const verticalPayload = await verticalTimelapse.json();
+assert.equal(verticalPayload.variant, 'vertical');
+assert.equal(verticalPayload.url, 'https://fonta-meteo.example/camera/nord/timelapse-vertical-preview.mp4');
+const servedVertical = await worker.fetch(new Request(verticalPayload.dailyUrl), env, context);
+assert.equal(servedVertical.status, 200);
+assert.equal(servedVertical.headers.get('X-Timelapse-Variant'), 'vertical');
+assert.ok(objects.has('nord/timelapses/latest-vertical-preview.mp4'));
+assert.ok(objects.has('nord/timelapses/daily-vertical/2026-10-07.mp4'));
+
 const invalid = new Uint8Array(2048).fill(1);
 const rejected = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/upload', {
   method:'PUT',
