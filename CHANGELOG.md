@@ -1,5 +1,12 @@
 # Changelog
 
+## En preparació — Càrrega resilient de la previsió · 2026-10-17
+
+- Mostra immediatament l’última previsió vàlida del navegador mentre demana dades noves a Open‑Meteo.
+- Separa la càrrega de la previsió principal de la comparació multimodel perquè un model lent no bloquegi tota la pàgina.
+- Si la font falla temporalment, manté les dades recents amb l’antiguitat visible en lloc de buidar la previsió.
+- Tanca els estats de càrrega del resum diari i setmanal quan no existeix cap previsió reutilitzable.
+
 ## En preparació — Explorador visual multimodel amb Windy · 2026-10-17
 
 - Separa la previsió numèrica pròpia de la consulta visual perquè obrir un mapa no alteri els pesos locals.

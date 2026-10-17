@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
-const [html,router,shell,alerts,forecast,social,seo,sitemap,i18n,french]=await Promise.all([
+const [html,router,shell,alerts,forecast,social,seo,sitemap,i18n,french,app,weatherApi]=await Promise.all([
   read('index.html'),read('src/features/portal-router.js'),read('src/features/portal-shell.js'),
   read('src/modules/avisos.js'),read('src/modules/prediccio.js'),read('src/features/footer-social.js'),
-  read('src/features/seo.js'),read('sitemap.xml'),read('src/core/i18n.js'),read('src/core/i18n-fr.js')
+  read('src/features/seo.js'),read('sitemap.xml'),read('src/core/i18n.js'),read('src/core/i18n-fr.js'),read('src/app.js'),read('src/services/weather-api.js')
 ]);
 
 assert.ok(html.includes('data-portal-page="llarg-termini"'));
@@ -21,5 +21,8 @@ assert.ok(social.includes("['instagram','youtube','tiktok']")&&social.includes('
 assert.ok(seo.includes("'llarg-termini':{ca:"));
 assert.ok(sitemap.includes('?page=llarg-termini')&&sitemap.includes('?page=llarg-termini&amp;lang=fr'));
 assert.ok(i18n.includes("'Predicció a llarg termini'")&&french.includes("'Predicció a llarg termini':'Prévisions à long terme'"));
+assert.ok(weatherApi.includes('LAST_FORECAST_KEY')&&weatherApi.includes('getLastCachedForecast'));
+assert.ok(app.includes('const cached=getLastCachedForecast()')&&app.includes('const forecastTask=fetchForecast()')&&app.includes('const modelsTask=fetchModelComparison()'));
+assert.ok(forecast.includes("setText('weekly-brief-status','Temporalment no disponible')")&&forecast.includes('Sense dades de model'));
 
 console.log('Test V22.32: portada, risc i predicció a llarg termini');
