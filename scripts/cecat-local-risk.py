@@ -12,7 +12,6 @@ import hashlib
 import io
 import json
 import math
-import re
 import sys
 import urllib.parse
 import urllib.request
@@ -23,6 +22,8 @@ from zoneinfo import ZoneInfo
 
 from PIL import Image, ImageDraw, ImageFont
 from pypdf import PdfReader
+
+from cecat_map_layout import extract_panel_layout, image_window
 
 
 TIME_ZONE = ZoneInfo("Europe/Madrid")
@@ -42,16 +43,9 @@ RISK_COLOURS = {
     "red": ((229, 0, 0), 4, "Vermell"),
 }
 
-WINDOW_BY_XOBJECT = {
-    "img1": (0, 6),
-    "img3": (6, 12),
-    "img5": (12, 18),
-    "img7": (18, 24),
-}
-
-
 @dataclass(frozen=True)
 class MapRisk:
+    panel_group: int
     target_date: str
     phenomenon: str
     start_hour_utc: int
@@ -142,35 +136,42 @@ def local_patch_risk(image: Image.Image) -> tuple[str, int, dict[str, int], tupl
     return level, rank, counts, (station_x, station_y)
 
 
-def xobject_key(name: str) -> str:
-    return Path(name).stem.lower()
-
-
 def extract_map_risks(pdf: bytes) -> list[MapRisk]:
     reader = PdfReader(io.BytesIO(pdf))
     risks: list[MapRisk] = []
-    for page in reader.pages:
+    for page_number, page in enumerate(reader.pages):
         text = page.extract_text() or ""
-        date_match = re.search(r"Dia:\s*(\d{2})/(\d{2})/(\d{4})", text)
-        if not date_match or "Intensitat de pluja" not in text:
+        if "Intensitat de pluja" not in text:
             continue
-        target_date = f"{date_match.group(3)}-{date_match.group(2)}-{date_match.group(1)}"
         phenomenon = "Intensitat de pluja en 3 hores" if "en 3 hores" in text else "Intensitat de pluja"
-        images = {xobject_key(item.name): item.image.convert("RGBA") for item in page.images if item.image.mode == "RGBA"}
-        if not set(WINDOW_BY_XOBJECT).issubset(images):
+        panels = extract_panel_layout(text)
+        images: dict[tuple[int, int], Image.Image] = {}
+        for item in page.images:
+            if item.image.mode != "RGBA":
+                continue
+            window = image_window(item.name)
+            if window is None or window in images:
+                raise ValueError("Estructura de mapes oficials no reconeguda: panells d'imatge ambigus.")
+            images[window] = item.image.convert("RGBA")
+        if len(panels) != 4 or len(images) != 4:
             # Some CECAT updates start the annex with a carry-over page that
             # only contains the remaining two panels from the previous day.
-            # Its local XObject names are reused from zero, so those panels
-            # cannot be mapped to time windows safely. Ignore that incomplete
-            # page and continue until a complete, unambiguous four-panel page.
-            # A page that claims to contain four maps but changes their
-            # structure must still fail closed.
-            if 0 < len(images) < len(WINDOW_BY_XOBJECT):
+            # Ignore only pages where both the extracted labels and colour
+            # panels agree that the page is incomplete. Any mismatch still
+            # fails closed.
+            if 0 < len(images) < 4 and len(panels) == len(images):
                 continue
-            raise ValueError(f"Estructura de mapes oficials no reconeguda per al {target_date}.")
-        for key, (start_hour, end_hour) in WINDOW_BY_XOBJECT.items():
-            level, rank, counts, station_xy = local_patch_risk(images[key])
-            risks.append(MapRisk(target_date, phenomenon, start_hour, end_hour, level, rank, counts, images[key], station_xy))
+            target = panels[0][0] if panels else "data desconeguda"
+            raise ValueError(f"Estructura de mapes oficials no reconeguda per al {target}.")
+        panel_by_window = {(start, end): target_date for target_date, start, end in panels}
+        if len(panel_by_window) != 4 or set(panel_by_window) != set(images):
+            target = panels[0][0]
+            raise ValueError(f"Les franges i els panells oficials no coincideixen per al {target}.")
+        for window in ((0, 6), (6, 12), (12, 18), (18, 24)):
+            target_date = panel_by_window[window]
+            start_hour, end_hour = window
+            level, rank, counts, station_xy = local_patch_risk(images[window])
+            risks.append(MapRisk(page_number, target_date, phenomenon, start_hour, end_hour, level, rank, counts, images[window], station_xy))
     if not risks:
         raise NoSupportedRiskMaps("El comunicat no conté mapes municipals de risc de pluja reconeguts.")
     return risks
@@ -221,7 +222,7 @@ def render_card(items: list[MapRisk], metadata: dict, output_png: Path, output_j
     draw.text((884, 101), "PROTECCIÓ CIVIL", anchor="mm", font=font(18, True), fill="#9fe3bd")
 
     draw.text((72, 192), "ACTUALITZACIÓ DE RISC LOCAL", font=font(22, True), fill="#86d8a7")
-    draw.text((72, 232), "Risc de pluja · evolució del dia", font=font(43, True), fill="#ffffff")
+    draw.text((72, 232), "Risc de pluja · evolució de 24 hores", font=font(43, True), fill="#ffffff")
     draw.text((72, 294), f"{metadata['dateLabel']} · Sant Celoni i entorn · hora local", font=font(25, True), fill="#c6d8d0")
 
     positions = [(72, 350), (552, 350), (72, 710), (552, 710)]
@@ -261,21 +262,33 @@ def window_end(item: MapRisk) -> datetime:
     return base + timedelta(hours=item.end_hour_utc)
 
 
+def window_start(item: MapRisk) -> datetime:
+    base = datetime.fromisoformat(item.target_date).replace(tzinfo=timezone.utc)
+    return base + timedelta(hours=item.start_hour_utc)
+
+
+def four_consecutive_windows(items: list[MapRisk]) -> bool:
+    if len(items) != 4:
+        return False
+    starts = [window_start(item) for item in items]
+    return all(starts[index + 1] - starts[index] == timedelta(hours=6) for index in range(3))
+
+
 def build_result(pdf: bytes, args: argparse.Namespace) -> tuple[dict, list[MapRisk]]:
     risks = extract_map_risks(pdf)
     now = datetime.now(timezone.utc)
     allowed_dates = {(now.astimezone(TIME_ZONE).date() + timedelta(days=offset)).isoformat() for offset in range(4)}
-    groups: dict[tuple[str, str], list[MapRisk]] = {}
+    groups: dict[tuple[int, str], list[MapRisk]] = {}
     for item in risks:
-        groups.setdefault((item.target_date, item.phenomenon), []).append(item)
-    candidates: list[tuple[int, str, str, list[MapRisk]]] = []
-    for (target_date, phenomenon), items in groups.items():
-        ordered = sorted(items, key=lambda item: item.start_hour_utc)
-        if target_date not in allowed_dates or len(ordered) != 4 or [item.start_hour_utc for item in ordered] != [0, 6, 12, 18]:
+        groups.setdefault((item.panel_group, item.phenomenon), []).append(item)
+    candidates: list[tuple[int, datetime, str, list[MapRisk]]] = []
+    for (_, phenomenon), items in groups.items():
+        ordered = sorted(items, key=window_start)
+        if ordered[0].target_date not in allowed_dates or not four_consecutive_windows(ordered):
             continue
         future_severe = [item for item in ordered if item.rank >= 3 and window_end(item) > now]
         if future_severe:
-            candidates.append((max(item.rank for item in future_severe), target_date, phenomenon, ordered))
+            candidates.append((max(item.rank for item in future_severe), window_start(ordered[0]), phenomenon, ordered))
     if not candidates:
         return {
             "publishable": False,
@@ -286,11 +299,23 @@ def build_result(pdf: bytes, args: argparse.Namespace) -> tuple[dict, list[MapRi
         }, []
     _, _, _, selected = sorted(candidates, key=lambda item: (item[1], -item[0], -int("3 hores" in item[2])))[0]
     strongest = max(selected, key=lambda item: item.rank)
-    date_label = datetime.fromisoformat(strongest.target_date).strftime("%d/%m/%Y")
+    first_date = datetime.fromisoformat(selected[0].target_date)
+    last_date = datetime.fromisoformat(selected[-1].target_date)
+    date_label = first_date.strftime("%d/%m/%Y")
+    if first_date.date() != last_date.date():
+        date_label = f"{first_date:%d}–{last_date:%d/%m/%Y}"
     _, _, valid_until = local_window_label(selected[-1])
+    spans_dates = len({item.target_date for item in selected}) > 1
     windows = []
     for item in selected:
         _, window_label, end_at = local_window_label(item)
+        if spans_dates:
+            local_start = window_start(item).astimezone(TIME_ZONE)
+            local_end = window_end(item).astimezone(TIME_ZONE)
+            if local_start.date() == local_end.date():
+                window_label = f"{local_start:%d/%m %H:%M}–{local_end:%H:%M} h"
+            else:
+                window_label = f"{local_start:%d/%m %H:%M}–{local_end:%d/%m %H:%M} h"
         windows.append({
             "startHourUtc": item.start_hour_utc,
             "endHourUtc": item.end_hour_utc,
@@ -312,7 +337,7 @@ def build_result(pdf: bytes, args: argparse.Namespace) -> tuple[dict, list[MapRi
         "documentUrl": args.document_url,
         "documentSha256": hashlib.sha256(pdf).hexdigest(),
         "issuedAt": issued_at,
-        "targetDate": strongest.target_date,
+        "targetDate": selected[0].target_date,
         "dateLabel": date_label,
         "windows": windows,
         "validUntil": valid_until,

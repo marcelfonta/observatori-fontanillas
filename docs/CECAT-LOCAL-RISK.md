@@ -15,8 +15,9 @@ Aportar una informació oficial addicional quan Protecció Civil publica un mapa
 
 - Pla actiu: només INUNCAT.
 - Àrea: punt de l'estació de Sant Celoni i radi aproximat de 12 km sobre el mapa municipal oficial.
-- Llindar: cal almenys una franja activa o futura taronja o vermella. La targeta conserva igualment les quatre franges del dia —també les verdes i grogues— per mostrar-ne l'evolució completa.
-- Vigència: avui i els tres dies següents; la peça caduca al final de l'última franja oficial del dia convertida a hora local.
+- Llindar: cal almenys una franja activa o futura taronja o vermella. La targeta conserva igualment les quatre franges consecutives —també les verdes i grogues— per mostrar-ne l'evolució completa.
+- Període: les quatre franges poden correspondre a un dia natural o a una finestra oficial de 24 hores que travessi mitjanit. Cada panell conserva la seva data i hora oficials i la targeta identifica les dues dates quan cal.
+- Vigència: la primera data ha de ser avui o un dels tres dies següents; la peça caduca al final de l'última franja oficial convertida a hora local.
 - El mapa es conserva amb els colors oficials. Només s'hi afegeix un marcador local i la capa de marca/explicació.
 - El text sempre diu «actualització de risc local», identifica CECAT/Protecció Civil i explica que no és probabilitat de pluja.
 
@@ -34,7 +35,7 @@ Aportar una informació oficial addicional quan Protecció Civil publica un mapa
 - Els comunicats oficials només textuals són un resultat normal sense peça: es
   conserven a l'auditoria com a `no_supported_risk_maps`, no publiquen i no
   provoquen una falsa alarma de GitHub Actions.
-- Qualsevol canvi de plantilla o resultat geogràfic insuficientment segur falla tancat.
+- Qualsevol canvi de plantilla, franges no consecutives, discrepància entre etiquetes i imatges o resultat geogràfic insuficientment segur falla tancat.
 - El workflow no rep credencials de xarxes; només el token de retorn ja utilitzat per les automatitzacions socials.
 - El Worker torna a validar totes les metadades, la vigència, el nivell i les dues imatges abans de crear l'esborrany.
 - No hi ha canvi d'esquema D1.
