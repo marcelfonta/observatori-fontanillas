@@ -25,6 +25,7 @@ if (quick && !selected.includes('buffer-x.mjs')) selected.push('buffer-x.mjs');
 if (quick && !selected.includes('opera-readiness.mjs')) selected.push('opera-readiness.mjs');
 if (quick && !selected.includes('forecast-dayparts.mjs')) selected.push('forecast-dayparts.mjs');
 if (quick && !selected.includes('cecat-local-risk.mjs')) selected.push('cecat-local-risk.mjs');
+if (quick && !selected.includes('cecat-map-layout.mjs')) selected.push('cecat-map-layout.mjs');
 if (quick && !selected.includes('civil-protection-plans.mjs')) selected.push('civil-protection-plans.mjs');
 if (quick && !selected.includes('fonta-model.mjs')) selected.push('fonta-model.mjs');
 if (quick && !selected.includes('fonta-foundations.mjs')) selected.push('fonta-foundations.mjs');

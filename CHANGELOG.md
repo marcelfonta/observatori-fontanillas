@@ -1,5 +1,11 @@
 # Changelog
 
+## En preparació — Compatibilitat amb finestres temporals CECAT · 2026-10-17
+
+- El lector CECAT associa cada mapa amb la data i la franja UTC extretes del PDF, inclosos els comunicats que reparteixen una finestra oficial de 24 hores entre dues dates dins la mateixa pàgina.
+- Les quatre franges consecutives que travessen mitjanit es mantenen com una sola peça i la targeta identifica les dues dates.
+- Els noms interns consecutius (`img9`, `img11`, etc.) es reconeixen sense deixar d'aturar el procés davant panells ambigus o franges discordants.
+
 ## En preparació — Timelapses diaris i privacitat de la càmera · 2026-10-12
 
 - La Raspberry prepara cada nit el timelapse del dia anterior i en conserva els
