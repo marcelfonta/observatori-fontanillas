@@ -188,6 +188,20 @@ no com a mapes equivalents. No entren al pes del model Fonta fins que existeixi
 una ingestió numèrica privada, predicció congelada, verificació prospectiva i
 una decisió de versió separada. PIAF continua sent experimental i la seva
 indisponibilitat no s'interpreta com una absència de fenomen meteorològic.
+## ADR-010 — Windy com a explorador visual, separat del càlcul local
+
+**Estat:** acceptada, 2026-10-17.
+
+Windy és la porta principal per explorar visualment models globals i regionals
+sobre Sant Celoni. Els enllaços poden incloure ECMWF, GFS, ICON, AROME, NEMS o
+ALADIN quan Windy els ofereixi, però la seva presència al selector visual no els
+incorpora al blend, als pesos locals ni a la verificació de l’Observatori.
+
+La comparació numèrica pròpia continua limitada a les fonts amb ingestió,
+predicció congelada i verificació prospectiva. Els visors directes de
+Météo-France es mantenen com a circuit tècnic independent i totes les vistes
+externes conserven l’atribució i l’enllaç a la font original.
+
 # ADR — Automatització editorial de baixa freqüència i episodis locals (2026-08-31)
 
 - Les noves publicacions no s’activen amb el desplegament: cada família té un interruptor explícit i es valida gradualment.

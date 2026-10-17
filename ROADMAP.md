@@ -11,6 +11,7 @@
 - [x] Afegir la clau gratuïta `FIRMS_MAP_KEY` al Worker i validar una resposta real abans d’activar les deteccions públiques.
 - [x] Situar les deteccions FIRMS en un mapa interactiu de Catalunya i l’entorn, amb les fitxes textuals com a resum secundari i accés separat al mapa mundial.
 - [x] Incorporar el mapa WMS oficial d’AROME per a tota Catalunya al visor principal i conservar AROME HD com a detall local separat.
+- [x] Incorporar Windy com a explorador visual multimodel amb accessos a models globals i regionals, sense afegir-los automàticament als pesos locals.
 
 ## Laboratori de models francesos — Revisió funcional
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## En preparació — Explorador visual multimodel amb Windy · 2026-10-17
+
+- Separa la previsió numèrica pròpia de la consulta visual perquè obrir un mapa no alteri els pesos locals.
+- Incorpora accessos directes centrats a Sant Celoni per a ECMWF, GFS, ICON-EU, ICON, AROME-HD, AROME França, NEMS i ALADIN.
+- Manté dins la pàgina els visors globals provats i les fonts directes d’AROME i Météo-France com a circuit tècnic independent.
+- El botó de Windy conserva el model i la variable seleccionats quan s’obre el mapa complet.
+
 ## En preparació — Compatibilitat amb finestres temporals CECAT · 2026-10-17
 
 - El lector CECAT associa cada mapa amb la data i la franja UTC extretes del PDF, inclosos els comunicats que reparteixen una finestra oficial de 24 hores entre dues dates dins la mateixa pàgina.

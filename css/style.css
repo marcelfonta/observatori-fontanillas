@@ -62,6 +62,22 @@ a { color: inherit; }.panel { background: linear-gradient(145deg, rgba(24,44,37,
 @media (max-width:780px){.extremes-archive>header,.model-viewer__controls,.model-viewer>footer{align-items:flex-start;flex-direction:column}.segmented--archive{width:100%;overflow-x:auto}.archive-grid{grid-template-columns:1fr 1fr}.source-quick-links{align-items:flex-start;flex-wrap:wrap}.model-viewer__frame{aspect-ratio:4/3;min-height:360px}.model-viewer>footer small{text-align:left}.moon-card{flex-direction:row}.astronomy-overview>article{min-height:0}}
 @media (max-width:510px){.archive-grid{grid-template-columns:1fr}.archive-grid>article{padding:16px}.moon-card{flex-direction:column}.sun-times{grid-template-columns:1fr 1fr}.sun-times span:nth-child(2){display:none}.model-viewer__frame{aspect-ratio:1/1.15;min-height:430px}.model-viewer__controls{padding:10px}.model-viewer>header,.model-viewer>footer{padding:14px}.four-look-row{min-width:680px}}
 
+/* Windy visual model explorer */
+.windy-model-catalog{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+.windy-model-catalog>header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+.windy-model-catalog>header h3{margin:3px 0 6px}
+.windy-model-catalog>header p:last-child{max-width:760px;color:var(--muted);font-size:12px;line-height:1.55;margin:0}
+.windy-model-catalog>header>a{flex:0 0 auto;color:var(--green);font-size:11px;font-weight:700;text-decoration:none}
+.windy-model-catalog .model-map-links{margin-top:14px}
+.windy-model-catalog .model-map-links a{display:grid;grid-template-columns:1fr auto;gap:5px 12px;transition:border-color .2s ease,background .2s ease,transform .2s ease}
+.windy-model-catalog .model-map-links a:hover{background:rgba(137,214,163,.075);transform:translateY(-1px)}
+.windy-model-catalog .model-map-links small{grid-column:1/-1;color:var(--muted);font-size:10px}
+.model-viewer__controls{align-items:flex-end}
+.model-viewer__controls>.model-viewer__control-group{display:grid;gap:6px}
+.model-viewer__control-group>small{color:var(--muted);font:700 9px var(--font-display);letter-spacing:.08em;text-transform:uppercase}
+.model-viewer__control-group>div{display:flex;flex-wrap:wrap;gap:6px}
+@media (max-width:780px){.windy-model-catalog>header{align-items:flex-start;flex-direction:column;gap:12px}.model-viewer__controls>.model-viewer__control-group{width:100%}}
+
 /* V4.4: més diagnosi, fonts oficials, evolució completa i astronomia refinada. */
 .derived-grid>div{border-top:0;border-right:1px solid var(--line)}.derived-grid>div:nth-child(4n){border-right:0}.derived-grid>div:nth-child(n+5){border-top:1px solid var(--line)}
 .insight-card:nth-child(2){min-height:224px}

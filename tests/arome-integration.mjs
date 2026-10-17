@@ -20,9 +20,18 @@ assert.match(prediction,/if\(code===null\|\|code===undefined\|\|code===''\)retur
 assert.match(index,/AROME HD aporta detall local durant les primeres 48 hores/);
 assert.match(index,/data-viewer-model="arome"/);
 assert.match(index,/data-viewer-model="aromeHd"/);
+assert.match(index,/id="windy-model-catalog-title"/);
+assert.match(index,/Aquesta consulta visual no modifica la previsió ni els pesos locals/);
+assert.match(index,/\?arome,rain,41\.691,2\.489,9/);
+assert.match(index,/\?aromeFrance,rain,41\.691,2\.489,9/);
+assert.match(index,/\?nems,rain,41\.691,2\.489,9/);
+assert.match(index,/\?aladin,rain,41\.691,2\.489,9/);
+assert.match(index,/Windy és l’explorador visual/);
 assert.match(index,/id="arome-map"/);
 assert.match(index,/id="arome-complete-link"[^>]+models-franca\.html/);
 assert.match(models,/aromeGrid\.length\} punts AROME HD/);
+assert.match(models,/function windyPublicUrl\(\)/);
+assert.match(models,/Font: Windy · obrir complet/);
 assert.match(models,/meteofrance\/map/);
 assert.match(models,/CATALUNYA_BOUNDS/);
 assert.match(models,/AROME oficial · Catalunya/);
