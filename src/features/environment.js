@@ -18,6 +18,10 @@ let firmsLoaded=false;
 let firmsMap;
 let firmsMarkers;
 let firmsLeafletPromise;
+let earthquakesLoaded=false;
+let earthquakesMap;
+let earthquakesMarkers;
+let earthquakesPeriod='day';
 
 function put(id,value){
   const node=document.getElementById(id);
@@ -223,6 +227,7 @@ function initEnvironmentViewers(){
     buttons.forEach(button=>{const active=button.dataset.environmentViewer===name;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});
     panels.forEach(panel=>{const active=panel.dataset.environmentPanel===name;panel.hidden=!active;if(active){const asset=panel.querySelector('[data-src]');const skipEmbeddedJellyfish=name==='jellyfish'&&compactViewer.matches&&asset?.tagName==='IFRAME';if(asset&&!skipEmbeddedJellyfish&&!asset.getAttribute('src')){const suffix=asset.tagName==='IMG'?`?v=${new Date().toISOString().slice(0,13)}`:'';asset.src=`${asset.dataset.src}${suffix}`;}}});
     if(name==='firms'&&!firmsLoaded)void loadFirmsDetections();
+    if(name==='earthquakes'&&!earthquakesLoaded)void loadEarthquakes(earthquakesPeriod);
   };
   buttons.forEach((button,index)=>{
     button.addEventListener('click',()=>activate(button.dataset.environmentViewer));
@@ -287,6 +292,54 @@ async function loadFirmsDetections(){
   }catch(error){firmsLoaded=false;target.innerHTML='<p><strong>Deteccions temporalment no disponibles.</strong> El Pla Alfa continua accessible i és la referència oficial de risc.</p>';console.warn('NASA FIRMS no disponible.',error);}
 }
 
+const EARTHQUAKE_FEEDS={
+  day:'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson',
+  week:'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson'
+};
+function earthquakeDate(value){return new Intl.DateTimeFormat('ca-ES',{timeZone:'Europe/Madrid',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value));}
+function earthquakeColor(magnitude){return magnitude>=4.5?'#ff765f':magnitude>=2.5?'#efb56c':'#89d6a3';}
+function earthquakeRadius(magnitude){return Math.max(4,Math.min(18,4+Math.max(0,magnitude)*2));}
+function setEarthquakeView(view){
+  if(!earthquakesMap)return;
+  if(view==='world')earthquakesMap.setView([20,0],2);
+  else earthquakesMap.setView([41.69,2.49],6);
+}
+async function renderEarthquakes(payload){
+  await ensureFirmsLeaflet();
+  const target=document.getElementById('environment-earthquakes-map');if(!target)return;
+  if(!earthquakesMap){
+    earthquakesMap=window.L.map(target,{zoomControl:true,scrollWheelZoom:false,minZoom:2,maxZoom:15,worldCopyJump:true}).setView([41.69,2.49],6);
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap · Dades sísmiques USGS'}).addTo(earthquakesMap);
+    window.L.circleMarker([CONFIG.station.latitude,CONFIG.station.longitude],{radius:6,color:'#fff',weight:2,fillColor:'#55a7ff',fillOpacity:1}).addTo(earthquakesMap).bindTooltip('Sant Celoni · Estació Fontanillas');
+  }
+  if(earthquakesMarkers)earthquakesMarkers.clearLayers();else earthquakesMarkers=window.L.layerGroup().addTo(earthquakesMap);
+  for(const feature of payload.features||[]){
+    const [longitude,latitude,depth]=feature.geometry?.coordinates||[];const magnitude=Number(feature.properties?.mag);
+    if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||!Number.isFinite(magnitude))continue;
+    const place=escapeHtml(feature.properties?.place||'Localització no indicada');const time=earthquakeDate(feature.properties?.time);const rawDetailUrl=String(feature.properties?.url||'');const detailUrl=rawDetailUrl.startsWith('https://earthquake.usgs.gov/')?rawDetailUrl:'';
+    const popup=`<strong>Magnitud ${number(magnitude,1)}</strong><br>${place}<br>${escapeHtml(time)} · profunditat ${number(depth,1)} km${detailUrl?`<br><a href="${escapeHtml(detailUrl)}" target="_blank" rel="noreferrer">Fitxa USGS ↗</a>`:''}`;
+    window.L.circleMarker([latitude,longitude],{radius:earthquakeRadius(magnitude),color:'#fff5e9',weight:1,fillColor:earthquakeColor(magnitude),fillOpacity:.82}).bindTooltip(`M${number(magnitude,1)} · ${place}`).bindPopup(popup).addTo(earthquakesMarkers);
+  }
+  requestAnimationFrame(()=>earthquakesMap.invalidateSize({pan:false}));
+}
+async function loadEarthquakes(period='day'){
+  earthquakesLoaded=true;earthquakesPeriod=period;const target=document.getElementById('environment-earthquakes-results');if(!target)return;
+  document.querySelectorAll('[data-earthquake-period]').forEach(button=>button.classList.toggle('is-active',button.dataset.earthquakePeriod===period));
+  target.innerHTML='<p>Consultant el catàleg sísmic mundial de l’USGS…</p>';
+  const controller=new AbortController();const timeout=window.setTimeout(()=>controller.abort(),12000);
+  try{
+    const response=await fetch(EARTHQUAKE_FEEDS[period],{cache:'no-store',signal:controller.signal});if(!response.ok)throw new Error(`USGS ${response.status}`);
+    const payload=await response.json();await renderEarthquakes(payload);
+    const features=payload.features||[];const strongest=features.reduce((best,item)=>Number(item.properties?.mag)>Number(best?.properties?.mag??-Infinity)?item:best,null);
+    target.innerHTML=`<header><strong>${features.length} terratrèmols al mapa</strong><small>${period==='day'?'Últimes 24 hores · totes les magnituds':'Últims 7 dies · magnitud 2,5 o superior'}</small></header>${strongest?`<p>El més intens del període: <b>M${number(strongest.properties?.mag,1)}</b> · ${escapeHtml(strongest.properties?.place||'localització no indicada')} · ${escapeHtml(earthquakeDate(strongest.properties?.time))}.</p>`:'<p>No hi ha esdeveniments al catàleg per al període seleccionat.</p>'}<small>Les dades són preliminars i poden ser revisades per l’organisme d’origen.</small>`;
+  }catch(error){earthquakesLoaded=false;target.innerHTML='<p><strong>Catàleg mundial temporalment no disponible.</strong> Pots obrir directament els mapes oficials de l’USGS o l’ICGC.</p>';console.warn('Catàleg sísmic USGS no disponible.',error);}
+  finally{window.clearTimeout(timeout);}
+}
+function initEarthquakeControls(){
+  document.querySelectorAll('[data-earthquake-period]').forEach(button=>button.addEventListener('click',()=>void loadEarthquakes(button.dataset.earthquakePeriod)));
+  document.querySelectorAll('[data-earthquake-view]').forEach(button=>button.addEventListener('click',()=>setEarthquakeView(button.dataset.earthquakeView)));
+}
+
 export async function initEnvironment(){
   if(loaded||!document.getElementById('medi-ambient'))return;
   loaded=true;
@@ -296,6 +349,7 @@ export async function initEnvironment(){
     if(document.visibilityState!=='hidden'&&Date.now()-lastAttempt>=15*60_000)void refreshEnvironment();
   },60_000);
   initEnvironmentViewers();
+  initEarthquakeControls();
   await refreshEnvironment();
 }
 function refreshEnvironment(){

@@ -1,5 +1,12 @@
 # Changelog
 
+## En preparació — Mapa mundial de terratrèmols · 2026-10-17
+
+- Incorpora una pestanya de terratrèmols dins dels visors de Medi Ambient amb dades instrumentals mundials de l’USGS.
+- Permet alternar entre les últimes 24 hores i set dies amb magnitud 2,5 o superior, i canviar ràpidament entre Catalunya i la vista mundial.
+- Mostra magnitud, ubicació, hora local, profunditat i accés a la fitxa original de cada esdeveniment.
+- Manté l’ICGC i SISMOCAT com a fonts complementàries per al detall oficial de Catalunya i evita presentar el catàleg com un sistema d’avisos.
+
 ## En preparació — Càrrega resilient de la previsió · 2026-10-17
 
 - Mostra immediatament l’última previsió vàlida del navegador mentre demana dades noves a Open‑Meteo.

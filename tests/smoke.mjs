@@ -44,7 +44,8 @@ for(const feature of ['ensureLeaflet','renderMap','historySeries','compare-varia
 if(!html.includes('data-portal-page="cel"')||html.match(/id="cel-nocturn"[^>]*data-mobile-advanced/))throw new Error('La pàgina del cel no és independent o pot quedar oculta en mòbil.');
 if((html.match(/class="portal-view-header panel"/g)||[]).length!==14)throw new Error('Les catorze subpàgines principals no comparteixen capçalera.');
 if(!html.includes('data-history-limit="5"')||!html.includes('historial-avisos.html'))throw new Error('La vista principal no limita l’historial o no enllaça amb l’arxiu complet.');
-for(const viewer of ['fire','drought','jellyfish'])if(!html.includes(`data-environment-viewer="${viewer}"`))throw new Error(`Medi Ambient: falta el visor ${viewer}.`);
+for(const viewer of ['fire','firms','drought','earthquakes','jellyfish'])if(!html.includes(`data-environment-viewer="${viewer}"`))throw new Error(`Medi Ambient: falta el visor ${viewer}.`);
+if(!html.includes('environment-earthquakes-map')||!html.includes('earthquake.usgs.gov/earthquakes/map/')||!html.includes('sismocat.icgc.cat'))throw new Error('Medi Ambient: falta el mapa sísmic mundial o les fonts USGS i ICGC.');
 if(!html.includes('https://meduseo.com/es/')||!html.includes('https://www.medusapp.net/mapa/mapa-portada.php'))throw new Error('Medi Ambient: falten MedusApp o Meduseo.');
 if(html.includes('https://www.meteo.cat/observacions/radarLlamps'))throw new Error('Encara queda el visor de llamps de Meteocat que es retallava.');
 if(html.includes('https://www.aemet.es/es/eltiempo/observacion/rayos.html?w=0'))throw new Error('Encara queda el visor de llamps d’AEMET que no convencia.');
@@ -86,6 +87,7 @@ if(!worker.includes("'/assets/icons/icon-maskable-512.png'")||!worker.includes("
 const headers=await readFile(resolve(root,'_headers'),'utf8');
 if(!headers.includes('https://maps.blitzortung.org'))throw new Error('La política de seguretat bloquejaria Blitzortung.');
 if(!headers.includes('https://geocoding-api.open-meteo.com'))throw new Error('La política de seguretat bloquejaria la consulta d’altres poblacions.');
+if(!headers.includes('https://earthquake.usgs.gov'))throw new Error('La política de seguretat bloquejaria el catàleg sísmic mundial de l’USGS.');
 if(!headers.includes('https://seasonal-api.open-meteo.com'))throw new Error('La política de seguretat bloquejaria la tendència ECMWF EC46.');
 if(!headers.includes('/administracio.html')||!headers.includes('X-Robots-Tag: noindex'))throw new Error('La pàgina administrativa no té capçaleres antiindexació.');
 const meteoAi=await readFile(resolve(root,'src/features/meteo-ai.js'),'utf8');
