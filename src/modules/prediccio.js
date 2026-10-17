@@ -329,6 +329,13 @@ export function initForecastControls() {
 export function renderForecastError() {
   renderHomeForecast(null);
   setText('forecast-status','Predicció temporalment no disponible');
+  setText('forecast-headline','Previsió temporalment no disponible');
+  setText('forecast-headline-copy','Tornarem a consultar el model automàticament. Les dades en directe de l’estació continuen actives.');
+  setText('forecast-today-symbol','◌');setText('forecast-today-title','Sense dades de model');setText('forecast-today-copy','La pròxima actualització es farà automàticament.');setText('forecast-today-temp','—');setText('forecast-today-rain','—');setText('forecast-today-wind','—');
+  setText('forecast-tomorrow-symbol','◌');setText('forecast-tomorrow-title','Sense dades de model');setText('forecast-tomorrow-copy','La pròxima actualització es farà automàticament.');setText('forecast-tomorrow-temp','—');setText('forecast-tomorrow-rain','—');setText('forecast-tomorrow-wind','—');
+  const next=document.getElementById('forecast-next-days');if(next)next.innerHTML='<span><small>Pròxim intent</small><b>Automàtic</b><em>Sense recarregar la pàgina</em></span>';
+  setText('weekly-brief-status','Temporalment no disponible');setText('weekly-brief-copy','El resum apareixerà quan torni a respondre el model.');
+  const weekly=document.getElementById('weekly-brief-grid');if(weekly)weekly.innerHTML='<div class="forecast-loading">Sense una previsió recent prou fiable per resumir la setmana.</div>';
   const strip=document.getElementById('forecast-strip'); if(strip) strip.innerHTML='<div class="forecast-loading">La predicció no està disponible ara mateix. Les dades de l’estació continuen actives.</div>';
   const daily=document.getElementById('daily-forecast'); if(daily) daily.innerHTML='<div class="forecast-loading">No s’ha pogut carregar la previsió diària.</div>';
 }

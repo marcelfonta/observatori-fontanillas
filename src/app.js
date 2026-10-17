@@ -1,6 +1,6 @@
 // Observatori Meteorològic Fontanillas — app.js · V7 Fase 1
 import { CONFIG } from './core/config.js';
-import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchLongRangeForecast, fetchModelComparison, fetchStationHistory, fetchStationRecords, getLastCachedObs } from './services/weather-api.js';
+import { fetchAlerts, fetchCurrentWeather, fetchDataQuality, fetchForecast, fetchLongRangeForecast, fetchModelComparison, fetchStationHistory, fetchStationRecords, getLastCachedForecast, getLastCachedObs } from './services/weather-api.js';
 import { setText } from './core/dom.js';
 import { renderStation } from './modules/estacio.js';
 import { renderCharts, renderMetricSparklines } from './modules/grafiques.js';
@@ -62,9 +62,11 @@ async function enableCharts(){try{await loadChartJs();chartsAvailable=true;if(ch
 function updateClock(){ setText('header-time',new Intl.DateTimeFormat(getLocale(),{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Europe/Madrid'}).format(new Date())); }
 function setUpdated(value){ const date=value?new Date(String(value).replace(' ','T')):new Date(); const safe=Number.isNaN(date.getTime())?new Date():date; setText('updated-time',new Intl.DateTimeFormat(getLocale(),{hour:'2-digit',minute:'2-digit'}).format(safe)); const mins=Math.max(0,Math.round((Date.now()-safe.getTime())/60000)); setText('updated-relative',mins<2?'ara mateix':`fa ${mins} min`); }
 async function loadForecastSuite(){
-  const [forecastResult,modelsResult]=await Promise.allSettled([fetchForecast(),fetchModelComparison()]);
-  if(forecastResult.status==='fulfilled'){renderForecast(forecastResult.value);initWhenVisible('#cel-nocturn', () => renderAstronomy(forecastResult.value));updateSituation({forecast:forecastResult.value});updateMeteoAIContext({forecast:forecastResult.value});updateShareContext({forecast:forecastResult.value});}else{renderForecastError();initWhenVisible('#cel-nocturn', () => renderAstronomy(null));updateSituation({forecast:null});updateMeteoAIContext({forecast:null});updateShareContext({forecast:null});}
-  if(modelsResult.status==='fulfilled')renderModelComparison(modelsResult.value);else renderModelError();
+  const cached=getLastCachedForecast();
+  if(cached){renderForecast(cached.data);setText('forecast-status',`Previsió desada · fa ${cached.ageMinutes} min`);}
+  const forecastTask=fetchForecast().then(data=>{renderForecast(data);initWhenVisible('#cel-nocturn',()=>renderAstronomy(data));updateSituation({forecast:data});updateMeteoAIContext({forecast:data});updateShareContext({forecast:data});}).catch(error=>{console.warn('Previsió principal temporalment no disponible.',error);if(cached){setText('forecast-status',`Última previsió disponible · fa ${cached.ageMinutes} min`);initWhenVisible('#cel-nocturn',()=>renderAstronomy(cached.data));updateSituation({forecast:cached.data});updateMeteoAIContext({forecast:cached.data});updateShareContext({forecast:cached.data});}else{renderForecastError();initWhenVisible('#cel-nocturn',()=>renderAstronomy(null));updateSituation({forecast:null});updateMeteoAIContext({forecast:null});updateShareContext({forecast:null});}});
+  const modelsTask=fetchModelComparison().then(renderModelComparison).catch(error=>{console.warn('Comparació de models temporalment no disponible.',error);renderModelError();});
+  await Promise.allSettled([forecastTask,modelsTask]);
   forecastFetchedAt=Date.now();
 }
 

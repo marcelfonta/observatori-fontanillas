@@ -1,6 +1,7 @@
 import { CONFIG } from '../core/config.js';
 
 const LAST_OBS_KEY = 'fontanilles-last-obs';
+const LAST_FORECAST_KEY = 'fontanilles-last-forecast';
 
 // Desa la darrera observació vàlida a localStorage per poder mostrar dades
 // encara que el Worker no respongui (mode sense connexió).
@@ -25,6 +26,20 @@ export function getLastCachedObs() {
     console.warn('No s’ha pogut llegir la darrera lectura de localStorage.', error);
     return null;
   }
+}
+
+function storeLastForecast(data) {
+  try { localStorage.setItem(LAST_FORECAST_KEY,JSON.stringify({data,ts:Date.now()})); }
+  catch(error){ console.warn('No s’ha pogut desar la darrera previsió al navegador.',error); }
+}
+
+export function getLastCachedForecast(maxAgeMs=6*60*60*1000) {
+  try {
+    const parsed=JSON.parse(localStorage.getItem(LAST_FORECAST_KEY)||'null');
+    if(!parsed?.data?.hourly?.time?.length||!parsed?.data?.daily?.time?.length||!Number.isFinite(parsed.ts))return null;
+    const ageMs=Math.max(0,Date.now()-parsed.ts);
+    return ageMs<=maxAgeMs?{data:parsed.data,ts:parsed.ts,ageMinutes:Math.round(ageMs/60000)}:null;
+  } catch(error){ console.warn('No s’ha pogut recuperar la darrera previsió del navegador.',error);return null; }
 }
 
 async function request(url, options={}, timeoutMs=12000) {
@@ -56,7 +71,9 @@ export async function fetchForecast() {
   });
   const response = await request(`https://api.open-meteo.com/v1/forecast?${params}`, { cache: 'no-store' },15000);
   if (!response.ok) throw new Error(`Forecast API ${response.status}`);
-  return response.json();
+  const data=await response.json();
+  storeLastForecast(data);
+  return data;
 }
 
 export async function fetchLongRangeForecast() {
