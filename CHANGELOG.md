@@ -1,5 +1,11 @@
 # Changelog
 
+## En preparació — Recuperació de connexió · 2026-10-18
+
+- Reintenta una lectura puntual abans de declarar indisponible el servei.
+- Diferencia una caiguda temporal de l’API d’una desconnexió real del dispositiu.
+- Actualitza automàticament la lectura quan el navegador recupera la connexió.
+
 ## En preparació — Salut de captura de prediccions · 2026-10-18
 
 - Registra l'estat real de la captura multimodel després de cada execució del

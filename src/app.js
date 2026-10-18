@@ -56,6 +56,18 @@ let loadInFlight = null;
 const OFFLINE_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hores
 function showOfflineBanner(ageMinutes,message=''){ const banner=document.getElementById('offline-banner'); if(!banner)return; banner.textContent=message||`Mostrant dades de fa ${ageMinutes} min (mode sense connexió)`; banner.hidden=false; }
 function hideOfflineBanner(){ const banner=document.getElementById('offline-banner'); if(banner)banner.hidden=true; }
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function fetchCurrentWeatherResilient(){
+  try{return await fetchCurrentWeather();}
+  catch(firstError){
+    // Una pestanya restaurada, un canvi de xarxa o una actualització del Worker
+    // poden fer fallar només la primera petició. Evitem declarar tot el portal
+    // «sense connexió» abans de fer un segon intent curt i segur.
+    await wait(1200);
+    try{return await fetchCurrentWeather();}
+    catch{throw firstError;}
+  }
+}
 function refreshCharts(data, history = [], period = chartPeriod) {
   chartData=data; chartHistory=history; chartPeriod=period;
   if (!chartsAvailable) return;
@@ -117,7 +129,7 @@ async function loadAlerts(){
 async function performLoad(){
   const label=document.getElementById('connection-label');
   try {
-    latest=await fetchCurrentWeather();
+    latest=await fetchCurrentWeatherResilient();
     const localContext=recordReading(latest);
     let context;
     try {
@@ -138,8 +150,11 @@ async function performLoad(){
     const cached=getLastCachedObs();
     if(cached && (Date.now()-cached.ts)<OFFLINE_MAX_AGE_MS){
       latest=cached.data; renderStation(latest); updateHomeNow({current:{...latest,degraded:true,ageMinutes:cached.ageMinutes}}); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); updateWeatherStories({history:[]}); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:[]});updateShareContext({current:latest});
-      showOfflineBanner(cached.ageMinutes);
-      if(label){label.textContent='Sense connexió';label.parentElement.classList.add('is-offline');}
+      const browserOffline=typeof navigator!=='undefined'&&navigator.onLine===false;
+      showOfflineBanner(cached.ageMinutes,browserOffline
+        ? `Sense connexió. Mostrant l’última lectura desada de fa ${cached.ageMinutes} min.`
+        : `Servei temporalment no disponible. Mostrant una lectura desada de fa ${cached.ageMinutes} min; reintentarem automàticament.`);
+      if(label){label.textContent=browserOffline?'Sense connexió':'Reconnectant…';label.parentElement.classList.add('is-offline');}
     } else {
       latest=demo; renderStation(latest); updateHomeNow({current:null}); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); updateWeatherStories({history:[]}); setUpdated(latest.updated); updateSeoObservation(null); updateSituation({current:latest}); updateMeteoAIContext({current:null,history:[]});updateShareContext({current:null});
       hideOfflineBanner();
@@ -228,3 +243,4 @@ window.addEventListener('pageshow',event=>{
   refreshAfterResume(Boolean(event.persisted));
 });
 window.addEventListener('focus',()=>refreshAfterResume(false));
+window.addEventListener('online',()=>refreshAfterResume(true));
