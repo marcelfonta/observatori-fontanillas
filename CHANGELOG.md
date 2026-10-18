@@ -1,5 +1,14 @@
 # Changelog
 
+## En preparació — Fase 2: portada intel·ligent · 2026-10-18
+
+- Resumeix a la portada què cal saber ara amb observació local, previsió del
+  dia, avisos oficials i confiança entre ECMWF, GFS, ICON i AROME.
+- Manté visible l'origen de cada lectura i enllaça al detall corresponent.
+- Ofereix estats pendents i degradats que no bloquegen ni buiden la portada si
+  una font triga o falla temporalment.
+- Marca la fase 1 com a desplegada i la fase 2 com a iniciada al roadmap comú.
+
 ## En preparació — Centre operatiu i roadmap espacial · 2026-10-18
 
 - Unifica el roadmap de web i xarxes amb les aportacions de NASA, ESA,

@@ -10,7 +10,13 @@ La prioritat és estable: **fiabilitat → claredat → context espacial → dif
 NASA, ESA, Copernicus i EUMETSAT complementen l’estació, els avisos oficials i
 la càmera; no els substitueixen.
 
-## Fase 1 · Confiança operativa — en curs
+## Estat d'execució
+
+- **Fase 1 completada i desplegada** el 18 d'octubre de 2026.
+- **Fase 2 en curs:** primer lliurable, resum intel·ligent de portada.
+- Fases 3–6 planificades i subjectes a la porta de qualitat de la fase anterior.
+
+## Fase 1 · Confiança operativa — completada
 
 Objectiu: saber en menys de deu segons si el sistema està preparat.
 
@@ -35,6 +41,10 @@ pantalles.
 - Càrrega progressiva: primer contingut local i últim valor vàlid; després
   comparacions i mapes.
 - Explicacions curtes sobre incertesa i origen de cada dada.
+
+Primer lliurable: quatre lectures essencials —observació, previsió d'avui,
+vigilància oficial i confiança multimodel— amb font visible, accés al detall i
+estats útils quan una API encara no ha respost.
 
 ## Fase 3 · Centre d’observació de la Terra
 
