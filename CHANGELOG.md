@@ -1799,3 +1799,9 @@ Rollback: revertir aquest paquet i desplegar versions prèvies autoritzades. Els
 - Els dilluns, dimecres i divendres només publica quan el moviment és prou intens.
 - La resta de dies exigeix alhora moviment intens i un avís oficial actiu groc, taronja o vermell.
 - Manté com a màxim una publicació per data i deixa els vídeos descartats disponibles a l’administració.
+
+# V22.32.7 — Timelapse amb memòria controlada · 2026-10-18
+
+- Limita a un sol fil la descodificació, els filtres i la codificació de totes dues variants del timelapse.
+- Redueix les arenas de memòria d’FFmpeg per evitar que la Raspberry de 512 MB activi l’OOM-killer.
+- Aplica els mateixos límits a l’anàlisi de moviment sense alterar l’enquadrament ni la qualitat actuals.

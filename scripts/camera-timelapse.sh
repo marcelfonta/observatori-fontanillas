@@ -60,9 +60,10 @@ FONT="$(fc-match -f '%{file}' 'DejaVu Sans:style=Bold' 2>/dev/null || true)"
 FILTER="scale=960:-2,crop=ih*0.90*16/9:ih*0.90:(iw-ih*0.90*16/9)/2:0,scale=960:540"
 
 rm -f "$OUTPUT_TMP"
-ffmpeg -nostdin -hide_banner -loglevel error -y \
-  -f concat -safe 0 -i "$LIST" \
-  -filter_threads 1 -vf "$FILTER" -r 20 -an -c:v libx264 -threads 1 -preset ultrafast -crf 22 \
+MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
+  -threads 1 -f concat -safe 0 -i "$LIST" \
+  -filter_threads 1 -filter_complex_threads 1 \
+  -vf "$FILTER" -r 20 -an -c:v libx264 -threads 1 -preset ultrafast -crf 22 \
   -pix_fmt yuv420p -movflags +faststart -f mp4 "$OUTPUT_TMP"
 [[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
 mv "$OUTPUT_TMP" "$OUTPUT"
@@ -76,9 +77,10 @@ if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
 fi
 
 rm -f "$SOCIAL_TMP"
-ffmpeg -nostdin -hide_banner -loglevel error -y \
-  -i "$OUTPUT" \
-  -filter_threads 1 -vf "$SOCIAL_FILTER" -r 20 -an -c:v libx264 -threads 1 \
+MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
+  -threads 1 -i "$OUTPUT" \
+  -filter_threads 1 -filter_complex_threads 1 \
+  -vf "$SOCIAL_FILTER" -r 20 -an -c:v libx264 -threads 1 \
   -preset ultrafast -crf 22 -pix_fmt yuv420p -movflags +faststart -f mp4 "$SOCIAL_TMP"
 [[ -s "$SOCIAL_TMP" ]] || { echo "FFmpeg no ha creat la versió social vertical." >&2; exit 1; }
 mv "$SOCIAL_TMP" "$SOCIAL_OUTPUT"
@@ -88,7 +90,8 @@ echo "Versió social 9:16: $SOCIAL_OUTPUT"
 echo "Fotogrames: $FRAME_COUNT"
 MOTION_SCENE_THRESHOLD="${CAMERA_TIMELAPSE_SCENE_THRESHOLD:-0.035}"
 MOTION_MIN_PERMILLE="${CAMERA_TIMELAPSE_MOTION_MIN_PERMILLE:-180}"
-SCENE_CHANGES="$(ffmpeg -nostdin -hide_banner -loglevel info -i "$OUTPUT" \
+SCENE_CHANGES="$(MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel info \
+  -threads 1 -i "$OUTPUT" -filter_threads 1 -filter_complex_threads 1 \
   -vf "fps=8,crop=iw*0.70:ih*0.45:iw*0.15:ih*0.18,scale=160:-2,select='gt(scene,$MOTION_SCENE_THRESHOLD)',metadata=print" \
   -an -f null - 2>&1 | grep -c 'lavfi.scene_score' || true)"
 SCENE_CHANGES="${SCENE_CHANGES:-0}"

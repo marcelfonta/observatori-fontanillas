@@ -20,7 +20,10 @@ assert.match(generator,/SOCIAL_OUTPUT="\$OUTPUT_DIR\/meteo-fontanillas-nord-\$DA
 assert.match(generator,/crop=ih\*0\.90\*16\/9:ih\*0\.90:\(iw-ih\*0\.90\*16\/9\)\/2:0,scale=960:540/);
 assert.match(generator,/scale=540:304,pad=540:960:0:\(oh-ih\)\/2:color=#101820/);
 assert.match(generator,/-filter_threads 1/);
-assert.match(generator,/-i "\$OUTPUT"[\s\S]*-vf "\$SOCIAL_FILTER"/);
+assert.equal((generator.match(/MALLOC_ARENA_MAX=1 ffmpeg/g) || []).length,3);
+assert.equal((generator.match(/-filter_complex_threads 1/g) || []).length,3);
+assert.match(generator,/-threads 1 -f concat -safe 0 -i "\$LIST"/);
+assert.match(generator,/-threads 1 -i "\$OUTPUT"[\s\S]*-vf "\$SOCIAL_FILTER"/);
 assert.equal((generator.match(/-f concat -safe 0 -i "\$LIST"/g) || []).length,1);
 assert.match(generator,/TIMELAPSE DEL CEL/);
 assert.match(generator,/PANORÀMICA COMPLETA/);
