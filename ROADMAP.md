@@ -25,6 +25,10 @@ manté a [`docs/ROADMAP-ESPAI-I-XARXES-2026-2027.md`](docs/ROADMAP-ESPAI-I-XARXE
 - [x] Incorporar el mapa WMS oficial d’AROME per a tota Catalunya al visor principal i conservar AROME HD com a detall local separat.
 - [x] Incorporar Windy com a explorador visual multimodel amb accessos a models globals i regionals, sense afegir-los automàticament als pesos locals.
 - [x] Afegir un mapa mundial de terratrèmols recents amb catàleg USGS i accessos complementaris a l’ICGC i SISMOCAT.
+- [x] Incorporar HARMONIE-AROME al visor mitjançant la font oficial d’AEMET, separat dels pesos locals fins que hi hagi dades numèriques i verificació prospectiva comparables.
+- [x] Obrir la fase 1 de nowcasting amb animació observada i fotogrames futurs només quan la font radar els publica, distingint visualment observació i projecció i declarant-ne l’absència.
+- [ ] Acumular disponibilitat i qualitat de fotogrames futurs abans de calcular trajectòries, arribades o confiança meteorològica local.
+- [ ] Fusionar radar, llamps, satèl·lit i model d’alta resolució només en un circuit d’ombra validat; no emetre avisos automàtics sense contrast i autorització específica.
 
 ## Laboratori de models francesos — Revisió funcional
 

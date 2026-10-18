@@ -1,5 +1,16 @@
 # Changelog
 
+## En preparació — HARMONIE i nowcasting experimental · 2026-10-18
+
+- El visor de models incorpora HARMONIE-AROME dins la pàgina mitjançant el
+  visor oficial d’AEMET, amb resolució i horitzó identificats i sense donar-li
+  pes local abans de disposar de verificació prospectiva comparable.
+- El radar separa els fotogrames observats dels projectats i limita qualsevol
+  projecció visible a les dues hores següents; si la font no publica futur, la
+  web ho declara i conserva l’accés a la previsió oficial +1 h de Meteocat.
+- La primera fase de nowcasting queda explícitament experimental: no calcula
+  hores d’arribada, no inventa fotogrames i no activa avisos automàtics.
+
 ## En preparació — CECAT a través de mitjanit · 2026-10-18
 
 - Accepta quatre franges oficials consecutives encara que comencin a mig dia i

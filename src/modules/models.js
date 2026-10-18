@@ -4,7 +4,8 @@ import { fetchAromeLocalGrid } from '../services/weather-api.js';
 
 const layerNames={rain:'precipitació',temp:'temperatura a 2 metres',wind:'vent a 10 metres',clouds:'nuvolositat',pressure:'pressió atmosfèrica'};
 const officialLayers={rain:'precipitation',temp:'temperature',wind:'wind',clouds:'clouds'};
-const modelNames={ecmwf:'ECMWF',gfs:'GFS',iconEu:'ICON-EU',arome:'AROME · Catalunya',aromeHd:'AROME HD · Baix Montseny'};
+const modelNames={ecmwf:'ECMWF',gfs:'GFS',iconEu:'ICON-EU',harmonie:'HARMONIE-AROME · AEMET',arome:'AROME · Catalunya',aromeHd:'AROME HD · Baix Montseny'};
+const HARMONIE_URL='https://www.aemet.es/ca/eltiempo/prediccion/modelosnumericos/harmonie_arome?opc2=pybal&opc3=pr';
 const CATALUNYA_BOUNDS=[[40.4,0],[43.6,4.5]];
 const CATALUNYA_DISPLAY_BOUNDS=[[40.9,.1],[43,3.4]];
 const scales={
@@ -90,22 +91,23 @@ function togglePlayback(){
 }
 function syncWindySource(){const source=document.getElementById('model-viewer-source');if(!source)return;source.href=windyPublicUrl();source.textContent='Font: Windy · obrir complet ↗';}
 function showWindy(){stopPlayback();mapRequest+=1;const frame=document.getElementById('model-viewer-frame');const viewer=document.getElementById('arome-viewer');if(viewer)viewer.hidden=true;if(frame){frame.hidden=false;frame.src=windyUrl();}syncWindySource();markLoading();setText('model-viewer-caption',`${modelNames[model]} · ${layerNames[layer]}`);}
+function showHarmonie(){stopPlayback();mapRequest+=1;const frame=document.getElementById('model-viewer-frame');const viewer=document.getElementById('arome-viewer');if(viewer)viewer.hidden=true;if(frame){frame.hidden=false;frame.src=HARMONIE_URL;}markLoading('Carregant el visor oficial HARMONIE-AROME d’AEMET…');setText('model-viewer-caption','HARMONIE-AROME · Península i Balears · 0–48 h');setText('model-viewer-state','Visor oficial AEMET; selecciona la variable i l’hora dins del mapa.');}
 function selectModel(button){
   model=button.dataset.viewerModel;document.querySelectorAll('[data-viewer-model]').forEach(item=>item.classList.toggle('is-active',item.dataset.viewerModel===model));
-  const isArome=model==='arome'||model==='aromeHd';const pressure=document.getElementById('model-layer-pressure');if(pressure){pressure.disabled=isArome;pressure.title=isArome?'AROME no ofereix aquesta capa en aquest visor':'';}
+  const isArome=model==='arome'||model==='aromeHd';const isHarmonie=model==='harmonie';const pressure=document.getElementById('model-layer-pressure');if(pressure){pressure.disabled=isArome;pressure.title=isArome?'AROME no ofereix aquesta capa en aquest visor':'';}
   const completeLink=document.getElementById('arome-complete-link');if(completeLink)completeLink.hidden=!isArome;
-  const source=document.getElementById('model-viewer-source');if(source){source.href=model==='arome'?'https://portail-api.meteofrance.fr/web/fr/api/DonneesPubliquesPaquetAROME':model==='aromeHd'?'https://open-meteo.com/en/docs/meteofrance-api':windyPublicUrl();source.textContent=model==='arome'?'Font: Météo-France · WMS ↗':model==='aromeHd'?'Dades: Open-Meteo · Météo-France ↗':'Font: Windy · obrir complet ↗';}
-  setText('model-viewer-title',model==='arome'?'AROME oficial · Catalunya':model==='aromeHd'?'AROME HD · Baix Montseny':'Mapa temporal interactiu');
+  const source=document.getElementById('model-viewer-source');if(source){source.href=model==='arome'?'https://portail-api.meteofrance.fr/web/fr/api/DonneesPubliquesPaquetAROME':model==='aromeHd'?'https://open-meteo.com/en/docs/meteofrance-api':isHarmonie?HARMONIE_URL:windyPublicUrl();source.textContent=model==='arome'?'Font: Météo-France · WMS ↗':model==='aromeHd'?'Dades: Open-Meteo · Météo-France ↗':isHarmonie?'Font oficial: AEMET ↗':'Font: Windy · obrir complet ↗';}
+  setText('model-viewer-title',model==='arome'?'AROME oficial · Catalunya':model==='aromeHd'?'AROME HD · Baix Montseny':isHarmonie?'HARMONIE-AROME oficial · AEMET':'Mapa temporal interactiu');
   if(isArome&&layer==='pressure'){layer='rain';document.querySelectorAll('[data-viewer-layer]').forEach(item=>item.classList.toggle('is-active',item.dataset.viewerLayer===layer));}
-  if(model==='arome')void showAromeOfficial({reset:true});else if(model==='aromeHd')void showAromeLocal({reset:true});else showWindy();
+  if(model==='arome')void showAromeOfficial({reset:true});else if(model==='aromeHd')void showAromeLocal({reset:true});else if(isHarmonie)showHarmonie();else showWindy();
 }
 
 export function initModelViewer(){
   const frame=document.getElementById('model-viewer-frame');
-  frame?.addEventListener('load',()=>{if(model==='arome'||model==='aromeHd')return;markReady();setText('model-viewer-state','Visor temporal de Windy centrat a Sant Celoni.');});
+  frame?.addEventListener('load',()=>{if(model==='arome'||model==='aromeHd')return;markReady();setText('model-viewer-state',model==='harmonie'?'Visor oficial HARMONIE-AROME d’AEMET · resolució 2,5 km · horitzó màxim 48 h.':'Visor temporal de Windy centrat a Sant Celoni.');});
   if(frame&&!frame.getAttribute('src')&&frame.dataset.src){markLoading();frame.src=frame.dataset.src;}
   document.querySelectorAll('[data-viewer-model]').forEach(button=>button.addEventListener('click',()=>selectModel(button)));
-  document.querySelectorAll('[data-viewer-layer]').forEach(button=>button.addEventListener('click',()=>{const isArome=model==='arome'||model==='aromeHd';if(isArome&&button.dataset.viewerLayer==='pressure')return;layer=button.dataset.viewerLayer;document.querySelectorAll('[data-viewer-layer]').forEach(item=>item.classList.toggle('is-active',item===button));if(model==='arome')void showAromeOfficial();else if(model==='aromeHd')renderLocalFrame(aromeIndex);else showWindy();}));
+  document.querySelectorAll('[data-viewer-layer]').forEach(button=>button.addEventListener('click',()=>{const isArome=model==='arome'||model==='aromeHd';if(isArome&&button.dataset.viewerLayer==='pressure')return;layer=button.dataset.viewerLayer;document.querySelectorAll('[data-viewer-layer]').forEach(item=>item.classList.toggle('is-active',item===button));if(model==='arome')void showAromeOfficial();else if(model==='aromeHd')renderLocalFrame(aromeIndex);else if(model==='harmonie')showHarmonie();else showWindy();}));
   document.getElementById('arome-time')?.addEventListener('input',event=>{stopPlayback();if(model==='arome')void renderOfficialFrame(event.target.value).catch(()=>markError('No s’ha pogut carregar aquest instant AROME.'));else renderLocalFrame(event.target.value);});
   document.getElementById('arome-play')?.addEventListener('click',togglePlayback);
 }
