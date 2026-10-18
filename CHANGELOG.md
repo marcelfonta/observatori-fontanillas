@@ -1,5 +1,11 @@
 # Changelog
 
+## En preparació — Salut de captura de prediccions · 2026-10-18
+
+- Registra l'estat real de la captura multimodel després de cada execució del
+  cron perquè el panell públic no quedi indefinidament en mode «recollint».
+- Diferencia captura completa, parcial i fallida sense publicar detalls interns.
+
 ## En preparació — Fase 6: verificació i reputació · 2026-10-18
 
 - Amplia la verificació pública amb exportacions CSV i JSON reproduïbles,
