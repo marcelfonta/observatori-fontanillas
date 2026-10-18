@@ -1,5 +1,14 @@
 # Changelog
 
+## En preparació — Visor topogràfic estable · 2026-10-18
+
+- Substitueix el mosaic satel·litari incomplet del centre d’observació per un
+  mapa topogràfic estable, amb Sant Celoni identificat i enquadraments per a
+  Catalunya, el Mediterrani occidental i Europa.
+- Manté núvols, masses d’aire i llamps com a consultes explícites al visor
+  oficial d’EUMETSAT, sense presentar una composició defectuosa com si fos una
+  imatge contínua.
+
 ## En preparació — HARMONIE i nowcasting experimental · 2026-10-18
 
 - El visor de models incorpora HARMONIE-AROME dins la pàgina mitjançant el
