@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import worker from '../worker/index.js';
-import { analyticsServiceState, overallState, performanceRating, serviceState } from '../src/features/admin.js';
+import { analyticsServiceState, operationalOverview, overallState, performanceRating, serviceState } from '../src/features/admin.js';
 import { readFile } from 'node:fs/promises';
 
 assert.equal(serviceState(true).label,'Configurat');
@@ -16,7 +16,19 @@ assert.equal(analyticsServiceState({cloudflareEnabled:true}).label,'Actiu al dom
 assert.equal(analyticsServiceState({cloudflareEnabled:true}).className,'is-ok');
 assert.equal(analyticsServiceState({googleMeasurementId:'G-TEST'}).provider,'google');
 assert.equal(analyticsServiceState().provider,'none');
+const operationalPayload={ok:true,station:{ok:true},alerts:{ok:true,active:0},operations:{scheduler:{status:'healthy',detail:{jobs:4}},social:{status:'healthy'}},social:{channelCredentials:{facebook:true,instagram:true,bluesky:true,telegram:true,threads:true,bufferTikTok:true,bufferX:true},preflight:{status:'healthy'}}};
+const operationalReady=operationalOverview(operationalPayload,[{date:'2026-10-17',publication:{status:'ready'}}]);
+assert.equal(operationalReady.state,'ok');
+assert.equal(operationalReady.actions.length,0);
+assert.equal(operationalReady.domains.length,4);
+const operationalPending=operationalOverview({...operationalPayload,operations:{scheduler:{status:'failed'},social:{status:'failed'}}},[]);
+assert.equal(operationalPending.state,'error');
+assert.equal(operationalPending.actions.length,3);
+assert.equal(operationalPending.domains.find(domain=>domain.key==='camera').state,'warning');
+assert.equal(operationalOverview({...operationalPayload,operations:{...operationalPayload.operations,social:{status:'down'}}},[]).domains.find(domain=>domain.key==='social').state,'error');
 const adminHtml=await readFile(new URL('../administracio.html',import.meta.url),'utf8');
+assert.match(adminHtml,/id="admin-command-center"/);
+assert.match(adminHtml,/id="admin-command-domains"/);
 assert.match(adminHtml,/id="admin-youtube-schedule"/);
 assert.match(adminHtml,/id="admin-youtube-operation"/);
 assert.match(adminHtml,/id="admin-buffer-diagnostics"/);

@@ -12,9 +12,9 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-v21.png?v=22.0.0" />
   <link rel="stylesheet" href="css/variables.css?v=22.0.0" />
   <link rel="stylesheet" href="css/layout.css?v=22.0.0" />
-  <link rel="stylesheet" href="css/style.css?v=22.32.1" />
-  <link rel="stylesheet" href="css/portal.css?v=22.32.1" />
-  <script type="module" src="src/features/admin.js?v=22.32.1"></script>
+  <link rel="stylesheet" href="css/style.css?v=22.33.0" />
+  <link rel="stylesheet" href="css/portal.css?v=22.33.0" />
+  <script type="module" src="src/features/admin.js?v=22.33.0"></script>
 </head>
 <body id="top" class="admin-body">
   <a class="skip-link" href="#admin-main">Saltar al panell</a>
@@ -44,6 +44,17 @@
         <a href="https://github.com/marcelfonta/observatori-fontanillas/actions/workflows/youtube-short-private.yml" target="_blank" rel="noopener noreferrer">Comprova l’execució a GitHub Actions</a>
       </article>
       <div class="admin-toolbar panel"><div><span class="admin-live-dot"></span><strong id="admin-overall-status">Comprovant serveis…</strong><small id="admin-last-update">Sense actualització</small></div><div><button type="button" id="admin-copy-diagnostic">Copiar diagnòstic</button><button type="button" id="admin-refresh">Actualitzar</button><button type="button" id="admin-logout">Tancar sessió</button></div></div>
+
+      <article class="admin-command-center panel" id="admin-command-center" data-state="pending" aria-labelledby="admin-command-title">
+        <header><div><p class="eyebrow">Centre operatiu</p><h2 id="admin-command-title">Què requereix atenció ara?</h2><p id="admin-command-summary" role="status">Completant les comprovacions del sistema…</p></div><span class="admin-status-pill is-warning" id="admin-command-pill">Comprovant</span></header>
+        <div class="admin-command-domains" id="admin-command-domains" aria-live="polite">
+          <article class="admin-command-domain is-pending"><span class="admin-command-domain__indicator" aria-hidden="true"></span><div><strong>Dades i avisos</strong><p>Comprovant…</p></div></article>
+          <article class="admin-command-domain is-pending"><span class="admin-command-domain__indicator" aria-hidden="true"></span><div><strong>Automatitzacions</strong><p>Comprovant…</p></div></article>
+          <article class="admin-command-domain is-pending"><span class="admin-command-domain__indicator" aria-hidden="true"></span><div><strong>Xarxes</strong><p>Comprovant…</p></div></article>
+          <article class="admin-command-domain is-pending"><span class="admin-command-domain__indicator" aria-hidden="true"></span><div><strong>Càmera i timelapse</strong><p>Comprovant…</p></div></article>
+        </div>
+        <nav class="admin-command-actions" id="admin-command-actions" aria-label="Accions prioritàries" hidden></nav>
+      </article>
 
       <div class="admin-overview">
         <article class="panel" data-admin-card="worker"><span>Worker</span><strong id="admin-worker-state">—</strong><small id="admin-worker-detail">Versió pendent</small></article>
@@ -108,6 +119,6 @@
     </section>
   </main>
 
-  <footer class="shell"><span>© 2026 Observatori Meteorològic Fontanillas</span><small>Administració · V22.32.1</small><div><a href="#top">Tornar amunt ↑</a></div></footer>
+  <footer class="shell"><span>© 2026 Observatori Meteorològic Fontanillas</span><small>Administració · V22.33.0</small><div><a href="#top">Tornar amunt ↑</a></div></footer>
 </body>
 </html>
