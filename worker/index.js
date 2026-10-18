@@ -12,8 +12,8 @@ import { dailySocialCardV5 } from './social-daily-v5.js';
 import { meteofranceMap, meteofranceModels } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.32.6";
-const WORKER_BUILT = "2026-10-15";
+const WORKER_VERSION = "22.38.0";
+const WORKER_BUILT = "2026-10-18";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -3320,6 +3320,27 @@ async function health(env) {
   }
 }
 
+const PUBLIC_OPERATION_SERVICES=['scheduler','database-maintenance','forecast-capture','social-automatic','meteocat-alert-social','camera-nord'];
+
+async function publicOperationsStatus(env){
+  const generatedAt=new Date().toISOString();
+  if(!(await ensureOperationsSchema(env)))return json({ok:false,status:'unavailable',generatedAt,services:[],incidents:[]},200,'public, max-age=120');
+  const result=await env.DB.prepare(`SELECT service_key,status,consecutive_failures,last_checked_at,last_failure_at,last_success_at
+    FROM monitor_state WHERE service_key IN (${PUBLIC_OPERATION_SERVICES.map(()=>'?').join(',')}) ORDER BY service_key`).bind(...PUBLIC_OPERATION_SERVICES).all();
+  const rows=new Map((result?.results||[]).map(row=>[row.service_key,row]));
+  const services=PUBLIC_OPERATION_SERVICES.map(key=>{
+    const row=rows.get(key)||{};
+    return {
+      key,status:['healthy','down','degraded'].includes(row.status)?row.status:'unknown',
+      checkedAt:row.last_checked_at||null,lastSuccessAt:row.last_success_at||null,lastFailureAt:row.last_failure_at||null,
+      consecutiveFailures:Number(row.consecutive_failures)||0,
+    };
+  });
+  const incidents=services.filter(item=>item.status==='down'||item.status==='degraded').map(item=>({service:item.key,status:item.status,detectedAt:item.lastFailureAt||item.checkedAt}));
+  const pending=services.some(item=>item.status==='unknown');
+  return json({ok:!pending&&!incidents.length,status:incidents.length?'degraded':pending?'collecting':'healthy',generatedAt,services,incidents,scope:'Estat tècnic agregat, sense credencials, contingut privat ni detalls interns.'},200,'public, max-age=120');
+}
+
 async function secureTokenMatch(candidate, expected) {
   if (!candidate || !expected || candidate.length > 512) return false;
   const encoder = new TextEncoder();
@@ -6203,14 +6224,13 @@ async function publishForecastEpisodeVideo(env,draft,{youtubeId=null}={}){
   const previousOutcomes=Array.isArray(previousState.outcomes)?previousState.outcomes:[];
   const completed=new Map(previousOutcomes.filter(item=>item?.ok&&item?.channel).map(item=>[item.channel,item]));
   if(youtubeId&&!completed.has('youtube'))completed.set('youtube',{channel:'youtube',ok:true,remoteId:youtubeId});
-  const caption=cleanText(`${draft.body}\n\n${draft.source_url}`,2200);
   const targets=[];
   if(env.META_SYSTEM_USER_TOKEN){
-    targets.push(['instagram',async previousOutcome=>publishInstagramReel({videoUrl:await socialVideoUrl(key,env,3600),caption,containerId:previousOutcome?.reelContainerId||''},env)]);
-    targets.push(['facebook',async ()=>publishFacebookReel({videoUrl:await socialVideoUrl(key,env,3600),caption},env)]);
+    targets.push(['instagram',async previousOutcome=>publishInstagramReel({videoUrl:await socialVideoUrl(key,env,3600),caption:socialChannelPostText(draft,'instagram'),containerId:previousOutcome?.reelContainerId||''},env)]);
+    targets.push(['facebook',async ()=>publishFacebookReel({videoUrl:await socialVideoUrl(key,env,3600),caption:socialChannelPostText(draft,'facebook')},env)]);
   }
-  if(bufferTikTokConfigured(env)&&bufferTikTokEnabled(env))targets.push(['tiktok',async ()=>publishBufferForecastEpisode(env,{service:'tiktok',label:'TikTok',key,text:caption})]);
-  if(bufferXConfigured(env)&&bufferXEnabled(env))targets.push(['x',async ()=>publishBufferForecastEpisode(env,{service:'twitter',label:'X',key,text:caption})]);
+  if(bufferTikTokConfigured(env)&&bufferTikTokEnabled(env))targets.push(['tiktok',async ()=>publishBufferForecastEpisode(env,{service:'tiktok',label:'TikTok',key,text:socialChannelPostText(draft,'tiktok')})]);
+  if(bufferXConfigured(env)&&bufferXEnabled(env))targets.push(['x',async ()=>publishBufferForecastEpisode(env,{service:'twitter',label:'X',key,text:socialChannelPostText(draft,'x')})]);
   const outcomes=[...completed.values()];
   for(const [channel,publisher] of targets){
     if(completed.has(channel))continue;
@@ -7149,6 +7169,7 @@ export default {
       if (url.pathname === "/records") return stationRecords(request,env,ctx);
       if (url.pathname === "/quality") return quality(env);
       if (url.pathname === "/health") return health(env);
+      if (url.pathname === "/public-status") return publicOperationsStatus(env);
       if (url.pathname === "/alerts") return alerts(env);
       if (url.pathname === "/alert-history") return alertHistory(url, env);
       if (url.pathname === "/stations") return comparisonStations(url, env);
@@ -7163,7 +7184,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/fires-nearby?lat=41.69&lon=2.49", "/camera/nord/latest.jpg", "/camera/nord/timelapse-preview.mp4", "/forecast-videos", "/forecast-verification?days=45", "/meteofrance/models", "/meteofrance/map?model=arome&layer=precipitation", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/public-status", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/fires-nearby?lat=41.69&lon=2.49", "/camera/nord/latest.jpg", "/camera/nord/timelapse-preview.mp4", "/forecast-videos", "/forecast-verification?days=45", "/meteofrance/models", "/meteofrance/map?model=arome&layer=precipitation", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

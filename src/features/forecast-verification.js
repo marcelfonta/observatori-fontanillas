@@ -1,4 +1,6 @@
-import { fetchForecastVerification } from '../services/weather-api.js';
+import { fetchForecastVerification, fetchPublicOperationsStatus } from '../services/weather-api.js';
+
+let latestVerification=null;
 
 const fmt=(value,digits=1)=>Number.isFinite(Number(value))?Number(value).toLocaleString('ca-ES',{maximumFractionDigits:digits,minimumFractionDigits:digits}):'—';
 const quality=(mae,good,medium)=>!Number.isFinite(Number(mae))?'Recollint':mae<=good?'Molt bona':mae<=medium?'Bona':'Millorable';
@@ -36,6 +38,28 @@ function verificationChart(detail=[]){
   return `<figure class="verification-chart"><figcaption><span><i class="is-forecast"></i> Màxima prevista</span><span><i class="is-observed"></i> Màxima observada</span></figcaption><svg viewBox="0 0 640 180" role="img" aria-label="Evolució de la temperatura màxima prevista i observada"><line x1="24" y1="154" x2="616" y2="154"></line><polyline class="is-forecast" points="${forecast}"></polyline><polyline class="is-observed" points="${observed}"></polyline></svg><small>${first||''} → ${last||''} · cada punt és un pronòstic de demà verificat</small></figure>`;
 }
 
+const safeCsv=value=>{const text=String(value??'');return `"${(/^[=+\-@]/.test(text)?`'${text}`:text).replaceAll('"','""')}"`;};
+export function verificationCsv(payload={}){
+  const rows=[['date','issued_at','forecast_max_c','observed_max_c','forecast_min_c','observed_min_c','forecast_rain_mm','observed_rain_mm','forecast_gust_kmh','observed_gust_kmh']];
+  for(const item of payload.detail||[])rows.push([item.date,item.issuedAt,item.forecast?.max,item.observed?.max,item.forecast?.min,item.observed?.min,item.forecast?.rain,item.observed?.rain,item.forecast?.gust,item.observed?.gust]);
+  return rows.map(row=>row.map(safeCsv).join(',')).join('\n');
+}
+function download(name,type,content){const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([content],{type}));link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(link.href),0);}
+function prepareExports(payload){
+  latestVerification=payload;
+  const csv=document.getElementById('verification-export-csv');const json=document.getElementById('verification-export-json');const status=document.getElementById('verification-export-status');
+  const ready=Array.isArray(payload.detail)&&payload.detail.length>0;
+  if(csv)csv.disabled=!ready;if(json)json.disabled=!ready;
+  if(status)status.textContent=ready?`${payload.detail.length} casos visibles · generat ${new Date(payload.generatedAt).toLocaleString('ca-ES')}`:'La mostra encara no conté casos exportables.';
+}
+function renderPublicHealth(payload){
+  const badge=document.getElementById('verification-public-health');const summary=document.getElementById('verification-health-summary');const list=document.getElementById('verification-health-services');if(!badge||!summary||!list)return;
+  badge.textContent=payload.status==='healthy'?'Serveis operatius':payload.status==='degraded'?'Incidència activa':'Estat no disponible';
+  summary.textContent=payload.scope||'Estat tècnic agregat dels processos públics.';
+  const labels={scheduler:'Programador', 'database-maintenance':'Base de dades','forecast-capture':'Captura de prediccions','social-automatic':'Publicació social','meteocat-alert-social':'Avisos Meteocat','camera-nord':'Càmera nord'};
+  list.innerHTML=(payload.services||[]).length?(payload.services||[]).map(item=>`<li><span>${escapeHtml(labels[item.key]||item.key)}</span><b class="${item.status==='healthy'?'':'is-down'}">${item.status==='healthy'?'Correcte':item.status==='down'?'Incidència':'Pendent'}</b></li>`).join(''):'<li>No hi ha prou registres públics encara.</li>';
+}
+
 function render(payload){
   const status=document.getElementById('verification-status');
   const hero=document.getElementById('verification-hero');
@@ -45,6 +69,7 @@ function render(payload){
   const method=document.getElementById('verification-method');
   if(!status||!hero||!metrics||!horizons||!detail||!method)return;
   const days=Number(payload.sampleDays)||0;
+  prepareExports(payload);
   if(payload.status!=='ready'){
     const target=7;
     const progress=Math.min(100,Math.max(0,days/target*100));
@@ -80,6 +105,11 @@ function render(payload){
 }
 
 export async function initForecastVerification(){
-  try{render(await fetchForecastVerification(45));}
-  catch(error){const status=document.getElementById('verification-status');if(status)status.textContent='Temporalment no disponible';console.warn('Verificació de prediccions no disponible.',error);}
+  document.getElementById('verification-export-csv')?.addEventListener('click',()=>{if(latestVerification)download(`verificacio-meteo-${new Date().toISOString().slice(0,10)}.csv`,'text/csv;charset=utf-8',verificationCsv(latestVerification));});
+  document.getElementById('verification-export-json')?.addEventListener('click',()=>{if(latestVerification)download(`verificacio-meteo-${new Date().toISOString().slice(0,10)}.json`,'application/json',JSON.stringify({...latestVerification,license:{station:'Dades pròpies de l’Observatori Fontanillas',forecast:'Derivat Open-Meteo; consulteu atribució i termes de la font'},exportedAt:new Date().toISOString()},null,2));});
+  const [verification,operations]=await Promise.allSettled([fetchForecastVerification(45),fetchPublicOperationsStatus()]);
+  if(verification.status==='fulfilled')render(verification.value);
+  else {const status=document.getElementById('verification-status');if(status)status.textContent='Temporalment no disponible';console.warn('Verificació de prediccions no disponible.',verification.reason);}
+  if(operations.status==='fulfilled')renderPublicHealth(operations.value);
+  else renderPublicHealth({status:'unavailable',scope:'L’estat operatiu no està disponible temporalment.',services:[]});
 }

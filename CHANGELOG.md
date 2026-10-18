@@ -1,5 +1,16 @@
 # Changelog
 
+## En preparació — Fase 6: verificació i reputació · 2026-10-18
+
+- Amplia la verificació pública amb exportacions CSV i JSON reproduïbles,
+  mostra, data de generació, metodologia, fonts i llicències visibles.
+- Publica un estat operatiu agregat dels serveis essencials sense detalls,
+  credencials ni informació privada.
+- Adapta també per canal els textos dels vídeos d'episodis meteorològics de
+  Facebook, Instagram, TikTok i X, completant el circuit de la fase 5.
+- Manté els pesos locals com a informació experimental: no alteren la
+  predicció operativa sense mostra i revisió suficients.
+
 ## En preparació — Fase 5: xarxes adaptades per canal · 2026-10-18
 
 - Genera una versió editorial pròpia per Facebook, Instagram, Bluesky,

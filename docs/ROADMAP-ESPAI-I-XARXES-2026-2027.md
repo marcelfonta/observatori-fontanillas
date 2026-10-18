@@ -16,8 +16,9 @@ la càmera; no els substitueixen.
 - **Fase 2 completada i desplegada:** resum intel·ligent de portada.
 - **Fase 3 completada i desplegada:** centre d'observació de la Terra per horitzons.
 - **Fase 4 completada i desplegada:** històries meteorològiques verificables.
-- **Fase 5 en curs:** relat i presentació adaptats a cada canal.
-- Fase 6 planificada i subjecta a la porta de qualitat de la fase anterior.
+- **Fase 5 completada:** relat i presentació adaptats a cada canal, també en
+  peces audiovisuals d'episodi.
+- **Fase 6 completada:** verificació, exportació i salut pública sense secrets.
 
 ## Fase 1 · Confiança operativa — completada
 
@@ -105,6 +106,10 @@ versió, sense alterar el registre segur ni duplicar els canals ja completats.
 - Metodologia, cobertura, errors i canvis de pes consultables.
 - Exportacions de dades pròpies i derivats compatibles amb les llicències.
 - Pàgina pública de salut i historial d’incidències sense dades sensibles.
+
+Primer lliurable: el bloc públic de verificació mostra resultats per model i
+mostra mínima, documenta el mètode, exporta els casos visibles en CSV o JSON i
+publica l'estat agregat dels processos essencials sense exposar detalls interns.
 
 ## Criteris permanents
 

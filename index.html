@@ -68,12 +68,12 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=22.32.7-windy-explorer" />
+    <link rel="stylesheet" href="css/style.css?v=22.38.0-verification-reputation" />
     <link rel="stylesheet" href="css/portal.css?v=22.36.0-weather-stories" />
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="src/features/push.js?v=22.31.6"></script>
     <script type="module" src="src/features/pwa.js?v=22.31.6"></script>
-    <script type="module" src="src/app.js?v=22.36.0-weather-stories"></script>
+    <script type="module" src="src/app.js?v=22.38.0-verification-reputation"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/?page=centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -647,6 +647,11 @@
         <div class="verification-horizons" id="verification-horizons" hidden></div>
         <div class="verification-detail" id="verification-detail" hidden></div>
         <p class="verification-method" id="verification-method">Cada pronòstic queda segellat amb data i hora; la realitat prové de l’Observatori Fontanillas.</p>
+        <section class="verification-transparency" aria-labelledby="verification-transparency-title">
+          <header><div><p class="eyebrow">Traçabilitat pública</p><h3 id="verification-transparency-title">Mètode, dades i salut operativa</h3></div><span class="tag" id="verification-public-health">Comprovant serveis</span></header>
+          <div class="verification-transparency__grid"><article><strong>Exportació reproduïble</strong><p>Descarrega la mostra visible amb previsió congelada, observació posterior i metadades del mètode.</p><div class="verification-export-actions"><button type="button" id="verification-export-csv" disabled>CSV</button><button type="button" id="verification-export-json" disabled>JSON</button></div><small id="verification-export-status" role="status">Esperant una mostra verificable.</small></article><article><strong>Estat dels processos</strong><p id="verification-health-summary">Consultant únicament estats agregats, sense secrets ni informació privada.</p><ul id="verification-health-services"><li>Dades pendents.</li></ul></article></div>
+          <p class="verification-license">Dades pròpies de l’Observatori Fontanillas i derivats de prediccions Open‑Meteo. Consulta la <a href="./metodologia.html">metodologia completa</a>; les fonts oficials conserven les seves llicències i atribucions.</p>
+        </section>
       </section>
 
       <section id="tendencies" class="section-block" role="tabpanel" aria-labelledby="data-center-tab-charts" data-mobile-advanced data-portal-page="centre-dades" data-data-center-panel="charts">

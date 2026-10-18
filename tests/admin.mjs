@@ -54,6 +54,10 @@ const fakeDb={
     const statement={sql,bindings:[],bind(...values){this.bindings=values;return this;},async run(){return {meta:{changes:0}};},async all(){
       if(sql.includes('sqlite_master'))return {results:[{name:'observations'},{name:'alert_events'},{name:'contact_rate_limit'}]};
       if(sql.includes('FROM social_drafts'))return {results:[{id:1,kind:'daily_observation',status:'draft',channels:'["facebook","instagram","bluesky","telegram"]',title:'Dades de Sant Celoni',created_at:new Date().toISOString(),scheduled_for:null}]};
+      if(sql.includes('FROM monitor_state'))return {results:[
+        {service_key:'scheduler',status:'healthy',consecutive_failures:0,last_checked_at:new Date().toISOString(),last_success_at:new Date().toISOString()},
+        {service_key:'social-automatic',status:'down',consecutive_failures:2,last_checked_at:new Date().toISOString(),last_failure_at:new Date().toISOString()},
+      ]};
       return {results:[]};
     },async first(){
       if(sql.includes('SELECT * FROM observations'))return {observed_epoch:nowSeconds-60,local_time:new Date((nowSeconds-60)*1000).toISOString(),observed_at_utc:new Date((nowSeconds-60)*1000).toISOString(),temperature:24,humidity:55,pressure:1016,wind_speed:4,rain_total:0};
@@ -76,7 +80,7 @@ global.fetch=originalFetch;
 assert.equal(authorized.status,200);
 assert.match(authorized.headers.get('Cache-Control'),/no-store/);
 const adminPayload=await authorized.json();
-assert.equal(adminPayload.worker.version,'22.32.6');
+assert.equal(adminPayload.worker.version,'22.38.0');
 assert.equal(adminPayload.station.ok,true);
 assert.equal(adminPayload.database.observations,1200);
 assert.equal(adminPayload.database.totalRows,1205);
@@ -100,5 +104,16 @@ assert.equal(socialDraftPayload.hasMore,false);
 assert.equal(socialDraftPayload.drafts.length,1);
 assert.deepEqual(Object.keys(socialDraftPayload.drafts[0].channelContent),['facebook','instagram','bluesky','telegram']);
 assert.match(socialDraftPayload.drafts[0].channelContent.instagram.media,/Vertical 4:5/);
+
+const publicStatus=await worker.fetch(new Request('https://fonta-meteo.example/public-status'),{DB:fakeDb},context);
+assert.equal(publicStatus.status,200);
+assert.match(publicStatus.headers.get('Cache-Control'),/max-age=120/);
+const publicStatusPayload=await publicStatus.json();
+assert.equal(publicStatusPayload.status,'degraded');
+assert.equal(publicStatusPayload.services.length,6);
+assert.equal(publicStatusPayload.services.find(item=>item.key==='social-automatic').consecutiveFailures,2);
+assert.equal(publicStatusPayload.services.find(item=>item.key==='camera-nord').status,'unknown');
+assert.equal(publicStatusPayload.incidents.length,1);
+assert.equal('detail' in publicStatusPayload.services[0],false);
 
 console.log('Test d’Administració V21: correcte');
