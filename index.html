@@ -57,6 +57,7 @@
       html[data-portal-page="radar"] [data-portal-page]:not([data-portal-page~="radar"]),
       html[data-portal-page="webcams"] [data-portal-page]:not([data-portal-page~="webcams"]),
       html[data-portal-page="terra"] [data-portal-page]:not([data-portal-page~="terra"]),
+      html[data-portal-page="histories"] [data-portal-page]:not([data-portal-page~="histories"]),
       html[data-portal-page="centre-dades"] [data-portal-page]:not([data-portal-page~="centre-dades"]),
       html[data-portal-page="medi-ambient"] [data-portal-page]:not([data-portal-page~="medi-ambient"]),
       html[data-portal-page="aprendre"] [data-portal-page]:not([data-portal-page~="aprendre"]),
@@ -68,11 +69,11 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=22.32.7-windy-explorer" />
-    <link rel="stylesheet" href="css/portal.css?v=22.35.0-earth-center" />
+    <link rel="stylesheet" href="css/portal.css?v=22.36.0-weather-stories" />
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="src/features/push.js?v=22.31.6"></script>
     <script type="module" src="src/features/pwa.js?v=22.31.6"></script>
-    <script type="module" src="src/app.js?v=22.35.0-earth-center"></script>
+    <script type="module" src="src/app.js?v=22.36.0-weather-stories"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/?page=centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -158,6 +159,7 @@
       <section class="portal-view-header panel" aria-labelledby="radar-page-title" data-portal-page="radar"><div><p class="eyebrow">Observació territorial</p><h1 id="radar-page-title">Radar, llamps i estat de la Tordera.</h1><p>Precipitació, activitat elèctrica i cabal del riu en un sol espai.</p></div><span class="tag">En directe</span></section>
       <section class="portal-view-header panel" aria-labelledby="webcams-page-title" data-portal-page="webcams"><div><p class="eyebrow">Webcams</p><h1 id="webcams-page-title">Una mirada directa al Montseny.</h1><p>Imatge de l’observatori i accessos seleccionats a altres vistes properes.</p></div><span class="tag">Imatge actual</span></section>
       <section class="portal-view-header panel" aria-labelledby="earth-page-title" data-portal-page="terra"><div><p class="eyebrow">NASA · ESA · Copernicus · EUMETSAT</p><h1 id="earth-page-title">La Terra, observada amb criteri.</h1><p>Satèl·lit, llamps, foc, atmosfera i canvis del territori ordenats segons la pregunta que vols respondre.</p></div><span class="tag">Fonts espacials</span></section>
+      <section class="portal-view-header panel" aria-labelledby="stories-page-title" data-portal-page="histories"><div><p class="eyebrow">Fase 4 · Memòria meteorològica</p><h1 id="stories-page-title">El temps, explicat amb proves.</h1><p>Episodis reconstruïts amb dades locals, hores exactes, fonts oficials i context visual.</p></div><span class="tag">Traçabilitat completa</span></section>
       <section class="portal-view-header panel" aria-labelledby="data-page-title" data-portal-page="centre-dades"><div><p class="eyebrow">Centre de Dades</p><h1 id="data-page-title">L’arxiu meteorològic, ordenat.</h1><p>Resums, cobertura, rècords i descàrregues a partir de l’històric real.</p></div><span class="tag">Dades pròpies</span></section>
       <section class="portal-view-header panel" aria-labelledby="environment-page-title" data-portal-page="medi-ambient"><div><p class="eyebrow">Medi Ambient</p><h1 id="environment-page-title">Entorn i salut ambiental.</h1><p>Aire, radiació, pol·len i accés directe als indicadors oficials del territori i la costa.</p></div><span class="tag">Sant Celoni</span></section>
       <section class="portal-view-header panel" aria-labelledby="learning-page-title" data-portal-page="aprendre"><div><p class="eyebrow">Aprendre meteorologia</p><h1 id="learning-page-title">Una biblioteca per entendre el cel.</h1><p>Recursos educatius verificats, ordenats per nivell i tema, per observar, preguntar i aprendre amb fonts sòlides.</p></div><span class="tag">Aula oberta</span></section>
@@ -767,6 +769,26 @@
         </div>
         <div id="earth-observation-layers" class="earth-observation__grid" aria-live="polite"></div>
         <p class="earth-observation__note"><span>i</span> Els visors externs només s’obren quan els demanes. Per a decisions de seguretat prevalen sempre Meteocat, AEMET i Protecció Civil.</p>
+      </section>
+
+      <section id="weather-stories" class="weather-stories section-block" aria-labelledby="weather-stories-title" data-portal-page="histories">
+        <article class="weather-stories__intro panel">
+          <div><p class="eyebrow">Històries meteorològiques verificables</p><h2 id="weather-stories-title">Un episodi, una cronologia, totes les fonts.</h2><p>Reconstruïm què va passar sense confondre una lectura local, una imatge de context i un avís oficial.</p></div>
+          <aside><strong>Regla editorial</strong><p>Només es crea una història quan l’arxiu conté un senyal meteorològic mesurable. Si falten dades, el buit queda visible.</p></aside>
+        </article>
+        <div class="weather-stories__layout">
+          <nav class="weather-stories__archive panel" aria-label="Episodis reconstruïts">
+            <header><span>Arxiu recent</span><small id="weather-stories-count">Buscant episodis…</small></header>
+            <div id="weather-stories-list" aria-live="polite"><p>Analitzant l’arxiu de l’estació…</p></div>
+          </nav>
+          <article class="weather-story panel" id="weather-story-detail" aria-live="polite">
+            <div class="weather-story__empty"><span aria-hidden="true">⌁</span><strong>Preparant la reconstrucció</strong><p>Connectant les observacions locals amb l’historial oficial.</p></div>
+          </article>
+        </div>
+        <section class="weather-stories__method panel" aria-labelledby="weather-stories-method-title">
+          <div><p class="eyebrow">Cadena de custòdia</p><h3 id="weather-stories-method-title">Què és prova i què és context?</h3></div>
+          <dl><div><dt>Observació</dt><dd>Mesura de l’estació amb hora local, unitat i cobertura.</dd></div><div><dt>Context visual</dt><dd>Radar, satèl·lit o timelapse identificat; ajuda a interpretar, però no substitueix la mesura.</dd></div><div><dt>Avís oficial</dt><dd>Només Meteocat, AEMET o Protecció Civil, amb vigència i font explícites.</dd></div></dl>
+        </section>
       </section>
 
       <section id="medi-ambient" class="environment-section section-block" aria-labelledby="environment-summary-title" data-portal-page="medi-ambient">

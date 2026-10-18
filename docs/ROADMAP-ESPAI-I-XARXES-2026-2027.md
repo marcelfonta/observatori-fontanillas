@@ -14,8 +14,9 @@ la càmera; no els substitueixen.
 
 - **Fase 1 completada i desplegada** el 18 d'octubre de 2026.
 - **Fase 2 completada i desplegada:** resum intel·ligent de portada.
-- **Fase 3 en curs:** centre d'observació de la Terra per horitzons.
-- Fases 4–6 planificades i subjectes a la porta de qualitat de la fase anterior.
+- **Fase 3 completada i desplegada:** centre d'observació de la Terra per horitzons.
+- **Fase 4 en curs:** històries meteorològiques verificables.
+- Fases 5–6 planificades i subjectes a la porta de qualitat de la fase anterior.
 
 ## Fase 1 · Confiança operativa — completada
 
@@ -73,6 +74,12 @@ i evita carregar visors externs fins que l'usuari els obre.
   model i avís oficial.
 - Mantenir un màxim d’un timelapse principal al dia, publicat només si aporta
   una evolució visible o acompanya un episodi rellevant.
+
+Primer lliurable: una pàgina pública detecta jornades recents amb pluja, vent o
+contrast tèrmic mesurable, les reconstrueix sobre una cronologia comuna i mostra
+separadament observacions, context visual i coincidències amb avisos oficials.
+La cobertura, les mostres i els buits continuen visibles; el timelapse només es
+presenta si el derivat d'aquella data existeix.
 
 ## Fase 5 · Xarxes adaptades a cada canal
 
