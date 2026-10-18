@@ -1,5 +1,17 @@
 # Changelog
 
+## En preparació — Fase 3: centre d'observació de la Terra · 2026-10-18
+
+- Incorpora una pàgina pròpia per consultar fonts espacials segons tres
+  preguntes: què passa ara, quin context tenim avui i com ha evolucionat el
+  territori.
+- Reuneix Meteosat-12, MTG Lightning Imager, radar i webcam, NASA FIRMS i
+  EONET, CAMS, Sentinel-1/2 i NASA Worldview.
+- Identifica cada producte com a observació, model o context i explica frescor,
+  ús correcte i limitacions abans d'obrir la font.
+- Evita incrustacions pesades i connexions externes fins que l'usuari decideix
+  obrir el visor oficial.
+
 ## En preparació — Fase 2: portada intel·ligent · 2026-10-18
 
 - Resumeix a la portada què cal saber ara amb observació local, previsió del

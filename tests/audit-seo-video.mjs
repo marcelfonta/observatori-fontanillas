@@ -22,7 +22,7 @@ for(const language of ['ca','es','en','fr']){
   assert.equal(dataset.temporalCoverage,'2026-08-04/..');
 }
 assert.match(index,/"temporalCoverage":"2026-08-04\/\.\."/);
-for(const page of ['meteo-ia','estacio','prediccio','llarg-termini','videos','verificacio','cel','avisos','radar','webcams','centre-dades','medi-ambient','aprendre','contacte']){
+for(const page of ['meteo-ia','estacio','prediccio','llarg-termini','videos','verificacio','cel','avisos','radar','webcams','terra','centre-dades','medi-ambient','aprendre','contacte']){
   assert.ok(sitemap.includes(`?page=${page}`),`Falta ${page} al sitemap.`);
   assert.ok(sitemap.includes(`?page=${page}&amp;lang=fr`),`Falta la variant francesa de ${page}.`);
 }
