@@ -2,8 +2,14 @@ import {CONFIG} from '../core/config.js';
 
 export const EARTH_VIEWER_LAYERS={clouds:'Núvols en color natural',airmass:'Masses d’aire',lightning:'Llamps MTG-I sobre els núvols'};
 export const EARTH_VIEWER_REGIONS={catalunya:'Catalunya i entorn',mediterrani:'Mediterrani occidental',europa:'Europa'};
-export const EARTH_VIEWER_BOUNDS={catalunya:[[40.4,.1],[43.2,3.5]],mediterrani:[[30,-12],[50,25]],europa:[[25,-25],[72,45]]};
+export const EARTH_VIEWER_BOUNDS={catalunya:[[40.2,-1.5],[43.5,5.1]],mediterrani:[[30,-12],[50,28]],europa:[[28,-25],[68,55]]};
 const EARTH_VIEWER_SOURCE='https://view.eumetsat.int/';
+const EARTH_WMS_SOURCE='https://view.eumetsat.int/geoserver/wms';
+export const EARTH_VIEWER_DATA={
+  clouds:{layers:[{name:'mtg_fd:rgb_geocolour',opacity:.82}],caption:'Meteosat-12 · GeoColour dia/nit · actualització aproximada cada 10 minuts'},
+  airmass:{layers:[{name:'msg_fes:rgb_airmass',opacity:.82}],caption:'Meteosat · RGB de masses d’aire · actualització aproximada cada 15 minuts'},
+  lightning:{layers:[{name:'mtg_fd:rgb_geocolour',opacity:.62},{name:'mtg_fd:li_afa',opacity:1}],caption:'Meteosat-12 + àrea acumulada de llamps MTG-I · si no hi ha senyals, no s’hi observa activitat recent'}
+};
 
 export const EARTH_OBSERVATION_LAYERS=[
   {id:'meteosat',horizon:'now',type:'observation',agency:'EUMETSAT',title:'Meteosat-12 · núvols',summary:'Imatge gairebé en temps real per seguir fronts, tempestes i l’evolució de la nuvolositat.',freshness:'Actualització aproximada cada 10 minuts · retard de processament',use:'Observa com creixen i es desplacen les masses de núvols abans de comparar-les amb el radar.',href:'https://view.eumetsat.int/',cta:'Obrir EUMETView'},
@@ -29,6 +35,14 @@ export function earthViewerUrl(layer='clouds',region='catalunya',revision=''){
   return `${CONFIG.apiUrl}/earth-observation/map?layer=${safeLayer}&region=${safeRegion}${suffix}`;
 }
 
+export function earthWmsUrl(name,region='catalunya',revision=''){
+  const bounds=EARTH_VIEWER_BOUNDS[EARTH_VIEWER_REGIONS[region]?region:'catalunya'];
+  const [[south,west],[north,east]]=bounds;
+  const params=new URLSearchParams({service:'WMS',version:'1.3.0',request:'GetMap',layers:name,styles:'',crs:'CRS:84',bbox:[west,south,east,north].join(','),width:'1600',height:'1000',format:'image/png',transparent:'true'});
+  if(revision)params.set('v',revision);
+  return `${EARTH_WMS_SOURCE}?${params}`;
+}
+
 let earthLeafletPromise;
 function ensureLeaflet(){
   if(window.L)return Promise.resolve(window.L);
@@ -52,28 +66,36 @@ async function initViewer(){
   const source=document.getElementById('earth-viewer-source');
   if(!canvas||!loading||!status||!caption||!source)return;
   let layer='clouds',region='catalunya';
-  let map;
-  const load=async()=>{
-    loading.hidden=false;loading.textContent='Preparant el mapa topogràfic…';status.textContent='Carregant mapa…';
-    caption.textContent=`Context per a ${EARTH_VIEWER_LAYERS[layer]} · ${EARTH_VIEWER_REGIONS[region]}`;
+  let map,weatherLayers=[],generation=0;
+  const load=async(fresh=false)=>{
+    const currentGeneration=++generation;
+    loading.hidden=false;loading.textContent='Carregant observació d’EUMETSAT…';status.textContent='Carregant dades…';
+    caption.textContent=`${EARTH_VIEWER_DATA[layer].caption} · ${EARTH_VIEWER_REGIONS[region]}`;
     source.href=EARTH_VIEWER_SOURCE;source.textContent=`Consultar ${EARTH_VIEWER_LAYERS[layer]} a EUMETView ↗`;
     try{
       const L=await ensureLeaflet();
       if(!map){
-        map=L.map(canvas,{zoomControl:true,attributionControl:true,preferCanvas:true});
+        map=L.map(canvas,{zoomControl:true,attributionControl:true,preferCanvas:true,zoomSnap:.1});
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Mapa topogràfic © Esri, HERE, Garmin, FAO, NOAA, USGS i col·laboradors'}).addTo(map);
         L.circleMarker([41.6906,2.489],{radius:7,color:'#effff4',weight:2,fillColor:'#56c788',fillOpacity:1}).bindPopup('<strong>Observatori Fontanillas</strong><br>Sant Celoni').addTo(map);
       }
-      map.fitBounds(EARTH_VIEWER_BOUNDS[region],{padding:[18,18]});
-      requestAnimationFrame(()=>map.invalidateSize());
-      loading.hidden=true;status.textContent=`Mapa actualitzat a les ${new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit'}).format(new Date())}`;
+      weatherLayers.forEach(item=>map.removeLayer(item));weatherLayers=[];
+      const definitions=EARTH_VIEWER_DATA[layer].layers;
+      let loaded=0;
+      definitions.forEach(definition=>{
+        const overlay=L.imageOverlay(earthWmsUrl(definition.name,region,fresh?Date.now():''),EARTH_VIEWER_BOUNDS[region],{opacity:definition.opacity,interactive:false,crossOrigin:true});
+        overlay.on('load',()=>{if(currentGeneration!==generation)return;loaded+=1;if(loaded===definitions.length){loading.hidden=true;status.textContent=`Dades carregades a les ${new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit'}).format(new Date())}`;}});
+        overlay.on('error',()=>{if(currentGeneration!==generation)return;loading.textContent='La capa meteorològica no està disponible ara mateix. Pots consultar-la al visor oficial d’EUMETSAT.';loading.hidden=false;status.textContent='Dades temporalment no disponibles';});
+        overlay.addTo(map);weatherLayers.push(overlay);
+      });
+      requestAnimationFrame(()=>{map.invalidateSize();map.fitBounds(EARTH_VIEWER_BOUNDS[region],{padding:[18,18]});});
     }catch{
-      loading.textContent='No s’ha pogut carregar el mapa topogràfic. La consulta oficial d’EUMETSAT continua disponible.';loading.hidden=false;status.textContent='Mapa temporalment no disponible';
+      loading.textContent='No s’ha pogut carregar el visor. La consulta oficial d’EUMETSAT continua disponible.';loading.hidden=false;status.textContent='Visor temporalment no disponible';
     }
   };
   document.querySelectorAll('[data-earth-layer]').forEach(button=>button.addEventListener('click',()=>{layer=button.dataset.earthLayer;document.querySelectorAll('[data-earth-layer]').forEach(item=>item.classList.toggle('is-active',item===button));load();}));
   document.querySelectorAll('[data-earth-region]').forEach(button=>button.addEventListener('click',()=>{region=button.dataset.earthRegion;document.querySelectorAll('[data-earth-region]').forEach(item=>item.classList.toggle('is-active',item===button));load();}));
-  document.getElementById('earth-viewer-refresh')?.addEventListener('click',()=>load());
+  document.getElementById('earth-viewer-refresh')?.addEventListener('click',()=>load(true));
   const viewer=document.getElementById('earth-viewer');
   if('IntersectionObserver'in window&&viewer){
     const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){observer.disconnect();load();}},{rootMargin:'240px'});
