@@ -1,5 +1,12 @@
 # Changelog
 
+## En preparació — Informació meteorològica al visor terrestre · 2026-10-18
+
+- Superposa al mapa topogràfic les observacions GeoColour de Meteosat-12, el
+  producte RGB de masses d’aire i l’àrea acumulada de llamps MTG-I.
+- Identifica la font, la freqüència aproximada i el significat d’una absència
+  de senyals elèctrics, mantenint l’accés al visor oficial d’EUMETSAT.
+
 ## En preparació — Visor topogràfic estable · 2026-10-18
 
 - Substitueix el mosaic satel·litari incomplet del centre d’observació per un
