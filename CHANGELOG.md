@@ -1895,3 +1895,11 @@ Rollback: revertir aquest paquet i desplegar versions prèvies autoritzades. Els
 - Limita a un sol fil la descodificació, els filtres i la codificació de totes dues variants del timelapse.
 - Redueix les arenas de memòria d’FFmpeg per evitar que la Raspberry de 512 MB activi l’OOM-killer.
 - Aplica els mateixos límits a l’anàlisi de moviment sense alterar l’enquadrament ni la qualitat actuals.
+
+# V22.39.0 — ESTOFEX local i visor EUMETSAT propi · 2026-10-18
+
+- La secció d’avisos llegeix els polígons XML vigents d’ESTOFEX i calcula si Sant Celoni hi queda dins o a menys de 120 km.
+- Quan hi ha context convectiu proper mostra el mapa oficial, nivell, distància i període de vigència, mantenint clar que no és un avís oficial.
+- El Centre d’observació incorpora un visor propi amb núvols, masses d’aire i llamps MTG-I per Catalunya, el Mediterrani occidental i Europa.
+- El Worker actua com a passarel·la WMS restringida per capa i regió, amb memòria cau, atribució EUMETSAT i degradació segura.
+- Les imatges només es carreguen quan el visor s’aproxima a la pantalla, per evitar consum innecessari de dades.

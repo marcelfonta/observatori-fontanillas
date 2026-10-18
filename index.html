@@ -68,12 +68,12 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=22.38.0-verification-reputation" />
-    <link rel="stylesheet" href="css/portal.css?v=22.36.0-weather-stories" />
+    <link rel="stylesheet" href="css/style.css?v=22.39.0-earth-viewer" />
+    <link rel="stylesheet" href="css/portal.css?v=22.39.0-earth-viewer" />
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="src/features/push.js?v=22.31.6"></script>
     <script type="module" src="src/features/pwa.js?v=22.31.6"></script>
-    <script type="module" src="src/app.js?v=22.38.2-weather-stories-date"></script>
+    <script type="module" src="src/app.js?v=22.39.0-earth-viewer"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/?page=centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -444,7 +444,11 @@
             <div>
               <p class="eyebrow">Context europeu · font complementària</p>
               <h3 id="estofex-title">ESTOFEX: vigilància de tempestes severes</h3>
-              <p>ESTOFEX publica perspectives europees de tempestes, calamarsa, vent sever i tornados per ajudar els professionals a valorar el risc convectiu. No és un avís oficial ni garanteix afectació a Sant Celoni.</p>
+              <p id="estofex-summary">Comprovant si la perspectiva europea vigent inclou Sant Celoni o el seu entorn de 120 km. No és un avís oficial.</p>
+              <div class="estofex-card__local" id="estofex-local" aria-live="polite" aria-busy="true" hidden>
+                <img id="estofex-map" alt="Mapa de la perspectiva convectiva vigent d’ESTOFEX" loading="lazy" referrerpolicy="no-referrer" />
+                <div><strong id="estofex-risk">Analitzant la zona…</strong><span id="estofex-period"></span></div>
+              </div>
               <div class="estofex-card__actions"><a href="https://www.estofex.org/cgi-bin/polygon/showforecast.cgi?listvalid=yes" target="_blank" rel="noreferrer">Consultar la perspectiva vigent ↗</a><span>AEMET, Meteocat, Protecció Civil i 112 prevalen sempre.</span></div>
             </div>
           </aside>
@@ -772,8 +776,18 @@
           <button type="button" role="tab" aria-selected="false" tabindex="-1" data-earth-horizon="today"><span>Avui</span><small>Foc · aire · episodis</small></button>
           <button type="button" role="tab" aria-selected="false" tabindex="-1" data-earth-horizon="evolution"><span>Evolució</span><small>Sentinel · abans/després</small></button>
         </div>
+        <article class="earth-viewer panel" id="earth-viewer" aria-labelledby="earth-viewer-title">
+          <header><div><p class="eyebrow">Visor propi · EUMETSAT</p><h3 id="earth-viewer-title">Satèl·lit europeu, sense sortir de l’Observatori</h3></div><span id="earth-viewer-status" role="status">Preparant la capa…</span></header>
+          <div class="earth-viewer__controls" aria-label="Controls del visor">
+            <fieldset><legend>Capa</legend><button class="is-active" type="button" data-earth-layer="clouds">Núvols</button><button type="button" data-earth-layer="airmass">Masses d’aire</button><button type="button" data-earth-layer="lightning">Llamps MTG-I</button></fieldset>
+            <fieldset><legend>Regió</legend><button class="is-active" type="button" data-earth-region="catalunya">Catalunya</button><button type="button" data-earth-region="mediterrani">Mediterrani</button><button type="button" data-earth-region="europa">Europa</button></fieldset>
+            <button class="earth-viewer__refresh" type="button" id="earth-viewer-refresh">Actualitzar</button>
+          </div>
+          <figure class="earth-viewer__canvas"><img id="earth-viewer-image" alt="Imatge satel·lit d’EUMETSAT" loading="lazy" /><div class="earth-viewer__loading" id="earth-viewer-loading">Carregant observació…</div><figcaption><span id="earth-viewer-caption">Núvols en color natural · Catalunya i entorn</span><a href="https://view.eumetsat.int/" target="_blank" rel="noreferrer">Font i visor oficial EUMETSAT ↗</a></figcaption></figure>
+          <p class="earth-viewer__notice">Imatge d’observació, no predicció. Pot tenir retard de processament i no substitueix els avisos oficials.</p>
+        </article>
         <div id="earth-observation-layers" class="earth-observation__grid" aria-live="polite"></div>
-        <p class="earth-observation__note"><span>i</span> Els visors externs només s’obren quan els demanes. Per a decisions de seguretat prevalen sempre Meteocat, AEMET i Protecció Civil.</p>
+        <p class="earth-observation__note"><span>i</span> El visor propi carrega les capes oficials d’EUMETSAT sota demanda. La resta d’enllaços obren la font original. Per a decisions de seguretat prevalen sempre Meteocat, AEMET i Protecció Civil.</p>
       </section>
 
       <section id="weather-stories" class="weather-stories section-block" aria-labelledby="weather-stories-title" data-portal-page="histories">

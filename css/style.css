@@ -424,6 +424,7 @@ body{font-size:var(--type-body)}
 .estofex-card h3{margin:5px 0 8px;font:700 clamp(20px,2vw,28px)/1.2 var(--font-display);letter-spacing:-.025em}.estofex-card p:not(.eyebrow){max-width:920px;margin:0;color:var(--muted);font-size:var(--type-small);line-height:1.65}
 .estofex-card__actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:13px}.estofex-card__actions a{color:var(--green);font-size:var(--type-small);font-weight:700;text-decoration:none}.estofex-card__actions span{color:var(--amber);font-size:var(--type-caption)}
 @media(max-width:700px){.estofex-card{grid-template-columns:1fr;padding:22px 19px}.estofex-card__mark{width:58px;height:58px;border-radius:17px;font-size:26px}.estofex-card__actions{align-items:flex-start;flex-direction:column;gap:8px}}
+.estofex-card__local{display:grid;grid-template-columns:minmax(180px,320px) 1fr;gap:16px;align-items:center;margin-top:16px;padding:12px;border:1px solid rgba(242,208,95,.22);border-radius:16px;background:rgba(242,208,95,.045)}.estofex-card__local[hidden]{display:none}.estofex-card__local img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:11px;background:#111}.estofex-card__local>div{display:grid;gap:7px}.estofex-card__local strong{color:#f2d47d;font-size:16px}.estofex-card__local span{color:var(--muted);font-size:11px;line-height:1.55}@media(max-width:700px){.estofex-card__local{grid-template-columns:1fr}}
 
 
 /* V22.7 · Càrrega visual progressiva */
