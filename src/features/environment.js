@@ -294,7 +294,7 @@ async function loadFirmsDetections(){
 
 const EARTHQUAKE_FEEDS={
   day:'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson',
-  week:'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson'
+  week:'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson'
 };
 function earthquakeDate(value){return new Intl.DateTimeFormat('ca-ES',{timeZone:'Europe/Madrid',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value));}
 function earthquakeColor(magnitude){return magnitude>=4.5?'#ff765f':magnitude>=2.5?'#efb56c':'#89d6a3';}
@@ -331,7 +331,7 @@ async function loadEarthquakes(period='day'){
     const response=await fetch(EARTHQUAKE_FEEDS[period],{cache:'no-store',signal:controller.signal});if(!response.ok)throw new Error(`USGS ${response.status}`);
     const payload=await response.json();await renderEarthquakes(payload);
     const features=payload.features||[];const strongest=features.reduce((best,item)=>Number(item.properties?.mag)>Number(best?.properties?.mag??-Infinity)?item:best,null);
-    target.innerHTML=`<header><strong>${features.length} terratrèmols al mapa</strong><small>${period==='day'?'Últimes 24 hores · totes les magnituds':'Últims 7 dies · magnitud 2,5 o superior'}</small></header>${strongest?`<p>El més intens del període: <b>M${number(strongest.properties?.mag,1)}</b> · ${escapeHtml(strongest.properties?.place||'localització no indicada')} · ${escapeHtml(earthquakeDate(strongest.properties?.time))}.</p>`:'<p>No hi ha esdeveniments al catàleg per al període seleccionat.</p>'}<small>Les dades són preliminars i poden ser revisades per l’organisme d’origen.</small>`;
+    target.innerHTML=`<header><strong>${features.length} terratrèmols al mapa</strong><small>${period==='day'?'Últimes 24 hores · totes les magnituds':'Últims 7 dies · totes les magnituds registrades per l’USGS'}</small></header>${strongest?`<p>El més intens del període: <b>M${number(strongest.properties?.mag,1)}</b> · ${escapeHtml(strongest.properties?.place||'localització no indicada')} · ${escapeHtml(earthquakeDate(strongest.properties?.time))}.</p>`:'<p>No hi ha esdeveniments al catàleg per al període seleccionat.</p>'}<small>Les dades són preliminars i poden ser revisades. Per a la micro-sismicitat de Catalunya, consulta també el catàleg ICGC/SISMOCAT.</small>`;
   }catch(error){earthquakesLoaded=false;target.innerHTML='<p><strong>Catàleg mundial temporalment no disponible.</strong> Pots obrir directament els mapes oficials de l’USGS o l’ICGC.</p>';console.warn('Catàleg sísmic USGS no disponible.',error);}
   finally{window.clearTimeout(timeout);}
 }

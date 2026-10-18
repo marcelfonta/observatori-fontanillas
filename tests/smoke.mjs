@@ -6,6 +6,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const html=await readFile(resolve(root,'index.html'),'utf8');
 const pageBootstrap=await readFile(resolve(root,'src/core/page-bootstrap.js'),'utf8');
 const portalShell=await readFile(resolve(root,'src/features/portal-shell.js'),'utf8');
+const environment=await readFile(resolve(root,'src/features/environment.js'),'utf8');
 const pages=['inici','meteo-ia','estacio','prediccio','cel','avisos','radar','webcams','terra','histories','centre-dades','medi-ambient','aprendre','contacte'];
 for(const page of pages){if(!portalShell.includes(`'${page}'`))throw new Error(`Falta l’enllaç de pàgina: ${page}`);}
 for(const id of ['quick-alert-link','official-alert-list','push-alert-button','alertInviteModal','alert-history-list','radar-map','radar-panel-lightning','contact-form','hero-webcam-image','station-page-title','cel-nocturn','nearby-webcams-title','centre-dades-overview','data-summary-samples','data-export-status','data-extremes-period-label','data-evolution-period-label','data-rain-now','data-rain-today','data-rain-since-10','data-rain-wettest','data-ephemeris-list','data-weather-timeline','push-preference-summary','long-range','long-range-weeks','long-range-status','environment-aqi','environment-pm25','environment-pm25-level','environment-viewers-title','environment-uv-source','xac-summary-title','meteo-ai-page-title','meteo-ia','meteo-ai-messages','meteo-ai-form','meteo-ai-input','meteo-ai-submit','meteo-ai-data-status','meteo-ai-context','seo-structured-data']){if(!html.includes(`id="${id}"`))throw new Error(`Falta el selector crític: ${id}`);}
@@ -46,6 +47,7 @@ if((html.match(/class="portal-view-header panel"/g)||[]).length!==16)throw new E
 if(!html.includes('data-history-limit="5"')||!html.includes('historial-avisos.html'))throw new Error('La vista principal no limita l’historial o no enllaça amb l’arxiu complet.');
 for(const viewer of ['fire','firms','drought','earthquakes','jellyfish'])if(!html.includes(`data-environment-viewer="${viewer}"`))throw new Error(`Medi Ambient: falta el visor ${viewer}.`);
 if(!html.includes('environment-earthquakes-map')||!html.includes('earthquake.usgs.gov/earthquakes/map/')||!html.includes('sismocat.icgc.cat'))throw new Error('Medi Ambient: falta el mapa sísmic mundial o les fonts USGS i ICGC.');
+if(!html.includes('7 dies · totes')||!environment.includes('summary/all_week.geojson')||environment.includes('summary/2.5_week.geojson'))throw new Error('Medi Ambient: el mapa sísmic setmanal ha d’incloure totes les magnituds disponibles.');
 if(!html.includes('https://meduseo.com/es/')||!html.includes('https://www.medusapp.net/mapa/mapa-portada.php'))throw new Error('Medi Ambient: falten MedusApp o Meduseo.');
 if(html.includes('https://www.meteo.cat/observacions/radarLlamps'))throw new Error('Encara queda el visor de llamps de Meteocat que es retallava.');
 if(html.includes('https://www.aemet.es/es/eltiempo/observacion/rayos.html?w=0'))throw new Error('Encara queda el visor de llamps d’AEMET que no convencia.');
