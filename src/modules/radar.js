@@ -65,6 +65,8 @@ function showFrame(index) {
   const slider = document.getElementById('radar-slider');
   if (slider) slider.value = String(frameIndex);
   setText('radar-time', formatFrameTime(frame.time));
+  setText('nowcast-frame-kind',frame.kind==='projected'?'Projectat':'Observat');
+  document.getElementById('radar-panel-interactive')?.classList.toggle('is-projected',frame.kind==='projected');
 }
 
 function togglePlayback() {
@@ -98,12 +100,20 @@ async function loadFrames() {
   }
   if (!response.ok) throw new Error(`Radar ${response.status}`);
   const payload = await response.json();
-  frames = (payload?.radar?.past || []).map(frame => ({ ...frame, host:payload.host }));
+  const observed=(payload?.radar?.past || []).map(frame => ({ ...frame, host:payload.host,kind:'observed' }));
+  const latestObserved=observed.at(-1)?.time||0;
+  const projected=(payload?.radar?.nowcast || []).filter(frame=>frame.time>latestObserved&&frame.time<=latestObserved+120*60).map(frame => ({ ...frame, host:payload.host,kind:'projected' }));
+  frames=[...observed,...projected];
   if (!frames.length) throw new Error('No hi ha fotogrames disponibles');
   const slider = document.getElementById('radar-slider');
   if (slider) { slider.max = String(frames.length - 1); slider.value = String(frames.length - 1); }
-  showFrame(frames.length - 1);
-  setText('radar-status', `${frames.length} imatges · 2 h`);
+  showFrame(Math.max(0,observed.length-1));
+  const ageMinutes=latestObserved?Math.max(0,Math.round((Date.now()/1000-latestObserved)/60)):null;
+  const horizonMinutes=projected.length?Math.max(0,Math.round((projected.at(-1).time-latestObserved)/60)):0;
+  setText('radar-status', `${observed.length} observades${projected.length?` · ${projected.length} projectades`:''}`);
+  setText('nowcast-freshness',ageMinutes===null?'No disponible':ageMinutes<2?'Ara mateix':`Fa ${ageMinutes} min`);
+  setText('nowcast-horizon',horizonMinutes?`Fins a +${horizonMinutes} min`:'No disponible ara');
+  setText('nowcast-shadow-copy',horizonMinutes?`La font aporta ${projected.length} fotogrames futurs. La línia temporal separa observació i projecció.`:'La font no aporta fotogrames futurs en aquesta actualització. Es manté només l’animació observada i l’accés oficial de Meteocat.');
   if(firstLoad)setRadarLoading(false);
 }
 
