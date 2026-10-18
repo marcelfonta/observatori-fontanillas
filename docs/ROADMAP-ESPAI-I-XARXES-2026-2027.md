@@ -13,8 +13,9 @@ la càmera; no els substitueixen.
 ## Estat d'execució
 
 - **Fase 1 completada i desplegada** el 18 d'octubre de 2026.
-- **Fase 2 en curs:** primer lliurable, resum intel·ligent de portada.
-- Fases 3–6 planificades i subjectes a la porta de qualitat de la fase anterior.
+- **Fase 2 completada i desplegada:** resum intel·ligent de portada.
+- **Fase 3 en curs:** centre d'observació de la Terra per horitzons.
+- Fases 4–6 planificades i subjectes a la porta de qualitat de la fase anterior.
 
 ## Fase 1 · Confiança operativa — completada
 
@@ -58,6 +59,10 @@ Tres nivells de lectura, amb fonts i responsabilitats separades:
 NASA Worldview/GIBS continua sent l’explorador global. Copernicus Data Space és
 la font preferent per Sentinel. NASA POWER s’utilitza només com a context
 climàtic, mai com a lectura meteorològica local en temps real.
+
+Primer lliurable: una pàgina pròpia ordena nou eines verificades en «Ara»,
+«Avui» i «Evolució», identifica si cada producte és observació, model o context
+i evita carregar visors externs fins que l'usuari els obre.
 
 ## Fase 4 · Històries meteorològiques verificables
 
