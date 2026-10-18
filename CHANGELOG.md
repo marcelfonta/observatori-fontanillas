@@ -1,5 +1,12 @@
 # Changelog
 
+## En preparació — Catàleg sísmic ICGC integrat · 2026-10-18
+
+- Fusiona al mapa els terratrèmols locals i regionals de l’ICGC/SISMOCAT amb
+  la cobertura mundial de l’USGS i elimina coincidències duplicades.
+- Identifica la font de cada sisme i ressalta els marcadors ICGC amb contorn
+  blau, inclosos els esdeveniments que no consten al catàleg global.
+
 ## En preparació — Més terratrèmols febles · 2026-10-18
 
 - El període de set dies deixa d’amagar els sismes inferiors a magnitud 2,5 i

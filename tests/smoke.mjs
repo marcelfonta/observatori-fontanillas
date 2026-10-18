@@ -48,6 +48,7 @@ if(!html.includes('data-history-limit="5"')||!html.includes('historial-avisos.ht
 for(const viewer of ['fire','firms','drought','earthquakes','jellyfish'])if(!html.includes(`data-environment-viewer="${viewer}"`))throw new Error(`Medi Ambient: falta el visor ${viewer}.`);
 if(!html.includes('environment-earthquakes-map')||!html.includes('earthquake.usgs.gov/earthquakes/map/')||!html.includes('sismocat.icgc.cat'))throw new Error('Medi Ambient: falta el mapa sísmic mundial o les fonts USGS i ICGC.');
 if(!html.includes('7 dies · totes')||!environment.includes('summary/all_week.geojson')||environment.includes('summary/2.5_week.geojson'))throw new Error('Medi Ambient: el mapa sísmic setmanal ha d’incloure totes les magnituds disponibles.');
+if(!environment.includes('sisweb_api_external.php?consulta=2init')||!environment.includes('normalizeIcgcEarthquakes')||!environment.includes('mergeEarthquakeCatalogues')||!environment.includes("origin.area==='T'"))throw new Error('Medi Ambient: falta fusionar el catàleg local i regional ICGC amb el catàleg mundial USGS.');
 if(!html.includes('https://meduseo.com/es/')||!html.includes('https://www.medusapp.net/mapa/mapa-portada.php'))throw new Error('Medi Ambient: falten MedusApp o Meduseo.');
 if(html.includes('https://www.meteo.cat/observacions/radarLlamps'))throw new Error('Encara queda el visor de llamps de Meteocat que es retallava.');
 if(html.includes('https://www.aemet.es/es/eltiempo/observacion/rayos.html?w=0'))throw new Error('Encara queda el visor de llamps d’AEMET que no convencia.');
@@ -90,6 +91,7 @@ const headers=await readFile(resolve(root,'_headers'),'utf8');
 if(!headers.includes('https://maps.blitzortung.org'))throw new Error('La política de seguretat bloquejaria Blitzortung.');
 if(!headers.includes('https://geocoding-api.open-meteo.com'))throw new Error('La política de seguretat bloquejaria la consulta d’altres poblacions.');
 if(!headers.includes('https://earthquake.usgs.gov'))throw new Error('La política de seguretat bloquejaria el catàleg sísmic mundial de l’USGS.');
+if(!headers.includes('https://sismocat.icgc.cat'))throw new Error('La política de seguretat bloquejaria el catàleg sísmic local de l’ICGC.');
 if(!headers.includes('https://seasonal-api.open-meteo.com'))throw new Error('La política de seguretat bloquejaria la tendència ECMWF EC46.');
 if(!headers.includes('/administracio.html')||!headers.includes('X-Robots-Tag: noindex'))throw new Error('La pàgina administrativa no té capçaleres antiindexació.');
 const meteoAi=await readFile(resolve(root,'src/features/meteo-ai.js'),'utf8');

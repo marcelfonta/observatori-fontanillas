@@ -296,9 +296,30 @@ const EARTHQUAKE_FEEDS={
   day:'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson',
   week:'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson'
 };
+const ICGC_EARTHQUAKE_FEED='https://sismocat.icgc.cat/sisweb3/sisweb_api_external.php?consulta=2init';
 function earthquakeDate(value){return new Intl.DateTimeFormat('ca-ES',{timeZone:'Europe/Madrid',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value));}
 function earthquakeColor(magnitude){return magnitude>=4.5?'#ff765f':magnitude>=2.5?'#efb56c':'#89d6a3';}
 function earthquakeRadius(magnitude){return Math.max(4,Math.min(18,4+Math.max(0,magnitude)*2));}
+function preferredMagnitude(origin){const values=Array.isArray(origin?.magnitud)?origin.magnitud:[origin?.magnitud];return values.find(item=>item?.['@attributes']?.pref==='1')||values.find(Boolean);}
+function normalizeIcgcEarthquakes(payload,period){
+  const limit=Date.now()-(period==='day'?24:7*24)*60*60_000;
+  return (payload?.esdeveniment||[]).flatMap(event=>{
+    const eventData=event?.['@attributes']||{};const origin=event?.origen?.['@attributes']||{};const magnitude=preferredMagnitude(event?.origen)?.['@attributes']||{};
+    const time=Number(origin.torigen||eventData.treferencia)*1000;const latitude=Number(origin.latitud);const longitude=Number(origin.longitud);const depth=Number(origin.profunditat);const mag=Number(magnitude.mag);
+    if(origin.area==='T'||time<limit||![latitude,longitude,mag].every(Number.isFinite))return [];
+    const code=String(eventData.codi||'');
+    return [{type:'Feature',id:`icgc-${code}`,geometry:{type:'Point',coordinates:[longitude,latitude,Number.isFinite(depth)?depth:0]},properties:{mag,place:origin.regio||origin.regioFE||'Localització no indicada',time,url:code?`https://sismocat.icgc.cat/sisweb3/sisweb_details.php?codi=${encodeURIComponent(code)}&lang=ca`:'',source:'ICGC'}}];
+  });
+}
+function mergeEarthquakeCatalogues(usgs,icgc){
+  const features=[...(usgs?.features||[])];
+  for(const candidate of icgc){
+    const [lon,lat]=candidate.geometry.coordinates;const time=Number(candidate.properties.time);
+    const duplicate=features.some(item=>{const [itemLon,itemLat]=item.geometry?.coordinates||[];return Math.abs(Number(item.properties?.time)-time)<180_000&&Math.abs(Number(itemLat)-lat)<.15&&Math.abs(Number(itemLon)-lon)<.15;});
+    if(!duplicate)features.push(candidate);
+  }
+  return {type:'FeatureCollection',features};
+}
 function setEarthquakeView(view){
   if(!earthquakesMap)return;
   if(view==='world')earthquakesMap.setView([20,0],2);
@@ -316,9 +337,9 @@ async function renderEarthquakes(payload){
   for(const feature of payload.features||[]){
     const [longitude,latitude,depth]=feature.geometry?.coordinates||[];const magnitude=Number(feature.properties?.mag);
     if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||!Number.isFinite(magnitude))continue;
-    const place=escapeHtml(feature.properties?.place||'Localització no indicada');const time=earthquakeDate(feature.properties?.time);const rawDetailUrl=String(feature.properties?.url||'');const detailUrl=rawDetailUrl.startsWith('https://earthquake.usgs.gov/')?rawDetailUrl:'';
-    const popup=`<strong>Magnitud ${number(magnitude,1)}</strong><br>${place}<br>${escapeHtml(time)} · profunditat ${number(depth,1)} km${detailUrl?`<br><a href="${escapeHtml(detailUrl)}" target="_blank" rel="noreferrer">Fitxa USGS ↗</a>`:''}`;
-    window.L.circleMarker([latitude,longitude],{radius:earthquakeRadius(magnitude),color:'#fff5e9',weight:1,fillColor:earthquakeColor(magnitude),fillOpacity:.82}).bindTooltip(`M${number(magnitude,1)} · ${place}`).bindPopup(popup).addTo(earthquakesMarkers);
+    const place=escapeHtml(feature.properties?.place||'Localització no indicada');const time=earthquakeDate(feature.properties?.time);const source=feature.properties?.source==='ICGC'?'ICGC':'USGS';const rawDetailUrl=String(feature.properties?.url||'');const detailUrl=rawDetailUrl.startsWith('https://earthquake.usgs.gov/')||rawDetailUrl.startsWith('https://sismocat.icgc.cat/')?rawDetailUrl:'';
+    const popup=`<strong>Magnitud ${number(magnitude,1)}</strong><br>${place}<br>${escapeHtml(time)} · profunditat ${number(depth,1)} km<br>Font: ${source}${detailUrl?`<br><a href="${escapeHtml(detailUrl)}" target="_blank" rel="noreferrer">Fitxa ${source} ↗</a>`:''}`;
+    window.L.circleMarker([latitude,longitude],{radius:earthquakeRadius(magnitude),color:source==='ICGC'?'#86c9ff':'#fff5e9',weight:source==='ICGC'?2:1,fillColor:earthquakeColor(magnitude),fillOpacity:.82}).bindTooltip(`M${number(magnitude,1)} · ${place} · ${source}`).bindPopup(popup).addTo(earthquakesMarkers);
   }
   requestAnimationFrame(()=>earthquakesMap.invalidateSize({pan:false}));
 }
@@ -328,10 +349,13 @@ async function loadEarthquakes(period='day'){
   target.innerHTML='<p>Consultant el catàleg sísmic mundial de l’USGS…</p>';
   const controller=new AbortController();const timeout=window.setTimeout(()=>controller.abort(),12000);
   try{
-    const response=await fetch(EARTHQUAKE_FEEDS[period],{cache:'no-store',signal:controller.signal});if(!response.ok)throw new Error(`USGS ${response.status}`);
-    const payload=await response.json();await renderEarthquakes(payload);
+    const [usgsResult,icgcResult]=await Promise.allSettled([fetch(EARTHQUAKE_FEEDS[period],{cache:'no-store',signal:controller.signal}),fetch(ICGC_EARTHQUAKE_FEED,{cache:'no-store',signal:controller.signal})]);
+    if(usgsResult.status!=='fulfilled'||!usgsResult.value.ok)throw new Error(`USGS ${usgsResult.status==='fulfilled'?usgsResult.value.status:'no disponible'}`);
+    const usgs=await usgsResult.value.json();let icgc=[];
+    if(icgcResult.status==='fulfilled'&&icgcResult.value.ok)icgc=normalizeIcgcEarthquakes(await icgcResult.value.json(),period);
+    const payload=mergeEarthquakeCatalogues(usgs,icgc);await renderEarthquakes(payload);
     const features=payload.features||[];const strongest=features.reduce((best,item)=>Number(item.properties?.mag)>Number(best?.properties?.mag??-Infinity)?item:best,null);
-    target.innerHTML=`<header><strong>${features.length} terratrèmols al mapa</strong><small>${period==='day'?'Últimes 24 hores · totes les magnituds':'Últims 7 dies · totes les magnituds registrades per l’USGS'}</small></header>${strongest?`<p>El més intens del període: <b>M${number(strongest.properties?.mag,1)}</b> · ${escapeHtml(strongest.properties?.place||'localització no indicada')} · ${escapeHtml(earthquakeDate(strongest.properties?.time))}.</p>`:'<p>No hi ha esdeveniments al catàleg per al període seleccionat.</p>'}<small>Les dades són preliminars i poden ser revisades. Per a la micro-sismicitat de Catalunya, consulta també el catàleg ICGC/SISMOCAT.</small>`;
+    target.innerHTML=`<header><strong>${features.length} terratrèmols al mapa</strong><small>${period==='day'?'Últimes 24 hores':'Últims 7 dies'} · totes les magnituds · USGS + ${icgc.length?`${icgc.length} registres ICGC`:'ICGC temporalment no disponible'}</small></header>${strongest?`<p>El més intens del període: <b>M${number(strongest.properties?.mag,1)}</b> · ${escapeHtml(strongest.properties?.place||'localització no indicada')} · ${escapeHtml(earthquakeDate(strongest.properties?.time))}.</p>`:'<p>No hi ha esdeveniments al catàleg per al període seleccionat.</p>'}<small>Les dades són preliminars i poden ser revisades pels organismes d’origen.</small>`;
   }catch(error){earthquakesLoaded=false;target.innerHTML='<p><strong>Catàleg mundial temporalment no disponible.</strong> Pots obrir directament els mapes oficials de l’USGS o l’ICGC.</p>';console.warn('Catàleg sísmic USGS no disponible.',error);}
   finally{window.clearTimeout(timeout);}
 }
