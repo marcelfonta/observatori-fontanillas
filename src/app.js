@@ -35,6 +35,7 @@ import { getLocale, initLanguage } from './core/i18n.js';
 import { initHeaderTools } from './features/header-tools.js';
 import { initSeasonalOutlook } from './features/seasonal-outlook.js';
 import { initStationRecords } from './features/station-records.js';
+import { initHomeNow, updateHomeNow } from './features/home-now.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -63,9 +64,9 @@ function updateClock(){ setText('header-time',new Intl.DateTimeFormat(getLocale(
 function setUpdated(value){ const date=value?new Date(String(value).replace(' ','T')):new Date(); const safe=Number.isNaN(date.getTime())?new Date():date; setText('updated-time',new Intl.DateTimeFormat(getLocale(),{hour:'2-digit',minute:'2-digit'}).format(safe)); const mins=Math.max(0,Math.round((Date.now()-safe.getTime())/60000)); setText('updated-relative',mins<2?'ara mateix':`fa ${mins} min`); }
 async function loadForecastSuite(){
   const cached=getLastCachedForecast();
-  if(cached){renderForecast(cached.data);setText('forecast-status',`Previsió desada · fa ${cached.ageMinutes} min`);}
-  const forecastTask=fetchForecast().then(data=>{renderForecast(data);initWhenVisible('#cel-nocturn',()=>renderAstronomy(data));updateSituation({forecast:data});updateMeteoAIContext({forecast:data});updateShareContext({forecast:data});}).catch(error=>{console.warn('Previsió principal temporalment no disponible.',error);if(cached){setText('forecast-status',`Última previsió disponible · fa ${cached.ageMinutes} min`);initWhenVisible('#cel-nocturn',()=>renderAstronomy(cached.data));updateSituation({forecast:cached.data});updateMeteoAIContext({forecast:cached.data});updateShareContext({forecast:cached.data});}else{renderForecastError();initWhenVisible('#cel-nocturn',()=>renderAstronomy(null));updateSituation({forecast:null});updateMeteoAIContext({forecast:null});updateShareContext({forecast:null});}});
-  const modelsTask=fetchModelComparison().then(renderModelComparison).catch(error=>{console.warn('Comparació de models temporalment no disponible.',error);renderModelError();});
+  if(cached){renderForecast(cached.data);updateHomeNow({forecast:cached.data});setText('forecast-status',`Previsió desada · fa ${cached.ageMinutes} min`);}
+  const forecastTask=fetchForecast().then(data=>{renderForecast(data);updateHomeNow({forecast:data});initWhenVisible('#cel-nocturn',()=>renderAstronomy(data));updateSituation({forecast:data});updateMeteoAIContext({forecast:data});updateShareContext({forecast:data});}).catch(error=>{console.warn('Previsió principal temporalment no disponible.',error);if(cached){setText('forecast-status',`Última previsió disponible · fa ${cached.ageMinutes} min`);updateHomeNow({forecast:cached.data});initWhenVisible('#cel-nocturn',()=>renderAstronomy(cached.data));updateSituation({forecast:cached.data});updateMeteoAIContext({forecast:cached.data});updateShareContext({forecast:cached.data});}else{renderForecastError();updateHomeNow({forecast:null});initWhenVisible('#cel-nocturn',()=>renderAstronomy(null));updateSituation({forecast:null});updateMeteoAIContext({forecast:null});updateShareContext({forecast:null});}});
+  const modelsTask=fetchModelComparison().then(data=>{renderModelComparison(data);updateHomeNow({models:data});}).catch(error=>{console.warn('Comparació de models temporalment no disponible.',error);renderModelError();updateHomeNow({models:null});});
   await Promise.allSettled([forecastTask,modelsTask]);
   forecastFetchedAt=Date.now();
 }
@@ -106,7 +107,7 @@ async function loadAlerts(){
     renderAlerts(payload);updateShareContext({alerts:payload});
   } catch(error) {
     console.warn('Avisos oficials no disponibles.',error);
-    renderAlertsUnavailable();updateShareContext({alerts:null});
+    renderAlertsUnavailable();updateHomeNow({alerts:{ok:false}});updateShareContext({alerts:null});
   }
   alertsFetchedAt=Date.now();
 }
@@ -127,18 +128,18 @@ async function performLoad(){
       latestHistory=context.history;
       renderSummaryFallback();
     }
-    renderStation(latest,context); refreshCharts(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenter(latestHistory,latest); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:latestHistory});updateShareContext({current:latest});
+    renderStation(latest,context); updateHomeNow({current:latest}); refreshCharts(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenter(latestHistory,latest); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:latestHistory});updateShareContext({current:latest});
     if(latest.degraded){showOfflineBanner(latest.ageMinutes,latest.sourceMessage||`Weather Underground no respon. Mostrant l’última lectura fiable de fa ${latest.ageMinutes} min.`);if(label){label.textContent='Dades de suport';label.parentElement.classList.add('is-offline');}}
     else{hideOfflineBanner();if(label){label.textContent='En directe';label.parentElement.classList.remove('is-offline');}}
   } catch(error) {
     console.warn('No s’han pogut carregar les dades en directe.',error);
     const cached=getLastCachedObs();
     if(cached && (Date.now()-cached.ts)<OFFLINE_MAX_AGE_MS){
-      latest=cached.data; renderStation(latest); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:[]});updateShareContext({current:latest});
+      latest=cached.data; renderStation(latest); updateHomeNow({current:{...latest,degraded:true,ageMinutes:cached.ageMinutes}}); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:[]});updateShareContext({current:latest});
       showOfflineBanner(cached.ageMinutes);
       if(label){label.textContent='Sense connexió';label.parentElement.classList.add('is-offline');}
     } else {
-      latest=demo; renderStation(latest); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSeoObservation(null); updateSituation({current:latest}); updateMeteoAIContext({current:null,history:[]});updateShareContext({current:null});
+      latest=demo; renderStation(latest); updateHomeNow({current:null}); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); setUpdated(latest.updated); updateSeoObservation(null); updateSituation({current:latest}); updateMeteoAIContext({current:null,history:[]});updateShareContext({current:null});
       hideOfflineBanner();
       if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
     }
@@ -167,6 +168,7 @@ document.addEventListener('observatori:data-tab-change',event=>{
   enableCharts().then(()=>requestAnimationFrame(()=>window.dispatchEvent(new Event('resize'))));
 });
 initLanguage();
+initHomeNow();
 initPortal();
 initHeaderTools();
 initSeasonalOutlook();
