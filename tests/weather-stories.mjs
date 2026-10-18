@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { buildWeatherStories } from '../src/features/weather-stories.js';
+import { buildWeatherStories, formatStoryLongDate } from '../src/features/weather-stories.js';
 
 const base=new Date('2026-10-17T00:00:00+02:00');
 const history=Array.from({length:24},(_,index)=>({
@@ -23,6 +23,8 @@ assert.equal(stories[0].coverage,100);
 assert.ok(Math.abs(stories[0].rain-3.6)<1e-9);
 assert.equal(stories[0].official.length,1);
 assert.equal(stories[0].official[0].source,'Meteocat');
+assert.match(formatStoryLongDate('2026-10-17T12:00:00','ca-ES'),/2026/);
+assert.equal(formatStoryLongDate('data-invàlida','ca-ES'),'Data no disponible');
 
 const missing=buildWeatherStories([{t:base.getTime(),temperature:null,windGust:null,rainIncrement:null}],[],options);
 assert.deepEqual(missing,[],'Les absències no poden crear un episodi artificial.');
@@ -32,7 +34,7 @@ assert.deepEqual(incomplete,[],'Una jornada incompleta no pot semblar una histò
 const [html,app,worker,shell]=await Promise.all(['index.html','src/app.js','service-worker.js','src/features/portal-shell.js'].map(file=>readFile(new URL(`../${file}`,import.meta.url),'utf8')));
 for(const id of ['stories-page-title','weather-stories','weather-stories-list','weather-story-detail','weather-stories-method-title'])assert.ok(html.includes(`id="${id}"`),`Falta ${id}.`);
 assert.match(app,/initWeatherStories\(\)/);
-assert.match(app,/updateWeatherStories\(\{history:latestHistory\}\)/);
+assert.match(app,/updateWeatherStoriesSafely\(\{history:latestHistory\}\)/);
 assert.match(worker,/src\/features\/weather-stories\.js/);
 assert.match(shell,/Històries meteo/);
 

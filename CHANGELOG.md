@@ -1,5 +1,10 @@
 # Changelog
 
+## En preparació — Històries meteo aïllades · 2026-10-18
+
+- Converteix explícitament les dates de les històries abans de formatar-les.
+- Impedeix que un error d’un mòdul editorial opcional degradi la lectura principal.
+
 ## En preparació — Recuperació de connexió · 2026-10-18
 
 - Reintenta una lectura puntual abans de declarar indisponible el servei.
