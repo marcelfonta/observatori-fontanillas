@@ -1,5 +1,16 @@
 # Changelog
 
+## En preparació — Fase 4: històries meteorològiques · 2026-10-18
+
+- Afegeix una pàgina pública d'episodis reconstruïts amb l'arxiu real de
+  l'estació i una cronologia comuna d'inici, moment actiu i final de cobertura.
+- Separa visualment observació local, context de radar/satèl·lit/timelapse i
+  coincidències amb avisos oficials.
+- Manté visibles la cobertura, el nombre de mostres i els buits, sense convertir
+  absències en zeros ni presentar el context visual com una prova local.
+- Recupera el timelapse diari sota demanda i degrada la fitxa amb claredat si
+  aquell derivat no existeix.
+
 ## En preparació — Fase 3: centre d'observació de la Terra · 2026-10-18
 
 - Incorpora una pàgina pròpia per consultar fonts espacials segons tres

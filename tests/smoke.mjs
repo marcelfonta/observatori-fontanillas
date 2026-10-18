@@ -6,7 +6,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const html=await readFile(resolve(root,'index.html'),'utf8');
 const pageBootstrap=await readFile(resolve(root,'src/core/page-bootstrap.js'),'utf8');
 const portalShell=await readFile(resolve(root,'src/features/portal-shell.js'),'utf8');
-const pages=['inici','meteo-ia','estacio','prediccio','cel','avisos','radar','webcams','terra','centre-dades','medi-ambient','aprendre','contacte'];
+const pages=['inici','meteo-ia','estacio','prediccio','cel','avisos','radar','webcams','terra','histories','centre-dades','medi-ambient','aprendre','contacte'];
 for(const page of pages){if(!portalShell.includes(`'${page}'`))throw new Error(`Falta l’enllaç de pàgina: ${page}`);}
 for(const id of ['quick-alert-link','official-alert-list','push-alert-button','alertInviteModal','alert-history-list','radar-map','radar-panel-lightning','contact-form','hero-webcam-image','station-page-title','cel-nocturn','nearby-webcams-title','centre-dades-overview','data-summary-samples','data-export-status','data-extremes-period-label','data-evolution-period-label','data-rain-now','data-rain-today','data-rain-since-10','data-rain-wettest','data-ephemeris-list','data-weather-timeline','push-preference-summary','long-range','long-range-weeks','long-range-status','environment-aqi','environment-pm25','environment-pm25-level','environment-viewers-title','environment-uv-source','xac-summary-title','meteo-ai-page-title','meteo-ia','meteo-ai-messages','meteo-ai-form','meteo-ai-input','meteo-ai-submit','meteo-ai-data-status','meteo-ai-context','seo-structured-data']){if(!html.includes(`id="${id}"`))throw new Error(`Falta el selector crític: ${id}`);}
 for(const id of ['forecast-today-title','forecast-today-temp','forecast-tomorrow-title','forecast-tomorrow-temp','forecast-next-days'])if(!html.includes(`id="${id}"`))throw new Error(`Falta el resum temporal de portada: ${id}`);
@@ -42,7 +42,7 @@ for(const metric of ['temperature','humidity','pressure','wind','rain'])if(!comp
 const comparisonFeature=await readFile(resolve(root,'src/features/stations-comparison.js'),'utf8');
 for(const feature of ['ensureLeaflet','renderMap','historySeries','compare-variable-chart'])if(!comparisonFeature.includes(feature))throw new Error(`Comparativa: falta la funció ${feature}.`);
 if(!html.includes('data-portal-page="cel"')||html.match(/id="cel-nocturn"[^>]*data-mobile-advanced/))throw new Error('La pàgina del cel no és independent o pot quedar oculta en mòbil.');
-if((html.match(/class="portal-view-header panel"/g)||[]).length!==15)throw new Error('Les quinze subpàgines principals no comparteixen capçalera.');
+if((html.match(/class="portal-view-header panel"/g)||[]).length!==16)throw new Error('Les setze subpàgines principals no comparteixen capçalera.');
 if(!html.includes('data-history-limit="5"')||!html.includes('historial-avisos.html'))throw new Error('La vista principal no limita l’historial o no enllaça amb l’arxiu complet.');
 for(const viewer of ['fire','firms','drought','earthquakes','jellyfish'])if(!html.includes(`data-environment-viewer="${viewer}"`))throw new Error(`Medi Ambient: falta el visor ${viewer}.`);
 if(!html.includes('environment-earthquakes-map')||!html.includes('earthquake.usgs.gov/earthquakes/map/')||!html.includes('sismocat.icgc.cat'))throw new Error('Medi Ambient: falta el mapa sísmic mundial o les fonts USGS i ICGC.');
