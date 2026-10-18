@@ -14,7 +14,11 @@ const escapeHtml=(value='')=>String(value).replace(/[&<>"']/g,character=>({'&':'
 const localDate=value=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Madrid'}).format(new Date(value));
 const fmt=(value,digits=1)=>new Intl.NumberFormat(getLocale(),{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(value);
 const hour=value=>new Intl.DateTimeFormat(getLocale(),{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(value);
-const longDate=value=>new Intl.DateTimeFormat(getLocale(),{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Madrid'}).format(value);
+export function formatStoryLongDate(value,locale=getLocale()){
+  const date=value instanceof Date?value:new Date(value);
+  if(!Number.isFinite(date.getTime()))return 'Data no disponible';
+  return new Intl.DateTimeFormat(locale,{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Madrid'}).format(date);
+}
 const values=(items,key)=>items.map(item=>finiteNumber(item[key])).filter(value=>value!==null);
 
 function alertOverlapsDate(alert,date){
@@ -68,7 +72,7 @@ function renderDetail(story){
   const warning=story.official[0];
   const warningCopy=warning?`${warning.phenomenon||warning.title||'Fenomen meteorològic'} · nivell ${String(warning.level||'oficial').toLowerCase()}`:'No consta cap avís oficial coincident a l’historial disponible.';
   const video=`${WORKER}/camera/nord/timelapses/${story.date}.mp4`;
-  host.innerHTML=`<header><div><p class="eyebrow">${escapeHtml(longDate(`${story.date}T12:00:00`))}</p><h2>${escapeHtml(story.title)}</h2><p>${escapeHtml(story.summary)}</p></div><span class="weather-story__status">${story.coverage}% cobertura horària</span></header>
+  host.innerHTML=`<header><div><p class="eyebrow">${escapeHtml(formatStoryLongDate(`${story.date}T12:00:00`))}</p><h2>${escapeHtml(story.title)}</h2><p>${escapeHtml(story.summary)}</p></div><span class="weather-story__status">${story.coverage}% cobertura horària</span></header>
     <div class="weather-story__metrics">${metric('Pluja',story.rain===null?'—':`${fmt(story.rain)} mm`,'Acumulació observada')}${metric('Ratxa',story.gust===null?'—':`${fmt(story.gust,0)} km/h`,'Màxima observada')}${metric('Temperatura',story.low===null?'—':`${fmt(story.low)}–${fmt(story.high)} °C`,'Interval observat')}</div>
     <section class="weather-story__timeline" aria-label="Cronologia de l’episodi"><article><time>${hour(story.start.t)}</time><i></i><div><span>Inici de la cobertura</span><p>Primera observació disponible del dia.</p></div></article><article><time>${hour(story.peak.t)}</time><i></i><div><span>Moment més actiu</span><p>Pic combinat segons pluja, vent i canvi tèrmic observats.</p></div></article><article><time>${hour(story.end.t)}</time><i></i><div><span>Final de la cobertura</span><p>Darrera observació utilitzada en aquesta reconstrucció.</p></div></article></section>
     <div class="weather-story__evidence"><article><span>Observació</span><strong>Estació Fontanillas</strong><p>${story.items.length} mostres amb timestamp local i valors conservats a l’arxiu.</p><a href="./?page=centre-dades">Auditar les dades →</a></article><article class="is-context"><span>Context visual</span><strong>Timelapse, radar i Meteosat</strong><p>El vídeo del dia es mostra si està disponible; radar i satèl·lit s’obren sota demanda.</p><div><a href="./?page=radar">Radar →</a><a href="./?page=terra">Satèl·lit →</a></div></article><article class="${warning?'is-warning':'is-neutral'}"><span>Avís oficial</span><strong>${escapeHtml(warning?'Coincidència registrada':'Sense coincidència')}</strong><p>${escapeHtml(warningCopy)}</p><a href="./historial-avisos.html">Historial oficial →</a></article></div>
