@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {EARTH_OBSERVATION_LAYERS,earthLayersFor} from '../src/features/earth-observation.js';
+import {EARTH_OBSERVATION_LAYERS,EARTH_VIEWER_LAYERS,EARTH_VIEWER_REGIONS,earthLayersFor,earthViewerUrl} from '../src/features/earth-observation.js';
 
 assert.equal(EARTH_OBSERVATION_LAYERS.length,9);
 for(const horizon of ['now','today','evolution'])assert.equal(earthLayersFor(horizon).length,3);
@@ -17,4 +17,8 @@ const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 assert.match(html,/data-portal-page="terra"/);
 assert.match(html,/id="earth-observation-center"/);
 assert.match(html,/Observació.+Model.+Context/s);
-console.log('Observació de la Terra: nou fonts, tres horitzons i tipus explícits correctes');
+assert.deepEqual(Object.keys(EARTH_VIEWER_LAYERS),['clouds','airmass','lightning']);
+assert.deepEqual(Object.keys(EARTH_VIEWER_REGIONS),['catalunya','mediterrani','europa']);
+assert.match(earthViewerUrl('lightning','europa'),/earth-observation\/map\?layer=lightning&region=europa$/);
+assert.match(html,/id="earth-viewer"/);
+console.log('Observació de la Terra: nou fonts, tres horitzons i visor EUMETSAT propi correctes');

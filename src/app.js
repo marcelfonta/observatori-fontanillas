@@ -37,6 +37,7 @@ import { initSeasonalOutlook } from './features/seasonal-outlook.js';
 import { initStationRecords } from './features/station-records.js';
 import { initHomeNow, updateHomeNow } from './features/home-now.js';
 import { initEarthObservation } from './features/earth-observation.js';
+import { initEstofexLocal } from './features/estofex-local.js';
 import { initWeatherStories, updateWeatherStories } from './features/weather-stories.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
@@ -192,6 +193,7 @@ initLanguage();
 initHomeNow();
 initPortal();
 initEarthObservation();
+initEstofexLocal();
 initWeatherStories();
 initHeaderTools();
 initSeasonalOutlook();

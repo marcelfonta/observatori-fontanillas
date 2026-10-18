@@ -12,7 +12,7 @@ import { dailySocialCardV5 } from './social-daily-v5.js';
 import { meteofranceMap, meteofranceModels } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.38.0";
+const WORKER_VERSION = "22.39.0";
 const WORKER_BUILT = "2026-10-18";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -314,6 +314,107 @@ function json(data, status = 200, cacheControl = "no-store", origin = "*") {
       "Cache-Control": cacheControl,
     },
   });
+}
+
+const ESTOFEX_BASE_URL='https://www.estofex.org/cgi-bin/polygon/showforecast.cgi';
+const ESTOFEX_LOCAL_RADIUS_KM=120;
+const EARTH_WMS_URL='https://view.eumetsat.int/geoserver/wms';
+const EARTH_WMS_LAYERS={
+  clouds:{name:'msg_fes:rgb_naturalenhncd',title:'Núvols en color natural',transparent:false},
+  airmass:{name:'msg_fes:rgb_airmass',title:"Masses d’aire",transparent:false},
+  lightning:{name:'msg_fes:rgb_naturalenhncd,mtg_fd:li_afa',title:'Llamps MTG-I sobre la imatge de núvols',transparent:false},
+};
+const EARTH_WMS_REGIONS={
+  catalunya:{bbox:[39.8,-1.2,43.8,5.5],title:'Catalunya i entorn'},
+  mediterrani:{bbox:[30,-12,50,25],title:'Mediterrani occidental'},
+  europa:{bbox:[25,-25,72,45],title:'Europa'},
+};
+
+function xmlValue(xml,tag){return String(xml).match(new RegExp(`<${tag}\\b[^>]*value="([^"]+)"`,'i'))?.[1]||'';}
+function xmlText(xml,tag){return String(xml).match(new RegExp(`<${tag}\\b[^>]*>([\\s\\S]*?)<\\/${tag}>`,'i'))?.[1]||'';}
+function estofexTimestamp(value){
+  return /^\d{10}$/.test(value)?`${value.slice(0,4)}-${value.slice(4,6)}-${value.slice(6,8)}T${value.slice(8,10)}:00:00Z`:null;
+}
+function pointInPolygon(point,polygon){
+  let inside=false;
+  for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
+    const a=polygon[i],b=polygon[j];
+    if(((a.lat>point.lat)!==(b.lat>point.lat))&&(point.lon<(b.lon-a.lon)*(point.lat-a.lat)/((b.lat-a.lat)||Number.EPSILON)+a.lon))inside=!inside;
+  }
+  return inside;
+}
+function localKm(point,origin={lat:STATION_LATITUDE,lon:STATION_LONGITUDE}){
+  const latKm=(point.lat-origin.lat)*111.32;
+  const lonKm=(point.lon-origin.lon)*111.32*Math.cos(origin.lat*Math.PI/180);
+  return {x:lonKm,y:latKm};
+}
+function segmentDistanceKm(point,a,b){
+  const p=localKm(point),p1=localKm(a),p2=localKm(b);
+  const dx=p2.x-p1.x,dy=p2.y-p1.y;
+  const t=Math.max(0,Math.min(1,((p.x-p1.x)*dx+(p.y-p1.y)*dy)/((dx*dx+dy*dy)||1)));
+  return Math.hypot(p.x-(p1.x+t*dx),p.y-(p1.y+t*dy));
+}
+function polygonDistanceKm(point,polygon){
+  if(pointInPolygon(point,polygon))return 0;
+  let closest=Infinity;
+  for(let i=0;i<polygon.length;i++)closest=Math.min(closest,segmentDistanceKm(point,polygon[i],polygon[(i+1)%polygon.length]));
+  return closest;
+}
+function estofexRiskRank(type){
+  const match=String(type).toLowerCase().match(/level\s*(\d)/);
+  if(match)return Number(match[1])+10;
+  return /thunder/.test(String(type).toLowerCase())?1:0;
+}
+export function parseEstofexForecastXml(xml){
+  const areas=[];
+  for(const match of String(xml).matchAll(/<area\b[^>]*risktype="([^"]+)"[^>]*>([\s\S]*?)<\/area>/gi)){
+    const points=[...match[2].matchAll(/<point\b[^>]*lat="([+-]?\d+(?:\.\d+)?)"[^>]*lon="([+-]?\d+(?:\.\d+)?)"[^>]*\/?\s*>/gi)].map(item=>({lat:Number(item[1]),lon:Number(item[2])}));
+    if(points.length>=3)areas.push({type:match[1],points});
+  }
+  return {type:xmlText(xml,'forecast_type'),start:estofexTimestamp(xmlValue(xml,'start_time')),expiry:estofexTimestamp(xmlValue(xml,'expiry_time')),issued:estofexTimestamp(xmlValue(xml,'issue_time')),forecaster:xmlText(xml,'forecaster'),areas};
+}
+export function estofexLocalImpact(forecast,{lat=STATION_LATITUDE,lon=STATION_LONGITUDE,radiusKm=ESTOFEX_LOCAL_RADIUS_KM}={}){
+  const point={lat,lon};
+  const evaluated=(forecast?.areas||[]).map(area=>({...area,distanceKm:polygonDistanceKm(point,area.points),rank:estofexRiskRank(area.type)}));
+  const nearby=evaluated.filter(area=>area.distanceKm<=radiusKm).sort((a,b)=>b.rank-a.rank||a.distanceKm-b.distanceKm);
+  const closest=[...evaluated].sort((a,b)=>a.distanceKm-b.distanceKm)[0];
+  const primary=nearby[0]||closest||null;
+  return {relevant:nearby.length>0,inside:Boolean(primary&&primary.distanceKm===0),distanceKm:primary?Math.round(primary.distanceKm):null,risk:primary?.type||null,radiusKm};
+}
+function estofexForecastFiles(html){
+  return [...new Set([...String(html).matchAll(/fcstfile=([a-z0-9_.-]+\.xml)/gi)].map(match=>match[1]))].slice(0,4);
+}
+async function estofexLocal(){
+  const listResponse=await fetch(`${ESTOFEX_BASE_URL}?listvalid=yes`,{headers:{Accept:'text/html','User-Agent':`MeteoFontanillas/${WORKER_VERSION} (ESTOFEX local context)`},signal:AbortSignal.timeout(12_000),cf:{cacheEverything:true,cacheTtl:600}});
+  if(!listResponse.ok)throw new Error(`ESTOFEX list ${listResponse.status}`);
+  const files=estofexForecastFiles(await listResponse.text());
+  const forecasts=(await Promise.all(files.map(async file=>{
+    try{
+      const response=await fetch(`${ESTOFEX_BASE_URL}?xml=yes&fcstfile=${encodeURIComponent(file)}`,{headers:{Accept:'application/xml','User-Agent':`MeteoFontanillas/${WORKER_VERSION} (ESTOFEX local context)`},signal:AbortSignal.timeout(12_000),cf:{cacheEverything:true,cacheTtl:600}});
+      if(!response.ok)return null;
+      const parsed=parseEstofexForecastXml(await response.text());
+      const impact=estofexLocalImpact(parsed);
+      return {...parsed,areas:undefined,file,...impact,mapUrl:`${ESTOFEX_BASE_URL}?map=yes&fcstfile=${encodeURIComponent(file)}`,detailUrl:`${ESTOFEX_BASE_URL}?text=yes&fcstfile=${encodeURIComponent(file)}`};
+    }catch(error){console.warn('ESTOFEX forecast unavailable',{file,error:cleanText(error.message,180)});return null;}
+  }))).filter(Boolean);
+  const relevant=forecasts.filter(item=>item.relevant);
+  return json({ok:true,location:{name:'Sant Celoni',lat:STATION_LATITUDE,lon:STATION_LONGITUDE,radiusKm:ESTOFEX_LOCAL_RADIUS_KM},relevant:relevant.length>0,forecasts:relevant.length?relevant:forecasts.slice(0,1),source:'ESTOFEX',license:'CC BY-NC-SA 3.0',official:false,updatedAt:new Date().toISOString()},200,'public, max-age=600, stale-while-revalidate=3600');
+}
+async function earthObservationMap(url){
+  const layer=EARTH_WMS_LAYERS[url.searchParams.get('layer')||'clouds'];
+  const region=EARTH_WMS_REGIONS[url.searchParams.get('region')||'catalunya'];
+  if(!layer||!region)return json({error:'Capa o regió no admesa'},400,'public, max-age=300');
+  const width=960,height=600;
+  const upstream=new URL(EARTH_WMS_URL);
+  Object.entries({service:'WMS',version:'1.3.0',request:'GetMap',layers:layer.name,styles:'',crs:'EPSG:4326',bbox:region.bbox.join(','),width,height,format:'image/png',transparent:String(layer.transparent)}).forEach(([key,value])=>upstream.searchParams.set(key,value));
+  const response=await fetch(upstream,{headers:{Accept:'image/png','User-Agent':`MeteoFontanillas/${WORKER_VERSION} (EUMETSAT viewer)`},signal:AbortSignal.timeout(20_000),cf:{cacheEverything:true,cacheTtl:600}});
+  if(!response.ok)throw new Error(`EUMETSAT WMS ${response.status}`);
+  const type=response.headers.get('content-type')||'';
+  if(!type.includes('image/'))throw new Error('Resposta WMS inesperada');
+  const headers=new Headers(corsHeaders('*'));
+  headers.set('Content-Type','image/png');headers.set('Cache-Control','public, max-age=300, stale-while-revalidate=1800');
+  headers.set('X-Earth-Layer',layer.title);headers.set('X-Earth-Region',region.title);headers.set('X-Data-Source','EUMETSAT EUMETView WMS');
+  return new Response(response.body,{status:200,headers});
 }
 
 async function xacPollenProxy(url) {
@@ -7179,6 +7280,8 @@ export default {
       if (url.pathname === "/met-forecast") return metNorwayForecast(url);
       if (url.pathname === "/webcams-nearby") return nearbyWebcams(url, env);
       if (url.pathname === "/fires-nearby") return nearbyActiveFires(url, env);
+      if (url.pathname === "/estofex-local") return estofexLocal();
+      if (url.pathname === "/earth-observation/map") return earthObservationMap(url);
       if (url.pathname === "/forecast-videos") return forecastVideos(request, ctx);
       if (url.pathname === "/forecast-verification") return forecastVerification(url, env);
       if (url.pathname === "/meteofrance/models") return meteofranceModels(env);
@@ -7187,7 +7290,7 @@ export default {
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
-      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/public-status", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/fires-nearby?lat=41.69&lon=2.49", "/camera/nord/latest.jpg", "/camera/nord/timelapse-preview.mp4", "/forecast-videos", "/forecast-verification?days=45", "/meteofrance/models", "/meteofrance/map?model=arome&layer=precipitation", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
+      return json({ error:"Ruta no trobada", routes:["/", "/widget-observation", "/pollen-xac?station=bellaterra", "/aca-hydrology", "/history?days=365", "/temperature-trend", "/records", "/quality", "/health", "/public-status", "/alerts", "/alert-history", "/stations?period=now", "/met-forecast?lat=41.69&lon=2.49", "/webcams-nearby?lat=41.69&lon=2.49", "/fires-nearby?lat=41.69&lon=2.49", "/estofex-local", "/earth-observation/map?layer=clouds&region=catalunya", "/camera/nord/latest.jpg", "/camera/nord/timelapse-preview.mp4", "/forecast-videos", "/forecast-verification?days=45", "/meteofrance/models", "/meteofrance/map?model=arome&layer=precipitation", "/version", "/admin/status", "/admin/social-drafts", "POST /meteo-ai", "POST /push-test", "POST /push-preferences", "POST /contact"] }, 404);
     } catch (error) {
       console.error("Worker error", error);
       return json({ error:error.message || "Error intern" }, error.status || 500);

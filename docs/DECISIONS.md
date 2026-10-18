@@ -202,6 +202,21 @@ predicció congelada i verificació prospectiva. Els visors directes de
 Météo-France es mantenen com a circuit tècnic independent i totes les vistes
 externes conserven l’atribució i l’enllaç a la font original.
 
+## ADR-011 — ESTOFEX geomètric i WMS EUMETSAT restringit
+
+**Estat:** acceptada, 2026-10-18.
+
+ESTOFEX només es destaca localment després de llegir els polígons XML vigents:
+Sant Celoni ha de quedar dins del polígon o la seva vora ha de passar a menys de
+120 km. El nivell més alt proper preval sobre una zona de tro, però sempre es
+presenta com a context europeu no oficial; Meteocat, AEMET, Protecció Civil i
+112 continuen sent les fonts operatives.
+
+EUMETView s’integra mitjançant una passarel·la WMS del Worker. El navegador no
+pot triar cap URL arbitrària: només s’accepten tres capes i tres regions
+predefinides. La resposta es desa temporalment, manté l’atribució i falla de
+manera visible sense convertir una absència d’imatge en una absència de fenomen.
+
 # ADR — Automatització editorial de baixa freqüència i episodis locals (2026-08-31)
 
 - Les noves publicacions no s’activen amb el desplegament: cada família té un interruptor explícit i es valida gradualment.

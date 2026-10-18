@@ -1,3 +1,8 @@
+import {CONFIG} from '../core/config.js';
+
+export const EARTH_VIEWER_LAYERS={clouds:'Núvols en color natural',airmass:'Masses d’aire',lightning:'Llamps MTG-I sobre els núvols'};
+export const EARTH_VIEWER_REGIONS={catalunya:'Catalunya i entorn',mediterrani:'Mediterrani occidental',europa:'Europa'};
+
 export const EARTH_OBSERVATION_LAYERS=[
   {id:'meteosat',horizon:'now',type:'observation',agency:'EUMETSAT',title:'Meteosat-12 · núvols',summary:'Imatge gairebé en temps real per seguir fronts, tempestes i l’evolució de la nuvolositat.',freshness:'Actualització aproximada cada 10 minuts · retard de processament',use:'Observa com creixen i es desplacen les masses de núvols abans de comparar-les amb el radar.',href:'https://view.eumetsat.int/',cta:'Obrir EUMETView'},
   {id:'lightning',horizon:'now',type:'observation',agency:'EUMETSAT · MTG',title:'Lightning Imager · llamps',summary:'Detecció òptica contínua de llamps totals sobre Europa i Àfrica des de Meteosat-12.',freshness:'Alta freqüència · observació satel·litària',use:'Ajuda a identificar convecció activa; no diferencia per si sola els llamps núvol-terra.',href:'https://view.eumetsat.int/',cta:'Veure capa LI'},
@@ -14,6 +19,38 @@ const HORIZONS={now:{label:'Ara',copy:'Què està passant a l’atmosfera en aqu
 const TYPE_LABELS={observation:'Observació',model:'Model + observacions',context:'Context global'};
 
 export function earthLayersFor(horizon){return EARTH_OBSERVATION_LAYERS.filter(layer=>layer.horizon===horizon);}
+
+export function earthViewerUrl(layer='clouds',region='catalunya',revision=''){
+  const safeLayer=EARTH_VIEWER_LAYERS[layer]?layer:'clouds';
+  const safeRegion=EARTH_VIEWER_REGIONS[region]?region:'catalunya';
+  const suffix=revision?`&v=${encodeURIComponent(revision)}`:'';
+  return `${CONFIG.apiUrl}/earth-observation/map?layer=${safeLayer}&region=${safeRegion}${suffix}`;
+}
+
+function initViewer(){
+  const image=document.getElementById('earth-viewer-image');
+  const loading=document.getElementById('earth-viewer-loading');
+  const status=document.getElementById('earth-viewer-status');
+  const caption=document.getElementById('earth-viewer-caption');
+  if(!image||!loading||!status||!caption)return;
+  let layer='clouds',region='catalunya';
+  const load=(fresh=false)=>{
+    loading.hidden=false;image.classList.remove('is-ready');status.textContent='Carregant capa oficial…';
+    caption.textContent=`${EARTH_VIEWER_LAYERS[layer]} · ${EARTH_VIEWER_REGIONS[region]}`;
+    image.alt=`${EARTH_VIEWER_LAYERS[layer]} sobre ${EARTH_VIEWER_REGIONS[region]}, font EUMETSAT`;
+    image.src=earthViewerUrl(layer,region,fresh?Date.now():'');
+  };
+  image.addEventListener('load',()=>{loading.hidden=true;image.classList.add('is-ready');status.textContent=`Capa carregada a les ${new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit'}).format(new Date())}`;});
+  image.addEventListener('error',()=>{loading.textContent='La capa no està disponible ara mateix. Pots obrir el visor oficial d’EUMETSAT.';loading.hidden=false;status.textContent='Font temporalment no disponible';});
+  document.querySelectorAll('[data-earth-layer]').forEach(button=>button.addEventListener('click',()=>{layer=button.dataset.earthLayer;document.querySelectorAll('[data-earth-layer]').forEach(item=>item.classList.toggle('is-active',item===button));load();}));
+  document.querySelectorAll('[data-earth-region]').forEach(button=>button.addEventListener('click',()=>{region=button.dataset.earthRegion;document.querySelectorAll('[data-earth-region]').forEach(item=>item.classList.toggle('is-active',item===button));load();}));
+  document.getElementById('earth-viewer-refresh')?.addEventListener('click',()=>load(true));
+  const viewer=document.getElementById('earth-viewer');
+  if('IntersectionObserver'in window&&viewer){
+    const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){observer.disconnect();load();}},{rootMargin:'240px'});
+    observer.observe(viewer);
+  }else load();
+}
 
 function render(horizon='now'){
   const host=document.getElementById('earth-observation-layers');
@@ -39,4 +76,5 @@ export function initEarthObservation(){
     });
   });
   render('now');
+  initViewer();
 }

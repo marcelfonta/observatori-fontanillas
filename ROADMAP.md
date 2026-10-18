@@ -680,6 +680,13 @@ Centre de notícies meteorològiques, calendari, API pública, widgets, recursos
 
 ## Definició de projecte madur
 
+## V22.39.0 — Context convectiu local i observació satel·lit integrada — Completat
+
+- ESTOFEX localitzat geomètricament amb radi de 120 km, mapa, risc i vigència.
+- Visor EUMETSAT propi amb capes de núvols, masses d’aire i llamps i tres escales territorials.
+- Fonts originals, atribució, diferència entre observació i avís i degradació segura preservades.
+- Evolució futura: afegir una línia temporal només quan el WMS permeti seleccionar instants sense multiplicar de forma excessiva les peticions.
+
 ## V22.11.0 — Fiabilitat dels avisos i context convectiu europeu
 
 - Corregit el filtre de destinataris de OneSignal perquè respecti nivell i fenomen sense perdre avisos no classificats.

@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {parseEstofexForecastXml,estofexLocalImpact} from '../worker/index.js';
+import {estofexLocalCopy} from '../src/features/estofex-local.js';
+
+const xml='<?xml version="1.0"?><forecast><forecast_type>Storm Forecast</forecast_type><start_time value="2026101806"/><expiry_time value="2026101906"/><issue_time value="202610180624"/><forecaster>TUSCHY</forecaster><area risktype="level 1"><point lat="41.0" lon="1.5"/><point lat="42.2" lon="1.5"/><point lat="42.2" lon="3.4"/><point lat="41.0" lon="3.4"/></area><area risktype="level 2"><point lat="38" lon="0"/><point lat="39" lon="0"/><point lat="39" lon="1"/></area></forecast>';
+const forecast=parseEstofexForecastXml(xml);
+assert.equal(forecast.type,'Storm Forecast');
+assert.equal(forecast.start,'2026-10-18T06:00:00Z');
+assert.equal(forecast.areas.length,2);
+const local=estofexLocalImpact(forecast);
+assert.equal(local.relevant,true);
+assert.equal(local.inside,true);
+assert.equal(local.risk,'level 1');
+assert.match(estofexLocalCopy(local),/Sant Celoni queda dins/);
+const far=estofexLocalImpact({areas:[{type:'level 1',points:[{lat:30,lon:-10},{lat:31,lon:-10},{lat:31,lon:-9}]}]});
+assert.equal(far.relevant,false);
+const [html,worker]=await Promise.all([readFile(new URL('../index.html',import.meta.url),'utf8'),readFile(new URL('../worker/index.js',import.meta.url),'utf8')]);
+assert.match(html,/id="estofex-local"/);
+assert.match(worker,/ESTOFEX_LOCAL_RADIUS_KM=120/);
+console.log('ESTOFEX local: XML, geometria, radi de 120 km i interfície verificats');
