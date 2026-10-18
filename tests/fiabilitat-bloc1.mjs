@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { classifyAlertWindows } from '../src/modules/avisos.js';
 import { groupAlertEpisodes } from '../src/core/alert-episodes.js';
-import { rainSampleCopy, verificationMilestoneCopy } from '../src/features/forecast-verification.js';
+import { rainSampleCopy, verificationCsv, verificationMilestoneCopy } from '../src/features/forecast-verification.js';
 import { stationIdentity, pressureComparisonNote } from '../src/features/stations-comparison.js';
 import { sunHeightLabel } from '../src/modules/astronomia.js';
 
@@ -37,6 +37,10 @@ assert.equal(grouped.find(item=>item.source==='Meteocat').updates,2);
 assert.equal(grouped.find(item=>item.source==='Meteocat').level,'orange','L’episodi conserva el nivell màxim.');
 
 assert.equal(rainSampleCopy({wetDays:0,dryDays:14}),'14 dies secs · encara cap dia amb pluja');
+const exportCsv=verificationCsv({detail:[{date:'2026-10-17',issuedAt:'2026-10-16T06:00:00Z',forecast:{max:20,min:10,rain:2,gust:30},observed:{max:21,min:9,rain:1.4,gust:34}}]});
+assert.match(exportCsv,/forecast_max_c/);
+assert.match(exportCsv,/2026-10-17/);
+assert.equal(exportCsv.trim().split('\n').length,2);
 assert.match(verificationMilestoneCopy({sampleDays:29}),/Demà.*30 dies/);
 assert.equal(verificationMilestoneCopy({sampleDays:28}),'');
 assert.match(verificationMilestoneCopy({sampleDays:30,summary:{wetDays:3}}),/Primer tall de 30 dies assolit/);
