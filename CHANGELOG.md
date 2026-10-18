@@ -1,5 +1,12 @@
 # Changelog
 
+## En preparació — Més terratrèmols febles · 2026-10-18
+
+- El període de set dies deixa d’amagar els sismes inferiors a magnitud 2,5 i
+  mostra totes les magnituds disponibles al catàleg mundial de l’USGS.
+- Identifica l’ICGC/SISMOCAT com a font complementària per consultar la
+  micro-sismicitat catalana que no sempre entra al catàleg global.
+
 ## En preparació — Informació meteorològica al visor terrestre · 2026-10-18
 
 - Superposa al mapa topogràfic les observacions GeoColour de Meteosat-12, el
