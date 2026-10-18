@@ -1,5 +1,10 @@
 # Changelog
 
+## En preparació — CECAT a través de mitjanit · 2026-10-18
+
+- Accepta quatre franges oficials consecutives encara que comencin a mig dia i
+  continuïn l'endemà, sense relaxar la caducitat ni els llindars de risc local.
+
 ## En preparació — Vídeo d’Històries meteo · 2026-10-18
 
 - Autoritza explícitament a la CSP els timelapses servits pel Worker privat.
