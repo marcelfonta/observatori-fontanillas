@@ -330,7 +330,7 @@ async function renderEarthquakes(payload){
   const target=document.getElementById('environment-earthquakes-map');if(!target)return;
   if(!earthquakesMap){
     earthquakesMap=window.L.map(target,{zoomControl:true,scrollWheelZoom:false,minZoom:2,maxZoom:15,worldCopyJump:true}).setView([41.69,2.49],6);
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap · Dades sísmiques USGS'}).addTo(earthquakesMap);
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap · Dades sísmiques USGS + ICGC'}).addTo(earthquakesMap);
     window.L.circleMarker([CONFIG.station.latitude,CONFIG.station.longitude],{radius:6,color:'#fff',weight:2,fillColor:'#55a7ff',fillOpacity:1}).addTo(earthquakesMap).bindTooltip('Sant Celoni · Estació Fontanillas');
   }
   if(earthquakesMarkers)earthquakesMarkers.clearLayers();else earthquakesMarkers=window.L.layerGroup().addTo(earthquakesMap);
@@ -351,11 +351,11 @@ async function loadEarthquakes(period='day'){
   try{
     const [usgsResult,icgcResult]=await Promise.allSettled([fetch(EARTHQUAKE_FEEDS[period],{cache:'no-store',signal:controller.signal}),fetch(ICGC_EARTHQUAKE_FEED,{cache:'no-store',signal:controller.signal})]);
     if(usgsResult.status!=='fulfilled'||!usgsResult.value.ok)throw new Error(`USGS ${usgsResult.status==='fulfilled'?usgsResult.value.status:'no disponible'}`);
-    const usgs=await usgsResult.value.json();let icgc=[];
-    if(icgcResult.status==='fulfilled'&&icgcResult.value.ok)icgc=normalizeIcgcEarthquakes(await icgcResult.value.json(),period);
+    const usgs=await usgsResult.value.json();const icgcAvailable=icgcResult.status==='fulfilled'&&icgcResult.value.ok;let icgc=[];
+    if(icgcAvailable)icgc=normalizeIcgcEarthquakes(await icgcResult.value.json(),period);
     const payload=mergeEarthquakeCatalogues(usgs,icgc);await renderEarthquakes(payload);
     const features=payload.features||[];const strongest=features.reduce((best,item)=>Number(item.properties?.mag)>Number(best?.properties?.mag??-Infinity)?item:best,null);
-    target.innerHTML=`<header><strong>${features.length} terratrèmols al mapa</strong><small>${period==='day'?'Últimes 24 hores':'Últims 7 dies'} · totes les magnituds · USGS + ${icgc.length?`${icgc.length} registres ICGC`:'ICGC temporalment no disponible'}</small></header>${strongest?`<p>El més intens del període: <b>M${number(strongest.properties?.mag,1)}</b> · ${escapeHtml(strongest.properties?.place||'localització no indicada')} · ${escapeHtml(earthquakeDate(strongest.properties?.time))}.</p>`:'<p>No hi ha esdeveniments al catàleg per al període seleccionat.</p>'}<small>Les dades són preliminars i poden ser revisades pels organismes d’origen.</small>`;
+    target.innerHTML=`<header><strong>${features.length} terratrèmols al mapa</strong><small>${period==='day'?'Últimes 24 hores':'Últims 7 dies'} · totes les magnituds · USGS + ${icgcAvailable?`ICGC · ${icgc.length} registres addicionals`:'ICGC temporalment no disponible'}</small></header>${strongest?`<p>El més intens del període: <b>M${number(strongest.properties?.mag,1)}</b> · ${escapeHtml(strongest.properties?.place||'localització no indicada')} · ${escapeHtml(earthquakeDate(strongest.properties?.time))}.</p>`:'<p>No hi ha esdeveniments al catàleg per al període seleccionat.</p>'}<small>Les dades són preliminars i poden ser revisades pels organismes d’origen.</small>`;
   }catch(error){earthquakesLoaded=false;target.innerHTML='<p><strong>Catàleg mundial temporalment no disponible.</strong> Pots obrir directament els mapes oficials de l’USGS o l’ICGC.</p>';console.warn('Catàleg sísmic USGS no disponible.',error);}
   finally{window.clearTimeout(timeout);}
 }
