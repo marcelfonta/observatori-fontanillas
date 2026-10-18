@@ -19,6 +19,8 @@ assert.doesNotMatch(worker, /fetch\(readinessUrl/);
 assert.doesNotMatch(worker, /Worker públic no coincideix/);
 assert.match(worker, /ONESIGNAL_API_KEY \|\| env\.ONESIGNAL_REST_API_KEY/);
 assert.match(worker, /runDatabaseMaintenance/);
+assert.match(worker, /recordOperationalState\(env,'forecast-capture',status,result\)/);
+assert.match(worker, /recordOperationalState\(env,'forecast-capture','down'/);
 assert.match(worker, /PERSIST_ON_REQUEST/);
 assert.match(worker, /ON CONFLICT\(observed_epoch\) DO NOTHING/);
 assert.match(worker, /El canal no té les credencials necessàries configurades a Cloudflare/);

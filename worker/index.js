@@ -7217,6 +7217,16 @@ export default {
     const specialSocialRecovery=Promise.allSettled([periodicSocial,stationEventSocial,environmentalSocial,ephemerisSocial,seasonChangeSocial,astronomyAdvanceSocial,astronomyReminderSocial])
       .then(()=>recoverIncompleteSpecialSocialDraft(env))
       .then(result=>publishAutomaticSocialDraft(result,env));
+    const forecastCapture=captureForecastSnapshot(env)
+      .then(async result=>{
+        const status=result?.stored===true?(result.failed?.length?'degraded':'healthy'):'down';
+        await recordOperationalState(env,'forecast-capture',status,result);
+        return result;
+      })
+      .catch(async error=>{
+        await recordOperationalState(env,'forecast-capture','down',{error:cleanText(error.message,500)}).catch(()=>{});
+        throw error;
+      });
     const aemetAlerts=checkAlertsAndNotify(env);
     const meteocatAlerts=checkMeteocatAlertsAndPublish(env);
     const cecatLocalRisk=checkCecatLocalRisk(env);
@@ -7228,7 +7238,7 @@ export default {
     const observedJob=(label,promise)=>promise.catch(error=>{console.error(JSON.stringify({event:'scheduled_job_failed',job:label,error:cleanText(error.message,500)}));throw error;});
     const jobs = [
       observedJob('observation',capture),
-      observedJob('forecast',captureForecastSnapshot(env)),
+      observedJob('forecast',forecastCapture),
       observedJob('social',social),
       observedJob('social-periodic',periodicSocial),
       observedJob('social-station-event',stationEventSocial),
