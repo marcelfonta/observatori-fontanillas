@@ -1,5 +1,9 @@
 # Changelog
 
+## En preparació — Vídeo d’Històries meteo · 2026-10-18
+
+- Autoritza explícitament a la CSP els timelapses servits pel Worker privat.
+
 ## En preparació — Històries meteo aïllades · 2026-10-18
 
 - Converteix explícitament les dates de les històries abans de formatar-les.

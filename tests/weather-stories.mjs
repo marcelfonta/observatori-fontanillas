@@ -31,11 +31,12 @@ assert.deepEqual(missing,[],'Les absències no poden crear un episodi artificial
 const incomplete=buildWeatherStories(history.slice(0,12),alerts,options);
 assert.deepEqual(incomplete,[],'Una jornada incompleta no pot semblar una història tancada.');
 
-const [html,app,worker,shell]=await Promise.all(['index.html','src/app.js','service-worker.js','src/features/portal-shell.js'].map(file=>readFile(new URL(`../${file}`,import.meta.url),'utf8')));
+const [html,app,worker,shell,headers]=await Promise.all(['index.html','src/app.js','service-worker.js','src/features/portal-shell.js','_headers'].map(file=>readFile(new URL(`../${file}`,import.meta.url),'utf8')));
 for(const id of ['stories-page-title','weather-stories','weather-stories-list','weather-story-detail','weather-stories-method-title'])assert.ok(html.includes(`id="${id}"`),`Falta ${id}.`);
 assert.match(app,/initWeatherStories\(\)/);
 assert.match(app,/updateWeatherStoriesSafely\(\{history:latestHistory\}\)/);
 assert.match(worker,/src\/features\/weather-stories\.js/);
 assert.match(shell,/Històries meteo/);
+assert.match(headers,/media-src 'self' blob: https:\/\/fonta-meteo\.marcelfonta\.workers\.dev/);
 
 console.log('Històries meteorològiques: llindars, cronologia, cobertura i avisos verificats');
