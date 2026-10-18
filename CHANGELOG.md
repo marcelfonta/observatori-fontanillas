@@ -1,5 +1,15 @@
 # Changelog
 
+## En preparació — Fase 5: xarxes adaptades per canal · 2026-10-18
+
+- Genera una versió editorial pròpia per Facebook, Instagram, Bluesky,
+  Threads, Telegram, X, TikTok i YouTube, amb límits i formats explícits.
+- Mostra a l'administració la previsualització exacta de cada canal abans de
+  publicar-la, inclosos el recompte de caràcters i el format visual recomanat.
+- Connecta els publicadors directes a aquestes versions sense canviar les
+  garanties existents de confirmació, identificador i reintents selectius.
+- Marca la fase 4 com a completada i la fase 5 com a iniciada al roadmap.
+
 ## En preparació — Fase 4: històries meteorològiques · 2026-10-18
 
 - Afegeix una pàgina pública d'episodis reconstruïts amb l'arxiu real de

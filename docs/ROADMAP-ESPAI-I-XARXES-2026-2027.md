@@ -15,8 +15,9 @@ la càmera; no els substitueixen.
 - **Fase 1 completada i desplegada** el 18 d'octubre de 2026.
 - **Fase 2 completada i desplegada:** resum intel·ligent de portada.
 - **Fase 3 completada i desplegada:** centre d'observació de la Terra per horitzons.
-- **Fase 4 en curs:** històries meteorològiques verificables.
-- Fases 5–6 planificades i subjectes a la porta de qualitat de la fase anterior.
+- **Fase 4 completada i desplegada:** històries meteorològiques verificables.
+- **Fase 5 en curs:** relat i presentació adaptats a cada canal.
+- Fase 6 planificada i subjecta a la porta de qualitat de la fase anterior.
 
 ## Fase 1 · Confiança operativa — completada
 
@@ -92,6 +93,11 @@ presenta si el derivat d'aquella data existeix.
 Cap canal es considera publicat fins a rebre confirmació i identificador o URL.
 Els reintents només afecten els canals fallits. Els avisos oficials urgents són
 l’única excepció possible al límit editorial diari.
+
+Primer lliurable: cada esborrany genera versions deterministes per canal amb
+límit, format, mitjà, font i crida a l'acció propis. L'administració permet
+revisar-les abans d'enviar i els publicadors consumeixen exactament aquella
+versió, sense alterar el registre segur ni duplicar els canals ja completats.
 
 ## Fase 6 · Verificació i reputació
 

@@ -294,6 +294,16 @@ function socialPublicationRows(draft){
     container.append(row);});
   return container;
 }
+function socialChannelPreviews(draft){
+  const content=draft.channelContent&&typeof draft.channelContent==='object'?Object.values(draft.channelContent):[];
+  if(!content.length)return document.createDocumentFragment();
+  const details=document.createElement('details');details.className='admin-social-channel-previews';
+  const summary=document.createElement('summary');summary.textContent=`Previsualitzar les ${content.length} versions adaptades`;
+  const grid=document.createElement('div');grid.className='admin-social-channel-preview-grid';
+  content.forEach(item=>{const article=document.createElement('article');const heading=document.createElement('header');const title=document.createElement('strong');const meta=document.createElement('span');const copy=document.createElement('p');
+    title.textContent=item.label||item.channel;meta.textContent=`${item.format} · ${item.media} · ${item.length}/${item.maxLength}`;copy.textContent=item.text||'';heading.append(title,meta);article.append(heading,copy);grid.append(article);});
+  details.append(summary,grid);return details;
+}
 export function socialDraftCard(draft){
   const card=document.createElement('article');card.className='admin-social-card';card.dataset.draftId=String(draft.id);card.dataset.status=draft.status;
   const header=document.createElement('header');const heading=document.createElement('div');const eyebrow=document.createElement('p');const title=document.createElement('h3');const badge=document.createElement('span');
@@ -327,9 +337,9 @@ export function socialDraftCard(draft){
   if(archived){
     const details=document.createElement('details');details.className='admin-social-card__details';
     const summary=document.createElement('summary');summary.textContent='Veure el detall i el registre per canal';
-    details.append(summary,form,note,actions,socialPublicationRows(draft));
+    details.append(summary,form,socialChannelPreviews(draft),note,actions,socialPublicationRows(draft));
     card.append(header,details);
-  }else card.append(header,form,note,actions,socialPublicationRows(draft));
+  }else card.append(header,form,socialChannelPreviews(draft),note,actions,socialPublicationRows(draft));
   card.querySelectorAll('input:not(:disabled),textarea:not(:disabled)').forEach(control=>control.addEventListener('input',()=>{card.classList.add('is-dirty');socialEditorDirty=true;socialFeedback('Hi ha canvis sense desar.','warning');}));
   return card;
 }
