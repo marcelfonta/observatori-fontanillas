@@ -94,11 +94,21 @@ assert.equal(first.status,201,JSON.stringify(firstPayload));
 assert.equal(firstPayload.created,true);assert.equal(firstPayload.autoPublish,false);assert.equal(firstPayload.status,'review');
 const second=await handler.fetch(await multipart({documentKey:'c'.repeat(24),documentSha256:'d'.repeat(64)}),env,{waitUntil(){}});
 assert.equal(second.status,200);assert.equal((await second.json()).created,false);
+const rollingWindows=[...windows.slice(2),...windows.slice(0,2)].map((item,index)=>({
+  ...item,
+  endAt:new Date(checkedAt.getTime()+(index+1)*3600000).toISOString(),
+}));
+const rollingValidUntil=rollingWindows[3].endAt;
+const rolling=await handler.fetch(await multipart({
+  documentKey:'1'.repeat(24),documentSha256:'2'.repeat(64),
+  targetDate:localTarget,windows:rollingWindows,validUntil:rollingValidUntil,
+}),env,{waitUntil(){}});
+assert.equal(rolling.status,201,JSON.stringify(await rolling.clone().json()));
 const redWindows=windows.map((item,index)=>index===3?{...item,level:'red',levelLabel:'Vermell',riskCounts:{green:0,yellow:0,orange:0,red:40}}:item);
 const changed=await handler.fetch(await multipart({documentKey:'e'.repeat(24),documentSha256:'f'.repeat(64),level:'red',levelLabel:'Vermell',windows:redWindows}),env,{waitUntil(){}});
 assert.equal(changed.status,201);assert.equal((await changed.json()).created,true);
-assert.equal(sqlite.prepare("SELECT COUNT(*) AS total FROM social_drafts WHERE kind='cecat_local_risk'").get().total,2);
-assert.equal(objects.size,4);
+assert.equal(sqlite.prepare("SELECT COUNT(*) AS total FROM social_drafts WHERE kind='cecat_local_risk'").get().total,3);
+assert.equal(objects.size,6);
 sqlite.close();
 
 console.log('CECAT local complementari: correcte');

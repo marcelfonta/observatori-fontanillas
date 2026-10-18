@@ -4439,17 +4439,20 @@ function validCecatResult(raw,date=new Date()) {
   if(!documentUrl||!documentKey||!documentSha256||!level||!targetDate||!Number.isFinite(issuedAt)||!Number.isFinite(validUntil)||!Number.isFinite(checkedAt))return null;
   if(validUntil<=date.getTime()||validUntil>date.getTime()+4*86400000||Math.abs(date.getTime()-checkedAt)>2*3600000)return null;
   const levelRank={green:1,yellow:2,orange:3,red:4};
-  const expectedStarts=[0,6,12,18];
-  const windows=(Array.isArray(raw.windows)?raw.windows:[]).map((item,index)=>{
+  const rawWindows=Array.isArray(raw.windows)?raw.windows:[];
+  const firstStart=Number(rawWindows[0]?.startHourUtc);
+  if(![0,6,12,18].includes(firstStart))return null;
+  const windows=rawWindows.map((item,index)=>{
     const startHourUtc=Number(item?.startHourUtc);
     const endHourUtc=Number(item?.endHourUtc);
     const windowLevel=Object.hasOwn(levelRank,item?.level)?item.level:'';
     const endAt=Date.parse(String(item?.endAt||''));
     const riskCounts=item?.riskCounts&&typeof item.riskCounts==='object'?item.riskCounts:{};
-    if(startHourUtc!==expectedStarts[index]||endHourUtc!==startHourUtc+6||!windowLevel||!Number.isFinite(endAt)||Number(riskCounts[windowLevel]||0)<5)return null;
+    const expectedStart=(firstStart+index*6)%24;
+    if(startHourUtc!==expectedStart||endHourUtc!==startHourUtc+6||!windowLevel||!Number.isFinite(endAt)||Number(riskCounts[windowLevel]||0)<5)return null;
     return {startHourUtc,endHourUtc,windowLabel:cleanText(item.windowLabel,60),endAt:new Date(endAt).toISOString(),level:windowLevel,levelLabel:{green:'Verd',yellow:'Groc',orange:'Taronja',red:'Vermell'}[windowLevel],riskCounts};
   });
-  if(windows.length!==4||windows.some(item=>!item)||Date.parse(windows[3].endAt)!==validUntil)return null;
+  if(windows.length!==4||windows.some(item=>!item)||windows.some((item,index)=>index>0&&Date.parse(item.endAt)<=Date.parse(windows[index-1].endAt))||Date.parse(windows[3].endAt)!==validUntil)return null;
   const strongest=windows.reduce((best,item)=>levelRank[item.level]>levelRank[best.level]?item:best,windows[0]);
   if(strongest.level!==level||!windows.some(item=>levelRank[item.level]>=3&&Date.parse(item.endAt)>date.getTime())||raw.analysisMethod!=='official-raster-local-patch-v1')return null;
   return {
