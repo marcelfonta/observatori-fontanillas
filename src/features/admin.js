@@ -8,6 +8,7 @@ const performanceMetrics={lcp:null,cls:null,inp:null,ttfb:null};
 const performanceObservers=[];
 let token='';
 let latestDiagnostic=null;
+let latestStatusPayload=null;
 let refreshTimer=null;
 let socialFilter='';
 let socialDrafts=[];
@@ -26,6 +27,40 @@ const formatDate=value=>{const date=new Date(value);return Number.isNaN(date.get
 export function serviceState(value){return value?{label:'Configurat',className:'is-ok'}:{label:'No configurat',className:'is-muted'};}
 export function analyticsServiceState({googleMeasurementId='',cloudflareBeacon=false,cloudflareEnabled=false}={}){if(cloudflareBeacon)return {label:'Cloudflare actiu',className:'is-ok',provider:'cloudflare',detected:true};if(cloudflareEnabled)return {label:'Actiu al domini',className:'is-ok',provider:'cloudflare',detected:false};if(googleMeasurementId)return {label:'Google actiu',className:'is-ok',provider:'google',detected:true};return {label:'No configurat',className:'is-muted',provider:'none',detected:false};}
 export function overallState(payload){if(!payload?.ok)return {label:'No disponible',className:'is-error'};if(!payload.station?.ok||!payload.alerts?.ok)return {label:'Cal revisar serveis',className:'is-warning'};return {label:'Sistema operatiu',className:'is-ok'};}
+const commandDomain=(key,label,state,detail,action=null)=>({key,label,state,detail,action});
+export function operationalOverview(payload={},timelapses=null){
+  const domains=[];
+  const stationOk=Boolean(payload.station?.ok);
+  const alertsOk=Boolean(payload.alerts?.ok);
+  domains.push(commandDomain('data','Dades i avisos',stationOk&&alertsOk?'ok':payload.ok?'warning':'error',stationOk&&alertsOk?`Estació al dia${payload.alerts?.active?` · ${payload.alerts.active} avisos actius`:' · avisos oficials verificats'}`:!stationOk?'L’estació no aporta una lectura vàlida ara mateix':'No s’han pogut verificar els avisos oficials',{label:'Revisar dades',href:'#admin-quality-pill'}));
+
+  const scheduler=payload.operations?.scheduler;
+  domains.push(commandDomain('automation','Automatitzacions',scheduler?.status==='healthy'?'ok':scheduler?'error':'warning',scheduler?.status==='healthy'?`Programador correcte · ${scheduler.detail?.jobs??0} processos`:scheduler?'El programador ha registrat una execució fallida':'Encara no hi ha cap comprovació del programador',{label:'Veure processos',href:'#admin-operations-pill'}));
+
+  const expectedChannels=['facebook','instagram','bluesky','telegram','threads','tiktok','bufferX'];
+  const credentials=payload.social?.channelCredentials||{};
+  const missing=expectedChannels.filter(channel=>channel==='tiktok'?!credentials.bufferTikTok:!credentials[channel]);
+  const socialOperation=payload.operations?.social;
+  const preflight=payload.social?.preflight;
+  const socialError=Boolean((socialOperation&&socialOperation.status!=='healthy')||(preflight&&preflight.status!=='healthy'));
+  const socialState=socialError?'error':missing.length?'warning':'ok';
+  const socialDetail=socialError?'La darrera comprovació o publicació social ha fallat':missing.length?`${missing.length} canals encara no tenen connexió completa`:'Set canals amb credencials; cap incidència registrada';
+  domains.push(commandDomain('social','Xarxes',socialState,socialDetail,{label:'Revisar xarxes',href:'#admin-social-pill'}));
+
+  let cameraState='pending';let cameraDetail='Comprovant el catàleg de timelapses…';
+  if(Array.isArray(timelapses)){
+    const latest=timelapses[0];
+    const failed=timelapses.find(item=>item.publication?.status==='failed');
+    if(!latest){cameraState='warning';cameraDetail='No hi ha cap timelapse preparat al catàleg';}
+    else if(failed){cameraState='warning';cameraDetail=`Vídeo preparat; publicació pendent o fallida del ${failed.date}`;}
+    else{cameraState='ok';cameraDetail=`Darrer vídeo preparat: ${latest.date}`;}
+  }
+  domains.push(commandDomain('camera','Càmera i timelapse',cameraState,cameraDetail,{label:'Veure timelapses',href:'#admin-camera-timelapses-title'}));
+
+  const actionable=domains.filter(domain=>domain.state==='error'||domain.state==='warning');
+  const hasError=domains.some(domain=>domain.state==='error');
+  return {state:hasError?'error':actionable.length?'warning':domains.some(domain=>domain.state==='pending')?'pending':'ok',label:hasError?'Requereix intervenció':actionable.length?`${actionable.length} ${actionable.length===1?'punt a revisar':'punts a revisar'}`:domains.some(domain=>domain.state==='pending')?'Completant comprovacions':'Tot preparat',summary:hasError?'Hi ha almenys un servei amb una fallada confirmada. Revisa primer les accions prioritàries.':actionable.length?'El servei continua disponible, però hi ha elements que convé resoldre abans de publicar o ampliar-lo.':domains.some(domain=>domain.state==='pending')?'Les dades principals són disponibles; falta completar alguna comprovació secundària.':'Dades, automatitzacions, xarxes i càmera no presenten incidències conegudes.',domains,actions:actionable.map(domain=>({...domain.action,domain:domain.label,detail:domain.detail,state:domain.state}))};
+}
 export function performanceRating(metric,value){
   if(!Number.isFinite(value))return 'pending';
   const thresholds={lcp:[2500,4000],inp:[200,500],cls:[0.1,0.25],ttfb:[800,1800]};
@@ -35,6 +70,17 @@ export function performanceRating(metric,value){
 
 function setCard(name,state,label,detail){const card=document.querySelector(`[data-admin-card="${name}"]`);card?.classList.remove('is-ok','is-warning','is-error','is-muted');card?.classList.add(state);text(`admin-${name}-state`,label);text(`admin-${name}-detail`,detail);}
 function setPill(id,label,state){const node=element(id);if(!node)return;node.textContent=label;node.className=`admin-status-pill ${state}`;}
+function renderOperationalOverview(payload,timelapses=null){
+  const overview=operationalOverview(payload,timelapses);
+  const stateClass=overview.state==='ok'?'is-ok':overview.state==='error'?'is-error':'is-warning';
+  const root=element('admin-command-center');if(root)root.dataset.state=overview.state;
+  setPill('admin-command-pill',overview.label,stateClass);text('admin-command-summary',overview.summary);
+  const domains=element('admin-command-domains');
+  if(domains)domains.replaceChildren(...overview.domains.map(domain=>{const row=document.createElement('article'),indicator=document.createElement('span'),copy=document.createElement('div'),label=document.createElement('strong'),detail=document.createElement('p'),link=document.createElement('a');row.className=`admin-command-domain is-${domain.state}`;indicator.className='admin-command-domain__indicator';indicator.setAttribute('aria-hidden','true');label.textContent=domain.label;detail.textContent=domain.detail;link.href=domain.action.href;link.textContent=domain.action.label;copy.append(label,detail);row.append(indicator,copy,link);return row;}));
+  const actions=element('admin-command-actions');
+  if(actions){actions.hidden=!overview.actions.length;actions.replaceChildren(...overview.actions.map(action=>{const link=document.createElement('a');link.href=action.href;link.className=`is-${action.state}`;link.innerHTML='<strong></strong><span></span>';link.querySelector('strong').textContent=action.domain;link.querySelector('span').textContent=action.detail;return link;}));}
+  return overview;
+}
 
 function performanceSnapshot(){return {...performanceMetrics};}
 function renderPerformanceSnapshot(){
@@ -158,7 +204,7 @@ function cameraTimelapseFeedback(message,state='ok'){
 }
 function renderCameraTimelapses(items=[]){
   const list=element('admin-camera-timelapse-list');const preview=element('admin-camera-timelapse-preview');if(!list)return;
-  if(!items.length){list.innerHTML='<p class="admin-social-diagnostic-empty">Encara no hi ha cap timelapse diari preparat.</p>';if(preview)preview.hidden=true;return;}
+  if(!items.length){list.innerHTML='<p class="admin-social-diagnostic-empty">Encara no hi ha cap timelapse diari preparat.</p>';if(preview)preview.hidden=true;if(latestStatusPayload)renderOperationalOverview(latestStatusPayload,items);return;}
   if(preview){preview.src=`${items[0].url}?v=${encodeURIComponent(items[0].createdAt||Date.now())}`;preview.hidden=false;}
   list.replaceChildren(...items.map(item=>{
     const row=document.createElement('div');const label=document.createElement('strong');const detail=document.createElement('span');const action=document.createElement('button');
@@ -169,10 +215,11 @@ function renderCameraTimelapses(items=[]){
     action.type='button';action.dataset.cameraTimelapseDate=item.date;action.textContent=done?'Publicat':processing?'Processant…':'Previsualitzar i publicar';action.disabled=done||processing;
     row.append(label,detail,action);return row;
   }));
+  if(latestStatusPayload)renderOperationalOverview(latestStatusPayload,items);
 }
 async function fetchCameraTimelapses(){
-  try{const payload=await adminApi('/admin/camera-timelapses');renderCameraTimelapses(payload.items||[]);cameraTimelapseFeedback('');}
-  catch(error){cameraTimelapseFeedback(`No s’han pogut carregar els timelapses: ${error.message}`,'error');recordIncident('Timelapses',error.message);}
+  try{const payload=await adminApi('/admin/camera-timelapses');renderCameraTimelapses(payload.items||[]);cameraTimelapseFeedback('');return payload.items||[];}
+  catch(error){cameraTimelapseFeedback(`No s’han pogut carregar els timelapses: ${error.message}`,'error');recordIncident('Timelapses',error.message);if(latestStatusPayload)renderOperationalOverview(latestStatusPayload,[]);return [];}
 }
 async function handleCameraTimelapseAction(event){
   const button=event.target.closest('[data-camera-timelapse-date]');if(!button)return;
@@ -371,10 +418,12 @@ async function renderPublicationReadiness(){
 }
 
 async function renderDashboard(payload,requestLatency){
+  latestStatusPayload=payload;
   const analytics=renderIntegrations(payload.integrations);
   renderSocialQueue(payload.social);
   renderOperations(payload.operations,payload.schedule);
-  latestDiagnostic={...payload,client:{webVersion:'22.31.3',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
+  renderOperationalOverview(payload);
+  latestDiagnostic={...payload,client:{webVersion:'22.33.0',requestLatencyMs:requestLatency,pwa:await localPwaStatus(),publication:await renderPublicationReadiness(),performance:renderPerformanceSnapshot(),analyticsConfigured:analytics.provider!=='none',analyticsProvider:analytics.provider,analyticsDetectedOnPage:Boolean(analytics.detected),oneSignalClientConfigured:Boolean(CONFIG.oneSignalAppId),socialAutomation:payload.social?.mode||'manual-review'},incidents:[...incidents]};
   const overall=overallState(payload);text('admin-overall-status',overall.label);text('admin-last-update',`Actualitzat ${formatDate(payload.generatedAt)} · ${requestLatency} ms`);
   setCard('worker',payload.ok?'is-ok':'is-error',payload.ok?'Operatiu':'Error',`V${payload.worker?.version||'—'} · ${payload.latencyMs??'—'} ms`);
   const stationOk=Boolean(payload.station?.ok);setCard('station',stationOk?'is-ok':'is-warning',stationOk?'Al dia':'Cal revisar',payload.station?.ageMinutes===null?'Antiguitat desconeguda':`${payload.station.ageMinutes} min d’antiguitat`);

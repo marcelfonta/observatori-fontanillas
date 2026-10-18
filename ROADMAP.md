@@ -1,5 +1,17 @@
 # Roadmap oficial
 
+## Web, observació espacial i xarxes 2026–2027 — Fase 1 en curs
+
+El roadmap conjunt de NASA, ESA/Copernicus/EUMETSAT, webcam, web i xarxes es
+manté a [`docs/ROADMAP-ESPAI-I-XARXES-2026-2027.md`](docs/ROADMAP-ESPAI-I-XARXES-2026-2027.md).
+
+- [x] Ordenar les millores per fiabilitat, claredat, context espacial i difusió.
+- [x] Començar la fase 1 amb un centre operatiu basat en dades ja verificades.
+- [ ] Validar la fase 1 en producció abans d’ampliar la portada o afegir noves
+  capes satel·litàries.
+- [ ] Executar les fases 2–6 només després de superar la porta de qualitat de la
+  fase anterior.
+
 ## Confiança multimodel i observació satel·litària — Implementat i activat
 
 - [x] Afegir l’ensemble ICON d’Open-Meteo a la previsió i mostrar dispersió, rang central i percentatge de membres amb pluja.

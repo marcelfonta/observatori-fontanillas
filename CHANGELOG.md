@@ -1,5 +1,16 @@
 # Changelog
 
+## En preparació — Centre operatiu i roadmap espacial · 2026-10-18
+
+- Unifica el roadmap de web i xarxes amb les aportacions de NASA, ESA,
+  Copernicus i EUMETSAT en sis fases amb portes de qualitat.
+- Afegeix a l’administració una lectura operativa de dades, automatitzacions,
+  xarxes i timelapses, amb incidències prioritzades i accés al diagnòstic.
+- Reutilitza l’estat real existent i no introdueix cap petició externa ni cap
+  acció destructiva nova.
+- Manté la càrrega progressiva: l’estat de càmera s’incorpora quan arriba el
+  catàleg de vídeos sense bloquejar la resta del panell.
+
 ## En preparació — Mapa mundial de terratrèmols · 2026-10-17
 
 - Incorpora una pestanya de terratrèmols dins dels visors de Medi Ambient amb dades instrumentals mundials de l’USGS.
