@@ -3649,9 +3649,11 @@ function parseSocialChannels(value) {
 }
 
 function socialDraftPayload(row, publications = []) {
+  const channels=parseSocialChannels(row?.channels);
   return {
     ...row,
-    channels:parseSocialChannels(row?.channels),
+    channels,
+    channelContent:Object.fromEntries(channels.map(channel=>[channel,socialChannelContent(row,channel)])),
     publications:(publications || []).map(entry => ({ ...entry, response_code:entry.response_code == null ? null : Number(entry.response_code) })),
   };
 }
@@ -3775,6 +3777,49 @@ export function socialPostText(draft, maxLength = 3900) {
     }
   }
   return graphemes.length <= maxLength ? text : `${graphemes.slice(0, Math.max(1, maxLength - 1)).join('')}…`;
+}
+
+const SOCIAL_CHANNEL_EDITORIAL_PROFILES={
+  facebook:{label:'Facebook',maxLength:6000,format:'Context i enllaç',media:'Targeta 4:5 o vídeo 16:9'},
+  instagram:{label:'Instagram',maxLength:2200,format:'Impacte visual',media:'Vertical 4:5 · Reel 9:16'},
+  tiktok:{label:'TikTok',maxLength:300,format:'Un sol fenomen',media:'Vídeo 9:16 · 15–35 s'},
+  youtube:{label:'YouTube',maxLength:3000,format:'Explicació i arxiu',media:'Vídeo 16:9 · Short 9:16'},
+  x:{label:'X',maxLength:X_WEIGHTED_SAFE_LENGTH,format:'Actualització ràpida',media:'Targeta o vídeo breu'},
+  bluesky:{label:'Bluesky',maxLength:300,format:'Actualització amb font',media:'Targeta accessible'},
+  threads:{label:'Threads',maxLength:500,format:'Actualització conversacional',media:'Targeta 4:5'},
+  telegram:{label:'Telegram',maxLength:1000,format:'Butlletí directe',media:'Targeta amb enllaç'},
+};
+
+function truncateSocialText(value,maxLength){
+  const graphemes=Array.from(String(value||''));
+  return graphemes.length<=maxLength?graphemes.join(''):`${graphemes.slice(0,Math.max(1,maxLength-1)).join('').trimEnd()}…`;
+}
+
+function socialTextWithSource(prefix,source,maxLength){
+  const suffix=source?`\n\nFont i detall: ${source}`:'';
+  if(Array.from(suffix).length>=maxLength)return truncateSocialText(prefix,maxLength);
+  const remaining=Math.max(1,maxLength-Array.from(suffix).length);
+  return `${truncateSocialText(prefix,remaining)}${suffix}`;
+}
+
+export function socialChannelContent(draft,channel){
+  const profile=SOCIAL_CHANNEL_EDITORIAL_PROFILES[channel]||{label:channel,maxLength:3900,format:'Publicació',media:'Targeta'};
+  const title=cleanText(draft?.title,180);
+  const body=cleanText(draft?.body,3900);
+  const source=cleanText(draft?.source_url,500);
+  let lead=[title,body].filter(Boolean).join('\n\n');
+  if(channel==='instagram')lead=[title,body,source?'Consulta el detall a l’enllaç del perfil.':'','#MeteoFontanillas #SantCeloni'].filter(Boolean).join('\n\n');
+  else if(channel==='tiktok')lead=[title,body.split(/\n\s*\n/)[0],'Dades i evolució local · Meteo Fontanillas'].filter(Boolean).join('\n\n');
+  else if(channel==='youtube')lead=[title,body,'Dades, fonts i arxiu de l’episodi a Meteo Fontanillas.'].filter(Boolean).join('\n\n');
+  else if(channel==='x'||channel==='bluesky'||channel==='threads')lead=[title,body.split(/\n\s*\n/)[0]].filter(Boolean).join('\n\n');
+  const keepsSource=channel!=='instagram';
+  const text=keepsSource?socialTextWithSource(lead,source,profile.maxLength):truncateSocialText(lead,profile.maxLength);
+  return {channel,label:profile.label,format:profile.format,media:profile.media,maxLength:profile.maxLength,length:Array.from(text).length,text,sourceIncluded:Boolean(source&&text.includes(source))};
+}
+
+export function socialChannelPostText(draft,channel,maxLength=null){
+  const adapted=socialChannelContent(draft,channel);
+  return maxLength&&maxLength<adapted.maxLength?truncateSocialText(adapted.text,maxLength):adapted.text;
 }
 
 function compactDaypartSocialText(day,when){
@@ -5687,7 +5732,7 @@ async function publishFacebook(draft, env, beforeSend) {
   await beforeSend();
   const { payload, responseCode } = await metaGraphRequest(env, `${assets.pageId}/photos`, {
     method:'POST', accessToken:assets.pageToken,
-    params:{ caption:socialPostText(draft, 6000), url:imageUrl, published:true },
+    params:{ caption:socialChannelPostText(draft,'facebook'), url:imageUrl, published:true },
   });
   if (!payload.id) throw Object.assign(new Error('Facebook no ha retornat l’identificador de la publicació.'), { status:502, responseCode });
   return { remoteId:String(payload.id), responseCode };
@@ -5699,7 +5744,7 @@ async function publishInstagram(draft, env, beforeSend) {
   const imageUrl = await ensureSocialCardUrl(draft, env, 'jpeg');
   const created = await metaGraphRequest(env, `${assets.instagramId}/media`, {
     method:'POST', accessToken:assets.pageToken,
-    params:{ image_url:imageUrl, caption:socialPostText(draft, 2200) },
+    params:{ image_url:imageUrl, caption:socialChannelPostText(draft,'instagram') },
   });
   if (!created.payload.id) throw Object.assign(new Error('Instagram no ha pogut preparar la imatge.'), { status:502, responseCode:created.responseCode });
   let containerReady = false;
@@ -6240,7 +6285,7 @@ async function threadsGraphRequest(env, path, { method='GET', params={} } = {}) 
 }
 
 async function publishThreads(draft, env, beforeSend) {
-  const text = socialPostText(draft, 500);
+  const text = socialChannelPostText(draft,'threads');
   const imageUrl=await ensureSocialCardUrl(draft,env);
   const created = await threadsGraphRequest(env, 'me/threads', {
     method:'POST',
@@ -6425,7 +6470,7 @@ async function publishTelegram(draft, env, beforeSend) {
   await beforeSend();
   const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, {
     method:'POST', headers:{ 'Content-Type':'application/json' },
-    body:JSON.stringify({ chat_id:env.TELEGRAM_CHANNEL_ID, photo:imageUrl, caption:socialPostText(draft, 1000) }),
+    body:JSON.stringify({ chat_id:env.TELEGRAM_CHANNEL_ID, photo:imageUrl, caption:socialChannelPostText(draft,'telegram') }),
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || payload.ok !== true) throw Object.assign(new Error(payload.description || `Telegram ha respost ${response.status}.`), { status:502, responseCode:response.status });
@@ -6454,7 +6499,7 @@ async function publishBluesky(draft, env, beforeSend) {
     const details = cleanText(await imageResponse.text().catch(() => ''), 500);
     console.error('Bluesky card fallback', JSON.stringify({ draftId:draft.id, status:imageResponse.status, details }));
   }
-  const post = { '$type':'app.bsky.feed.post', text:socialPostText(draft, 300), createdAt:new Date().toISOString(), langs:['ca'] };
+  const post = { '$type':'app.bsky.feed.post', text:socialChannelPostText(draft,'bluesky'), createdAt:new Date().toISOString(), langs:['ca'] };
   if (imageEmbed) post.embed = imageEmbed;
   await beforeSend();
   const recordResponse = await fetch(`${service}/xrpc/com.atproto.repo.createRecord`, {

@@ -98,5 +98,7 @@ assert.equal(socialDraftPayload.limit,6);
 assert.equal(socialDraftPayload.offset,0);
 assert.equal(socialDraftPayload.hasMore,false);
 assert.equal(socialDraftPayload.drafts.length,1);
+assert.deepEqual(Object.keys(socialDraftPayload.drafts[0].channelContent),['facebook','instagram','bluesky','telegram']);
+assert.match(socialDraftPayload.drafts[0].channelContent.instagram.media,/Vertical 4:5/);
 
 console.log('Test d’Administració V21: correcte');
