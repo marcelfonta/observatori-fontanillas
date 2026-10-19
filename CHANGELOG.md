@@ -1,5 +1,12 @@
 # Changelog
 
+## En preparació — Confirmació real dels timelapses a TikTok · 2026-10-19
+
+- Un timelapse ja no consta com a publicat a TikTok només perquè Buffer n'hagi
+  acceptat la petició: cal que l'estat final sigui `sent` i tingui data d'enviament.
+- Les publicacions en procés conserven el mateix identificador de Buffer i es
+  tornen a comprovar sense crear duplicats; els rebutjos mostren l'error real.
+
 ## En preparació — Catàleg sísmic ICGC integrat · 2026-10-18
 
 - Fusiona al mapa els terratrèmols locals i regionals de l’ICGC/SISMOCAT amb
