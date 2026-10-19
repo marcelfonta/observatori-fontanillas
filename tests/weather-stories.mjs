@@ -33,7 +33,7 @@ assert.deepEqual(incomplete,[],'Una jornada incompleta no pot semblar una histò
 
 const [html,app,worker,shell,headers]=await Promise.all(['index.html','src/app.js','service-worker.js','src/features/portal-shell.js','_headers'].map(file=>readFile(new URL(`../${file}`,import.meta.url),'utf8')));
 for(const id of ['stories-page-title','weather-stories','weather-stories-list','weather-story-detail','weather-stories-method-title'])assert.ok(html.includes(`id="${id}"`),`Falta ${id}.`);
-assert.match(app,/initWeatherStories\(\)/);
+assert.match(app,/module=>module\.initWeatherStories\(\)/);
 assert.match(app,/updateWeatherStoriesSafely\(\{history:latestHistory\}\)/);
 assert.match(worker,/src\/features\/weather-stories\.js/);
 assert.match(shell,/Històries meteo/);
