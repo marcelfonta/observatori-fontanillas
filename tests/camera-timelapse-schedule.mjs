@@ -19,6 +19,8 @@ assert.match(generator,/mv "\$OUTPUT_TMP" "\$OUTPUT"/);
 assert.match(generator,/SOCIAL_OUTPUT="\$OUTPUT_DIR\/meteo-fontanillas-nord-\$DATE-social\.mp4"/);
 assert.match(generator,/crop=ih\*0\.90\*16\/9:ih\*0\.90:\(iw-ih\*0\.90\*16\/9\)\/2:0,scale=960:540/);
 assert.match(generator,/scale=540:304,pad=540:960:0:\(oh-ih\)\/2:color=#101820/);
+assert.match(generator,/SOCIAL_FRAME_RATE=30/);
+assert.match(generator,/-vf "\$SOCIAL_FILTER" -r "\$SOCIAL_FRAME_RATE"/);
 assert.match(generator,/-filter_threads 1/);
 assert.equal((generator.match(/MALLOC_ARENA_MAX=1 ffmpeg/g) || []).length,3);
 assert.equal((generator.match(/-filter_complex_threads 1/g) || []).length,3);

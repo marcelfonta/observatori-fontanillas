@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-19 — Timelapse vertical compatible amb TikTok
+
+- La versió social del timelapse es codifica ara a 30 fps, dins del rang de
+  23–60 fps exigit per TikTok, sense augmentar els fils d'FFmpeg ni el consum
+  de memòria de la Raspberry.
+- La prova de regressió fixa explícitament aquesta freqüència per evitar que
+  una futura simplificació torni a generar vídeos rebutjats per TikTok.
+
 ## En preparació — Confirmació real dels timelapses a TikTok · 2026-10-19
 
 - Un timelapse ja no consta com a publicat a TikTok només perquè Buffer n'hagi
