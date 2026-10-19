@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-19 — Fiabilitat i rendiment després de l’auditoria
+
+- La previsió comparteix una única càrrega en curs entre l’arrencada, `pageshow`,
+  `focus`, canvis de visibilitat i recuperacions de xarxa; així evita duplicar
+  sis consultes a Open‑Meteo i provocar respostes `429`.
+- La Raspberry genera i puja una miniatura pública de 960 px de la càmera. La
+  portada i la vista de webcams la fan servir, mentre l’ampliació conserva la
+  versió completa amb privacitat.
+- Cada ruta activa només inicia els serveis que necessita: la resta ja no
+  consulta previsió, qualitat, avisos, dos històrics, webcam o visors ocults.
+  La lectura actual continua alimentant l’estat de connexió compartit.
+- La imatge principal declara dimensions i els controls «Imatge recent»,
+  «Segueix-nos», marca lateral i Meteo IA fan coincidir el text visible amb el
+  nom accessible.
+
 ## 2026-10-19 — Timelapse vertical compatible amb TikTok
 
 - La versió social del timelapse es codifica ara a 30 fps, dins del rang de

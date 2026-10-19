@@ -25,6 +25,7 @@ const CAMERA_IMAGE_MAX_BYTES = 16 * 1024 * 1024;
 const CAMERA_TIMELAPSE_MAX_BYTES = 40 * 1024 * 1024;
 const CAMERA_LATEST_KEY = 'nord/latest.jpg';
 const CAMERA_BRANDED_KEY = 'nord/latest-branded.jpg';
+const CAMERA_PREVIEW_KEY = 'nord/latest-preview.jpg';
 const CAMERA_TIMELAPSE_KEY = 'nord/timelapses/latest-preview.mp4';
 const CAMERA_TIMELAPSE_DAILY_PREFIX = 'nord/timelapses/daily/';
 const CAMERA_TIMELAPSE_VERTICAL_KEY = 'nord/timelapses/latest-vertical-preview.mp4';
@@ -4196,9 +4197,14 @@ async function uploadCameraImage(request, env, variant = 'original') {
   if (image.byteLength !== contentLength || image.byteLength > CAMERA_IMAGE_MAX_BYTES || !jpegSignatureIsValid(image)) {
     return json({ error:'La càrrega no és un JPEG complet i vàlid.' }, 422, 'no-store');
   }
-  const branded = variant === 'branded';
-  const key = branded ? CAMERA_BRANDED_KEY : CAMERA_LATEST_KEY;
-  const publicPath = branded ? '/camera/nord/latest-branded.jpg' : '/camera/nord/latest.jpg';
+  const cameraVariants = {
+    original:{ key:CAMERA_LATEST_KEY, publicPath:'/camera/nord/latest.jpg' },
+    branded:{ key:CAMERA_BRANDED_KEY, publicPath:'/camera/nord/latest-branded.jpg' },
+    preview:{ key:CAMERA_PREVIEW_KEY, publicPath:'/camera/nord/latest-preview.jpg' },
+  };
+  const selected = cameraVariants[variant];
+  if (!selected) return json({ error:'La variant de càmera no és vàlida.' }, 400, 'no-store');
+  const { key, publicPath } = selected;
   await env.CAMERA_BUCKET.put(key, image, {
     httpMetadata:{ contentType:'image/jpeg', cacheControl:'public, max-age=60, stale-while-revalidate=300' },
     customMetadata:{ capturedAt, uploadedAt:new Date().toISOString(), camera:'nord', variant },
@@ -4503,9 +4509,19 @@ async function recoverCameraTimelapsePublications(env) {
 async function serveLatestCameraImage(request, env, variant = 'original') {
   if (!env.CAMERA_BUCKET) return json({ error:"L'emmagatzematge de la càmera encara no està configurat." }, 503, 'no-store');
   const branded = variant === 'branded';
+  const preview = variant === 'preview';
   // L'original net es conserva a R2 només com a còpia privada. Totes les rutes
   // públiques serveixen la variant filtrada i retolada generada a la Raspberry.
-  const object = await env.CAMERA_BUCKET.get(CAMERA_BRANDED_KEY);
+  let object = await env.CAMERA_BUCKET.get(preview ? CAMERA_PREVIEW_KEY : CAMERA_BRANDED_KEY);
+  let previewFallback = false;
+  // El frontal pot desplegar-se abans que la Raspberry hagi pujat la primera
+  // miniatura. En aquest interval servim la variant pública completa perquè la
+  // webcam no desaparegui, i passem automàticament a la miniatura tan bon punt
+  // existeixi.
+  if (!object && preview) {
+    object = await env.CAMERA_BUCKET.get(CAMERA_BRANDED_KEY);
+    previewFallback = Boolean(object);
+  }
   if (!object) return json({ error:'Encara no hi ha cap captura pública.' }, 404, 'no-store');
   const headers = new Headers();
   if (typeof object.writeHttpMetadata === 'function') object.writeHttpMetadata(headers);
@@ -4513,7 +4529,8 @@ async function serveLatestCameraImage(request, env, variant = 'original') {
   headers.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
   headers.set('Access-Control-Allow-Origin', '*');
   headers.set('X-Content-Type-Options', 'nosniff');
-  headers.set('Content-Disposition', `inline; filename="meteo-fontanillas-nord${branded ? '-marca' : '-privacitat'}.jpg"`);
+  if (previewFallback) headers.set('X-Camera-Preview-Fallback', 'full');
+  headers.set('Content-Disposition', `inline; filename="meteo-fontanillas-nord${preview ? '-miniatura' : branded ? '-marca' : '-privacitat'}.jpg"`);
   const capturedAt = object.customMetadata?.capturedAt;
   if (capturedAt) {
     headers.set('X-Captured-At', capturedAt);
@@ -7243,10 +7260,12 @@ export default {
       if (request.method === 'POST' && socialVideoUploadMatch) return uploadSocialVideo(request, env, socialVideoUploadMatch[1]);
       if (request.method === 'PUT' && url.pathname === '/camera/nord/upload') return uploadCameraImage(request, env);
       if (request.method === 'PUT' && url.pathname === '/camera/nord/upload-branded') return uploadCameraImage(request, env, 'branded');
+      if (request.method === 'PUT' && url.pathname === '/camera/nord/upload-preview') return uploadCameraImage(request, env, 'preview');
       if (request.method === 'PUT' && url.pathname === '/camera/nord/timelapse-upload') return uploadCameraTimelapse(request, env);
       if (request.method === 'POST' && url.pathname === '/camera/nord/timelapse-publish') return cameraTimelapseAutomaticPublish(request, env);
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest.jpg') return serveLatestCameraImage(request, env);
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest-branded.jpg') return serveLatestCameraImage(request, env, 'branded');
+      if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest-preview.jpg') return serveLatestCameraImage(request, env, 'preview');
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/timelapse-preview.mp4') return serveCameraTimelapse(request, env);
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/timelapse-vertical-preview.mp4') return serveCameraTimelapse(request, env, '', 'vertical');
       const cameraTimelapseMatch = url.pathname.match(/^\/camera\/nord\/timelapses\/(\d{4}-\d{2}-\d{2})\.mp4$/);
