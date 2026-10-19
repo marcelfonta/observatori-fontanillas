@@ -4351,12 +4351,13 @@ async function publishCameraTimelapse(env, date, mode = 'manual') {
       let result;
       if (channel === 'instagram') result = await publishInstagramReel({ videoUrl:verticalUrl, caption, containerId:old.reelContainerId || '' }, env);
       else if (channel === 'facebook') result = await publishFacebookReel({ videoUrl:landscapeUrl, caption, videoId:old.facebookReelVideoId || '', uploadUrl:old.facebookReelUploadUrl || '', stage:old.facebookReelStage || '' }, env);
-      else if (channel === 'tiktok') result = await publishBufferPublicVideo(env, { service:'tiktok', label:'TikTok', videoUrl:verticalUrl, text:caption });
+      else if (channel === 'tiktok') result = await publishBufferPublicVideo(env, { service:'tiktok', label:'TikTok', videoUrl:verticalUrl, text:caption, postId:mode==='manual'&&!old.pending?'':old.remoteId || '' });
       else result = await dispatchCameraTimelapseToYoutube(env, { date, videoUrl:landscapeUrl });
       outcomes.push({ channel, ok:true, remoteId:result.remoteId });
     } catch (error) {
       outcomes.push({
         channel, ok:false, pending:Boolean(error.pending), error:cleanText(error.message, 500),
+        remoteId:cleanText(error.remoteId, 100) || undefined,
         reelContainerId:cleanText(error.reelContainerId, 100) || undefined,
         facebookReelVideoId:cleanText(error.facebookReelVideoId, 100) || undefined,
         facebookReelUploadUrl:cleanText(error.facebookReelUploadUrl, 1000) || undefined,
@@ -4371,7 +4372,20 @@ async function publishCameraTimelapse(env, date, mode = 'manual') {
   return { ok:failed.length === 0, status:failed.length ? (pending ? 202 : 502) : 200, ...state };
 }
 
-async function publishBufferPublicVideo(env, { service, label, videoUrl, text }) {
+async function bufferPostDelivery(env, postId, label) {
+  const data=await bufferGraphql(env, `query PostDelivery($input: PostInput!) {
+    post(input: $input) { id status sentAt externalLink error { message supportUrl } }
+  }`, { input:{ id:postId } });
+  const post=data.post;
+  if(!post?.id)throw Object.assign(new Error(`Buffer no troba la publicació de ${label}.`),{status:502,remoteId:postId});
+  const status=String(post.status||'').toLowerCase();
+  if(status==='sent'&&post.sentAt)return {remoteId:String(post.id),remoteStatus:status,sentAt:post.sentAt,externalLink:post.externalLink||null};
+  if(status==='error')throw Object.assign(new Error(cleanText(post.error?.message||`TikTok ha rebutjat la publicació enviada per Buffer.`,500)),{status:502,remoteId:String(post.id),remoteStatus:status});
+  throw Object.assign(new Error(`${label} encara no ha confirmat la publicació (${status||'estat desconegut'}).`),{status:202,pending:true,remoteId:String(post.id),remoteStatus:status||'unknown'});
+}
+
+async function publishBufferPublicVideo(env, { service, label, videoUrl, text, postId = '' }) {
+  if(postId)return bufferPostDelivery(env,postId,label);
   const channel = await bufferChannel(env, service, label);
   const input = {
     text:truncateBufferText(text, 150), channelId:channel.id,
@@ -4386,7 +4400,8 @@ async function publishBufferPublicVideo(env, { service, label, videoUrl, text })
   }`, { input });
   const result = data.createPost || {};
   if (result.message || !result.post?.id) throw Object.assign(new Error(cleanText(result.message || `Buffer no ha creat la publicació de ${label}.`, 500)), { status:502 });
-  return { remoteId:String(result.post.id), remoteStatus:result.post.status || 'sending' };
+  if(String(result.post.status||'').toLowerCase()==='sent'&&result.post.sentAt)return {remoteId:String(result.post.id),remoteStatus:'sent',sentAt:result.post.sentAt,externalLink:result.post.externalLink||null};
+  return bufferPostDelivery(env,String(result.post.id),label);
 }
 
 async function dispatchCameraTimelapseToYoutube(env, { date, videoUrl }) {
@@ -4460,7 +4475,21 @@ async function recoverCameraTimelapsePublications(env) {
   const dates = (listed.objects || []).map(item => item.key.match(/(\d{4}-\d{2}-\d{2})\.json$/)?.[1]).filter(Boolean).sort().reverse();
   const results = [];
   for (const date of dates.slice(0, 3)) {
-    const state = await readCameraTimelapsePublication(env, date);
+    let state = await readCameraTimelapsePublication(env, date);
+    if(state?.status==='published'){
+      const tiktok=state.outcomes?.find(item=>item?.channel==='tiktok'&&item?.remoteId);
+      if(tiktok){
+        try{
+          const delivery=await bufferPostDelivery(env,tiktok.remoteId,'TikTok');
+          state={...state,outcomes:state.outcomes.map(item=>item===tiktok?{...item,...delivery,ok:true}:item),verifiedAt:new Date().toISOString()};
+          await writeCameraTimelapsePublication(env,date,state);
+        }catch(error){
+          const pending=Boolean(error.pending);
+          state={...state,status:pending?'processing':'failed',outcomes:state.outcomes.map(item=>item===tiktok?{channel:'tiktok',ok:false,pending,error:cleanText(error.message,500),remoteId:tiktok.remoteId}:item),verifiedAt:new Date().toISOString()};
+          await writeCameraTimelapsePublication(env,date,state);
+        }
+      }
+    }
     // Només reprèn publicacions que realment havien començat. Els vídeos en
     // estat «ready» han estat descartats per la selecció automàtica i han de
     // quedar disponibles exclusivament per a una publicació manual.
