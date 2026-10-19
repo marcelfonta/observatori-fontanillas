@@ -32,7 +32,7 @@ function mountSocialGroup(container,className,variant){
   direct.forEach(([key,label])=>{const link=socialLink(key,label,variant);if(link)group.append(link);});
   if(variant==='header'&&group.children.length){
     const more=document.createElement('details');more.className='header-social-more';
-    const summary=document.createElement('summary');summary.setAttribute('aria-label','Veure totes les xarxes socials');summary.title='Segueix-nos';summary.innerHTML='<span aria-hidden="true">＋</span><b>Segueix-nos</b>';
+    const summary=document.createElement('summary');summary.setAttribute('aria-label','Segueix-nos: veure totes les xarxes socials');summary.title='Segueix-nos';summary.innerHTML='<span aria-hidden="true">＋</span><b>Segueix-nos</b>';
     const panel=document.createElement('div');panel.className='header-social-more__panel';
     NETWORKS.filter(([key])=>!['instagram','youtube','tiktok'].includes(key)).forEach(([key,label])=>{const link=socialLink(key,label,'more');if(link)panel.append(link);});
     more.append(summary,panel);group.append(more);

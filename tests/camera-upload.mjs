@@ -87,6 +87,25 @@ assert.deepEqual(new Uint8Array(await servedPublic.arrayBuffer()), jpeg);
 assert.ok(objects.has('nord/latest.jpg'));
 assert.ok(objects.has('nord/latest-branded.jpg'));
 
+const previewFallback = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/latest-preview.jpg'), env, context);
+assert.equal(previewFallback.status, 200, 'La webcam ha de continuar visible abans de la primera miniatura.');
+assert.equal(previewFallback.headers.get('X-Camera-Preview-Fallback'), 'full');
+assert.deepEqual(new Uint8Array(await previewFallback.arrayBuffer()), jpeg);
+
+const previewUpload = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/upload-preview', {
+  method:'PUT',
+  headers:{ Authorization:`Bearer ${secret}`, 'Content-Type':'image/jpeg', 'Content-Length':String(jpeg.byteLength), 'X-Captured-At':capturedAt },
+  body:jpeg,
+}), env, context);
+assert.equal(previewUpload.status, 201);
+assert.equal((await previewUpload.json()).url, 'https://fonta-meteo.example/camera/nord/latest-preview.jpg');
+const servedPreview = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/latest-preview.jpg'), env, context);
+assert.equal(servedPreview.status, 200);
+assert.match(servedPreview.headers.get('Content-Disposition'), /-miniatura\.jpg/);
+assert.equal(servedPreview.headers.get('X-Captured-At'), capturedAt);
+assert.equal(servedPreview.headers.get('X-Camera-Preview-Fallback'), null);
+assert.ok(objects.has('nord/latest-preview.jpg'));
+
 const mp4 = new Uint8Array(4096).fill(0);
 mp4.set([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]);
 const timelapse = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/timelapse-upload', {

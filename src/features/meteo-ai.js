@@ -559,7 +559,7 @@ async function hydrateWidgetContext(){
 export function initMeteoAIWidget(){
   if(document.getElementById('meteo-ai-widget'))return;
   const root=document.createElement('aside');root.className='meteo-ai-widget';root.id='meteo-ai-widget';
-  const toggle=document.createElement('button');toggle.className='meteo-ai-widget__toggle';toggle.type='button';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','meteo-ai-widget-panel');toggle.setAttribute('aria-label','Obrir el xat ràpid de Meteo IA');toggle.innerHTML='<span>IA</span><b>Pregunta al temps</b>';
+  const toggle=document.createElement('button');toggle.className='meteo-ai-widget__toggle';toggle.type='button';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','meteo-ai-widget-panel');toggle.setAttribute('aria-label','Pregunta al temps amb Meteo IA');toggle.innerHTML='<span>IA</span><b>Pregunta al temps</b>';
   const panel=document.createElement('div');panel.className='meteo-ai-widget__panel';panel.id='meteo-ai-widget-panel';panel.hidden=true;
   panel.innerHTML='<header><span><i></i><b>Meteo IA</b><small>Una pregunta ràpida</small></span><button type="button" aria-label="Tancar el xat">×</button></header><div class="meteo-ai-widget__messages"><p>Pregunta pel temps, una data concreta o qualsevol ciutat del món.</p></div><form><label for="meteo-ai-widget-input">Pregunta meteorològica</label><div><input id="meteo-ai-widget-input" type="text" maxlength="160" autocomplete="off" placeholder="Ex.: Demà plourà a Sant Celoni?" required><button type="submit">Enviar</button></div></form><a class="meteo-ai-widget__continue" href="./?page=meteo-ia" hidden>Continuar a Meteo IA →</a>';
   root.append(panel,toggle);document.body.append(root);

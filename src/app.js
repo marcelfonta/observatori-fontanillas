@@ -53,6 +53,12 @@ let chartPeriod = '24h';
 let chartData = null;
 let chartHistory = [];
 let loadInFlight = null;
+let forecastInFlight = null;
+const ACTIVE_PAGE=document.body.dataset.page || document.documentElement.dataset.portalPage || 'inici';
+const HISTORY_PAGES=new Set(['inici','meteo-ia','estacio','verificacio','histories','centre-dades']);
+const QUALITY_PAGES=new Set(['inici','estacio','centre-dades']);
+const ALERT_PAGES=new Set(['inici','meteo-ia','prediccio','avisos']);
+const FORECAST_PAGES=new Set(['inici','meteo-ia','prediccio','llarg-termini','videos','verificacio','cel','avisos','histories']);
 
 const OFFLINE_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hores
 function updateWeatherStoriesSafely(payload){
@@ -81,13 +87,21 @@ function refreshCharts(data, history = [], period = chartPeriod) {
 async function enableCharts(){try{await loadChartJs();chartsAvailable=true;if(chartData)refreshCharts(chartData,chartHistory,chartPeriod);}catch(error){console.warn('Les gràfiques no estan disponibles ara mateix.',error);}}
 function updateClock(){ setText('header-time',new Intl.DateTimeFormat(getLocale(),{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Europe/Madrid'}).format(new Date())); }
 function setUpdated(value){ const date=value?new Date(String(value).replace(' ','T')):new Date(); const safe=Number.isNaN(date.getTime())?new Date():date; setText('updated-time',new Intl.DateTimeFormat(getLocale(),{hour:'2-digit',minute:'2-digit'}).format(safe)); const mins=Math.max(0,Math.round((Date.now()-safe.getTime())/60000)); setText('updated-relative',mins<2?'ara mateix':`fa ${mins} min`); }
-async function loadForecastSuite(){
+async function performForecastLoad(){
   const cached=getLastCachedForecast();
   if(cached){renderForecast(cached.data);updateHomeNow({forecast:cached.data});setText('forecast-status',`Previsió desada · fa ${cached.ageMinutes} min`);}
   const forecastTask=fetchForecast().then(data=>{renderForecast(data);updateHomeNow({forecast:data});initWhenVisible('#cel-nocturn',()=>renderAstronomy(data));updateSituation({forecast:data});updateMeteoAIContext({forecast:data});updateShareContext({forecast:data});}).catch(error=>{console.warn('Previsió principal temporalment no disponible.',error);if(cached){setText('forecast-status',`Última previsió disponible · fa ${cached.ageMinutes} min`);updateHomeNow({forecast:cached.data});initWhenVisible('#cel-nocturn',()=>renderAstronomy(cached.data));updateSituation({forecast:cached.data});updateMeteoAIContext({forecast:cached.data});updateShareContext({forecast:cached.data});}else{renderForecastError();updateHomeNow({forecast:null});initWhenVisible('#cel-nocturn',()=>renderAstronomy(null));updateSituation({forecast:null});updateMeteoAIContext({forecast:null});updateShareContext({forecast:null});}});
   const modelsTask=fetchModelComparison().then(data=>{renderModelComparison(data);updateHomeNow({models:data});}).catch(error=>{console.warn('Comparació de models temporalment no disponible.',error);renderModelError();updateHomeNow({models:null});});
   await Promise.allSettled([forecastTask,modelsTask]);
   forecastFetchedAt=Date.now();
+}
+function loadForecastSuite(){
+  if(forecastInFlight)return forecastInFlight;
+  const pending=performForecastLoad().finally(()=>{
+    if(forecastInFlight===pending)forecastInFlight=null;
+  });
+  forecastInFlight=pending;
+  return pending;
 }
 
 let longRangeLoaded=false;
@@ -138,9 +152,14 @@ async function performLoad(){
     const localContext=recordReading(latest);
     let context;
     try {
-      await loadHistory();
-      context=summarizeRemoteHistory(latest,latestHistory,localContext.stats);
-      renderSummary(context.summary,latestHistory.length);
+      if(HISTORY_PAGES.has(ACTIVE_PAGE)){
+        await loadHistory();
+        context=summarizeRemoteHistory(latest,latestHistory,localContext.stats);
+        renderSummary(context.summary,latestHistory.length);
+      }else{
+        context=localContext;
+        latestHistory=context.history;
+      }
     } catch(historyError) {
       console.warn('Històric remot no disponible.',historyError);
       context=localContext;
@@ -192,30 +211,30 @@ document.addEventListener('observatori:data-tab-change',event=>{
 initLanguage();
 initHomeNow();
 initPortal();
-initEarthObservation();
-initEstofexLocal();
-initWeatherStories();
+if(ACTIVE_PAGE==='terra')initEarthObservation();
+if(ACTIVE_PAGE==='avisos')initEstofexLocal();
+if(ACTIVE_PAGE==='histories')initWeatherStories();
 initHeaderTools();
-initSeasonalOutlook();
+if(ACTIVE_PAGE==='llarg-termini')initSeasonalOutlook();
 if(['estacio','centre-dades'].includes(document.body.dataset.page))initStationRecords(fetchStationRecords);
 if(document.body.dataset.page==='inici')initWhenVisible('.metrics-grid',enableCharts,'0px 0px');
 if(document.body.dataset.page==='estacio')initWhenVisible('#calculats',enableCharts,'0px 0px');
 if(document.body.dataset.page==='centre-dades')initWhenVisible('#tendencies',enableCharts,'200px 0px');
 initNavigation();
-initWebcam();
+if(['inici','webcams'].includes(ACTIVE_PAGE))initWebcam();
 initContact();
 initForecastControls();
 initExtremeControls();
-initDataCenter();
+if(ACTIVE_PAGE==='centre-dades')initDataCenter();
 initMeteoAI();
 initMeteoAIWidget();
 initShare();
 initLearning();
 initFooterSocial();
 initHomeDensity();
-initForecastVideos();
-initCivilProtectionPlans();
-initWhenVisible('#forecast-verification',initForecastVerification,'700px 0px');
+if(ACTIVE_PAGE==='videos')initForecastVideos();
+if(ACTIVE_PAGE==='avisos')initCivilProtectionPlans();
+if(ACTIVE_PAGE==='verificacio')initWhenVisible('#forecast-verification',initForecastVerification,'700px 0px');
 document.addEventListener('observatori:alerts-updated',event=>updateSituation({alerts:event.detail}));
 initWhenVisible('.model-viewer',initModelViewer);
 initWhenVisible('#long-range',loadLongRange,'900px 0px');
@@ -226,20 +245,20 @@ if(document.body.dataset.page==='meteo-ia')initEnvironment();
 updateClock();
 setInterval(updateClock,1000);
 load();
-loadQuality();
-loadAlerts();
-loadForecastSuite();
+if(QUALITY_PAGES.has(ACTIVE_PAGE))loadQuality();
+if(ALERT_PAGES.has(ACTIVE_PAGE))loadAlerts();
+if(FORECAST_PAGES.has(ACTIVE_PAGE))loadForecastSuite();
 setInterval(load,CONFIG.refreshMs);
-setInterval(loadQuality,CONFIG.refreshMs);
-setInterval(loadAlerts,CONFIG.alertsRefreshMs);
-setInterval(loadForecastSuite,CONFIG.forecastRefreshMs);
+if(QUALITY_PAGES.has(ACTIVE_PAGE))setInterval(loadQuality,CONFIG.refreshMs);
+if(ALERT_PAGES.has(ACTIVE_PAGE))setInterval(loadAlerts,CONFIG.alertsRefreshMs);
+if(FORECAST_PAGES.has(ACTIVE_PAGE))setInterval(loadForecastSuite,CONFIG.forecastRefreshMs);
 async function refreshAfterResume(force=false){
   const now=Date.now();
   const minAge=CONFIG.foregroundRefreshMinMs || 30000;
   if(force || now-currentFetchedAt>minAge) await load();
-  if(force || now-qualityFetchedAt>CONFIG.refreshMs) loadQuality();
-  if(force || now-alertsFetchedAt>CONFIG.alertsRefreshMs) loadAlerts();
-  if(force || now-forecastFetchedAt>CONFIG.forecastRefreshMs) loadForecastSuite();
+  if(QUALITY_PAGES.has(ACTIVE_PAGE)&&(force || now-qualityFetchedAt>CONFIG.refreshMs)) loadQuality();
+  if(ALERT_PAGES.has(ACTIVE_PAGE)&&(force || now-alertsFetchedAt>CONFIG.alertsRefreshMs)) loadAlerts();
+  if(FORECAST_PAGES.has(ACTIVE_PAGE)&&(force || now-forecastFetchedAt>CONFIG.forecastRefreshMs)) loadForecastSuite();
 }
 document.addEventListener('visibilitychange',()=>{
   if(!document.hidden) refreshAfterResume(false);

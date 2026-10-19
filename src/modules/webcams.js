@@ -47,7 +47,7 @@ async function refreshCameraMetadata() {
 }
 
 export function initWebcam() {
-  const webcamUrl=`${CONFIG.cameraUrl}?t=${Date.now()}`;
+  const webcamUrl=`${CONFIG.cameraPreviewUrl || CONFIG.cameraUrl}?t=${Date.now()}`;
   document.querySelectorAll('#webcam-image, #hero-webcam-image').forEach(image => {
     image.addEventListener('error', () => {
       image.removeAttribute('src');
