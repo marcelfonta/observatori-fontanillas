@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "version": "0.2.0",
-  "generatedAt": "2026-10-18T22:24:12.132Z",
+  "generatedAt": "2026-10-19T15:33:51.427Z",
   "station": "ISANTC198",
   "mode": "shadow",
   "productionEnabled": false,
   "status": "collecting",
-  "latestCaptureAt": "2026-10-18T22:24:11.228Z",
-  "captureCount": 45,
+  "latestCaptureAt": "2026-10-19T15:33:50.543Z",
+  "captureCount": 46,
   "eligibleObservedDays": 29,
   "pairedDays": 14,
   "evaluatedDays": 0,
@@ -17,22 +17,29 @@
     {
       "model": "best_match",
       "date": "2026-10-20",
-      "max": 20.4,
-      "min": 12.9,
+      "max": 19,
+      "min": 11.2,
       "complete": true
     },
     {
       "model": "ecmwf_ifs025",
       "date": "2026-10-20",
       "max": 19.4,
-      "min": 14.6,
+      "min": 12.6,
       "complete": true
     },
     {
       "model": "icon_eu",
       "date": "2026-10-20",
-      "max": 19.3,
-      "min": 12.6,
+      "max": 18.1,
+      "min": 11.5,
+      "complete": true
+    },
+    {
+      "model": "meteofrance_arome_france",
+      "date": "2026-10-20",
+      "max": 18.9,
+      "min": 12,
       "complete": true
     }
   ],
@@ -277,19 +284,19 @@
     },
     "rows": []
   },
-  "codeRevision": "3daac498b2f6dca6a4829e5bdbb2c0beefacbf3c",
+  "codeRevision": "996507c66b827f09bcbce1b6a18b9f7e84c06583",
   "diagnostics": {
     "schema": 1,
-    "asOf": "2026-10-18T22:24:12.132Z",
+    "asOf": "2026-10-19T15:33:51.427Z",
     "execution": {
       "event": "schedule",
-      "runId": "39172053509"
+      "runId": "39278936836"
     },
     "firstCaptureAt": "2026-09-20T12:12:22.031Z",
     "budget": {
-      "captureCount": 45,
+      "captureCount": 46,
       "captureLimit": 180,
-      "bytes": 17257368,
+      "bytes": 17698716,
       "byteLimit": 104857600,
       "reviewNeeded": false
     },
@@ -433,7 +440,7 @@
         },
         {
           "date": "2026-10-17",
-          "availableAt": "2026-10-18T22:24:11.215Z",
+          "availableAt": "2026-10-19T15:33:50.531Z",
           "eligible": true,
           "coverage": 0.945,
           "samples": 288,
@@ -443,7 +450,7 @@
         },
         {
           "date": "2026-10-18",
-          "availableAt": "2026-10-18T22:24:11.215Z",
+          "availableAt": "2026-10-19T15:33:50.531Z",
           "eligible": true,
           "coverage": 0.945,
           "samples": 287,
@@ -457,45 +464,39 @@
       {
         "model": "best_match",
         "state": "available",
-        "receivedAt": "2026-10-18T22:24:09.782Z",
+        "receivedAt": "2026-10-19T15:33:48.513Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "ecmwf_ifs025",
         "state": "available",
-        "receivedAt": "2026-10-18T22:24:09.885Z",
+        "receivedAt": "2026-10-19T15:33:48.655Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "icon_eu",
         "state": "available",
-        "receivedAt": "2026-10-18T22:24:09.987Z",
+        "receivedAt": "2026-10-19T15:33:48.797Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "meteofrance_arome_france",
-        "state": "incomplete",
-        "receivedAt": "2026-10-18T22:24:10.087Z",
+        "state": "available",
+        "receivedAt": "2026-10-19T15:33:48.947Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "observations",
         "state": "available",
-        "receivedAt": "2026-10-18T22:24:11.215Z",
+        "receivedAt": "2026-10-19T15:33:50.531Z",
         "modelRunAt": null
       }
     ],
     "recentCaptures": [
-      {
-        "id": "2026-10-11-pm",
-        "capturedAt": "2026-10-11T23:38:13.004Z",
-        "issueState": "outside-current-policy",
-        "failureCount": 0
-      },
       {
         "id": "2026-10-12-am",
         "capturedAt": "2026-10-12T17:50:37.637Z",
@@ -572,6 +573,12 @@
         "id": "2026-10-18-pm",
         "capturedAt": "2026-10-18T22:24:11.228Z",
         "issueState": "outside-current-policy",
+        "failureCount": 0
+      },
+      {
+        "id": "2026-10-19-am",
+        "capturedAt": "2026-10-19T15:33:50.543Z",
+        "issueState": "eligible-issue",
         "failureCount": 0
       }
     ],
