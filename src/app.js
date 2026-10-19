@@ -17,28 +17,18 @@ import { initModelViewer } from './modules/models.js';
 import { initNavigation, initWhenVisible, loadDeferredAssets } from './modules/navigation.js';
 import { renderDataQuality, renderDataQualityUnavailable } from './modules/qualitat.js';
 import { renderAlerts, renderAlertsUnavailable } from './modules/avisos.js';
-import { initCivilProtectionPlans } from './modules/civil-protection.js';
 import { updateSituation } from './modules/situacio.js';
 import { initShare, updateShareContext } from './features/share.js';
 import { initPortal } from './features/portal-router.js';
-import { initDataCenter, renderDataCenter } from './features/data-center.js';
-import { initEnvironment, updateEnvironmentStation } from './features/environment.js';
 import { initMeteoAI, initMeteoAIWidget, updateMeteoAIContext } from './features/meteo-ai.js';
-import { renderLongRangeError, renderLongRangeForecast } from './features/long-range.js';
 import { initLearning } from './features/learning.js';
 import { initFooterSocial } from './features/footer-social.js';
-import { initForecastVerification } from './features/forecast-verification.js';
 import { updateSeoObservation } from './features/seo.js';
 import { initHomeDensity } from './features/home-density.js';
-import { initForecastVideos } from './features/forecast-videos.js';
 import { getLocale, initLanguage } from './core/i18n.js';
 import { initHeaderTools } from './features/header-tools.js';
-import { initSeasonalOutlook } from './features/seasonal-outlook.js';
 import { initStationRecords } from './features/station-records.js';
 import { initHomeNow, updateHomeNow } from './features/home-now.js';
-import { initEarthObservation } from './features/earth-observation.js';
-import { initEstofexLocal } from './features/estofex-local.js';
-import { initWeatherStories, updateWeatherStories } from './features/weather-stories.js';
 
 const demo = { temperature:21.8, feelsLike:21.6, humidity:64, dewPoint:14.7, pressure:1017.4, windSpeed:6.2, windGust:13.1, windDirection:155, rainToday:0, rainRate:0, solarRadiation:null, uv:null, webcam:CONFIG.fallbackWebcam, updated:new Date().toISOString() };
 let latest = demo;
@@ -59,11 +49,26 @@ const HISTORY_PAGES=new Set(['inici','meteo-ia','estacio','verificacio','histori
 const QUALITY_PAGES=new Set(['inici','estacio','centre-dades']);
 const ALERT_PAGES=new Set(['inici','meteo-ia','prediccio','avisos']);
 const FORECAST_PAGES=new Set(['inici','meteo-ia','prediccio','llarg-termini','videos','verificacio','cel','avisos','histories']);
+const ENVIRONMENT_PAGES=new Set(['medi-ambient','meteo-ia']);
+
+let dataCenterModulePromise;
+let environmentModulePromise;
+let weatherStoriesModulePromise;
+const getDataCenterModule=()=>dataCenterModulePromise ||= import('./features/data-center.js');
+const getEnvironmentModule=()=>environmentModulePromise ||= import('./features/environment.js');
+const getWeatherStoriesModule=()=>weatherStoriesModulePromise ||= import('./features/weather-stories.js');
+function loadRouteFeature(loader,label){
+  return loader().catch(error=>console.warn(`${label} no s’ha pogut carregar.`,error));
+}
+function renderDataCenterSafely(history,current){
+  if(ACTIVE_PAGE!=='centre-dades')return;
+  loadRouteFeature(()=>getDataCenterModule().then(module=>module.renderDataCenter(history,current)),'El Centre de Dades');
+}
 
 const OFFLINE_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hores
 function updateWeatherStoriesSafely(payload){
-  try{updateWeatherStories(payload);}
-  catch(error){console.warn('Les històries meteorològiques no s’han pogut actualitzar.',error);}
+  if(ACTIVE_PAGE!=='histories')return;
+  loadRouteFeature(()=>getWeatherStoriesModule().then(module=>module.updateWeatherStories(payload)),'Les històries meteorològiques');
 }
 function showOfflineBanner(ageMinutes,message=''){ const banner=document.getElementById('offline-banner'); if(!banner)return; banner.textContent=message||`Mostrant dades de fa ${ageMinutes} min (mode sense connexió)`; banner.hidden=false; }
 function hideOfflineBanner(){ const banner=document.getElementById('offline-banner'); if(banner)banner.hidden=true; }
@@ -108,8 +113,9 @@ let longRangeLoaded=false;
 async function loadLongRange(){
   if(longRangeLoaded)return;
   longRangeLoaded=true;
-  try{renderLongRangeForecast(await fetchLongRangeForecast());}
-  catch(error){console.warn('Tendència de llarg termini no disponible.',error);renderLongRangeError();}
+  const module=await import('./features/long-range.js');
+  try{module.renderLongRangeForecast(await fetchLongRangeForecast());}
+  catch(error){console.warn('Tendència de llarg termini no disponible.',error);module.renderLongRangeError();}
 }
 
 async function loadHistory(){
@@ -166,26 +172,26 @@ async function performLoad(){
       latestHistory=context.history;
       renderSummaryFallback();
     }
-    renderStation(latest,context); updateHomeNow({current:latest}); refreshCharts(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenter(latestHistory,latest); updateWeatherStoriesSafely({history:latestHistory}); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:latestHistory});updateShareContext({current:latest});
+    renderStation(latest,context); updateHomeNow({current:latest}); refreshCharts(latest,latestHistory); renderExtremeArchive(latestHistory); renderDataCenterSafely(latestHistory,latest); updateWeatherStoriesSafely({history:latestHistory}); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:latestHistory});updateShareContext({current:latest});
     if(latest.degraded){showOfflineBanner(latest.ageMinutes,latest.sourceMessage||`Weather Underground no respon. Mostrant l’última lectura fiable de fa ${latest.ageMinutes} min.`);if(label){label.textContent='Dades de suport';label.parentElement.classList.add('is-offline');}}
     else{hideOfflineBanner();if(label){label.textContent='En directe';label.parentElement.classList.remove('is-offline');}}
   } catch(error) {
     console.warn('No s’han pogut carregar les dades en directe.',error);
     const cached=getLastCachedObs();
     if(cached && (Date.now()-cached.ts)<OFFLINE_MAX_AGE_MS){
-      latest=cached.data; renderStation(latest); updateHomeNow({current:{...latest,degraded:true,ageMinutes:cached.ageMinutes}}); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); updateWeatherStoriesSafely({history:[]}); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:[]});updateShareContext({current:latest});
+      latest=cached.data; renderStation(latest); updateHomeNow({current:{...latest,degraded:true,ageMinutes:cached.ageMinutes}}); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenterSafely([],latest); updateWeatherStoriesSafely({history:[]}); setUpdated(latest.updated); updateSeoObservation(latest); updateSituation({current:latest}); updateMeteoAIContext({current:latest,history:[]});updateShareContext({current:latest});
       const browserOffline=typeof navigator!=='undefined'&&navigator.onLine===false;
       showOfflineBanner(cached.ageMinutes,browserOffline
         ? `Sense connexió. Mostrant l’última lectura desada de fa ${cached.ageMinutes} min.`
         : `Servei temporalment no disponible. Mostrant una lectura desada de fa ${cached.ageMinutes} min; reintentarem automàticament.`);
       if(label){label.textContent=browserOffline?'Sense connexió':'Reconnectant…';label.parentElement.classList.add('is-offline');}
     } else {
-      latest=demo; renderStation(latest); updateHomeNow({current:null}); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenter([],latest); updateWeatherStoriesSafely({history:[]}); setUpdated(latest.updated); updateSeoObservation(null); updateSituation({current:latest}); updateMeteoAIContext({current:null,history:[]});updateShareContext({current:null});
+      latest=demo; renderStation(latest); updateHomeNow({current:null}); refreshCharts(latest,[]); renderExtremeArchive([]); renderDataCenterSafely([],latest); updateWeatherStoriesSafely({history:[]}); setUpdated(latest.updated); updateSeoObservation(null); updateSituation({current:latest}); updateMeteoAIContext({current:null,history:[]});updateShareContext({current:null});
       hideOfflineBanner();
       if(label){label.textContent='Mode demo';label.parentElement.classList.add('is-offline');}
     }
   }
-  updateEnvironmentStation(latest);
+  if(ENVIRONMENT_PAGES.has(ACTIVE_PAGE))loadRouteFeature(()=>getEnvironmentModule().then(module=>module.updateEnvironmentStation(latest)),'Les dades ambientals');
   currentFetchedAt=Date.now();
 }
 function load(){
@@ -211,11 +217,11 @@ document.addEventListener('observatori:data-tab-change',event=>{
 initLanguage();
 initHomeNow();
 initPortal();
-if(ACTIVE_PAGE==='terra')initEarthObservation();
-if(ACTIVE_PAGE==='avisos')initEstofexLocal();
-if(ACTIVE_PAGE==='histories')initWeatherStories();
+if(ACTIVE_PAGE==='terra')loadRouteFeature(()=>import('./features/earth-observation.js').then(module=>module.initEarthObservation()),'El visor de la Terra');
+if(ACTIVE_PAGE==='avisos')loadRouteFeature(()=>import('./features/estofex-local.js').then(module=>module.initEstofexLocal()),'La vigilància ESTOFEX');
+if(ACTIVE_PAGE==='histories')loadRouteFeature(()=>getWeatherStoriesModule().then(module=>module.initWeatherStories()),'Les històries meteorològiques');
 initHeaderTools();
-if(ACTIVE_PAGE==='llarg-termini')initSeasonalOutlook();
+if(ACTIVE_PAGE==='llarg-termini')loadRouteFeature(()=>import('./features/seasonal-outlook.js').then(module=>module.initSeasonalOutlook()),'La previsió estacional');
 if(['estacio','centre-dades'].includes(document.body.dataset.page))initStationRecords(fetchStationRecords);
 if(document.body.dataset.page==='inici')initWhenVisible('.metrics-grid',enableCharts,'0px 0px');
 if(document.body.dataset.page==='estacio')initWhenVisible('#calculats',enableCharts,'0px 0px');
@@ -225,23 +231,23 @@ if(['inici','webcams'].includes(ACTIVE_PAGE))initWebcam();
 initContact();
 initForecastControls();
 initExtremeControls();
-if(ACTIVE_PAGE==='centre-dades')initDataCenter();
+if(ACTIVE_PAGE==='centre-dades')loadRouteFeature(()=>getDataCenterModule().then(module=>module.initDataCenter()),'El Centre de Dades');
 initMeteoAI();
 initMeteoAIWidget();
 initShare();
 initLearning();
 initFooterSocial();
 initHomeDensity();
-if(ACTIVE_PAGE==='videos')initForecastVideos();
-if(ACTIVE_PAGE==='avisos')initCivilProtectionPlans();
-if(ACTIVE_PAGE==='verificacio')initWhenVisible('#forecast-verification',initForecastVerification,'700px 0px');
+if(ACTIVE_PAGE==='videos')loadRouteFeature(()=>import('./features/forecast-videos.js').then(module=>module.initForecastVideos()),'La predicció en vídeo');
+if(ACTIVE_PAGE==='avisos')loadRouteFeature(()=>import('./modules/civil-protection.js').then(module=>module.initCivilProtectionPlans()),'Els plans de protecció civil');
+if(ACTIVE_PAGE==='verificacio')initWhenVisible('#forecast-verification',()=>loadRouteFeature(()=>import('./features/forecast-verification.js').then(module=>module.initForecastVerification()),'La verificació de la previsió'),'700px 0px');
 document.addEventListener('observatori:alerts-updated',event=>updateSituation({alerts:event.detail}));
 initWhenVisible('.model-viewer',initModelViewer);
 initWhenVisible('#long-range',loadLongRange,'900px 0px');
 initWhenVisible('#territori',initRadar,'700px 0px');
-initWhenVisible('#medi-ambient',initEnvironment,'600px 0px');
+initWhenVisible('#medi-ambient',()=>loadRouteFeature(()=>getEnvironmentModule().then(module=>module.initEnvironment()),'El visor ambiental'),'600px 0px');
 initWhenVisible('#avisos',()=>loadDeferredAssets('#avisos'),'600px 0px');
-if(document.body.dataset.page==='meteo-ia')initEnvironment();
+if(document.body.dataset.page==='meteo-ia')loadRouteFeature(()=>getEnvironmentModule().then(module=>module.initEnvironment()),'El visor ambiental');
 updateClock();
 setInterval(updateClock,1000);
 load();

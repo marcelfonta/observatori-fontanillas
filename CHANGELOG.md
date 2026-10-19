@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-19 — JavaScript adaptat a cada secció
+
+- Terra, ESTOFEX, històries, previsió estacional, vídeos, verificació, Centre de
+  Dades, medi ambient i protecció civil es carreguen només quan la ruta els
+  necessita, en lloc de formar part de l’arrencada de totes les pàgines.
+- La portada redueix de 101 a 58 els recursos JavaScript observats en una
+  càrrega neta local, sense perdre la disponibilitat posterior sense connexió.
+- S’ha eliminat una inicialització duplicada de les gràfiques de la portada.
+
 ## 2026-10-19 — Fiabilitat i rendiment després de l’auditoria
 
 - La previsió comparteix una única càrrega en curs entre l’arrencada, `pageshow`,

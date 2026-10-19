@@ -14,7 +14,11 @@ assert.match(app,/if\(forecastInFlight===pending\)forecastInFlight=null/);
 assert.match(app,/const FORECAST_PAGES=new Set/);
 assert.match(app,/if\(FORECAST_PAGES\.has\(ACTIVE_PAGE\)\)loadForecastSuite\(\)/);
 assert.match(app,/if\(HISTORY_PAGES\.has\(ACTIVE_PAGE\)\)/);
-assert.match(app,/if\(ACTIVE_PAGE==='terra'\)initEarthObservation\(\)/);
+assert.match(app,/if\(ACTIVE_PAGE==='terra'\)loadRouteFeature\(\(\)=>import\('\.\/features\/earth-observation\.js'\)/);
+for(const routeModule of ['earth-observation','estofex-local','weather-stories','seasonal-outlook','forecast-videos','forecast-verification','data-center','environment','long-range']){
+  assert.doesNotMatch(app,new RegExp(`^import .*${routeModule}\\.js`,'m'),`${routeModule} no ha de formar part de l’arrencada comuna.`);
+}
+assert.equal((app.match(/initWhenVisible\('\.metrics-grid',enableCharts/g)||[]).length,1);
 assert.match(app,/if\(\['inici','webcams'\]\.includes\(ACTIVE_PAGE\)\)initWebcam\(\)/);
 assert.match(html,/aria-label="Webcam · ara: obrir la webcam de l.observatori"/);
 assert.match(social,/aria-label','Segueix-nos: veure totes les xarxes socials/);
