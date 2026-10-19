@@ -32,6 +32,7 @@ OUTPUT="$OUTPUT_DIR/meteo-fontanillas-nord-$DATE.mp4"
 OUTPUT_TMP="$OUTPUT.part"
 SOCIAL_OUTPUT="$OUTPUT_DIR/meteo-fontanillas-nord-$DATE-social.mp4"
 SOCIAL_TMP="$SOCIAL_OUTPUT.part"
+SOCIAL_FRAME_RATE=30
 mkdir -p "$OUTPUT_DIR"
 
 [[ -d "$SOURCE_DIR" ]] || { echo "No existeix l'arxiu $SOURCE_DIR" >&2; exit 1; }
@@ -80,7 +81,7 @@ rm -f "$SOCIAL_TMP"
 MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
   -threads 1 -i "$OUTPUT" \
   -filter_threads 1 -filter_complex_threads 1 \
-  -vf "$SOCIAL_FILTER" -r 20 -an -c:v libx264 -threads 1 \
+  -vf "$SOCIAL_FILTER" -r "$SOCIAL_FRAME_RATE" -an -c:v libx264 -threads 1 \
   -preset ultrafast -crf 22 -pix_fmt yuv420p -movflags +faststart -f mp4 "$SOCIAL_TMP"
 [[ -s "$SOCIAL_TMP" ]] || { echo "FFmpeg no ha creat la versió social vertical." >&2; exit 1; }
 mv "$SOCIAL_TMP" "$SOCIAL_OUTPUT"
