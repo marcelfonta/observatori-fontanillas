@@ -68,17 +68,7 @@ entrades en mòbil i escriptori.
 **Fet quan:** existeix una línia base repetible que identifica els colls
 d’ampolla reals i permet comparar qualsevol canvi posterior.
 
-### 2. Càrrega diferida guiada per dades
-
-- [ ] Reduir l’LCP mòbil de la capa inicial dels Models francesos, actualment
-  d’uns 7,4 segons, fins a 4 segons o menys en tres execucions consecutives.
-- [ ] Mantenir la reserva estable i la degradació segura quan Météo-France no
-  respongui; no afegir més càrrega inicial a la portada.
-
-**Fet quan:** Models francesos compleix l’objectiu en tres execucions i la resta
-de la matriu conserva els guanys documentats a la revalidació del 20 d’octubre.
-
-### 3. Validació en dispositius i accessibilitat
+### 2. Validació en dispositius i accessibilitat
 
 - [ ] Revisar «El temps arreu», Meteocat, XAC, avisos i els visors principals en
   un iPhone, un Android i un ordinador.

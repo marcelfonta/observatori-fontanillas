@@ -79,6 +79,8 @@ for(const width of [390,1280]){
     await page.goto('/models-franca.html');
     await expect(page.getByText('Tornar a la previsió')).toHaveCount(0);
     await expect(page.locator('#time-range')).toHaveAttribute('max','2');
+    await expect(page.locator('#time-label')).toHaveText('Edició activa');
+    await page.locator('#time-range').fill('1');
     await expect(page.locator('#time-label')).toContainText('7');
     expect(parseFloat(await page.locator('.hero h1').evaluate(node=>getComputedStyle(node).fontSize))).toBeLessThanOrEqual(52);
     expect(await page.locator('.hero').evaluate(node=>getComputedStyle(node).borderRadius)).not.toBe('0px');

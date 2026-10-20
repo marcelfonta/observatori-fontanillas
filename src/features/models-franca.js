@@ -1,7 +1,7 @@
 import { CONFIG } from '../core/config.js';
 
 const $=selector=>document.querySelector(selector);
-const state={model:'arome',layer:'precipitation',products:[],timeIndex:0,playing:false};
+const state={model:'arome',layer:'precipitation',products:[],timeIndex:0,playing:false,activeEdition:true};
 const LABELS={precipitation:'precipitació',temperature:'temperatura',wind:'vent',clouds:'nuvolositat'};
 const CATALUNYA_BOUNDS=[[40.4,0],[43.6,4.5]];
 const DISPLAY_BOUNDS=[[40.9,.1],[43,3.4]];
@@ -15,9 +15,9 @@ let resizeObserver;
 function api(path){return `${CONFIG.apiUrl}${path}`;}
 function product(id){return state.products.find(item=>item.id===id);}
 function selectedTimes(){return product(state.model)?.times||[];}
-function selectedTime(){return selectedTimes()[state.timeIndex]||'';}
-function mapSize(){return window.matchMedia('(max-width: 620px)').matches?{width:'960',height:'544'}:{width:'1500',height:'850'};}
-function mapUrl(){const size=mapSize();const params=new URLSearchParams({model:state.model,layer:state.layer,...size,fresh:String(Math.floor(Date.now()/600000))});if(selectedTime())params.set('time',selectedTime());return api(`/meteofrance/map?${params}`);}
+function selectedTime(){return state.activeEdition?'':selectedTimes()[state.timeIndex]||'';}
+function mapSize(){return window.matchMedia('(max-width: 620px)').matches?{width:'720',height:'408'}:{width:'1500',height:'850'};}
+function mapUrl(){const size=mapSize();const params=new URLSearchParams({model:state.model,layer:state.layer,...size});if(selectedTime())params.set('time',selectedTime());return api(`/meteofrance/map?${params}`);}
 function timeLabel(value,style='full'){
   if(!value)return style==='short'?'—':'Edició activa';
   const options=style==='short'?{day:'numeric',month:'short',hour:'2-digit'}:{weekday:'long',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'};
@@ -39,7 +39,7 @@ function syncTimeline({reset=false}={}){
   range.max=String(Math.max(0,times.length-1));range.value=String(state.timeIndex);range.disabled=disabled;
   $('#time-prev').disabled=disabled||state.timeIndex===0;$('#time-next').disabled=disabled||state.timeIndex===times.length-1;$('#time-play').disabled=disabled;
   $('#time-date').textContent=times.length?`${state.timeIndex+1} de ${times.length} instants`:'El producte no publica una seqüència temporal';
-  $('#time-label').textContent=timeLabel(selectedTime());
+  $('#time-label').textContent=state.activeEdition?'Edició activa':timeLabel(selectedTime());
   $('#time-start').textContent=times.length?timeLabel(times[0],'short'):'Sense inici';
   $('#time-end').textContent=times.length?timeLabel(times.at(-1),'short'):'Mapa de l’edició activa';
   $('#model-timeline').classList.toggle('is-unavailable',!times.length);
@@ -117,30 +117,34 @@ async function loadMap(){
   }
 }
 async function init(){
-  const mapReady=ensureMap().catch(error=>{console.warn('No s’ha pogut preparar el mapa base.',error);return null;});
+  // La capa inicial coincideix amb els `preload` del document i comença a
+  // baixar abans que arribin els catàlegs. Leaflet i el catàleg es preparen en
+  // paral·lel; només els canvis temporals explícits afegeixen el paràmetre
+  // immutable `time`.
+  const initialMap=loadMap();
   try{
-    const response=await fetch(api('/meteofrance/models'),{headers:{Accept:'application/json'},cache:'no-store'});
+    const response=await fetch(api('/meteofrance/models'),{headers:{Accept:'application/json'}});
     if(!response.ok)throw new Error(`API ${response.status}`);
     const data=await response.json();state.products=data.products||[];
     $('#checked-at').textContent=`Comprovat ${new Intl.DateTimeFormat('ca-ES',{dateStyle:'medium',timeStyle:'short'}).format(new Date(data.checkedAt))}`;
     renderCatalog();
     const initial=product(state.model);if(initial&&!initial.available){const fallback=state.products.find(item=>item.visualizable&&item.available);if(fallback)state.model=fallback.id;}
     syncTimeline({reset:true});
-    await mapReady;loadMap();
+    await initialMap;syncControls();
   }catch{
     $('#product-grid').innerHTML='<article class="product-card"><h3>Connexió temporalment no disponible</h3><p class="product-purpose">La previsió principal continua funcionant. Torna a provar aquest laboratori més tard.</p></article>';
-    $('#global-state').textContent='Laboratori temporalment no disponible';$('#global-dot').style.background='var(--red)';await mapReady;loadMap();
+    $('#global-state').textContent='Laboratori temporalment no disponible';$('#global-dot').style.background='var(--red)';await initialMap;
   }
 }
-$('#model-controls').addEventListener('click',event=>{const button=event.target.closest('[data-model]');if(!button)return;stopPlayback();state.model=button.dataset.model;syncTimeline({reset:true});loadMap();});
-$('#layer-controls').addEventListener('click',event=>{const button=event.target.closest('[data-layer]');if(!button||button.disabled)return;state.layer=button.dataset.layer;loadMap();});
+$('#model-controls').addEventListener('click',event=>{const button=event.target.closest('[data-model]');if(!button)return;stopPlayback();state.activeEdition=true;state.model=button.dataset.model;syncTimeline({reset:true});loadMap();});
+$('#layer-controls').addEventListener('click',event=>{const button=event.target.closest('[data-layer]');if(!button||button.disabled)return;state.activeEdition=true;state.layer=button.dataset.layer;loadMap();});
 $('#map-refresh').addEventListener('click',loadMap);
-$('#time-range').addEventListener('input',event=>{stopPlayback();state.timeIndex=Number(event.target.value)||0;syncTimeline();loadMap();});
-$('#time-prev').addEventListener('click',()=>{stopPlayback();state.timeIndex=Math.max(0,state.timeIndex-1);syncTimeline();loadMap();});
-$('#time-next').addEventListener('click',()=>{stopPlayback();state.timeIndex=Math.min(selectedTimes().length-1,state.timeIndex+1);syncTimeline();loadMap();});
+$('#time-range').addEventListener('input',event=>{stopPlayback();state.activeEdition=false;state.timeIndex=Number(event.target.value)||0;syncTimeline();loadMap();});
+$('#time-prev').addEventListener('click',()=>{stopPlayback();state.activeEdition=false;state.timeIndex=Math.max(0,state.timeIndex-1);syncTimeline();loadMap();});
+$('#time-next').addEventListener('click',()=>{stopPlayback();state.activeEdition=false;state.timeIndex=Math.min(selectedTimes().length-1,state.timeIndex+1);syncTimeline();loadMap();});
 $('#time-play').addEventListener('click',()=>{
   if(state.playing){stopPlayback();return;}
-  if(selectedTimes().length<2)return;state.playing=true;const button=$('#time-play');button.textContent='Ⅱ';button.setAttribute('aria-pressed','true');button.setAttribute('aria-label','Aturar l’evolució');
+  if(selectedTimes().length<2)return;state.activeEdition=false;state.playing=true;const button=$('#time-play');button.textContent='Ⅱ';button.setAttribute('aria-pressed','true');button.setAttribute('aria-label','Aturar l’evolució');
   const advance=async()=>{if(!state.playing)return;if(state.timeIndex>=selectedTimes().length-1)state.timeIndex=0;else state.timeIndex+=1;syncTimeline();await loadMap();if(state.playing)playbackTimer=setTimeout(advance,1200);};advance();
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPlayback();});
