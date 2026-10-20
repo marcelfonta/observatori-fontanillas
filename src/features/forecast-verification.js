@@ -26,6 +26,17 @@ export function verificationMilestoneCopy(payload={}){
   return `Primer tall de 30 dies assolit: ja permet detectar tendències inicials, però no certificar ni corregir automàticament la previsió o l’estació.${rainCaution}`;
 }
 
+export function modelMaturityCopy(payload={}){
+  const maturity=payload.modelMaturity||{};
+  const comparable=Math.max(0,Number(maturity.comparableDays??payload.comparableDays)||0);
+  const wet=Math.max(0,Number(maturity.wetDays)||0);
+  if(comparable<7)return `${comparable} de 7 dies comuns als cinc models. Encara no es calculen pesos candidats.`;
+  const review=Number(maturity.nextReviewDays);
+  const reviewCopy=review?` Propera revisió metodològica: ${review} dies (${Math.max(0,Number(maturity.daysToNextReview)||0)} pendents).`:' Ja s’han superat els talls de revisió de 60 i 90 dies.';
+  const rainCopy=maturity.rainWeightsReady?' La mostra de pluja ja supera el mínim de varietat.':` La pluja continua bloquejada: ${wet} de ${Number(maturity.minimumWetDays)||7} dies plujosos comparables.`;
+  return `${comparable} dies exactament comuns als cinc models.${reviewCopy}${rainCopy}`;
+}
+
 function verificationChart(detail=[]){
   const rows=detail.slice(0,14).reverse().filter(item=>Number.isFinite(Number(item.forecast?.max))&&Number.isFinite(Number(item.observed?.max)));
   if(rows.length<2)return '';
@@ -95,7 +106,7 @@ function render(payload){
   ].join('');
   horizons.hidden=false;
   horizons.innerHTML=`<h4>Com canvia l’encert amb l’horitzó?</h4><p class="verification-legend">«Avui» és l’última actualització del mateix dia i només serveix de context; el resum principal usa exclusivament «Demà».</p><div>${(payload.horizons||[]).map(item=>`<article><span>${item.key==='today'?'Avui · actualització del dia':item.label}</span><strong>${item.samples?`${fmt(item.temperatureMae)} °C`:'Encara sense mostra'}</strong><small>${item.samples?`${fmt(item.rainAccuracy,0)}% pluja · ${item.samples} casos`:'Recollint prediccions'}</small></article>`).join('')}</div>`;
-  if((payload.byModel||[]).length)horizons.innerHTML+=`<h4 class="verification-model-title">Quin model funciona millor aquí?</h4><p class="verification-legend">Comparació de la previsió de demà amb l’estació. Els pesos locals només es calculen amb almenys ${payload.weights?.minimumSamples||7} casos i no s’apliquen abans de tenir mostra real.</p><div class="verification-models">${payload.byModel.map(item=>{const weight=Number(payload.weights?.temperature?.[item.model]);return `<article><span>${escapeHtml(item.label)}</span><strong>${item.samples>=7?`${fmt(item.temperatureMae)} °C`:'Recollint'}</strong><small>${item.samples} casos · ${item.samples>=7?`${fmt(item.rainAccuracy,0)}% pluja${Number.isFinite(weight)?` · pes tèrmic ${fmt(weight*100,0)}%`:''}`:'encara sense pes'}</small></article>`;}).join('')}</div>`;
+  if((payload.byModel||[]).length)horizons.innerHTML+=`<h4 class="verification-model-title">Quin model funciona millor aquí?</h4><p class="verification-legend">${escapeHtml(modelMaturityCopy(payload))} Els pesos són candidats experimentals i no s’apliquen a la previsió.</p><div class="verification-models">${payload.byModel.map(item=>{const maxWeight=Number(payload.weights?.maximumTemperature?.[item.model]);const minWeight=Number(payload.weights?.minimumTemperature?.[item.model]);return `<article><span>${escapeHtml(item.label)}</span><strong>${item.samples>=7?`Màx. ${fmt(item.maximumTemperatureMae)} °C · mín. ${fmt(item.minimumTemperatureMae)} °C`:'Recollint'}</strong><small>${item.samples} dies comuns · ${item.wetDays} amb pluja${Number.isFinite(maxWeight)&&Number.isFinite(minWeight)?` · pesos candidats ${fmt(maxWeight*100,0)}% / ${fmt(minWeight*100,0)}%`:''}</small></article>`;}).join('')}</div>`;
   if((payload.detail||[]).length){
     detail.hidden=false;
     detail.innerHTML=`<h4>Pronòstics de demà verificats: previsió → resultat real</h4><p class="verification-legend">El valor verd es va guardar el dia anterior; després de la fletxa hi ha el que va mesurar l’estació.</p>${verificationChart(payload.detail)}<p class="verification-scroll-hint">En pantalles petites, arrossega la taula cap als costats.</p><div class="verification-table" role="table" aria-label="Pronòstics de demà comparats amb observacions" tabindex="0"><div class="verification-row is-head" role="row"><span role="columnheader">Dia</span><span role="columnheader">Màxima</span><span role="columnheader">Mínima</span><span role="columnheader">Pluja</span><span role="columnheader">Ratxa</span></div>${payload.detail.slice(0,7).map(item=>`<div class="verification-row" role="row"><span role="cell">${new Date(`${item.date}T12:00:00`).toLocaleDateString('ca-ES',{day:'numeric',month:'short'})}</span><span role="cell"><b>${fmt(item.forecast.max)}°</b> → ${fmt(item.observed.max)}°</span><span role="cell"><b>${fmt(item.forecast.min)}°</b> → ${fmt(item.observed.min)}°</span><span role="cell"><b>${fmt(item.forecast.rain)} mm</b> → ${fmt(item.observed.rain)} mm</span><span role="cell"><b>${fmt(item.forecast.gust)} km/h</b> → ${fmt(item.observed.gust)} km/h</span></div>`).join('')}</div>`;
@@ -107,7 +118,7 @@ function render(payload){
 export async function initForecastVerification(){
   document.getElementById('verification-export-csv')?.addEventListener('click',()=>{if(latestVerification)download(`verificacio-meteo-${new Date().toISOString().slice(0,10)}.csv`,'text/csv;charset=utf-8',verificationCsv(latestVerification));});
   document.getElementById('verification-export-json')?.addEventListener('click',()=>{if(latestVerification)download(`verificacio-meteo-${new Date().toISOString().slice(0,10)}.json`,'application/json',JSON.stringify({...latestVerification,license:{station:'Dades pròpies de l’Observatori Fontanillas',forecast:'Derivat Open-Meteo; consulteu atribució i termes de la font'},exportedAt:new Date().toISOString()},null,2));});
-  const [verification,operations]=await Promise.allSettled([fetchForecastVerification(45),fetchPublicOperationsStatus()]);
+  const [verification,operations]=await Promise.allSettled([fetchForecastVerification(90),fetchPublicOperationsStatus()]);
   if(verification.status==='fulfilled')render(verification.value);
   else {const status=document.getElementById('verification-status');if(status)status.textContent='Temporalment no disponible';console.warn('Verificació de prediccions no disponible.',verification.reason);}
   if(operations.status==='fulfilled')renderPublicHealth(operations.value);
