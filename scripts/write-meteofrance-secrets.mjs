@@ -3,7 +3,7 @@ import {resolve} from 'node:path';
 
 const names=[
   'METEOFRANCE_AROME_API_KEY','METEOFRANCE_AROME_NOWCAST_API_KEY','METEOFRANCE_AROME_ENSEMBLE_API_KEY',
-  'METEOFRANCE_ARPEGE_API_KEY','METEOFRANCE_ARPEGE_ENSEMBLE_API_KEY','METEOFRANCE_PIAF_API_KEY',
+  'METEOFRANCE_ARPEGE_API_KEY','METEOFRANCE_ARPEGE_ENSEMBLE_API_KEY',
 ];
 const missing=names.filter(name=>!String(process.env[name]||'').trim());
 if(missing.length)throw new Error(`Falten ${missing.length} credencials Météo-France; no es genera un fitxer parcial.`);

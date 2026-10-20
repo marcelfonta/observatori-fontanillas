@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-20 — PIAF retirat del circuit operatiu
+
+- PIAF deixa d'aparèixer al selector, al diagnòstic i al desplegament de staging.
+- La decisió conserva la traça del diagnòstic: credencial present i vigent, però
+  servei professional mai verificat i amb resposta HTTP 520.
+- El laboratori Météo-France queda format pels cinc productes que sí responen:
+  AROME, AROME-PI, ARPEGE, PE-AROME i PE-ARPEGE.
+
 ## 2026-10-20 — Validació privada dels sis productes Météo-France
 
 - L'administració diferencia catàlegs disponibles de mapes WMS realment

@@ -50,15 +50,6 @@ const checks = [
     context: '/public/pearpege',
     version: '1.0',
   },
-  {
-    label: 'PIAF',
-    secretName: 'METEOFRANCE_PIAF_API_KEY',
-    envName: 'METEOFRANCE_PIAF_API_KEY',
-    apiId: 'aa174208-b051-4c95-af8f-dd52241a4d06',
-    apiName: 'PrevisionImmediatePrecipitations',
-    context: '/pro/piaf',
-    version: '1.0',
-  },
 ];
 
 function decodeJwtExpiry(token) {

@@ -1,8 +1,8 @@
 # Validació privada de Météo-France
 
-El Worker comprova els sis productes configurats sense exposar cap credencial:
+El Worker comprova els cinc productes operatius sense exposar cap credencial:
 
-- AROME, AROME-PI, ARPEGE i PIAF: catàleg WMS i generació real d'una imatge PNG petita.
+- AROME, AROME-PI i ARPEGE: catàleg WMS i generació real d'una imatge PNG petita.
 - PE-AROME i PE-ARPEGE: catàleg WCS i nombre de cobertures publicades.
 
 El resultat només és accessible amb autenticació d'administració a
@@ -24,9 +24,12 @@ La pàgina oficial de Météo-France indica que els productes públics estan sub
 a la Licence Ouverte d'Etalab, exigeix atribució a Météo-France i no autoritza la
 redistribució de la informació en l'estat original. Per això el projecte conserva
 la font, no exposa descàrregues WCS/GRIB i només contempla productes derivats i
-un pilot privat abans de qualsevol ús públic. PIAF figura al context professional
-i queda marcat separadament com a `terms-must-be-confirmed`; no se li pressuposa
-la mateixa llicència dels productes públics.
+un pilot privat abans de qualsevol ús públic.
+
+PIAF es va retirar del circuit operatiu el 20 d'octubre de 2026: la clau estava
+present i vigent fins al 2029, però l'API professional no havia ofert mai una
+resposta verificable i retornava HTTP 520. Es conserva aquesta decisió a
+`docs/DECISIONS.md`, però PIAF ja no compta com a producte pendent ni es consulta.
 
 Font consultada el 20 d'octubre de 2026:
 <https://donneespubliques.meteofrance.fr/?fond=dossier&id_dossier=12>

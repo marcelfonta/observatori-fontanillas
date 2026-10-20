@@ -25,7 +25,6 @@ jobs:
       METEOFRANCE_AROME_ENSEMBLE_API_KEY: ${{ secrets.METEOFRANCE_AROME_ENSEMBLE_API_KEY }}
       METEOFRANCE_ARPEGE_API_KEY: ${{ secrets.METEOFRANCE_ARPEGE_API_KEY }}
       METEOFRANCE_ARPEGE_ENSEMBLE_API_KEY: ${{ secrets.METEOFRANCE_ARPEGE_ENSEMBLE_API_KEY }}
-      METEOFRANCE_PIAF_API_KEY: ${{ secrets.METEOFRANCE_PIAF_API_KEY }}
     steps:
       - name: Descarrega el repositori
         uses: actions/checkout@v7

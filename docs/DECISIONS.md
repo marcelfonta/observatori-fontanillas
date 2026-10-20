@@ -182,12 +182,16 @@ mai no s'envien al navegador ni formen part de les claus públiques de memòria 
 El Worker valida models, variables, dimensions i capes mitjançant llistes blanques,
 i cada producte pot degradar-se sense fer caure la previsió principal.
 
-AROME, AROME-PI, ARPEGE i PIAF es poden visualitzar quan ofereixen WMS. PE-AROME
+AROME, AROME-PI i ARPEGE es poden visualitzar quan ofereixen WMS. PE-AROME
 i PE-ARPEGE són productes WCS/GRIB i es presenten com a fonts probabilístiques,
 no com a mapes equivalents. No entren al pes del model Fonta fins que existeixi
 una ingestió numèrica privada, predicció congelada, verificació prospectiva i
-una decisió de versió separada. PIAF continua sent experimental i la seva
-indisponibilitat no s'interpreta com una absència de fenomen meteorològic.
+una decisió de versió separada.
+
+**Esmena, 2026-10-20:** PIAF es retira del circuit operatiu. La credencial
+configurada era present i vigent, però el servei professional no va arribar a
+donar una resposta verificable i retornava HTTP 520. No es continua sondejant,
+no apareix al selector i no bloqueja la validació dels cinc productes reals.
 ## ADR-010 — Windy com a explorador visual, separat del càlcul local
 
 **Estat:** acceptada, 2026-10-17.

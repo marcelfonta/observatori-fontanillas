@@ -52,8 +52,8 @@ async function getMeteofranceCatalog() {
 }
 
 const meteofrance = await getMeteofranceCatalog();
-if (meteofrance.ok !== true || !Array.isArray(meteofrance.products) || meteofrance.products.length !== 6) {
-  throw new Error('/meteofrance/models: no retorna els sis productes esperats.');
+if (meteofrance.ok !== true || !Array.isArray(meteofrance.products) || meteofrance.products.length !== 5) {
+  throw new Error('/meteofrance/models: no retorna els cinc productes operatius esperats.');
 }
 const missingMeteofrance = meteofrance.products.filter(product => product.configured !== true);
 if (missingMeteofrance.length) {
