@@ -20,6 +20,6 @@ assert.ok(index.includes('environment-viewer-mobile-launch')&&portal.includes('e
 assert.ok(index.includes('no implica necessàriament afectació a tot el municipi')&&alerts.includes('que inclou Sant Celoni')&&worker.includes('no implica necessàriament afectació a tot el municipi'),'L’abast territorial dels avisos no queda explicat.');
 assert.ok(admin.includes('automatització apagada')&&admin.includes('automatització activa'),'TikTok no diferencia la clau configurada de l’automatització activa.');
 assert.ok(index.includes('<title>Observatori Meteorològic Fontanillas · Sant Celoni</title>'),'El títol principal i social no estan unificats.');
-assert.ok(roadmap.includes('V22.5.2 — Mòbil, transparència i configuració resilient'));
+assert.ok(roadmap.includes('# Roadmap viu')&&!roadmap.match(/- \[x\]/i));
 
 console.log('Test V22.5.2: configuració resilient, transparència TikTok i millores mòbils');

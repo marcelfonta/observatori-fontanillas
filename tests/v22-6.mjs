@@ -23,6 +23,6 @@ assert.ok(css.includes('.verification-orbit.is-ready :is(strong,span){color:#052
 assert.ok(css.includes('repeat(auto-fit,minmax(210px,1fr))'),'Les quatre mètriques no tenen una graella adaptable.');
 assert.ok(alerts.includes('Abast zonal')&&alerts.includes('la intensitat exacta a Sant Celoni pot variar'),'Falta transparència territorial als avisos.');
 assert.ok(ai.includes('currentDetailAnswer')&&ai.includes('sunAnswer'),'La IA no cobreix les consultes senzilles noves.');
-assert.ok(roadmap.includes('V22.6.0 — Prioritat alta'));
+assert.ok(roadmap.includes('# Roadmap viu')&&!roadmap.match(/- \[x\]/i));
 
 console.log('Test V22.6.0: IA, avisos, push real i predicció vs realitat');

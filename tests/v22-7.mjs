@@ -15,6 +15,6 @@ assert.ok(html.includes('iframe data-src="https://static-m.meteo.cat/ginys/mapaA
 assert.ok(navigation.includes('export function loadDeferredAssets')&&app.includes("loadDeferredAssets('#avisos')"));
 assert.ok(html.includes('1. Fenòmens')&&html.includes('2. Intensitat de l’avís'));
 assert.ok(css.includes('position:sticky')&&css.includes('grid-template-columns:repeat(3,1fr)!important'));
-assert.ok(roadmap.includes('V22.7.0 — Experiència mòbil i rendiment percebut'));
+assert.ok(roadmap.includes('# Roadmap viu')&&!roadmap.match(/- \[x\]/i));
 
 console.log('Test V22.7.0: càrrega visual, avisos mòbils i ginys diferits');

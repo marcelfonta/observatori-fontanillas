@@ -14,6 +14,6 @@ assert.ok(serviceWorker.includes('observatori-fontanillas-v22-31-10-fonta-region
 assert.ok(meteoAI.includes('everydayAdviceAnswer')&&meteoAI.includes('hourlyRainAnswer'));
 assert.ok(meteoAI.includes("hourly.time?.slice(0,48)"));
 assert.ok(worker.includes('preguntes quotidianes molt senzilles'));
-assert.ok(roadmap.includes('V22.4.0 — Meteo IA més útil i entenedora'));
+assert.ok(roadmap.includes('# Roadmap viu')&&!roadmap.match(/- \[x\]/i));
 
 console.log('Test V22.4: Meteo IA quotidiana i context horari preparats');
