@@ -84,8 +84,6 @@ en els tres entorns.
 
 ### Rutes i metadades pròpies
 
-- [ ] Donar a cada ruta títol, descripció, canonical, Open Graph, Twitter Card i
-  contingut introductori propis.
 - [ ] Generar sitemap i comprovar les rutes amb Rich Results Test i Search
   Console.
 

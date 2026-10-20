@@ -1,7 +1,11 @@
 import { finiteNumber as finite } from '../src/core/numeric.js';
+import { PORTAL_PAGES } from '../src/core/portal-routes.js';
+import { buildSeoStructuredGraph, seoPageCopy, seoPageUrl, SEO_LANGUAGE_META } from '../src/features/seo.js';
+import { SUPPORTED_LANGUAGES } from '../src/core/i18n.js';
 
 const OBSERVATION_URL='https://fonta-meteo.marcelfonta.workers.dev/';
 const BASE_URL='https://meteo.fontanillas.cat/';
+const PAGE_SET=new Set(PORTAL_PAGES);
 
 const format=(value,digits=1)=>finite(value)===null?'—':finite(value).toLocaleString('ca-ES',{minimumFractionDigits:digits,maximumFractionDigits:digits});
 const escapeHtml=value=>String(value??'').replace(/[&<>"]/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[character]));
@@ -31,19 +35,21 @@ export function initialCondition(observation){
 }
 
 export function initialSchema(observation){
-  const property=(name,value,unit)=>({'@type':'PropertyValue',name,value,...(unit?{unitText:unit}:{})});
-  const values=[property('Temperatura',observation.temperature,'°C')];
-  if(observation.humidity!==null)values.push(property('Humitat relativa',observation.humidity,'%'));
-  if(observation.pressure!==null)values.push(property('Pressió atmosfèrica',observation.pressure,'hPa'));
-  if(observation.windSpeed!==null)values.push(property('Velocitat del vent',observation.windSpeed,'km/h'));
-  if(observation.rainToday!==null)values.push(property('Precipitació acumulada avui',observation.rainToday,'mm'));
-  return {'@context':'https://schema.org','@graph':[
-    {'@type':'WebSite','@id':`${BASE_URL}#website`,name:'Observatori Meteorològic Fontanillas',url:BASE_URL,inLanguage:'ca',description:'Dades meteorològiques en directe, avisos, predicció i radar des de Sant Celoni, als peus del Montseny.'},
-    {'@type':'WebPage','@id':`${BASE_URL}#webpage`,url:BASE_URL,name:'Observatori Meteorològic Fontanillas · Temps a Sant Celoni',description:'Dades meteorològiques en directe, avisos, predicció i radar des de Sant Celoni, als peus del Montseny.',inLanguage:'ca',isPartOf:{'@id':`${BASE_URL}#website`},about:{'@id':`${BASE_URL}#dataset`}},
-    {'@type':'Dataset','@id':`${BASE_URL}#dataset`,name:'Observacions meteorològiques de l’estació Fontanillas',description:'Sèries meteorològiques locals de temperatura, humitat, pressió, vent, precipitació, radiació solar i índex UV.',url:BASE_URL,inLanguage:'ca',spatialCoverage:{'@type':'Place',name:'Sant Celoni, Vallès Oriental',geo:{'@type':'GeoCoordinates',latitude:41.6906,longitude:2.489}},temporalCoverage:'2025/..',measurementTechnique:'Estació meteorològica automàtica',variableMeasured:['Temperatura','Humitat relativa','Pressió atmosfèrica','Velocitat i ratxa del vent','Precipitació','Radiació solar','Índex UV']},
-    {'@type':'BreadcrumbList','@id':`${BASE_URL}#breadcrumb`,itemListElement:[{'@type':'ListItem',position:1,name:'Inici',item:BASE_URL}]},
-    {'@type':'Observation','@id':`${BASE_URL}#latest-observation`,name:'Darrera observació meteorològica de Fontanillas',observationDate:observation.updated,measuredProperty:values,about:{'@id':`${BASE_URL}#dataset`},spatialCoverage:{'@type':'Place',name:'Sant Celoni'}}
-  ]};
+  return buildSeoStructuredGraph('inici',observation,'ca');
+}
+
+export function portalPageFromPath(pathname='/'){
+  const normalized=String(pathname||'/').replace(/\/+$/,'')||'/';
+  if(normalized==='/'||normalized==='/index.html')return 'inici';
+  const page=decodeURIComponent(normalized.slice(1));
+  return PAGE_SET.has(page)?page:null;
+}
+
+export function routeSeo(page='inici',lang='ca'){
+  const safePage=PAGE_SET.has(page)?page:'inici';
+  const safeLanguage=SUPPORTED_LANGUAGES.includes(lang)?lang:'ca';
+  const copy=seoPageCopy(safePage,safeLanguage);
+  return {...copy,page:safePage,lang:safeLanguage,locale:SEO_LANGUAGE_META[safeLanguage].locale,url:seoPageUrl(safePage,safeLanguage),schema:buildSeoStructuredGraph(safePage,null,safeLanguage)};
 }
 
 async function fetchObservation(){
@@ -58,6 +64,8 @@ async function fetchObservation(){
 
 class TextHandler{constructor(value){this.value=value;}element(element){element.setInnerContent(String(this.value));}}
 class SchemaHandler{constructor(value){this.value=value;}element(element){element.setInnerContent(JSON.stringify(this.value));}}
+class AttributeHandler{constructor(name,value){this.name=name;this.value=value;}element(element){element.setAttribute(this.name,String(this.value));}}
+class DocumentHandler{constructor(page,lang){this.page=page;this.lang=lang;}element(element){element.setAttribute('lang',this.lang);element.setAttribute('data-portal-page',this.page);}}
 class NoscriptHandler{
   constructor(observation){this.observation=observation;}
   element(element){
@@ -66,15 +74,48 @@ class NoscriptHandler{
   }
 }
 
+class RouteNoscriptHandler{
+  constructor(meta){this.meta=meta;}
+  element(element){
+    element.setInnerContent(`<h1>${escapeHtml(this.meta.title)}</h1><p>${escapeHtml(this.meta.description)}</p><p>El visor interactiu necessita JavaScript. Pots consultar igualment la <a href="https://www.meteo.cat/prediccio/municipal/082021">predicció oficial de Meteocat</a>, els <a href="https://www.meteo.cat/prediccio/general/">avisos oficials</a> i la <a href="${escapeHtml(BASE_URL)}">portada de l’Observatori</a>.</p>`,{html:true});
+  }
+}
+
+function routeRewriter(meta){
+  let rewriter=new HTMLRewriter()
+    .on('html',new DocumentHandler(meta.page,meta.lang))
+    .on('title',new TextHandler(meta.title))
+    .on('meta[name="description"]',new AttributeHandler('content',meta.description))
+    .on('meta[property="og:locale"]',new AttributeHandler('content',meta.locale))
+    .on('meta[property="og:title"]',new AttributeHandler('content',meta.title))
+    .on('meta[property="og:description"]',new AttributeHandler('content',meta.description))
+    .on('meta[property="og:url"]',new AttributeHandler('content',meta.url))
+    .on('meta[name="twitter:title"]',new AttributeHandler('content',meta.title))
+    .on('meta[name="twitter:description"]',new AttributeHandler('content',meta.description))
+    .on('link[rel="canonical"]',new AttributeHandler('href',meta.url))
+    .on('#seo-structured-data',new SchemaHandler(meta.schema))
+    .on('.noscript-weather',new RouteNoscriptHandler(meta));
+  for(const language of SUPPORTED_LANGUAGES)rewriter=rewriter.on(`link[rel="alternate"][hreflang="${language}"]`,new AttributeHandler('href',seoPageUrl(meta.page,language)));
+  return rewriter.on('link[rel="alternate"][hreflang="x-default"]',new AttributeHandler('href',seoPageUrl(meta.page,'ca')));
+}
+
 export async function onRequest(context){
   const accepts=context.request.headers.get('Accept')||'';
   const url=new URL(context.request.url);
-  if(context.request.method!=='GET'||(url.pathname!=='/'&&url.pathname!=='/index.html')||!accepts.includes('text/html'))return context.next();
-  const [response,observation]=await Promise.all([context.next(),fetchObservation()]);
-  if(!observation||!response.headers.get('Content-Type')?.includes('text/html'))return response;
+  const page=portalPageFromPath(url.pathname);
+  if(context.request.method!=='GET'||!page||!accepts.includes('text/html'))return context.next();
+  const lang=SUPPORTED_LANGUAGES.includes(url.searchParams.get('lang'))?url.searchParams.get('lang'):'ca';
+  const [response,observation]=await Promise.all([context.next(),page==='inici'?fetchObservation():Promise.resolve(null)]);
+  if(!response.headers.get('Content-Type')?.includes('text/html'))return response;
+  const meta=routeSeo(page,lang);
+  let rewriter=routeRewriter(meta);
+  if(!observation){
+    const transformed=rewriter.transform(response);const headers=new Headers(transformed.headers);headers.set('X-Observatori-Route',page);
+    return new Response(transformed.body,{status:transformed.status,statusText:transformed.statusText,headers});
+  }
   const time=new Date(observation.updated);
   const localTime=Number.isFinite(time.getTime())?time.toLocaleTimeString('ca-ES',{timeZone:'Europe/Madrid',hour:'2-digit',minute:'2-digit'}):'—';
-  const rewriter=new HTMLRewriter()
+  rewriter=rewriter
     .on('#temperature',new TextHandler(format(observation.temperature)))
     .on('#humidity',new TextHandler(format(observation.humidity,0)))
     .on('#dew-point',new TextHandler(`${format(observation.dewPoint)} °C`))
@@ -86,9 +127,9 @@ export async function onRequest(context){
     .on('#updated-relative',new TextHandler(observation.stale?'darrera lectura':'fa menys de 5 min'))
     .on('#updated-time',new TextHandler(localTime))
     .on('#connection-label',new TextHandler(observation.stale?'Dades desades':'En directe'))
-    .on('#seo-structured-data',new SchemaHandler(initialSchema(observation)))
+    .on('#seo-structured-data',new SchemaHandler(buildSeoStructuredGraph(page,observation,lang)))
     .on('.noscript-weather',new NoscriptHandler(observation));
   const transformed=rewriter.transform(response);
-  const headers=new Headers(transformed.headers);headers.set('X-Observatori-Initial-Data',observation.stale?'stored':'live');
+  const headers=new Headers(transformed.headers);headers.set('X-Observatori-Initial-Data',observation.stale?'stored':'live');headers.set('X-Observatori-Route',page);
   return new Response(transformed.body,{status:transformed.status,statusText:transformed.statusText,headers});
 }

@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-20 — Metadades de servidor per ruta
+
+- Les rutes del portal reben des de Cloudflare Pages el títol, la descripció,
+  la canònica, Open Graph, Twitter Card i JSON-LD corresponents abans que
+  s'executi JavaScript.
+- L'HTML inicial identifica la ruta activa i conserva una introducció útil amb
+  enllaços oficials també quan JavaScript no està disponible, sense duplicar
+  `index.html` ni afegir documents estàtics paral·lels.
+- La primera observació de la portada reutilitza el mateix graf SEO que el
+  navegador, amb la cobertura temporal real iniciada el 4 d'agost de 2026.
+
 ## 2026-10-20 — Visor de models consolidat a `/models`
 
 - El laboratori oficial de Météo-France té una ruta pública, llegible i
