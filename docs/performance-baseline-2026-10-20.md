@@ -68,6 +68,14 @@ compleix l’objectiu de 4 segons. Aquesta capa inicial és l’únic coll d’a
 propi prioritari que queda; el LCP mòbil del Radar depèn de les rajoles externes
 i ja no provoca inestabilitat visual.
 
+**Tancament posterior del paquet de Models francesos:** la capa AROME inicial i
+Leaflet ara es demanen des de la capçalera, mentre el catàleg es resol en
+paral·lel. La imatge mòbil passa de 960 × 544 a 720 × 408, suficient per a la
+mida de presentació, i baixa de 62 a 42 KB. Tres execucions Lighthouse 12.8.2
+sobre la previsualització comprimida de Cloudflare han donat LCP de `2.807`,
+`2.591` i `2.951` ms, rendiment de `90`, `93` i `89`, CLS `0,006` i
+accessibilitat `100`. El criteri de ≤ 4 segons queda complert.
+
 ### P0 · Radar inestable durant la càrrega
 
 El Radar és l’única secció amb rendiment mòbil pobre i CLS crític. Lighthouse
@@ -142,8 +150,8 @@ incidències de tercers continuen separades de les correccions pròpies.
 
 1. Fet: reduir l’actiu de marca carregat a totes les pàgines.
 2. Fet: estabilitzar la geometria del Radar i repetir la matriu Radar.
-3. Fet parcialment: avançar i emmagatzemar la capa inicial dels Models
-   francesos; encara cal reduir-ne l’LCP mòbil fins a 4 segons o menys.
+3. Fet: avançar i emmagatzemar la capa inicial dels Models francesos, amb LCP
+   mòbil inferior a 4 segons en tres execucions consecutives.
 4. Fet: corregir l’accessibilitat pròpia.
 5. Fet: tornar a mesurar les sis entrades i comparar-les amb la línia base.
 6. Pendent: afegir Core Web Vitals de camp quan Search Console tingui prou
