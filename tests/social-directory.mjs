@@ -33,7 +33,8 @@ assert.ok(page.includes('target="_blank"') && page.includes('rel="noopener noref
 assert.equal((page.match(/<span class="mark"><svg/g) || []).length, 9, 'Cada xarxa ha de mostrar el seu logotip.');
 assert.ok(!page.includes('Observatori Meteorològic Fontanillas · V'), 'El peu públic no ha de mostrar la versió tècnica.');
 assert.ok(sitemap.includes('https://meteo.fontanillas.cat/xarxes.html'));
-assert.ok(serviceWorker.includes("'/xarxes.html'") && serviceWorker.includes("'/assets/social/publicacio-xarxes-v22-24.png'"));
+assert.ok(serviceWorker.includes("'/xarxes.html'"), 'El directori de xarxes ha de continuar disponible offline.');
+assert.ok(!serviceWorker.includes("'/assets/social/publicacio-xarxes-v22-24.png'"), 'La creativitat social pesada no s’ha de precarregar amb l’aplicació.');
 assert.ok(artwork.includes('width="1080" height="1350"') && artwork.includes('meteo.fontanillas.cat/xarxes.html'));
 
 const png = await readFile(resolve(root, 'assets/social/publicacio-xarxes-v22-24.png'));
