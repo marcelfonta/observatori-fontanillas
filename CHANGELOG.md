@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-20 — Visor de models consolidat a `/models`
+
+- El laboratori oficial de Météo-France té una ruta pública, llegible i
+  canònica a `/models`, sense incorporar-ne la càrrega pesada a la portada.
+- L’adreça antiga `models-franca.html` redirigeix de manera permanent a la ruta
+  nova, que també s’utilitza a la navegació, els enllaços interns i el sitemap.
+- La PWA desa la ruta canònica i conserva el visor per a una consulta posterior
+  quan ja s’hagi carregat almenys una vegada.
+
 ## 2026-10-20 — Enllaços profunds llegibles i compatibles
 
 - Totes les seccions principals disposen d’una ruta pròpia, com `/prediccio`,

@@ -28,7 +28,7 @@ assert.match(index,/\?nems,rain,41\.691,2\.489,9/);
 assert.match(index,/\?aladin,rain,41\.691,2\.489,9/);
 assert.match(index,/Windy és l’explorador visual/);
 assert.match(index,/id="arome-map"/);
-assert.match(index,/id="arome-complete-link"[^>]+models-franca\.html/);
+assert.match(index,/id="arome-complete-link"[^>]+href="\/models"/);
 assert.match(models,/aromeGrid\.length\} punts AROME HD/);
 assert.match(models,/function windyPublicUrl\(\)/);
 assert.match(models,/Font: Windy · obrir complet/);

@@ -76,6 +76,8 @@ for(const width of [390,1280]){
     await page.route('**/meteofrance/models',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
       checkedAt:'2026-10-07T18:00:00Z',products:[{id:'arome',label:'AROME directe',shortLabel:'AROME',horizon:'0–48 h',purpose:'Detall determinista local',configured:true,available:true,protocol:'wms',visualizable:true,layers:['precipitation','temperature','wind','clouds'],times:['2026-10-07T18:00:00.000Z','2026-10-07T19:00:00.000Z','2026-10-07T20:00:00.000Z']}]
     })}));
+    // El servidor estàtic de la suite no interpreta `_redirects`; la ruta
+    // pública `/models` es valida amb la previsualització de Cloudflare.
     await page.goto('/models-franca.html');
     await expect(page.getByText('Tornar a la previsió')).toHaveCount(0);
     await expect(page.locator('#time-range')).toHaveAttribute('max','2');
