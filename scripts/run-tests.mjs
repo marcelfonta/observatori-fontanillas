@@ -23,6 +23,7 @@ if (quick && !selected.includes('camera-timelapse-schedule.mjs')) selected.push(
 if (quick && !selected.includes('meteofrance-direct.mjs')) selected.push('meteofrance-direct.mjs');
 if (quick && !selected.includes('buffer-x.mjs')) selected.push('buffer-x.mjs');
 if (quick && !selected.includes('opera-readiness.mjs')) selected.push('opera-readiness.mjs');
+if (quick && !selected.includes('nowcast-shadow.mjs')) selected.push('nowcast-shadow.mjs');
 if (quick && !selected.includes('forecast-dayparts.mjs')) selected.push('forecast-dayparts.mjs');
 if (quick && !selected.includes('cecat-local-risk.mjs')) selected.push('cecat-local-risk.mjs');
 if (quick && !selected.includes('cecat-map-layout.mjs')) selected.push('cecat-map-layout.mjs');

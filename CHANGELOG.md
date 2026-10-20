@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-20 — Nowcasting local en mode d’ombra
+
+- El Worker captura prospectivament la disponibilitat, frescor, cadència i
+  horitzó dels fotogrames de radar i comprova al mateix instant les capes de
+  núvols, llamps i la precipitació horària d’AROME HD.
+- Les mostres queden en un registre privat de 120 dies amb un resum de cobertura
+  consultable des de l’administració. El primer llindar exigeix 288 mostres i
+  almenys un 90% de radar útil.
+- El circuit no calcula trajectòries, probabilitats ni hores d’arribada, i no
+  alimenta avisos ni publicacions. L’error espacial queda ajornat fins que una
+  projecció guardada es pugui comparar honestament amb l’observació posterior.
+
 ## 2026-10-20 — Entrega social verificable dels timelapses
 
 - Cada canal registra ara per separat si el vídeo ha estat acceptat, continua
