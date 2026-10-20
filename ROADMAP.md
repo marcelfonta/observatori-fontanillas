@@ -82,21 +82,10 @@ en els tres entorns.
 
 ## P1 — Navegació, enllaços i indexació
 
-### 1. Enllaços profunds fiables
+### Rutes i metadades pròpies
 
-- [ ] Fer que cada secció actualitzi una URL estable i llegible.
-- [ ] Assegurar que recarregar, compartir, enrere i endavant restauren la secció
-  correcta, incloses les rutes antigues amb `?page=`.
-- [ ] Definir redireccions o compatibilitat perquè cap enllaç existent deixi de
-  funcionar.
-
-**Fet quan:** totes les seccions principals es poden obrir directament i la
-navegació del navegador funciona com en una web multipàgina.
-
-### 2. Rutes i metadades pròpies
-
-- [ ] Introduir progressivament rutes com `/prediccio`, `/radar`, `/avisos`,
-  `/terra` i `/models`, començant per les de més valor públic.
+- [ ] Consolidar el visor especialitzat `models-franca.html` sota `/models`
+  sense duplicar-ne la canonical ni degradar la càrrega inicial.
 - [ ] Donar a cada ruta títol, descripció, canonical, Open Graph, Twitter Card i
   contingut introductori propis.
 - [ ] Generar sitemap i comprovar les rutes amb Rich Results Test i Search

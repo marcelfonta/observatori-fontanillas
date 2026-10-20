@@ -1,3 +1,5 @@
+import { portalPageHref } from '../core/portal-routes.js';
+
 const icon=paths=>`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths}</svg>`;
 const ICONS={
   fonta:icon('<path d="m2 19 7-10 4 5 3-7 6 12M3 5h6M6 2v6"/>'),
@@ -26,11 +28,11 @@ const ICONS={
 };
 const NAV_ITEMS=[
   ['fonta','Fonta · laboratori','./fonta.html'],
-  ['inici','Inici','./?page=inici'],['meteo-ia','Meteo IA','./?page=meteo-ia'],['estacio','Estació','./?page=estacio'],
-  ['prediccio','Predicció','./?page=prediccio'],['models-franca','Models francesos','./models-franca.html'],['llarg-termini','Llarg termini','./?page=llarg-termini'],['videos','Predicció en vídeo','./?page=videos'],['verificacio','Predicció vs realitat','./?page=verificacio'],['avisos','Avisos','./?page=avisos'],
-  ['cel','Cel de dia i de nit','./?page=cel'],['radar','Radar','./?page=radar'],['webcams','Webcams','./?page=webcams'],['terra','Observació de la Terra','./?page=terra'],['histories','Històries meteo','./?page=histories'],
-  ['centre-dades','Centre de Dades','./?page=centre-dades'],['comparar','Comparar','./comparativa.html'],['municipis','El temps arreu','./municipis.html'],
-  ['medi-ambient','Medi Ambient','./?page=medi-ambient'],['aprendre','Aprendre','./?page=aprendre'],['contacte','Contacte','./?page=contacte'],['metodologia','Metodologia','./metodologia.html'],['collaboracions','Col·laboracions','./colaboracions.html']
+  ['inici','Inici','/'],['meteo-ia','Meteo IA','/meteo-ia'],['estacio','Estació','/estacio'],
+  ['prediccio','Predicció','/prediccio'],['models-franca','Models francesos','./models-franca.html'],['llarg-termini','Llarg termini','/llarg-termini'],['videos','Predicció en vídeo','/videos'],['verificacio','Predicció vs realitat','/verificacio'],['avisos','Avisos','/avisos'],
+  ['cel','Cel de dia i de nit','/cel'],['radar','Radar','/radar'],['webcams','Webcams','/webcams'],['terra','Observació de la Terra','/terra'],['histories','Històries meteo','/histories'],
+  ['centre-dades','Centre de Dades','/centre-dades'],['comparar','Comparar','./comparativa.html'],['municipis','El temps arreu','./municipis.html'],
+  ['medi-ambient','Medi Ambient','/medi-ambient'],['aprendre','Aprendre','/aprendre'],['contacte','Contacte','/contacte'],['metodologia','Metodologia','./metodologia.html'],['collaboracions','Col·laboracions','./colaboracions.html']
 ];
 const NAV_GROUPS=[
   ['Ara',['inici','meteo-ia','estacio','municipis']],
@@ -58,12 +60,12 @@ export function mountPortalShell(activePage){
   let sidebar=document.getElementById('portal-sidebar');
   if(!sidebar){
     sidebar=document.createElement('aside');sidebar.className='portal-sidebar';sidebar.id='portal-sidebar';sidebar.setAttribute('aria-label','Seccions del portal');
-    const brand=document.createElement('a');brand.className='portal-sidebar__brand';brand.href='./?page=inici';brand.setAttribute('aria-label','Fontanillas Sant Celoni: inici');brand.innerHTML='<span class="portal-sidebar__brand-mark" aria-hidden="true"><img src="assets/icons/icon-192.png" alt="" width="52" height="52" decoding="async" /></span><span class="portal-sidebar__brand-copy"><strong>Fontanillas</strong><small>Sant Celoni</small></span>';
+    const brand=document.createElement('a');brand.className='portal-sidebar__brand';brand.href=portalPageHref('inici');brand.setAttribute('aria-label','Fontanillas Sant Celoni: inici');brand.innerHTML='<span class="portal-sidebar__brand-mark" aria-hidden="true"><img src="assets/icons/icon-192.png" alt="" width="52" height="52" decoding="async" /></span><span class="portal-sidebar__brand-copy"><strong>Fontanillas</strong><small>Sant Celoni</small></span>';
     const nav=document.createElement('nav');
     NAV_GROUPS.forEach(([group,ids])=>{
       const section=document.createElement('div');section.className='portal-nav-group';
       const heading=document.createElement('p');heading.textContent=group;section.append(heading);
-      ids.forEach(id=>{const [,label,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=href;link.dataset.pageLink=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span>${label}`;section.append(link);});
+      ids.forEach(id=>{const [,label,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=href.startsWith('/')?portalPageHref(id):href;link.dataset.pageLink=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span>${label}`;section.append(link);});
       nav.append(section);
     });
     const footer=document.createElement('div');footer.className='portal-sidebar__footer';footer.innerHTML='<div class="portal-sidebar__copyright"><small>© 2026 Fontanillas</small><span>Observatori meteorològic local</span></div>';
@@ -80,7 +82,7 @@ export function mountPortalShell(activePage){
   if(!document.getElementById('portal-mobile-nav')){
     const mobile=document.createElement('nav');mobile.className='portal-mobile-nav';mobile.id='portal-mobile-nav';mobile.setAttribute('aria-label','Navegació principal mòbil');
     [['inici','Inici'],['estacio','Ara'],['municipis','Arreu'],['prediccio','Previsió'],['avisos','Avisos']].forEach(([id,label])=>{
-      const [, ,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=href;link.dataset.mobilePage=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span><b>${label}</b>`;mobile.append(link);
+      const [, ,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=href.startsWith('/')?portalPageHref(id):href;link.dataset.mobilePage=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span><b>${label}</b>`;mobile.append(link);
     });
     const more=document.createElement('button');more.type='button';more.id='portal-mobile-more';more.setAttribute('aria-label','Més: obrir totes les seccions');more.setAttribute('aria-controls','portal-sidebar');more.setAttribute('aria-expanded','false');more.innerHTML='<span aria-hidden="true">•••</span><b>Més</b>';
     more.addEventListener('click',()=>{button?.click();more.setAttribute('aria-expanded',button?.getAttribute('aria-expanded')||'false');});

@@ -1,5 +1,6 @@
 import { CONFIG } from '../core/config.js';
 import { getLanguage, SUPPORTED_LANGUAGES } from '../core/i18n.js';
+import { PORTAL_PAGES } from '../core/portal-routes.js';
 
 const BASE='https://meteo.fontanillas.cat/';
 const LANGUAGE_META={ca:{locale:'ca_ES',home:'Inici'},es:{locale:'es_ES',home:'Inicio'},en:{locale:'en_GB',home:'Home'},fr:{locale:'fr_FR',home:'Accueil'}};
@@ -26,7 +27,7 @@ const PAGES={
 function language(){const current=getLanguage();return SUPPORTED_LANGUAGES.includes(current)?current:'ca';}
 function pageCopy(page,lang=language()){const entry=PAGES[page]||PAGES.inici;const [title,description]=entry[lang]||entry.ca;return {title,description};}
 export function seoPageUrl(page='inici',lang='ca'){
-  const url=new URL(BASE);if(page!=='inici')url.searchParams.set('page',PAGES[page]?page:'inici');
+  const selected=PAGES[page]&&PORTAL_PAGES.includes(page)?page:'inici';const url=new URL(selected==='inici'?'':selected,BASE);
   if(lang!=='ca'&&SUPPORTED_LANGUAGES.includes(lang))url.searchParams.set('lang',lang);return url.toString();
 }
 function setMeta(selector,value){const node=document.querySelector(selector);if(node)node.setAttribute('content',value);}
