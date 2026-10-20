@@ -2029,6 +2029,10 @@ async function forecastVerification(url, env) {
     WHERE r.position=1 AND o.observed_samples>=72 ORDER BY r.target_date DESC,r.horizon_day ASC`)
     .bind(cutoff, cutoff, new Intl.DateTimeFormat("en-CA", { timeZone:TIME_ZONE }).format(new Date())).all();
   const rows = (query?.results || []).map(row => ({ ...row,
+    maximumTemperatureError:Number(row.temperature_max)-Number(row.observed_max),
+    maximumTemperatureAbsoluteError:Math.abs(Number(row.temperature_max)-Number(row.observed_max)),
+    minimumTemperatureError:Number(row.temperature_min)-Number(row.observed_min),
+    minimumTemperatureAbsoluteError:Math.abs(Number(row.temperature_min)-Number(row.observed_min)),
     temperatureError:verificationMean([
       Number(row.temperature_max)-Number(row.observed_max),
       Number(row.temperature_min)-Number(row.observed_min),
@@ -2051,6 +2055,10 @@ async function forecastVerification(url, env) {
     samples:subset.length,
     wetDays:subset.filter(row=>Number(row.observed_rain)>=0.2).length,
     dryDays:subset.filter(row=>Number(row.observed_rain)<0.2).length,
+    maximumTemperatureMae:verificationRound(verificationMean(subset.map(row=>row.maximumTemperatureAbsoluteError))),
+    maximumTemperatureBias:verificationRound(verificationMean(subset.map(row=>row.maximumTemperatureError))),
+    minimumTemperatureMae:verificationRound(verificationMean(subset.map(row=>row.minimumTemperatureAbsoluteError))),
+    minimumTemperatureBias:verificationRound(verificationMean(subset.map(row=>row.minimumTemperatureError))),
     temperatureMae:verificationRound(verificationMean(subset.map(row=>row.temperatureAbsoluteError))),
     temperatureBias:verificationRound(verificationMean(subset.map(row=>row.temperatureError))),
     rainAccuracy:verificationRound(verificationMean(subset.map(row=>row.rainCorrect?100:0)),0),
@@ -2074,10 +2082,17 @@ async function forecastVerification(url, env) {
   const confidence=sampleDays>=30?{level:'consolidated',label:'Mostra consolidada',note:'30 dies o més verificats'}:sampleDays>=14?{level:'growing',label:'Mostra en creixement',note:'Calen 30 dies per consolidar tendències'}:{level:'preliminary',label:'Resultat preliminar',note:'Menys de 14 dies verificats'};
   const modelNames={best_match:'Open‑Meteo Best Match',ecmwf:'ECMWF',icon:'ICON',gfs:'GFS',arome_hd:'AROME HD'};
   const modelOrder=['best_match','ecmwf','icon','gfs','arome_hd'];
-  const byModel=modelOrder.map(model=>{const subset=rows.filter(row=>row.model===model&&Number(row.horizon_day)===1);return {model,label:modelNames[model],...summarize(subset)};}).filter(item=>item.samples);
-  const normalizedWeights=key=>{const eligible=byModel.filter(item=>item.samples>=7&&Number.isFinite(Number(item[key])));const raw=eligible.map(item=>({model:item.model,value:1/(Math.max(.01,Number(item[key]))+(key==='rainBrier'?.04:.15))}));const total=raw.reduce((sum,item)=>sum+item.value,0);return total?Object.fromEntries(raw.map(item=>[item.model,verificationRound(item.value/total,3)])):{};};
-  const weights={temperature:normalizedWeights('temperatureMae'),rain:normalizedWeights('rainBrier'),wind:normalizedWeights('windMae'),minimumSamples:7,note:'Pes invers a l’error observat; només es calcula amb set casos comparables o més i no altera encara la previsió operativa.'};
-  return json({ ok:true,status,requestedDays,generatedAt:new Date().toISOString(),firstIssued:firstSnapshot?.firstIssued||null,storedForecasts:Number(firstSnapshot?.total)||0,sampleDays,totalComparisons:rows.length,summaryScope:"tomorrow",confidence,summary,horizons,detail,byModel,weights,method:{ provider:"Open-Meteo · Best Match, ECMWF, ICON, GFS i AROME HD",observation:"Observatori Fontanillas · D1",minimumObservedSamples:72,rainThresholdMillimetres:0.2,rainProbabilityThreshold:40,note:"Els indicadors principals comparen només la previsió de demà guardada el dia anterior. La comparativa per model i els pesos locals només apareixen amb mostres reals; no es reconstrueixen pronòstics passats. L’índex Brier de pluja va de 0 (millor) a 1 (pitjor)." } }, 200, "public, max-age=900");
+  const tomorrowRows=rows.filter(row=>Number(row.horizon_day)===1);
+  const comparableDates=[...new Set(tomorrowRows.map(row=>row.target_date))].filter(date=>modelOrder.every(model=>tomorrowRows.some(row=>row.target_date===date&&row.model===model))).sort();
+  const comparableDateSet=new Set(comparableDates);
+  const comparableRows=tomorrowRows.filter(row=>comparableDateSet.has(row.target_date));
+  const byModel=modelOrder.map(model=>{const subset=comparableRows.filter(row=>row.model===model);return {model,label:modelNames[model],...summarize(subset)};});
+  const minimumSamples=7;const minimumWetDays=7;
+  const normalizedWeights=(key,{rain=false}={})=>{const eligible=byModel.filter(item=>item.samples>=minimumSamples&&(!rain||item.wetDays>=minimumWetDays)&&Number.isFinite(Number(item[key])));if(eligible.length!==modelOrder.length)return {};const raw=eligible.map(item=>({model:item.model,value:1/(Math.max(.01,Number(item[key]))+(rain ? .04 : .15))}));const total=raw.reduce((sum,item)=>sum+item.value,0);return total?Object.fromEntries(raw.map(item=>[item.model,verificationRound(item.value/total,3)])):{};};
+  const weights={maximumTemperature:normalizedWeights('maximumTemperatureMae'),minimumTemperature:normalizedWeights('minimumTemperatureMae'),rain:normalizedWeights('rainBrier',{rain:true}),wind:normalizedWeights('windMae'),minimumSamples,minimumWetDays,applied:false,note:'Pes candidat invers a l’error observat sobre exactament els mateixos dies. No s’aplica a la previsió operativa; la pluja exigeix també set dies plujosos comparables.'};
+  const comparableDays=comparableDates.length;const nextReviewDays=comparableDays<60?60:comparableDays<90?90:null;
+  const modelMaturity={status:comparableDays>=90?'review-90':comparableDays>=60?'review-60':comparableDays>=minimumSamples?'minimum-ready':'collecting',comparableDays,minimumSamples,minimumWetDays,wetDays:byModel[0]?.wetDays||0,reviewDays:[60,90],nextReviewDays,daysToNextReview:nextReviewDays?Math.max(0,nextReviewDays-comparableDays):0,allModelsPresent:byModel.every(item=>item.samples===comparableDays),rainWeightsReady:byModel.every(item=>item.samples>=minimumSamples&&item.wetDays>=minimumWetDays)};
+  return json({ ok:true,status,requestedDays,generatedAt:new Date().toISOString(),firstIssued:firstSnapshot?.firstIssued||null,storedForecasts:Number(firstSnapshot?.total)||0,sampleDays,comparableDays,totalComparisons:rows.length,summaryScope:"tomorrow",confidence,summary,horizons,detail,byModel,modelMaturity,weights,method:{ provider:"Open-Meteo · Best Match, ECMWF, ICON, GFS i AROME HD",observation:"Observatori Fontanillas · D1",minimumObservedSamples:72,rainThresholdMillimetres:0.2,rainProbabilityThreshold:40,note:"Els indicadors principals comparen només la previsió de demà guardada el dia anterior. La comparativa entre models usa exclusivament dates presents en tots cinc models; màxima i mínima s’avaluen per separat. No es reconstrueixen pronòstics passats ni s’apliquen pesos candidats a la previsió operativa." } }, 200, "public, max-age=900");
 }
 
 function socialNumber(value, digits = 1) {

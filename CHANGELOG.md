@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-20 — Confiança multimodel comparable
+
+- Confirmada en producció la primera mostra mínima: els cinc models disposen de
+  vuit dies reals comuns, sense reconstrucció retrospectiva.
+- La comparativa passa a usar exclusivament dates presents en tots cinc models,
+  separa l’error de temperatura màxima i mínima i exposa els talls de revisió de
+  60 i 90 dies.
+- Els pesos continuen sent candidats no operatius. El pes de pluja queda
+  bloquejat fins que hi hagi almenys set dies plujosos comuns; actualment n’hi
+  ha tres.
+
 ## 2026-10-20 — Roadmap reduït a pendents reals
 
 - El roadmap deixa de duplicar centenars de tasques ja completades i conserva

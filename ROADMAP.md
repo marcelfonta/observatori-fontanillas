@@ -19,9 +19,6 @@ pendent i decisions encara obertes. Les fases completades es documenten a
 
 ### Confiança multimodel
 
-- [ ] Deixar que cada model individual acumuli com a mínim set casos reals
-  vàlids i aparellats; l’automatització existent avisarà quan la mostra mínima
-  estigui disponible.
 - [ ] Revisar de nou els resultats als 60 i 90 dies, separant temperatura màxima,
   temperatura mínima i pluja, abans de modificar els pesos locals.
 - [ ] Exigir més dies amb pluja abans de concloure quin model resol millor la
