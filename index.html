@@ -90,7 +90,7 @@
       <button type="button" id="app-update-dismiss" aria-label="Tancar avís d’actualització">×</button>
     </div>
     <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
-    <a class="skip-link" href="#ara">Saltar al contingut principal</a>
+    <a class="skip-link" href="#top">Saltar al contingut principal</a>
     <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
     <header class="site-header shell">
       <button class="portal-menu-button" id="portal-menu-button" type="button" aria-expanded="false" aria-controls="portal-sidebar" aria-label="Obrir el menú">☰</button>
@@ -98,7 +98,7 @@
       <p class="header-context" id="portal-page-label">Consulta ràpida</p>
     </header>
 
-    <main id="top" class="shell portal-main">
+    <main id="top" class="shell portal-main" tabindex="-1">
       <section id="ara" class="hero panel" data-portal-page="inici">
         <div class="hero__copy">
           <p class="eyebrow">Sant Celoni · Vallès Oriental</p>
@@ -107,9 +107,9 @@
           <div class="freshness"><span class="freshness__dot"></span><span>Actualitzat <b id="updated-relative">ara mateix</b></span><span class="separator">·</span><time id="updated-time">--:--</time></div>
         </div>
         <div class="current-temp">
-          <a class="hero-webcam-preview" href="?page=webcams" aria-label="Webcam · ara: obrir la webcam de l’observatori">
+          <a class="hero-webcam-preview" href="?page=webcams" aria-labelledby="hero-webcam-status">
             <img id="hero-webcam-image" alt="Vista actual cap al nord des de la càmera meteorològica de l’Observatori Fontanillas" width="960" height="415" loading="eager" decoding="async" fetchpriority="high" />
-            <span><i aria-hidden="true"></i><b data-webcam-status>Webcam · comprovant</b></span>
+            <span><i aria-hidden="true"></i><b id="hero-webcam-status" data-webcam-status>Webcam · comprovant</b></span>
             <em class="webcam-fallback">Imatge temporalment no disponible</em>
           </a>
           <div class="current-temp__value"><span id="temperature" class="is-placeholder is-placeholder--value" aria-busy="true">--</span><sup>°C</sup></div>

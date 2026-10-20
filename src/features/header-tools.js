@@ -12,7 +12,7 @@ export function initHeaderTools(){
   tools.innerHTML=`<form class="header-place-search" role="search" autocomplete="off">
     <label class="sr-only" for="header-place-query">Cerca el teu municipi</label>
     <span aria-hidden="true">⌕</span>
-    <input id="header-place-query" name="municipi" type="search" role="combobox" minlength="2" maxlength="80" placeholder="Cerca el teu municipi" aria-autocomplete="list" aria-controls="header-place-suggestions" data-i18n-placeholder data-i18n-source-placeholder="Cerca el teu municipi" />
+    <input id="header-place-query" name="municipi" type="search" role="combobox" minlength="2" maxlength="80" placeholder="Cerca el teu municipi" aria-autocomplete="list" aria-controls="header-place-suggestions" aria-expanded="false" data-i18n-placeholder data-i18n-source-placeholder="Cerca el teu municipi" />
     <div id="header-place-suggestions" class="header-place-suggestions" role="listbox" hidden></div>
   </form>
   <label class="header-language"><span aria-hidden="true">◎</span><span class="sr-only">Idioma</span><select id="header-language-select" name="idioma" aria-label="Idioma" data-i18n-label data-i18n-source-label="Idioma"><option value="ca">CA</option><option value="es">ES</option><option value="en">EN</option><option value="fr">FR</option></select></label>`;

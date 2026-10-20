@@ -61,7 +61,7 @@ assert.match(client,/width:['"]960['"],height:['"]544['"]/);
 for(const origin of ['fonta-meteo.marcelfonta.workers.dev','unpkg.com','tile.openstreetmap.org'])assert.ok(page.includes(`rel="preconnect" href="https://${origin}"`),`Falta preconnexió amb ${origin}`);
 assert.match(client,/button\.disabled=Boolean\(item&&!item\.available\)/);
 assert.doesNotMatch(page+client,/METEOFRANCE_[A-Z_]+_API_KEY/);
-assert.match(page,/id="model-map" aria-hidden="true"/);
+assert.match(page,/id="model-map" aria-label="Mapa interactiu/);
 assert.match(meteofrance,/RETRYABLE_STATUS/);
 assert.match(meteofrance,/buildMapUrl\(product,layer,width,height,time\)/);
 assert.match(meteofrance,/parsed\.times\.includes\(requestedTime\)/);

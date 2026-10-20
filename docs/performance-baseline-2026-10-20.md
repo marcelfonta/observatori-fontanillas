@@ -100,6 +100,13 @@ provenen principalment de tercers.
 **Acció següent:** fer una correcció pròpia d’ARIA, focus, enllaç de salt i mida
 de text; documentar per separat el que només pot resoldre el proveïdor extern.
 
+**Resolució del 20 d’octubre:** el cercador declara l’estat inicial del
+desplegable, el salt de teclat apunta sempre al contingut principal, la webcam
+pren el nom accessible del seu estat visible i el mapa de models ja no amaga
+controls enfocables als lectors de pantalla. Lighthouse d’accessibilitat passa
+de `96` a `100` a la portada i de `91` a `100` als Models francesos. Les
+incidències de tercers continuen separades de les correccions pròpies.
+
 ## Ordre d’execució
 
 1. Reduir l’actiu de marca carregat a totes les pàgines.
