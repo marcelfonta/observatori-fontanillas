@@ -208,7 +208,7 @@ function renderCameraTimelapses(items=[]){
   if(preview){preview.src=`${items[0].url}?v=${encodeURIComponent(items[0].createdAt||Date.now())}`;preview.hidden=false;}
   list.replaceChildren(...items.map(item=>{
     const row=document.createElement('div');const label=document.createElement('strong');const detail=document.createElement('span');const action=document.createElement('button');
-    const state=item.publication?.status||'ready';const done=state==='published';const processing=state==='processing'||state==='publishing';const failedOutcome=item.publication?.outcomes?.find(outcome=>outcome?.ok===false);
+    const state=item.publication?.status||'ready';const done=state==='published';const processing=state==='processing'||state==='publishing';const failedOutcome=item.publication?.outcomes?.find(outcome=>outcome?.stage==='failed');
     row.className=`admin-social-diagnostic ${done?'is-ok':state==='failed'?'is-error':''}`;
     label.textContent=new Intl.DateTimeFormat('ca-ES',{dateStyle:'full',timeZone:'UTC'}).format(new Date(`${item.date}T12:00:00Z`));
     detail.textContent=done?'Publicat i confirmat als quatre canals':state==='failed'&&failedOutcome?`${DIAGNOSTIC_CHANNEL_LABELS[failedOutcome.channel]||failedOutcome.channel}: ${failedOutcome.error||'publicació rebutjada'}`:processing?'Publicació en procés; es comprova l’entrega real':item.automatic?'Preparat · dia de publicació automàtica':'Preparat · publicació manual opcional';

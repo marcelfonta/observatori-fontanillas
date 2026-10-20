@@ -29,8 +29,6 @@ pendent i decisions encara obertes. Les fases completades es documenten a
 - [ ] Confirmar en una jornada real que el timelapse arriba a tots els canals
   habilitats, especialment TikTok, sense duplicats i mantenint el màxim d’una
   publicació de timelapse al dia.
-- [ ] Registrar separadament acceptació, processament i publicació final de cada
-  canal; una petició acceptada no compta com a publicació confirmada.
 - [ ] Validar una franja automàtica completa de Meta abans de considerar
   prescindibles els controls manuals de recuperació.
 

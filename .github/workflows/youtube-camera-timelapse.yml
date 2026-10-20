@@ -11,6 +11,14 @@ on:
         description: URL pública temporal del vídeo protegit
         required: true
         type: string
+      callback_url:
+        description: URL de confirmació de publicació
+        required: true
+        type: string
+      callback_token:
+        description: Testimoni d'un sol ús per confirmar el resultat
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -55,6 +63,26 @@ jobs:
           node -e 'const fs=require("node:fs");const d=process.env.TIMELAPSE_DATE;fs.writeFileSync(process.env.VIDEO_METADATA_FILE,JSON.stringify({title:`Timelapse del cel · Sant Celoni · ${d}`,description:`Evolució del cel vista des de la càmera nord de Meteo Fontanillas, a Sant Celoni.\n\nhttps://meteo.fontanillas.cat/webcams.html\n\n#SantCeloni #Montseny #Timelapse #MeteoCatalunya`,tags:["Sant Celoni","Montseny","timelapse","meteorologia","Meteo Fontanillas"]}))'
       - name: Publica a YouTube
         run: node scripts/youtube-upload.mjs
+      - name: Confirma el resultat al Worker
+        if: always()
+        env:
+          CALLBACK_URL: ${{ inputs.callback_url }}
+          CALLBACK_TOKEN: ${{ inputs.callback_token }}
+          TIMELAPSE_DATE: ${{ inputs.date }}
+          UPLOAD_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          expected="https://fonta-meteo.marcelfonta.workers.dev/camera/nord/timelapse-youtube-callback"
+          [ "$CALLBACK_URL" = "$expected" ]
+          if [ "$UPLOAD_STATUS" = "success" ] && [ -f /tmp/youtube-camera-result.json ]; then
+            video_id="$(jq -r '.id // empty' /tmp/youtube-camera-result.json)"
+            [ -n "$video_id" ]
+            payload="$(jq -n --arg date "$TIMELAPSE_DATE" --arg token "$CALLBACK_TOKEN" --arg videoId "$video_id" '{date:$date,token:$token,success:true,videoId:$videoId}')"
+          else
+            error="Pujada de YouTube fallida; consulta l'artefacte de diagnòstic del workflow."
+            payload="$(jq -n --arg date "$TIMELAPSE_DATE" --arg token "$CALLBACK_TOKEN" --arg error "$error" '{date:$date,token:$token,success:false,error:$error}')"
+          fi
+          curl --fail --silent --show-error --max-time 30 -H 'Content-Type: application/json' --data "$payload" "$CALLBACK_URL"
       - name: Conserva el resultat de diagnòstic
         if: always()
         uses: actions/upload-artifact@v7

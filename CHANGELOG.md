@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-20 — Entrega social verificable dels timelapses
+
+- Cada canal registra ara per separat si el vídeo ha estat acceptat, continua
+  processant-se, ha quedat publicat o ha fallat. El panell només mostra el
+  timelapse com a complet quan els quatre canals confirmen la publicació final.
+- Instagram i Facebook es reconcilien amb Meta, TikTok conserva i consulta el
+  mateix identificador de Buffer i YouTube retorna automàticament al Worker el
+  resultat i l’identificador real del vídeo.
+- Les recuperacions reutilitzen els identificadors ja creats i mantenen una
+  única publicació per data, evitant duplicats encara que una plataforma trigui
+  més d’un cicle a processar el vídeo.
+
 ## 2026-10-20 — Confiança multimodel comparable
 
 - Confirmada en producció la primera mostra mínima: els cinc models disposen de
