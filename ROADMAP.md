@@ -55,16 +55,15 @@ L’autopublicació CECAT requerirà una autorització posterior explícita.
 
 ## P1 — Qualitat i velocitat de la web
 
-### 1. Mesura de referència
+### 1. Mesura de camp
 
-- [x] Registrar Lighthouse/PageSpeed en mòbil i escriptori per a la portada i
-  les seccions Predicció, Radar, Terra, Avisos i Models francesos.
-- [x] Anotar LCP, CLS, TBT, pes transferit, peticions i recursos externs més
-  lents en un informe reproduïble; INP queda pendent de dades de camp.
+La línia base de laboratori ja és a
+[`docs/performance-baseline-2026-10-20.md`](docs/performance-baseline-2026-10-20.md).
+Inclou LCP, CLS, TBT, transferència, peticions i recursos externs per a sis
+entrades en mòbil i escriptori.
+
 - [ ] Contrastar les proves de laboratori amb Core Web Vitals de camp quan
   Search Console disposi de prou trànsit.
-
-Línia base: [`docs/performance-baseline-2026-10-20.md`](docs/performance-baseline-2026-10-20.md).
 
 **Fet quan:** existeix una línia base repetible que identifica els colls
 d’ampolla reals i permet comparar qualsevol canvi posterior.
