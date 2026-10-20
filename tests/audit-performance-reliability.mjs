@@ -20,7 +20,8 @@ for(const routeModule of ['earth-observation','estofex-local','weather-stories',
 }
 assert.equal((app.match(/initWhenVisible\('\.metrics-grid',enableCharts/g)||[]).length,1);
 assert.match(app,/if\(\['inici','webcams'\]\.includes\(ACTIVE_PAGE\)\)initWebcam\(\)/);
-assert.match(html,/aria-label="Webcam · ara: obrir la webcam de l.observatori"/);
+assert.match(html,/aria-labelledby="hero-webcam-status"/);
+assert.match(html,/id="hero-webcam-status" data-webcam-status/);
 assert.match(social,/aria-label','Segueix-nos: veure totes les xarxes socials/);
 assert.match(portal,/aria-label','Fontanillas Sant Celoni: inici/);
 assert.match(ai,/aria-label','Pregunta al temps amb Meteo IA/);
