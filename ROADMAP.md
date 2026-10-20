@@ -57,12 +57,14 @@ L’autopublicació CECAT requerirà una autorització posterior explícita.
 
 ### 1. Mesura de referència
 
-- [ ] Registrar Lighthouse/PageSpeed en mòbil i escriptori per a la portada i
+- [x] Registrar Lighthouse/PageSpeed en mòbil i escriptori per a la portada i
   les seccions Predicció, Radar, Terra, Avisos i Models francesos.
-- [ ] Anotar LCP, INP, CLS, pes transferit, JavaScript inicial i recursos externs
-  més lents en un informe reproduïble.
+- [x] Anotar LCP, CLS, TBT, pes transferit, peticions i recursos externs més
+  lents en un informe reproduïble; INP queda pendent de dades de camp.
 - [ ] Contrastar les proves de laboratori amb Core Web Vitals de camp quan
   Search Console disposi de prou trànsit.
+
+Línia base: [`docs/performance-baseline-2026-10-20.md`](docs/performance-baseline-2026-10-20.md).
 
 **Fet quan:** existeix una línia base repetible que identifica els colls
 d’ampolla reals i permet comparar qualsevol canvi posterior.
