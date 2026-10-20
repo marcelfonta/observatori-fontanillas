@@ -29,11 +29,11 @@ const timeLabel=value=>{
   return Number.isNaN(date.getTime())?'hora no disponible':new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(date);
 };
 const sourceLinks={
-  'Sensor Fontanillas':'./?page=estacio','Estació Fontanillas':'./?page=estacio','Arxiu Fontanillas':'./?page=centre-dades',
-  'Open‑Meteo':'https://open-meteo.com/','CAMS via Open‑Meteo':'./?page=medi-ambient','CAMS · Sensor Fontanillas':'./?page=medi-ambient',
-  'AEMET · Meteocat':'./?page=avisos','Avisos oficials':'./?page=avisos','Comparador de l’Observatori':'./comparativa.html',
+  'Sensor Fontanillas':'/estacio','Estació Fontanillas':'/estacio','Arxiu Fontanillas':'/centre-dades',
+  'Open‑Meteo':'https://open-meteo.com/','CAMS via Open‑Meteo':'/medi-ambient','CAMS · Sensor Fontanillas':'/medi-ambient',
+  'AEMET · Meteocat':'/avisos','Avisos oficials':'/avisos','Comparador de l’Observatori':'./comparativa.html',
   'Historial d’avisos':'./historial-avisos.html',
-  'Estació i predicció':'./?page=prediccio','Meteo IA':'./?page=meteo-ia',
+  'Estació i predicció':'/prediccio','Meteo IA':'/meteo-ia',
   'AEMET · MeteoGlosario':'https://www.aemet.es/es/conocermas/meteo_glosario_visual',
   'AEMET · Dades climatològiques':'https://www.aemet.es/ca/serviciosclimaticos/datosclimatologicos',
   'AEMET OpenData':'https://www.aemet.es/es/datos_abiertos/AEMET_OpenData',
@@ -561,7 +561,7 @@ export function initMeteoAIWidget(){
   const root=document.createElement('aside');root.className='meteo-ai-widget';root.id='meteo-ai-widget';
   const toggle=document.createElement('button');toggle.className='meteo-ai-widget__toggle';toggle.type='button';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','meteo-ai-widget-panel');toggle.setAttribute('aria-label','Pregunta al temps amb Meteo IA');toggle.innerHTML='<span>IA</span><b>Pregunta al temps</b>';
   const panel=document.createElement('div');panel.className='meteo-ai-widget__panel';panel.id='meteo-ai-widget-panel';panel.hidden=true;
-  panel.innerHTML='<header><span><i></i><b>Meteo IA</b><small>Una pregunta ràpida</small></span><button type="button" aria-label="Tancar el xat">×</button></header><div class="meteo-ai-widget__messages"><p>Pregunta pel temps, una data concreta o qualsevol ciutat del món.</p></div><form><label for="meteo-ai-widget-input">Pregunta meteorològica</label><div><input id="meteo-ai-widget-input" type="text" maxlength="160" autocomplete="off" placeholder="Ex.: Demà plourà a Sant Celoni?" required><button type="submit">Enviar</button></div></form><a class="meteo-ai-widget__continue" href="./?page=meteo-ia" hidden>Continuar a Meteo IA →</a>';
+  panel.innerHTML='<header><span><i></i><b>Meteo IA</b><small>Una pregunta ràpida</small></span><button type="button" aria-label="Tancar el xat">×</button></header><div class="meteo-ai-widget__messages"><p>Pregunta pel temps, una data concreta o qualsevol ciutat del món.</p></div><form><label for="meteo-ai-widget-input">Pregunta meteorològica</label><div><input id="meteo-ai-widget-input" type="text" maxlength="160" autocomplete="off" placeholder="Ex.: Demà plourà a Sant Celoni?" required><button type="submit">Enviar</button></div></form><a class="meteo-ai-widget__continue" href="/meteo-ia" hidden>Continuar a Meteo IA →</a>';
   root.append(panel,toggle);document.body.append(root);
   const close=()=>{panel.hidden=true;toggle.setAttribute('aria-expanded','false');};
   const open=()=>{panel.hidden=false;toggle.setAttribute('aria-expanded','true');panel.querySelector('input')?.focus();};

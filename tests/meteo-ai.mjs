@@ -21,7 +21,7 @@ const services={
 const current=await answerMeteoQuestion('Quina temperatura fa ara?',context,services);
 assert.match(current.body,/24,2 °C/);
 assert.equal(current.sources[0].label,'Sensor Fontanillas');
-assert.equal(current.sources[0].href,'./?page=estacio');
+assert.equal(current.sources[0].href,'/estacio');
 
 const currentDetails=await answerMeteoQuestion('Quina humitat, pressió i direcció del vent hi ha?',context,services);
 assert.match(currentDetails.body,/58%/);

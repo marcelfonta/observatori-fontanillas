@@ -10,7 +10,7 @@ assert.ok(EARTH_OBSERVATION_LAYERS.some(layer=>layer.agency.includes('ESA')));
 assert.ok(EARTH_OBSERVATION_LAYERS.some(layer=>layer.agency.includes('Copernicus')));
 for(const layer of EARTH_OBSERVATION_LAYERS){
   assert.ok(['observation','model','context'].includes(layer.type));
-  assert.match(layer.href,/^(\.\/\?page=|https:\/\/)/);
+  assert.match(layer.href,/^(\/|https:\/\/)/);
   assert.ok(layer.freshness&&layer.use&&layer.cta);
 }
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');

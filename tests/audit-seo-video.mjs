@@ -12,19 +12,19 @@ const [sitemap,worker,staging,index,qualityWorkflow,stagingWorkflow,modelsFrance
 ]);
 
 assert.equal(seoPageUrl('inici','ca'),'https://meteo.fontanillas.cat/');
-assert.equal(seoPageUrl('avisos','fr'),'https://meteo.fontanillas.cat/?page=avisos&lang=fr');
+assert.equal(seoPageUrl('avisos','fr'),'https://meteo.fontanillas.cat/avisos?lang=fr');
 for(const language of ['ca','es','en','fr']){
   const graph=buildSeoStructuredGraph('prediccio',null,language)['@graph'];
   const page=graph.find(item=>item['@type']==='WebPage');
   const dataset=graph.find(item=>item['@type']==='Dataset');
   assert.equal(page.inLanguage,language);
-  assert.match(page.url,/\?page=prediccio/);
+  assert.match(page.url,/\/prediccio(?:\?|$)/);
   assert.equal(dataset.temporalCoverage,'2026-08-04/..');
 }
 assert.match(index,/"temporalCoverage":"2026-08-04\/\.\."/);
 for(const page of ['meteo-ia','estacio','prediccio','llarg-termini','videos','verificacio','cel','avisos','radar','webcams','terra','histories','centre-dades','medi-ambient','aprendre','contacte']){
-  assert.ok(sitemap.includes(`?page=${page}`),`Falta ${page} al sitemap.`);
-  assert.ok(sitemap.includes(`?page=${page}&amp;lang=fr`),`Falta la variant francesa de ${page}.`);
+  assert.ok(sitemap.includes(`/${page}`),`Falta ${page} al sitemap.`);
+  assert.ok(sitemap.includes(`/${page}?lang=fr`),`Falta la variant francesa de ${page}.`);
 }
 for(const html of staticPages){
   assert.match(html,/hreflang="fr"/);assert.match(html,/property="og:title"/);assert.match(html,/name="twitter:card"/);

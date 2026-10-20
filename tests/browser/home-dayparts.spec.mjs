@@ -62,7 +62,7 @@ for(const scenario of [
     await expect(block.locator('#home-dayparts')).toHaveText('Predicció temporalment no disponible');
     await expect(block.locator('svg')).toHaveCount(0);
     await block.getByRole('link',{name:'Previsió completa →'}).click();
-    await expect(page).toHaveURL(/page=prediccio/);
+    await expect(page).toHaveURL(/\/prediccio(?:\?|$)/);
     expect(errors).toEqual([]);
   });
 }

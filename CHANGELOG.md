@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-20 — Enllaços profunds llegibles i compatibles
+
+- Totes les seccions principals disposen d’una ruta pròpia, com `/prediccio`,
+  `/radar`, `/avisos` o `/terra`, que es pot recarregar i compartir directament.
+- Els enllaços antics amb `?page=` continuen funcionant i es normalitzen a la
+  nova adreça sense afegir una entrada artificial a l’historial del navegador.
+- La navegació principal, els enllaços interns, les canonical multilingües i el
+  sitemap utilitzen les adreces llegibles.
+- Cloudflare Pages reescriu les rutes a l’entrada correcta i la PWA conserva el
+  selector de ruta també quan recupera la còpia fora de línia.
+
 ## 2026-10-20 — Radar estable des del primer pintat
 
 - La ruta de Radar amaga la targeta de webcam i fixa la graella d’una columna

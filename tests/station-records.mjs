@@ -27,7 +27,7 @@ assert.equal(payload.records.find(item=>item.key==='temperature_high').occurredA
 assert.equal(recordAge('2026-09-06T10:00:00Z',new Date('2026-09-07T10:00:00Z').getTime()),'fa 1 dia');
 
 for(const id of ['station-records-main','station-records-complete','station-records-status'])assert.match(html,new RegExp(`id="${id}"`));
-assert.match(html,/href="\.\/\?page=centre-dades#records"/,'La portada i Estació han d’enllaçar la taula completa.');
+assert.match(html,/href="\/centre-dades#records"/,'La portada i Estació han d’enllaçar la taula completa.');
 assert.match(worker,/WITH extremes AS/);
 assert.match(worker,/GROUP BY local_date ORDER BY value DESC/);
 assert.match(worker,/neighbour\.observed_epoch BETWEEN base\.observed_epoch - 600 AND base\.observed_epoch \+ 600/,'Els rècords d’humitat han de descartar lectures aïllades sense corroboració temporal.');

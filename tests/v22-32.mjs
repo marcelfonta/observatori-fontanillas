@@ -10,8 +10,8 @@ const [html,router,shell,alerts,forecast,social,seo,sitemap,i18n,french,app,weat
 
 assert.ok(html.includes('data-portal-page="llarg-termini"'));
 assert.ok(router.includes("'llarg-termini':'Predicció a llarg termini'"));
-assert.ok(shell.includes("['llarg-termini','Llarg termini','./?page=llarg-termini']"));
-assert.ok(html.includes('href="./?page=llarg-termini"')&&html.includes('href="./?page=prediccio"'));
+assert.ok(shell.includes("['llarg-termini','Llarg termini','/llarg-termini']"));
+assert.ok(html.includes('href="/llarg-termini"')&&html.includes('href="/prediccio"'));
 assert.ok(html.includes('<section id="long-range"')&&html.includes('<section id="seasonal-outlook"'));
 assert.ok(html.includes('class="hero-alert-row"')&&html.includes('id="quick-alert-meta"')&&alerts.includes("setText('quick-alert-meta',copy)"));
 assert.ok(!forecast.includes('amb temps tranquil')&&forecast.includes('amb poca precipitació prevista'));
@@ -19,7 +19,7 @@ assert.ok(forecast.includes("document.addEventListener('observatori:alerts-updat
 assert.ok(html.includes('home-personalization')&&html.includes('thermal-index-guide'));
 assert.ok(social.includes("['instagram','youtube','tiktok']")&&social.includes('Segueix-nos'));
 assert.ok(seo.includes("'llarg-termini':{ca:"));
-assert.ok(sitemap.includes('?page=llarg-termini')&&sitemap.includes('?page=llarg-termini&amp;lang=fr'));
+assert.ok(sitemap.includes('/llarg-termini')&&sitemap.includes('/llarg-termini?lang=fr'));
 assert.ok(i18n.includes("'Predicció a llarg termini'")&&french.includes("'Predicció a llarg termini':'Prévisions à long terme'"));
 assert.ok(weatherApi.includes('LAST_FORECAST_KEY')&&weatherApi.includes('getLastCachedForecast'));
 assert.ok(app.includes('const cached=getLastCachedForecast()')&&app.includes('const forecastTask=fetchForecast()')&&app.includes('const modelsTask=fetchModelComparison()'));

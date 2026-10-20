@@ -80,7 +80,7 @@
     <script type="module" src="src/app.js?v=22.39.0-earth-viewer"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
-      {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/?page=centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
+      {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
     </script>
   </head>
   <body>
@@ -107,7 +107,7 @@
           <div class="freshness"><span class="freshness__dot"></span><span>Actualitzat <b id="updated-relative">ara mateix</b></span><span class="separator">·</span><time id="updated-time">--:--</time></div>
         </div>
         <div class="current-temp">
-          <a class="hero-webcam-preview" href="?page=webcams" aria-labelledby="hero-webcam-status">
+          <a class="hero-webcam-preview" href="/webcams" aria-labelledby="hero-webcam-status">
             <img id="hero-webcam-image" alt="Vista actual cap al nord des de la càmera meteorològica de l’Observatori Fontanillas" width="960" height="415" loading="eager" decoding="async" fetchpriority="high" />
             <span><i aria-hidden="true"></i><b id="hero-webcam-status" data-webcam-status>Webcam · comprovant</b></span>
             <em class="webcam-fallback">Imatge temporalment no disponible</em>
@@ -124,7 +124,7 @@
           <small id="comfort-label">Confort tèrmic</small>
         </aside>
         <div class="hero-alert-row">
-          <a class="quick-alert is-pending quick-alert--hero" id="quick-alert-link" href="./?page=avisos">
+          <a class="quick-alert is-pending quick-alert--hero" id="quick-alert-link" href="/avisos">
             <span class="quick-alert__signal" aria-hidden="true">!</span>
             <span><small id="quick-alert-kicker">Avisos oficials</small><strong id="quick-alert-title">Comprovant la situació</strong><span id="quick-alert-meta">Consultant fenomen, territori i vigència</span></span>
             <em id="quick-alert-action">Consultar →</em>
@@ -144,13 +144,13 @@
           <header><div><p class="eyebrow">Previsió per franges</p><h2 id="home-dayparts-title">El que queda d’avui</h2></div><small id="home-dayparts-date">Hora local · Sant Celoni</small></header>
         <div id="home-dayparts" class="home-dayparts__grid"><p>Carregant la previsió horària…</p></div>
         <p class="home-dayparts__note">Open-Meteo · símbol del fenomen més destacat. Pluja: màxim horari, no probabilitat de tota la franja.</p>
-        <nav aria-label="Consulta la previsió"><a href="./?page=prediccio">Previsió completa →</a><a href="./?page=radar">Veure radar →</a><a href="./?page=avisos">Avisos oficials →</a></nav>
+        <nav aria-label="Consulta la previsió"><a href="/prediccio">Previsió completa →</a><a href="/radar">Veure radar →</a><a href="/avisos">Avisos oficials →</a></nav>
       </section>
-      <a class="home-records-link panel" href="./?page=centre-dades#records" data-portal-page="inici"><span aria-hidden="true">↗</span><div><b>Rècords de l’Observatori</b><small>Màximes i mínimes de tot l’arxiu disponible, amb data i hora.</small></div><strong>Veure rècords històrics →</strong></a>
+      <a class="home-records-link panel" href="/centre-dades#records" data-portal-page="inici"><span aria-hidden="true">↗</span><div><b>Rècords de l’Observatori</b><small>Màximes i mínimes de tot l’arxiu disponible, amb data i hora.</small></div><strong>Veure rècords històrics →</strong></a>
       <section class="portal-view-header panel" aria-labelledby="station-page-title" data-portal-page="estacio"><div><p class="eyebrow">Estació Fontanillas</p><h1 id="station-page-title">L’estació, sensor a sensor.</h1><p>Lectures actuals, valors calculats i resum del dia des de Sant Celoni.</p></div><span class="tag">Cada 5 minuts</span></section>
 
       <section class="station-records-summary panel" aria-labelledby="station-records-summary-title" data-portal-page="estacio">
-        <header><div><p class="eyebrow">Tot l’arxiu disponible</p><h2 id="station-records-summary-title">Rècords principals de l’Observatori</h2></div><a href="./?page=centre-dades#records">Veure la taula completa →</a></header>
+        <header><div><p class="eyebrow">Tot l’arxiu disponible</p><h2 id="station-records-summary-title">Rècords principals de l’Observatori</h2></div><a href="/centre-dades#records">Veure la taula completa →</a></header>
         <div class="station-records-grid station-records-grid--main" id="station-records-main" aria-live="polite"><p class="station-records-empty">Preparant els rècords històrics…</p></div>
       </section>
       <section class="portal-view-header panel" aria-labelledby="meteo-ai-page-title" data-portal-page="meteo-ia"><div><p class="eyebrow">Meteo IA · dades verificades</p><h1 id="meteo-ai-page-title">Pregunta al temps, amb les fonts a la vista.</h1><p>Respostes construïdes amb l’estació, la predicció i els avisos disponibles; sense inventar lectures.</p></div><span class="tag">Consulta guiada</span></section>
@@ -247,7 +247,7 @@
 
       <section class="home-personalization panel" data-portal-page="inici" aria-labelledby="home-personalization-title">
         <div><p class="eyebrow">El teu temps</p><h2 id="home-personalization-title">Desa un municipi i rep només els avisos que t’interessen.</h2><p>Els municipis preferits es guarden només en aquest navegador. Les notificacions són opcionals i es poden canviar quan vulguis.</p></div>
-        <div><a href="./municipis.html">Escollir municipi →</a><a href="./?page=avisos#push-alert-button">Configurar avisos →</a></div>
+        <div><a href="./municipis.html">Escollir municipi →</a><a href="/avisos#push-alert-button">Configurar avisos →</a></div>
       </section>
 
       <aside class="thermal-index-guide panel" data-portal-page="estacio"><div><p class="eyebrow">Lectura tèrmica</p><h2>Quina temperatura he de mirar?</h2></div><p><b>La temperatura</b> és la mesura del sensor. <b>La sensació tèrmica</b> és la referència principal per entendre com es percep combinant humitat i vent. <b>L’Humidex</b> és un índex complementari de xafogor i no s’expressa com una temperatura real.</p></aside>
@@ -579,12 +579,12 @@
           <p class="model-license-note">Windy és l’explorador visual i conserva la seva atribució i accés originals. HARMONIE-AROME es consulta al visor oficial d’AEMET (2,5 km, fins a 48 h); NEMS, ALADIN i les variants d’AROME serveixen per contrastar escenaris, però no entren automàticament en el càlcul ni en els pesos locals. La vista directa de Catalunya utilitza el WMS oficial d’AROME de Météo-France i el detall del Baix Montseny conserva AROME France HD via Open-Meteo.</p>
         </article>
         <a class="forecast-horizon-link panel" href="./models-franca.html"><span aria-hidden="true">FR</span><div><p class="eyebrow">Laboratori directe Météo-France</p><h3>Explora cinc models francesos</h3><p>AROME, previsió immediata, ARPEGE i els dos ensembles amb mapes oficials i estat de connexió independent.</p></div><strong>Obrir laboratori →</strong></a>
-        <a class="forecast-horizon-link panel" href="./?page=llarg-termini"><span aria-hidden="true">↗</span><div><p class="eyebrow">Més enllà de set dies</p><h3>Consulta la predicció a llarg termini</h3><p>Sis setmanes d’ECMWF i mapes mensuals oficials del Meteocat, amb la incertesa explicada.</p></div><strong>Obrir tendències →</strong></a>
+        <a class="forecast-horizon-link panel" href="/llarg-termini"><span aria-hidden="true">↗</span><div><p class="eyebrow">Més enllà de set dies</p><h3>Consulta la predicció a llarg termini</h3><p>Sis setmanes d’ECMWF i mapes mensuals oficials del Meteocat, amb la incertesa explicada.</p></div><strong>Obrir tendències →</strong></a>
         <p class="forecast-disclaimer">La predicció descriu un escenari de model per a Sant Celoni, no una certesa. L’observació real de l’estació és la referència del temps que està fent.</p>
       </section>
 
       <section class="long-term-section section-block" data-portal-page="llarg-termini" aria-labelledby="long-range-title">
-        <a class="forecast-return-link" href="./?page=prediccio">← Tornar a la previsió de les pròximes hores i dies</a>
+        <a class="forecast-return-link" href="/prediccio">← Tornar a la previsió de les pròximes hores i dies</a>
         <section id="long-range" class="long-range panel" aria-labelledby="long-range-title">
           <header><div><p class="eyebrow">Tendència de llarg termini</p><h3 id="long-range-title">Com poden ser les pròximes sis setmanes?</h3><p>Mitjanes setmanals i diferència respecte de la climatologia del mateix model. No són pronòstics dia a dia.</p></div><span class="tag" id="long-range-status">Preparant ECMWF EC46…</span></header>
           <div class="long-range-weeks" id="long-range-weeks" aria-live="polite"><div class="forecast-loading">Calculant la tendència setmanal…</div></div>
@@ -610,7 +610,7 @@
           <footer><span>Font: Servei Meteorològic de Catalunya · ECMWF SEAS5</span><a href="https://www.meteo.cat/wpweb/prediccio/prediccio-mensual/" target="_blank" rel="noreferrer">Veure la predicció mensual oficial ↗</a></footer>
           <p class="long-range-note"><span>i</span> És una tendència probabilística mensual, no una predicció concreta per a cada dia ni un avís oficial. La precipitació té més incertesa a la Mediterrània.</p>
         </section>
-        <a class="forecast-horizon-link panel forecast-horizon-link--return" href="./?page=prediccio"><span aria-hidden="true">↙</span><div><p class="eyebrow">Decisions del dia a dia</p><h3>Torna a la previsió operativa</h3><p>Consulta les pròximes 48 hores, els set dies i la comparació de models abans de prendre decisions.</p></div><strong>Veure curt termini →</strong></a>
+        <a class="forecast-horizon-link panel forecast-horizon-link--return" href="/prediccio"><span aria-hidden="true">↙</span><div><p class="eyebrow">Decisions del dia a dia</p><h3>Torna a la previsió operativa</h3><p>Consulta les pròximes 48 hores, els set dies i la comparació de models abans de prendre decisions.</p></div><strong>Veure curt termini →</strong></a>
       </section>
 
       <section class="forecast-videos section-block" id="forecast-videos" aria-labelledby="forecast-videos-title" data-portal-page="videos">
@@ -870,7 +870,7 @@
           <button type="button" data-learning-path="batxillerat"><span aria-hidden="true">🛰️</span><b>Batxillerat</b><small>Models, dades i clima</small></button>
           <button type="button" data-learning-path="docents"><span aria-hidden="true">🧭</span><b>Docents</b><small>Activitats per portar a l’aula</small></button>
         </nav>
-        <section class="learning-local panel" aria-labelledby="learning-local-title"><div><p class="eyebrow">Laboratori Fontanillas</p><h3 id="learning-local-title">Aprèn amb el temps que tens davant.</h3><p>Observa una variable real, compara-la amb la predicció i explica què ha canviat. La meteorologia s’entén millor quan les dades tenen lloc i hora.</p></div><div><a href="./?page=estacio">Llegir els sensors →</a><a href="./?page=radar">Interpretar el radar →</a><a href="./?page=centre-dades">Analitzar l’històric →</a><a href="./?page=avisos">Entendre els avisos →</a></div></section>
+        <section class="learning-local panel" aria-labelledby="learning-local-title"><div><p class="eyebrow">Laboratori Fontanillas</p><h3 id="learning-local-title">Aprèn amb el temps que tens davant.</h3><p>Observa una variable real, compara-la amb la predicció i explica què ha canviat. La meteorologia s’entén millor quan les dades tenen lloc i hora.</p></div><div><a href="/estacio">Llegir els sensors →</a><a href="/radar">Interpretar el radar →</a><a href="/centre-dades">Analitzar l’històric →</a><a href="/avisos">Entendre els avisos →</a></div></section>
         <section class="learning-challenges" aria-labelledby="learning-challenges-title">
           <header><p class="eyebrow">Reptes pràctics</p><h3 id="learning-challenges-title">Aprèn fent, en menys de mitja hora.</h3></header>
           <div>

@@ -64,6 +64,6 @@ assert.match(roadmap,/Nowcasting local en mode d’ombra/);
 assert.doesNotMatch(roadmap,/### Meteoclimatic/);
 assert.match(roadmap,/- \[ \]/);
 assert.doesNotMatch(roadmap,/- \[x\]/i);
-assert.match(sitemap,/\?page=prediccio/);
+assert.match(sitemap,/\/prediccio/);
 assert.match(sitemap,/privacitat\.html/);
 console.log('Test V19 de disseny, privacitat i publicació: correcte');
