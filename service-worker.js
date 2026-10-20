@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v22-31-10-fonta-regional-v1-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup-environment-freshness-v2-fonta-lab-v3-home-dayparts-v3-long-range-readability-v2-aca-hydrology-v1-civil-protection-v1-arome-local-v2-meteofrance-direct-v2-camera-homepage-v1-multimodel-v1-firms-map-v1-arome-catalunya-v1-buffer-rate-limit-v1-opera-ready-v1-windy-explorer-v1-forecast-resilience-v1-earthquakes-v1-smart-home-v1-earth-center-v1-weather-stories-v1-verification-reputation-v1-connection-recovery-v1-weather-stories-date-v1-estofex-local-earth-viewer-v1-harmonie-nowcast-v1-earth-topographic-v1-earth-overlays-v1-earthquakes-all-week-v1-icgc-live-v1-audit-performance-reliability-v1-route-split-v1-route-dom-v1';
+const CACHE = 'observatori-fontanillas-v22-31-10-fonta-regional-v1-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup-environment-freshness-v2-fonta-lab-v3-home-dayparts-v3-long-range-readability-v2-aca-hydrology-v1-civil-protection-v1-arome-local-v2-meteofrance-direct-v2-camera-homepage-v1-multimodel-v1-firms-map-v1-arome-catalunya-v1-buffer-rate-limit-v1-opera-ready-v1-windy-explorer-v1-forecast-resilience-v1-earthquakes-v1-smart-home-v1-earth-center-v1-weather-stories-v1-verification-reputation-v1-connection-recovery-v1-weather-stories-date-v1-estofex-local-earth-viewer-v1-harmonie-nowcast-v1-earth-topographic-v1-earth-overlays-v1-earthquakes-all-week-v1-icgc-live-v1-audit-performance-reliability-v1-route-split-v1-route-dom-v1-brand-light-v1';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
@@ -25,10 +25,8 @@ const APP_SHELL = [
   '/src/modules/navigation.js', '/src/modules/prediccio.js', '/src/modules/qualitat.js',
   '/src/modules/radar.js', '/src/modules/hydrology.js', '/src/modules/civil-protection.js', '/src/modules/resum.js', '/src/modules/situacio.js', '/src/modules/webcams.js',
   '/assets/icons/favicon-16.png', '/assets/icons/favicon-32.png', '/assets/icons/icon-192.png',
-  '/assets/icons/icon-512.png', '/assets/icons/icon-maskable-192.png', '/assets/icons/icon-maskable-512.png',
+  '/assets/icons/icon-maskable-192.png',
   '/assets/icons/apple-touch-icon.png', '/assets/icons/apple-touch-icon-v21.png', '/assets/logos/observatori-symbol.svg', '/assets/logos/observatori-lockup.svg',
-  '/assets/images/observatori-fontanillas-social-v12-2.png', '/assets/images/observatori-fontanillas-avatar-v21.png',
-  '/assets/images/observatori-fontanillas-social.jpg', '/assets/social/publicacio-xarxes-v22-24.png'
 ];
 
 self.addEventListener('install', event => {

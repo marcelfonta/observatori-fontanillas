@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-20 — Marca lleugera i memòria offline ajustada
+
+- La marca visible del portal, l’administració i el laboratori Fonta reutilitza
+  la icona de 192 px en lloc de descarregar l’avatar social de 1024 px.
+- Una primera visita estalvia uns 871 KB en el logotip visible sense canviar-ne
+  l’aspecte ni les dimensions reservades.
+- La instal·lació del service worker deixa de precarregar icones grans i
+  creativitats socials que no són necessàries per consultar dades sense xarxa;
+  la memòria inicial evita aproximadament 2,8 MB d’actius prescindibles.
+- Les icones PWA de 512 px i les imatges socials continuen disponibles a les
+  seves URL per a instal·lació, SEO, compartició i publicacions.
+
 ## 2026-10-20 — Correccions verificades de l’auditoria externa
 
 - Les pàgines de municipis i models francesos completen les metadades de cerca,
