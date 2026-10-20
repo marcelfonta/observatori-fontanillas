@@ -48,6 +48,13 @@ la reserva durant els estats de càrrega/error i revisar el salt causat per
 l’activació directa de `?page=radar`. Criteri: CLS ≤ 0,10 en tres execucions
 consecutives, sense empitjorar l’ús tàctil.
 
+**Resolució del 20 d’octubre:** la selecció inicial de ruta ara amaga la webcam
+i fixa la columna única abans del primer pintat. Tres execucions mòbils locals
+amb Lighthouse 12.8.2 han donat `0,0328`, `0,0328` i `0,0328` de CLS. La prova
+de navegador també valida la reserva mínima del mapa i el mateix límit de
+`0,10`. El P0 de geometria queda resolt; l’LCP de la capa externa es tractarà
+separadament i no es dedueix d’aquesta comparació local.
+
 ### P0 · Imatge de marca desproporcionada
 
 `observatori-fontanillas-avatar-v21.png` és una imatge de 1024 × 1024 i uns

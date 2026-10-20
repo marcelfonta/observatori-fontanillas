@@ -47,6 +47,20 @@ for(const width of [360,390,768]){
     expect(errors).toEqual([]);
   });
 }
+test('radar: geometria correcta des de l’arrencada de ruta',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.addInitScript(()=>{
+    globalThis.__radarCls=0;
+    new PerformanceObserver(list=>{for(const entry of list.getEntries())if(!entry.hadRecentInput)globalThis.__radarCls+=entry.value;}).observe({type:'layout-shift',buffered:true});
+  });
+  await page.goto('/?page=radar');
+  await expect(page.locator('#territori .radar-card')).toBeVisible();
+  await expect(page.locator('#territori .webcam-card')).toBeHidden();
+  expect(await page.locator('#territori').evaluate(node=>getComputedStyle(node).gridTemplateColumns.trim().split(/\s+/).length)).toBe(1);
+  expect(await page.locator('.radar-frame').evaluate(node=>node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(300);
+  await page.waitForTimeout(1000);
+  expect(await page.evaluate(()=>globalThis.__radarCls)).toBeLessThanOrEqual(.1);
+});
 test('Meteo IA: quatre preguntes i desplegable accessible',async({page})=>{
   await page.goto('/?page=meteo-ia');
   await expect(page.locator('.meteo-ai-guide > .meteo-ai-suggestions > button')).toHaveCount(4);
