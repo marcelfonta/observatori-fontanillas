@@ -5,9 +5,9 @@ import { buildSeoStructuredGraph, seoPageUrl } from '../src/features/seo.js';
 import { claimMetaVideoRun } from '../worker/index.js';
 
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
-const [sitemap,worker,staging,index,qualityWorkflow,stagingWorkflow,...staticPages]=await Promise.all([
+const [sitemap,worker,staging,index,qualityWorkflow,stagingWorkflow,modelsFrance,...staticPages]=await Promise.all([
   read('sitemap.xml'),read('worker/index.js'),read('scripts/staging-smoke.mjs'),read('index.html'),
-  read('.github/workflows/quality.yml'),read('.github/workflows/staging-deploy.yml'),
+  read('.github/workflows/quality.yml'),read('.github/workflows/staging-deploy.yml'),read('models-franca.html'),
   ...['condicions.html','privacitat.html','metodologia.html','municipis.html','xarxes.html'].map(read),
 ]);
 
@@ -29,6 +29,12 @@ for(const page of ['meteo-ia','estacio','prediccio','llarg-termini','videos','ve
 for(const html of staticPages){
   assert.match(html,/hreflang="fr"/);assert.match(html,/property="og:title"/);assert.match(html,/name="twitter:card"/);
 }
+const methodology=staticPages[2];const municipalities=staticPages[3];
+for(const html of [modelsFrance,municipalities]){
+  assert.match(html,/name="robots"/);assert.match(html,/property="og:image:width"/);assert.match(html,/property="og:image:alt"/);assert.match(html,/name="twitter:image:alt"/);assert.match(html,/mobile-web-app-capable/);
+}
+assert.doesNotMatch(methodology,/href="administracio\.html"/);
+assert.doesNotMatch(index,/Fase 4 · Memòria meteorològica|0 dies verificats|La comparació comença avui/);
 for(const resolution of ['raw','hourly','daily'])assert.ok(staging.includes(`validateWeatherHistory('${resolution}'`));
 assert.ok(!staging.includes('payload.ok !== true'),'/history no exposa cap camp ok al seu contracte.');
 for(const token of ['Number.isInteger(payload.count)','payload.count === payload.observations.length','payload.storage?.enabled === true'])assert.ok(staging.includes(token));

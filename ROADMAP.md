@@ -87,13 +87,6 @@ pendent i decisions encara obertes. Les fases completades es documenten a
 
 ## P2 — Integracions externes pendents
 
-### Meteoclimatic
-
-- [ ] Esperar resposta de Meteoclimatic i, quan arribi, completar o corregir
-  l’alta de l’estació i l’enllaç de la webcam.
-- [ ] Verificar que les dades i la imatge es mantenen actualitzades abans de
-  donar la integració per tancada.
-
 ### Protecció Civil
 
 - [ ] Validar el primer comunicat CECAT real detectat en mode revisió, comprovant

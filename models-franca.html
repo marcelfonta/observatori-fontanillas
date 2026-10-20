@@ -4,9 +4,28 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#071b16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="robots" content="index, follow, max-image-preview:large">
   <meta name="description" content="Laboratori de models francesos AROME, AROME-PI, ARPEGE i ensembles per a Sant Celoni.">
   <link rel="canonical" href="https://meteo.fontanillas.cat/models-franca.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ca_ES">
+  <meta property="og:site_name" content="Observatori Meteorològic Fontanillas">
+  <meta property="og:title" content="Models francesos en directe · Meteo Fontanillas">
+  <meta property="og:description" content="AROME, AROME-PI, ARPEGE i ensembles de Météo-France interpretats per a Sant Celoni.">
+  <meta property="og:url" content="https://meteo.fontanillas.cat/models-franca.html">
+  <meta property="og:image" content="https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-social-v12-2.png">
+  <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Observatori Meteorològic Fontanillas davant del Montseny">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Models francesos en directe · Meteo Fontanillas">
+  <meta name="twitter:description" content="Models oficials de Météo-France contrastats a escala local.">
+  <meta name="twitter:image" content="https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-social-v12-2.png">
+  <meta name="twitter:image:alt" content="Observatori Meteorològic Fontanillas davant del Montseny">
   <link rel="icon" href="/assets/icons/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon-v21.png">
+  <link rel="manifest" href="/site.webmanifest">
   <link rel="stylesheet" href="/css/variables.css">
   <link rel="stylesheet" href="/css/layout.css">
   <link rel="stylesheet" href="/css/style.css">
@@ -26,7 +45,7 @@
   </header>
   <main class="shell models-franca-page" id="top">
     <section class="hero portal-view-header panel">
-      <div><p class="eyebrow">Laboratori de modelització directa</p><h1>França, a escala local.</h1><p class="lead">Sis productes oficials de Météo-France per observar el curt termini, la previsió immediata i la incertesa. Aquesta és una capa experimental: complementa la previsió operativa, no la substitueix.</p></div>
+      <div><p class="eyebrow">Laboratori de modelització directa</p><h1>França, a escala local.</h1><p class="lead">Cinc productes oficials de Météo-France per observar el curt termini, la previsió immediata i la incertesa. Aquesta és una capa experimental: complementa la previsió operativa, no la substitueix.</p></div>
       <div class="live-stamp"><span id="global-dot"></span><strong id="global-state">Connectant amb Météo-France…</strong><small id="checked-at">Credencials protegides pel servidor</small></div>
     </section>
 
@@ -47,10 +66,10 @@
     </section>
 
     <section class="catalog" aria-labelledby="catalog-title">
-      <header><div><p class="eyebrow">Sis aplicacions, una lectura coherent</p><h2 id="catalog-title">Què aporta cada producte?</h2></div><p>Verd indica que el servidor ha pogut llegir el catàleg oficial. Si un producte falla, els altres continuen actius.</p></header>
+      <header><div><p class="eyebrow">Cinc productes, una lectura coherent</p><h2 id="catalog-title">Què aporta cada producte?</h2></div><p>Verd indica que el servidor ha pogut llegir el catàleg oficial. Si un producte falla, els altres continuen actius.</p></header>
       <div class="product-grid" id="product-grid" aria-live="polite">
         <article class="product-card skeleton"></article><article class="product-card skeleton"></article><article class="product-card skeleton"></article>
-        <article class="product-card skeleton"></article><article class="product-card skeleton"></article><article class="product-card skeleton"></article>
+        <article class="product-card skeleton"></article><article class="product-card skeleton"></article>
       </div>
     </section>
 
