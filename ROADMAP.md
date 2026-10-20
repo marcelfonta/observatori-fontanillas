@@ -43,10 +43,11 @@ pendent i decisions encara obertes. Les fases completades es documenten a
 
 - [ ] Mesurar durant episodis reals la disponibilitat, continuïtat temporal i
   qualitat dels fotogrames futurs de radar.
-- [ ] Preparar un circuit d’ombra que contrasti radar, llamps, satèl·lit i un
-  model d’alta resolució sense mostrar hores d’arribada ni enviar avisos.
-- [ ] Definir una mètrica prospectiva d’error i uns mínims de cobertura abans de
-  provar trajectòries o probabilitats locals.
+- [ ] Acumular com a mínim 288 mostres i un 90% de radar útil abans d’avaluar
+  episodis; el circuit d’ombra ja contrasta radar, llamps, satèl·lit i AROME HD
+  sense mostrar hores d’arribada ni enviar avisos.
+- [ ] Definir l’error espacial prospectiu només quan les mostres reals permetin
+  comparar una projecció guardada amb l’observació posterior corresponent.
 - [ ] Demanar una autorització específica abans de convertir qualsevol resultat
   experimental en avís o publicació automàtica.
 

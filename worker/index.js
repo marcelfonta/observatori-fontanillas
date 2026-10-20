@@ -236,6 +236,26 @@ const CREATE_AI_RATE_LIMIT_INDEX = `CREATE INDEX IF NOT EXISTS idx_ai_rate_limit
 ON ai_rate_limit(asked_at)`;
 const CREATE_AI_RATE_LIMIT_IP_INDEX = `CREATE INDEX IF NOT EXISTS idx_ai_rate_limit_ip_time
 ON ai_rate_limit(ip_hash, asked_at DESC)`;
+const CREATE_NOWCAST_SHADOW_SAMPLES = `CREATE TABLE IF NOT EXISTS nowcast_shadow_samples (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  sampled_at TEXT NOT NULL UNIQUE,
+  radar_ok INTEGER NOT NULL DEFAULT 0,
+  observed_frames INTEGER NOT NULL DEFAULT 0,
+  projected_frames INTEGER NOT NULL DEFAULT 0,
+  latest_observed_at TEXT,
+  freshness_minutes INTEGER,
+  cadence_minutes INTEGER,
+  horizon_minutes INTEGER,
+  satellite_ok INTEGER NOT NULL DEFAULT 0,
+  lightning_ok INTEGER NOT NULL DEFAULT 0,
+  high_resolution_model_ok INTEGER NOT NULL DEFAULT 0,
+  model_checked_at TEXT,
+  model_precipitation_now REAL,
+  model_precipitation_plus_1h REAL,
+  detail TEXT
+)`;
+const CREATE_NOWCAST_SHADOW_SAMPLES_INDEX = `CREATE INDEX IF NOT EXISTS idx_nowcast_shadow_sampled
+ON nowcast_shadow_samples(sampled_at DESC)`;
 const CREATE_FORECAST_SNAPSHOTS = `CREATE TABLE IF NOT EXISTS forecast_snapshots (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   snapshot_key TEXT NOT NULL UNIQUE,
@@ -263,6 +283,7 @@ let socialDraftSchemaReady = false;
 let operationsSchemaReady = false;
 let forecastSchemaReady = false;
 let oauthTokenSchemaReady = false;
+let nowcastShadowSchemaReady = false;
 
 export function madridLocalTime(epoch, fallback = null) {
   const seconds = finiteNumber(epoch);
@@ -416,6 +437,65 @@ async function earthObservationMap(url){
   headers.set('Content-Type','image/png');headers.set('Cache-Control','public, max-age=300, stale-while-revalidate=1800');
   headers.set('X-Earth-Layer',layer.title);headers.set('X-Earth-Region',region.title);headers.set('X-Data-Source','EUMETSAT EUMETView WMS');
   return new Response(response.body,{status:200,headers});
+}
+
+export function normalizeNowcastRadar(payload,nowEpoch=Math.floor(Date.now()/1000)){
+  const observed=(Array.isArray(payload?.radar?.past)?payload.radar.past:[]).map(frame=>Number(frame?.time)).filter(Number.isFinite).sort((a,b)=>a-b);
+  const latest=observed.at(-1)||null;
+  const projected=(Array.isArray(payload?.radar?.nowcast)?payload.radar.nowcast:[]).map(frame=>Number(frame?.time)).filter(time=>Number.isFinite(time)&&latest!==null&&time>latest&&time<=latest+120*60).sort((a,b)=>a-b);
+  const gaps=observed.slice(1).map((time,index)=>Math.round((time-observed[index])/60)).filter(value=>value>0);
+  return {ok:Boolean(payload?.host&&latest),observedFrames:observed.length,projectedFrames:projected.length,latestObservedAt:latest?new Date(latest*1000).toISOString():null,
+    freshnessMinutes:latest?Math.max(0,Math.round((nowEpoch-latest)/60)):null,cadenceMinutes:gaps.length?Math.max(...gaps):null,
+    horizonMinutes:projected.length?Math.round((projected.at(-1)-latest)/60):0};
+}
+
+export function nowcastShadowCoverage(rows=[]){
+  const samples=Array.isArray(rows)?rows:[];const total=samples.length;
+  const rate=key=>total?Number((samples.filter(row=>Number(row[key])===1).length/total*100).toFixed(1)):0;
+  const usable=samples.filter(row=>Number(row.radar_ok)===1&&Number(row.freshness_minutes)<=15&&Number(row.cadence_minutes)<=15);
+  return {samples:total,coverage:{radar:rate('radar_ok'),satellite:rate('satellite_ok'),lightning:rate('lightning_ok'),highResolutionModel:rate('high_resolution_model_ok')},
+    usableRadarPercent:total?Number((usable.length/total*100).toFixed(1)):0,projectedSamples:samples.filter(row=>Number(row.projected_frames)>0).length,
+    readiness:{minimumSamples:288,minimumUsableRadarPercent:90,ready:total>=288&&usable.length/total>=.9},
+    method:'Mesura prospectiva de disponibilitat i continuïtat. No calcula trajectòries, probabilitats ni hores d’arribada.'};
+}
+
+async function ensureNowcastShadowSchema(env){
+  if(!env.DB)return false;if(nowcastShadowSchemaReady)return true;
+  await env.DB.batch([env.DB.prepare(CREATE_NOWCAST_SHADOW_SAMPLES),env.DB.prepare(CREATE_NOWCAST_SHADOW_SAMPLES_INDEX)]);nowcastShadowSchemaReady=true;return true;
+}
+
+async function fetchNowcastWmsLayer(layerName){
+  const upstream=new URL(EARTH_WMS_URL);Object.entries({service:'WMS',version:'1.3.0',request:'GetMap',layers:layerName,styles:'',crs:'EPSG:4326',bbox:EARTH_WMS_REGIONS.catalunya.bbox.join(','),width:160,height:100,format:'image/png',transparent:'false'}).forEach(([key,value])=>upstream.searchParams.set(key,value));
+  const response=await fetch(upstream,{headers:{Accept:'image/png','User-Agent':`MeteoFontanillas/${WORKER_VERSION} (nowcast shadow)`},signal:AbortSignal.timeout(15_000)});
+  const bytes=response.ok?await response.arrayBuffer():new ArrayBuffer(0);return {ok:response.ok&&(response.headers.get('content-type')||'').includes('image/')&&bytes.byteLength>1000,status:response.status,bytes:bytes.byteLength};
+}
+
+async function fetchNowcastHighResolutionModel(now=new Date()){
+  const url=new URL('https://api.open-meteo.com/v1/meteofrance');url.search=new URLSearchParams({latitude:String(STATION_LATITUDE),longitude:String(STATION_LONGITUDE),hourly:'precipitation',models:'meteofrance_arome_france_hd',forecast_days:'1',timezone:'UTC'}).toString();
+  const response=await fetch(url,{headers:{Accept:'application/json','User-Agent':`MeteoFontanillas/${WORKER_VERSION} (nowcast shadow)`},signal:AbortSignal.timeout(15_000)});if(!response.ok)throw new Error(`AROME HD ${response.status}`);
+  const payload=await response.json();const times=payload?.hourly?.time||[];const precipitation=payload?.hourly?.precipitation||[];const hour=new Date(now);hour.setUTCMinutes(0,0,0);const index=times.indexOf(hour.toISOString().slice(0,13)+':00');
+  return {ok:index>=0&&Number.isFinite(Number(precipitation[index])),modelCheckedAt:cleanText(payload?.generationtime_ms!==undefined?now.toISOString():'',30)||null,precipitationNow:index>=0?finiteNumber(precipitation[index]):null,precipitationPlus1h:index>=0?finiteNumber(precipitation[index+1]):null};
+}
+
+async function captureNowcastShadowSample(env,now=new Date()){
+  if(!(await ensureNowcastShadowSchema(env)))return {skipped:'no_database'};
+  const [radarResult,satelliteResult,lightningResult,modelResult]=await Promise.allSettled([
+    fetch('https://api.rainviewer.com/public/weather-maps.json',{headers:{Accept:'application/json','User-Agent':`MeteoFontanillas/${WORKER_VERSION} (nowcast shadow)`},signal:AbortSignal.timeout(12_000)}).then(async response=>{if(!response.ok)throw new Error(`RainViewer ${response.status}`);return normalizeNowcastRadar(await response.json(),Math.floor(now.getTime()/1000));}),
+    fetchNowcastWmsLayer(EARTH_WMS_LAYERS.clouds.name),fetchNowcastWmsLayer(EARTH_WMS_LAYERS.lightning.name),fetchNowcastHighResolutionModel(now),
+  ]);
+  const radar=radarResult.status==='fulfilled'?radarResult.value:{ok:false};const satellite=satelliteResult.status==='fulfilled'?satelliteResult.value:{ok:false};const lightning=lightningResult.status==='fulfilled'?lightningResult.value:{ok:false};const model=modelResult.status==='fulfilled'?modelResult.value:{ok:false};
+  const sampledAt=now.toISOString();const detail={errors:[radarResult,satelliteResult,lightningResult,modelResult].filter(item=>item.status==='rejected').map(item=>cleanText(item.reason?.message||item.reason,240)),satelliteBytes:satellite.bytes||0,lightningBytes:lightning.bytes||0};
+  await env.DB.prepare(`INSERT OR IGNORE INTO nowcast_shadow_samples
+    (sampled_at,radar_ok,observed_frames,projected_frames,latest_observed_at,freshness_minutes,cadence_minutes,horizon_minutes,satellite_ok,lightning_ok,high_resolution_model_ok,model_checked_at,model_precipitation_now,model_precipitation_plus_1h,detail)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(sampledAt,radar.ok?1:0,radar.observedFrames||0,radar.projectedFrames||0,radar.latestObservedAt||null,radar.freshnessMinutes??null,radar.cadenceMinutes??null,radar.horizonMinutes||0,satellite.ok?1:0,lightning.ok?1:0,model.ok?1:0,model.modelCheckedAt||null,model.precipitationNow??null,model.precipitationPlus1h??null,JSON.stringify(detail)).run();
+  await env.DB.prepare("DELETE FROM nowcast_shadow_samples WHERE sampled_at < datetime('now','-120 days')").run();
+  return {sampledAt,radar,satellite,lightning,model,mode:'shadow',public:false,alerts:false};
+}
+
+async function adminNowcastShadow(request,env,url){
+  const auth=await authorizeAdminRequest(request,env);if(auth.response)return auth.response;if(!(await ensureNowcastShadowSchema(env)))return json({error:'La base de dades no està disponible.'},503,'no-store',auth.origin);
+  const days=Math.min(30,Math.max(1,Number.parseInt(url.searchParams.get('days')||'7',10)||7));const result=await env.DB.prepare("SELECT * FROM nowcast_shadow_samples WHERE sampled_at >= datetime('now', ?) ORDER BY sampled_at DESC LIMIT 2000").bind(`-${days} days`).all();
+  const rows=result?.results||[];return json({ok:true,mode:'shadow',generatedAt:new Date().toISOString(),days,...nowcastShadowCoverage(rows),recent:rows.slice(0,96)},200,'no-store, private',auth.origin);
 }
 
 async function xacPollenProxy(url) {
@@ -7397,6 +7477,7 @@ export default {
       if (url.pathname === "/meteofrance/models") return meteofranceModels(env);
       if (url.pathname === "/meteofrance/map") return meteofranceMap(url, env);
       if (url.pathname === "/admin/status") return adminStatus(request, env);
+      if (url.pathname === "/admin/nowcast-shadow") return adminNowcastShadow(request,env,url);
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
@@ -7480,6 +7561,7 @@ export default {
       observedJob('buffer-x-recovery',recoverBufferXSchedule(env)),
       observedJob('camera-nord',monitorCameraFreshness(env)),
       observedJob('camera-timelapse-publication-recovery',recoverCameraTimelapsePublications(env)),
+      observedJob('nowcast-shadow',captureNowcastShadowSample(env)),
     ];
     ctx.waitUntil(Promise.allSettled(jobs).then(async results => {
       const rejected=results.filter(item=>item.status==='rejected');
