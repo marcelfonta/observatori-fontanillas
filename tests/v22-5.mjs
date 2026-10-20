@@ -24,6 +24,6 @@ assert.ok(admin.includes("retry-failed")&&admin.includes('Repetir només els err
 assert.ok(admin.includes("item.status==='failed'&&!publishedChannels.has(item.channel)"));
 assert.ok(worker.includes('SOCIAL_AUTOMATIC_MAX_ATTEMPTS = 4')&&worker.includes('definitiveFailures.length'),'Els correus socials encara avisen abans d’esgotar els reintents.');
 assert.ok(worker.includes('després de ${SOCIAL_AUTOMATIC_MAX_ATTEMPTS} intents'),'El correu definitiu no explica que els reintents s’han esgotat.');
-assert.ok(roadmap.includes('V22.5.0 — Control operatiu i recuperació segura'));
+assert.ok(roadmap.includes('# Roadmap viu')&&!roadmap.match(/- \[x\]/i));
 
 console.log('Test V22.5: control operatiu persistent i reintents selectius preparats');

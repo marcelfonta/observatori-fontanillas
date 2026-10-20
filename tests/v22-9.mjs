@@ -20,6 +20,6 @@ assert.ok(portal.includes("['municipis','El temps arreu','./municipis.html']")&&
 assert.ok(worker.includes('hasCustomCenter')&&worker.includes('[20,50,100,200]')&&worker.includes('searchRadiusKm:discovery.searchRadiusKm'));
 assert.ok(worker.includes('SOCIAL_SCHEDULE_BLUEPRINT')&&worker.includes("time:'14:00'")&&worker.includes("time:'20:30'")&&worker.includes('schedulePlan:socialSchedulePlan(env)'));
 assert.ok(style.includes('.municipality-search')&&style.includes('.municipality-station-grid'));
-assert.ok(sitemap.includes('/municipis.html')&&roadmap.includes('V22.9.0 — Consulta meteorològica per municipi'));
+assert.ok(sitemap.includes('/municipis.html')&&roadmap.includes('# Roadmap viu')&&!roadmap.match(/- \[x\]/i));
 
 console.log('Test V22.10.0: cercador de municipis, previsió i estacions properes');

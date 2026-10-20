@@ -16,6 +16,6 @@ assert.ok(environment.includes('skipEmbeddedJellyfish')&&environment.includes("e
 assert.ok(environment.includes("node.classList.remove('is-placeholder')")&&environment.includes("node.removeAttribute('aria-busy')"));
 assert.ok(alerts.includes('official-alert-scope')&&alerts.includes('Abast municipal')&&alerts.includes('Abast zonal'));
 assert.ok(style.includes('.official-alert-scope')&&portal.includes('.environment-viewer-mobile-launch__icon'));
-assert.ok(roadmap.includes('V22.8.0 — Visors mòbils, abast dels avisos i accessibilitat'));
+assert.ok(roadmap.includes('# Roadmap viu')&&!roadmap.match(/- \[x\]/i));
 
 console.log('Test V22.10.0: visors mòbils, avisos territorials i càrrega ambiental');
