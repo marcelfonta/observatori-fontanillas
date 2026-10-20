@@ -9,6 +9,7 @@
   // Configura'l amb `wrangler secret put FIRMS_MAP_KEY` per activar NASA FIRMS.
   "vars": {
     "ENVIRONMENT": "local",
+    "METEOFRANCE_NUMERIC_REUSE_APPROVED_PRODUCTS": "",
     "META_VIDEO_AUTOMATION_ENABLED": "false",
     "META_VIDEO_AUTO_TIMES": "06:45,20:30",
     "BUFFER_TIKTOK_AUTOMATION_ENABLED": "false",

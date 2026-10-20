@@ -9,7 +9,7 @@ import { youtubeRecoveryEligibility } from '../src/core/youtube-recovery.js';
 import { DAYPART_HOURLY_VARIABLES, normalizeSocialForecast, summarizeForecastDayparts, daypartCaption } from '../src/core/forecast-dayparts.js';
 import { fetchSocialEnvironment } from '../src/core/social-environment.js';
 import { dailySocialCardV5 } from './social-daily-v5.js';
-import { meteofranceMap, meteofranceModels } from './meteofrance.js';
+import { meteofranceMap, meteofranceModels, meteofranceStagingValidation } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
 const WORKER_VERSION = "22.39.0";
@@ -496,6 +496,13 @@ async function adminNowcastShadow(request,env,url){
   const auth=await authorizeAdminRequest(request,env);if(auth.response)return auth.response;if(!(await ensureNowcastShadowSchema(env)))return json({error:'La base de dades no està disponible.'},503,'no-store',auth.origin);
   const days=Math.min(30,Math.max(1,Number.parseInt(url.searchParams.get('days')||'7',10)||7));const result=await env.DB.prepare("SELECT * FROM nowcast_shadow_samples WHERE sampled_at >= datetime('now', ?) ORDER BY sampled_at DESC LIMIT 2000").bind(`-${days} days`).all();
   const rows=result?.results||[];return json({ok:true,mode:'shadow',generatedAt:new Date().toISOString(),days,...nowcastShadowCoverage(rows),recent:rows.slice(0,96)},200,'no-store, private',auth.origin);
+}
+
+async function adminMeteofranceValidation(request,env){
+  const auth=await authorizeAdminRequest(request,env);if(auth.response)return auth.response;
+  const response=await meteofranceStagingValidation(env);const headers=new Headers(response.headers);
+  headers.set('Cache-Control','no-store, private');headers.set('Access-Control-Allow-Origin',auth.origin);
+  return new Response(response.body,{status:response.status,headers});
 }
 
 async function xacPollenProxy(url) {
@@ -7478,6 +7485,7 @@ export default {
       if (url.pathname === "/meteofrance/map") return meteofranceMap(url, env);
       if (url.pathname === "/admin/status") return adminStatus(request, env);
       if (url.pathname === "/admin/nowcast-shadow") return adminNowcastShadow(request,env,url);
+      if (url.pathname === "/admin/meteofrance-validation") return adminMeteofranceValidation(request,env);
       if (url.pathname === "/version") {
         return json({ version:WORKER_VERSION, built:WORKER_BUILT, env:(env.ENVIRONMENT || "production") }, 200, "public, max-age=300");
       }
