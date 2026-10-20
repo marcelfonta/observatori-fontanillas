@@ -86,7 +86,10 @@ if(socialWidth!==1200||socialHeight!==630)throw new Error('La targeta social no 
 const [avatarWidth,avatarHeight]=await pngDimensions('assets/images/observatori-fontanillas-avatar-v21.png');
 if(avatarWidth!==1024||avatarHeight!==1024)throw new Error('L’avatar social V21 no fa 1024 × 1024 px.');
 for(const file of ['index.html','comparativa.html','metodologia.html','historial-avisos.html']){const page=await readFile(resolve(root,file),'utf8');if(!page.includes('observatori-fontanillas-social-v12-2.png')||!page.includes('assets/icons/favicon-16.png')||!page.includes('apple-mobile-web-app-title'))throw new Error(`${file}: metadades de marca incompletes.`);}
-if(!worker.includes("'/assets/icons/icon-maskable-512.png'")||!worker.includes("'/assets/images/observatori-fontanillas-social-v12-2.png'")||!worker.includes("'/assets/images/observatori-fontanillas-avatar-v21.png'"))throw new Error('La PWA no desa els nous recursos de marca.');
+if(!worker.includes("'/assets/icons/icon-192.png'")||!worker.includes("'/assets/icons/icon-maskable-192.png'"))throw new Error('La PWA no desa les icones lleugeres necessàries.');
+for(const heavyAsset of ["'/assets/icons/icon-512.png'","'/assets/icons/icon-maskable-512.png'","'/assets/images/observatori-fontanillas-social-v12-2.png'","'/assets/images/observatori-fontanillas-avatar-v21.png'"])if(worker.includes(heavyAsset))throw new Error(`La PWA encara precarrega un actiu de marca pesant: ${heavyAsset}.`);
+const lightweightBrandShell=await readFile(resolve(root,'src/features/portal-shell.js'),'utf8');
+if(!lightweightBrandShell.includes('assets/icons/icon-192.png')||lightweightBrandShell.includes('observatori-fontanillas-avatar-v21.png'))throw new Error('El portal no utilitza la variant lleugera de la marca.');
 const headers=await readFile(resolve(root,'_headers'),'utf8');
 if(!headers.includes('https://maps.blitzortung.org'))throw new Error('La política de seguretat bloquejaria Blitzortung.');
 if(!headers.includes('https://geocoding-api.open-meteo.com'))throw new Error('La política de seguretat bloquejaria la consulta d’altres poblacions.');
