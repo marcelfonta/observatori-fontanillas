@@ -1,45 +1,38 @@
 {
   "schema": 1,
   "version": "0.2.0",
-  "generatedAt": "2026-10-20T13:32:24.724Z",
+  "generatedAt": "2026-10-20T23:09:52.256Z",
   "station": "ISANTC198",
   "mode": "shadow",
   "productionEnabled": false,
   "status": "collecting",
-  "latestCaptureAt": "2026-10-20T13:32:23.798Z",
-  "captureCount": 48,
-  "eligibleObservedDays": 30,
-  "pairedDays": 15,
+  "latestCaptureAt": "2026-10-20T23:09:51.501Z",
+  "captureCount": 49,
+  "eligibleObservedDays": 31,
+  "pairedDays": 16,
   "evaluatedDays": 0,
-  "trainingAvailableDays": 15,
-  "targetDate": "2026-10-21",
+  "trainingAvailableDays": 16,
+  "targetDate": "2026-10-22",
   "forecast": [
     {
       "model": "best_match",
-      "date": "2026-10-21",
-      "max": 19.2,
-      "min": 10.3,
+      "date": "2026-10-22",
+      "max": 17,
+      "min": 12.8,
       "complete": true
     },
     {
       "model": "ecmwf_ifs025",
-      "date": "2026-10-21",
-      "max": 19.5,
-      "min": 11.8,
+      "date": "2026-10-22",
+      "max": 17.5,
+      "min": 12.8,
       "complete": true
     },
     {
       "model": "icon_eu",
-      "date": "2026-10-21",
-      "max": 18.1,
-      "min": 10.4,
-      "complete": true
-    },
-    {
-      "model": "meteofrance_arome_france",
-      "date": "2026-10-21",
-      "max": 19.2,
-      "min": 9.6,
+      "date": "2026-10-22",
+      "max": 16.2,
+      "min": 11.8,
       "complete": true
     }
   ],
@@ -284,44 +277,34 @@
     },
     "rows": []
   },
-  "codeRevision": "c9f46a9250e8812d7005437840909ef050b3dc6b",
+  "codeRevision": "4f98aaf4432cec51a24b96a1393db2ff8c3b015e",
   "diagnostics": {
     "schema": 1,
-    "asOf": "2026-10-20T13:32:24.724Z",
+    "asOf": "2026-10-20T23:09:52.256Z",
     "execution": {
       "event": "schedule",
-      "runId": "39431232397"
+      "runId": "39513145609"
     },
     "firstCaptureAt": "2026-09-20T12:12:22.031Z",
     "budget": {
-      "captureCount": 48,
+      "captureCount": 49,
       "captureLimit": 180,
-      "bytes": 18469873,
+      "bytes": 18808563,
       "byteLimit": 104857600,
       "reviewNeeded": false
     },
     "progress": {
-      "trainingDays": 15,
+      "trainingDays": 16,
       "trainingRequired": 30,
       "backtestDays": 0,
       "prospectiveDays": 0,
       "exploratoryRequired": 14
     },
     "quality": {
-      "daysSeen": 32,
-      "accepted": 30,
+      "daysSeen": 33,
+      "accepted": 31,
       "rejected": 2,
       "recent": [
-        {
-          "date": "2026-10-06",
-          "availableAt": "2026-10-08T00:10:11.064Z",
-          "eligible": true,
-          "coverage": 0.937,
-          "samples": 286,
-          "expectedSamples": 288,
-          "maxGapMinutes": 19.65,
-          "reasons": []
-        },
         {
           "date": "2026-10-07",
           "availableAt": "2026-10-09T00:19:48.107Z",
@@ -450,12 +433,22 @@
         },
         {
           "date": "2026-10-19",
-          "availableAt": "2026-10-20T13:32:23.704Z",
+          "availableAt": "2026-10-20T23:09:51.491Z",
           "eligible": true,
           "coverage": 0.945,
           "samples": 289,
           "expectedSamples": 288,
           "maxGapMinutes": 5.667,
+          "reasons": []
+        },
+        {
+          "date": "2026-10-20",
+          "availableAt": "2026-10-20T23:09:51.491Z",
+          "eligible": true,
+          "coverage": 0.943,
+          "samples": 287,
+          "expectedSamples": 288,
+          "maxGapMinutes": 9.833,
           "reasons": []
         }
       ]
@@ -464,45 +457,39 @@
       {
         "model": "best_match",
         "state": "available",
-        "receivedAt": "2026-10-20T13:32:22.024Z",
+        "receivedAt": "2026-10-20T23:09:49.702Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "ecmwf_ifs025",
         "state": "available",
-        "receivedAt": "2026-10-20T13:32:22.127Z",
+        "receivedAt": "2026-10-20T23:09:49.842Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "icon_eu",
         "state": "available",
-        "receivedAt": "2026-10-20T13:32:22.227Z",
+        "receivedAt": "2026-10-20T23:09:49.981Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "meteofrance_arome_france",
-        "state": "available",
-        "receivedAt": "2026-10-20T13:32:22.327Z",
+        "state": "incomplete",
+        "receivedAt": "2026-10-20T23:09:50.122Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "observations",
         "state": "available",
-        "receivedAt": "2026-10-20T13:32:23.704Z",
+        "receivedAt": "2026-10-20T23:09:51.491Z",
         "modelRunAt": null
       }
     ],
     "recentCaptures": [
-      {
-        "id": "2026-10-13-pm",
-        "capturedAt": "2026-10-13T23:42:46.915Z",
-        "issueState": "outside-current-policy",
-        "failureCount": 0
-      },
       {
         "id": "2026-10-14-am",
         "capturedAt": "2026-10-14T13:40:32.877Z",
@@ -579,6 +566,12 @@
         "id": "2026-10-20-am",
         "capturedAt": "2026-10-20T13:32:23.798Z",
         "issueState": "eligible-issue",
+        "failureCount": 0
+      },
+      {
+        "id": "2026-10-20-pm",
+        "capturedAt": "2026-10-20T23:09:51.501Z",
+        "issueState": "outside-current-policy",
         "failureCount": 0
       }
     ],
