@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-20 — Correccions verificades de l’auditoria externa
+
+- Les pàgines de municipis i models francesos completen les metadades de cerca,
+  compartició i PWA sense crear rutes artificials ni duplicar contingut.
+- El catàleg Météo-France mostra cinc productes a tot el contingut estàtic.
+- La política de privacitat incorpora municipis desats, consultes meteorològiques
+  externes i la data real de revisió.
+- La metodologia deixa d’enllaçar públicament l’accés administratiu i els textos
+  base de memòria i verificació ja no exposen fases internes ni un zero fictici.
+- Meteoclimatic surt del roadmap pendent després de verificar dades actualitzades
+  i webcam visible a la fitxa pública de l’estació.
+
 ## 2026-10-20 — PIAF retirat del circuit operatiu
 
 - PIAF deixa d'aparèixer al selector, al diagnòstic i al desplegament de staging.
