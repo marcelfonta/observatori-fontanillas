@@ -11,7 +11,7 @@ mòbil i d’escriptori:
 - Radar (`?page=radar`);
 - Terra (`?page=terra`);
 - Avisos (`?page=avisos`);
-- Models francesos (`models-franca.html`).
+- Models francesos (`/models`).
 
 Ordre de les puntuacions: rendiment, accessibilitat, bones pràctiques i SEO.
 FCP, LCP i TBT són mil·lisegons; CLS no té unitats. Els resultats són una línia

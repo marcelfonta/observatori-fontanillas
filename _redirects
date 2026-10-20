@@ -1,6 +1,9 @@
 /meteo-ia       /  200
 /estacio        /  200
 /prediccio      /  200
+/models-franca.html  /models  301
+/models-franca   /models  301
+/models          /models-franca  200
 /llarg-termini  /  200
 /videos         /  200
 /verificacio    /  200

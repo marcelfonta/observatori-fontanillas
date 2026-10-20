@@ -84,8 +84,6 @@ en els tres entorns.
 
 ### Rutes i metadades pròpies
 
-- [ ] Consolidar el visor especialitzat `models-franca.html` sota `/models`
-  sense duplicar-ne la canonical ni degradar la càrrega inicial.
 - [ ] Donar a cada ruta títol, descripció, canonical, Open Graph, Twitter Card i
   contingut introductori propis.
 - [ ] Generar sitemap i comprovar les rutes amb Rich Results Test i Search
