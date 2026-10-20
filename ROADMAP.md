@@ -91,16 +91,6 @@ en els tres entorns.
 navegació prèvia i és indexable per separat. No cal separar físicament tot
 l’HTML si la solució manté bon rendiment i accessibilitat.
 
-### 3. Contingut meteorològic indexable
-
-- [ ] Preparar entrades clares per a Sant Celoni, radar del Baix Montseny,
-  models, nowcasting, terratrèmols i metodologia del model Fonta.
-- [ ] Enllaçar cada explicació amb el visor o la dada operativa corresponent,
-  sense duplicar ni inflar textos.
-
-**Fet quan:** una persona o un cercador pot entendre el valor de cada servei
-sense executar tota l’aplicació i arribar després al visor adequat.
-
 ## P2 — Primera lectura i mode sense connexió
 
 ### HTML inicial amb l’última dada coneguda

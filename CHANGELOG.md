@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-20 — Guies meteorològiques indexables
+
+- La portada, la predicció, el radar i el visor ambiental incorporen explicacions
+  breus que separen observació, estimació, nowcasting i avisos oficials.
+- Les guies de radar i terratrèmols documenten les limitacions de les fonts i
+  enllacen directament els visors operatius i els catàlegs oficials.
+- La metodologia explica les entrades, la mostra mínima, la verificació
+  prospectiva i la revisió humana del model Fonta, inclòs el paper experimental
+  d’AROME HD.
+
 ## 2026-10-20 — Metadades de servidor per ruta
 
 - Les rutes del portal reben des de Cloudflare Pages el títol, la descripció,

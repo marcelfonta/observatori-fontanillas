@@ -40,7 +40,7 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=22.31.3" />
-    <link rel="stylesheet" href="css/portal.css?v=22.31.3" />
+    <link rel="stylesheet" href="css/portal.css?v=22.40.0-weather-guides" />
     <script type="module" src="src/features/portal-static.js?v=22.31.3"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
     <script type="application/ld+json">
@@ -117,6 +117,19 @@
           <li><strong>Cloudflare D1:</strong> Base de dades SQL per emmagatzemar observacions històriques.</li>
           <li><strong>Weather Underground:</strong> Font de les dades meteorològiques en temps real.</li>
         </ul>
+      </div>
+      <div id="model-fonta" class="panel">
+        <p class="eyebrow">Verificació local</p>
+        <h3>Com funciona el model Fonta</h3>
+        <p>Fonta és una combinació meteorològica local, no un model físic nou ni una intel·ligència artificial que aprengui sense control. El Worker desa, abans que passi cada dia, les prediccions de Best Match, ECMWF, ICON, GFS i AROME per als mateixos horitzons.</p>
+        <ol>
+          <li><strong>Predicció congelada:</strong> cada captura conserva el model, l’hora d’emissió i l’horitzó; l’històric no es reconstrueix després de conèixer el resultat.</li>
+          <li><strong>Realitat local:</strong> temperatura i precipitació es comparen amb les observacions posteriors de l’estació Fontanillas.</li>
+          <li><strong>Pesos prudents:</strong> només es poden proposar ajustos quan cada model té almenys set casos reals comparables. La pluja es valora per separat perquè necessita episodis observats, no només dies secs.</li>
+          <li><strong>Revisió humana:</strong> cap candidat nou entra automàticament a la previsió. AROME HD es recull en mode experimental fins que tingui prou mostra prospectiva aparellada.</li>
+        </ol>
+        <p>El resultat expressa una estimació i la seva confiança. No converteix una coincidència estadística en certesa i mai no substitueix els avisos de Meteocat, AEMET o Protecció Civil.</p>
+        <p><a href="/verificacio">Consultar els resultats de verificació →</a> · <a href="/models">Obrir el laboratori de models →</a></p>
       </div>
       <div class="panel">
         <h3>Manteniment del projecte</h3>
