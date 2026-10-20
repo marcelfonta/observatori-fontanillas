@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-20 — Radar estable des del primer pintat
+
+- La ruta de Radar amaga la targeta de webcam i fixa la graella d’una columna
+  abans que arrenqui l’aplicació, evitant que el mapa canviï d’amplada durant
+  la càrrega.
+- El contenidor del mapa conserva l’altura reservada mentre Leaflet i les capes
+  externes encara no han respost.
+- Tres passades Lighthouse mòbils consecutives donen un CLS de `0,033`, davant
+  del `0,674` de la línia base pública.
+- Una prova de navegador protegeix la columna única, la reserva mínima del mapa
+  i el límit de CLS `≤ 0,10`.
+
 ## 2026-10-20 — Marca lleugera i memòria offline ajustada
 
 - La marca visible del portal, l’administració i el laboratori Fonta reutilitza

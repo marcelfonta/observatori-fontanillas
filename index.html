@@ -62,6 +62,10 @@
       html[data-portal-page="medi-ambient"] [data-portal-page]:not([data-portal-page~="medi-ambient"]),
       html[data-portal-page="aprendre"] [data-portal-page]:not([data-portal-page~="aprendre"]),
       html[data-portal-page="contacte"] [data-portal-page]:not([data-portal-page~="contacte"]) { display:none !important; }
+      html[data-portal-page="radar"] #territori .webcam-card,
+      html[data-portal-page="webcams"] #territori .radar-card { display:none !important; }
+      html[data-portal-page="radar"] #territori,
+      html[data-portal-page="webcams"] #territori { grid-template-columns:1fr; }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
