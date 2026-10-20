@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-20 — Roadmap reduït a pendents reals
+
+- El roadmap deixa de duplicar centenars de tasques ja completades i conserva
+  només validacions, decisions i integracions encara obertes.
+- Els pendents queden ordenats per prioritat i amb una condició observable per
+  donar-los per acabats; les idees sense compromís passen fora del roadmap actiu.
+- L’històric complet continua disponible al changelog, als informes del projecte
+  i a Git.
+
 ## 2026-10-20 — DOM adaptat a cada ruta
 
 - Abans d’inicialitzar l’aplicació, el navegador retira els blocs HTML de les
