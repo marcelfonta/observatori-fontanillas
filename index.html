@@ -73,7 +73,7 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=22.39.0-earth-viewer" />
-    <link rel="stylesheet" href="css/portal.css?v=22.39.0-earth-viewer" />
+    <link rel="stylesheet" href="css/portal.css?v=22.40.0-weather-guides" />
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="src/features/push.js?v=22.31.6"></script>
     <script type="module" src="src/features/pwa.js?v=22.31.6"></script>
@@ -168,6 +168,38 @@
       <section class="portal-view-header panel" aria-labelledby="environment-page-title" data-portal-page="medi-ambient"><div><p class="eyebrow">Medi Ambient</p><h1 id="environment-page-title">Entorn i salut ambiental.</h1><p>Aire, radiació, pol·len i accés directe als indicadors oficials del territori i la costa.</p></div><span class="tag">Sant Celoni</span></section>
       <section class="portal-view-header panel" aria-labelledby="learning-page-title" data-portal-page="aprendre"><div><p class="eyebrow">Aprendre meteorologia</p><h1 id="learning-page-title">Una biblioteca per entendre el cel.</h1><p>Recursos educatius verificats, ordenats per nivell i tema, per observar, preguntar i aprendre amb fonts sòlides.</p></div><span class="tag">Aula oberta</span></section>
       <section class="portal-view-header panel" aria-labelledby="contact-page-title" data-portal-page="contacte"><div><p class="eyebrow">Contacte</p><h1 id="contact-page-title">Parlem de meteorologia.</h1><p>Consultes, incidències de dades i propostes per continuar millorant l’Observatori.</p></div><span class="tag">Canal privat</span></section>
+
+      <section id="guia-sant-celoni" class="service-guide panel" aria-labelledby="guia-sant-celoni-title" data-portal-page="inici">
+        <header><div><p class="eyebrow">Guia local</p><h2 id="guia-sant-celoni-title">Com llegim el temps de Sant Celoni</h2></div><span class="service-guide__kind">Observació local</span></header>
+        <p>L’estació Fontanillas mesura el que passa en un punt concret del municipi. El Montseny, la vall de la Tordera i la distància al mar poden fer que pluja, boira o vent canviïn en pocs quilòmetres; per això una lectura local no representa tota la comarca.</p>
+        <nav aria-label="Serveis meteorològics de Sant Celoni"><a href="/estacio">Veure l’estació →</a><a href="/prediccio">Consultar la predicció →</a><a href="/avisos">Avisos oficials →</a></nav>
+        <small>Observació és una mesura; predicció és una estimació. En situacions de risc sempre prevalen Meteocat, AEMET, Protecció Civil i el 112.</small>
+      </section>
+
+      <section id="guia-models" class="service-guide panel" aria-labelledby="guia-models-title" data-portal-page="prediccio">
+        <header><div><p class="eyebrow">Guia de predicció</p><h2 id="guia-models-title">Models meteorològics i model Fonta</h2></div><span class="service-guide__kind">Estimacions</span></header>
+        <div class="service-guide__grid">
+          <article><h3>Per què comparem models?</h3><p>ECMWF, GFS, ICON i AROME calculen futurs possibles amb resolucions i actualitzacions diferents. L’acord entre models augmenta la confiança; la discrepància assenyala incertesa, no un error de la web.</p><a href="/prediccio#models">Comparar els models →</a></article>
+          <article><h3>Què aporta Fonta?</h3><p>Fonta contrasta prediccions desades abans de l’episodi amb les observacions reals de l’estació. Només proposa pesos locals quan cada model acumula prou casos comparables; AROME HD continua com a candidat experimental.</p><a href="/verificacio">Veure la verificació →</a><a href="/metodologia.html#model-fonta">Llegir la metodologia →</a></article>
+        </div>
+        <small>Cap model substitueix els avisos oficials ni garanteix el temps exacte en un carrer concret.</small>
+      </section>
+
+      <section id="guia-radar-nowcasting" class="service-guide panel" aria-labelledby="guia-radar-nowcasting-title" data-portal-page="radar">
+        <header><div><p class="eyebrow">Guia de molt curt termini</p><h2 id="guia-radar-nowcasting-title">Radar i nowcasting al Baix Montseny</h2></div><span class="service-guide__kind">0–2 hores</span></header>
+        <div class="service-guide__grid">
+          <article><h3>Què mostra el radar?</h3><p>El radar observa ecos de precipitació i la seva evolució recent. El relleu, l’atenuació i ecos no meteorològics poden crear zones buides o senyals enganyosos; cal contrastar-lo amb l’estació i els llamps.</p><a href="/radar#territori">Obrir el visor operatiu →</a></article>
+          <article><h3>Què és el nowcasting?</h3><p>És una estimació immediata que extrapola el moviment observat durant les darreres imatges. És especialment útil en les primeres dues hores, però un nucli pot créixer, dissipar-se o canviar de trajectòria.</p><a href="/avisos">Comprovar els avisos oficials →</a></article>
+        </div>
+        <small>El prototip local de nowcasting es manté en observació: no publica hores d’arribada ni genera alertes automàtiques.</small>
+      </section>
+
+      <section id="guia-terratremols" class="service-guide panel" aria-labelledby="guia-terratremols-title" data-portal-page="medi-ambient">
+        <header><div><p class="eyebrow">Guia sísmica</p><h2 id="guia-terratremols-title">Terratrèmols recents a Catalunya i al món</h2></div><span class="service-guide__kind">ICGC + USGS</span></header>
+        <p>La magnitud estima l’energia alliberada; la intensitat descriu com s’ha percebut i els efectes en un lloc. El mapa combina el catàleg local ICGC/SISMOCAT —que inclou sismes febles— amb la cobertura mundial de l’USGS.</p>
+        <nav aria-label="Consulta sísmica"><a href="/medi-ambient#environment-panel-earthquakes">Obrir el mapa de terratrèmols →</a><a href="https://www.icgc.cat/ca/Ambits-tematics/Riscos-i-emergencies/Terratremols" target="_blank" rel="noreferrer">Consultar l’ICGC ↗</a></nav>
+        <small>Les localitzacions i magnituds inicials es poden revisar. Aquest visor és informatiu i no és un sistema d’avisos d’emergència.</small>
+      </section>
 
       <section id="meteo-ia" class="meteo-ai-section section-block" aria-labelledby="meteo-ai-title" data-portal-page="meteo-ia">
         <div class="meteo-ai-layout">
