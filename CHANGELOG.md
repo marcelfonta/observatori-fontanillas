@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-20 — Navegació correcta als models francesos
+
+- L’enllaç «Models francesos» del menú conserva la ruta pròpia `/models` en lloc
+  de convertir-la en la portada com si fos una secció interna del portal.
+- La resta de rutes internes continuen mantenint idioma i navegació profunda.
+
 ## 2026-10-20 — Guies meteorològiques indexables
 
 - La portada, la predicció, el radar i el visor ambiental incorporen explicacions

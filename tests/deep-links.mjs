@@ -20,6 +20,9 @@ assert.equal(portalPageFromLocation({pathname:'/radar/',search:''}),'radar');
 assert.equal(portalPageFromLocation({pathname:'/desconeguda',search:''}),'inici');
 assert.match(bootstrap,/location\.pathname/);
 assert.match(shell,/portalPageHref/);
+assert.match(shell,/const navHref=\(id,href\)=>portalPages\.has\(id\)\?portalPageHref\(id\):href/);
+assert.match(shell,/\['models','Models francesos','\/models'\]/);
+assert.doesNotMatch(shell,/href\.startsWith\('\/'\)\?portalPageHref\(id\):href/);
 assert.match(worker,/portal-routes\.js/);
 for(const page of ['prediccio','radar','avisos','terra']){
   assert.ok(sitemap.includes(`https://meteo.fontanillas.cat/${page}`));

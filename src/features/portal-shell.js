@@ -1,4 +1,7 @@
-import { portalPageHref } from '../core/portal-routes.js';
+import { PORTAL_PAGES, portalPageHref } from '../core/portal-routes.js';
+
+const portalPages=new Set(PORTAL_PAGES);
+const navHref=(id,href)=>portalPages.has(id)?portalPageHref(id):href;
 
 const icon=paths=>`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths}</svg>`;
 const ICONS={
@@ -65,7 +68,7 @@ export function mountPortalShell(activePage){
     NAV_GROUPS.forEach(([group,ids])=>{
       const section=document.createElement('div');section.className='portal-nav-group';
       const heading=document.createElement('p');heading.textContent=group;section.append(heading);
-      ids.forEach(id=>{const [,label,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=href.startsWith('/')?portalPageHref(id):href;link.dataset.pageLink=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span>${label}`;section.append(link);});
+      ids.forEach(id=>{const [,label,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=navHref(id,href);link.dataset.pageLink=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span>${label}`;section.append(link);});
       nav.append(section);
     });
     const footer=document.createElement('div');footer.className='portal-sidebar__footer';footer.innerHTML='<div class="portal-sidebar__copyright"><small>© 2026 Fontanillas</small><span>Observatori meteorològic local</span></div>';
@@ -82,7 +85,7 @@ export function mountPortalShell(activePage){
   if(!document.getElementById('portal-mobile-nav')){
     const mobile=document.createElement('nav');mobile.className='portal-mobile-nav';mobile.id='portal-mobile-nav';mobile.setAttribute('aria-label','Navegació principal mòbil');
     [['inici','Inici'],['estacio','Ara'],['municipis','Arreu'],['prediccio','Previsió'],['avisos','Avisos']].forEach(([id,label])=>{
-      const [, ,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=href.startsWith('/')?portalPageHref(id):href;link.dataset.mobilePage=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span><b>${label}</b>`;mobile.append(link);
+      const [, ,href]=NAV_ITEMS.find(item=>item[0]===id);const link=document.createElement('a');link.href=navHref(id,href);link.dataset.mobilePage=id;link.innerHTML=`<span aria-hidden="true">${ICONS[id]}</span><b>${label}</b>`;mobile.append(link);
     });
     const more=document.createElement('button');more.type='button';more.id='portal-mobile-more';more.setAttribute('aria-label','Més: obrir totes les seccions');more.setAttribute('aria-controls','portal-sidebar');more.setAttribute('aria-expanded','false');more.innerHTML='<span aria-hidden="true">•••</span><b>Més</b>';
     more.addEventListener('click',()=>{button?.click();more.setAttribute('aria-expanded',button?.getAttribute('aria-expanded')||'false');});
