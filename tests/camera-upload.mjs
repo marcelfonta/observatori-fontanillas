@@ -153,6 +153,20 @@ assert.equal(servedVertical.headers.get('X-Timelapse-Variant'), 'vertical');
 assert.ok(objects.has('nord/timelapses/latest-vertical-preview.mp4'));
 assert.ok(objects.has('nord/timelapses/daily-vertical/2026-10-07.mp4'));
 
+const callbackToken='youtube-callback-token-'.padEnd(48,'y');
+await bucket.put('nord/timelapses/publications/2026-10-07.json',JSON.stringify({date:'2026-10-07',mode:'manual',status:'processing',outcomes:[
+  {channel:'instagram',stage:'published'},{channel:'facebook',stage:'published'},{channel:'tiktok',stage:'published'},
+  {channel:'youtube',stage:'accepted',remoteId:'workflow-dispatched:2026-10-07',callbackToken},
+]}),{httpMetadata:{contentType:'application/json'}});
+const rejectedCallback=await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/timelapse-youtube-callback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:'2026-10-07',token:'incorrect-token-that-is-long-enough',success:true,videoId:'video-123'})}),env,context);
+assert.equal(rejectedCallback.status,401);
+const callback=await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/timelapse-youtube-callback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:'2026-10-07',token:callbackToken,success:true,videoId:'video-123'})}),env,context);
+assert.equal(callback.status,200);
+assert.equal((await callback.json()).status,'published');
+const publication=JSON.parse(new TextDecoder().decode(objects.get('nord/timelapses/publications/2026-10-07.json').bytes));
+assert.equal(publication.outcomes.find(item=>item.channel==='youtube').remoteId,'video-123');
+assert.equal(publication.outcomes.find(item=>item.channel==='youtube').callbackToken,undefined);
+
 const invalid = new Uint8Array(2048).fill(1);
 const rejected = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/upload', {
   method:'PUT',

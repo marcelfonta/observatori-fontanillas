@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { cameraTimelapsePublicationDecision } from '../worker/index.js';
+import { cameraTimelapseDeliveryState, cameraTimelapsePublicationDecision } from '../worker/index.js';
 
 const generator=readFileSync('scripts/camera-timelapse.sh','utf8');
 const installer=readFileSync('scripts/install-camera-timelapse-timer.sh','utf8');
@@ -53,10 +53,10 @@ assert.match(worker,/publishBufferPublicVideo/);
 assert.match(worker,/query PostDelivery\(\$input: PostInput!\)/);
 assert.match(worker,/status==='sent'&&post\.sentAt/);
 assert.match(worker,/if\(status==='error'\)/);
-assert.match(worker,/postId:mode==='manual'&&!old\.pending\?'':old\.remoteId \|\| ''/);
+assert.match(worker,/postId:old\.remoteId \|\| ''/);
 assert.match(worker,/remoteId:cleanText\(error\.remoteId/);
-assert.match(worker,/state\?\.status==='published'/);
-assert.match(worker,/bufferPostDelivery\(env,tiktok\.remoteId,'TikTok'\)/);
+assert.match(worker,/timelapse-youtube-callback/);
+assert.match(worker,/verifyCameraTimelapseOutcome/);
 assert.match(worker,/\['processing','failed'\]\.includes\(state\.status\)/);
 assert.match(worker,/\['automatic','extraordinary','manual'\]\.includes\(state\.mode\)/);
 assert.doesNotMatch(worker,/state && state\.status !== 'published'/);
@@ -64,7 +64,11 @@ assert.deepEqual(cameraTimelapsePublicationDecision({date:'2026-10-14',motion:{s
 assert.equal(cameraTimelapsePublicationDecision({date:'2026-10-13',motion:{sceneChanges:8,frameCount:188},official:{ok:true,active:1,maxLevel:'orange'}}).reason,'insufficient_motion');
 assert.equal(cameraTimelapsePublicationDecision({date:'2026-10-13',motion:{sceneChanges:40,frameCount:188},official:{ok:true,active:0,maxLevel:'none'}}).reason,'no_official_warning');
 assert.equal(cameraTimelapsePublicationDecision({date:'2026-10-13',motion:{sceneChanges:40,frameCount:188},official:{ok:true,active:1,maxLevel:'yellow'}}).reason,'extraordinary_official_warning_and_motion');
+assert.equal(cameraTimelapseDeliveryState([{channel:'instagram',stage:'published'},{channel:'facebook',stage:'published'},{channel:'tiktok',stage:'published'},{channel:'youtube',stage:'published'}]),'published');
+assert.equal(cameraTimelapseDeliveryState([{channel:'instagram',stage:'published'},{channel:'facebook',stage:'accepted'}]),'processing');
+assert.equal(cameraTimelapseDeliveryState([{channel:'instagram',stage:'failed'}]),'failed');
 assert.match(youtubeWorkflow,/YOUTUBE_PRIVACY_STATUS: public/);
 assert.match(youtubeWorkflow,/camera\/nord\/timelapses\/\$TIMELAPSE_DATE\.mp4/);
+assert.match(youtubeWorkflow,/Confirma el resultat al Worker/);
 
 console.log('Timelapse diari: preparació diària i publicació selectiva correctes.');
