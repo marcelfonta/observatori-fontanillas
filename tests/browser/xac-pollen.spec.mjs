@@ -40,7 +40,7 @@ for(const width of [390,1280])test(`XAC: integració web Bellaterra i Girona ${w
     if(url.pathname==='/src/app.js'||url.hostname!=='127.0.0.1')return route.abort();
     return route.continue();
   });
-  await page.goto('/');
+  await page.goto('/?page=medi-ambient');
   const girona=xacFixture.replaceAll('Bellaterra','Girona').replaceAll('bellaterra','girona').replace('<URTI>1</URTI>','<URTI>3</URTI>');
   await page.evaluate(async({bellaterra,girona})=>{
     const section=document.getElementById('medi-ambient');document.body.replaceChildren(section);section.style.display='grid';

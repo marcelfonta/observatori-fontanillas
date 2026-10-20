@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-20 — DOM adaptat a cada ruta
+
+- Abans d’inicialitzar l’aplicació, el navegador retira els blocs HTML de les
+  seccions que no pertanyen a la ruta activa, en lloc de conservar-los ocults.
+- Els blocs compartits continuen disponibles a totes les rutes corresponents i
+  la navegació, el contingut indexable i el mode sense connexió mantenen el
+  comportament existent.
+- La reducció queda exposada com una mètrica local de diagnòstic per poder
+  comparar elements retirats i conservats en cada pàgina.
+
 ## 2026-10-19 — JavaScript adaptat a cada secció
 
 - Terra, ESTOFEX, històries, previsió estacional, vídeos, verificació, Centre de

@@ -682,6 +682,17 @@ Centre de notícies meteorològiques, calendari, API pública, widgets, recursos
 - La lectura i els dies previstos incorporen iconografia meteorològica accessible, i els resultats geogràfics llargs queden limitats dins un desplegable desplaçable.
 - Pendent de validació final: comprovar en dispositius reals la capa de resultats, les tres pestanyes de fonts i la mida de les icones.
 
+## V22.40.0 — Portal lleuger per ruta — En revisió
+
+- [x] Carregar només els mòduls JavaScript necessaris per a la ruta activa.
+- [x] Retirar del DOM els blocs HTML de les rutes inactives abans d’inicialitzar
+  l’aplicació, preservant els blocs compartits.
+- [x] Mantenir la selecció de ruta, l’HTML indexable i la còpia PWA existents.
+- [x] Exposar una mètrica local de blocs i elements retirats per verificar el
+  guany sense afegir analítica externa.
+- [ ] Valorar fitxers HTML independents per ruta només si les dades reals de
+  camp mostren que els bytes del document continuen sent un coll d’ampolla.
+
 ## Definició de projecte madur
 
 ## V22.39.0 — Context convectiu local i observació satel·lit integrada — Completat
