@@ -1,6 +1,7 @@
 const PORTAL_BASE = 'https://public-api.meteofrance.fr';
 const CATALOG_CACHE_SECONDS = 30 * 60;
 const MAP_CACHE_SECONDS = 10 * 60;
+const HISTORICAL_MAP_CACHE_SECONDS = 24 * 60 * 60;
 const RETRYABLE_STATUS = new Set([429,500,502,503,504]);
 
 export const METEOFRANCE_REUSE_POLICY = Object.freeze({
@@ -245,9 +246,12 @@ export async function meteofranceMap(url,env){
     if(requestedTime&&!time)return payload({error:'Instant temporal no disponible per a aquesta edició.'},400,60);
     // Sense `time`, el WMS aplica l'instant per defecte de l'edició activa.
     const upstream=new Request(buildMapUrl(product,layer,width,height,time),{headers:{Accept:'image/png,*/*',apikey:key}});
-    const response=await cachedFetch(upstream,MAP_CACHE_SECONDS);
+    // Un instant explícit del model és immutable. Conservar-lo evita tornar a
+    // generar la mateixa imatge WMS durant la navegació i entre visites.
+    const mapCacheSeconds=time?HISTORICAL_MAP_CACHE_SECONDS:MAP_CACHE_SECONDS;
+    const response=await cachedFetch(upstream,mapCacheSeconds);
     if(!response.ok)return payload({error:'Météo-France no ha pogut generar el mapa ara mateix.'},response.status>=500?502:response.status,120);
-    const headers=safeHeaders(response.headers.get('Content-Type')||'image/png',MAP_CACHE_SECONDS);
+    const headers=safeHeaders(response.headers.get('Content-Type')||'image/png',mapCacheSeconds);
     headers['X-Weather-Source']='Meteo-France';
     headers['Content-Disposition']='inline';
     return new Response(response.body,{status:200,headers});

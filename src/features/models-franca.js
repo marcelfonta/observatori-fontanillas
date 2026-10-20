@@ -16,7 +16,8 @@ function api(path){return `${CONFIG.apiUrl}${path}`;}
 function product(id){return state.products.find(item=>item.id===id);}
 function selectedTimes(){return product(state.model)?.times||[];}
 function selectedTime(){return selectedTimes()[state.timeIndex]||'';}
-function mapUrl(){const params=new URLSearchParams({model:state.model,layer:state.layer,width:'1500',height:'850',fresh:String(Math.floor(Date.now()/600000))});if(selectedTime())params.set('time',selectedTime());return api(`/meteofrance/map?${params}`);}
+function mapSize(){return window.matchMedia('(max-width: 620px)').matches?{width:'960',height:'544'}:{width:'1500',height:'850'};}
+function mapUrl(){const size=mapSize();const params=new URLSearchParams({model:state.model,layer:state.layer,...size,fresh:String(Math.floor(Date.now()/600000))});if(selectedTime())params.set('time',selectedTime());return api(`/meteofrance/map?${params}`);}
 function timeLabel(value,style='full'){
   if(!value)return style==='short'?'—':'Edició activa';
   const options=style==='short'?{day:'numeric',month:'short',hour:'2-digit'}:{weekday:'long',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'};
@@ -92,25 +93,31 @@ function syncControls(){
 async function loadMap(){
   syncControls();
   const selected=product(state.model);const mapElement=$('#model-map');const message=$('#map-message');const sequence=++requestSequence;
+  let candidateOverlay;
   mapElement.classList.remove('loaded');message.hidden=false;message.classList.remove('error');message.innerHTML='<span class="spinner"></span><strong>Preparant el mapa oficial…</strong>';
   if(selected&&!selected.available){message.classList.add('error');message.innerHTML='<strong>Aquest producte no respon ara mateix. Tria un dels models disponibles.</strong>';return;}
   try{
     const leafletMap=await ensureMap();
     if(sequence!==requestSequence)return;
     mapElement.classList.add('loaded');
-    if(weatherOverlay){leafletMap.removeLayer(weatherOverlay);weatherOverlay=null;}
-    const overlay=window.L.imageOverlay(mapUrl(),CATALUNYA_BOUNDS,{opacity:.7,interactive:false,crossOrigin:true});
-    await new Promise((resolve,reject)=>{overlay.once('load',resolve);overlay.once('error',reject);overlay.addTo(leafletMap);});
+    const overlay=candidateOverlay=window.L.imageOverlay(mapUrl(),CATALUNYA_BOUNDS,{opacity:.7,interactive:false,crossOrigin:true});
+    const loaded=new Promise((resolve,reject)=>{overlay.once('load',resolve);overlay.once('error',reject);});
+    overlay.addTo(leafletMap);
+    overlay.getElement()?.setAttribute('fetchpriority','high');
+    await loaded;
     if(sequence!==requestSequence){leafletMap.removeLayer(overlay);return;}
+    if(weatherOverlay)leafletMap.removeLayer(weatherOverlay);
     weatherOverlay=overlay;message.hidden=true;leafletMap.invalidateSize({pan:false});
     $('#map-status').textContent=selectedTime()?`Vàlid: ${timeLabel(selectedTime())}`:'Edició activa del model';
   }catch(error){
     console.warn('Mapa Météo-France no disponible.',error);
     if(sequence!==requestSequence)return;
+    if(candidateOverlay&&map?.hasLayer(candidateOverlay))map.removeLayer(candidateOverlay);
     message.hidden=false;message.classList.add('error');message.innerHTML='<strong>Aquest mapa no està disponible ara mateix. Pots provar un altre producte o tornar-ho a intentar.</strong>';
   }
 }
 async function init(){
+  const mapReady=ensureMap().catch(error=>{console.warn('No s’ha pogut preparar el mapa base.',error);return null;});
   try{
     const response=await fetch(api('/meteofrance/models'),{headers:{Accept:'application/json'},cache:'no-store'});
     if(!response.ok)throw new Error(`API ${response.status}`);
@@ -119,10 +126,10 @@ async function init(){
     renderCatalog();
     const initial=product(state.model);if(initial&&!initial.available){const fallback=state.products.find(item=>item.visualizable&&item.available);if(fallback)state.model=fallback.id;}
     syncTimeline({reset:true});
-    loadMap();
+    await mapReady;loadMap();
   }catch{
     $('#product-grid').innerHTML='<article class="product-card"><h3>Connexió temporalment no disponible</h3><p class="product-purpose">La previsió principal continua funcionant. Torna a provar aquest laboratori més tard.</p></article>';
-    $('#global-state').textContent='Laboratori temporalment no disponible';$('#global-dot').style.background='var(--red)';loadMap();
+    $('#global-state').textContent='Laboratori temporalment no disponible';$('#global-dot').style.background='var(--red)';await mapReady;loadMap();
   }
 }
 $('#model-controls').addEventListener('click',event=>{const button=event.target.closest('[data-model]');if(!button)return;stopPlayback();state.model=button.dataset.model;syncTimeline({reset:true});loadMap();});
