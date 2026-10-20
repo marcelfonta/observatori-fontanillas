@@ -3,36 +3,46 @@ const CATALOG_CACHE_SECONDS = 30 * 60;
 const MAP_CACHE_SECONDS = 10 * 60;
 const RETRYABLE_STATUS = new Set([429,500,502,503,504]);
 
+export const METEOFRANCE_REUSE_POLICY = Object.freeze({
+  scope:'public products only',
+  license:'Licence Ouverte / Open Licence Etalab',
+  source:'Météo-France',
+  url:'https://donneespubliques.meteofrance.fr/?fond=dossier&id_dossier=12',
+  attribution:'Informacions creades a partir de dades de Météo-France',
+  rawRedistributionAllowed:false,
+  note:'La reutilització amb atribució és permesa, però no la redistribució en l’estat original.',
+});
+
 export const METEOFRANCE_PRODUCTS = Object.freeze({
   arome: {
     label:'AROME directe', shortLabel:'AROME', secret:'METEOFRANCE_AROME_API_KEY',
     context:'/public/arome/1.0', protocol:'wms', service:'MF-NWP-HIGHRES-AROME-001-FRANCE-WMS',
-    horizon:'0–48 h', purpose:'Detall determinista local', layers:['precipitation','temperature','wind','clouds'],
+    horizon:'0–48 h', purpose:'Detall determinista local', layers:['precipitation','temperature','wind','clouds'], access:'public',
   },
   'arome-pi': {
     label:'AROME previsió immediata', shortLabel:'AROME-PI', secret:'METEOFRANCE_AROME_NOWCAST_API_KEY',
     context:'/public/aromepi/1.0', protocol:'wms', service:'MF-NWP-HIGHRES-AROMEPI-001-FRANCE-WMS',
-    horizon:'Pròximes hores', purpose:'Evolució ràpida de la precipitació', layers:['precipitation'],
+    horizon:'Pròximes hores', purpose:'Evolució ràpida de la precipitació', layers:['precipitation'], access:'public',
   },
   'pe-arome': {
     label:'AROME conjunt', shortLabel:'PE-AROME', secret:'METEOFRANCE_AROME_ENSEMBLE_API_KEY',
     context:'/public/pearome/1.0', protocol:'wcs', service:'MF-NWP-HIGHRES-PEARO000-0025-FRANCE-WCS', members:25,
-    horizon:'Curt termini', purpose:'25 membres per mesurar probabilitat i incertesa local', layers:[],
+    horizon:'Curt termini', purpose:'25 membres per mesurar probabilitat i incertesa local', layers:[], access:'public',
   },
   arpege: {
     label:'ARPEGE directe', shortLabel:'ARPEGE', secret:'METEOFRANCE_ARPEGE_API_KEY',
     context:'/public/arpege/1.0', protocol:'wms', service:'MF-NWP-GLOBAL-ARPEGE-01-EUROPE-WMS',
-    horizon:'Mitjà termini', purpose:'Context sinòptic i continuïtat', layers:['precipitation','temperature','wind','clouds'],
+    horizon:'Mitjà termini', purpose:'Context sinòptic i continuïtat', layers:['precipitation','temperature','wind','clouds'], access:'public',
   },
   'pe-arpege': {
     label:'ARPEGE conjunt', shortLabel:'PE-ARPEGE', secret:'METEOFRANCE_ARPEGE_ENSEMBLE_API_KEY',
     context:'/public/pearpege/1.0', protocol:'wcs', service:'MF-NWP-GLOBAL-PEARP000-01-EUROPE-WCS', members:35,
-    horizon:'Mitjà termini', purpose:'35 membres per mesurar dispersió i confiança', layers:[],
+    horizon:'Mitjà termini', purpose:'35 membres per mesurar dispersió i confiança', layers:[], access:'public',
   },
   piaf: {
     label:'PIAF', shortLabel:'PIAF', secret:'METEOFRANCE_PIAF_API_KEY',
     context:'/pro/piaf/1.0', protocol:'wms', service:'MF-NWP-HIGHRES-PIAF-001-FRANCE-WMS',
-    horizon:'0–3 h', purpose:'Precipitació immediata', layers:['precipitation'], experimental:true,
+    horizon:'0–3 h', purpose:'Precipitació immediata', layers:['precipitation'], experimental:true, access:'professional',
   },
 });
 
@@ -144,7 +154,8 @@ function publicProduct(id,product,configured,available,parsed,error){
   for(const semantic of product.layers)layerAvailability[semantic]=Boolean(chooseLayer(parsed?.layers,semantic));
   return {
     id,label:product.label,shortLabel:product.shortLabel,horizon:product.horizon,purpose:product.purpose,
-    configured,available,experimental:Boolean(product.experimental),protocol:product.protocol,
+    configured,available,experimental:Boolean(product.experimental),protocol:product.protocol,access:product.access,
+    reuseStatus:product.access==='public'?'open-license-with-attribution':'terms-must-be-confirmed',
     visualizable:product.protocol==='wms',members:product.members||null,layers:product.layers,
     layerAvailability,steps:parsed?.times?.length||null,coverages:parsed?.coverages?.length||null,
     times:product.protocol==='wms'?(parsed?.times||[]):[],
@@ -153,20 +164,58 @@ function publicProduct(id,product,configured,available,parsed,error){
   };
 }
 
-export async function meteofranceModels(env){
+export function numericIngestionDecision(productId,env={}){
+  const product=METEOFRANCE_PRODUCTS[productId];
+  if(!product)return {allowed:false,reason:'unknown-product'};
+  if(product.protocol!=='wcs')return {allowed:false,reason:'not-numeric-wcs'};
+  const approved=new Set(String(env.METEOFRANCE_NUMERIC_REUSE_APPROVED_PRODUCTS||'').split(',').map(value=>value.trim()).filter(Boolean));
+  if(!approved.has(productId))return {allowed:false,reason:'reuse-not-approved'};
+  if(!keyFor(env,product))return {allowed:false,reason:'credential-not-configured'};
+  return {allowed:true,reason:'approved-private-pilot'};
+}
+
+async function validateWmsImage(product,key,parsed){
+  const semantic=product.layers.find(item=>chooseLayer(parsed.layers,item));
+  const layer=semantic?chooseLayer(parsed.layers,semantic):null;
+  if(!layer)return {ok:false,semantic:null,bytes:0,reason:'no-compatible-layer'};
+  const request=new Request(buildMapUrl(product,layer,320,220,parsed.times.at(-1)||''),{headers:{Accept:'image/png,*/*',apikey:key}});
+  const response=await cachedFetch(request,MAP_CACHE_SECONDS);
+  if(!response.ok)return {ok:false,semantic,bytes:0,reason:`http-${response.status}`};
+  const type=response.headers.get('content-type')||'';const bytes=(await response.arrayBuffer()).byteLength;
+  return {ok:/^image\/png/i.test(type)&&bytes>=250,semantic,bytes,reason:/^image\/png/i.test(type)&&bytes>=250?null:'invalid-image'};
+}
+
+export async function inspectMeteofranceProducts(env,{probeMaps=false}={}){
   const checkedAt=new Date().toISOString();
-  const entries=await Promise.all(Object.entries(METEOFRANCE_PRODUCTS).map(async ([id,product])=>{
+  const products=await Promise.all(Object.entries(METEOFRANCE_PRODUCTS).map(async ([id,product])=>{
     const key=keyFor(env,product);
-    if(!key)return publicProduct(id,product,false,false,null,'Credencial pendent de configurar al Worker.');
+    if(!key)return {...publicProduct(id,product,false,false,null,'Credencial pendent de configurar al Worker.'),mapProbe:null,numericIngestion:numericIngestionDecision(id,env)};
     try{
       const parsed=await capabilities(product,key);
-      return publicProduct(id,product,true,true,parsed,null);
+      const mapProbe=probeMaps&&product.protocol==='wms'?await validateWmsImage(product,key,parsed):null;
+      return {...publicProduct(id,product,true,true,parsed,null),mapProbe,numericIngestion:numericIngestionDecision(id,env)};
     }catch(error){
       const suffix=Number.isFinite(error?.status)?` (HTTP ${error.status})`:'';
-      return publicProduct(id,product,true,false,null,`El proveïdor no respon ara mateix${suffix}; la resta de models continuen disponibles.`);
+      return {...publicProduct(id,product,true,false,null,`El proveïdor no respon ara mateix${suffix}; la resta de models continuen disponibles.`),mapProbe:null,numericIngestion:numericIngestionDecision(id,env)};
     }
   }));
-  return payload({ok:true,source:'Météo-France',checkedAt,products:entries},200,300);
+  return {checkedAt,products};
+}
+
+export async function meteofranceModels(env){
+  const {checkedAt,products}=await inspectMeteofranceProducts(env);
+  const publicProducts=products.map(({mapProbe:unusedMapProbe,numericIngestion:unusedNumericIngestion,...product})=>product);
+  return payload({ok:true,source:'Météo-France',checkedAt,products:publicProducts},200,300);
+}
+
+export async function meteofranceStagingValidation(env){
+  const {checkedAt,products}=await inspectMeteofranceProducts(env,{probeMaps:true});
+  const configured=products.filter(item=>item.configured).length;
+  const catalogs=products.filter(item=>item.available).length;
+  const wms=products.filter(item=>item.protocol==='wms');
+  const validMaps=wms.filter(item=>item.mapProbe?.ok).length;
+  const numericEligible=products.filter(item=>item.available&&item.numericIngestion?.allowed).map(item=>item.id);
+  return payload({ok:true,mode:'private-staging-validation',checkedAt,summary:{products:products.length,configured,catalogs,wmsMaps:`${validMaps}/${wms.length}`,numericEligible},reusePolicy:METEOFRANCE_REUSE_POLICY,products},200,0);
 }
 
 export function buildMapUrl(product,layer,width=1200,height=700,time=''){

@@ -68,7 +68,8 @@ pendent i decisions encara obertes. Les fases completades es documenten a
 ## P1 — Fonts numèriques de Météo-France
 
 - [ ] Validar a staging els sis catàlegs configurats i confirmar quines capes
-  WMS són reals, estables i reutilitzables.
+  WMS són reals, estables i reutilitzables. La comprovació privada de catàleg,
+  imatge real i llicència ja està preparada; falta acumular execucions a staging.
 - [ ] Construir ingestió WCS/GRIB en un circuit privat només per als productes
   que aportin dades numèriques comparables i una llicència compatible.
 - [ ] Congelar-ne les prediccions i verificar-les prospectivament abans de

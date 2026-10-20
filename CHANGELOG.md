@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-20 — Validació privada dels sis productes Météo-France
+
+- L'administració diferencia catàlegs disponibles de mapes WMS realment
+  generats per AROME, AROME-PI, ARPEGE i PIAF.
+- PE-AROME i PE-ARPEGE continuen bloquejats per a ingestió numèrica fins que
+  cada producte rebi una aprovació privada explícita de reutilització.
+- El contracte incorpora l'atribució, la llicència oberta i la prohibició de
+  redistribuir les dades originals, sense exposar credencials ni fitxers GRIB.
+
 ## 2026-10-20 — Nowcasting local en mode d’ombra
 
 - El Worker captura prospectivament la disponibilitat, frescor, cadència i
