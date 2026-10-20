@@ -18,7 +18,7 @@ completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 - Les accions que requereixen comptes, credencials, dispositius o una decisió
   editorial es tanquen només amb confirmació humana.
 
-## P0 — Validació operativa
+## P0 — Validació operativa real
 
 ### Model Fonta
 
