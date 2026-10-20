@@ -39,11 +39,6 @@ export const METEOFRANCE_PRODUCTS = Object.freeze({
     context:'/public/pearpege/1.0', protocol:'wcs', service:'MF-NWP-GLOBAL-PEARP000-01-EUROPE-WCS', members:35,
     horizon:'Mitjà termini', purpose:'35 membres per mesurar dispersió i confiança', layers:[], access:'public',
   },
-  piaf: {
-    label:'PIAF', shortLabel:'PIAF', secret:'METEOFRANCE_PIAF_API_KEY',
-    context:'/pro/piaf/1.0', protocol:'wms', service:'MF-NWP-HIGHRES-PIAF-001-FRANCE-WMS',
-    horizon:'0–3 h', purpose:'Precipitació immediata', layers:['precipitation'], experimental:true, access:'professional',
-  },
 });
 
 const LAYER_PATTERNS = Object.freeze({

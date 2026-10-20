@@ -49,7 +49,6 @@ jobs:
           METEOFRANCE_AROME_ENSEMBLE_API_KEY: ${{ secrets.METEOFRANCE_AROME_ENSEMBLE_API_KEY }}
           METEOFRANCE_ARPEGE_API_KEY: ${{ secrets.METEOFRANCE_ARPEGE_API_KEY }}
           METEOFRANCE_ARPEGE_ENSEMBLE_API_KEY: ${{ secrets.METEOFRANCE_ARPEGE_ENSEMBLE_API_KEY }}
-          METEOFRANCE_PIAF_API_KEY: ${{ secrets.METEOFRANCE_PIAF_API_KEY }}
         run: node scripts/write-meteofrance-secrets.mjs "$RUNNER_TEMP/meteofrance-secrets.json"
 
       - name: Sincronitza les credencials només amb staging
