@@ -37,6 +37,37 @@ trànsit suficient.
 
 ## Diagnòstic
 
+## Revalidació després de les millores
+
+Mesura repetida el 20 d’octubre de 2026, amb la mateixa versió de Lighthouse,
+els mateixos perfils i una càrrega nova per pàgina. Entre totes dues rondes es
+van desplegar la marca lleugera, l’estabilització del Radar, l’optimització dels
+Models francesos, les correccions d’accessibilitat pròpia i la memòria cau de
+24 hores de les capes immutables de Météo-France.
+
+| Perfil | Entrada | Puntuacions | FCP | LCP | TBT | CLS | Transferència | Peticions |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Mòbil | Portada | 97 / 100 / 75 / 100 | 1.963 | 1.963 | 67 | 0,007 | 822 KB | 89 |
+| Mòbil | Predicció | 98 / 100 / 75 / 100 | 1.955 | 1.955 | 0 | 0,034 | 629 KB | 83 |
+| Mòbil | Radar | 74 / 100 / 71 / 100 | 1.956 | 7.075 | 0 | 0,033 | 900 KB | 87 |
+| Mòbil | Terra | 98 / 100 / 71 / 100 | 1.849 | 1.849 | 0 | 0,033 | 1.333 KB | 86 |
+| Mòbil | Avisos | 98 / 100 / 75 / 100 | 1.884 | 1.884 | 0 | 0,026 | 1.895 KB | 118 |
+| Mòbil | Models francesos | 72 / 100 / 100 / 100 | 2.418 | 7.413 | 0 | 0,006 | 613 KB | 40 |
+| Escriptori | Portada | 98 / 100 / 78 / 100 | 792 | 916 | 0 | 0,038 | 667 KB | 86 |
+| Escriptori | Predicció | 97 / 100 / 78 / 100 | 951 | 951 | 0 | 0,032 | 538 KB | 81 |
+| Escriptori | Radar | 89 / 100 / 78 / 100 | 775 | 2.120 | 0 | 0,038 | 1.202 KB | 106 |
+| Escriptori | Terra | 97 / 100 / 74 / 100 | 858 | 970 | 0 | 0,058 | 1.651 KB | 108 |
+| Escriptori | Avisos | 92 / 100 / 78 / 100 | 1.062 | 1.410 | 0 | 0,077 | 1.815 KB | 117 |
+| Escriptori | Models francesos | 77 / 100 / 100 / 100 | 875 | 2.652 | 0 | 0,167 | 955 KB | 51 |
+
+La transferència baixa entre un 32 % i un 62 % a les entrades mòbils. Radar
+passa de 49 a 74 punts de rendiment i el seu CLS baixa de 0,674 a 0,033. La
+portada passa de 91 a 97 i totes les entrades arriben a 100 d’accessibilitat.
+Models francesos redueix l’LCP mòbil de 10,5 a 7,4 segons, però encara no
+compleix l’objectiu de 4 segons. Aquesta capa inicial és l’únic coll d’ampolla
+propi prioritari que queda; el LCP mòbil del Radar depèn de les rajoles externes
+i ja no provoca inestabilitat visual.
+
 ### P0 · Radar inestable durant la càrrega
 
 El Radar és l’única secció amb rendiment mòbil pobre i CLS crític. Lighthouse
@@ -109,12 +140,14 @@ incidències de tercers continuen separades de les correccions pròpies.
 
 ## Ordre d’execució
 
-1. Reduir l’actiu de marca carregat a totes les pàgines.
-2. Estabilitzar la geometria del Radar i repetir la matriu Radar.
-3. Avançar o estabilitzar la capa inicial dels Models francesos.
-4. Corregir accessibilitat pròpia.
-5. Tornar a mesurar les sis entrades i comparar-les amb aquesta taula.
-6. Afegir Core Web Vitals de camp quan Search Console tingui prou mostra.
+1. Fet: reduir l’actiu de marca carregat a totes les pàgines.
+2. Fet: estabilitzar la geometria del Radar i repetir la matriu Radar.
+3. Fet parcialment: avançar i emmagatzemar la capa inicial dels Models
+   francesos; encara cal reduir-ne l’LCP mòbil fins a 4 segons o menys.
+4. Fet: corregir l’accessibilitat pròpia.
+5. Fet: tornar a mesurar les sis entrades i comparar-les amb la línia base.
+6. Pendent: afegir Core Web Vitals de camp quan Search Console tingui prou
+   mostra.
 
 ## Reproducció
 

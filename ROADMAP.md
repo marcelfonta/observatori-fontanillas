@@ -70,15 +70,13 @@ d’ampolla reals i permet comparar qualsevol canvi posterior.
 
 ### 2. Càrrega diferida guiada per dades
 
-- [ ] Corregir primer els recursos que la línia base identifiqui com a
-  bloquejants o excessius.
-- [ ] Carregar visors, mapes, GIF i integracions externes només en entrar a la
-  secció corresponent, sempre que encara generin cost inicial mesurable.
-- [ ] Repetir exactament les mateixes proves i conservar només els canvis que
-  millorin les mètriques sense trencar la navegació.
+- [ ] Reduir l’LCP mòbil de la capa inicial dels Models francesos, actualment
+  d’uns 7,4 segons, fins a 4 segons o menys en tres execucions consecutives.
+- [ ] Mantenir la reserva estable i la degradació segura quan Météo-France no
+  respongui; no afegir més càrrega inicial a la portada.
 
-**Fet quan:** la portada compleix els objectius acordats de Core Web Vitals i no
-carrega cap recurs pesant d’una secció que l’usuari no ha obert.
+**Fet quan:** Models francesos compleix l’objectiu en tres execucions i la resta
+de la matriu conserva els guanys documentats a la revalidació del 20 d’octubre.
 
 ### 3. Validació en dispositius i accessibilitat
 
