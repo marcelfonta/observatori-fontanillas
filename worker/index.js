@@ -12,8 +12,8 @@ import { dailySocialCardV5 } from './social-daily-v5.js';
 import { meteofranceMap, meteofranceModels, meteofranceStagingValidation } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.39.0";
-const WORKER_BUILT = "2026-10-18";
+const WORKER_VERSION = "22.39.1";
+const WORKER_BUILT = "2026-10-21";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone:TIME_ZONE, year:"numeric", month:"2-digit", day:"2-digit",
@@ -4997,6 +4997,7 @@ const BUFFER_X_RECOVERY_STARTS = { morning:{ hour:6, minute:5 }, midday:{ hour:1
 const BUFFER_X_RECOVERY_AFTER_MINUTES = 90;
 const BUFFER_X_MAX_ATTEMPTS = 4;
 const BUFFER_RATE_LIMIT_FALLBACK_SECONDS = 15 * 60;
+const BUFFER_RATE_LIMIT_SERVICE_KEY = 'buffer:rate-limit';
 
 function bufferTikTokEnabled(env) {
   return String(env.BUFFER_TIKTOK_AUTOMATION_ENABLED || '').trim().toLowerCase() === 'true';
@@ -5044,9 +5045,36 @@ export function parseBufferRetryAfter(value, now = Date.now()) {
   return Math.max(1,Math.ceil((retryAt-Number(now))/1000));
 }
 
+export function bufferRateLimitRetryAt(detail, now = Date.now()) {
+  const value=typeof detail==='string'?parseYoutubeShortRunDetail(detail):detail;
+  const retryAt=Date.parse(value?.retryAt || '');
+  return value?.stage==='rate_limited'&&Number.isFinite(retryAt)&&retryAt>Number(now)
+    ? new Date(retryAt).toISOString()
+    : null;
+}
+
+async function activeBufferRateLimit(env, now = Date.now()) {
+  if (!(await ensureOperationsSchema(env))) return null;
+  const row=await env.DB.prepare('SELECT detail FROM monitor_state WHERE service_key = ?').bind(BUFFER_RATE_LIMIT_SERVICE_KEY).first();
+  const retryAt=bufferRateLimitRetryAt(row?.detail,now);
+  return retryAt?{retryAt,rateLimited:true,sharedCooldown:true}:null;
+}
+
+async function rememberBufferRateLimit(env, retryAt, error) {
+  if (!(await ensureOperationsSchema(env))) return;
+  await recordOperationalState(env,BUFFER_RATE_LIMIT_SERVICE_KEY,'running',{
+    stage:'rate_limited',rateLimited:true,retryAt,
+    responseCode:429,error:cleanText(error,500),
+  });
+}
+
 async function bufferGraphql(env, query, variables = {}) {
   const apiKey = String(env.BUFFER_API_KEY || '').trim();
   if (apiKey.length < 24) throw Object.assign(new Error('Falta BUFFER_API_KEY.'), { status:503 });
+  const cooldown=await activeBufferRateLimit(env).catch(()=>null);
+  if(cooldown)throw Object.assign(new Error('Buffer ha demanat una pausa temporal compartida. No es faran més peticions fins que finalitzi.'),{
+    status:429,responseCode:429,...cooldown,
+  });
   const response = await fetch('https://api.buffer.com', {
     method:'POST',
     headers:{ Authorization:`Bearer ${apiKey}`, 'Content-Type':'application/json', Accept:'application/json' },
@@ -5059,12 +5087,15 @@ async function bufferGraphql(env, query, variables = {}) {
     const retryAfterSeconds=rateLimited
       ? (parseBufferRetryAfter(response.headers.get('Retry-After')) || BUFFER_RATE_LIMIT_FALLBACK_SECONDS)
       : null;
+    const retryAt=retryAfterSeconds ? new Date(Date.now()+retryAfterSeconds*1000).toISOString() : null;
+    if(rateLimited)await rememberBufferRateLimit(env,retryAt,message).catch(()=>{});
     throw Object.assign(new Error(message), {
       status:rateLimited?429:502,
       responseCode:response.status,
       rateLimited,
       retryAfterSeconds,
-      retryAt:retryAfterSeconds ? new Date(Date.now()+retryAfterSeconds*1000).toISOString() : null,
+      retryAt,
+      sharedCooldown:rateLimited,
     });
   }
   return payload.data || {};
@@ -5164,6 +5195,8 @@ async function scheduleBufferTikTokSlot(env, localDate, slot) {
   if (!(await ensureOperationsSchema(env))) throw Object.assign(new Error('La coordinació de TikTok no està disponible.'),{status:503});
   const safeSlot = slot === 'morning' || slot === 'evening' ? slot : '';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(localDate) || !safeSlot) throw Object.assign(new Error('Data o franja de TikTok no vàlida.'),{status:400});
+  const sharedCooldown=await activeBufferRateLimit(env).catch(()=>null);
+  if(sharedCooldown)return {ok:true,pending:true,reused:true,skipped:'shared_buffer_cooldown',...sharedCooldown};
   const serviceKey = `buffer-tiktok:${localDate}:${safeSlot}`;
   const previous = await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
   const detail = parseYoutubeShortRunDetail(previous?.detail);
@@ -5438,6 +5471,8 @@ async function scheduleBufferXSlot(env, localDate, slot) {
   if (!(await ensureOperationsSchema(env))) throw Object.assign(new Error('La coordinació d’X no està disponible.'),{status:503});
   const safeSlot = ['morning','midday','evening'].includes(slot) ? slot : '';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(localDate) || !safeSlot) throw Object.assign(new Error('Data o franja d’X no vàlida.'),{status:400});
+  const sharedCooldown=await activeBufferRateLimit(env).catch(()=>null);
+  if(sharedCooldown)return {ok:true,pending:true,reused:true,skipped:'shared_buffer_cooldown',...sharedCooldown};
   const serviceKey = `buffer-x:${localDate}:${safeSlot}`;
   const previous = await env.DB.prepare('SELECT status,last_checked_at,detail FROM monitor_state WHERE service_key = ?').bind(serviceKey).first();
   const detail = parseYoutubeShortRunDetail(previous?.detail);
@@ -6771,7 +6806,7 @@ async function runDailyIntegrationPreflight(env, date = new Date()) {
     const notifiedAt=Date.parse(notice?.last_notified_at || '');
     const sameRecent=notice?.detail===signature&&Number.isFinite(notifiedAt)&&date.getTime()-notifiedAt<6*60*60_000;
     if(!sameRecent){
-      const rateLimitNote=failed.some(item=>item.rateLimited)?' Buffer ha indicat una pausa temporal i no es tornarà a comprovar fins a la franja següent.':'';
+      const rateLimitNote=failed.some(item=>item.rateLimited)?' Buffer ha indicat una pausa temporal compartida; X i TikTok no tornaran a contactar el servei fins que finalitzi el període indicat.':'';
       await sendOperationalEmail(env,'[Observatori] Connexió social no preparada',`La comprovació preventiva de les ${slot} ha detectat ${failed.length} connexió/ns activa/es amb incidències abans de la publicació automàtica.\n\n${failed.map(item=>`${item.channel}: ${item.detail}`).join('\n')}\n\nEls canals no configurats s’han omès i la resta podran continuar publicant de manera independent.${rateLimitNote}`,'social_preflight_failed');
       await env.DB.prepare(`INSERT INTO monitor_state (service_key,status,consecutive_failures,last_checked_at,last_failure_at,last_success_at,last_notified_at,detail)
         VALUES (?,?,?,?,?,?,?,?)

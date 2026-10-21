@@ -27,6 +27,7 @@ assert.match(admin, /id="admin-buffer-diagnostics"/);
 assert.match(worker, /bufferTikTokAutomationEnabled:bufferTikTokEnabled/);
 assert.match(worker, /recoverBufferTikTokSchedule/);
 assert.match(worker, /observedJob\('buffer-tiktok-recovery'/);
+assert.match(worker, /shared_buffer_cooldown/);
 
 assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:04:59.000Z')),null);
 assert.equal(bufferTikTokRecoverySlot(new Date('2026-08-29T04:05:00.000Z')),'morning');
