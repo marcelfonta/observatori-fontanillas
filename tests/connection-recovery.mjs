@@ -15,6 +15,6 @@ assert.match(app,/Servei temporalment no disponible/);
 assert.match(app,/window\.addEventListener\('online',\(\)=>refreshAfterResume\(true\)\)/);
 assert.match(html,/src\/app\.js\?v=22\.39\.0-earth-viewer/);
 assert.match(workerCache,/verification-reputation-v1-connection-recovery-v1/);
-assert.equal(pkg.version,'22.39.0');
+assert.equal(pkg.version,'22.39.1');
 
 console.log('Recuperació de connexió transitòria: correcta');
