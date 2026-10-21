@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-21 — Pausa compartida davant dels límits de Buffer
+
+- Un `429 Too many requests` desa ara un únic període de pausa compartit per
+  tots els fluxos de Buffer.
+- La comprovació preventiva i els programadors d’X i TikTok respecten el mateix
+  `Retry-After`, sense fer noves peticions ni enviar un segon avís durant el
+  bloqueig.
+- El correu preventiu explica que la pausa afecta temporalment els dos canals
+  gestionats per Buffer, mentre la resta de xarxes continuen independents.
+
 ## 2026-10-20 — Navegació correcta als models francesos
 
 - L’enllaç «Models francesos» del menú conserva la ruta pròpia `/models` en lloc
