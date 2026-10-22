@@ -2,12 +2,17 @@
 
 La base tècnica ja és dins del projecte: canòniques, metadades per pàgina, dades estructurades, `robots.txt` i `sitemap.xml`.
 
-## Estat completat — 10 d’agost de 2026
+## Estat verificat — 22 d’octubre de 2026
 
 - Propietat de domini `fontanillas.cat` verificada per DNS a Cloudflare.
-- Sitemap `https://meteo.fontanillas.cat/sitemap.xml` processat correctament.
-- 13 URL descobertes per Google.
-- Portada enviada a la cua d’indexació prioritària.
+- Sitemap `https://meteo.fontanillas.cat/sitemap.xml` correcte, llegit el 17
+  d’octubre i amb 52 URL descobertes.
+- L’informe d’indexació del 16 d’octubre encara mostra 55 URL sense indexar i
+  cap d’indexada. Molts exemples són URL antigues `?page=` que ja no són al
+  sitemap actual.
+- La incidència d’HTML inicial genèric queda documentada i corregida a
+  `docs/SEO-AUDIT-2026-10-22.md`; cal iniciar la validació després del
+  desplegament.
 
 ## Procediment de referència
 
