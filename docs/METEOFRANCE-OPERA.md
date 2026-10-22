@@ -5,8 +5,8 @@
 El 22 d’octubre de 2026, Météo-France va confirmar l’activació del cas
 `T#169758` per a l’usuari del projecte. La sessió autenticada del portal permet
 obrir **Utiliser**, consultar la consola i descarregar l’especificació OpenAPI
-oficial. No s’ha generat cap token ni s’ha incorporat cap credencial al
-repositori.
+oficial. Les credencials temporals utilitzades en les proves privades no s’han
+incorporat al repositori ni als informes.
 
 La llicència comunicada al projecte és **CC-BY-4.0**. El portal precisa que
 l’ús gratuït requereix autorització d’EUMETNET i està destinat a finalitats
@@ -73,3 +73,26 @@ La primera petició real haurà de ser petita i no destructiva: consultar
 registrar només metadades no sensibles: cobertura, productes, mida, temps de
 resposta, antiguitat, valors absents i capçaleres de memòria cau. No es
 publicarà cap capa fins que aquesta prova confirmi el comportament real.
+
+### Resultat de la primera prova privada — 22 d’octubre de 2026
+
+El tauler mostra **Données radar composites et individuelles Opera**, estat
+**En cours**, límit de 1.000 peticions/minut i final de subscripció el 5
+d’octubre de 2031. Tot i això, la passarel·la no accepta encara la subscripció:
+
+- OAuth2: HTTP `401`, codi `900909`, subscripció de l’API inactiva.
+- API key temporal: HTTP `403`, codi `900908`, recurs prohibit.
+
+La discrepància és externa i s’ha de comunicar a Météo-France amb la referència
+`T#169758`. No s’ha intentat descarregar cap HDF5 després d’aquests errors. La
+sonda reproduïble `scripts/opera-private-probe.mjs` només emet estat HTTP,
+latència, tipus de contingut i un resum del catàleg; mai imprimeix la
+credencial. Exemples d’ús privat:
+
+```sh
+OPERA_ACCESS_TOKEN='…' OPERA_AUTH_MODE=oauth2 node scripts/opera-private-probe.mjs
+OPERA_ACCESS_TOKEN='…' OPERA_AUTH_MODE=apikey node scripts/opera-private-probe.mjs
+```
+
+La validació del catàleg i del compost Cirrus continuarà pendent fins que la
+passarel·la reconegui la subscripció activa.
