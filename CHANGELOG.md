@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-22 — Capçaleres de producció auditades
+
+- MDN HTTP Observatory confirma A+ i 115/115, amb 12 controls superats i cap
+  error sobre `meteo.fontanillas.cat` després del desplegament.
+- Es documenta el resultat, l’identificador verificable i quan cal repetir-lo.
+- HSTS es manté durant un any sense `includeSubDomains` ni `preload` fins que
+  tots els subdominis estiguin inventariats i auditats.
+
 ## 2026-10-22 — Observacions pròpies com a dades obertes
 
 - Les observacions de l’estació es publiquen sota CC BY 4.0 amb una citació
