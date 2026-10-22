@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-22 — Autoria i confiança pública
+
+- Nova ruta «Sobre l’Observatori» amb responsable, identitat del projecte,
+  equipament, entorn general, freqüència, manteniment i limitacions conegudes.
+- La pàgina separa Observatori Meteorològic Fontanillas, Meteo Fontanillas i el
+  laboratori Fonta, i enllaça metodologia, qualitat, canvis i contacte.
+- Nou `/.well-known/security.txt` que deriva les incidències al formulari
+  protegit, amb caducitat, idiomes, URL canònica i política pública.
+- El formulari incorpora un motiu específic per a seguretat o vulnerabilitats.
+
 ## 2026-10-21 — Pausa compartida davant dels límits de Buffer
 
 - Un `429 Too many requests` desa ara un únic període de pausa compartit per

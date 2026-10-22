@@ -2,8 +2,8 @@ import { mountPortalShell } from './portal-shell.js';
 import { updateSeoMetadata } from './seo.js';
 import { canonicalizeLegacyPortalUrl, portalPageFromLocation } from '../core/portal-routes.js';
 
-const PAGES=new Set(['inici','meteo-ia','estacio','prediccio','llarg-termini','videos','verificacio','cel','avisos','radar','webcams','terra','histories','centre-dades','medi-ambient','aprendre','contacte']);
-const LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica','llarg-termini':'Predicció a llarg termini',videos:'Predicció en vídeo',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams',terra:'Observació de la Terra',histories:'Històries meteorològiques','centre-dades':'Centre de Dades','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',contacte:'Contacte'};
+const PAGES=new Set(['inici','meteo-ia','estacio','prediccio','llarg-termini','videos','verificacio','cel','avisos','radar','webcams','terra','histories','centre-dades','medi-ambient','aprendre','observatori','contacte']);
+const LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica','llarg-termini':'Predicció a llarg termini',videos:'Predicció en vídeo',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams',terra:'Observació de la Terra',histories:'Històries meteorològiques','centre-dades':'Centre de Dades','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',observatori:'Sobre l’Observatori',contacte:'Contacte'};
 
 export function initPortal(){
   const requested=portalPageFromLocation();

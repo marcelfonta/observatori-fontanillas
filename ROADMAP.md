@@ -90,13 +90,10 @@ L’autopublicació CECAT requerirà una autorització posterior explícita.
 
 ### Sobre l’Observatori
 
-- [ ] Crear una pàgina pública amb la persona o projecte responsable, objectiu,
-  història, fotografies de l’estació, entorn general, equipament, sensors,
-  alçades, freqüència de lectura, manteniment i limitacions.
-- [ ] Enllaçar-hi metodologia, registre de canvis, estat de les dades, contacte i
-  política de correccions sense revelar una ubicació privada precisa.
-- [ ] Explicar de manera breu la relació entre Observatori Fontanillas, Meteo
-  Fontanillas, Meteo IA i el model Fonta.
+- [ ] Afegir fotografies públiques revisades de l’estació i l’entorn general,
+  sense EXIF, adreça exacta ni elements que comprometin la ubicació privada.
+- [ ] Completar altura sobre el terreny i historial de manteniment quan aquestes
+  dades s’hagin mesurat i verificat de manera segura.
 
 **Fet quan:** una persona externa pot saber qui hi ha darrere, com es produeixen
 les dades, quines garanties tenen i com comunicar una incidència.
@@ -117,8 +114,6 @@ com citar l’Observatori, sense atribuir-nos drets de tercers.
 
 ### Contacte de seguretat
 
-- [ ] Publicar `/.well-known/security.txt` només després de confirmar un correu
-  monitorat, amb caducitat, idioma i URL canònica.
 - [ ] Revisar les capçaleres amb una eina externa sense ampliar HSTS a
   `includeSubDomains` o `preload` fins a auditar tots els subdominis.
 

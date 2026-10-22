@@ -61,6 +61,7 @@
       html[data-portal-page="centre-dades"] [data-portal-page]:not([data-portal-page~="centre-dades"]),
       html[data-portal-page="medi-ambient"] [data-portal-page]:not([data-portal-page~="medi-ambient"]),
       html[data-portal-page="aprendre"] [data-portal-page]:not([data-portal-page~="aprendre"]),
+      html[data-portal-page="observatori"] [data-portal-page]:not([data-portal-page~="observatori"]),
       html[data-portal-page="contacte"] [data-portal-page]:not([data-portal-page~="contacte"]) { display:none !important; }
       html[data-portal-page="radar"] #territori .webcam-card,
       html[data-portal-page="webcams"] #territori .radar-card { display:none !important; }
@@ -167,6 +168,7 @@
       <section class="portal-view-header panel" aria-labelledby="data-page-title" data-portal-page="centre-dades"><div><p class="eyebrow">Centre de Dades</p><h1 id="data-page-title">L’arxiu meteorològic, ordenat.</h1><p>Resums, cobertura, rècords i descàrregues a partir de l’històric real.</p></div><span class="tag">Dades pròpies</span></section>
       <section class="portal-view-header panel" aria-labelledby="environment-page-title" data-portal-page="medi-ambient"><div><p class="eyebrow">Medi Ambient</p><h1 id="environment-page-title">Entorn i salut ambiental.</h1><p>Aire, radiació, pol·len i accés directe als indicadors oficials del territori i la costa.</p></div><span class="tag">Sant Celoni</span></section>
       <section class="portal-view-header panel" aria-labelledby="learning-page-title" data-portal-page="aprendre"><div><p class="eyebrow">Aprendre meteorologia</p><h1 id="learning-page-title">Una biblioteca per entendre el cel.</h1><p>Recursos educatius verificats, ordenats per nivell i tema, per observar, preguntar i aprendre amb fonts sòlides.</p></div><span class="tag">Aula oberta</span></section>
+      <section class="portal-view-header panel" aria-labelledby="observatory-page-title" data-portal-page="observatori"><div><p class="eyebrow">Confiança i autoria</p><h1 id="observatory-page-title">Sobre l’Observatori.</h1><p>Qui hi ha darrere les dades, com es mesuren i quines limitacions cal tenir presents.</p></div><span class="tag">Sant Celoni</span></section>
       <section class="portal-view-header panel" aria-labelledby="contact-page-title" data-portal-page="contacte"><div><p class="eyebrow">Contacte</p><h1 id="contact-page-title">Parlem de meteorologia.</h1><p>Consultes, incidències de dades i propostes per continuar millorant l’Observatori.</p></div><span class="tag">Canal privat</span></section>
 
       <section id="guia-sant-celoni" class="service-guide panel" aria-labelledby="guia-sant-celoni-title" data-portal-page="inici">
@@ -925,6 +927,25 @@
         <aside class="learning-criteria panel"><div><p class="eyebrow">Com s’ha fet la selecció</p><h3>Curiositat, criteri i fonts visibles.</h3></div><ul><li><b>Autoritat</b><span>Prioritat per Meteocat, AEMET, OMM, NOAA, NASA, ESA, EUMETSAT i centres acadèmics.</span></li><li><b>Utilitat</b><span>El recurs ha d’explicar, permetre observar o proposar una activitat concreta.</span></li><li><b>Transparència</b><span>Els recursos en anglès s’indiquen abans d’obrir-los i cap enllaç substitueix els avisos oficials.</span></li></ul></aside>
       </section>
 
+      <section id="sobre-observatori" class="observatory-about section-block" aria-labelledby="observatory-about-title" data-portal-page="observatori">
+        <article class="observatory-about__lead panel">
+          <p class="eyebrow">Projecte meteorològic local</p>
+          <h2 id="observatory-about-title">Dades pròpies, fonts visibles i criteri local.</h2>
+          <p>L’Observatori Meteorològic Fontanillas és un projecte independent impulsat per Marcel Fontanillas a Sant Celoni. Observa el temps en un punt concret del municipi i combina aquestes lectures amb prediccions, avisos i fonts oficials clarament diferenciades.</p>
+          <p>Meteo Fontanillas és el nom utilitzat a les xarxes socials. Fonta és el laboratori experimental que verifica models contra observacions futures; no és una font oficial ni substitueix Meteocat, AEMET, Protecció Civil o el 112.</p>
+        </article>
+        <div class="observatory-about__grid">
+          <article class="panel"><span>01</span><h3>Estació i sensors</h3><p>Estació automàtica VEVOR YT60234, família 7 en 1. Registra temperatura, humitat, pressió, vent, precipitació, radiació solar, llum i índex UV. La web publica lectures agregades aproximadament cada cinc minuts.</p></article>
+          <article class="panel"><span>02</span><h3>Entorn de mesura</h3><p>El conjunt exterior està instal·lat sobre una coberta privada de Sant Celoni. No es publica l’adreça exacta. La proximitat de les teules i l’exposició local poden afectar algunes lectures; les dades no representen tot el Baix Montseny.</p></article>
+          <article class="panel"><span>03</span><h3>Qualitat i manteniment</h3><p>Es controla la continuïtat, la cobertura i la frescor de les dades. L’orientació nord i el nivell del conjunt s’han comprovat, però l’estació no disposa encara d’un certificat de calibratge independent. No s’apliquen correccions intuïtives.</p></article>
+          <article class="panel"><span>04</span><h3>Privacitat i correccions</h3><p>Les fotografies originals, la ubicació precisa i les metadades sensibles romanen privades. Les incidències es documenten, les dades absents no es converteixen en zero i qualsevol canvi instrumental ha de conservar la traçabilitat.</p></article>
+        </div>
+        <aside class="observatory-about__links panel" aria-label="Documentació i contacte de l’Observatori">
+          <div><p class="eyebrow">Comprova el projecte</p><h3>Metodologia, dades i registre públic.</h3></div>
+          <nav><a href="./metodologia.html">Llegir la metodologia →</a><a href="/centre-dades">Consultar dades i qualitat →</a><a href="https://github.com/marcelfonta/observatori-fontanillas/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Veure el registre de canvis ↗</a><a href="/contacte">Comunicar una incidència →</a></nav>
+        </aside>
+      </section>
+
       <section id="contacte" class="contact-section section-block" aria-labelledby="contact-title" data-portal-page="contacte">
         <article class="contact-intro panel">
           <p class="eyebrow">Escriu a l’Observatori</p>
@@ -939,7 +960,7 @@
             <label><span>Nom</span><input type="text" name="name" minlength="2" maxlength="80" autocomplete="name" required placeholder="Com et dius?" /></label>
             <label><span>Correu de resposta</span><input type="email" name="email" maxlength="254" autocomplete="email" required placeholder="nom@exemple.cat" /></label>
           </div>
-          <label><span>Motiu del contacte</span><select name="topic" required><option value="">Selecciona una opció</option><option value="Dades de l’estació">Dades de l’estació</option><option value="Predicció i models">Predicció i models</option><option value="Webcam o fonts">Webcam o fonts</option><option value="Proposta de col·laboració">Proposta de col·laboració</option><option value="Altres">Altres</option></select></label>
+          <label><span>Motiu del contacte</span><select name="topic" required><option value="">Selecciona una opció</option><option value="Dades de l’estació">Dades de l’estació</option><option value="Predicció i models">Predicció i models</option><option value="Webcam o fonts">Webcam o fonts</option><option value="Seguretat">Seguretat o vulnerabilitat</option><option value="Proposta de col·laboració">Proposta de col·laboració</option><option value="Altres">Altres</option></select></label>
           <label><span>Missatge</span><textarea name="message" minlength="20" maxlength="3000" required placeholder="Explica breument la teva consulta…"></textarea></label>
           <label class="consent"><input type="checkbox" name="consent" required /><span>Accepto que les dades facilitades s’utilitzin exclusivament per respondre aquesta consulta.</span></label>
           <div class="contact-actions"><button type="submit" id="contact-submit">Enviar missatge <span>→</span></button><p id="contact-status" role="status" aria-live="polite">Resposta habitual tan aviat com sigui possible.</p></div>
