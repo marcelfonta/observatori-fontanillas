@@ -1,6 +1,7 @@
 import { CONFIG } from '../core/config.js';
 import { getLanguage, SUPPORTED_LANGUAGES } from '../core/i18n.js';
 import { PORTAL_PAGES } from '../core/portal-routes.js';
+import { editorialStoryById } from '../data/editorial-stories.js';
 
 export const SEO_BASE='https://meteo.fontanillas.cat/';
 export const SEO_LANGUAGE_META={ca:{locale:'ca_ES',home:'Inici'},es:{locale:'es_ES',home:'Inicio'},en:{locale:'en_GB',home:'Home'},fr:{locale:'fr_FR',home:'Accueil'}};
@@ -34,9 +35,10 @@ export const SEO_PAGES={
 };
 
 function language(){const current=getLanguage();return SUPPORTED_LANGUAGES.includes(current)?current:'ca';}
+function activeEditorialStory(){if(typeof location==='undefined')return null;const id=decodeURIComponent(location.pathname.match(/^\/histories\/([^/]+)\/?$/)?.[1]||new URLSearchParams(location.search).get('story')||'');return editorialStoryById(id);}
 export function seoPageCopy(page,lang=language()){const entry=SEO_PAGES[page]||SEO_PAGES.inici;const [title,description]=entry[lang]||entry.ca;return {title,description};}
 export function seoPageUrl(page='inici',lang='ca'){
-  const selected=SEO_PAGES[page]&&PORTAL_PAGES.includes(page)?page:'inici';const url=new URL(selected==='inici'?'':selected,SEO_BASE);
+  const selected=SEO_PAGES[page]&&PORTAL_PAGES.includes(page)?page:'inici';const story=selected==='histories'?activeEditorialStory():null;const url=new URL(story?`histories/${story.id}`:selected==='inici'?'':selected,SEO_BASE);
   if(lang!=='ca'&&SUPPORTED_LANGUAGES.includes(lang))url.searchParams.set('lang',lang);return url.toString();
 }
 function setMeta(selector,value){const node=document.querySelector(selector);if(node)node.setAttribute('content',value);}
@@ -51,7 +53,7 @@ function observationFromInitialSchema(){
 }
 let latestObservation=observationFromInitialSchema();
 export function buildSeoStructuredGraph(page='inici',observation=null,lang='ca'){
-  const current=seoPageCopy(page,lang);const canonicalUrl=seoPageUrl(page,lang);const meta=SEO_LANGUAGE_META[lang]||SEO_LANGUAGE_META.ca;const breadcrumbs=[{'@type':'ListItem',position:1,name:meta.home,item:seoPageUrl('inici',lang)}];
+  const story=page==='histories'?activeEditorialStory():null;const base=seoPageCopy(page,lang);const current=story&&lang==='ca'?{title:`${story.title} · Històries Fontanillas`,description:story.summary}:base;const canonicalUrl=seoPageUrl(page,lang);const meta=SEO_LANGUAGE_META[lang]||SEO_LANGUAGE_META.ca;const breadcrumbs=[{'@type':'ListItem',position:1,name:meta.home,item:seoPageUrl('inici',lang)}];
   if(page!=='inici')breadcrumbs.push({'@type':'ListItem',position:2,name:current.title.split(' · ')[0],item:canonicalUrl});
   const graph=[
     {'@type':'WebSite','@id':`${SEO_BASE}#website`,name:'Observatori Meteorològic Fontanillas',url:SEO_BASE,inLanguage:['ca','es','en','fr'],description:seoPageCopy('inici',lang).description},
@@ -61,6 +63,7 @@ export function buildSeoStructuredGraph(page='inici',observation=null,lang='ca')
     {'@type':'BreadcrumbList','@id':`${canonicalUrl}#breadcrumb`,itemListElement:breadcrumbs}
   ];
   if(page==='aprendre')graph.push({'@type':'FAQPage','@id':`${canonicalUrl}#faq`,mainEntity:LEARNING_FAQ.map(([name,text])=>({'@type':'Question',name,acceptedAnswer:{'@type':'Answer',text}}))});
+  if(story)graph.push({'@type':'Article','@id':`${canonicalUrl}#article`,headline:story.title,description:story.summary,datePublished:`${story.date}T12:00:00+02:00`,dateModified:'2026-10-22T21:00:00+02:00',inLanguage:'ca',mainEntityOfPage:{'@id':`${canonicalUrl}#webpage`},author:{'@id':`${SEO_BASE}#organization`},publisher:{'@id':`${SEO_BASE}#organization`},image:`${SEO_BASE}assets/images/histories/${story.id}.png`,about:['Meteorologia','Sant Celoni','Baix Montseny']});
   if(observation&&Number.isFinite(Number(observation.temperature))){
     const property=(name,value,unit)=>({'@type':'PropertyValue',name,value:Number(value),...(unit?{unitText:unit}:{})});const values=[property('Temperatura',observation.temperature,'°C')];
     const available=value=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value));
@@ -71,9 +74,9 @@ export function buildSeoStructuredGraph(page='inici',observation=null,lang='ca')
 }
 function renderStructuredData(){const schema=document.getElementById('seo-structured-data');if(schema)schema.textContent=JSON.stringify(buildSeoStructuredGraph(activePage,latestObservation,language()));}
 export function updateSeoMetadata(page='inici'){
-  activePage=SEO_PAGES[page]?page:'inici';const lang=language();const current=seoPageCopy(activePage,lang);const viewUrl=seoPageUrl(activePage,lang);const verification=String(CONFIG.googleSiteVerification||'').trim();let verificationMeta=document.querySelector('meta[name="google-site-verification"]');
+  activePage=SEO_PAGES[page]?page:'inici';const lang=language();const story=activePage==='histories'?activeEditorialStory():null;const current=story&&lang==='ca'?{title:`${story.title} · Històries Fontanillas`,description:story.summary}:seoPageCopy(activePage,lang);const viewUrl=seoPageUrl(activePage,lang);const verification=String(CONFIG.googleSiteVerification||'').trim();let verificationMeta=document.querySelector('meta[name="google-site-verification"]');
   if(verification&&!verificationMeta){verificationMeta=document.createElement('meta');verificationMeta.name='google-site-verification';document.head.append(verificationMeta);}if(verificationMeta){if(verification)verificationMeta.content=verification;else verificationMeta.remove();}
-  document.documentElement.lang=lang;document.title=current.title;setMeta('meta[name="description"]',current.description);setMeta('meta[property="og:locale"]',SEO_LANGUAGE_META[lang].locale);setMeta('meta[property="og:title"]',current.title);setMeta('meta[property="og:description"]',current.description);setMeta('meta[property="og:url"]',viewUrl);setMeta('meta[name="twitter:title"]',current.title);setMeta('meta[name="twitter:description"]',current.description);
+  document.documentElement.lang=lang;document.title=current.title;setMeta('meta[name="description"]',current.description);setMeta('meta[property="og:locale"]',SEO_LANGUAGE_META[lang].locale);setMeta('meta[property="og:title"]',current.title);setMeta('meta[property="og:description"]',current.description);setMeta('meta[property="og:url"]',viewUrl);setMeta('meta[name="twitter:title"]',current.title);setMeta('meta[name="twitter:description"]',current.description);if(story){const image=`${SEO_BASE}assets/images/histories/${story.id}.png`;setMeta('meta[property="og:type"]','article');setMeta('meta[property="og:image"]',image);setMeta('meta[property="og:image:alt"]',story.title);setMeta('meta[name="twitter:image"]',image);setMeta('meta[name="twitter:image:alt"]',story.title);}
   setLink('canonical',viewUrl);for(const code of SUPPORTED_LANGUAGES)setLink('alternate',seoPageUrl(activePage,code),code);setLink('alternate',seoPageUrl(activePage,'ca'),'x-default');renderStructuredData();
 }
 export function updateSeoObservation(observation){latestObservation=observation||null;renderStructuredData();}

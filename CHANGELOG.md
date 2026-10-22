@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-22 — Tres històries reals i una guia local
+
+- Es publiquen tres peces editorials permanents basades en l’arxiu propi: els
+  82,55 mm del 4 d’octubre, el canvi de calor i vent del 6 d’agost i el contrast
+  tèrmic de 19,4 °C del 14 de setembre.
+- Cada història té URL, cronologia, perfil horari, cobertura, fonts, imatge
+  social pròpia i dades estructurades; els candidats automàtics queden separats.
+- Nova guia local sobre la boira a la vall de la Tordera, amb límits explícits
+  de l’estació i referència al manual d’observació de Meteocat.
+
 ## 2026-10-22 — Lectura útil i orientació pràctica
 
 - La portada sintetitza observació, previsió immediata i avisos en una frase,

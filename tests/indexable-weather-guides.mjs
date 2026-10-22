@@ -31,8 +31,8 @@ assert.match(methodology, /Best Match, ECMWF, ICON, GFS i AROME/);
 assert.match(methodology, /almenys set casos reals comparables/);
 assert.match(methodology, /no un model físic nou ni una intel·ligència artificial que aprengui sense control/);
 assert.match(methodology, /AROME HD es recull en mode experimental/);
-assert.match(index, /css\/portal\.css\?v=22\.40\.0-weather-guides/);
-assert.match(methodology, /css\/portal\.css\?v=22\.40\.0-weather-guides/);
+assert.match(index, /css\/portal\.css\?v=22\.41\.0-editorial-stories/);
+assert.match(methodology, /css\/portal\.css\?v=22\.41\.0-editorial-stories/);
 
 assert.doesNotMatch(roadmap, /Contingut meteorològic indexable/);
 assert.doesNotMatch(roadmap, /\[x\]/);

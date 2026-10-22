@@ -116,18 +116,6 @@ de tercers i documenta la llicència de cada component.
 **Fet quan:** la comparació utilitza prou cobertura, identifica el període i no
 presenta una mitjana curta com una normal climàtica.
 
-### Històries meteorològiques pròpies
-
-- [ ] Publicar manualment les primeres 2 o 3 històries permanents d’episodis
-  reals, amb gràfics, cronologia, dades, fotografia o timelapse i fonts.
-- [ ] Fer que les històries siguin indexables i compartibles, amb URL, títol,
-  descripció i imatge social propis.
-- [ ] Utilitzar la detecció automàtica només per preparar candidats o esborranys;
-  la publicació editorial continuarà requerint revisió.
-
-**Fet quan:** la secció mostra exemples reals i complets encara que aquell dia
-no es detecti cap episodi nou.
-
 ### Resums climatològics permanents
 
 - [ ] Generar un primer resum mensual amb màxima, mínima, pluja total, ratxa
@@ -481,16 +469,15 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **Editorial:** 2–3 històries permanents i primera guia local.
-2. **Climatologia:** primer resum mensual permanent i compartible.
-3. **SEO verificat:** Search Console, Rich Results i HTML inicial per ruta només
+1. **Climatologia:** primer resum mensual permanent i compartible.
+2. **SEO verificat:** Search Console, Rich Results i HTML inicial per ruta només
    si les proves ho exigeixen.
-4. **Qualitat tècnica:** tipografies locals, dispositius, lector de pantalla i
+3. **Qualitat tècnica:** tipografies locals, dispositius, lector de pantalla i
    refinament offline.
-5. **Educació:** primera fitxa pròpia d’Aula oberta.
-6. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
+4. **Educació:** primera fitxa pròpia d’Aula oberta.
+5. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
    accessibilitat i validació astronòmica.
-7. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
+6. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
 
 Les millores d’un paquet s’han de desplegar, mesurar i documentar abans d’obrir
 el següent. L’objectiu no és tenir més funcions que altres portals, sinó ser la
