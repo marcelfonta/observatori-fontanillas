@@ -13,6 +13,10 @@ The portal labels sources and keeps source-specific limits visible. It does not 
 | OpenStreetMap | Base map for the sampled local AROME viewer, with visible attribution. |
 | Cloudflare Pages, Workers and D1 | Hosting, Worker execution and project persistence. |
 
+The station's own observations are published under CC BY 4.0; see the
+[open-data scope, attribution and variable dictionary](DADES-OBERTES.md).
+This licence never overrides the conditions of the external sources above.
+
 The exact availability, licences and terms of each upstream service remain the providers’ responsibility. Contributors must review current provider terms before adding a new source or changing how a source is cached, redistributed or attributed.
 
 Weather data is informative. In particular, local sensor coverage, forecast models and zonal warnings have limits that the UI should preserve rather than hide.

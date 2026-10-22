@@ -176,6 +176,11 @@ body[data-page="centre-dades"] [data-data-center-panel].is-active { animation: d
 .data-export--period { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 28px; padding: 26px 30px; }
 .data-export--period h2 { margin: 5px 0 8px; font-size: 23px; }.data-export--period p:not(.eyebrow) { max-width: 690px; margin: 0; color: var(--muted); line-height: 1.55; }
 .data-export--period .data-export__actions { justify-content: flex-end; margin-top: 0; }
+.open-data-license { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(300px,.85fr); gap: 28px; padding: 26px 30px; }
+.open-data-license h2 { margin: 5px 0 10px; font-size: 23px; }.open-data-license h3 { margin: 0 0 10px; }
+.open-data-license p { color: var(--muted); line-height: 1.55; }.open-data-license__scope { margin-bottom: 0; }
+.open-data-license code { display: block; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: rgba(137,214,163,.07); color: var(--text); white-space: normal; }
+.open-data-license nav { display: flex; flex-wrap: wrap; gap: 8px 16px; }.open-data-license a { color: var(--green); font-weight: 800; }
 .data-calendar-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 34px 8px 4px; }
 .data-calendar-heading h2 { margin: 6px 0 8px; font: 700 30px/1.05 var(--font-display); letter-spacing: -.035em; }.data-calendar-heading p:last-child { max-width: 720px; margin: 0; color: var(--muted); line-height: 1.55; }
 .rain-dashboard { padding: 30px; }
@@ -735,7 +740,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .data-center-hero { grid-template-columns: 1fr; padding: 28px; }
   .data-center-controls { justify-items: start; }
   .data-center-controls p { text-align: left; }
-  .data-export--period { grid-template-columns: 1fr; }.data-export--period .data-export__actions { justify-content: flex-start; }
+  .data-export--period, .open-data-license { grid-template-columns: 1fr; }.data-export--period .data-export__actions { justify-content: flex-start; }
   .data-calendar-heading { align-items: flex-start; flex-direction: column; }
   .data-summary-grid { grid-template-columns: 1fr 1fr; }
   .station-records-grid,.station-records-grid--main{grid-template-columns:repeat(2,minmax(0,1fr))}

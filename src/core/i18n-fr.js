@@ -1,6 +1,16 @@
 // Catàleg francès separat per mantenir i auditar la quarta llengua sense
 // barrejar-la amb la font catalana i les traduccions castellana i anglesa.
 export const FRENCH_PHRASES={
+  'Dades obertes':'Données ouvertes',
+  'Observacions pròpies sota CC BY 4.0':'Observations propres sous CC BY 4.0',
+  'Pots copiar, analitzar i adaptar les observacions de l’estació, també comercialment, sempre que citis l’origen i indiquis els canvis. Els fitxers CSV, Excel, JSON i PDF ja incorporen la llicència o l’atribució.':'Vous pouvez copier, analyser et adapter les observations de la station, y compris à des fins commerciales, à condition de citer la source et d’indiquer les modifications. Les fichiers CSV, Excel, JSON et PDF contiennent déjà la licence ou l’attribution.',
+  'No inclou:':'N’inclut pas :',
+  'prediccions, avisos oficials, mapes, radars, webcams ni dades de tercers; cadascuna conserva les condicions de la seva font.':'les prévisions, alertes officielles, cartes, radars, webcams ou données de tiers ; chaque élément conserve les conditions de sa source.',
+  'Com citar-les':'Comment les citer',
+  'Variables: data ISO 8601; temperatura °C; humitat %; pressió hPa; vent i ratxa km/h; pluja mm; radiació W/m²; índex UV. La cobertura pot contenir buits i els acumulats poden ser parcials.':'Variables : date ISO 8601 ; température °C ; humidité % ; pression hPa ; vent et rafale km/h ; pluie mm ; rayonnement W/m² ; indice UV. La couverture peut comporter des lacunes et les cumuls peuvent être partiels.',
+  'Llegir la llicència ↗':'Lire la licence ↗',
+  'Guia de reutilització ↗':'Guide de réutilisation ↗',
+  'Consultar la qualitat →':'Consulter la qualité →',
   'Sobre l’Observatori':'À propos de l’Observatoire',
   'Confiança i autoria':'Confiance et responsabilité',
   'Qui hi ha darrere les dades, com es mesuren i quines limitacions cal tenir presents.':'Qui est à l’origine des données, comment elles sont mesurées et quelles limites il faut garder à l’esprit.',

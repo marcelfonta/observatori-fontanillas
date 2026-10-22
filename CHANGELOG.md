@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-22 — Observacions pròpies com a dades obertes
+
+- Les observacions de l’estació es publiquen sota CC BY 4.0 amb una citació
+  recomanada i un abast que exclou explícitament fonts i productes de tercers.
+- El Centre de Dades explica la reutilització, les variables, les unitats, la
+  cobertura i la qualitat, amb una guia pública detallada.
+- CSV, Excel, JSON i PDF incorporen llicència o atribució, i el Dataset JSON-LD
+  declara llicència, autoria i accés gratuït.
+
 ## 2026-10-22 — Autoria i confiança pública
 
 - Nova ruta «Sobre l’Observatori» amb responsable, identitat del projecte,

@@ -2,6 +2,10 @@
 
 The Worker returns JSON. Its base URL is configured in `src/core/config.js`. These endpoints are implementation contracts used by the portal, not a promise of a versioned public platform. Consumers should handle unavailable upstream data and cache directives.
 
+Own station observations returned by `/` and `/history` are available under
+[CC BY 4.0](DADES-OBERTES.md). The licence does not extend to forecasts,
+warnings, maps, webcams or third-party data returned by other endpoints.
+
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET | `/` | Current station observation; persisted asynchronously when appropriate. |

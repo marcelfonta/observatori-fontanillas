@@ -8,6 +8,13 @@ export { calendarCoverage } from '../core/archive-coverage.js';
 
 const DAY = 86400000;
 const DATA_TABS = ['summary', 'charts', 'rain', 'episodes', 'quality'];
+export const DATA_LICENSE = Object.freeze({
+  name: 'Creative Commons Attribution 4.0 International',
+  identifier: 'CC BY 4.0',
+  url: 'https://creativecommons.org/licenses/by/4.0/',
+  attribution: 'Observatori Meteorològic Fontanillas — meteo.fontanillas.cat',
+  scope: 'Observacions meteorològiques pròpies de l’estació Fontanillas; no inclou previsions, avisos, mapes, webcams ni dades de tercers.'
+});
 
 let archive = [];
 let current = null;
@@ -251,14 +258,16 @@ function csvCell(value) { return `"${String(value ?? '').replaceAll('"', '""')}"
 function xml(value) { return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'); }
 
 function exportCsv(rows) {
-  const headers = Object.keys(rows[0]);
-  const body = [headers, ...rows.map(row => headers.map(key => row[key]))].map(line => line.map(csvCell).join(';')).join('\n');
+  const licensedRows = rows.map(row => ({ ...row, llicencia: DATA_LICENSE.identifier, atribucio: DATA_LICENSE.attribution }));
+  const headers = Object.keys(licensedRows[0]);
+  const body = [headers, ...licensedRows.map(row => headers.map(key => row[key]))].map(line => line.map(csvCell).join(';')).join('\n');
   download(`\ufeff${body}`, 'text/csv;charset=utf-8', 'csv');
 }
 
 function exportExcel(rows) {
-  const headers = Object.keys(rows[0]);
-  const table = [headers, ...rows.map(row => headers.map(key => row[key]))].map(line => `<Row>${line.map(value => `<Cell><Data ss:Type="String">${xml(value)}</Data></Cell>`).join('')}</Row>`).join('');
+  const licensedRows = rows.map(row => ({ ...row, llicencia: DATA_LICENSE.identifier, atribucio: DATA_LICENSE.attribution }));
+  const headers = Object.keys(licensedRows[0]);
+  const table = [headers, ...licensedRows.map(row => headers.map(key => row[key]))].map(line => `<Row>${line.map(value => `<Cell><Data ss:Type="String">${xml(value)}</Data></Cell>`).join('')}</Row>`).join('');
   const workbook = `<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Observacions"><Table>${table}</Table></Worksheet></Workbook>`;
   download(workbook, 'application/vnd.ms-excel;charset=utf-8', 'xls');
 }
@@ -276,7 +285,10 @@ function exportPdf(rows) {
     `Pluja acumulada: ${fmt(summary.rain)} mm`,
     '',
     'Aquest informe resumeix el periode seleccionat.',
-    'El CSV, Excel o JSON contenen totes les observacions.'
+    'El CSV, Excel o JSON contenen totes les observacions.',
+    '',
+    `Llicencia de les observacions propies: ${DATA_LICENSE.identifier}`,
+    `Atribucio: ${DATA_LICENSE.attribution}`
   ];
   const stream = lines.map((line, index) => `BT /F1 ${index === 0 ? 16 : 11} Tf 54 ${780 - index * 28} Td (${pdfAscii(line)}) Tj ET`).join('\n');
   const objects = [
@@ -299,7 +311,7 @@ function runExport(format) {
   if (!rows.length) { set('data-export-status', 'No hi ha observacions per descarregar en aquest període.'); return; }
   if (format === 'csv') exportCsv(rows);
   if (format === 'excel') exportExcel(rows);
-  if (format === 'json') download(JSON.stringify({ station: 'Fontanillas', generatedAt: new Date().toISOString(), days: activeDays, current, observations: rows }, null, 2), 'application/json;charset=utf-8', 'json');
+  if (format === 'json') download(JSON.stringify({ station: 'Fontanillas', generatedAt: new Date().toISOString(), days: activeDays, license: DATA_LICENSE, current, observations: rows }, null, 2), 'application/json;charset=utf-8', 'json');
   if (format === 'pdf') exportPdf(rows);
   set('data-export-status', `${format === 'excel' ? 'Excel' : format.toUpperCase()} preparat amb ${rows.length} observacions.`);
 }
