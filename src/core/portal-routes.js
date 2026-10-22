@@ -1,5 +1,5 @@
 export const PORTAL_PAGES = Object.freeze([
-  'inici','meteo-ia','estacio','prediccio','llarg-termini','videos','verificacio','cel','avisos','radar','webcams','terra','histories','centre-dades','medi-ambient','aprendre','observatori','contacte'
+  'inici','meteo-ia','estacio','prediccio','llarg-termini','videos','verificacio','cel','avisos','radar','webcams','terra','histories','resums','centre-dades','medi-ambient','aprendre','observatori','contacte'
 ]);
 
 const PAGE_SET = new Set(PORTAL_PAGES);
@@ -10,6 +10,7 @@ export function portalPageFromLocation(locationLike = globalThis.location) {
   const pathname = String(locationLike?.pathname || '/').replace(/\/+$/, '') || '/';
   if (pathname === '/' || pathname === '/index.html') return 'inici';
   if(pathname.startsWith('/histories/'))return 'histories';
+  if(pathname.startsWith('/resums/'))return 'resums';
   const page = decodeURIComponent(pathname.slice(1));
   return PAGE_SET.has(page) ? page : 'inici';
 }

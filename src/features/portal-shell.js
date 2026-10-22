@@ -20,6 +20,7 @@ const ICONS={
   webcams:icon('<rect x="3" y="6" width="18" height="13" rx="2"/><path d="m8 6 1.2-2h5.6L16 6"/><circle cx="12" cy="12.5" r="3.3"/>'),
   terra:icon('<circle cx="12" cy="12" r="8.5"/><path d="M4 10.5h16M7 5.5c2.5 2 3.5 4.2 3 6.5s.2 4.5 2.5 7.7M16.5 5.2c-1 2-1 3.8.2 5.2 1.1 1.3 1.2 3.1.2 5.4"/>'),
   histories:icon('<path d="M5 4.5h14v15H5zM8 8h8M8 11.5h8M8 15h5"/><path d="M3 7H1.5v10H3"/>'),
+  resums:icon('<path d="M4 19.5h16M6 16V9M11 16V5M16 16v-4M20 16V7"/><path d="M4 4h4"/>'),
   'centre-dades':icon('<ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6M4.5 11.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/>'),
   comparar:icon('<path d="M4 8h13M14 5l3 3-3 3M20 16H7M10 13l-3 3 3 3"/>'),
   municipis:icon('<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4M8 11h6M11 8v6"/>'),
@@ -34,17 +35,17 @@ const NAV_ITEMS=[
   ['fonta','Fonta · laboratori','./fonta.html'],
   ['inici','Inici','/'],['meteo-ia','Meteo IA','/meteo-ia'],['estacio','Estació','/estacio'],
   ['prediccio','Predicció','/prediccio'],['models','Models francesos','/models'],['llarg-termini','Llarg termini','/llarg-termini'],['videos','Predicció en vídeo','/videos'],['verificacio','Predicció vs realitat','/verificacio'],['avisos','Avisos','/avisos'],
-  ['cel','Cel de dia i de nit','/cel'],['radar','Radar','/radar'],['webcams','Webcams','/webcams'],['terra','Observació de la Terra','/terra'],['histories','Històries meteo','/histories'],
+  ['cel','Cel de dia i de nit','/cel'],['radar','Radar','/radar'],['webcams','Webcams','/webcams'],['terra','Observació de la Terra','/terra'],['histories','Històries meteo','/histories'],['resums','Resums mensuals','/resums/2026-09'],
   ['centre-dades','Centre de Dades','/centre-dades'],['comparar','Comparar','./comparativa.html'],['municipis','El temps arreu','./municipis.html'],
   ['medi-ambient','Medi Ambient','/medi-ambient'],['aprendre','Aprendre','/aprendre'],['observatori','Sobre l’Observatori','/observatori'],['contacte','Contacte','/contacte'],['metodologia','Metodologia','./metodologia.html'],['collaboracions','Col·laboracions','./colaboracions.html']
 ];
 const NAV_GROUPS=[
   ['Ara',['inici','meteo-ia','estacio','municipis']],
   ['Previsió i risc',['prediccio','models','llarg-termini','videos','verificacio','avisos','fonta']],
-  ['Explora',['cel','radar','webcams','terra','histories']],
+  ['Explora',['cel','radar','webcams','terra','histories','resums']],
   ['Dades i projecte',['centre-dades','comparar','medi-ambient','aprendre','observatori','contacte','metodologia','collaboracions']]
 ];
-const PAGE_LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',models:'Models francesos','llarg-termini':'Predicció a llarg termini',videos:'Predicció en vídeo',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams',terra:'Observació de la Terra',histories:'Històries meteorològiques','centre-dades':'Centre de Dades',comparar:'Comparativa',municipis:'El temps arreu','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',observatori:'Sobre l’Observatori',contacte:'Contacte',metodologia:'Metodologia',collaboracions:'Col·laboracions'};
+const PAGE_LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',models:'Models francesos','llarg-termini':'Predicció a llarg termini',videos:'Predicció en vídeo',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams',terra:'Observació de la Terra',histories:'Històries meteorològiques',resums:'Resums climatològics','centre-dades':'Centre de Dades',comparar:'Comparativa',municipis:'El temps arreu','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',observatori:'Sobre l’Observatori',contacte:'Contacte',metodologia:'Metodologia',collaboracions:'Col·laboracions'};
 
 export function mountPortalShell(activePage){
   document.body.classList.add('has-portal-shell');
