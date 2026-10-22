@@ -93,4 +93,8 @@ Consulta `PROJECT.md`, `ROADMAP.md` i `CHANGELOG.md` per a les normes, l’ordre
 - API i fonts de dades: [docs/api.md](docs/api.md) i [docs/data-sources.md](docs/data-sources.md)
 - Contribucions, seguretat i suport: [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md) i [SUPPORT.md](SUPPORT.md)
 
-El projecte es distribueix sota la [llicència MIT](LICENSE). Les credencials i la configuració de producció no formen part del repositori.
+El programari es distribueix sota la [llicència MIT](LICENSE). Les observacions
+pròpies de l’estació es publiquen separadament sota
+[CC BY 4.0](docs/DADES-OBERTES.md); aquesta llicència no inclou fonts externes,
+prediccions, avisos, mapes ni webcams. Les credencials i la configuració de
+producció no formen part del repositori.

@@ -4,6 +4,16 @@ const STORAGE_KEY='fontanillas-language-v1';
 export const SUPPORTED_LANGUAGES=['ca','es','en','fr'];
 
 export const PHRASES={
+  'Dades obertes':{es:'Datos abiertos',en:'Open data'},
+  'Observacions pròpies sota CC BY 4.0':{es:'Observaciones propias bajo CC BY 4.0',en:'First-party observations under CC BY 4.0'},
+  'Pots copiar, analitzar i adaptar les observacions de l’estació, també comercialment, sempre que citis l’origen i indiquis els canvis. Els fitxers CSV, Excel, JSON i PDF ja incorporen la llicència o l’atribució.':{es:'Puedes copiar, analizar y adaptar las observaciones de la estación, también comercialmente, siempre que cites el origen e indiques los cambios. Los archivos CSV, Excel, JSON y PDF ya incorporan la licencia o la atribución.',en:'You may copy, analyse and adapt the station observations, including commercially, provided that you credit the source and indicate changes. CSV, Excel, JSON and PDF files already include the licence or attribution.'},
+  'No inclou:':{es:'No incluye:',en:'Not included:'},
+  'prediccions, avisos oficials, mapes, radars, webcams ni dades de tercers; cadascuna conserva les condicions de la seva font.':{es:'predicciones, avisos oficiales, mapas, radares, webcams ni datos de terceros; cada elemento conserva las condiciones de su fuente.',en:'forecasts, official warnings, maps, radar, webcams or third-party data; each retains its source terms.'},
+  'Com citar-les':{es:'Cómo citarlas',en:'How to cite'},
+  'Variables: data ISO 8601; temperatura °C; humitat %; pressió hPa; vent i ratxa km/h; pluja mm; radiació W/m²; índex UV. La cobertura pot contenir buits i els acumulats poden ser parcials.':{es:'Variables: fecha ISO 8601; temperatura °C; humedad %; presión hPa; viento y racha km/h; lluvia mm; radiación W/m²; índice UV. La cobertura puede contener huecos y los acumulados pueden ser parciales.',en:'Variables: ISO 8601 date; temperature °C; humidity %; pressure hPa; wind and gust km/h; rain mm; radiation W/m²; UV index. Coverage may contain gaps and totals may be partial.'},
+  'Llegir la llicència ↗':{es:'Leer la licencia ↗',en:'Read the licence ↗'},
+  'Guia de reutilització ↗':{es:'Guía de reutilización ↗',en:'Reuse guide ↗'},
+  'Consultar la qualitat →':{es:'Consultar la calidad →',en:'View data quality →'},
   'Sobre l’Observatori':{es:'Sobre el Observatorio',en:'About the Observatory'},
   'Confiança i autoria':{es:'Confianza y autoría',en:'Trust and authorship'},
   'Qui hi ha darrere les dades, com es mesuren i quines limitacions cal tenir presents.':{es:'Quién está detrás de los datos, cómo se miden y qué limitaciones deben tenerse en cuenta.',en:'Who is behind the data, how it is measured and which limitations should be considered.'},

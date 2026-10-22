@@ -100,17 +100,11 @@ les dades, quines garanties tenen i com comunicar una incidència.
 
 ### Llicència i reutilització
 
-- [ ] Decidir explícitament si les observacions pròpies es publiquen sota CC BY
-  4.0 o una altra llicència.
-- [ ] Separar l’abast de la llicència pròpia de les previsions, avisos, mapes,
-  webcams i fonts externes, que conserven les seves condicions.
-- [ ] Afegir la llicència aprovada al Dataset JSON-LD, al Centre de Dades, als
-  CSV/JSON i a la documentació de l’API.
-- [ ] Publicar exemples mínims de reutilització, atribució, variables, unitats,
-  cobertura i qualitat.
+- [ ] Revisar l’abast si un futur export combina observacions pròpies amb una
+  font externa o incorpora una variable nova.
 
-**Fet quan:** qualsevol reutilitzador sap què pot usar, sota quines condicions i
-com citar l’Observatori, sense atribuir-nos drets de tercers.
+**Fet quan:** qualsevol export nou manté l’abast de CC BY 4.0 separat dels drets
+de tercers i documenta la llicència de cada component.
 
 ### Contacte de seguretat
 
