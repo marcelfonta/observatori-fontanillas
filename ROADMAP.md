@@ -410,12 +410,10 @@ posicions han superat les proves astronòmiques definides.
 Estat confirmat el 22 d’octubre de 2026: Météo-France ha aprovat el cas
 `T#169758` i ha activat per a l’usuari `meteofontanillas` tots els compostos
 OPERA, tant en temps real com arxivats. La llicència i l’alta ja no són un
-bloqueig; la integració continuarà tancada al públic fins a validar el contracte
-tècnic real i la degradació segura.
+bloqueig. El contracte oficial —autenticació, endpoints, formats, límits i
+retenció— està verificat a `docs/METEOFRANCE-OPERA.md`; la integració continuarà
+tancada al públic fins a validar el catàleg real i la degradació segura.
 
-- [ ] Identificar al portal RadarOpera el mecanisme d’autenticació, els
-  endpoints, formats, límits de peticions i condicions de conservació, sense
-  copiar credencials al repositori, al navegador ni a la documentació.
 - [ ] Validar amb una prova privada el catàleg real: cobertura geogràfica,
   productes disponibles, resolució, passos temporals, retard, valors absents i
   accés a l’arxiu.
