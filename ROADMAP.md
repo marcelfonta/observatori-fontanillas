@@ -1,6 +1,6 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
-Actualitzat el 21 d’octubre de 2026. Aquest document conté únicament feina
+Actualitzat el 22 d’octubre de 2026. Aquest document conté únicament feina
 pendent, aplicable i amb un criteri de finalització observable. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
@@ -404,6 +404,41 @@ llicència estan documentades, existeix una alternativa accessible i les
 posicions han superat les proves astronòmiques definides.
 
 ## P2 — Experiments meteorològics
+
+### Radar europeu EUMETNET OPERA
+
+Estat confirmat el 22 d’octubre de 2026: Météo-France ha aprovat el cas
+`T#169758` i ha activat per a l’usuari `meteofontanillas` tots els compostos
+OPERA, tant en temps real com arxivats. La llicència i l’alta ja no són un
+bloqueig; la integració continuarà tancada al públic fins a validar el contracte
+tècnic real i la degradació segura.
+
+- [ ] Identificar al portal RadarOpera el mecanisme d’autenticació, els
+  endpoints, formats, límits de peticions i condicions de conservació, sense
+  copiar credencials al repositori, al navegador ni a la documentació.
+- [ ] Validar amb una prova privada el catàleg real: cobertura geogràfica,
+  productes disponibles, resolució, passos temporals, retard, valors absents i
+  accés a l’arxiu.
+- [ ] Guardar la credencial exclusivament com a secret de Cloudflare i crear un
+  proxy del Worker amb llista tancada de productes i temps, validació de
+  paràmetres, límits de mida, temps d’espera i memòria cau adequada.
+- [ ] Incorporar OPERA al visor com a capa europea diferenciada de Meteocat i
+  RainViewer, amb hora i frescor visibles i atribució **EUMETNET OPERA · CC BY
+  4.0**.
+- [ ] Conservar Meteocat com a referència oficial local i RainViewer com a
+  reserva quan OPERA no respongui; cap fallada europea ha de deixar inutilitzat
+  el radar ni presentar una imatge antiga com si fos actual.
+- [ ] Provar temps real i arxiu en mòbil i escriptori, mesurar latència i
+  disponibilitat i afegir monitoratge operatiu sense exposar URLs signades,
+  usuaris, claus ni detalls sensibles als missatges d’error.
+- [ ] Valorar l’arxiu OPERA per a històries d’episodis i validació retrospectiva
+  només després de documentar-ne la traçabilitat i separar-lo del nowcasting
+  prospectiu.
+
+**Fet quan:** la capa europea mostra un producte OPERA real amb temps,
+atribució i cobertura correctes, passa per un proxy segur, es degrada cap a les
+fonts actuals sense trencar el visor i l’accés històric conserva una traça
+reproduïble.
 
 ### Nowcasting local en mode d’ombra
 
