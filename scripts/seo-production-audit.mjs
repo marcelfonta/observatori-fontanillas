@@ -1,4 +1,5 @@
 const base=String(process.env.SEO_BASE_URL||'https://meteo.fontanillas.cat').replace(/\/$/,'');
+const canonicalBase=String(process.env.SEO_CANONICAL_URL||'https://meteo.fontanillas.cat').replace(/\/$/,'');
 const routes=[
   ['/',/Observatori Meteorològic Fontanillas/,'inici','WebPage'],
   ['/prediccio',/Predicció del temps a Sant Celoni/,'prediccio','WebPage'],
@@ -20,7 +21,7 @@ for(const [path,titlePattern,page,schemaType] of routes){
   const title=html.match(/<title>([^<]+)<\/title>/i)?.[1]||'';
   if(!titlePattern.test(title))throw new Error(`${path}: títol inicial incorrecte: ${title}`);
   const canonical=canonicalUrl(html);
-  if(canonical!==base+path)throw new Error(`${path}: canonical incorrecta: ${canonical}`);
+  if(canonical!==canonicalBase+path)throw new Error(`${path}: canonical incorrecta: ${canonical}`);
   const schemaText=html.match(/<script[^>]*id="seo-structured-data"[^>]*>([\s\S]*?)<\/script>/i)?.[1];
   const graph=JSON.parse(schemaText||'{}')['@graph']||[];
   if(!graph.some(item=>item['@type']===schemaType))throw new Error(`${path}: falta ${schemaType} al JSON-LD`);
