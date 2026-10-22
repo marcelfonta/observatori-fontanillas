@@ -13,6 +13,7 @@
     "check": "npm test",
     "test:staging": "node scripts/staging-smoke.mjs",
     "test:browser": "playwright test",
+    "audit:seo": "node scripts/seo-production-audit.mjs",
     "serve": "python3 -m http.server 8080",
     "worker:types": "wrangler types --config ops/wrangler.example.jsonc worker-configuration.d.ts",
     "worker:dry-run": "wrangler deploy --dry-run --config ops/wrangler.example.jsonc"

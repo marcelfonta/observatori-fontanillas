@@ -1,7 +1,9 @@
 import { finiteNumber as finite } from '../src/core/numeric.js';
 import { PORTAL_PAGES } from '../src/core/portal-routes.js';
-import { buildSeoStructuredGraph, seoPageCopy, seoPageUrl, SEO_LANGUAGE_META } from '../src/features/seo.js';
+import { buildSeoStructuredGraph, seoPagePresentation, seoPageUrl, SEO_LANGUAGE_META } from '../src/features/seo.js';
 import { SUPPORTED_LANGUAGES } from '../src/core/i18n.js';
+import {editorialStoryById} from '../src/data/editorial-stories.js';
+import {monthlySummaryById} from '../src/data/monthly-summaries.js';
 
 const OBSERVATION_URL='https://fonta-meteo.marcelfonta.workers.dev/';
 const BASE_URL='https://meteo.fontanillas.cat/';
@@ -38,18 +40,23 @@ export function initialSchema(observation){
   return buildSeoStructuredGraph('inici',observation,'ca');
 }
 
-export function portalPageFromPath(pathname='/'){
+export function portalRouteFromPath(pathname='/'){
   const normalized=String(pathname||'/').replace(/\/+$/,'')||'/';
-  if(normalized==='/'||normalized==='/index.html')return 'inici';
+  if(normalized==='/'||normalized==='/index.html')return {page:'inici'};
+  const storyId=decodeURIComponent(normalized.match(/^\/histories\/([^/]+)$/)?.[1]||'');
+  if(storyId&&editorialStoryById(storyId))return {page:'histories',storyId};
+  const summaryId=decodeURIComponent(normalized.match(/^\/resums\/([^/]+)$/)?.[1]||'');
+  if(summaryId&&monthlySummaryById(summaryId))return {page:'resums',summaryId};
   const page=decodeURIComponent(normalized.slice(1));
-  return PAGE_SET.has(page)?page:null;
+  return PAGE_SET.has(page)?{page}:null;
 }
+export function portalPageFromPath(pathname='/'){return portalRouteFromPath(pathname)?.page||null;}
 
-export function routeSeo(page='inici',lang='ca'){
+export function routeSeo(page='inici',lang='ca',context={}){
   const safePage=PAGE_SET.has(page)?page:'inici';
   const safeLanguage=SUPPORTED_LANGUAGES.includes(lang)?lang:'ca';
-  const copy=seoPageCopy(safePage,safeLanguage);
-  return {...copy,page:safePage,lang:safeLanguage,locale:SEO_LANGUAGE_META[safeLanguage].locale,url:seoPageUrl(safePage,safeLanguage),schema:buildSeoStructuredGraph(safePage,null,safeLanguage)};
+  const presentation=seoPagePresentation(safePage,safeLanguage,context);
+  return {...presentation,page:safePage,lang:safeLanguage,locale:SEO_LANGUAGE_META[safeLanguage].locale,url:seoPageUrl(safePage,safeLanguage,context),schema:buildSeoStructuredGraph(safePage,null,safeLanguage,context),context};
 }
 
 async function fetchObservation(){
@@ -65,6 +72,7 @@ async function fetchObservation(){
 class TextHandler{constructor(value){this.value=value;}element(element){element.setInnerContent(String(this.value));}}
 class SchemaHandler{constructor(value){this.value=value;}element(element){element.setInnerContent(JSON.stringify(this.value));}}
 class AttributeHandler{constructor(name,value){this.name=name;this.value=value;}element(element){element.setAttribute(this.name,String(this.value));}}
+class RemoveHandler{element(element){element.remove();}}
 class DocumentHandler{constructor(page,lang){this.page=page;this.lang=lang;}element(element){element.setAttribute('lang',this.lang);element.setAttribute('data-portal-page',this.page);}}
 class NoscriptHandler{
   constructor(observation){this.observation=observation;}
@@ -90,24 +98,32 @@ function routeRewriter(meta){
     .on('meta[property="og:title"]',new AttributeHandler('content',meta.title))
     .on('meta[property="og:description"]',new AttributeHandler('content',meta.description))
     .on('meta[property="og:url"]',new AttributeHandler('content',meta.url))
+    .on('meta[property="og:type"]',new AttributeHandler('content',meta.type))
+    .on('meta[property="og:image"]',new AttributeHandler('content',meta.image))
+    .on('meta[property="og:image:alt"]',new AttributeHandler('content',meta.title))
     .on('meta[name="twitter:title"]',new AttributeHandler('content',meta.title))
     .on('meta[name="twitter:description"]',new AttributeHandler('content',meta.description))
+    .on('meta[name="twitter:image"]',new AttributeHandler('content',meta.image))
+    .on('meta[name="twitter:image:alt"]',new AttributeHandler('content',meta.title))
     .on('link[rel="canonical"]',new AttributeHandler('href',meta.url))
     .on('#seo-structured-data',new SchemaHandler(meta.schema))
     .on('.noscript-weather',new RouteNoscriptHandler(meta));
-  for(const language of SUPPORTED_LANGUAGES)rewriter=rewriter.on(`link[rel="alternate"][hreflang="${language}"]`,new AttributeHandler('href',seoPageUrl(meta.page,language)));
-  return rewriter.on('link[rel="alternate"][hreflang="x-default"]',new AttributeHandler('href',seoPageUrl(meta.page,'ca')));
+  if(meta.story||meta.summary)return rewriter.on('link[rel="alternate"]',new RemoveHandler());
+  for(const language of SUPPORTED_LANGUAGES)rewriter=rewriter.on(`link[rel="alternate"][hreflang="${language}"]`,new AttributeHandler('href',seoPageUrl(meta.page,language,meta.context)));
+  return rewriter.on('link[rel="alternate"][hreflang="x-default"]',new AttributeHandler('href',seoPageUrl(meta.page,'ca',meta.context)));
 }
 
 export async function onRequest(context){
   const accepts=context.request.headers.get('Accept')||'';
   const url=new URL(context.request.url);
-  const page=portalPageFromPath(url.pathname);
+  const route=portalRouteFromPath(url.pathname);const page=route?.page;
+  if(!route&&/^\/(?:histories|resums)\//.test(url.pathname))return new Response('Pàgina no trobada',{status:404,headers:{'Content-Type':'text/plain; charset=utf-8','X-Robots-Tag':'noindex'}});
   if(context.request.method!=='GET'||!page||!accepts.includes('text/html'))return context.next();
-  const lang=SUPPORTED_LANGUAGES.includes(url.searchParams.get('lang'))?url.searchParams.get('lang'):'ca';
+  const requestedLanguage=SUPPORTED_LANGUAGES.includes(url.searchParams.get('lang'))?url.searchParams.get('lang'):'ca';
+  const lang=route.storyId||route.summaryId?'ca':requestedLanguage;
   const [response,observation]=await Promise.all([context.next(),page==='inici'?fetchObservation():Promise.resolve(null)]);
   if(!response.headers.get('Content-Type')?.includes('text/html'))return response;
-  const meta=routeSeo(page,lang);
+  const meta=routeSeo(page,lang,route);
   let rewriter=routeRewriter(meta);
   if(!observation){
     const transformed=rewriter.transform(response);const headers=new Headers(transformed.headers);headers.set('X-Observatori-Route',page);
@@ -127,7 +143,7 @@ export async function onRequest(context){
     .on('#updated-relative',new TextHandler(observation.stale?'darrera lectura':'fa menys de 5 min'))
     .on('#updated-time',new TextHandler(localTime))
     .on('#connection-label',new TextHandler(observation.stale?'Dades desades':'En directe'))
-    .on('#seo-structured-data',new SchemaHandler(buildSeoStructuredGraph(page,observation,lang)))
+    .on('#seo-structured-data',new SchemaHandler(buildSeoStructuredGraph(page,observation,lang,route)))
     .on('.noscript-weather',new NoscriptHandler(observation));
   const transformed=rewriter.transform(response);
   const headers=new Headers(transformed.headers);headers.set('X-Observatori-Initial-Data',observation.stale?'stored':'live');headers.set('X-Observatori-Route',page);

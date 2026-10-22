@@ -146,13 +146,17 @@ lector entén per què es recomana cada font.
 
 ### Validació SEO real
 
-- [ ] Enviar i verificar el sitemap actual a Search Console.
-- [ ] Inspeccionar les rutes prioritàries, Rich Results, canonical, `hreflang`,
-  títols, descripcions, H1 i dades estructurades.
-- [ ] Afegir `lastmod` fiable només per a pàgines amb una modificació real.
-- [ ] Comprovar què rep un robot sense executar JavaScript. Si les rutes hereten
-  les metadades de portada, prototipar HTML o metadades generades al Worker per
-  ruta abans de migrar tota l’arquitectura.
+L’auditoria real del 22 d’octubre és a `docs/SEO-AUDIT-2026-10-22.md`. Search
+Console manté el sitemap correcte amb 52 URL descobertes, però l’informe anterior
+encara no en mostra cap d’indexada. La prova sense JavaScript va detectar l’HTML
+genèric i s’ha activat la generació de metadades, canonical, H1 i JSON-LD a
+l’edge, incloses les rutes profundes. Els `lastmod` editorials corresponen a una
+publicació real.
+
+- [ ] Després del desplegament, executar l’auditoria de producció, reenviar el
+  sitemap i iniciar «Valida la correcció» a Search Console.
+- [ ] Revisar l’evolució d’indexació quan Google acabi el nou rastreig; no crear
+  més pàgines només per forçar volum.
 
 **Fet quan:** cada ruta prioritària és indexada separadament i mostra el títol,
 descripció, canonical, idioma i contingut esperats.
@@ -467,14 +471,12 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **SEO verificat:** Search Console, Rich Results i HTML inicial per ruta només
-   si les proves ho exigeixen.
-2. **Qualitat tècnica:** tipografies locals, dispositius, lector de pantalla i
+1. **Qualitat tècnica:** tipografies locals, dispositius, lector de pantalla i
    refinament offline.
-3. **Educació:** primera fitxa pròpia d’Aula oberta.
-4. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
+2. **Educació:** primera fitxa pròpia d’Aula oberta.
+3. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
    accessibilitat i validació astronòmica.
-5. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
+4. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
 
 Les millores d’un paquet s’han de desplegar, mesurar i documentar abans d’obrir
 el següent. L’objectiu no és tenir més funcions que altres portals, sinó ser la

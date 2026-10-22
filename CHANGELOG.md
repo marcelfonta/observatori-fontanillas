@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-22 — SEO de servidor verificat amb Search Console
+
+- L’auditoria real detecta que Cloudflare servia el títol de portada a l’HTML
+  inicial de totes les rutes i activa explícitament la capa SEO a l’edge.
+- Històries i resums obtenen canonical, imatge social, H1 i dades estructurades
+  pròpies abans d’executar JavaScript; les URL inexistents són 404 no indexables.
+- Es documenta l’estat real de Search Console i s’afegeix una auditoria de
+  producció repetible per evitar regressions d’indexació.
+
 ## 2026-10-22 — Primer resum climatològic mensual
 
 - Nou resum permanent de setembre de 2026 amb temperatures, pluja, ratxa,
