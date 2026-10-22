@@ -1,0 +1,5 @@
+Contact: https://meteo.fontanillas.cat/contacte
+Expires: 2027-10-22T23:59:59Z
+Preferred-Languages: ca, es, en, fr
+Canonical: https://meteo.fontanillas.cat/.well-known/security.txt
+Policy: https://github.com/marcelfonta/observatori-fontanillas/security/policy
