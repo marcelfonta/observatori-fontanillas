@@ -9,6 +9,7 @@ export function portalPageFromLocation(locationLike = globalThis.location) {
   if (PAGE_SET.has(requested)) return requested;
   const pathname = String(locationLike?.pathname || '/').replace(/\/+$/, '') || '/';
   if (pathname === '/' || pathname === '/index.html') return 'inici';
+  if(pathname.startsWith('/histories/'))return 'histories';
   const page = decodeURIComponent(pathname.slice(1));
   return PAGE_SET.has(page) ? page : 'inici';
 }

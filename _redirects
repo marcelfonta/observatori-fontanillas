@@ -13,6 +13,7 @@
 /webcams        /  200
 /terra          /  200
 /histories      /  200
+/histories/*    /  200
 /centre-dades   /  200
 /medi-ambient   /  200
 /aprendre       /  200
