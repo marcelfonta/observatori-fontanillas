@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-22 — Primer resum climatològic mensual
+
+- Nou resum permanent de setembre de 2026 amb temperatures, pluja, ratxa,
+  evolució diària, dies destacats i cobertura de les observacions pròpies.
+- La ruta `/resums/2026-09` té sitemap, metadades, dades estructurades i una
+  targeta social pròpia per poder-la citar i compartir.
+- Les incidències de cobertura es fan visibles i el resum evita presentar una
+  sèrie curta com una normal climàtica.
+
 ## 2026-10-22 — Tres històries reals i una guia local
 
 - Es publiquen tres peces editorials permanents basades en l’arxiu propi: els

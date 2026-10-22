@@ -220,6 +220,7 @@ initPortal();
 if(ACTIVE_PAGE==='terra')loadRouteFeature(()=>import('./features/earth-observation.js').then(module=>module.initEarthObservation()),'El visor de la Terra');
 if(ACTIVE_PAGE==='avisos')loadRouteFeature(()=>import('./features/estofex-local.js').then(module=>module.initEstofexLocal()),'La vigilància ESTOFEX');
 if(ACTIVE_PAGE==='histories')loadRouteFeature(()=>getWeatherStoriesModule().then(module=>module.initWeatherStories()),'Les històries meteorològiques');
+if(ACTIVE_PAGE==='resums')loadRouteFeature(()=>import('./features/monthly-summaries.js').then(module=>module.initMonthlySummaries()),'Els resums climatològics');
 initHeaderTools();
 if(ACTIVE_PAGE==='llarg-termini')loadRouteFeature(()=>import('./features/seasonal-outlook.js').then(module=>module.initSeasonalOutlook()),'La previsió estacional');
 if(['estacio','centre-dades'].includes(document.body.dataset.page))initStationRecords(fetchStationRecords);

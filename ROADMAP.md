@@ -116,15 +116,13 @@ de tercers i documenta la llicència de cada component.
 **Fet quan:** la comparació utilitza prou cobertura, identifica el període i no
 presenta una mitjana curta com una normal climàtica.
 
-### Resums climatològics permanents
+### Resums climatològics periòdics
 
-- [ ] Generar un primer resum mensual amb màxima, mínima, pluja total, ratxa
-  màxima, dies destacats, cobertura i incidències de qualitat.
-- [ ] Crear URLs permanents del tipus `/resums/2026-10`, afegir-les al sitemap i
-  oferir una targeta social revisable.
-- [ ] Comparar només períodes realment disponibles; incorporar normals oficials
-  únicament quan siguin espacialment representatives, citables i compatibles.
-- [ ] Preparar després un resum setmanal web i, si aporta valor, distribuir-lo
+El primer resum mensual permanent és `/resums/2026-09`: inclou extrems, pluja,
+vent, cobertura, incidències de qualitat, sitemap i targeta social. No presenta
+l'arxiu curt de l'estació com una normal climàtica.
+
+- [ ] Preparar un resum setmanal web i, si aporta valor, distribuir-lo
   per Telegram o correu amb consentiment explícit.
 
 **Fet quan:** cada resum es pot citar, compartir i reproduir des de dades
@@ -469,15 +467,14 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **Climatologia:** primer resum mensual permanent i compartible.
-2. **SEO verificat:** Search Console, Rich Results i HTML inicial per ruta només
+1. **SEO verificat:** Search Console, Rich Results i HTML inicial per ruta només
    si les proves ho exigeixen.
-3. **Qualitat tècnica:** tipografies locals, dispositius, lector de pantalla i
+2. **Qualitat tècnica:** tipografies locals, dispositius, lector de pantalla i
    refinament offline.
-4. **Educació:** primera fitxa pròpia d’Aula oberta.
-5. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
+3. **Educació:** primera fitxa pròpia d’Aula oberta.
+4. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
    accessibilitat i validació astronòmica.
-6. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
+5. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
 
 Les millores d’un paquet s’han de desplegar, mesurar i documentar abans d’obrir
 el següent. L’objectiu no és tenir més funcions que altres portals, sinó ser la
