@@ -106,14 +106,6 @@ les dades, quines garanties tenen i com comunicar una incidència.
 **Fet quan:** qualsevol export nou manté l’abast de CC BY 4.0 separat dels drets
 de tercers i documenta la llicència de cada component.
 
-### Contacte de seguretat
-
-- [ ] Revisar les capçaleres amb una eina externa sense ampliar HSTS a
-  `includeSubDomains` o `preload` fins a auditar tots els subdominis.
-
-**Fet quan:** existeix un canal verificable per comunicar vulnerabilitats i no
-s’ha introduït cap política irreversible sense comprovar-ne l’abast.
-
 ## P1 — Contingut útil, local i diferencial
 
 ### Primera lectura humana
@@ -507,19 +499,17 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **Confiança:** Sobre l’Observatori, autoria, equipament i `security.txt`.
-2. **Dades obertes:** decisió de llicència, abast, Dataset i documentació.
-3. **Utilitat:** FAQ, indicadors pràctics i frase humana de situació actual.
-4. **Editorial:** 2–3 històries permanents i primera guia local.
-5. **Climatologia:** primer resum mensual permanent i compartible.
-6. **SEO verificat:** Search Console, Rich Results i HTML inicial per ruta només
+1. **Utilitat:** FAQ, indicadors pràctics i frase humana de situació actual.
+2. **Editorial:** 2–3 històries permanents i primera guia local.
+3. **Climatologia:** primer resum mensual permanent i compartible.
+4. **SEO verificat:** Search Console, Rich Results i HTML inicial per ruta només
    si les proves ho exigeixen.
-7. **Qualitat tècnica:** tipografies locals, dispositius, lector de pantalla i
+5. **Qualitat tècnica:** tipografies locals, dispositius, lector de pantalla i
    refinament offline.
-8. **Educació:** primera fitxa pròpia d’Aula oberta.
-9. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
+6. **Educació:** primera fitxa pròpia d’Aula oberta.
+7. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
    accessibilitat i validació astronòmica.
-10. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
+8. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
 
 Les millores d’un paquet s’han de desplegar, mesurar i documentar abans d’obrir
 el següent. L’objectiu no és tenir més funcions que altres portals, sinó ser la
