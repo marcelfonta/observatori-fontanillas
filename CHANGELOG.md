@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-22 — Lectura útil i orientació pràctica
+
+- La portada sintetitza observació, previsió immediata i avisos en una frase,
+  amb fonts visibles i sense completar allò que no s’ha pogut confirmar.
+- L’Aula oberta incorpora una FAQ sobre mesures, prediccions, fiabilitat, Fonta
+  i avisos, també publicada com a dades estructurades.
+- Els indicadors calculats guanyen una lectura pràctica i prudent, i una guia
+  breu deriva sempre als consells oficials de Protecció Civil i al 112.
+
 ## 2026-10-22 — Capçaleres de producció auditades
 
 - MDN HTTP Observatory confirma A+ i 115/115, amb 12 controls superats i cap

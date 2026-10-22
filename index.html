@@ -138,6 +138,11 @@
           <div><p class="eyebrow">Lectura essencial</p><h2 id="home-now-title">Què cal saber ara a Sant Celoni?</h2></div>
           <p>Observació, previsió, avisos i confiança amb la font sempre visible.</p>
         </header>
+        <article class="home-now__summary" aria-live="polite">
+          <small>En una frase</small>
+          <strong id="home-now-summary">Encara no hi ha prou dades per resumir la situació amb garanties.</strong>
+          <span id="home-now-summary-meta">S’omet qualsevol conclusió sense dades suficients</span>
+        </article>
         <div id="home-now-grid" class="home-now__grid" aria-live="polite"></div>
       </section>
 
@@ -290,12 +295,12 @@
         <header><div><p class="eyebrow">Diagnosi atmosfèrica</p><h2 id="derived-title">Més lectura, sense inventar sensors</h2></div><span class="tag">Valors calculats</span></header>
         <p class="derived-panel__intro">Indicadors estimats a partir de la temperatura, la humitat, el punt de rosada i el vent mesurats per l’estació.</p>
         <div class="derived-grid">
-          <div><span>Temp. de bulb humit</span><strong><b id="wet-bulb">—</b> °C</strong><small>Capacitat de refredament per evaporació</small><details><summary>Què vol dir?</summary><p>És la temperatura mínima a què podria arribar l’aire evaporant aigua. Si s’acosta molt a la temperatura real, l’ambient és molt humit.</p></details></div>
-          <div><span>Dèficit de vapor</span><strong><b id="vpd">—</b> kPa</strong><small id="vpd-reading">Demanda d’humitat de l’aire</small><details><summary>Què vol dir?</summary><p>Indica quanta humitat encara podria absorbir l’aire. Un valor alt afavoreix una evaporació més ràpida de plantes i superfícies.</p></details></div>
+          <div><span>Temp. de bulb humit</span><strong><b id="wet-bulb">—</b> °C</strong><small>Capacitat de refredament per evaporació</small><details><summary>Què vol dir?</summary><p>És la temperatura mínima a què podria arribar l’aire evaporant aigua. Si s’acosta molt a la temperatura real, l’ambient és molt humit. Serveix per contextualitzar l’estrès tèrmic, però no és per si sol un llindar personal de risc.</p></details></div>
+          <div><span>Dèficit de vapor</span><strong><b id="vpd">—</b> kPa</strong><small id="vpd-reading">Demanda d’humitat de l’aire</small><details><summary>Què vol dir?</summary><p>Indica quanta humitat encara podria absorbir l’aire. Un valor alt afavoreix una evaporació més ràpida de plantes i superfícies: és útil per entendre la demanda d’aigua, no una ordre automàtica de reg.</p></details></div>
           <div><span>Base del núvol estimada</span><strong><b id="cloud-base">—</b> m</strong><small>Estimació sobre el nivell de l’estació</small><details><summary>Què vol dir?</summary><p>És l’altura aproximada on l’aire es podria saturar i formar la base dels núvols. És una estimació, no una mesura directa.</p></details></div>
           <div><span>Humitat absoluta</span><strong><b id="absolute-humidity">—</b> g/m³</strong><small>Vapor d’aigua present a l’aire</small><details><summary>Què vol dir?</summary><p>Expressa els grams reals de vapor d’aigua presents en cada metre cúbic d’aire, independentment del percentatge relatiu.</p></details></div>
           <div><span>Escala de Beaufort</span><strong><b id="beaufort">—</b></strong><small id="beaufort-reading">Força del vent estimada</small><details><summary>Què vol dir?</summary><p>Tradueix la velocitat del vent a una escala de 0 a 12: des de calma fins a huracà, amb efectes fàcils d’identificar.</p></details></div>
-          <div><span>Pressió de vapor</span><strong><b id="vapor-pressure">—</b> hPa</strong><small>Part de la pressió causada pel vapor d’aigua</small><details><summary>Què vol dir?</summary><p>Mesura la contribució real del vapor d’aigua a la pressió de l’aire. Com més alta és, més vapor conté l’atmosfera.</p></details></div>
+          <div><span>Pressió de vapor</span><strong><b id="vapor-pressure">—</b> hPa</strong><small>Part de la pressió causada pel vapor d’aigua</small><details><summary>Què vol dir?</summary><p>Mesura la contribució real del vapor d’aigua a la pressió de l’aire. Permet comparar la humitat real entre dies, però no és un diagnòstic de salut ni una predicció per si sola.</p></details></div>
           <div><span>Raó de mescla</span><strong><b id="mixing-ratio">—</b> g/kg</strong><small>Vapor per cada quilo d’aire sec</small><details><summary>Què vol dir?</summary><p>Indica quants grams de vapor d’aigua hi ha per cada quilogram d’aire sec. És molt útil perquè canvia menys amb la temperatura que la humitat relativa.</p></details></div>
           <div><span>Densitat de l’aire</span><strong><b id="air-density">—</b> kg/m³</strong><small id="air-density-reading">Massa de l’aire calculada</small><details><summary>Què vol dir?</summary><p>L’aire fred i amb pressió alta és més dens; l’aire calent i humit és menys dens. Pot influir lleugerament en el rendiment esportiu, l’aviació i la propagació del so.</p></details></div>
         </div>
@@ -910,6 +915,28 @@
           <button type="button" data-learning-path="docents"><span aria-hidden="true">🧭</span><b>Docents</b><small>Activitats per portar a l’aula</small></button>
         </nav>
         <section class="learning-local panel" aria-labelledby="learning-local-title"><div><p class="eyebrow">Laboratori Fontanillas</p><h3 id="learning-local-title">Aprèn amb el temps que tens davant.</h3><p>Observa una variable real, compara-la amb la predicció i explica què ha canviat. La meteorologia s’entén millor quan les dades tenen lloc i hora.</p></div><div><a href="/estacio">Llegir els sensors →</a><a href="/radar">Interpretar el radar →</a><a href="/centre-dades">Analitzar l’històric →</a><a href="/avisos">Entendre els avisos →</a></div></section>
+        <section class="weather-utility panel" aria-labelledby="weather-utility-title">
+          <header><div><p class="eyebrow">Respostes clares</p><h3 id="weather-utility-title">Entendre les dades abans de decidir.</h3><p>Mesura local, predicció i avís oficial són peces diferents. Aquí n’expliquem l’abast i els límits.</p></div><a href="/avisos">Consultar avisos vigents →</a></header>
+          <div class="weather-faq">
+            <details><summary>Per què la temperatura pot diferir de Meteocat?</summary><p>Fontanillas mesura un punt concret de Sant Celoni. L’altura, l’entorn immediat, l’ombra, el vent i l’hora exacta poden fer-la diferent d’una estació oficial pròxima. No corregim intuïtivament les lectures per fer-les coincidir.</p></details>
+            <details><summary>Com de fiable és l’estació?</summary><p>Controlem continuïtat, frescor i coherència, però és una estació independent sense certificat de calibratge oficial. Les dades descriuen aquest emplaçament i no tot el Baix Montseny.</p></details>
+            <details><summary>Les dades són definitives?</summary><p>No sempre. Les lectures automàtiques i els acumulats recents poden ser provisionals, contenir buits o revisar-se quan es detecta una incidència. La pàgina de qualitat mostra la cobertura disponible.</p></details>
+            <details><summary>Quina diferència hi ha entre observació i predicció?</summary><p>L’observació és una mesura feta per un sensor en un lloc i una hora. La predicció és una estimació de model i sempre té incertesa; una probabilitat no és una certesa.</p></details>
+            <details><summary>Què és Fonta?</summary><p>És el laboratori experimental de l’Observatori: combina models i en comprova els resultats contra observacions posteriors. No és una font oficial ni substitueix Meteocat o AEMET.</p></details>
+            <details><summary>Com s’han d’interpretar els avisos?</summary><p>Cal mirar fenomen, territori, nivell i vigència. Un avís expressa risc potencial, no garanteix que el fenomen afecti cada carrer. Sempre prevalen el detall oficial i les indicacions de Protecció Civil.</p></details>
+          </div>
+          <div class="warning-guide" aria-labelledby="warning-guide-title">
+            <div><h4 id="warning-guide-title">Què fer en cas d’avís</h4><p>Primeres mesures orientatives. Consulta sempre l’avís oficial actualitzat; davant una emergència, truca al 112.</p></div>
+            <ul>
+              <li><b>Calor</b><span>Hidrata’t, evita les hores de més calor i vigila infants, gent gran i persones vulnerables.</span></li>
+              <li><b>Pluja intensa</b><span>No travessis rieres, passos inundats ni zones baixes; busca un lloc segur.</span></li>
+              <li><b>Vent</b><span>Retira objectes que puguin caure i allunya’t d’arbres, bastides i façanes inestables.</span></li>
+              <li><b>Tempesta</b><span>Refugia’t en un edifici o vehicle i evita espais oberts, aigua i arbres aïllats.</span></li>
+              <li><b>Neu o gel</b><span>Evita desplaçaments innecessaris, equipa el vehicle i segueix l’estat de les vies.</span></li>
+            </ul>
+            <nav><a href="https://interior.gencat.cat/ca/arees_dactuacio/proteccio_civil/consells_autoproteccio_emergencia/riscos_naturals/" target="_blank" rel="noopener noreferrer">Consells oficials de Protecció Civil ↗</a><a href="https://interior.gencat.cat/ca/arees_dactuacio/proteccio_civil/consells_autoproteccio_emergencia/riscos_naturals/aiguats_i_inundacions/fortes-pluges/" target="_blank" rel="noopener noreferrer">Pluges fortes ↗</a><a href="https://interior.gencat.cat/ca/arees_dactuacio/proteccio_civil/consells_autoproteccio_emergencia/riscos_naturals/ventades/" target="_blank" rel="noopener noreferrer">Ventades ↗</a><a href="https://interior.gencat.cat/ca/arees_dactuacio/proteccio_civil/consells_autoproteccio_emergencia/riscos_naturals/tempestes_electriques/" target="_blank" rel="noopener noreferrer">Tempestes elèctriques ↗</a></nav>
+          </div>
+        </section>
         <section class="learning-challenges" aria-labelledby="learning-challenges-title">
           <header><p class="eyebrow">Reptes pràctics</p><h3 id="learning-challenges-title">Aprèn fent, en menys de mitja hora.</h3></header>
           <div>
