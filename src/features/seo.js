@@ -4,6 +4,14 @@ import { PORTAL_PAGES } from '../core/portal-routes.js';
 
 export const SEO_BASE='https://meteo.fontanillas.cat/';
 export const SEO_LANGUAGE_META={ca:{locale:'ca_ES',home:'Inici'},es:{locale:'es_ES',home:'Inicio'},en:{locale:'en_GB',home:'Home'},fr:{locale:'fr_FR',home:'Accueil'}};
+const LEARNING_FAQ=[
+  ['Per què la temperatura pot diferir de Meteocat?','Fontanillas mesura un punt concret de Sant Celoni. L’altura, l’entorn immediat, l’ombra, el vent i l’hora exacta poden fer-la diferent d’una estació oficial pròxima.'],
+  ['Com de fiable és l’estació?','Es controlen la continuïtat, la frescor i la coherència, però és una estació independent sense certificat de calibratge oficial.'],
+  ['Les dades són definitives?','Les lectures automàtiques i els acumulats recents poden ser provisionals, contenir buits o revisar-se quan es detecta una incidència.'],
+  ['Quina diferència hi ha entre observació i predicció?','L’observació és una mesura feta per un sensor. La predicció és una estimació de model i sempre té incertesa.'],
+  ['Què és Fonta?','És el laboratori experimental de l’Observatori. No és una font oficial ni substitueix Meteocat o AEMET.'],
+  ['Com s’han d’interpretar els avisos?','Cal mirar fenomen, territori, nivell i vigència. Sempre prevalen el detall oficial i les indicacions de Protecció Civil.']
+];
 export const SEO_PAGES={
   inici:{ca:['Observatori Meteorològic Fontanillas · Temps a Sant Celoni','Dades meteorològiques en directe, avisos, predicció i radar des de Sant Celoni, als peus del Montseny.'],es:['Observatorio Meteorológico Fontanillas · Tiempo en Sant Celoni','Datos meteorológicos en directo, avisos, predicción y radar desde Sant Celoni, a los pies del Montseny.'],en:['Fontanillas Weather Observatory · Weather in Sant Celoni','Live weather data, alerts, forecasts and radar from Sant Celoni, at the foot of the Montseny massif.'],fr:['Observatoire météo Fontanillas · Météo à Sant Celoni','Données météo en direct, alertes, prévisions et radar depuis Sant Celoni, au pied du Montseny.']},
   'meteo-ia':{ca:['Meteo IA · Pregunta pel temps','Assistent meteorològic amb fonts visibles per consultar Sant Celoni, altres poblacions, dates i activitats.'],es:['Meteo IA · Pregunta por el tiempo','Asistente meteorológico con fuentes visibles para Sant Celoni, otras localidades, fechas y actividades.'],en:['Meteo AI · Ask about the weather','Weather assistant with visible sources for Sant Celoni, other places, dates and activities.'],fr:['Météo IA · Posez vos questions météo','Assistant météo avec sources visibles pour Sant Celoni, d’autres villes, dates et activités.']},
@@ -52,6 +60,7 @@ export function buildSeoStructuredGraph(page='inici',observation=null,lang='ca')
     {'@type':'Dataset','@id':`${SEO_BASE}#dataset`,name:'Observacions meteorològiques de l’estació Fontanillas',description:'Sèries meteorològiques locals de temperatura, humitat, pressió, vent, precipitació, radiació solar i índex UV.',url:seoPageUrl('centre-dades',lang),inLanguage:['ca','es','en','fr'],creator:{'@id':`${SEO_BASE}#organization`},license:'https://creativecommons.org/licenses/by/4.0/',creditText:'Observatori Meteorològic Fontanillas — meteo.fontanillas.cat',isAccessibleForFree:true,spatialCoverage:{'@type':'Place',name:'Sant Celoni, Vallès Oriental',geo:{'@type':'GeoCoordinates',latitude:41.6906,longitude:2.489}},temporalCoverage:'2026-08-04/..',measurementTechnique:'Estació meteorològica automàtica',variableMeasured:['Temperatura','Humitat relativa','Pressió atmosfèrica','Velocitat i ratxa del vent','Precipitació','Radiació solar','Índex UV']},
     {'@type':'BreadcrumbList','@id':`${canonicalUrl}#breadcrumb`,itemListElement:breadcrumbs}
   ];
+  if(page==='aprendre')graph.push({'@type':'FAQPage','@id':`${canonicalUrl}#faq`,mainEntity:LEARNING_FAQ.map(([name,text])=>({'@type':'Question',name,acceptedAnswer:{'@type':'Answer',text}}))});
   if(observation&&Number.isFinite(Number(observation.temperature))){
     const property=(name,value,unit)=>({'@type':'PropertyValue',name,value:Number(value),...(unit?{unitText:unit}:{})});const values=[property('Temperatura',observation.temperature,'°C')];
     const available=value=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value));

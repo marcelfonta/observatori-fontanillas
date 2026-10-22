@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {buildHomeNowModel,homeModelConfidence} from '../src/features/home-now.js';
+import {buildHomeNowModel,buildHomeNowSummary,homeModelConfidence} from '../src/features/home-now.js';
 
 const model=(max,rain)=>({daily:{time:['2026-10-18'],temperature_2m_max:[max],precipitation_sum:[rain]}});
 const high={ecmwf:model(21,0),gfs:model(22,0),icon:model(21.5,0),arome:model(20.5,0)};
@@ -22,7 +22,17 @@ assert.equal(cards[2].title,'1 avís actiu');
 assert.equal(cards[3].title,'Alta');
 assert.ok(buildHomeNowModel().every(card=>card.state==='pending'));
 
+const summary=buildHomeNowSummary({
+  current:{temperature:18.6,humidity:72,ageMinutes:2},
+  forecast:{hourly:{time:['2026-10-18T12:00','2026-10-18T13:00'],temperature_2m:[18.6,19.2],precipitation_probability:[20,45],wind_gusts_10m:[12,18]}},
+  alerts:{ok:true,active:0}
+},new Date('2026-10-18T12:00').getTime());
+assert.match(summary.text,/Ara, 18,6 °C/);assert.match(summary.text,/probabilitat de pluja fins al 45%/);assert.match(summary.text,/no consta cap avís oficial actiu/);assert.match(summary.meta,/Estació Fontanillas/);
+assert.doesNotMatch(buildHomeNowSummary({alerts:{ok:false}}).text,/Sense avisos|no consta/);
+assert.match(buildHomeNowSummary().text,/no hi ha prou dades/);
+
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 assert.match(html,/id="home-now-grid"/);
+assert.match(html,/id="home-now-summary"/);
 assert.match(html,/Què cal saber ara a Sant Celoni\?/);
 console.log('Portada intel·ligent: confiança, degradació i estructura correctes');

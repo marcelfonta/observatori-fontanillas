@@ -47,9 +47,39 @@ export function buildHomeNowModel(input={}){
   return [observationCard(input.current),forecastCard(input.forecast),alertCard(input.alerts),{key:'models',state:confidence.level,kicker:'Confiança entre models',title:confidence.label,copy:confidence.detail,source:'ECMWF · GFS · ICON · AROME',href:'/prediccio#models'}];
 }
 
+function immediateForecast(forecast,now){
+  const hourly=forecast?.hourly;if(!Array.isArray(hourly?.time))return null;
+  const indices=hourly.time.map((time,index)=>({index,time:new Date(time).getTime()})).filter(item=>Number.isFinite(item.time)&&item.time>=now-1800000&&item.time<=now+3*60*60*1000).map(item=>item.index);
+  if(!indices.length)return null;
+  const rain=indices.map(index=>numeric(hourly.precipitation_probability?.[index])).filter(value=>value!==null);
+  const gusts=indices.map(index=>numeric(hourly.wind_gusts_10m?.[index])).filter(value=>value!==null);
+  const temperatures=indices.map(index=>numeric(hourly.temperature_2m?.[index])).filter(value=>value!==null);
+  const parts=[];
+  if(rain.length)parts.push(`les pròximes 3 h, probabilitat de pluja fins al ${format(Math.max(...rain))}%`);
+  if(gusts.length&&Math.max(...gusts)>=35)parts.push(`ratxes de fins a ${format(Math.max(...gusts))} km/h`);
+  if(!parts.length&&temperatures.length)parts.push(`les pròximes 3 h, temperatura entre ${format(Math.min(...temperatures),1)} i ${format(Math.max(...temperatures),1)} °C`);
+  return parts.join(' i ')||null;
+}
+
+export function buildHomeNowSummary(input={},now=Date.now()){
+  const phrases=[];const sources=[];const current=input.current;
+  if(current&&numeric(current.temperature)!==null){
+    phrases.push(`Ara, ${format(current.temperature,1)} °C${numeric(current.humidity)!==null?` i ${format(current.humidity)}% d’humitat`:''}`);
+    sources.push(numeric(current.ageMinutes)!==null?`Estació Fontanillas · fa ${format(current.ageMinutes)} min`:'Estació Fontanillas');
+  }
+  const immediate=immediateForecast(input.forecast,now);
+  if(immediate){phrases.push(immediate);sources.push('Open-Meteo · predicció');}
+  if(input.alerts?.ok===true){
+    const active=Number(input.alerts.active)||0;phrases.push(active?`${active} avís${active===1?'':'os'} oficial${active===1?'':'s'} actiu${active===1?'':'s'}; consulta’n la vigència`:'no consta cap avís oficial actiu per a la zona');sources.push('Meteocat · AEMET');
+  }else if(input.alerts?.ok===false){phrases.push('la comprovació d’avisos no està disponible ara mateix');sources.push('Avisos oficials · estat no confirmat');}
+  return {text:phrases.length?`${phrases.join('. ')}.`:'Encara no hi ha prou dades per resumir la situació amb garanties.',meta:[...new Set(sources)].join(' · ')||'S’omet qualsevol conclusió sense dades suficients'};
+}
+
 function render(){
   const host=document.getElementById('home-now-grid');
   if(!host)return;
+  const summary=buildHomeNowSummary(state);const summaryNode=document.getElementById('home-now-summary');const metaNode=document.getElementById('home-now-summary-meta');
+  if(summaryNode)summaryNode.textContent=summary.text;if(metaNode)metaNode.textContent=summary.meta;
   host.innerHTML=buildHomeNowModel(state).map(card=>`<a class="home-now-card is-${card.state}" href="${card.href}"><span class="home-now-card__signal" aria-hidden="true"></span><small>${card.kicker}</small><strong>${card.title}</strong><p>${card.copy}</p><footer><span>${card.source}</span><b>Veure detall →</b></footer></a>`).join('');
 }
 

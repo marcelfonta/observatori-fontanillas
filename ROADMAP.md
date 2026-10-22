@@ -108,31 +108,13 @@ de tercers i documenta la llicència de cada component.
 
 ## P1 — Contingut útil, local i diferencial
 
-### Primera lectura humana
+### Context d’arxiu a la primera lectura
 
-- [ ] Refinar «Què cal saber ara?» en una frase breu que combini observació,
-  tendència, predicció immediata i avisos, sense presentar probabilitats com
-  certeses.
-- [ ] Mostrar sempre hora i font de cada component; si no hi ha prou dades,
-  ometre la conclusió en lloc d’inventar-la.
 - [ ] Afegir context d’arxiu només quan la mostra sigui representativa i mostrar
   el període comparat. No etiquetar-lo encara com a normal climàtica.
 
-**Fet quan:** la portada respon en pocs segons «què passa, què pot passar i què
-he de vigilar?» amb dades traçables.
-
-### FAQ i utilitat dels indicadors
-
-- [ ] Publicar una FAQ inicial sobre diferències amb Meteocat, fiabilitat de
-  l’estació, dades provisionals, observació versus predicció, model Fonta i
-  interpretació dels avisos.
-- [ ] Afegir una frase pràctica i prudent als indicadors calculats: punt de
-  rosada, dèficit de pressió de vapor, sensació tèrmica, pressió i altres.
-- [ ] Preparar una guia «Què fer en cas d’avís» basada i enllaçada a Protecció
-  Civil per calor, vent, tempesta, neu i pluja intensa.
-
-**Fet quan:** cada concepte important explica què significa, per a què serveix i
-quins límits té, amb font autoritzada quan hi ha implicacions de seguretat.
+**Fet quan:** la comparació utilitza prou cobertura, identifica el període i no
+presenta una mitjana curta com una normal climàtica.
 
 ### Històries meteorològiques pròpies
 
@@ -499,17 +481,16 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **Utilitat:** FAQ, indicadors pràctics i frase humana de situació actual.
-2. **Editorial:** 2–3 històries permanents i primera guia local.
-3. **Climatologia:** primer resum mensual permanent i compartible.
-4. **SEO verificat:** Search Console, Rich Results i HTML inicial per ruta només
+1. **Editorial:** 2–3 històries permanents i primera guia local.
+2. **Climatologia:** primer resum mensual permanent i compartible.
+3. **SEO verificat:** Search Console, Rich Results i HTML inicial per ruta només
    si les proves ho exigeixen.
-5. **Qualitat tècnica:** tipografies locals, dispositius, lector de pantalla i
+4. **Qualitat tècnica:** tipografies locals, dispositius, lector de pantalla i
    refinament offline.
-6. **Educació:** primera fitxa pròpia d’Aula oberta.
-7. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
+5. **Educació:** primera fitxa pròpia d’Aula oberta.
+6. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
    accessibilitat i validació astronòmica.
-8. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
+7. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
 
 Les millores d’un paquet s’han de desplegar, mesurar i documentar abans d’obrir
 el següent. L’objectiu no és tenir més funcions que altres portals, sinó ser la
