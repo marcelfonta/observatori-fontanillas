@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-23 — Revisió visual del vespre
+
+- La targeta social fa més llegible el distintiu lunar i indica que la dada d’USNO és de les 12 h.
+- Divuit proves de navegador comproven targeta i Short de vespre per set fenòmens i les absències independents del temps i de la fase lunar, sense retalls ni solapament.
+
+
 ## 2026-10-23 — Vespre meteorològic i lunar; mostres de sintonia
 
 - Els Shorts i les targetes socials de vespre mostren el símbol meteorològic i la fase lunar oficial de l’USNO en espais separats. Si falta una dada, l’altra continua disponible.

@@ -82,8 +82,8 @@ assert.match(markup,/AVUI · 2026-09-17/);assert.match(markup,/Matí/);assert.ma
 assert.doesNotMatch(dailyDaypartsCardMarkup({...payload,period:'migdia'}),/>Matí</);
 assert.match(dailyDaypartsCardMarkup({...payload,period:'vespre'}),/DEMÀ · 2026-09-18/);
 const eveningV5=socialCardHtml({kind:'daily_observation',payload:JSON.stringify({...payload,socialFormat:'cinematic-v5',period:'vespre',moon:{date:'2026-09-18',label:'Quart creixent',percent:50}})});
-assert.match(eveningV5,/FASE LUNAR · Quart creixent · 50% · USNO/);
-assert.match(socialCardHtml({kind:'daily_observation',payload:JSON.stringify({...payload,socialFormat:'cinematic-v5',period:'vespre',moon:null})}),/FASE LUNAR · no disponible/);
+assert.match(eveningV5,/LLUNA · Quart creixent · 50% · USNO 12 h/);
+assert.match(socialCardHtml({kind:'daily_observation',payload:JSON.stringify({...payload,socialFormat:'cinematic-v5',period:'vespre',moon:null})}),/LLUNA · no disponible/);
 const html=socialCardHtml({kind:'daily_observation',payload:JSON.stringify(payload)});
 assert.match(html,/<body class="daily-dayparts-card">/);assert.doesNotMatch(html,/<div class="forecast-symbol">/);
 const legacy=socialCardHtml({kind:'daily_observation',payload:JSON.stringify({...payload,forecast:[{date:'2026-09-17',weatherCode:61,condition:'Pluja',max:23,min:16}]})});
