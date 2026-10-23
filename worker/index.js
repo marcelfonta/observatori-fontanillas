@@ -10,6 +10,7 @@ import { DAYPART_HOURLY_VARIABLES, normalizeSocialForecast, summarizeForecastDay
 import { fetchSocialEnvironment } from '../src/core/social-environment.js';
 import { dailySocialCardV5 } from './social-daily-v5.js';
 import { readNoaaCo2, refreshNoaaCo2 } from './noaa-co2.js';
+import { fetchMoon } from '../src/core/lunar-phase.js';
 import { meteofranceMap, meteofranceModels, meteofranceStagingValidation } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
@@ -2229,9 +2230,9 @@ export function socialForecastSummary(day, slot){
 }
 
 function socialWeatherGlyphSvg(code,night=false){
-  const value=Number(code);const clear=value===0;const partly=value<=2;const fog=value===45||value===48;const rain=(value>=51&&value<=67)||(value>=80&&value<=82)||value>=95;const snow=(value>=71&&value<=77)||(value>=85&&value<=86);const storm=value>=95;
-  const moon='<path d="M22-72A76 76 0 1 0 80 38A68 68 0 0 1 22-72" fill="#d8f4ff"/>';
-  const sun=clear?(night?moon:'<circle r="52" fill="#ffd166"/><g stroke="#ffd166" stroke-width="13" stroke-linecap="round"><path d="M0-94v-24M0 94v24M-94 0h-24M94 0h24M-67-67l-17-17M67 67l17 17M67-67l17-17M-67 67l-17 17"/></g>'):partly?(night?`<g transform="translate(-45 -65) scale(.75)">${moon}</g>`:'<circle cx="-55" cy="-45" r="38" fill="#ffd166"/>'):'';
+  const value=optionalFinite(code);const clear=value===0;const partly=value!==null&&value<=2;const fog=value===45||value===48;const rain=(value>=51&&value<=67)||(value>=80&&value<=82)||value>=95;const snow=(value>=71&&value<=77)||(value>=85&&value<=86);const storm=value>=95;
+  const nightSky='<circle cx="-28" cy="-18" r="7" fill="#d8f4ff"/><circle cx="35" cy="-63" r="5" fill="#d8f4ff"/><circle cx="46" cy="35" r="4" fill="#d8f4ff"/>';
+  const sun=clear?(night?nightSky:'<circle r="52" fill="#ffd166"/><g stroke="#ffd166" stroke-width="13" stroke-linecap="round"><path d="M0-94v-24M0 94v24M-94 0h-24M94 0h24M-67-67l-17-17M67 67l17 17M67-67l17-17M-67 67l-17 17"/></g>'):partly?(night?`<g transform="translate(-45 -65) scale(.75)">${nightSky}</g>`:'<circle cx="-55" cy="-45" r="38" fill="#ffd166"/>'):'';
   const cloud=clear?'':'<path d="M-84 60c-25 0-45-18-45-41 0-22 18-40 41-42 10-32 40-53 75-53 45 0 81 33 85 76 27 4 48 25 48 51 0 29-25 52-57 52H-84z" fill="#f2f8f5" stroke="#8cbba8" stroke-width="9"/>';
   const drops=rain?'<g stroke="#67cae9" stroke-width="11" stroke-linecap="round"><path d="M-65 119l-12 25M0 119l-12 25M65 119l-12 25"/></g>':'';
   const flakes=snow?'<g fill="#d8f4ff"><circle cx="-62" cy="137" r="9"/><circle cy="166" r="9"/><circle cx="62" cy="137" r="9"/></g>':'';
@@ -2904,6 +2905,10 @@ export async function createDailySocialDraft(observation, env, slot = null) {
   ]);
   const today=forecast[0];const tomorrow=forecast[1];
   const focus=profile.period==='vespre'?tomorrow:today;
+  const moon=profile.period==='vespre'&&focus?.date
+    ? await fetchMoon(focus.date,(url,options)=>fetch(url,{...options,cf:{cacheEverything:true,cacheTtl:3600}}))
+      .catch(error=>{console.error('Social lunar phase error',error);return null;})
+    : null;
   const detail=focus?daypartCaption(focus.dayparts):'';
   const socialFormat=env.SOCIAL_CARD_FORMAT==='legacy'?'legacy':'cinematic-v5';
   const environment=socialFormat==='cinematic-v5'&&focus?.date
@@ -2911,8 +2916,9 @@ export async function createDailySocialDraft(observation, env, slot = null) {
   const forecastText=focus?` ${profile.forecastLead}, ${focus.date}: ${detail||focus.condition}.${profile.period==='mati'&&tomorrow?` Demà, ${tomorrow.date}: ${tomorrow.condition}, ${socialNumber(tomorrow.max,0)}°/${socialNumber(tomorrow.min,0)}°.`:''}`:'';
   const title = `${profile.eyebrow} a Sant Celoni · ${localDate}`;
   const co2Text=co2?.fresh?`\n\nCO₂ atmosfèric a Mauna Loa (NOAA): ${co2.ppm.toFixed(2)} ppm · ${co2.date}${co2.yearChangePpm===null?'':` · ${co2.yearChangePpm>=0?'+':''}${co2.yearChangePpm.toFixed(2)} ppm respecte de ${co2.yearAgoDate}`}. Valor provisional d’una estació de referència; no és qualitat de l’aire de Sant Celoni. ${co2.sourceUrl}`:'';
-  const body = `${profile.greeting} des de Meteo Fontanillas. ${profile.lead} a les ${String(observation.updated || '').slice(11,16)}: ${facts.join(' · ')}.${forecastText} Consulta l’evolució i la predicció a meteo.fontanillas.cat.${co2Text}\n\n${socialHashtags()}`;
-  const payload = JSON.stringify({ socialFormat, environment, co2:co2?.fresh?co2:null, localDate, slot, period:profile.period, eyebrow:profile.eyebrow, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv), forecast, temperatureTrend });
+  const moonText=moon?` Fase lunar de demà a les 12 h locals: ${moon.label}, ${Math.round(moon.percent)}% il·luminada (USNO); no indica si el cel serà visible.`:'';
+  const body = `${profile.greeting} des de Meteo Fontanillas. ${profile.lead} a les ${String(observation.updated || '').slice(11,16)}: ${facts.join(' · ')}.${forecastText}${moonText} Consulta l’evolució i la predicció a meteo.fontanillas.cat.${co2Text}\n\n${socialHashtags()}`;
+  const payload = JSON.stringify({ socialFormat, environment, co2:co2?.fresh?co2:null, moon, localDate, slot, period:profile.period, eyebrow:profile.eyebrow, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv), forecast, temperatureTrend });
   const initialStatus = socialAutomationEnabled(env) ? 'approved' : 'draft';
   const result = await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
     (dedupe_key, kind, status, channels, title, body, source_url, payload)

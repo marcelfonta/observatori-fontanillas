@@ -208,6 +208,8 @@ afirmació, sense confondre temps, contaminació local i clima.
 
 ### Publicacions diàries: nova identitat sonora, CO₂ i vespre complet
 
+El distintiu lunar separat i les mostres musicals estan implementats en una branca de revisió; resta la validació visual i auditiva abans de donar aquest bloc per completat.
+
 Les peces diàries han de sonar i veure’s com una sola marca, però sense
 convertir una previsió meteorològica en un missatge climàtic confús. La dada de
 CO₂ serà la mateixa fotografia global oficial que aparegui a la webcam; no serà
