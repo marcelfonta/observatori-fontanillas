@@ -241,12 +241,12 @@ actual compleix aquests criteris.
 
 ### Aula oberta amb material propi
 
-- [ ] Crear una primera fitxa descarregable per a ESO basada en el CSV real de
-  l’estació: punt de rosada, interpretació d’una gràfica o estadística bàsica.
-- [ ] Documentar objectius, nivell, solució orientativa, autoria, llicència i
-  data de les dades.
 - [ ] Provar el material amb almenys una persona docent abans d’ampliar la
   col·lecció.
+
+La primera fitxa, «Quan va ploure més?», ja ofereix una activitat imprimible,
+el CSV real, solucions orientatives, rúbrica, autoria, llicència i data. Abans
+d’ampliar la col·lecció cal recollir una revisió docent i aplicar-ne els canvis.
 
 **Fet quan:** existeix un recurs propi, reproduïble i pedagògicament revisat que
 una escola pot utilitzar sense assistència tècnica.
@@ -463,7 +463,7 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **Educació:** primera fitxa pròpia d’Aula oberta.
+1. **Educació:** revisió docent de la primera fitxa pròpia d’Aula oberta.
 2. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
    accessibilitat i validació astronòmica.
 3. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
