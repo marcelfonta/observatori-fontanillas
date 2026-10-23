@@ -6,6 +6,7 @@ const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const OUTPUT=resolve(ROOT,process.env.VIDEO_MUSIC_OUTPUT||'build/youtube-short/music.wav');
 const RATE=44100;
 const DURATION=Math.max(5,Math.min(120,Number(process.env.VIDEO_DURATION_SECONDS)||30));
+const VARIANT=process.env.VIDEO_MUSIC_VARIANT||'current';
 
 const midi=note=>440*Math.pow(2,(note-69)/12);
 const clamp=value=>Math.max(-1,Math.min(1,value));
@@ -31,6 +32,30 @@ export function sampleAt(time){
   return clamp((pad*.14+bass*.19+pluck*.13+kick*.22+clap*.035)*Math.max(0,fade));
 }
 
+// One four-note motif shared by three internal candidates; no third-party samples.
+export function warmSampleAt(time,variant='morning',duration=DURATION){
+  const beat=60/88;
+  const motif=[64,67,69,67];
+  const chordRoots=variant==='evening'?[57,53,55,52]:[60,57,53,55];
+  const beatIndex=Math.floor(time/beat);
+  const bar=Math.floor(beatIndex/4);
+  const root=chordRoots[bar%chordRoots.length];
+  const padNotes=[root,root+4,root+7];
+  const pad=padNotes.reduce((sum,note)=>sum+Math.sin(2*Math.PI*midi(note)*time),0)/3;
+  const stepTime=time%beat;
+  const phraseTime=time%(4*beat);
+  const note=motif[beatIndex%motif.length]+(root-60);
+  const bell=Math.sin(2*Math.PI*midi(note+12)*stepTime)*Math.exp(-stepTime*5.5);
+  const overtone=Math.sin(2*Math.PI*midi(note+24)*stepTime)*Math.exp(-stepTime*9);
+  const bass=Math.sin(2*Math.PI*midi(root-12)*time)*Math.exp(-stepTime*2.8);
+  const pulse=variant==='event'?Math.sin(2*Math.PI*58*stepTime)*Math.exp(-stepTime*20):0;
+  const air=Math.sin(2*Math.PI*660*time)*Math.sin(2*Math.PI*1.4*time)*.006;
+  const contour=variant==='evening'?.82:variant==='event'?1.05:1;
+  const fade=Math.max(0,Math.min(1,time/.8,(duration-time)/1.3));
+  const phrase=phraseTime<beat*.2?1:.92;
+  return clamp(Math.tanh((pad*.11+bass*.12+bell*.13+overtone*.025+pulse*.035+air)*contour*phrase)*fade);
+}
+
 function wavBuffer(){
   const frames=RATE*DURATION;
   const channels=2;
@@ -42,7 +67,7 @@ function wavBuffer(){
   buffer.writeUInt32LE(RATE*channels*2,28);buffer.writeUInt16LE(channels*2,32);
   buffer.writeUInt16LE(16,34);buffer.write('data',36);buffer.writeUInt32LE(dataSize,40);
   for(let frame=0;frame<frames;frame++){
-    const value=Math.round(sampleAt(frame/RATE)*32767);
+    const value=Math.round((VARIANT==='current'?sampleAt(frame/RATE):warmSampleAt(frame/RATE,VARIANT))*32767);
     buffer.writeInt16LE(value,44+frame*4);
     buffer.writeInt16LE(value,46+frame*4);
   }
@@ -50,9 +75,10 @@ function wavBuffer(){
 }
 
 async function main(){
+  if(!['current','morning','evening','event'].includes(VARIANT))throw new Error('Variant de música desconeguda.');
   await mkdir(dirname(OUTPUT),{recursive:true});
   await writeFile(OUTPUT,wavBuffer());
-  console.log(`Música original generada: ${OUTPUT}`);
+  console.log(`Música original generada (${VARIANT}): ${OUTPUT}`);
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href)main().catch(error=>{console.error(error);process.exitCode=1;});

@@ -72,7 +72,8 @@ for(const slot of ['mati','vespre']){
 assert.match(forecastDaypartContent(absent[0]),/Dades incompletes/);
 assert.match(forecastDaypartContent(absent[0]),/—° \/ —°/);
 assert.doesNotMatch(weatherGlyph(0,0,0,1,true),/<circle r="52"/);
-assert.match(weatherGlyph(0,0,0,1,true),/A76 76/);
+assert.match(weatherGlyph(0,0,0,1,true),/circle cx="-28" cy="-18"/);
+assert.doesNotMatch(weatherGlyph(0,0,0,1,true),/A76 76/);
 assert.match(daypartCaption(parts),/Matí.*Tarda.*Vespre/);
 
 const payload={localDate:'2026-09-17',period:'mati',temperature:20,forecast};
@@ -80,6 +81,9 @@ const markup=dailyDaypartsCardMarkup(payload);
 assert.match(markup,/AVUI · 2026-09-17/);assert.match(markup,/Matí/);assert.match(markup,/Tarda/);assert.match(markup,/Vespre/);
 assert.doesNotMatch(dailyDaypartsCardMarkup({...payload,period:'migdia'}),/>Matí</);
 assert.match(dailyDaypartsCardMarkup({...payload,period:'vespre'}),/DEMÀ · 2026-09-18/);
+const eveningV5=socialCardHtml({kind:'daily_observation',payload:JSON.stringify({...payload,socialFormat:'cinematic-v5',period:'vespre',moon:{date:'2026-09-18',label:'Quart creixent',percent:50}})});
+assert.match(eveningV5,/FASE LUNAR · Quart creixent · 50% · USNO/);
+assert.match(socialCardHtml({kind:'daily_observation',payload:JSON.stringify({...payload,socialFormat:'cinematic-v5',period:'vespre',moon:null})}),/FASE LUNAR · no disponible/);
 const html=socialCardHtml({kind:'daily_observation',payload:JSON.stringify(payload)});
 assert.match(html,/<body class="daily-dayparts-card">/);assert.doesNotMatch(html,/<div class="forecast-symbol">/);
 const legacy=socialCardHtml({kind:'daily_observation',payload:JSON.stringify({...payload,forecast:[{date:'2026-09-17',weatherCode:61,condition:'Pluja',max:23,min:16}]})});
@@ -107,7 +111,7 @@ const env={SOCIAL_AUTOMATION_ENABLED:'false',DB:{batch:async()=>[],prepare(sql){
   async first(){return sql.includes('SELECT * FROM social_drafts')?stored.get(this.values[0]):null;},
 };}}};
 try{
-  globalThis.fetch=async url=>{const params=new URL(url).searchParams;assert.match(params.get('hourly'),/weather_code,temperature_2m,precipitation_probability,wind_gusts_10m/);calls++;return Response.json({hourly,daily});};
+  globalThis.fetch=async url=>{const parsed=new URL(url);if(parsed.hostname==='aa.usno.navy.mil')return Response.json({properties:{data:{year:2026,month:9,day:18,tz:2,isdst:false,curphase:'First Quarter',fracillum:'50%'}}});const params=parsed.searchParams;assert.match(params.get('hourly'),/weather_code,temperature_2m,precipitation_probability,wind_gusts_10m/);calls++;return Response.json({hourly,daily});};
   const observation={updated:'2026-09-17T14:00:00',epoch:1790000000,temperature:20};
   const midday=await createDailySocialDraft(observation,env,'14:00');
   assert.equal(midday.draft.status,'draft');assert.match(midday.draft.body,/Tarda \(14:00–19:00 h\)/);assert.doesNotMatch(midday.draft.body,/Matí \(/);

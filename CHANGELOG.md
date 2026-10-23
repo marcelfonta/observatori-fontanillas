@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-23 — Vespre meteorològic i lunar; mostres de sintonia
+
+- Els Shorts i les targetes socials de vespre mostren el símbol meteorològic i la fase lunar oficial de l’USNO en espais separats. Si falta una dada, l’altra continua disponible.
+- El símbol nocturn genèric ara són estrelles i no suggereix una fase lunar calculada. La fase es refereix a les 12 h locals del dia previst.
+- Hi ha tres variants de música original per comparar internament (matí, vespre i episodi). La publicació automàtica manté la sintonia actual fins a la revisió humana.
+
+
 ## 2026-10-23 — CO₂ NOAA compartit (preparat per a staging)
 
 - El Worker llegeix diàriament la sèrie de mitjanes diàries de Mauna Loa de NOAA,

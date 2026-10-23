@@ -5,6 +5,7 @@ import { fetchRainEvolution, rainEvolutionFooter, rainMapContent } from './youtu
 import { temperatureTrendGeometry } from '../src/core/temperature-trend.js';
 import { DAYPART_HOURLY_VARIABLES, normalizeSocialForecast, daypartCaption } from '../src/core/forecast-dayparts.js';
 import { finiteNumber } from '../src/core/numeric.js';
+import { fetchMoon } from '../src/core/lunar-phase.js';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const OUTPUT=resolve(ROOT,'build/youtube-short');
@@ -56,9 +57,9 @@ export function weatherTheme(code){
 
 export function weatherGlyph(code,x=790,y=510,scale=1,night=false){
   const theme=weatherTheme(code);const {kind,accent}=theme;
-  const moon='<path d="M22-72A76 76 0 1 0 80 38A68 68 0 0 1 22-72" fill="#d8f4ff"/>';
-  const clearSun=kind==='clear'?(night?moon:`<circle r="52" fill="${accent}"/><g stroke="${accent}" stroke-width="13" stroke-linecap="round"><path d="M0-94v-24M0 94v24M-94 0h-24M94 0h24M-67-67l-17-17M67 67l17 17M67-67l17-17M-67 67l-17 17"/></g>`):'';
-  const partialSun=kind==='partly'?(night?`<g transform="translate(-45 -65) scale(.75)">${moon}</g>`:`<circle cx="-55" cy="-45" r="38" fill="${accent}"/><g stroke="${accent}" stroke-width="9" stroke-linecap="round"><path d="M-55-105v-16M-55 15v16M-115-45h-16M5-45h16M-98-88l-12-12M-12-2L0 10M-12-88L0-100M-98-2l-12 12"/></g>`):'';
+  const nightSky='<circle cx="-28" cy="-18" r="7" fill="#d8f4ff"/><circle cx="35" cy="-63" r="5" fill="#d8f4ff"/><circle cx="46" cy="35" r="4" fill="#d8f4ff"/>';
+  const clearSun=kind==='clear'?(night?nightSky:`<circle r="52" fill="${accent}"/><g stroke="${accent}" stroke-width="13" stroke-linecap="round"><path d="M0-94v-24M0 94v24M-94 0h-24M94 0h24M-67-67l-17-17M67 67l17 17M67-67l17-17M-67 67l-17 17"/></g>`):'';
+  const partialSun=kind==='partly'?(night?`<g transform="translate(-45 -65) scale(.75)">${nightSky}</g>`:`<circle cx="-55" cy="-45" r="38" fill="${accent}"/><g stroke="${accent}" stroke-width="9" stroke-linecap="round"><path d="M-55-105v-16M-55 15v16M-115-45h-16M5-45h16M-98-88l-12-12M-12-2L0 10M-12-88L0-100M-98-2l-12 12"/></g>`):'';
   const cloud=kind!=='clear'?'<path d="M-84 60c-25 0-45-18-45-41 0-22 18-40 41-42 10-32 40-53 75-53 45 0 81 33 85 76 27 4 48 25 48 51 0 29-25 52-57 52H-84z" fill="#f1f8f5" stroke="#9bc6b5" stroke-width="9"/>':'';
   const rain=(kind==='drizzle'||kind==='rain'||kind==='storm')?`<g stroke="#66c7e8" stroke-width="11" stroke-linecap="round"><path d="M-65 119l-12 25M0 119l-12 25M65 119l-12 25"/>${kind==='rain'||kind==='storm'?'<path d="M-32 158l-12 25M33 158l-12 25"/>':''}</g>`:'';
   const snow=kind==='snow'?'<g fill="#d8f4ff"><circle cx="-62" cy="137" r="9"/><circle cy="166" r="9"/><circle cx="62" cy="137" r="9"/></g>':'';
@@ -131,8 +132,14 @@ export function forecastDaypartContent(part){
   return `<text x="76" y="650" fill="${accent}" font-family="DejaVu Sans" font-size="40" font-weight="800">${esc(part.timeLabel)} H · HORA LOCAL</text>${multilineText(part.condition,{x:76,y:738,maxChars:29,maxLines:2,fontSize:48,lineHeight:57})}${metricCard(76,875,'Temperatura de la franja',`${number(part.min)}° / ${number(part.max)}°`,'',accent)}${metricCard(566,875,'Pluja · màx. horària',number(part.rainProbability),'%',accent)}${metricCard(76,1127,'Ratxa màxima prevista',number(part.gust),'km/h',accent)}<rect x="566" y="1127" width="438" height="230" rx="34" fill="${accent}" fill-opacity=".13" stroke="${accent}" stroke-opacity=".5"/>${multilineText(part.complete?forecastAdvice(part):'Dades incompletes: consulta l’actualització a la web.',{x:604,y:1193,maxChars:24,maxLines:3,fontSize:29,lineHeight:39,fill:'#f7fcf9',weight:650})}<text x="76" y="1450" fill="#b8cdc3" font-family="DejaVu Sans" font-size="23">Pluja: màxim de les probabilitats horàries, no de tota la franja.</text><text x="76" y="1500" fill="#b8cdc3" font-family="DejaVu Sans" font-size="23">Símbol: fenomen més destacat · predicció, no avís oficial.</text>`;
 }
 
-export function buildDaypartSlides({day,when,edition,logoData}){
-  return day.dayparts.map((part,index)=>baseSvg({title:part.label,kicker:datedKicker(when,day.date),edition,weatherCode:part.weatherCode,night:part.id==='evening',slideIndex:index+1,logoData,content:forecastDaypartContent(part),footer:'Open-Meteo · previsió horària orientativa'}));
+export function lunarBadge(moon,date){
+  const valid=moon?.date===date&&typeof moon.label==='string'&&Number.isFinite(moon.percent);
+  const label=valid?`${moon.label} · ${number(moon.percent)}% il·luminada`:'Fase lunar no disponible';
+  return `<rect x="76" y="1550" width="928" height="82" rx="24" fill="#d8f4ff" fill-opacity=".08" stroke="#d8f4ff" stroke-opacity=".28"/><text x="104" y="1582" fill="#d8f4ff" font-family="DejaVu Sans" font-size="22" font-weight="800">LLUNA · DADA ASTRONÒMICA</text><text x="104" y="1614" fill="#f7fcf9" font-family="DejaVu Sans" font-size="24">${esc(label)}${valid?' · USNO, 12 h':''}</text>`;
+}
+
+export function buildDaypartSlides({day,when,edition,logoData,moon=null}){
+  return day.dayparts.map((part,index)=>baseSvg({title:part.label,kicker:datedKicker(when,day.date),edition,weatherCode:part.weatherCode,night:part.id==='evening',slideIndex:index+1,logoData,content:forecastDaypartContent(part)+(part.id==='evening'?lunarBadge(moon,day.date):''),footer:'Open-Meteo · previsió horària orientativa'}));
 }
 
 export function buildSlideSvg({title,kicker,content,footer,logoData='test',weatherCode=null,slideIndex=1,edition=''}){return baseSvg({title,kicker,content,footer,logoData,weatherCode,slideIndex,edition});}
@@ -153,10 +160,11 @@ async function main(){
   if(!daily?.time?.length||daily.time.length<5)throw new Error('La predicció no conté prou dies per generar el Short.');
   const days=normalizeSocialForecast(forecast);
   const mainIndex=slot==='vespre'?1:0;const mainDay=days[mainIndex];
+  const moon=slot==='vespre'?await fetchMoon(mainDay.date).catch(error=>{console.error('USNO lunar:',error.message);return null;}):null;
   const now=new Date();const time=String(current.updated||'').slice(11,16)||'—';
   const edition=editionLabel(slot,now);
   const accent=weatherTheme(mainDay.weatherCode).accent;
-  const slides=buildDaypartSlides({day:mainDay,when:slot==='vespre'?'Demà':'Avui',edition,logoData});
+  const slides=buildDaypartSlides({day:mainDay,when:slot==='vespre'?'Demà':'Avui',edition,logoData,moon});
   const temperatureTrend=trendPayload?.trend||null;
   slides.push(baseSvg({title:'Ara mateix, dades reals',kicker:datedKicker('Observació',now),edition,slideIndex:4,logoData,content:temperatureTrendVideoContent(current,time,accent,temperatureTrend),footer:'Observació real · Estació Meteo Fontanillas'}));
   const trendStart=slot==='vespre'?2:1;
@@ -171,7 +179,7 @@ async function main(){
   const targetDate=dateLabel(mainDay.date);
   const title=slot==='vespre'?`Demà a Sant Celoni: ${mainDay.condition.toLowerCase()} · ${targetDate} #Shorts`:`Avui a Sant Celoni: ${mainDay.condition.toLowerCase()} · ${targetDate} #Shorts`;
   const period=slot==='vespre'?'demà':'avui';
-  const description=`Previsió per ${period}, ${targetDate}: ${daypartCaption(mainDay.dayparts)}. Màxima diària ${number(mainDay.max)}° i mínima diària ${number(mainDay.min)}°. Edició ${slot==='vespre'?'del vespre':'del matí'} generada el ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Madrid'}).format(now)} amb dades reals de l’Observatori Meteo Fontanillas, Sant Celoni.`;
+  const description=`Previsió per ${period}, ${targetDate}: ${daypartCaption(mainDay.dayparts)}. Màxima diària ${number(mainDay.max)}° i mínima diària ${number(mainDay.min)}°. Edició ${slot==='vespre'?'del vespre':'del matí'} generada el ${new Intl.DateTimeFormat('ca-ES',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Madrid'}).format(now)} amb dades reals de l’Observatori Meteo Fontanillas, Sant Celoni.${moon?` Fase lunar a les 12 h locals: ${moon.label}, ${number(moon.percent)}% il·luminada (USNO). La fase no indica si el cel serà visible.`:''}`;
   await writeFile(resolve(OUTPUT,'metadata.json'),JSON.stringify({title,description:`${description}\n\nConsulta totes les dades: https://meteo.fontanillas.cat/\n\n#MeteoFontanillas #SantCeloni #ElTemps #Meteo #Shorts`,tags:['Meteo Fontanillas','Sant Celoni','meteorologia','el temps','Shorts']},null,2));
   console.log(`Generades ${slides.length} pantalles, ${temperatureFrames.length} fotogrames tèrmics i ${rainFrames.length} fotogrames de pluja ${slot} · ${mainDay.condition} · ${number(mainDay.max)}°/${number(mainDay.min)}° · ${rainEvolution.source}`);
 }

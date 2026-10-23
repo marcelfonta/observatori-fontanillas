@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { buildSlideSvg, datedKicker, editionLabel, kickerPillWidth, shortDateLabel, temperatureTrendVideoContent, weatherGlyph, weatherLabel, weatherTheme } from '../scripts/youtube-short.mjs';
+import { buildSlideSvg, datedKicker, editionLabel, kickerPillWidth, shortDateLabel, temperatureTrendVideoContent, weatherGlyph, weatherLabel, weatherTheme, lunarBadge } from '../scripts/youtube-short.mjs';
 import { projectRainPoint, rainColor, rainEvolutionFooter, rainFrameHours, rainMapContent, rainMapGrid } from '../scripts/youtube-rain-map.mjs';
-import { sampleAt } from '../scripts/youtube-music.mjs';
+import { sampleAt, warmSampleAt } from '../scripts/youtube-music.mjs';
 
 assert.equal(weatherLabel(0),'Cel serè');
 assert.equal(weatherLabel(1),'Poc ennuvolat');
@@ -17,6 +17,10 @@ assert.equal(weatherTheme(95).kind,'storm');
 assert.doesNotMatch(weatherGlyph(0),/fill="#f1f8f5"/);
 assert.match(weatherGlyph(61),/stroke="#66c7e8"/);
 assert.match(weatherGlyph(95),/fill="#ffd166"/);
+for(const code of [0,2,3,45,61,71,95]) assert.doesNotMatch(weatherGlyph(code,790,510,1,true),/M22-72A76/);
+assert.match(lunarBadge({date:'2026-09-20',label:'Gibosa creixent',percent:65},'2026-09-20'),/Gibosa creixent · 65% il·luminada · USNO, 12 h/);
+assert.match(lunarBadge(null,'2026-09-20'),/Fase lunar no disponible/);
+assert.doesNotMatch(lunarBadge({date:'2026-09-19',label:'Lluna plena',percent:100},'2026-09-20'),/Lluna plena/);
 for(const code of [0,2,3,45,61,71,80,95]){
   const glyph=weatherGlyph(code);
   assert.match(glyph,/<rect x="-180" y="-180" width="360" height="360"/);
@@ -99,5 +103,10 @@ assert.equal(sampleAt(0),0);
 assert.ok(Math.abs(sampleAt(1.25))<=1);
 assert.ok(Math.abs(sampleAt(12.5))>0.001);
 assert.ok(Math.abs(sampleAt(28.5))>0.001);
+for(const variant of ['morning','evening','event']){
+  assert.equal(warmSampleAt(0,variant),0);
+  assert.ok(Math.abs(warmSampleAt(30,variant))<1e-12);
+  for(let time=0;time<30;time+=.037){const value=warmSampleAt(time,variant);assert.ok(Number.isFinite(value)&&Math.abs(value)<=1);}
+}
 
 console.log('Test del generador de Shorts: correcte');
