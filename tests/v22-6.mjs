@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root=resolve(new URL('..',import.meta.url).pathname);
+const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const read=path=>readFile(resolve(root,path),'utf8');
 const [project,worker,push,verification,alerts,ai,html,css,serviceWorker,roadmap]=await Promise.all([
   read('project.json'),read('worker/index.js'),read('src/features/push.js'),read('src/features/forecast-verification.js'),read('src/modules/avisos.js'),read('src/features/meteo-ai.js'),read('index.html'),read('css/style.css'),read('service-worker.js'),read('ROADMAP.md')

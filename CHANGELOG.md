@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-23 — CO₂ NOAA compartit (preparat per a staging)
+
+- El Worker llegeix diàriament la sèrie de mitjanes diàries de Mauna Loa de NOAA,
+  en valida dates i valors i conserva l’última instantània bona a R2.
+- Una ruta pública retorna la mateixa dada a la webcam i al generador de Shorts;
+  les targetes socials diàries també llegeixen aquesta instantània.
+- Les peces identifiquen Mauna Loa com a estació de referència, mostren ppm i
+  data, i ometen la càpsula quan la dada és antiga o no està disponible.
+- La verificació visual amb imatges reals i el desplegament queden pendents.
+
 ## 2026-10-23 — Controls solars i hora peninsular del planetari
 
 - El visor permet saltar directament a la posta de sol o a l’inici de la nit
