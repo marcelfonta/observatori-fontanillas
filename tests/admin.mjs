@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import worker from '../worker/index.js';
-import { analyticsServiceState, operationalOverview, overallState, performanceRating, serviceState } from '../src/features/admin.js';
+import { analyticsServiceState, missingScheduledTimelapses, operationalOverview, overallState, performanceRating, serviceState } from '../src/features/admin.js';
+assert.deepEqual(missingScheduledTimelapses([{date:'2026-10-22'},{date:'2026-10-20'},{date:'2026-10-19'}]),['2026-10-21']);
+assert.equal(operationalOverview({},[{date:'2026-10-22'},{date:'2026-10-20'}]).domains.find(domain=>domain.key==='camera').state,'warning');
 import { readFile } from 'node:fs/promises';
 
 assert.equal(serviceState(true).label,'Configurat');

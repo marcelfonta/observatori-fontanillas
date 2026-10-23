@@ -36,22 +36,17 @@ SOCIAL_FRAME_RATE=30
 mkdir -p "$OUTPUT_DIR"
 
 [[ -d "$SOURCE_DIR" ]] || { echo "No existeix l'arxiu $SOURCE_DIR" >&2; exit 1; }
-TMP_DIR="$(mktemp -d)"
+# Les imatges reduïdes van al disc, no a /tmp (que pot ser tmpfs a la Raspberry).
+TMP_DIR="$(mktemp -d "$OUTPUT_DIR/.timelapse-${DATE}.XXXXXX")"
 trap 'rm -rf "$TMP_DIR"; rm -f "$OUTPUT_TMP" "$SOCIAL_TMP"' EXIT
 LIST="$TMP_DIR/frames.txt"
-
-while IFS= read -r image; do
-  printf "file '%s'\n" "${image//\'/\'\\\'\'}" >> "$LIST"
-  printf 'duration 0.12\n' >> "$LIST"
-done < <(find "$SOURCE_DIR" -maxdepth 1 -type f -name 'nord-*.jpg' -size +20k -print | sort)
-
-FRAME_COUNT="$(grep -c '^file ' "$LIST" 2>/dev/null || true)"
+IMAGES=()
+while IFS= read -r image; do IMAGES+=("$image"); done < <(find "$SOURCE_DIR" -maxdepth 1 -type f -name 'nord-*.jpg' -size +20k -print | sort)
+FRAME_COUNT="${#IMAGES[@]}"
 if (( FRAME_COUNT < 6 )); then
   echo "Calen almenys 6 captures vàlides; n'hi ha $FRAME_COUNT." >&2
   exit 1
 fi
-LAST_FRAME="$(tail -n 2 "$LIST" | head -n 1 | sed "s/^file '//;s/'$//")"
-printf "file '%s'\n" "$LAST_FRAME" >> "$LIST"
 
 FONT="$(fc-match -f '%{file}' 'DejaVu Sans:style=Bold' 2>/dev/null || true)"
 [[ -f "$FONT" ]] || FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
@@ -60,11 +55,24 @@ FONT="$(fc-match -f '%{file}' 'DejaVu Sans:style=Bold' 2>/dev/null || true)"
 # desenfocaments i redueix fortament el consum de memòria de la Raspberry.
 FILTER="scale=960:-2,crop=ih*0.90*16/9:ih*0.90:(iw-ih*0.90*16/9)/2:0,scale=960:540"
 
+# FFmpeg acumulava memòria en descodificar les captures originals durant el
+# concat i el nucli el matava en una Raspberry de 415 MiB. Cada procés tracta
+# una sola foto; el concat només llegeix JPEG de 960×540 ja protegits.
+for index in "${!IMAGES[@]}"; do
+  frame="$(printf '%s/frame-%04d.jpg' "$TMP_DIR" "$index")"
+  MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
+    -threads 1 -i "${IMAGES[$index]}" -filter_threads 1 -filter_complex_threads 1 \
+    -vf "$FILTER" -frames:v 1 -q:v 4 -f image2 -update 1 "$frame"
+  [[ -s "$frame" ]] || { echo "No s'ha pogut reduir el fotograma $((index + 1))." >&2; exit 1; }
+  printf "file '%s'\nduration 0.12\n" "${frame//\'/\'\\\'\'}" >> "$LIST"
+done
+printf "file '%s'\n" "${frame//\'/\'\\\'\'}" >> "$LIST"
+
 rm -f "$OUTPUT_TMP"
 MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
   -threads 1 -f concat -safe 0 -i "$LIST" \
   -filter_threads 1 -filter_complex_threads 1 \
-  -vf "$FILTER" -r 20 -an -c:v libx264 -threads 1 -preset ultrafast -crf 22 \
+  -r 20 -an -c:v libx264 -threads 1 -preset ultrafast -crf 22 \
   -pix_fmt yuv420p -movflags +faststart -f mp4 "$OUTPUT_TMP"
 [[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
 mv "$OUTPUT_TMP" "$OUTPUT"

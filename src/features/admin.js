@@ -28,6 +28,16 @@ export function serviceState(value){return value?{label:'Configurat',className:'
 export function analyticsServiceState({googleMeasurementId='',cloudflareBeacon=false,cloudflareEnabled=false}={}){if(cloudflareBeacon)return {label:'Cloudflare actiu',className:'is-ok',provider:'cloudflare',detected:true};if(cloudflareEnabled)return {label:'Actiu al domini',className:'is-ok',provider:'cloudflare',detected:false};if(googleMeasurementId)return {label:'Google actiu',className:'is-ok',provider:'google',detected:true};return {label:'No configurat',className:'is-muted',provider:'none',detected:false};}
 export function overallState(payload){if(!payload?.ok)return {label:'No disponible',className:'is-error'};if(!payload.station?.ok||!payload.alerts?.ok)return {label:'Cal revisar serveis',className:'is-warning'};return {label:'Sistema operatiu',className:'is-ok'};}
 const commandDomain=(key,label,state,detail,action=null)=>({key,label,state,detail,action});
+export function missingScheduledTimelapses(items=[]){
+  const dates=items.map(item=>item?.date).filter(value=>/^\d{4}-\d{2}-\d{2}$/.test(value)).sort();
+  if(dates.length<2)return [];
+  const known=new Set(dates);const missing=[];
+  for(let day=Date.parse(`${dates[0]}T12:00:00Z`)+86400000;day<Date.parse(`${dates.at(-1)}T12:00:00Z`);day+=86400000){
+    const date=new Date(day).toISOString().slice(0,10);const weekday=new Date(day).getUTCDay();
+    if([1,3,5].includes(weekday)&&!known.has(date))missing.push(date);
+  }
+  return missing;
+}
 export function operationalOverview(payload={},timelapses=null){
   const domains=[];
   const stationOk=Boolean(payload.station?.ok);
@@ -51,7 +61,9 @@ export function operationalOverview(payload={},timelapses=null){
   if(Array.isArray(timelapses)){
     const latest=timelapses[0];
     const failed=timelapses.find(item=>item.publication?.status==='failed');
+    const missed=missingScheduledTimelapses(timelapses);
     if(!latest){cameraState='warning';cameraDetail='No hi ha cap timelapse preparat al catàleg';}
+    else if(missed.length){cameraState='warning';cameraDetail=`Falta el vídeo programat del ${missed.at(-1)}`;}
     else if(failed){cameraState='warning';cameraDetail=`Vídeo preparat; publicació pendent o fallida del ${failed.date}`;}
     else{cameraState='ok';cameraDetail=`Darrer vídeo preparat: ${latest.date}`;}
   }
@@ -206,7 +218,9 @@ function renderCameraTimelapses(items=[]){
   const list=element('admin-camera-timelapse-list');const preview=element('admin-camera-timelapse-preview');if(!list)return;
   if(!items.length){list.innerHTML='<p class="admin-social-diagnostic-empty">Encara no hi ha cap timelapse diari preparat.</p>';if(preview)preview.hidden=true;if(latestStatusPayload)renderOperationalOverview(latestStatusPayload,items);return;}
   if(preview){preview.src=`${items[0].url}?v=${encodeURIComponent(items[0].createdAt||Date.now())}`;preview.hidden=false;}
-  list.replaceChildren(...items.map(item=>{
+  const missed=missingScheduledTimelapses(items);
+  const gapNotice=document.createElement('p');gapNotice.className='admin-social-feedback is-warning';gapNotice.textContent=`Falta el vídeo programat del ${missed.join(', ')}. Revisa la Raspberry abans de publicar manualment.`;
+  list.replaceChildren(...(missed.length?[gapNotice]:[]),...items.map(item=>{
     const row=document.createElement('div');const label=document.createElement('strong');const detail=document.createElement('span');const action=document.createElement('button');
     const state=item.publication?.status||'ready';const done=state==='published';const processing=state==='processing'||state==='publishing';const failedOutcome=item.publication?.outcomes?.find(outcome=>outcome?.stage==='failed');
     row.className=`admin-social-diagnostic ${done?'is-ok':state==='failed'?'is-error':''}`;
