@@ -123,6 +123,7 @@ const stalePayload=await staleStatus.json();
 assert.equal(stalePayload.services.find(item=>item.key==='scheduler').status,'degraded');
 assert.equal(stalePayload.services.find(item=>item.key==='scheduler').reason,'stale');
 assert.equal(stalePayload.incidents.length,2);
+assert.equal(stalePayload.incidents.find(item=>item.service==='scheduler').detectedAt,schedulerCheckedAt);
 assert.equal(stalePayload.ok,false);
 
 console.log('Test d’Administració V21: correcte');

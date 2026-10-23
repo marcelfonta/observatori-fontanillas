@@ -3553,7 +3553,7 @@ async function publicOperationsStatus(env){
       ...(stale?{reason:'stale'}:{}),
     };
   });
-  const incidents=services.filter(item=>item.status==='down'||item.status==='degraded').map(item=>({service:item.key,status:item.status,detectedAt:item.lastFailureAt||item.checkedAt}));
+  const incidents=services.filter(item=>item.status==='down'||item.status==='degraded').map(item=>({service:item.key,status:item.status,detectedAt:item.reason==='stale'?item.checkedAt:item.lastFailureAt||item.checkedAt}));
   const pending=services.some(item=>item.status==='unknown');
   return json({ok:!pending&&!incidents.length,status:incidents.length?'degraded':pending?'collecting':'healthy',generatedAt,services,incidents,scope:'Estat tècnic agregat, sense credencials, contingut privat ni detalls interns.'},200,'public, max-age=120');
 }
