@@ -137,8 +137,8 @@ adverteix que aquesta estació no és equivalent a una mitjana mundial. Les
 etiquetes públiques indicaran sempre «Mauna Loa» i evitaran dir «mitjana global».
 
 La ingestió diària, el resum compartit al Worker i les connexions locals amb
-webcam i peces diàries estan implementats. La prova visual amb imatges reals,
-la validació en staging i el desplegament continuen pendents.
+webcam i peces diàries estan desplegats. La validació visual amb imatges reals
+i la comparació editorial de les peces continuen pendents.
 
 - [ ] Crear una ingestió diària al Worker de les sèries oficials de NOAA, amb
   validació de data, unitats, rang, valors absents, atribució i últim valor bo.
@@ -208,7 +208,7 @@ afirmació, sense confondre temps, contaminació local i clima.
 
 ### Publicacions diàries: nova identitat sonora, CO₂ i vespre complet
 
-El distintiu lunar separat i les mostres musicals estan implementats en una branca de revisió; resta la validació visual i auditiva abans de donar aquest bloc per completat.
+El distintiu lunar separat i les mostres musicals estan desplegats. Divuit proves visuals locals cobreixen Shorts i Meta amb set fenòmens, manca del temps i manca de la fase. Resta confirmar una publicació real de vespre, fer la comparació auditiva A/B i aprovar l’activació de la nova música.
 
 Les peces diàries han de sonar i veure’s com una sola marca, però sense
 convertir una previsió meteorològica en un missatge climàtic confús. La dada de
