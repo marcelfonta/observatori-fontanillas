@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-23 — Pilot integrat del cel nocturn amb Stellarium
+
+- «El cel, de dia i de nit» incorpora el visor oficial de Stellarium Web,
+  carregat només després de prémer «Explora el cel» per evitar pes i connexions
+  externes durant la visita normal.
+- El visor parteix de Sant Celoni i permet canviar localitat i hora, tornar a
+  l’instant actual, saltar als punts cardinals o al zenit i entrar en pantalla
+  completa sense perdre les targetes astronòmiques textuals.
+- La política de seguretat, la privacitat, l’atribució i la dependència externa
+  queden documentades; els catàlegs pesants no entren a la memòria cau offline
+  del portal.
+- Es retira la reescriptura redundant de la primera fitxa educativa que, en
+  combinar-se amb les URL netes de Cloudflare Pages, provocava un bucle 308.
+
 ## 2026-10-23 — Primera fitxa pròpia de l’Aula oberta
 
 - «Quan va ploure més?» converteix les dades reals de l’aiguat del 4 d’octubre
