@@ -165,7 +165,7 @@ traçables i tres escales que no es barregin: planeta, Catalunya i Observatori.
 No s’utilitzarà una oscil·lació meteorològica local com a prova d’una tendència
 climàtica.
 
-La primera versió de la ruta i l’accés des del menú ja estan implementats: quatre indicadors amb font i període, CO₂ diari de Mauna Loa quan és recent, i una explicació dels límits de l’arxiu local. Continuen pendents els gràfics de sèries llargues, les comparacions climàtiques detallades i la validació editorial completa.
+La primera versió de la ruta i l’accés des del menú ja estan implementats: quatre indicadors amb font i període, CO₂ diari de Mauna Loa quan és recent, una sèrie anual NOAA de 1959–2025 descarregable i una explicació dels límits de l’arxiu local. Continuen pendents les comparacions climàtiques detallades de Catalunya, la revisió editorial externa i les traduccions reals de la pàgina. Fins aleshores la ruta climàtica es presenta als cercadors només en català.
 
 - [ ] Dissenyar una primera lectura curta amb quatre indicadors datats: CO₂
   atmosfèric global, temperatura global, evolució observada a Catalunya i
@@ -176,7 +176,7 @@ La primera versió de la ruta i l’accés des del menú ja estan implementats: 
 - [ ] Organitzar la narració en cinc capítols: «Ara mateix», «El planeta»,
   «Catalunya», «Baix Montseny i l’Observatori» i «Entendre les dades», amb una
   conclusió pràctica i enllaços a les sèries originals.
-- [ ] Incorporar la corba de Keeling i comparacions amb fa un any, deu anys i el
+- [ ] Revisar editorialment la corba de Keeling i les comparacions amb fa un any, deu anys i el
   nivell preindustrial, indicant estació, unitats, provisionalitat i font NOAA.
 - [ ] Utilitzar fonts climàtiques primàries i estables —NOAA/WMO o Copernicus a
   escala global i Meteocat/SMC a Catalunya— amb metodologia, enllaç, data
@@ -578,7 +578,7 @@ benefici demostrat:
 ## Ordre recomanat de pròxims paquets
 
 1. **Fiabilitat operativa:** observar la recuperació dels Cron Triggers, comprovar el proper vespre i timelapse reals sense duplicats i completar les proves OneSignal i avisos en dispositius reals.
-2. **Clima:** validar visualment el CO₂ ja integrat a webcam i peces diàries; ampliar `/canvi-climatic` amb sèries llargues, gràfics accessibles, metodologia i revisió editorial/idiomes. La ruta i la primera lectura ja són públiques.
+2. **Clima:** validar visualment el CO₂ ja integrat a webcam i peces diàries; verificar en staging i producció la nova sèrie llarga NOAA, afegir sèries oficials catalanes de temperatura/precipitació amb mètode comparable i completar la revisió editorial i les traduccions reals. La ruta i la primera lectura ja són públiques.
 3. **Qualitat real:** provar en iPhone, Android i ordinador els visors, els controls tàctils, l’accessibilitat i la recuperació sense connexió; repetir l’auditoria SEO a Search Console.
 4. **Contingut:** revisió docent de la primera fitxa d’Aula oberta, guia local estacional i següent resum periòdic només amb cobertura suficient.
 5. **Cel i experiments:** completar la guia d’objectes del cel nocturn i la prova física; continuar acumulant mostres prospectives de Fonta, XEMA i nowcasting. OPERA continua condicionat a la credencial i al catàleg privat real.

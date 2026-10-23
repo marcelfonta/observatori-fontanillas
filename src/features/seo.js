@@ -45,7 +45,7 @@ export function seoPageCopy(page,lang=language()){const entry=SEO_PAGES[page]||S
 export function seoPagePresentation(page='inici',lang='ca',context={}){const base=seoPageCopy(page,lang);const {story,summary}=routeContent(page,context);if(story&&lang==='ca')return {...base,title:`${story.title} · Històries Fontanillas`,description:story.summary,image:`${SEO_BASE}assets/images/histories/${story.id}.png`,type:'article',story,summary:null};if(summary&&lang==='ca')return {...base,title:`${summary.label} · Resum Fontanillas`,description:summary.summary,image:`${SEO_BASE}assets/images/resums/${summary.id}.png`,type:'article',story:null,summary};return {...base,image:`${SEO_BASE}assets/images/observatori-fontanillas-social-v12-2.png`,type:'website',story,summary};}
 export function seoPageUrl(page='inici',lang='ca',context={}){
   const selected=SEO_PAGES[page]&&PORTAL_PAGES.includes(page)?page:'inici';const {story,summary}=routeContent(selected,context);const url=new URL(story?`histories/${story.id}`:summary?`resums/${summary.id}`:selected==='inici'?'':selected,SEO_BASE);
-  if(!story&&!summary&&lang!=='ca'&&SUPPORTED_LANGUAGES.includes(lang))url.searchParams.set('lang',lang);return url.toString();
+  if(!story&&!summary&&selected!=='canvi-climatic'&&lang!=='ca'&&SUPPORTED_LANGUAGES.includes(lang))url.searchParams.set('lang',lang);return url.toString();
 }
 function setMeta(selector,value){const node=document.querySelector(selector);if(node)node.setAttribute('content',value);}
 function setLink(rel,href,hreflang=''){
@@ -79,12 +79,12 @@ export function buildSeoStructuredGraph(page='inici',observation=null,lang='ca',
   }
   return {'@context':'https://schema.org','@graph':graph};
 }
-function renderStructuredData(){const schema=document.getElementById('seo-structured-data');if(schema)schema.textContent=JSON.stringify(buildSeoStructuredGraph(activePage,latestObservation,language()));}
+function renderStructuredData(){const schema=document.getElementById('seo-structured-data');if(schema)schema.textContent=JSON.stringify(buildSeoStructuredGraph(activePage,latestObservation,activePage==='canvi-climatic'?'ca':language()));}
 export function updateSeoMetadata(page='inici'){
-  activePage=SEO_PAGES[page]?page:'inici';const lang=language();const current=seoPagePresentation(activePage,lang);const {story,summary}=current;const viewUrl=seoPageUrl(activePage,lang);const verification=String(CONFIG.googleSiteVerification||'').trim();let verificationMeta=document.querySelector('meta[name="google-site-verification"]');
+  activePage=SEO_PAGES[page]?page:'inici';const lang=activePage==='canvi-climatic'?'ca':language();const current=seoPagePresentation(activePage,lang);const {story,summary}=current;const viewUrl=seoPageUrl(activePage,lang);const verification=String(CONFIG.googleSiteVerification||'').trim();let verificationMeta=document.querySelector('meta[name="google-site-verification"]');
   if(verification&&!verificationMeta){verificationMeta=document.createElement('meta');verificationMeta.name='google-site-verification';document.head.append(verificationMeta);}if(verificationMeta){if(verification)verificationMeta.content=verification;else verificationMeta.remove();}
   document.documentElement.lang=lang;document.title=current.title;setMeta('meta[name="description"]',current.description);setMeta('meta[property="og:locale"]',SEO_LANGUAGE_META[lang].locale);setMeta('meta[property="og:title"]',current.title);setMeta('meta[property="og:description"]',current.description);setMeta('meta[property="og:url"]',viewUrl);setMeta('meta[name="twitter:title"]',current.title);setMeta('meta[name="twitter:description"]',current.description);if(story||summary){const image=story?`${SEO_BASE}assets/images/histories/${story.id}.png`:`${SEO_BASE}assets/images/resums/${summary.id}.png`;const alt=story?.title||summary.title;setMeta('meta[property="og:type"]','article');setMeta('meta[property="og:image"]',image);setMeta('meta[property="og:image:alt"]',alt);setMeta('meta[name="twitter:image"]',image);setMeta('meta[name="twitter:image:alt"]',alt);}
-  setLink('canonical',viewUrl);for(const code of SUPPORTED_LANGUAGES)setLink('alternate',seoPageUrl(activePage,code),code);setLink('alternate',seoPageUrl(activePage,'ca'),'x-default');renderStructuredData();
+  setLink('canonical',viewUrl);if(activePage==='canvi-climatic'){document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(node=>node.remove());}else{for(const code of SUPPORTED_LANGUAGES)setLink('alternate',seoPageUrl(activePage,code),code);setLink('alternate',seoPageUrl(activePage,'ca'),'x-default');}renderStructuredData();
 }
 export function updateSeoObservation(observation){latestObservation=observation||null;renderStructuredData();}
 if(typeof document!=='undefined')document.addEventListener('observatori:language-change',()=>updateSeoMetadata(activePage));

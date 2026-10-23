@@ -1,0 +1,7 @@
+# Dades de la pàgina de canvi climàtic
+
+La gràfica i el CSV d'`assets/data/climate/` es deriven de la [sèrie mensual de CO₂ de Mauna Loa de NOAA/GML](https://gml.noaa.gov/ccgg/trends/data.html), fitxer `co2_mm_mlo.csv`, consultat el 23 d'octubre de 2026. Per regenerar-los, descarrega el CSV original de NOAA i executa `node scripts/update-climate-co2.mjs /ruta/co2_mm_mlo.csv`.
+
+El generador calcula la mitjana aritmètica de les dotze mitjanes mensuals de cada any complet, de 1959 a 2025. Exclou l'any en curs i qualsevol any incomplet; rebutja mesos duplicats, salts d'any o valors fora del rang físic esperat. Aquest valor calculat és adequat per visualitzar la sèrie, però no substitueix les taules oficials d'índex anual de NOAA. La sèrie correspon a Mauna Loa (amb el trasllat temporal de la mesura a Maunakea entre 2022 i 2023), no a la mitjana global ni a la qualitat de l'aire local.
+
+La referència preindustrial d'uns 280 ppm procedeix de la [FAQ de NOAA/GML](https://gml.noaa.gov/infodata/faq_cat-3.html). L'indicador de temperatura global 2025 és de [Copernicus](https://indicators.climate.copernicus.eu/) i el rang català 2025 prové del [butlletí anual de Meteocat](https://www.meteo.cat/wpweb/climatologia/butlletins-i-episodis-meteorologics/butlleti-anual/). Són escales i mètodes diferents; l'arxiu Fontanillas, iniciat el 2026, encara és massa curt per estimar una tendència climàtica local.

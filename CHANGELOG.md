@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-23 — Històric climàtic i metadades fidels
+
+- `/canvi-climatic` incorpora 67 mitjanes anuals de CO₂ de Mauna Loa (1959–2025), una gràfica, una taula resum i el CSV descarregable, amb el mètode de reproducció i els límits de la sèrie documentats.
+- La ruta, escrita només en català, deixa d'anunciar als cercadors traduccions que encara no existeixen. Les metadades i les dades estructurades mantenen el català també després dels canvis d'idioma de la interfície.
+- La gràfica i el CSV entren a la memòria cau de la PWA; la pàgina conserva el contingut principal sense JavaScript.
+
 ## 2026-10-23 — Accés al canvi climàtic i Medi Ambient més net
 
 - La ruta `/canvi-climatic` apareix al menú amb quatre indicadors datats o contextualitzats, fonts originals i una lectura separada per planeta, Catalunya i observatori.
