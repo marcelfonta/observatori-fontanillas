@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-23 — Controls solars i hora peninsular del planetari
+
+- El visor permet saltar directament a la posta de sol o a l’inici de la nit
+  astronòmica per a la localitat i data escollides.
+- La data del planetari s’interpreta sempre en `Europe/Madrid` i mostra de manera
+  explícita CET/CEST; les proves cobreixen l’horari d’hivern i el d’estiu.
+- Els punts cardinals comuniquen quin està seleccionat amb estat accessible i
+  el roadmap separa les millores ja resoltes de la futura guia d’objectes.
+
 ## 2026-10-23 — Pilot integrat del cel nocturn amb Stellarium
 
 - «El cel, de dia i de nit» incorpora el visor oficial de Stellarium Web,
