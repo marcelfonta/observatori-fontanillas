@@ -150,6 +150,7 @@ function mapScene(t,local){
    text(`${num(f.values[0],1)} mm · acumulació de l’hora anterior`,88,1050,30);
    text('Open-Meteo · reserva puntual, no mapa territorial',88,1110,25,C.muted,'DM Sans');
   }else text('Consulta la previsió actualitzada a la web.',88,1080,30);
+  co2Capsule();
   return;
  }
  const fi=Math.min(3,Math.floor(local/1.25)),f=r.frames[fi];
@@ -167,7 +168,14 @@ function mapScene(t,local){
  if(allZero)text('Punts mostrats: 0 mm en les quatre hores seleccionades.',88,1350,25,C.muted,'DM Sans');
  else {['<1','1–5','5–10','≥10'].forEach((label,i)=>{circle(98+i*175,1341,5,[C.blue,C.mint,C.sun,'#ed985c'][i]);text(label,115+i*175,1350,24,C.muted,'DM Sans',140);});text('mm / 1 h',926,1350,23,C.muted,'DM Sans',160,'right');}
  text(`${r.source||'AROME France HD'} · Open-Meteo · graella · mapa ICGC`,88,1391,23,C.muted,'DM Sans',838);
- text('El temps canvia. Segueix-ne l’evolució amb nosaltres.',88,1460,29,C.mint,'Manrope',838);
+ if(data.co2)co2Capsule();
+ else text('El temps canvia. Segueix-ne l’evolució amb nosaltres.',88,1460,29,C.mint,'Manrope',838);
+}
+function co2Capsule(){
+ const value=data.co2;
+ if(!value||!value.fresh||!valid(value.ppm))return;
+ text(`CO₂ ATMOSFÈRIC · MAUNA LOA, NOAA`,88,1430,21,C.mint,'DM Sans',838);
+ text(`${num(value.ppm,2)} ppm · ${value.date}${valid(value.yearChangePpm)?` · ${value.yearChangePpm>=0?'+':''}${num(value.yearChangePpm,2)} ppm/any`:''}`,88,1473,28,C.paper,'Manrope',838);
 }
 function verify(){
  const errors=boxes.filter(b=>b.x<76||b.x+b.width>946||b.y<185||b.y+b.height>1710);

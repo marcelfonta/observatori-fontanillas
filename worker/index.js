@@ -9,6 +9,7 @@ import { youtubeRecoveryEligibility } from '../src/core/youtube-recovery.js';
 import { DAYPART_HOURLY_VARIABLES, normalizeSocialForecast, summarizeForecastDayparts, daypartCaption } from '../src/core/forecast-dayparts.js';
 import { fetchSocialEnvironment } from '../src/core/social-environment.js';
 import { dailySocialCardV5 } from './social-daily-v5.js';
+import { readNoaaCo2, refreshNoaaCo2 } from './noaa-co2.js';
 import { meteofranceMap, meteofranceModels, meteofranceStagingValidation } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
@@ -2896,9 +2897,10 @@ export async function createDailySocialDraft(observation, env, slot = null) {
     rain === null ? null : `pluja avui ${rain} mm`,
   ].filter(Boolean);
   const profile=socialSlotProfile(slot);
-  const [forecast,temperatureTrend]=await Promise.all([
+  const [forecast,temperatureTrend,co2]=await Promise.all([
     socialForecast({referenceDate:localDate,fromHour:profile.period==='migdia'?Number(slot.slice(0,2)):0}).catch(error=>{console.error('Social forecast error',error);return [];}),
     recentTemperatureTrend(env,observation.epoch).catch(error=>{console.error('Social temperature trend error',error);return null;}),
+    readNoaaCo2(env).catch(()=>null),
   ]);
   const today=forecast[0];const tomorrow=forecast[1];
   const focus=profile.period==='vespre'?tomorrow:today;
@@ -2908,8 +2910,9 @@ export async function createDailySocialDraft(observation, env, slot = null) {
     ? await fetchSocialEnvironment({date:focus.date,startHour:profile.period==='migdia'?14:6}) : null;
   const forecastText=focus?` ${profile.forecastLead}, ${focus.date}: ${detail||focus.condition}.${profile.period==='mati'&&tomorrow?` Demà, ${tomorrow.date}: ${tomorrow.condition}, ${socialNumber(tomorrow.max,0)}°/${socialNumber(tomorrow.min,0)}°.`:''}`:'';
   const title = `${profile.eyebrow} a Sant Celoni · ${localDate}`;
-  const body = `${profile.greeting} des de Meteo Fontanillas. ${profile.lead} a les ${String(observation.updated || '').slice(11,16)}: ${facts.join(' · ')}.${forecastText} Consulta l’evolució i la predicció a meteo.fontanillas.cat.\n\n${socialHashtags()}`;
-  const payload = JSON.stringify({ socialFormat, environment, localDate, slot, period:profile.period, eyebrow:profile.eyebrow, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv), forecast, temperatureTrend });
+  const co2Text=co2?.fresh?`\n\nCO₂ atmosfèric a Mauna Loa (NOAA): ${co2.ppm.toFixed(2)} ppm · ${co2.date}${co2.yearChangePpm===null?'':` · ${co2.yearChangePpm>=0?'+':''}${co2.yearChangePpm.toFixed(2)} ppm respecte de ${co2.yearAgoDate}`}. Valor provisional d’una estació de referència; no és qualitat de l’aire de Sant Celoni. ${co2.sourceUrl}`:'';
+  const body = `${profile.greeting} des de Meteo Fontanillas. ${profile.lead} a les ${String(observation.updated || '').slice(11,16)}: ${facts.join(' · ')}.${forecastText} Consulta l’evolució i la predicció a meteo.fontanillas.cat.${co2Text}\n\n${socialHashtags()}`;
+  const payload = JSON.stringify({ socialFormat, environment, co2:co2?.fresh?co2:null, localDate, slot, period:profile.period, eyebrow:profile.eyebrow, observationUpdated:observation.updated || null, temperature:finite(observation.temperature), feelsLike:finite(observation.feelsLike), humidity:finite(observation.humidity), pressure:finite(observation.pressure), windSpeed:finite(observation.windSpeed), windGust:finite(observation.windGust), windDirection:finite(observation.windDirection), rainToday:finite(observation.rainToday), rainRate:finite(observation.rainRate), solarRadiation:finite(observation.solarRadiation), uv:finite(observation.uv), forecast, temperatureTrend });
   const initialStatus = socialAutomationEnabled(env) ? 'approved' : 'draft';
   const result = await env.DB.prepare(`INSERT OR IGNORE INTO social_drafts
     (dedupe_key, kind, status, channels, title, body, source_url, payload)
@@ -7442,6 +7445,7 @@ export default {
       const socialVideoUploadMatch = url.pathname.match(/^\/admin\/social-video-upload\/((?:shorts\/\d{4}-\d{2}-\d{2}\/(?:morning|evening)|episodes\/\d+)\.mp4)$/);
       if (request.method === 'POST' && socialVideoUploadMatch) return uploadSocialVideo(request, env, socialVideoUploadMatch[1]);
       if (request.method === 'PUT' && url.pathname === '/camera/nord/upload') return uploadCameraImage(request, env);
+      if (request.method === 'GET' && url.pathname === '/climate/co2') return json({co2:await readNoaaCo2(env)},200,'no-store');
       if (request.method === 'PUT' && url.pathname === '/camera/nord/upload-branded') return uploadCameraImage(request, env, 'branded');
       if (request.method === 'PUT' && url.pathname === '/camera/nord/upload-preview') return uploadCameraImage(request, env, 'preview');
       if (request.method === 'PUT' && url.pathname === '/camera/nord/timelapse-upload') return uploadCameraTimelapse(request, env);
@@ -7534,6 +7538,13 @@ export default {
   async scheduled(event, env, ctx) {
     const scheduledAt = new Date().toISOString();
     const capture = monitorWeatherUnderground(env, captureObservation(env));
+    const noaaCo2=refreshNoaaCo2(env)
+      .then(async result=>{await recordOperationalState(env,'noaa-co2',result.reason==='storage_disabled'?'down':'healthy',result);return result;})
+      .catch(async error=>{
+        console.error('NOAA CO₂ update failed',error);
+        await recordOperationalState(env,'noaa-co2','down',{reason:'source_unavailable'}).catch(()=>{});
+        return {updated:false,reason:'source_unavailable'};
+      });
     const social = capture.then(async result => {
       const slot=activeSocialSlot(env);
       return slot ? createDailySocialDraft(result.observation,env,slot) : recoverIncompleteDailySocialDraft(env);
@@ -7577,6 +7588,7 @@ export default {
       .then(result=>dispatchForecastEpisodeWorkflow(result,env));
     const observedJob=(label,promise)=>promise.catch(error=>{console.error(JSON.stringify({event:'scheduled_job_failed',job:label,error:cleanText(error.message,500)}));throw error;});
     const jobs = [
+      observedJob('noaa-co2',noaaCo2),
       observedJob('observation',capture),
       observedJob('forecast',forecastCapture),
       observedJob('social',social),

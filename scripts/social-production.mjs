@@ -29,11 +29,12 @@ export async function collectProductionData({slot,now=Date.now(),fetcher=fetch,r
  const date=targetDate(slot,now),publicationDate=localDate(now),api='https://fonta-meteo.marcelfonta.workers.dev';
  const json=async url=>{const r=await fetcher(url,{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error(`Provider HTTP ${r.status}`);return r.json();};
  const params=new URLSearchParams({latitude:'41.6906',longitude:'2.4890',timezone:'Europe/Madrid',forecast_days:'6',hourly:DAYPART_HOURLY_VARIABLES+',precipitation',daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_gusts_10m_max'});
- const [current,forecast,trend,summary]=await Promise.all([
-  json(api),json('https://api.open-meteo.com/v1/forecast?'+params),json(api+'/temperature-trend').catch(()=>({trend:null})),fetchSocialEnvironment({date,now,fetcher}),
+ const [current,forecast,trend,summary,co2Response]=await Promise.all([
+  json(api),json('https://api.open-meteo.com/v1/forecast?'+params),json(api+'/temperature-trend').catch(()=>({trend:null})),fetchSocialEnvironment({date,now,fetcher}),json(api+'/climate/co2').catch(()=>({co2:null})),
  ]);
  const days=normalizeSocialForecast(forecast).filter(day=>day.date>=date),day=days[0];
- const data={pilot:false,format:'cinematic-v5',capturedAt:new Date(now).toISOString(),publicationDate,slot,edition:slot==='vespre'?'evening':'morning',date,current,forecast,days,day,trend:trend.trend,environmentEnabled:true,lunarEnabled:true,environment:{summary,selection:chooseEnvironmentScene(),secondaryUv:secondaryUv(summary,{date,now})},moon:null};
+ const co2=co2Response.co2?.fresh&&Date.parse(co2Response.co2.date+'T00:00:00Z')<=now?co2Response.co2:null;
+ const data={pilot:false,format:'cinematic-v5',capturedAt:new Date(now).toISOString(),publicationDate,slot,edition:slot==='vespre'?'evening':'morning',date,current,forecast,days,day,trend:trend.trend,environmentEnabled:true,lunarEnabled:true,environment:{summary,selection:chooseEnvironmentScene(),secondaryUv:secondaryUv(summary,{date,now})},co2,moon:null};
  assertProductionSnapshot(data,now);
  const moonUrl='https://aa.usno.navy.mil/api/rstt/oneday?'+new URLSearchParams({date,coords:'41.6906,2.4890',tz:String(madridOffset(date)),ID:'FONTAMET'});
  const [rain,moon]=await Promise.all([rainFetcher({slot,targetDate:date,hourlyFallback:forecast.hourly}),json(moonUrl).catch(()=>null)]);
@@ -43,7 +44,8 @@ export async function collectProductionData({slot,now=Date.now(),fetcher=fetch,r
 }
 export function productionMetadata(data){
  const when=data.slot==='vespre'?'Demà':'Avui';
- return {title:`${when} a Sant Celoni · ${data.date} #Shorts`,description:`Previsió per ${when.toLowerCase()}, ${data.date}: ${daypartCaption(data.day.dayparts)}.\nObservació de l’estació: ${data.current.updated}. Model meteorològic Open-Meteo; mapa de pluja ${data.rain.source}. ${data.moon?'Fase lunar USNO de les 12 h locals.':'Fase lunar no disponible.'} ${data.environment.secondaryUv?'UV previst CAMS, no sensor.':''}\n\nhttps://meteo.fontanillas.cat/\n#MeteoFontanillas #SantCeloni #ElTemps #Shorts`,tags:['Meteo Fontanillas','Sant Celoni','meteorologia','Shorts']};
+ const co2=data.co2?`\nCO₂ atmosfèric a Mauna Loa (NOAA): ${data.co2.ppm.toFixed(2)} ppm · ${data.co2.date}${data.co2.yearChangePpm===null?'':` · ${data.co2.yearChangePpm>=0?'+':''}${data.co2.yearChangePpm.toFixed(2)} ppm respecte de ${data.co2.yearAgoDate}`}. Valor provisional d’una estació de referència, no una mesura local ni qualitat de l’aire de Sant Celoni. ${data.co2.sourceUrl}`:'';
+ return {title:`${when} a Sant Celoni · ${data.date} #Shorts`,description:`Previsió per ${when.toLowerCase()}, ${data.date}: ${daypartCaption(data.day.dayparts)}.\nObservació de l’estació: ${data.current.updated}. Model meteorològic Open-Meteo; mapa de pluja ${data.rain.source}. ${data.moon?'Fase lunar USNO de les 12 h locals.':'Fase lunar no disponible.'} ${data.environment.secondaryUv?'UV previst CAMS, no sensor.':''}${co2}\n\nhttps://meteo.fontanillas.cat/\n#MeteoFontanillas #SantCeloni #ElTemps #Shorts`,tags:['Meteo Fontanillas','Sant Celoni','meteorologia','Shorts']};
 }
 async function main(){
  const root=resolve('build/youtube-short');await mkdir(root,{recursive:true});
