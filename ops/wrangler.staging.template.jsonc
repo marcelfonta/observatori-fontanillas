@@ -18,6 +18,10 @@
     "database_name": "fonta-meteo-staging",
     "database_id": "__STAGING_D1_DATABASE_ID__"
   }],
+  "r2_buckets": [{
+    "binding": "CAMERA_BUCKET",
+    "bucket_name": "meteo-fontanillas-camera-staging"
+  }],
   "browser": { "binding": "BROWSER" },
   "ai": { "binding": "AI" }
 }
