@@ -128,6 +128,59 @@ l'arxiu curt de l'estació com una normal climàtica.
 **Fet quan:** cada resum es pot citar, compartir i reproduir des de dades
 traçables, sense exagerar la significació climàtica d’un arxiu curt.
 
+### CO₂ global a la webcam
+
+La dada seguirà el criteri de les càmeres d’El Temps de 3Cat: no serà una
+lectura local de la càmera ni de l’estació, sinó la concentració atmosfèrica de
+referència de Mauna Loa publicada per NOAA Global Monitoring Laboratory.
+
+- [ ] Crear una ingestió diària al Worker de les sèries oficials de NOAA, amb
+  validació de data, unitats, rang, valors absents, atribució i últim valor bo.
+- [ ] Exposar només el resum necessari a la càmera: CO₂ en ppm, data efectiva,
+  diferència respecte fa un any i, si és reproduïble, respecte fa deu anys.
+- [ ] Incorporar a `latest-branded.jpg` un bloc llegible del tipus «CO₂
+  atmosfèric global · Mauna Loa, NOAA», sense presentar-lo com a dada de Sant
+  Celoni ni com a indicador de qualitat de l’aire local.
+- [ ] Mostrar l’antiguitat o retirar el valor si supera el límit de frescor; una
+  incidència de NOAA no ha d’impedir generar ni publicar la webcam.
+- [ ] Verificar la composició en dia, nit, mòbil, pantalla gran i imatges
+  compartides, mantenint la privacitat i la llegibilitat de la franja actual.
+
+**Fet quan:** la webcam mostra una dada oficial, datada, atribuïda i degradable,
+clarament diferenciada dels contaminants locals PM10, NO₂ i O₃.
+
+### Pàgina de canvi climàtic de referència
+
+Crear una ruta permanent `/canvi-climatic` amb narrativa pròpia, dades
+traçables i tres escales que no es barregin: planeta, Catalunya i Observatori.
+No s’utilitzarà una oscil·lació meteorològica local com a prova d’una tendència
+climàtica.
+
+- [ ] Dissenyar una primera lectura curta amb quatre indicadors datats: CO₂
+  atmosfèric global, temperatura global, evolució observada a Catalunya i
+  estat/cobertura de l’arxiu local.
+- [ ] Incorporar la corba de Keeling i comparacions amb fa un any, deu anys i el
+  nivell preindustrial, indicant estació, unitats, provisionalitat i font NOAA.
+- [ ] Utilitzar fonts climàtiques primàries i estables —NOAA/WMO o Copernicus a
+  escala global i Meteocat/SMC a Catalunya— amb metodologia, enllaç, data
+  d’actualització i llicència visibles.
+- [ ] Explicar en gràfics accessibles l’evolució de temperatura, precipitació,
+  sequera i extrems a Catalunya sense atribuir un episodi individual al canvi
+  climàtic si la font no ho sosté.
+- [ ] Reservar l’escala «Observatori» per a observacions pròpies, cobertura i
+  comparacions descriptives; no calcular tendències climàtiques ni «normals»
+  fins que la longitud i qualitat de la sèrie ho permetin.
+- [ ] Preparar text alternatiu, taules descarregables, definicions, metodologia,
+  preguntes freqüents i un apartat «Què sabem / què no podem concloure».
+- [ ] Afegir metadades pròpies, canonical, JSON-LD, imatge social, sitemap i una
+  prova sense JavaScript perquè la pàgina sigui citable i indexable.
+- [ ] Validar contingut, unitats, gràfics, llenguatge i actualització automàtica
+  amb proves de dades absents abans de destacar-la a la navegació principal.
+
+**Fet quan:** una persona pot entendre què està canviant al planeta i a
+Catalunya, què mesura realment l’Observatori i quines fonts sostenen cada
+afirmació, sense confondre temps, contaminació local i clima.
+
 ### Llenguatge i criteri editorial
 
 - [ ] Definir una guia curta de marca i terminologia per a «predicció»,
@@ -448,10 +501,12 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **Educació:** revisió docent de la primera fitxa pròpia d’Aula oberta.
-2. **Cel nocturn:** completar la guia textual d’objectes, creuar-la amb la
+1. **Clima:** ingestió NOAA i CO₂ global a la webcam; després, esquelet de la
+   pàgina `/canvi-climatic` amb fonts i escales ben separades.
+2. **Educació:** revisió docent de la primera fitxa pròpia d’Aula oberta.
+3. **Cel nocturn:** completar la guia textual d’objectes, creuar-la amb la
    meteorologia i fer la prova final en mòbil i la validació astronòmica.
-3. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
+4. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
 
 Les millores d’un paquet s’han de desplegar, mesurar i documentar abans d’obrir
 el següent. L’objectiu no és tenir més funcions que altres portals, sinó ser la
