@@ -25,6 +25,7 @@ const ICONS={
   comparar:icon('<path d="M4 8h13M14 5l3 3-3 3M20 16H7M10 13l-3 3 3 3"/>'),
   municipis:icon('<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4M8 11h6M11 8v6"/>'),
   'medi-ambient':icon('<path d="M19.5 4.5C12 4.7 6.2 8.4 6.2 14.2c0 3 2.2 5.3 5.2 5.3 5.9 0 8.1-6.3 8.1-15Z"/><path d="M4.2 20c2.8-5.7 6.8-9.3 12.2-11.8"/>'),
+  'canvi-climatic':icon('<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17M7.5 8.5a4.5 4.5 0 0 0 0 7M16.5 8.5a4.5 4.5 0 0 1 0 7"/>'),
   aprendre:icon('<path d="m3.5 8.5 8.5-4 8.5 4-8.5 4-8.5-4Z"/><path d="M6.5 10.2v5.2c2.9 2.2 8.1 2.2 11 0v-5.2M20.5 8.5v6"/>'),
   observatori:icon('<circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.5-4 2.7-6 6.5-6s6 2 6.5 6M4 4h3M17 4h3"/>'),
   contacte:icon('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4.5 7 7.5 5.7L19.5 7"/>'),
@@ -37,15 +38,15 @@ const NAV_ITEMS=[
   ['prediccio','Predicció','/prediccio'],['models','Models francesos','/models'],['llarg-termini','Llarg termini','/llarg-termini'],['videos','Predicció en vídeo','/videos'],['verificacio','Predicció vs realitat','/verificacio'],['avisos','Avisos','/avisos'],
   ['cel','Cel de dia i de nit','/cel'],['radar','Radar','/radar'],['webcams','Webcams','/webcams'],['terra','Observació de la Terra','/terra'],['histories','Històries meteo','/histories'],['resums','Resums mensuals','/resums/2026-09'],
   ['centre-dades','Centre de Dades','/centre-dades'],['comparar','Comparar','./comparativa.html'],['municipis','El temps arreu','./municipis.html'],
-  ['medi-ambient','Medi Ambient','/medi-ambient'],['aprendre','Aprendre','/aprendre'],['observatori','Sobre l’Observatori','/observatori'],['contacte','Contacte','/contacte'],['metodologia','Metodologia','./metodologia.html'],['collaboracions','Col·laboracions','./colaboracions.html']
+  ['medi-ambient','Medi Ambient','/medi-ambient'],['canvi-climatic','Canvi climàtic','/canvi-climatic'],['aprendre','Aprendre','/aprendre'],['observatori','Sobre l’Observatori','/observatori'],['contacte','Contacte','/contacte'],['metodologia','Metodologia','./metodologia.html'],['collaboracions','Col·laboracions','./colaboracions.html']
 ];
 const NAV_GROUPS=[
   ['Ara',['inici','meteo-ia','estacio','municipis']],
   ['Previsió i risc',['prediccio','models','llarg-termini','videos','verificacio','avisos','fonta']],
   ['Explora',['cel','radar','webcams','terra','histories','resums']],
-  ['Dades i projecte',['centre-dades','comparar','medi-ambient','aprendre','observatori','contacte','metodologia','collaboracions']]
+  ['Dades i projecte',['centre-dades','comparar','medi-ambient','canvi-climatic','aprendre','observatori','contacte','metodologia','collaboracions']]
 ];
-const PAGE_LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',models:'Models francesos','llarg-termini':'Predicció a llarg termini',videos:'Predicció en vídeo',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams',terra:'Observació de la Terra',histories:'Històries meteorològiques',resums:'Resums climatològics','centre-dades':'Centre de Dades',comparar:'Comparativa',municipis:'El temps arreu','medi-ambient':'Medi Ambient',aprendre:'Aprendre meteorologia',observatori:'Sobre l’Observatori',contacte:'Contacte',metodologia:'Metodologia',collaboracions:'Col·laboracions'};
+const PAGE_LABELS={inici:'Consulta ràpida','meteo-ia':'Meteo IA',estacio:'Dades de l’estació',prediccio:'Predicció meteorològica',models:'Models francesos','llarg-termini':'Predicció a llarg termini',videos:'Predicció en vídeo',verificacio:'Predicció vs realitat',cel:'Cel de dia i de nit',avisos:'Vigilància oficial',radar:'Radar meteorològic',webcams:'Webcams',terra:'Observació de la Terra',histories:'Històries meteorològiques',resums:'Resums climatològics','centre-dades':'Centre de Dades',comparar:'Comparativa',municipis:'El temps arreu','medi-ambient':'Medi Ambient','canvi-climatic':'Canvi climàtic',aprendre:'Aprendre meteorologia',observatori:'Sobre l’Observatori',contacte:'Contacte',metodologia:'Metodologia',collaboracions:'Col·laboracions'};
 
 export function mountPortalShell(activePage){
   document.body.classList.add('has-portal-shell');

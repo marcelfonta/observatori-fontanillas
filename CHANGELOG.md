@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-23 — Accés al canvi climàtic i Medi Ambient més net
+
+- La ruta `/canvi-climatic` apareix al menú amb quatre indicadors datats o contextualitzats, fonts originals i una lectura separada per planeta, Catalunya i observatori.
+- El CO₂ de Mauna Loa només es mostra si la lectura NOAA és recent; si falla, la pàgina en declara l’absència.
+- S’elimina la capsa sísmica redundant de Medi Ambient; el mapa USGS/ICGC continua al visor.
+
 ## 2026-10-23 — Estat del planificador caducat
 
 - L’estat públic marca el planificador com a degradat si fa més de 16 minuts que no completa cap cicle, encara que l’últim resultat desat fos correcte.

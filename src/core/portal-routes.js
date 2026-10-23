@@ -1,5 +1,5 @@
 export const PORTAL_PAGES = Object.freeze([
-  'inici','meteo-ia','estacio','prediccio','llarg-termini','videos','verificacio','cel','avisos','radar','webcams','terra','histories','resums','centre-dades','medi-ambient','aprendre','observatori','contacte'
+  'inici','meteo-ia','estacio','prediccio','llarg-termini','videos','verificacio','cel','avisos','radar','webcams','terra','histories','resums','centre-dades','medi-ambient','canvi-climatic','aprendre','observatori','contacte'
 ]);
 
 const PAGE_SET = new Set(PORTAL_PAGES);
