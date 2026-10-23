@@ -163,6 +163,8 @@ traçables i tres escales que no es barregin: planeta, Catalunya i Observatori.
 No s’utilitzarà una oscil·lació meteorològica local com a prova d’una tendència
 climàtica.
 
+La primera versió de la ruta i l’accés des del menú ja estan implementats: quatre indicadors amb font i període, CO₂ diari de Mauna Loa quan és recent, i una explicació dels límits de l’arxiu local. Continuen pendents els gràfics de sèries llargues, les comparacions climàtiques detallades i la validació editorial completa.
+
 - [ ] Dissenyar una primera lectura curta amb quatre indicadors datats: CO₂
   atmosfèric global, temperatura global, evolució observada a Catalunya i
   estat/cobertura de l’arxiu local.

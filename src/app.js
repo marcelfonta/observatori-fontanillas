@@ -50,6 +50,7 @@ const QUALITY_PAGES=new Set(['inici','estacio','centre-dades']);
 const ALERT_PAGES=new Set(['inici','meteo-ia','prediccio','avisos']);
 const FORECAST_PAGES=new Set(['inici','meteo-ia','prediccio','llarg-termini','videos','verificacio','cel','avisos','histories']);
 const ENVIRONMENT_PAGES=new Set(['medi-ambient','meteo-ia']);
+if(ACTIVE_PAGE==='canvi-climatic')import('./features/climate-page.js').then(module=>module.initClimatePage()).catch(error=>console.warn('La dada de CO₂ no està disponible.',error));
 
 let dataCenterModulePromise;
 let environmentModulePromise;
