@@ -1,6 +1,6 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
-Actualitzat el 22 d’octubre de 2026. Aquest document conté únicament feina
+Actualitzat el 23 d’octubre de 2026. Aquest document conté únicament feina
 pendent, aplicable i amb un criteri de finalització observable. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
@@ -187,18 +187,14 @@ no existeix només per captar trànsit.
 **Fet quan:** existeix una línia base repetible que identifica colls d’ampolla
 reals i permet comparar qualsevol canvi posterior.
 
-### Tipografies i actius propis
+### Actius propis
 
-- [ ] Allotjar localment només els pesos WOFF2 utilitzats de DM Sans i Manrope,
-  conservar-ne les llicències i eliminar les connexions a Google Fonts.
-- [ ] Ajustar `font-display`, precàrrega i subconjunts només després de mesurar
-  la primera càrrega.
 - [ ] Auditar les imatges que controlem i aplicar dimensions i formats moderns
   on aportin estalvi; no recomprimir indiscriminadament mapes, GIF o actius de
   tercers.
 
-**Fet quan:** la tipografia no depèn de dominis externs, no provoca regressions
-visuals i el canvi millora o manté les mètriques.
+**Fet quan:** els actius propis no provoquen regressions visuals i qualsevol
+optimització millora o manté les mètriques mesurades.
 
 ### Validació en dispositius i accessibilitat
 
@@ -232,10 +228,6 @@ la web cada cinc minuts si una resposta del Worker resol el mateix problema.
 
 ### Memòria cau útil i honesta
 
-- [ ] Conservar l’última lectura, predicció consultada i avisos recents que siguin
-  segurs per a ús sense connexió.
-- [ ] Mostrar de manera inequívoca que són dades desades, amb l’hora original i
-  una opció de reintent.
 - [ ] Provar connexió lenta, pèrdua de xarxa, recuperació i canvi de versió del
   service worker.
 - [ ] Revisar si tots els mòduls diferits han de formar part de la precàrrega
@@ -471,12 +463,10 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **Qualitat tècnica:** tipografies locals, dispositius, lector de pantalla i
-   refinament offline.
-2. **Educació:** primera fitxa pròpia d’Aula oberta.
-3. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
+1. **Educació:** primera fitxa pròpia d’Aula oberta.
+2. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
    accessibilitat i validació astronòmica.
-4. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
+3. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
 
 Les millores d’un paquet s’han de desplegar, mesurar i documentar abans d’obrir
 el següent. L’objectiu no és tenir més funcions que altres portals, sinó ser la

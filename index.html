@@ -69,9 +69,7 @@
       html[data-portal-page="radar"] #territori,
       html[data-portal-page="webcams"] #territori { grid-template-columns:1fr; }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/fonts.css?v=1.0" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=22.39.0-earth-viewer" />
@@ -91,7 +89,10 @@
       <button type="button" id="app-update-button">Actualitzar ara</button>
       <button type="button" id="app-update-dismiss" aria-label="Tancar avís d’actualització">×</button>
     </div>
-    <div id="offline-banner" hidden role="alert" class="offline-banner">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</div>
+    <div id="offline-banner" hidden role="status" aria-live="polite" aria-atomic="true" class="offline-banner">
+      <span id="offline-message">Mostrant dades de la darrera lectura disponible. Comprova la connexió.</span>
+      <button id="offline-retry" type="button">Reintenta ara</button>
+    </div>
     <a class="skip-link" href="#top">Saltar al contingut principal</a>
     <div class="ambient ambient--one"></div><div class="ambient ambient--two"></div>
     <header class="site-header shell">

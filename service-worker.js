@@ -1,4 +1,4 @@
-const CACHE = 'observatori-fontanillas-v22-31-10-fonta-regional-v1-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup-environment-freshness-v2-fonta-lab-v3-home-dayparts-v3-long-range-readability-v2-aca-hydrology-v1-civil-protection-v1-arome-local-v2-meteofrance-direct-v2-camera-homepage-v1-multimodel-v1-firms-map-v1-arome-catalunya-v1-buffer-rate-limit-v1-opera-ready-v1-windy-explorer-v1-forecast-resilience-v1-earthquakes-v1-smart-home-v1-earth-center-v1-weather-stories-v1-verification-reputation-v1-connection-recovery-v1-weather-stories-date-v1-estofex-local-earth-viewer-v1-harmonie-nowcast-v1-earth-topographic-v1-earth-overlays-v1-earthquakes-all-week-v1-icgc-live-v1-audit-performance-reliability-v1-route-split-v1-route-dom-v1-brand-light-v1-models-lcp-v1-deep-links-v1-models-route-v1-editorial-stories-v1-monthly-summary-v1';
+const CACHE = 'observatori-fontanillas-v22-31-10-fonta-regional-v1-morning-publication-0645-frances-colaboracions-extrems-v4-centre-dades-tabs-v1-records-v1-mobile-audit-v3-single-row-search-v1-astronomy-v2-audit-g-mobile-performance-accessibility-push-cleanup-environment-freshness-v2-fonta-lab-v3-home-dayparts-v3-long-range-readability-v2-aca-hydrology-v1-civil-protection-v1-arome-local-v2-meteofrance-direct-v2-camera-homepage-v1-multimodel-v1-firms-map-v1-arome-catalunya-v1-buffer-rate-limit-v1-opera-ready-v1-windy-explorer-v1-forecast-resilience-v1-earthquakes-v1-smart-home-v1-earth-center-v1-weather-stories-v1-verification-reputation-v1-connection-recovery-v1-weather-stories-date-v1-estofex-local-earth-viewer-v1-harmonie-nowcast-v1-earth-topographic-v1-earth-overlays-v1-earthquakes-all-week-v1-icgc-live-v1-audit-performance-reliability-v1-route-split-v1-route-dom-v1-brand-light-v1-models-lcp-v1-deep-links-v1-models-route-v1-editorial-stories-v1-monthly-summary-v1-technical-quality-v1';
 const API_CACHE = 'fontanilles-api-v2';
 const API_HOST = 'fonta-meteo.marcelfonta.workers.dev';
 const APP_SHELL = [
@@ -14,7 +14,7 @@ const APP_SHELL = [
   '/src/core/archive-coverage.js',
   '/src/core/ensemble-confidence.js',
   '/', '/index.html', '/models', '/metodologia.html', '/comparativa.html', '/municipis.html', '/historial-avisos.html', '/privacitat.html', '/condicions.html', '/xarxes.html', '/colaboracions.html', '/site.webmanifest',
-  '/css/variables.css', '/css/layout.css', '/css/style.css', '/css/portal.css', '/css/models-franca.css', '/css/models-franca-map.css', '/css/models-franca-portal.css', '/css/models-franca-ux.css',
+  '/css/fonts.css', '/css/variables.css', '/css/layout.css', '/css/style.css', '/css/portal.css', '/css/models-franca.css', '/css/models-franca-map.css', '/css/models-franca-portal.css', '/css/models-franca-ux.css',
   '/src/app.js', '/src/core/page-bootstrap.js', '/src/core/portal-routes.js', '/src/core/route-dom-pruner.js', '/src/core/config.js', '/src/core/dom.js', '/src/core/i18n.js', '/src/core/i18n-fr.js', '/src/core/alert-episodes.js', '/src/core/notification-preferences.js', '/src/data/meteorological-ephemerides.js', '/src/data/astronomical-calendar.js', '/src/data/learning-resources.js', '/src/data/editorial-stories.js', '/src/data/monthly-summaries.js', '/src/services/weather-api.js',
   '/src/features/analytics.js', '/src/features/push.js', '/src/features/pwa.js', '/src/features/share.js', '/src/features/models-franca.js',
   '/src/features/share-page.js', '/src/features/stations-comparison.js', '/src/features/municipality-explorer.js', '/src/features/alert-history-init.js', '/src/features/alert-history-page.js',
@@ -27,6 +27,7 @@ const APP_SHELL = [
   '/assets/icons/favicon-16.png', '/assets/icons/favicon-32.png', '/assets/icons/icon-192.png',
   '/assets/icons/icon-maskable-192.png',
   '/assets/icons/apple-touch-icon.png', '/assets/icons/apple-touch-icon-v21.png', '/assets/logos/observatori-symbol.svg', '/assets/logos/observatori-lockup.svg',
+  '/assets/fonts/dm-sans-latin.woff2', '/assets/fonts/dm-sans-latin-ext.woff2', '/assets/fonts/manrope-latin.woff2', '/assets/fonts/manrope-latin-ext.woff2',
   '/assets/images/histories/aiguat-4-octubre-2026.png', '/assets/images/histories/vent-calor-6-agost-2026.png', '/assets/images/histories/contrast-termic-14-setembre-2026.png',
   '/assets/images/resums/2026-09.png',
 ];
