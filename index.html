@@ -724,6 +724,28 @@
 
       <section id="cel-nocturn" class="astronomy-section section-block" aria-labelledby="astronomy-title" data-portal-page="cel">
         <div class="section-heading astronomy-heading"><div><p class="eyebrow">Astronomia local</p><h2 id="astronomy-title">El cel, de dia i de nit</h2></div><div class="astronomy-source"><span>Càlcul per a 41,6906° N · 2,4890° E</span><a href="https://aa.usno.navy.mil/data/" target="_blank" rel="noreferrer">Efemèrides: USNO ↗</a></div></div>
+        <article id="night-sky-viewer" class="night-sky-viewer panel" aria-labelledby="night-sky-title">
+          <header class="night-sky-viewer__header">
+            <div><p class="eyebrow">Pilot · planetari local de 360°</p><h3 id="night-sky-title">Explora el cel sobre Sant Celoni</h3><p>Tria lloc i hora, mou-te en qualsevol direcció i identifica estrelles, constel·lacions, planetes, el Sol i la Lluna.</p></div>
+            <div class="night-sky-viewer__place"><span id="night-sky-place-label">Sant Celoni</span><small id="night-sky-coordinates">41,6906° N · 2,4890° E</small></div>
+          </header>
+          <div class="night-sky-viewer__toolbar">
+            <div class="night-sky-place-control"><label for="night-sky-place">Localitat</label><input id="night-sky-place" type="search" role="combobox" autocomplete="off" aria-autocomplete="list" aria-controls="night-sky-suggestions" aria-expanded="false" placeholder="Sant Celoni o una altra localitat" /><div id="night-sky-suggestions" class="night-sky-suggestions" role="listbox" hidden></div></div>
+            <label for="night-sky-time">Data i hora local<input id="night-sky-time" type="datetime-local" /></label>
+            <button id="night-sky-now" type="button">Ara</button><button id="night-sky-reset" type="button">Sant Celoni · ara</button>
+          </div>
+          <div class="night-sky-viewer__stage">
+            <div class="night-sky-viewer__preview">
+              <span class="night-sky-viewer__stars" aria-hidden="true"></span>
+              <div><strong>Cel interactiu amb Stellarium Web</strong><p>El motor, el WebAssembly i els catàlegs només es carreguen quan ho demanes. Així la resta del portal continua sent lleuger.</p><button id="night-sky-launch" type="button">Explora el cel</button></div>
+            </div>
+            <iframe id="night-sky-frame" title="Planetari interactiu Stellarium centrat a Sant Celoni" allow="fullscreen" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" hidden></iframe>
+          </div>
+          <div class="night-sky-viewer__directions" aria-label="Orientació ràpida"><span>Mira cap a</span><button type="button" data-sky-direction="north">Nord</button><button type="button" data-sky-direction="east">Est</button><button type="button" data-sky-direction="south">Sud</button><button type="button" data-sky-direction="west">Oest</button><button type="button" data-sky-direction="zenith">Zenit</button><button id="night-sky-fullscreen" type="button">Pantalla completa</button></div>
+          <p id="night-sky-status" class="night-sky-viewer__status" role="status">El planetari encara no s’ha carregat. Les dades textuals de sota ja estan disponibles.</p>
+          <details class="night-sky-viewer__access"><summary>Com utilitzar-lo i alternativa accessible</summary><p>Arrossega per girar el cel, fes pinça o roda per ampliar i usa els botons cardinals per orientar-te. El visor WebGL és complementari: les hores del Sol i la Lluna, les fases, la qualitat prevista i els esdeveniments continuen explicats en text a les targetes següents.</p></details>
+          <footer><span>Visor oficial: Stellarium Web</span><a href="./docs/stellarium-licenses.html">Privacitat, llicència i atribució</a></footer>
+        </article>
         <div class="astronomy-overview">
           <article class="night-card panel"><div class="night-score"><span id="night-score">—</span><small>/100</small></div><div><p class="eyebrow">Aquesta nit</p><h3 id="night-rating">Analitzant les condicions</h3><p id="night-best-window">Buscant les hores més favorables.</p><p id="night-summary">Creuant núvols, probabilitat de pluja i llum lunar.</p></div></article>
           <article class="darkness-card panel"><p class="eyebrow">Finestra nocturna</p><div><strong id="darkness-hours">— h</strong><span>entre posta i sortida del Sol</span></div><p id="darkness-times">Horaris pendents</p></article>
@@ -932,7 +954,7 @@
         </nav>
         <article class="learning-own panel" aria-labelledby="learning-own-title">
           <div class="learning-own__copy"><p class="eyebrow">Material propi · ESO</p><h3 id="learning-own-title">Quan va ploure més?</h3><p>Una activitat de 45–60 minuts amb les dades reals dels 82,55 mm observats el 4 d’octubre de 2026. L’alumnat interpreta una taula, construeix un gràfic i argumenta què permeten afirmar les dades.</p><ul><li>Ciències i matemàtiques</li><li>CSV reutilitzable</li><li>Solucions i rúbrica docent</li><li>CC BY 4.0</li></ul></div>
-          <nav aria-label="Materials de Quan va ploure més?"><a class="learning-own__primary" href="/aula/analisi-aiguat-4-octubre-2026">Obrir la fitxa →</a><a href="/assets/data/aula/aiguat-fontanillas-2026-10-04.csv" download>Descarregar el CSV</a><a href="/aula/analisi-aiguat-4-octubre-2026/solucions">Guia docent i solucions</a></nav>
+          <nav aria-label="Materials de Quan va ploure més?"><a class="learning-own__primary" href="/aula/analisi-aiguat-4-octubre-2026">Obrir la fitxa →</a><a href="/assets/data/aula/aiguat-fontanillas-2026-10-04.csv" download>Descarregar el CSV</a><a href="/aula/analisi-aiguat-4-octubre-2026-solucions">Guia docent i solucions</a></nav>
         </article>
         <section class="learning-local panel" aria-labelledby="learning-local-title"><div><p class="eyebrow">Laboratori Fontanillas</p><h3 id="learning-local-title">Aprèn amb el temps que tens davant.</h3><p>Observa una variable real, compara-la amb la predicció i explica què ha canviat. La meteorologia s’entén millor quan les dades tenen lloc i hora.</p></div><div><a href="/estacio">Llegir els sensors →</a><a href="/radar">Interpretar el radar →</a><a href="/centre-dades">Analitzar l’històric →</a><a href="/avisos">Entendre els avisos →</a></div></section>
         <section class="weather-utility panel" aria-labelledby="weather-utility-title">

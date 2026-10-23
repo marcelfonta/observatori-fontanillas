@@ -1,5 +1,24 @@
 # Registre de decisions
 
+## ADR — Stellarium oficial i aïllat per al planetari local (2026-10-23)
+
+- El visor principal incrusta l’aplicació oficial de Stellarium Web en un marc
+  aïllat; no reimplementa ni modifica el motor astronòmic.
+- Els controls de l’Observatori passen localitat, hora i orientació mitjançant
+  els paràmetres públics del visor. Qualsevol canvi rellevant recarrega només el
+  marc, i el moviment 360° continua dins l’aplicació oficial.
+- La càrrega requereix una acció explícita. El service worker conserva la
+  carcassa i l’alternativa textual, però no desa el motor ni els catàlegs
+  astronòmics pesants a la memòria cau offline.
+- Aquesta decisió evita redistribuir el frontal, el WebAssembly i els catàlegs,
+  i elimina els errors CORS detectats en el prototip local. La pàgina explica
+  que en activar el visor s’estableix una connexió amb Stellarium i enllaça la
+  seva privacitat, llicència i codi font.
+- Les targetes del Sol, la Lluna, la qualitat nocturna i els esdeveniments són
+  la degradació accessible si WebGL, WebAssembly o els catàlegs fallen. La capa
+  «Aquesta nit», l’alternativa objecte-direcció-altura, les mesures mòbils i la
+  validació astronòmica continuen com a feina posterior.
+
 ## ADR — Confiança multimodel, pesos locals i satèl·lit sense duplicacions (2026-10-11)
 
 - Open-Meteo continua sent el gateway numèric públic: s’hi afegeix l’ensemble

@@ -24,7 +24,7 @@ assert.ok(sheet.includes('<caption>') && sheet.includes('scope="col"') && sheet.
 assert.ok(solutions.includes('86,2%') && solutions.includes('3,1 °C') && solutions.includes('Rúbrica breu'), 'La guia ha d’incloure solucions i rúbrica');
 assert.ok(solutions.includes('revisió externa per part d’una persona docent'), 'La guia no ha de fingir la revisió docent pendent');
 assert.ok(index.includes('/aula/analisi-aiguat-4-octubre-2026') && index.includes('aiguat-fontanillas-2026-10-04.csv'), 'Aula oberta ha d’enllaçar la fitxa i el CSV');
-assert.ok(read('_redirects').includes('/aula/analisi-aiguat-4-octubre-2026'), 'La ruta neta ha de tenir redirect');
+assert.ok(!read('_redirects').match(/^\/aula\/analisi-aiguat-4-octubre-2026\s/m), 'La ruta neta no pot reescriure a .html perquè Cloudflare crearia un bucle');
 assert.ok(read('sitemap.xml').includes('/aula/analisi-aiguat-4-octubre-2026</loc>'), 'La fitxa ha de constar al sitemap');
 assert.ok(read('service-worker.js').includes('/css/worksheet.css') && read('service-worker.js').includes('/assets/data/aula/aiguat-fontanillas-2026-10-04.csv'), 'El material ha de ser disponible offline');
 assert.ok(read('ROADMAP.md').includes('Provar el material amb almenys una persona docent'), 'La revisió docent ha de continuar pendent');

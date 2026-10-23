@@ -267,19 +267,15 @@ afirmacions sanitàries, agrícoles o de seguretat que no pot sostenir.
 
 ### Planetari local de 360°
 
-- [ ] Incorporar a «El cel, de dia i de nit» un visor carregat de manera
-  diferida, centrat per defecte a Sant Celoni i orientat segons l’horitzó local.
-- [ ] Permetre arrossegar el cel en 360°, ampliar-lo, tornar a la vista inicial i
-  saltar als punts cardinals sense exigir coneixements astronòmics.
-- [ ] Mostrar estrelles brillants, constel·lacions, planetes, Sol, Lluna,
-  eclíptica i horitzó; deixar catàlegs profunds i imatges astronòmiques com a
-  capes opcionals per no saturar la vista inicial.
+Pilot implementat el 23 d’octubre de 2026: el visor oficial de Stellarium Web
+s’inicia a Sant Celoni només després d’una acció explícita i ofereix moviment
+360°, zoom, retorn a l’estat inicial, punts
+cardinals, zenit, pantalla completa, localitat i hora. Les targetes textuals
+actuals continuen disponibles si el motor no arrenca.
+
 - [ ] Afegir un control temporal amb «Ara», posta de sol, inici de la nit
   astronòmica, franges horàries i data; qualsevol canvi ha d’actualitzar el cel
   i mantenir visible la zona horària utilitzada.
-- [ ] Permetre cercar una localitat mitjançant el geocodificador existent,
-  confirmar-ne el nom i les coordenades i tornar fàcilment a Sant Celoni. La
-  geolocalització del dispositiu serà opcional i requerirà una acció explícita.
 - [ ] Oferir controls tàctils, teclat, preferència de moviment reduït i una
   alternativa textual amb objecte, direcció, altura i millor hora.
 
@@ -306,37 +302,24 @@ sobre l’horitzó i explica les principals limitacions locals.
 
 ### Integració de Stellarium Web Engine
 
-Decisió de producte: el visor principal utilitzarà Stellarium Web Engine, no un
-mapa estel·lar simplificat ni un iframe genèric. La integració ha de conservar
-la capacitat visual del motor i afegir-hi la capa local de l’Observatori.
+Decisió de producte: el visor principal utilitza l’aplicació oficial de
+Stellarium Web en un marc aïllat, no un mapa estel·lar simplificat. Això manté
+el motor i els catàlegs al seu origen i permet afegir-hi la capa local de
+l’Observatori sense modificar-los ni redistribuir-los.
 
-- [ ] Construir una prova tècnica integrada amb la versió fixada del motor,
-  WebAssembly i actius necessaris; no dependre de l’etiqueta `latest` ni d’un
-  servei remot sense control de versió.
 - [ ] Configurar Sant Celoni com a observador inicial i sincronitzar latitud,
-  longitud, altitud, data, hora i zona horària amb els controls del portal.
-- [ ] Exposar orientació lliure de 360°, camp de visió, zoom, pantalla completa,
-  punts cardinals i accions ràpides «nord», «est», «sud», «oest» i «zenit».
-- [ ] Permetre seleccionar una localitat i una hora sense reconstruir el visor,
-  i oferir una acció clara per tornar a «Sant Celoni · ara».
-- [ ] Definir una vista inicial neta: atmosfera, paisatge o horitzó, estrelles,
-  planetes i línies de constel·lació. Catàlegs profunds, art de constel·lacions i
-  imatges HiPS quedaran en un mode avançat opcional.
+  longitud, altitud, data, hora i zona horària amb els controls del portal; el
+  pilot ja sincronitza lloc i instant, però encara ha de mostrar explícitament
+  `Europe/Madrid` i validar canvis d’horari.
 - [ ] Integrar sobre Stellarium les targetes pròpies «Aquesta nit», qualitat
   meteorològica, objectes recomanats i millor franja, sense alterar el significat
   de les dades astronòmiques del motor.
-- [ ] Carregar el motor només quan el visor entri a la pantalla o l’usuari premi
-  «Explora el cel»; mostrar abans una previsualització lleugera i mantenir les
-  targetes actuals funcionals si WebGL, WebAssembly o els catàlegs fallen.
 - [ ] Mesurar memòria, transferència, temps d’arrencada i estabilitat en iPhone,
   Android i ordinador; descarregar resolució o capes abans que degradar tota la
   pàgina «Cel».
-- [ ] Revisar i complir AGPL-3.0: conservar avisos i atribució, documentar la
-  versió, publicar el codi font corresponent de qualsevol modificació del motor
-  i revisar separadament les llicències dels paisatges, textures i cultures del
-  cel utilitzats.
-- [ ] Adaptar CSP, service worker i memòria cau només per als dominis i actius
-  indispensables, amb una estratègia explícita per a versions i mode offline.
+- [ ] Revisar periòdicament els canvis del servei, la política de privacitat i
+  les condicions de l’aplicació oficial; mantenir visibles l’atribució i els
+  enllaços a la llicència i al codi font.
 - [ ] Afegir una alternativa textual navegable amb objecte, direcció, altura i
   millor hora, perquè el Canvas/WebGL no sigui l’única via d’accés.
 - [ ] Validar posicions del Sol, Lluna i planetes contra una font astronòmica de
