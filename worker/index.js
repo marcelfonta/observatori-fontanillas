@@ -3534,6 +3534,7 @@ async function health(env) {
 }
 
 const PUBLIC_OPERATION_SERVICES=['scheduler','database-maintenance','forecast-capture','social-automatic','meteocat-alert-social','camera-nord'];
+const SCHEDULER_STALE_AFTER_MS=16*60*1000; // Tres cicles de cinc minuts, amb marge de propagació.
 
 async function publicOperationsStatus(env){
   const generatedAt=new Date().toISOString();
@@ -3543,10 +3544,13 @@ async function publicOperationsStatus(env){
   const rows=new Map((result?.results||[]).map(row=>[row.service_key,row]));
   const services=PUBLIC_OPERATION_SERVICES.map(key=>{
     const row=rows.get(key)||{};
+    const checkedAtMs=Date.parse(row.last_checked_at||'');
+    const stale=key==='scheduler'&&row.status==='healthy'&&(!Number.isFinite(checkedAtMs)||Date.now()-checkedAtMs>SCHEDULER_STALE_AFTER_MS);
     return {
-      key,status:['healthy','down','degraded'].includes(row.status)?row.status:'unknown',
+      key,status:stale?'degraded':['healthy','down','degraded'].includes(row.status)?row.status:'unknown',
       checkedAt:row.last_checked_at||null,lastSuccessAt:row.last_success_at||null,lastFailureAt:row.last_failure_at||null,
       consecutiveFailures:Number(row.consecutive_failures)||0,
+      ...(stale?{reason:'stale'}:{}),
     };
   });
   const incidents=services.filter(item=>item.status==='down'||item.status==='degraded').map(item=>({service:item.key,status:item.status,detectedAt:item.lastFailureAt||item.checkedAt}));

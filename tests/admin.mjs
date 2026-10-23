@@ -48,6 +48,7 @@ assert.equal(preflight.status,204);
 assert.match(preflight.headers.get('Access-Control-Allow-Headers'),/Authorization/);
 
 const nowSeconds=Math.floor(Date.now()/1000);
+let schedulerCheckedAt=new Date().toISOString();
 const fakeDb={
   batch:async()=>[],
   prepare(sql){
@@ -55,7 +56,7 @@ const fakeDb={
       if(sql.includes('sqlite_master'))return {results:[{name:'observations'},{name:'alert_events'},{name:'contact_rate_limit'}]};
       if(sql.includes('FROM social_drafts'))return {results:[{id:1,kind:'daily_observation',status:'draft',channels:'["facebook","instagram","bluesky","telegram"]',title:'Dades de Sant Celoni',created_at:new Date().toISOString(),scheduled_for:null}]};
       if(sql.includes('FROM monitor_state'))return {results:[
-        {service_key:'scheduler',status:'healthy',consecutive_failures:0,last_checked_at:new Date().toISOString(),last_success_at:new Date().toISOString()},
+        {service_key:'scheduler',status:'healthy',consecutive_failures:0,last_checked_at:schedulerCheckedAt,last_success_at:schedulerCheckedAt},
         {service_key:'social-automatic',status:'down',consecutive_failures:2,last_checked_at:new Date().toISOString(),last_failure_at:new Date().toISOString()},
       ]};
       return {results:[]};
@@ -115,5 +116,13 @@ assert.equal(publicStatusPayload.services.find(item=>item.key==='social-automati
 assert.equal(publicStatusPayload.services.find(item=>item.key==='camera-nord').status,'unknown');
 assert.equal(publicStatusPayload.incidents.length,1);
 assert.equal('detail' in publicStatusPayload.services[0],false);
+
+schedulerCheckedAt=new Date(Date.now()-17*60*1000).toISOString();
+const staleStatus=await worker.fetch(new Request('https://fonta-meteo.example/public-status'),{DB:fakeDb},context);
+const stalePayload=await staleStatus.json();
+assert.equal(stalePayload.services.find(item=>item.key==='scheduler').status,'degraded');
+assert.equal(stalePayload.services.find(item=>item.key==='scheduler').reason,'stale');
+assert.equal(stalePayload.incidents.length,2);
+assert.equal(stalePayload.ok,false);
 
 console.log('Test d’Administració V21: correcte');

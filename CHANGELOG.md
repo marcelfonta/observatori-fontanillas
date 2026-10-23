@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-23 — Estat del planificador caducat
+
+- L’estat públic marca el planificador com a degradat si fa més de 16 minuts que no completa cap cicle, encara que l’últim resultat desat fos correcte.
+- La resposta indica `stale` sense exposar detalls interns i permet detectar un cron aturat abans de confiar en dades o publicacions automàtiques.
+
 ## 2026-10-23 — Revisió visual del vespre
 
 - La targeta social fa més llegible el distintiu lunar i indica que la dada d’USNO és de les 12 h.
