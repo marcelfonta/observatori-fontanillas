@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-23 — Primera fitxa pròpia de l’Aula oberta
+
+- «Quan va ploure més?» converteix les dades reals de l’aiguat del 4 d’octubre
+  en una activitat imprimible per a ESO de ciències i matemàtiques.
+- El recurs inclou CSV reutilitzable, objectius, preguntes, solucions
+  orientatives, rúbrica, autoria, data, limitacions i llicència CC BY 4.0.
+- La fitxa queda disponible sense connexió; la primera revisió externa per part
+  d’una persona docent continua pendent abans d’ampliar la col·lecció.
+
 ## 2026-10-23 — Qualitat tècnica, fonts locals i mode offline
 
 - DM Sans i Manrope es serveixen localment en WOFF2, amb les llicències

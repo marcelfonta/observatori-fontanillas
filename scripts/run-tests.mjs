@@ -40,7 +40,7 @@ if (quick && !selected.includes('xac-integration.mjs')) selected.push('xac-integ
 if (quick && !selected.includes('xac-pollen.mjs')) selected.push('xac-pollen.mjs');
 if (quick && !selected.includes('social-production.mjs')) selected.push('social-production.mjs');
 if (quick && !selected.includes('aca-hydrology.mjs')) selected.push('aca-hydrology.mjs');
-if (quick) for(const name of ['publication-state.mjs','youtube-recovery.mjs','home-forecast.mjs','home-now.mjs','earth-observation.mjs','weather-stories.mjs','forecast-bias-experiment.mjs','technical-quality.mjs']) if(!selected.includes(name))selected.push(name);
+if (quick) for(const name of ['publication-state.mjs','youtube-recovery.mjs','home-forecast.mjs','home-now.mjs','earth-observation.mjs','weather-stories.mjs','forecast-bias-experiment.mjs','technical-quality.mjs','education-sheet.mjs']) if(!selected.includes(name))selected.push(name);
 
 for (const file of selected) {
   const result = spawnSync(process.execPath, [resolve(root, 'tests', file)], { cwd:root, stdio:'inherit' });
