@@ -72,12 +72,12 @@
     <link rel="stylesheet" href="css/fonts.css?v=1.0" />
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=22.39.0-earth-viewer" />
+    <link rel="stylesheet" href="css/style.css?v=22.39.2-stellarium-controls" />
     <link rel="stylesheet" href="css/portal.css?v=22.42.0-monthly-summary" />
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="src/features/push.js?v=22.31.6"></script>
     <script type="module" src="src/features/pwa.js?v=22.31.6"></script>
-    <script type="module" src="src/app.js?v=22.39.0-earth-viewer"></script>
+    <script type="module" src="src/app.js?v=22.39.2-stellarium-controls"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","license":"https://creativecommons.org/licenses/by/4.0/","creditText":"Observatori Meteorològic Fontanillas — meteo.fontanillas.cat","isAccessibleForFree":true,"creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -731,8 +731,8 @@
           </header>
           <div class="night-sky-viewer__toolbar">
             <div class="night-sky-place-control"><label for="night-sky-place">Localitat</label><input id="night-sky-place" type="search" role="combobox" autocomplete="off" aria-autocomplete="list" aria-controls="night-sky-suggestions" aria-expanded="false" placeholder="Sant Celoni o una altra localitat" /><div id="night-sky-suggestions" class="night-sky-suggestions" role="listbox" hidden></div></div>
-            <label for="night-sky-time">Data i hora local<input id="night-sky-time" type="datetime-local" /></label>
-            <button id="night-sky-now" type="button">Ara</button><button id="night-sky-reset" type="button">Sant Celoni · ara</button>
+            <label for="night-sky-time">Data i hora local<input id="night-sky-time" type="datetime-local" /><small id="night-sky-time-zone">Europe/Madrid · CET/CEST</small></label>
+            <div class="night-sky-viewer__time-presets" role="group" aria-label="Hora ràpida"><button id="night-sky-now" type="button">Ara</button><button type="button" data-sky-time-preset="sunset">Posta de sol</button><button type="button" data-sky-time-preset="astronomical">Nit astronòmica</button></div><button id="night-sky-reset" type="button">Sant Celoni · ara</button>
           </div>
           <div class="night-sky-viewer__stage">
             <div class="night-sky-viewer__preview">
@@ -741,9 +741,9 @@
             </div>
             <iframe id="night-sky-frame" title="Planetari interactiu Stellarium centrat a Sant Celoni" allow="fullscreen" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" hidden></iframe>
           </div>
-          <div class="night-sky-viewer__directions" aria-label="Orientació ràpida"><span>Mira cap a</span><button type="button" data-sky-direction="north">Nord</button><button type="button" data-sky-direction="east">Est</button><button type="button" data-sky-direction="south">Sud</button><button type="button" data-sky-direction="west">Oest</button><button type="button" data-sky-direction="zenith">Zenit</button><button id="night-sky-fullscreen" type="button">Pantalla completa</button></div>
+          <div class="night-sky-viewer__directions" aria-label="Orientació ràpida"><span>Mira cap a</span><button type="button" data-sky-direction="north" aria-pressed="false">Nord</button><button type="button" data-sky-direction="east" aria-pressed="false">Est</button><button type="button" data-sky-direction="south" aria-pressed="true">Sud</button><button type="button" data-sky-direction="west" aria-pressed="false">Oest</button><button type="button" data-sky-direction="zenith" aria-pressed="false">Zenit</button><button id="night-sky-fullscreen" type="button">Pantalla completa</button></div>
           <p id="night-sky-status" class="night-sky-viewer__status" role="status">El planetari encara no s’ha carregat. Les dades textuals de sota ja estan disponibles.</p>
-          <details class="night-sky-viewer__access"><summary>Com utilitzar-lo i alternativa accessible</summary><p>Arrossega per girar el cel, fes pinça o roda per ampliar i usa els botons cardinals per orientar-te. El visor WebGL és complementari: les hores del Sol i la Lluna, les fases, la qualitat prevista i els esdeveniments continuen explicats en text a les targetes següents.</p></details>
+          <details class="night-sky-viewer__access"><summary>Com utilitzar-lo i alternativa accessible</summary><p>Arrossega per girar el cel, fes pinça o roda per ampliar i usa els botons cardinals per orientar-te. «Posta de sol» i «Nit astronòmica» calculen l’hora per a la localitat i data escollides. Totes les hores es mostren en hora peninsular Europe/Madrid, amb el canvi CET/CEST aplicat automàticament.</p><p>El visor WebGL és complementari: les hores del Sol i la Lluna, les fases, la qualitat prevista i els esdeveniments continuen explicats en text a les targetes següents.</p></details>
           <footer><span>Visor oficial: Stellarium Web</span><a href="./docs/stellarium-licenses.html">Privacitat, llicència i atribució</a></footer>
         </article>
         <div class="astronomy-overview">

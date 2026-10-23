@@ -269,13 +269,15 @@ afirmacions sanitàries, agrícoles o de seguretat que no pot sostenir.
 
 Pilot implementat el 23 d’octubre de 2026: el visor oficial de Stellarium Web
 s’inicia a Sant Celoni només després d’una acció explícita i ofereix moviment
-360°, zoom, retorn a l’estat inicial, punts
-cardinals, zenit, pantalla completa, localitat i hora. Les targetes textuals
-actuals continuen disponibles si el motor no arrenca.
+360°, zoom, retorn a l’estat inicial, punts cardinals, zenit, pantalla completa,
+localitat i hora. També permet saltar a la posta de sol o a l’inici de la nit
+astronòmica i mostra explícitament `Europe/Madrid` amb canvi CET/CEST. Les
+targetes textuals actuals continuen disponibles si el motor no arrenca.
 
-- [ ] Afegir un control temporal amb «Ara», posta de sol, inici de la nit
-  astronòmica, franges horàries i data; qualsevol canvi ha d’actualitzar el cel
-  i mantenir visible la zona horària utilitzada.
+Completat: controls «Ara», posta de sol, inici de la nit astronòmica i data;
+qualsevol canvi actualitza el cel i manté visible la zona horària utilitzada.
+- [ ] Valorar franges horàries suggerides quan la capa meteorològica i els
+  objectes recomanats estiguin disponibles.
 - [ ] Oferir controls tàctils, teclat, preferència de moviment reduït i una
   alternativa textual amb objecte, direcció, altura i millor hora.
 
@@ -307,10 +309,10 @@ Stellarium Web en un marc aïllat, no un mapa estel·lar simplificat. Això mant
 el motor i els catàlegs al seu origen i permet afegir-hi la capa local de
 l’Observatori sense modificar-los ni redistribuir-los.
 
-- [ ] Configurar Sant Celoni com a observador inicial i sincronitzar latitud,
-  longitud, altitud, data, hora i zona horària amb els controls del portal; el
-  pilot ja sincronitza lloc i instant, però encara ha de mostrar explícitament
-  `Europe/Madrid` i validar canvis d’horari.
+Completat: Sant Celoni és l’observador inicial i latitud, longitud, altitud,
+data, hora i zona horària se sincronitzen amb els controls del portal;
+`Europe/Madrid` és visible i les conversions CET/CEST tenen proves d’hivern i
+estiu.
 - [ ] Integrar sobre Stellarium les targetes pròpies «Aquesta nit», qualitat
   meteorològica, objectes recomanats i millor franja, sense alterar el significat
   de les dades astronòmiques del motor.
@@ -447,8 +449,8 @@ benefici demostrat:
 ## Ordre recomanat de pròxims paquets
 
 1. **Educació:** revisió docent de la primera fitxa pròpia d’Aula oberta.
-2. **Cel nocturn:** Stellarium integrat, càrrega diferida, prova en mòbil,
-   accessibilitat i validació astronòmica.
+2. **Cel nocturn:** completar la guia textual d’objectes, creuar-la amb la
+   meteorologia i fer la prova final en mòbil i la validació astronòmica.
 3. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
 
 Les millores d’un paquet s’han de desplegar, mesurar i documentar abans d’obrir
