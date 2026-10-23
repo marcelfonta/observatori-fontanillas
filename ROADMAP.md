@@ -159,6 +159,12 @@ climàtica.
 - [ ] Dissenyar una primera lectura curta amb quatre indicadors datats: CO₂
   atmosfèric global, temperatura global, evolució observada a Catalunya i
   estat/cobertura de l’arxiu local.
+- [ ] Construir la pàgina com un relat i no com un tauler saturat: una portada
+  que respongui «què està canviant?», quatre xifres com a màxim i accés
+  progressiu al detall, les fonts i la metodologia.
+- [ ] Organitzar la narració en cinc capítols: «Ara mateix», «El planeta»,
+  «Catalunya», «Baix Montseny i l’Observatori» i «Entendre les dades», amb una
+  conclusió pràctica i enllaços a les sèries originals.
 - [ ] Incorporar la corba de Keeling i comparacions amb fa un any, deu anys i el
   nivell preindustrial, indicant estació, unitats, provisionalitat i font NOAA.
 - [ ] Utilitzar fonts climàtiques primàries i estables —NOAA/WMO o Copernicus a
@@ -170,8 +176,20 @@ climàtica.
 - [ ] Reservar l’escala «Observatori» per a observacions pròpies, cobertura i
   comparacions descriptives; no calcular tendències climàtiques ni «normals»
   fins que la longitud i qualitat de la sèrie ho permetin.
+- [ ] Fer visible la diferència entre CO₂ atmosfèric global, contaminants de
+  l’aire local i meteorologia; explicar també la diferència entre variabilitat
+  d’un dia, tendència climàtica i atribució d’un episodi extrem.
+- [ ] Afegir peces locals que aportin criteri propi —sequera, nits càlides,
+  precipitació i extrems— només quan una sèrie oficial o la cobertura de
+  l’arxiu permeti sostenir-les, sempre amb el període de comparació visible.
 - [ ] Preparar text alternatiu, taules descarregables, definicions, metodologia,
   preguntes freqüents i un apartat «Què sabem / què no podem concloure».
+- [ ] Definir un sistema visual propi, sobri i memorable: una escala cromàtica
+  accessible, gràfics amb anotacions que expliquin el perquè dels canvis i una
+  versió en taula que no depengui del color ni de la interacció.
+- [ ] Mostrar a cada indicador la data efectiva, la pròxima actualització,
+  l’estat provisional o definitiu i una degradació clara si la font no respon;
+  conservar l’últim valor bo sense fer-lo passar per actual.
 - [ ] Afegir metadades pròpies, canonical, JSON-LD, imatge social, sitemap i una
   prova sense JavaScript perquè la pàgina sigui citable i indexable.
 - [ ] Validar contingut, unitats, gràfics, llenguatge i actualització automàtica
@@ -180,6 +198,51 @@ climàtica.
 **Fet quan:** una persona pot entendre què està canviant al planeta i a
 Catalunya, què mesura realment l’Observatori i quines fonts sostenen cada
 afirmació, sense confondre temps, contaminació local i clima.
+
+### Publicacions diàries: nova identitat sonora, CO₂ i vespre complet
+
+Les peces diàries han de sonar i veure’s com una sola marca, però sense
+convertir una previsió meteorològica en un missatge climàtic confús. La dada de
+CO₂ serà la mateixa fotografia global oficial que aparegui a la webcam; no serà
+una mesura local.
+
+- [ ] Crear una breu guia sonora de marca i comparar prototips abans del canvi:
+  conservar un motiu reconeixible, però substituir la peça sintètica única
+  actual per una sintonia més càlida, agradable i menys repetitiva.
+- [ ] Preparar variants coherents de matí, vespre/nit i episodi destacat, amb el
+  mateix ADN musical i transicions suaus; evitar que una música dramàtica
+  exageri una previsió ordinària o un risc que no és un avís oficial.
+- [ ] Mantenir la música original o amb llicència compatible amb totes les
+  xarxes, documentar-ne autoria i drets, normalitzar volum, evitar saturació i
+  provar-la amb altaveu de mòbil, auriculars i reproducció sense so.
+- [ ] Fer una prova A/B interna de les sintonies amb una previsualització de
+  matí i una de vespre, i conservar una reversió immediata abans d’aplicar el
+  canvi a totes les publicacions automàtiques.
+- [ ] Reutilitzar una única instantània normalitzada de NOAA per a webcam, web i
+  publicacions; no crear tres ingestes ni tres criteris de frescor diferents.
+- [ ] Afegir a cada peça diària una càpsula breu i no invasiva —preferentment al
+  tancament— amb «CO₂ atmosfèric global · Mauna Loa, NOAA», ppm, data efectiva
+  i variació interanual. Ometre-la si és antiga o no està verificada.
+- [ ] Explicar a la descripció que el CO₂ és global i no és qualitat de l’aire
+  de Sant Celoni; la càpsula no ha de competir amb la previsió ni aparèixer
+  repetida a totes les escenes del vídeo.
+- [ ] Separar en el vespre dues informacions que ara competeixen: mantenir
+  sempre el símbol meteorològic de la franja —serè, núvols, boira, pluja, neu o
+  tempesta, amb variant nocturna— i mostrar la fase lunar real com a distintiu
+  astronòmic secundari, etiquetat i atribuït.
+- [ ] No utilitzar la fase lunar com a substitut de l’estat del cel ni la lluna
+  genèrica de «nit» com si fos una fase calculada. Si falla una font, conservar
+  l’altra i mostrar el seu estat de disponibilitat de manera independent.
+- [ ] Aplicar la mateixa jerarquia a Shorts, targetes de Meta i la resta de
+  formats diaris, incloent text i descripció; revisar que cada xarxa respecti
+  marges segurs i no retalli el símbol meteorològic o la fase lunar.
+- [ ] Afegir proves visuals de vespre serè, parcialment ennuvolat, cobert,
+  boira, pluja, neu i tempesta; cobrir també absència de codi meteorològic,
+  absència de fase lunar, CO₂ antic i generació amb el so desactivat.
+
+**Fet quan:** matí i vespre comparteixen una identitat sonora agradable, les
+publicacions incorporen CO₂ global sense confondre’l amb una mesura local i una
+persona pot distingir d’un cop d’ull quin temps farà i quina fase lunar hi haurà.
 
 ### Llenguatge i criteri editorial
 
@@ -501,12 +564,15 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **Clima:** ingestió NOAA i CO₂ global a la webcam; després, esquelet de la
-   pàgina `/canvi-climatic` amb fonts i escales ben separades.
-2. **Educació:** revisió docent de la primera fitxa pròpia d’Aula oberta.
-3. **Cel nocturn:** completar la guia textual d’objectes, creuar-la amb la
+1. **Clima:** ingestió NOAA compartida, CO₂ global a la webcam i a la càpsula
+   diària; després, esquelet narratiu de `/canvi-climatic` amb fonts i escales
+   ben separades.
+2. **Publicació diària:** corregir la jerarquia del vespre —temps i fase lunar
+   simultanis— i validar la nova identitat sonora abans de substituir l’actual.
+3. **Educació:** revisió docent de la primera fitxa pròpia d’Aula oberta.
+4. **Cel nocturn:** completar la guia textual d’objectes, creuar-la amb la
    meteorologia i fer la prova final en mòbil i la validació astronòmica.
-4. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
+5. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
 
 Les millores d’un paquet s’han de desplegar, mesurar i documentar abans d’obrir
 el següent. L’objectiu no és tenir més funcions que altres portals, sinó ser la
