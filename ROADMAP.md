@@ -208,7 +208,7 @@ afirmació, sense confondre temps, contaminació local i clima.
 
 ### Publicacions diàries: nova identitat sonora, CO₂ i vespre complet
 
-El distintiu lunar separat i les mostres musicals estan desplegats. Divuit proves visuals locals cobreixen Shorts i Meta amb set fenòmens, manca del temps i manca de la fase. Resta confirmar una publicació real de vespre, fer la comparació auditiva A/B i aprovar l’activació de la nova música.
+El distintiu lunar separat i les mostres musicals estan desplegats. Divuit proves visuals locals cobreixen Shorts i Meta amb set fenòmens, manca del temps i manca de la fase. La franja real del 23/10 es va perdre per una interrupció del cron, ja recuperat; resta confirmar la següent publicació real de vespre, fer la comparació auditiva A/B i aprovar l’activació de la nova música.
 
 Les peces diàries han de sonar i veure’s com una sola marca, però sense
 convertir una previsió meteorològica en un missatge climàtic confús. La dada de
