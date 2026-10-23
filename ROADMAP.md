@@ -5,6 +5,8 @@ pendent, aplicable i amb un criteri de finalització observable. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
 
+La revisió de producció posterior al PR #296 és a [`docs/POST-MERGE-AUDIT-2026-10-23.md`](docs/POST-MERGE-AUDIT-2026-10-23.md). La ruta de canvi climàtic i l’accés des del menú ja estan publicats. L’única degradació operativa observada durant la revisió va ser temporal: el planificador va passar de `stale` a `healthy` mentre Cloudflare investigava una incidència dels Cron Triggers. Encara cal validar els circuits que depenen de publicacions i dispositius reals.
+
 ## Visió
 
 Convertir l’Observatori Meteorològic Fontanillas en la referència digital de
@@ -575,15 +577,11 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **Clima:** ingestió NOAA compartida, CO₂ global a la webcam i a la càpsula
-   diària; després, esquelet narratiu de `/canvi-climatic` amb fonts i escales
-   ben separades.
-2. **Publicació diària:** corregir la jerarquia del vespre —temps i fase lunar
-   simultanis— i validar la nova identitat sonora abans de substituir l’actual.
-3. **Educació:** revisió docent de la primera fitxa pròpia d’Aula oberta.
-4. **Cel nocturn:** completar la guia textual d’objectes, creuar-la amb la
-   meteorologia i fer la prova final en mòbil i la validació astronòmica.
-5. **Experiments:** continuar acumulant mostres de Fonta, XEMA i nowcasting.
+1. **Fiabilitat operativa:** observar la recuperació dels Cron Triggers, comprovar el proper vespre i timelapse reals sense duplicats i completar les proves OneSignal i avisos en dispositius reals.
+2. **Clima:** validar visualment el CO₂ ja integrat a webcam i peces diàries; ampliar `/canvi-climatic` amb sèries llargues, gràfics accessibles, metodologia i revisió editorial/idiomes. La ruta i la primera lectura ja són públiques.
+3. **Qualitat real:** provar en iPhone, Android i ordinador els visors, els controls tàctils, l’accessibilitat i la recuperació sense connexió; repetir l’auditoria SEO a Search Console.
+4. **Contingut:** revisió docent de la primera fitxa d’Aula oberta, guia local estacional i següent resum periòdic només amb cobertura suficient.
+5. **Cel i experiments:** completar la guia d’objectes del cel nocturn i la prova física; continuar acumulant mostres prospectives de Fonta, XEMA i nowcasting. OPERA continua condicionat a la credencial i al catàleg privat real.
 
 Les millores d’un paquet s’han de desplegar, mesurar i documentar abans d’obrir
 el següent. L’objectiu no és tenir més funcions que altres portals, sinó ser la
