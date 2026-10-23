@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-23 — Timelapse amb menys memòria i detecció de buits
+
+- El generador de la Raspberry redueix les fotografies de 7680×2160 una a una i desa els fitxers temporals al disc abans de codificar el vídeo. Això evita acumular captures originals dins d'un sol procés FFmpeg en una màquina de 415 MiB de RAM.
+- El panell d'administració avisa quan falta un vídeo de dilluns, dimecres o divendres entre els dies que sí s'han preparat.
+- La investigació del 21 d'octubre és a la incidència #299. La recuperació d'aquell vídeo i la confirmació als quatre canals continuen pendents de prova a la Raspberry; aquest canvi no els publica.
+
 ## 2026-10-23 — Històric climàtic i metadades fidels
 
 - `/canvi-climatic` incorpora 67 mitjanes anuals de CO₂ de Mauna Loa (1959–2025), una gràfica, una taula resum i el CSV descarregable, amb el mètode de reproducció i els límits de la sèrie documentats.
