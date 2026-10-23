@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-23 — Qualitat tècnica, fonts locals i mode offline
+
+- DM Sans i Manrope es serveixen localment en WOFF2, amb les llicències
+  preservades i sense connexions ni excepcions CSP per a Google Fonts.
+- El service worker desa les fonts amb l’app shell i renova la memòria cau per
+  fer arribar el canvi als dispositius instal·lats.
+- El mode sense connexió mostra l’antiguitat de la dada, anuncia l’estat de
+  manera moderada i incorpora un reintent accessible sense recarregar la web.
+
 ## 2026-10-22 — SEO de servidor verificat amb Search Console
 
 - L’auditoria real detecta que Cloudflare servia el títol de portada a l’HTML

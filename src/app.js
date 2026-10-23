@@ -70,7 +70,7 @@ function updateWeatherStoriesSafely(payload){
   if(ACTIVE_PAGE!=='histories')return;
   loadRouteFeature(()=>getWeatherStoriesModule().then(module=>module.updateWeatherStories(payload)),'Les històries meteorològiques');
 }
-function showOfflineBanner(ageMinutes,message=''){ const banner=document.getElementById('offline-banner'); if(!banner)return; banner.textContent=message||`Mostrant dades de fa ${ageMinutes} min (mode sense connexió)`; banner.hidden=false; }
+function showOfflineBanner(ageMinutes,message=''){ const banner=document.getElementById('offline-banner'); if(!banner)return; const copy=document.getElementById('offline-message'); if(copy)copy.textContent=message||`Mostrant dades de fa ${ageMinutes} min (mode sense connexió)`; banner.hidden=false; }
 function hideOfflineBanner(){ const banner=document.getElementById('offline-banner'); if(banner)banner.hidden=true; }
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function fetchCurrentWeatherResilient(){
@@ -276,3 +276,10 @@ window.addEventListener('pageshow',event=>{
 });
 window.addEventListener('focus',()=>refreshAfterResume(false));
 window.addEventListener('online',()=>refreshAfterResume(true));
+document.getElementById('offline-retry')?.addEventListener('click',async event=>{
+  const button=event.currentTarget;
+  button.disabled=true;
+  button.textContent='Reintentant…';
+  try{await refreshAfterResume(true);}
+  finally{button.disabled=false;button.textContent='Reintenta ara';}
+});
