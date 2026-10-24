@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-24 — Cercles alineats i colors orientatius de qualitat de l'aire
+
+- Les etiquetes i els números de NO₂, O₃ i PM10 se centren dins de cada cercle. Es retira de la imatge el rètol «CAMS · µg/m³».
+- Cada cercle pren el color de la franja horària corresponent de l'índex europeu revisat el 2024 per aquell contaminant. La fitxa de la webcam n'explica la font CAMS/Open-Meteo, les unitats i el caràcter modelitzat; no es presenta com a sensor local ni com a avís oficial.
+- El nou dibuix i els colors necessiten una mostra real de la Raspberry abans d'instal·lar-lo al servei.
+
 ## 2026-10-24 — Dades de la càmera amb cercles discrets
 
 - El CO₂ queda en una etiqueta mínima amb valor i unitat; la data i Mauna Loa continuen a la fitxa de la webcam, però no tapen la imatge.

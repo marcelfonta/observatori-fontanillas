@@ -34,7 +34,10 @@ AIR_NO2="$(mktemp)"
 AIR_O3="$(mktemp)"
 AIR_PM10="$(mktemp)"
 AIR_TIME="$(mktemp)"
-trap 'rm -f "$TEMP" "$PREVIEW_TEMP" "$CO2_VALUE" "$CO2_DATE" "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_TIME"' EXIT
+AIR_NO2_COLOR="$(mktemp)"
+AIR_O3_COLOR="$(mktemp)"
+AIR_PM10_COLOR="$(mktemp)"
+trap 'rm -f "$TEMP" "$PREVIEW_TEMP" "$CO2_VALUE" "$CO2_DATE" "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_TIME" "$AIR_NO2_COLOR" "$AIR_O3_COLOR" "$AIR_PM10_COLOR"' EXIT
 # El Worker és l'única font normalitzada; una fallada NOAA no atura la càmera.
 CO2_URL="${CAMERA_UPLOAD_URL%/camera/nord/upload}/climate/co2"
 if curl --fail --silent --show-error --max-time 5 "$CO2_URL" | python3 -c '
@@ -80,24 +83,27 @@ try:
     values=[float(current[key]) for key in keys]
     if any(not math.isfinite(value) or not 0 <= value <= 1000 for value in values):
         raise ValueError("invalid CAMS value")
-    for path,value in zip(sys.argv[1:4],values):
+    # Franges horàries europees (EEA, revisió 2024). Els colors
+    # classifiquen cada valor del model; no són un índex oficial de cap estació.
+    limits=((10,25,60,100,150),(60,100,120,160,180),(15,45,120,195,270))
+    colors=("0x238D5A","0xB8891F","0xC65F22","0xB73535","0x873F93","0x5F275B")
+    for path,value,levels,color_path in zip(sys.argv[1:4],values,limits,sys.argv[5:8]):
         Path(path).write_text(str(round(value)))
+        band=next((index for index,limit in enumerate(levels) if value <= limit),5)
+        Path(color_path).write_text(colors[band])
     local=observed.astimezone(ZoneInfo("Europe/Madrid"))
     Path(sys.argv[4]).write_text(local.strftime("%d/%m %Hh ")+local.tzname())
 except (ValueError,KeyError,TypeError,json.JSONDecodeError):
     pass
-' "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_TIME"; then
-  if [[ -s "$AIR_NO2" && -s "$AIR_O3" && -s "$AIR_PM10" && -s "$AIR_TIME" ]]; then
-    # Cercles decoratius del mateix color: no són un semàfor sanitari ni un AQI.
-    # La procedència CAMS i les unitats es mantenen en lletra petita a la imatge.
-    FILTER="${FILTER},drawtext=fontfile='$FONT':text='CAMS · µg/m³':fontcolor=white@0.9:borderw=5:bordercolor=black@0.75:fontsize=50:x=6250:y=1660"
+' "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_TIME" "$AIR_NO2_COLOR" "$AIR_O3_COLOR" "$AIR_PM10_COLOR"; then
+  if [[ -s "$AIR_NO2" && -s "$AIR_O3" && -s "$AIR_PM10" && -s "$AIR_TIME" && -s "$AIR_NO2_COLOR" && -s "$AIR_O3_COLOR" && -s "$AIR_PM10_COLOR" ]]; then
     for pollutant in NO2 O3 PM10; do
       case "$pollutant" in
-        NO2) air_x=6030; air_value="$AIR_NO2" ;;
-        O3) air_x=6490; air_value="$AIR_O3" ;;
-        PM10) air_x=6950; air_value="$AIR_PM10" ;;
+        NO2) air_x=6030; air_value="$AIR_NO2"; air_color="$AIR_NO2_COLOR" ;;
+        O3) air_x=6490; air_value="$AIR_O3"; air_color="$AIR_O3_COLOR" ;;
+        PM10) air_x=6950; air_value="$AIR_PM10"; air_color="$AIR_PM10_COLOR" ;;
       esac
-      FILTER="${FILTER},drawtext=fontfile='$FONT':text='●':fontcolor=0x238D5A@0.87:borderw=7:bordercolor=0x07241A@0.7:fontsize=360:x=$air_x:y=1690,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=67:x=$((air_x+94)):y=1790,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=116:x=$((air_x+105)):y=1880"
+      FILTER="${FILTER},drawtext=fontfile='$FONT':text='●':fontcolor=$(cat "$air_color")@0.9:borderw=7:bordercolor=0x07241A@0.7:fontsize=360:x=$air_x:y=1690,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=64:x=$air_x+(300-text_w)/2:y=1755,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=98:x=$air_x+(300-text_w)/2:y=1830"
     done
   fi
 fi
