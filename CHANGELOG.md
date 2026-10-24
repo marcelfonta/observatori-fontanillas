@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-24 — Etiquetes compactes a la càmera
+
+- La mostra de la Raspberry mostrava dues capses molt grans damunt del cel. Es redueixen a dues franges translúcides de 250 píxels d'altura a la imatge original de 2.160 píxels, amb fonts, data i unitats visibles.
+- El canvi queda pendent d'una nova mostra local de dia i de nit abans d'instal·lar-lo al servei de publicació de la Raspberry.
+
 ## 2026-10-24 — Consulta marítima detallada i prova local de la càmera
 
 - El visor del mar destaca l'obertura del mapa ampliable de Copernicus i l'accés independent a mesures de temperatura de boies a Portus. Diferencia clarament els camps modelitzats de les observacions puntuals.

@@ -179,6 +179,9 @@ analitzada i prevista, no mesures instantànies de cada punt del mar.
 El visor ara destaca l'obertura a pantalla completa per fer zoom i enllaça
 separadament a Portus per consultar temperatura de l'aigua mesurada per boies.
 La càmera disposa d'un mode de prova local que no publica les imatges.
+La primera mostra real de dia ha confirmat les dades i l'atribució, però les
+capses tapaven massa cel; la versió compacta necessita una segona revisió
+visual abans de substituir el script del servei.
 
 - [ ] Provar amb llum de dia i de nit la nova franja de contaminants a la
   Raspberry, comprovar hora, font, valors, unitats i absència segura quan el

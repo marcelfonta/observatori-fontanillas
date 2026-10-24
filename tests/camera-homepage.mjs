@@ -46,7 +46,10 @@ const variants=fs.readFileSync(new URL('../scripts/camera-public-variants.sh',im
 assert.match(variants,/scale=960:-2/);
 assert.match(variants,/camera\/nord\/upload-preview/);
 assert.match(variants,/CO₂ ATMOSFÈRIC/);
-assert.match(variants,/MAUNA LOA · NOAA/);
+assert.match(variants,/MAUNA LOA/);
+assert.match(variants,/NOAA/);
+assert.match(variants,/w=1680:h=250/);
+assert.match(variants,/w=3020:h=250/);
 assert.match(variants,/textfile='\$CO2_DATE'/);
 assert.match(variants,/SANT CELONI  ·  BAIX MONTSENY/);
 
