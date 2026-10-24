@@ -90,7 +90,7 @@ except (ValueError,KeyError,TypeError,json.JSONDecodeError):
   if [[ -s "$AIR_NO2" && -s "$AIR_O3" && -s "$AIR_PM10" && -s "$AIR_TIME" ]]; then
     # Cercles decoratius del mateix color: no són un semàfor sanitari ni un AQI.
     # La procedència CAMS i les unitats es mantenen en lletra petita a la imatge.
-    FILTER="${FILTER},drawtext=fontfile='$FONT':text='CAMS · µg/m³':fontcolor=white@0.88:fontsize=50:x=6250:y=1660"
+    FILTER="${FILTER},drawtext=fontfile='$FONT':text='CAMS · µg/m³':fontcolor=white@0.9:borderw=5:bordercolor=black@0.75:fontsize=50:x=6250:y=1660"
     for pollutant in NO2 O3 PM10; do
       case "$pollutant" in
         NO2) air_x=6030; air_value="$AIR_NO2" ;;
