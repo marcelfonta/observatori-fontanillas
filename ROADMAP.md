@@ -171,31 +171,30 @@ clarament diferenciada dels contaminants locals PM10, NO₂ i O₃.
 
 ### Contaminants i temperatura superficial del mar
 
-La franja de NO₂, O₃ i PM10 de la webcam està preparada amb estimacions CAMS
-Europe via Open-Meteo. No són lectures de cap sensor de Fontanillas ni de la
-xarxa XVPCA. El visor de Copernicus Marine s'ha preparat com a pestanya de Medi
+La franja de NO₂, O₃ i PM10 de la webcam va començar amb estimacions CAMS.
+La nova proposta consulta les mesures provisionals de l'estació XVPCA ES1275A
+de Sant Celoni. La pàgina de medi ambient presenta les mesures d'aquesta
+estació en un bloc propi, mentre que l'índex i els camps CAMS es mantenen
+separats i identificats. El visor de Copernicus Marine és una pestanya de Medi
 Ambient, carregada només quan se selecciona; representa temperatura superficial
 analitzada i prevista, no mesures instantànies de cada punt del mar.
 El visor ara destaca l'obertura a pantalla completa per fer zoom i enllaça
 separadament a Portus per consultar temperatura de l'aigua mesurada per boies.
 La càmera disposa d'un mode de prova local que no publica les imatges.
-Les primeres mostres reals de dia han confirmat les dades. La proposta actual
-deixa el CO₂ en una etiqueta mínima i els contaminants en tres cercles petits
-amb text centrat. El color de cada cercle segueix la franja horària de l'índex
-europeu aplicada a la concentració estimada per CAMS; és una orientació de
-model i no un avís oficial ni una mesura local. Cal revisar-ne una mostra de
-dia i una de nit abans de substituir el script del servei.
+Les primeres mostres reals de dia han confirmat el disseny compacte. El CO₂
+continua en una etiqueta mínima i els contaminants en tres cercles petits. El
+color ara correspon a la categoria publicada per l'estació oficial. PM10 és una
+mitjana de 24 hores; les altres lectures són horàries. Cal provar aquest canvi
+de font a la Raspberry abans de substituir el script del servei.
 
-- [ ] Provar amb llum de dia i de nit la nova franja de contaminants a la
-  Raspberry, comprovar hora, font, valors, unitats i absència segura quan el
-  model falla; instal·lar el script només després de revisar la mostra.
+- [ ] Provar amb llum de dia i de nit els valors XVPCA de la càmera, comparar-los
+  amb el visor oficial i comprovar l'absència segura quan la font falla;
+  instal·lar el script només després de revisar la mostra.
 - [ ] Validar en staging i en dispositius reals els visors de l'ACA i Copernicus,
   incloent les versions mòbils, abans de desplegar-los a producció.
 - [ ] Quan l'ACA retorni el mapa interactiu al servei, comprovar-ne el contingut
   real i decidir si es pot recuperar la vista incrustada. Mentrestant, la pestanya
   ha de mostrar accessos oficials sense presentar la pàgina de manteniment com un mapa.
-- [ ] Comparar les estimacions CAMS amb una estació oficial XVPCA adequada abans
-  de considerar una presentació d'estat o colors de risc com els de televisió.
 
 ### Pàgina de canvi climàtic de referència
 

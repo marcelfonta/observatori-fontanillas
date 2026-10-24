@@ -1,15 +1,21 @@
 import { CONFIG } from '../core/config.js';
 import { finiteNumber } from '../core/numeric.js';
-import { stationUvReading, currentEnvironment, environmentalTimestamp } from '../core/environment-freshness.js';
+import { stationUvReading, currentEnvironment, environmentalTimestamp, isFresh } from '../core/environment-freshness.js';
 import { parseXacPollen, buildXacReference, rankXacTaxa } from '../core/xac-pollen.js';
 
 const AIR_API='https://air-quality-api.open-meteo.com/v1/air-quality';
+const OFFICIAL_AIR_URL='https://www.gencat.cat/territori/quaire/json/estat.json';
+const OFFICIAL_AIR_STATION='ES1275A';
+const OFFICIAL_AIR_MAX_AGE=3*60*60_000;
+const OFFICIAL_AIR_NAMES={NO2:'no2',O3:'o3',PM10:'pm10','PM2.5':'pm25',SO2:'so2',H2S:'h2s'};
+const OFFICIAL_AIR_QUALITY={bona:['Bona','is-good'],raonablement_bona:['Raonablement bona','is-fair'],regular:['Regular','is-moderate'],desfavorable:['Desfavorable','is-poor'],molt_desfavorable:['Molt desfavorable','is-very-poor'],extremadament_desfavorable:['Extremadament desfavorable','is-extreme']};
 let loaded=false;
 let stationUv=null;
 let modelUv=null;
 let modelCurrent={};
 let stationCurrent=null;
 let modelPayload={};
+let officialAir=null;
 let refreshInFlight=null;
 let lastAttempt=0;
 let xacReference=null;
@@ -60,6 +66,42 @@ function renderComponent(prefix,value){
   if(meter){meter.hidden=reading.position===null;meter.style.width=reading.position===null?'0%':`${Math.max(0,Math.min(100,reading.position))}%`;}
 }
 function finiteValue(value){const n=finiteNumber(value);return n!==null&&n>=0?n:null;}
+export function parseOfficialAir(payload,now=Date.now()){
+  const station=payload?.features?.find(feature=>feature?.id===OFFICIAL_AIR_STATION&&feature?.properties?.localitat==='Sant Celoni')?.properties;
+  const match=station?.dataActualitzacio?.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/);
+  if(!match)return null;
+  const time=environmentalTimestamp(`${match[3]}-${match[2]}-${match[1]}T${match[4]}:${match[5]}`);
+  if(!isFresh(time,now,OFFICIAL_AIR_MAX_AGE))return null;
+  const readings={};
+  for(const item of station.contaminants||[]){
+    const key=OFFICIAL_AIR_NAMES[item.abbr];if(!key)continue;
+    const row=item.dadesHoraries?.findLast(entry=>entry.hora===match[4]);
+    const value=typeof row?.valor==='string'?finiteValue(row.valor.replace(',','.')):finiteValue(row?.valor);
+    const quality=OFFICIAL_AIR_QUALITY[row?.qualitat];
+    if(value!==null&&value<=1000&&quality)readings[key]={value,label:quality[0],className:quality[1]};
+  }
+  return {time,updated:station.dataActualitzacio,readings};
+}
+function renderOfficialAir(){
+  const current=isFresh(officialAir?.time,Date.now(),OFFICIAL_AIR_MAX_AGE)?officialAir:null;
+  const status=document.getElementById('environment-official-status');
+  if(status)status.textContent=current?`Estació de Sant Celoni · ${current.updated} · dades provisionals`:'Mesures oficials temporalment no disponibles';
+  for(const key of Object.values(OFFICIAL_AIR_NAMES)){
+    const reading=current?.readings[key];
+    put(`environment-official-${key}`,reading?number(reading.value,key==='h2s'?1:0):'—');
+    const level=document.getElementById(`environment-official-${key}-level`);
+    if(level){level.textContent=reading?.label||'Sense dada recent';level.className=`environment-level ${reading?.className||''}`.trim();}
+  }
+}
+async function loadOfficialAir(){
+  const controller=new AbortController();const timeout=window.setTimeout(()=>controller.abort(),12000);
+  try{
+    const response=await fetch(OFFICIAL_AIR_URL,{cache:'no-store',signal:controller.signal});
+    if(!response.ok)throw new Error(`XVPCA ${response.status}`);
+    officialAir=parseOfficialAir(await response.json());
+  }catch(error){officialAir=null;console.warn('Estació XVPCA de Sant Celoni temporalment no disponible.',error);}
+  finally{window.clearTimeout(timeout);renderOfficialAir();}
+}
 // Offset-less provider times are already in Europe/Madrid, not the viewer's zone.
 // Never manufacture an update time when the provider omits it.
 function environmentTime(value){
@@ -370,6 +412,7 @@ export async function initEnvironment(){
   // An open/background tab must not keep treating an old observation as live.
   window.setInterval?.(()=>{
     render(modelPayload);
+    renderOfficialAir();
     if(document.visibilityState!=='hidden'&&Date.now()-lastAttempt>=15*60_000)void refreshEnvironment();
   },60_000);
   initEnvironmentViewers();
@@ -379,7 +422,7 @@ export async function initEnvironment(){
 function refreshEnvironment(){
   if(refreshInFlight)return refreshInFlight;
   lastAttempt=Date.now();
-  const pending=Promise.allSettled([loadEnvironment(),loadXacReference()]).finally(()=>{if(refreshInFlight===pending)refreshInFlight=null;});
+  const pending=Promise.allSettled([loadEnvironment(),loadOfficialAir(),loadXacReference()]).finally(()=>{if(refreshInFlight===pending)refreshInFlight=null;});
   refreshInFlight=pending;
   return pending;
 }

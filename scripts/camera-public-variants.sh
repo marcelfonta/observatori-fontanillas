@@ -65,44 +65,52 @@ except (ValueError,KeyError,TypeError,json.JSONDecodeError):
     FILTER="${FILTER},drawbox=x=75:y=85:w=1110:h=155:color=black@0.48:t=fill,drawbox=x=75:y=85:w=11:h=155:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂':fontcolor=0xF4CE46:fontsize=78:x=120:y=119,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=108:x=390:y=100,drawtext=fontfile='$FONT':text='ppm':fontcolor=white:fontsize=50:x=910:y=154"
   fi
 fi
-# CAMS Europe és una estimació modelitzada d'una cel·la d'uns 11 km, no una
-# lectura local de l'estació. Sense dades recents, no s'imprimeix cap valor.
-if curl --fail --silent --show-error --max-time 5 \
-  'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=41.6906&longitude=2.4890&current=nitrogen_dioxide,ozone,pm10&domains=cams_europe&timezone=UTC' | python3 -c '
-import datetime,json,math,sys
+# Mesures provisionals de l'estació oficial XVPCA ES1275A. Si falta un
+# contaminant o la darrera actualització és antiga, no es dibuixa cap cercle.
+if curl --fail --silent --show-error --max-time 8 \
+  'https://www.gencat.cat/territori/quaire/json/estat.json' | python3 -c '
+import datetime,json,math,re,sys
 from pathlib import Path
 from zoneinfo import ZoneInfo
 try:
     data=json.load(sys.stdin)
-    current=data["current"]
-    observed=datetime.datetime.fromisoformat(current["time"]+"+00:00")
-    age=(datetime.datetime.now(datetime.timezone.utc)-observed).total_seconds()
-    if not -1800 <= age <= 10800:
-        raise ValueError("stale CAMS time")
-    keys=("nitrogen_dioxide","ozone","pm10")
-    values=[float(current[key]) for key in keys]
-    if any(not math.isfinite(value) or not 0 <= value <= 1000 for value in values):
-        raise ValueError("invalid CAMS value")
-    # Franges horàries europees (EEA, revisió 2024). Els colors
-    # classifiquen cada valor del model; no són un índex oficial de cap estació.
-    limits=((10,25,60,100,150),(60,100,120,160,180),(15,45,120,195,270))
-    colors=("0x238D5A","0xB8891F","0xC65F22","0xB73535","0x873F93","0x5F275B")
-    for path,value,levels,color_path in zip(sys.argv[1:4],values,limits,sys.argv[5:8]):
-        Path(path).write_text(str(round(value)))
-        band=next((index for index,limit in enumerate(levels) if value <= limit),5)
-        Path(color_path).write_text(colors[band])
-    local=observed.astimezone(ZoneInfo("Europe/Madrid"))
-    Path(sys.argv[4]).write_text(local.strftime("%d/%m %Hh ")+local.tzname())
+    station=next((feature["properties"] for feature in data["features"] if feature.get("id")=="ES1275A" and feature.get("properties",{}).get("localitat")=="Sant Celoni"),None)
+    if not station:
+        raise ValueError("station missing")
+    stamp=station["dataActualitzacio"]
+    if not re.fullmatch(r"\d{2}/\d{2}/\d{4} \d{2}:\d{2}",stamp):
+        raise ValueError("invalid station time")
+    local=datetime.datetime.strptime(stamp,"%d/%m/%Y %H:%M").replace(tzinfo=ZoneInfo("Europe/Madrid"))
+    if local.replace(fold=0).utcoffset()!=local.replace(fold=1).utcoffset():
+        raise ValueError("ambiguous station time")
+    age=(datetime.datetime.now(datetime.timezone.utc)-local.astimezone(datetime.timezone.utc)).total_seconds()
+    if not -300 <= age < 10800:
+        raise ValueError("stale station time")
+    colors={"bona":"0x238D5A","raonablement_bona":"0x8CAC34","regular":"0xB8891F","desfavorable":"0xB73535","molt_desfavorable":"0x873F93","extremadament_desfavorable":"0x5F275B"}
+    components={item.get("abbr"):item for item in station.get("contaminants",[])}
+    for pollutant,value_path,color_path in zip(("NO2","O3","PM10"),sys.argv[1:4],sys.argv[5:8]):
+        component=components.get(pollutant,{})
+        row=next((row for row in component.get("dadesHoraries",[]) if row.get("hora")==local.strftime("%H")),None)
+        quality=colors.get(row.get("qualitat")) if row else None
+        try:
+            value=float(str(row.get("valor","")).replace(",",".")) if row else math.nan
+        except (ValueError,TypeError):
+            continue
+        if quality and math.isfinite(value) and 0 <= value <= 1000:
+            Path(value_path).write_text(str(round(value)))
+            Path(color_path).write_text(quality)
+    Path(sys.argv[4]).write_text(stamp)
 except (ValueError,KeyError,TypeError,json.JSONDecodeError):
     pass
 ' "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_TIME" "$AIR_NO2_COLOR" "$AIR_O3_COLOR" "$AIR_PM10_COLOR"; then
-  if [[ -s "$AIR_NO2" && -s "$AIR_O3" && -s "$AIR_PM10" && -s "$AIR_TIME" && -s "$AIR_NO2_COLOR" && -s "$AIR_O3_COLOR" && -s "$AIR_PM10_COLOR" ]]; then
+  if [[ -s "$AIR_TIME" ]]; then
     for pollutant in NO2 O3 PM10; do
       case "$pollutant" in
         NO2) air_x=6030; air_value="$AIR_NO2"; air_color="$AIR_NO2_COLOR" ;;
         O3) air_x=6490; air_value="$AIR_O3"; air_color="$AIR_O3_COLOR" ;;
         PM10) air_x=6950; air_value="$AIR_PM10"; air_color="$AIR_PM10_COLOR" ;;
       esac
+      [[ -s "$air_value" && -s "$air_color" ]] || continue
       FILTER="${FILTER},drawtext=fontfile='$FONT':text='●':fontcolor=$(cat "$air_color")@0.9:borderw=7:bordercolor=0x07241A@0.7:fontsize=360:x=$air_x:y=1690,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=64:x=$air_x+(300-text_w)/2:y=1755,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=98:x=$air_x+(300-text_w)/2:y=1830"
     done
   fi
