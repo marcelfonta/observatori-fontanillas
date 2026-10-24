@@ -182,6 +182,9 @@ analitzada i prevista, no mesures instantànies de cada punt del mar.
   model falla; instal·lar el script només després de revisar la mostra.
 - [ ] Validar en staging i en dispositius reals els visors de l'ACA i Copernicus,
   incloent les versions mòbils, abans de desplegar-los a producció.
+- [ ] Quan l'ACA retorni el mapa interactiu al servei, comprovar-ne el contingut
+  real i decidir si es pot recuperar la vista incrustada. Mentrestant, la pestanya
+  ha de mostrar accessos oficials sense presentar la pàgina de manteniment com un mapa.
 - [ ] Comparar les estimacions CAMS amb una estació oficial XVPCA adequada abans
   de considerar una presentació d'estat o colors de risc com els de televisió.
 

@@ -2,6 +2,11 @@ import {test,expect} from '@playwright/test';
 import {fileURLToPath} from 'node:url';
 
 const indexPath=fileURLToPath(new URL('../../index.html',import.meta.url));
+const openEnvironment=async page=>{
+  await page.goto('/medi-ambient');
+  await page.locator('#environment-tab-drought').scrollIntoViewIfNeeded();
+  await expect(page.locator('#environment-panel-fire img')).toHaveAttribute('src',/pla_alfa\.gif/,{timeout:15000});
+};
 
 test.beforeEach(async({page})=>{
   await page.route('**/*',route=>{
@@ -31,17 +36,19 @@ test('el menú lateral conserva la posició després de canviar de pàgina',asyn
   await expect.poll(()=>nav.evaluate(element=>element.scrollTop)).toBeGreaterThanOrEqual(before-2);
 });
 
-test('els visors de sequera i temperatura del mar apunten a les fonts vigents',async({page})=>{
-  await page.goto('/medi-ambient');
+test('la sequera ofereix alternatives oficials i el mapa marí apunta a Copernicus',async({page})=>{
+  await openEnvironment(page);
   await page.locator('#environment-tab-drought').click();
-  await expect(page.locator('#environment-panel-drought iframe')).toHaveAttribute('src','https://aplicacions.aca.gencat.cat/visseq/');
+  await expect(page.locator('#environment-panel-drought')).toContainText('El mapa interactiu de l’ACA pot estar temporalment en manteniment');
+  await expect(page.locator('#environment-panel-drought a[href="https://aca.gencat.cat/ca/laigua/portal-sequera/estat-actual/"]')).toBeVisible();
+  await expect(page.locator('#environment-panel-drought iframe')).toHaveCount(0);
   await page.locator('#environment-tab-marine').click();
   await expect(page.locator('#environment-panel-marine iframe')).toHaveAttribute('src','https://data.marine.copernicus.eu/viewer');
 });
 
 test('al mòbil el mapa del mar s’obre en pantalla completa',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.goto('/medi-ambient');
+  await openEnvironment(page);
   await page.locator('#environment-tab-marine').click();
   await expect(page.locator('#environment-panel-marine .environment-viewer-mobile-launch')).toBeVisible();
   await expect(page.locator('#environment-panel-marine iframe')).not.toHaveAttribute('src',/.+/);

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-24 — Alternativa oficial quan el mapa de sequera és en manteniment
+
+- La pestanya de sequera deixa d'incrustar la pàgina de manteniment de l'ACA i ofereix l'estat actual, les reserves dels embassaments i l'accés al mapa interactiu oficial. No infereix cap escenari de sequera ni reutilitza una dada antiga.
+
 ## 2026-10-24 — Visors ambientals i navegació de l'arxiu
 
 - El visor de sequera torna a obrir l'entrada vigent de l'ACA. Medi Ambient incorpora el mapa de temperatura superficial de Copernicus Marine sota demanda, identificat com a anàlisi i previsió propera al temps real.
