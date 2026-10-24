@@ -67,11 +67,10 @@ no és anecdòtica i qualsevol canvi de pesos queda justificat amb mètriques.
 
 ### Publicació social i timelapse
 
-- [ ] Instal·lar a la Raspberry els scripts actualitzats de la webcam i del
-  timelapse, verificar que una captura real mostra el CO₂ recent de Mauna Loa
-  amb font i data, i confirmar la pròxima publicació automàtica sense duplicats.
+- [ ] Confirmar la pròxima publicació automàtica del timelapse, amb el CO₂ a la
+  imatge, sense duplicats i en tots els canals habilitats.
 
-El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) recull la diagnosi. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El timelapse del 23/10 s’ha publicat a Instagram, però cal verificar la resta de canals i la pròxima execució amb la càpsula de CO₂ abans de tancar la incidència. El panell d'administració pot assenyalar dies programats absents.
+El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) recull la diagnosi. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El script actualitzat de la càmera es va instal·lar el 24/10 i el servei va acabar correctament. El timelapse del 23/10 s’ha publicat a Instagram i el workflow de YouTube del mateix dia va acabar correctament, però cal verificar les publicacions visibles a la resta de canals i la pròxima execució amb la càpsula de CO₂ abans de tancar la incidència. El panell d'administració pot assenyalar dies programats absents.
 
 - [ ] Confirmar en una jornada real que el timelapse arriba a tots els canals
   habilitats, especialment TikTok, sense duplicats i amb un màxim d’una
@@ -187,12 +186,12 @@ La càmera disposa d'un mode de prova local que no publica les imatges.
 Les primeres mostres reals de dia han confirmat el disseny compacte. El CO₂
 continua en una etiqueta mínima i els contaminants en tres cercles petits. El
 color ara correspon a la categoria publicada per l'estació oficial. PM10 és una
-mitjana de 24 hores; les altres lectures són horàries. Cal provar aquest canvi
-de font a la Raspberry abans de substituir el script del servei.
+mitjana de 24 hores; les altres lectures són horàries. Una mostra diürna es va
+comparar amb el visor oficial i el script es va instal·lar el 24/10; el servei
+de la Raspberry va acabar amb resultat correcte.
 
-- [ ] Provar amb llum de dia i de nit els valors XVPCA de la càmera, comparar-los
-  amb el visor oficial i comprovar l'absència segura quan la font falla;
-  instal·lar el script només després de revisar la mostra.
+- [ ] Comprovar en una mostra nocturna els valors XVPCA de la càmera i verificar
+  en producció l'absència segura quan la font oficial falla.
 - [ ] Validar en staging i en dispositius reals els visors de l'ACA i Copernicus,
   incloent les versions mòbils, abans de desplegar-los a producció.
 - [ ] Quan l'ACA retorni el mapa interactiu al servei, comprovar-ne el contingut

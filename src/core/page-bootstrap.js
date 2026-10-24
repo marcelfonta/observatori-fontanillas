@@ -5,4 +5,9 @@
   const pathPage = pathname === '/' || pathname === '/index.html' ? 'inici' : pathname.startsWith('/histories/')?'histories':pathname.startsWith('/resums/')?'resums':decodeURIComponent(pathname.slice(1));
   const requested = legacy || pathPage;
   document.documentElement.dataset.portalPage = pages.has(requested) ? requested : 'inici';
+  if(document.documentElement.dataset.portalPage==='medi-ambient')document.addEventListener('click',event=>{
+    if(document.documentElement.dataset.environmentViewersReady==='true')return;
+    const tab=event.target.closest?.('[data-environment-viewer]');
+    if(tab)document.documentElement.dataset.pendingEnvironmentViewer=tab.dataset.environmentViewer;
+  },true);
 })();

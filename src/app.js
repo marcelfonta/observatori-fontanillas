@@ -248,7 +248,18 @@ document.addEventListener('observatori:alerts-updated',event=>updateSituation({a
 initWhenVisible('.model-viewer',initModelViewer);
 initWhenVisible('#long-range',loadLongRange,'900px 0px');
 initWhenVisible('#territori',initRadar,'700px 0px');
-initWhenVisible('#medi-ambient',()=>loadRouteFeature(()=>getEnvironmentModule().then(module=>module.initEnvironment()),'El visor ambiental'),'600px 0px');
+if(ACTIVE_PAGE==='medi-ambient'){
+  // A visitor can select a tab before the environment module finishes importing.
+  // Keep that choice and apply it after the tab handlers have been attached.
+  loadRouteFeature(()=>getEnvironmentModule().then(module=>{
+    const loading=module.initEnvironment();
+    const requestedViewer=document.documentElement.dataset.pendingEnvironmentViewer;
+    document.documentElement.dataset.environmentViewersReady='true';
+    delete document.documentElement.dataset.pendingEnvironmentViewer;
+    if(requestedViewer)document.querySelector(`[data-environment-viewer="${requestedViewer}"]`)?.click();
+    return loading;
+  }),'El visor ambiental');
+}else initWhenVisible('#medi-ambient',()=>loadRouteFeature(()=>getEnvironmentModule().then(module=>module.initEnvironment()),'El visor ambiental'),'600px 0px');
 initWhenVisible('#avisos',()=>loadDeferredAssets('#avisos'),'600px 0px');
 if(document.body.dataset.page==='meteo-ia')loadRouteFeature(()=>getEnvironmentModule().then(module=>module.initEnvironment()),'El visor ambiental');
 updateClock();
