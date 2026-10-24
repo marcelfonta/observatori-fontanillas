@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-24 — Mesures oficials de qualitat de l'aire de Sant Celoni
+
+- La pàgina de medi ambient incorpora les lectures provisionals de l'estació XVPCA ES1275A amb hora, unitats, categories oficials i accés al visor de la Generalitat. Les estimacions CAMS continuen en un bloc separat i identificat.
+- Els cercles de NO₂, O₃ i PM10 de la webcam passen de CAMS a la mateixa estació; el color segueix la categoria oficial publicada. PM10 és una mitjana mòbil de 24 hores. Les dades antigues o absents no es dibuixen.
+- La Raspberry necessita una prova local del nou script abans de substituir la versió instal·lada.
+
 ## 2026-10-24 — Cercles alineats i colors orientatius de qualitat de l'aire
 
 - Les etiquetes i els números de NO₂, O₃ i PM10 se centren dins de cada cercle. Es retira de la imatge el rètol «CAMS · µg/m³».

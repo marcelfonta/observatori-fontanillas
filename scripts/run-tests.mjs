@@ -35,6 +35,7 @@ if (quick && !selected.includes('fonta-independent.mjs')) selected.push('fonta-i
 if (quick && !selected.includes('fonta-r2-backup.mjs')) selected.push('fonta-r2-backup.mjs');
 if (quick && !selected.includes('fonta-xema-daily.mjs')) selected.push('fonta-xema-daily.mjs');
 if (quick && !selected.includes('environment-missing-values.mjs')) selected.push('environment-missing-values.mjs');
+if (quick && !selected.includes('xvpca-air.mjs')) selected.push('xvpca-air.mjs');
 if (quick && !selected.includes('environment-freshness.mjs')) selected.push('environment-freshness.mjs');
 if (quick && !selected.includes('xac-integration.mjs')) selected.push('xac-integration.mjs');
 if (quick && !selected.includes('xac-pollen.mjs')) selected.push('xac-pollen.mjs');

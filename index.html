@@ -74,7 +74,7 @@
     <link rel="stylesheet" href="/css/variables.css?v=6.0" />
     <link rel="stylesheet" href="/css/layout.css?v=6.0" />
     <link rel="stylesheet" href="/css/style.css?v=22.39.2-stellarium-controls" />
-    <link rel="stylesheet" href="/css/portal.css?v=22.42.10-camera-aqi" />
+    <link rel="stylesheet" href="/css/portal.css?v=22.42.11-xvpca-air" />
     <script type="module" src="/src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="/src/features/push.js?v=22.31.6"></script>
     <script type="module" src="/src/features/pwa.js?v=22.31.6"></script>
@@ -790,7 +790,7 @@
           <div class="webcam-frame"><img id="webcam-image" alt="Vista actual cap al nord des de la càmera meteorològica de l’Observatori Fontanillas" loading="lazy" decoding="async" /><em class="webcam-fallback">La imatge no està disponible ara mateix. Les dades meteorològiques continuen actualitzant-se.</em><button class="webcam-expand" id="webcam-expand" type="button" aria-haspopup="dialog" aria-controls="webcam-dialog">⛶ Ampliar imatge</button><div class="webcam-overlay"><span data-webcam-time>Hora de captura pendent</span><b>Sant Celoni · vista nord</b></div></div>
           <div class="webcam-actions"><a href="https://fonta-meteo.marcelfonta.workers.dev/camera/nord/latest.jpg" target="_blank" rel="noreferrer">Obrir imatge amb privacitat ↗</a><a href="https://fonta-meteo.marcelfonta.workers.dev/camera/nord/latest-branded.jpg" target="_blank" rel="noreferrer">Versió amb marca ↗</a></div>
           <p class="webcam-co2" id="webcam-co2" hidden></p>
-          <p class="webcam-air-note">Els cercles NO₂, O₃ i PM10 mostren concentracions horàries estimades per CAMS Europe via Open-Meteo (µg/m³). Els colors segueixen les <a href="https://airindex.eea.europa.eu/AQI/index.html" target="_blank" rel="noopener noreferrer">franges de l’índex europeu</a> per cada contaminant: verd, ocre, taronja, vermell i porpra, de millor a pitjor. Són valors de model d’uns 11 km, no mesures de sensors locals ni avisos oficials.</p>
+          <p class="webcam-air-note">Els cercles NO₂, O₃ i PM10 mostren mesures provisionals de l’<a href="https://mediambient.gencat.cat/ca/05_ambits_dactuacio/atmosfera/qualitat_de_laire/vols-saber-que-respires/visor-de-dades/" target="_blank" rel="noopener noreferrer">estació oficial XVPCA de Sant Celoni</a> (µg/m³). El color segueix la categoria publicada per la Generalitat; PM10 és la mitjana de les darreres 24 hores. Si la lectura no és recent, no es mostra.</p>
           <div class="webcam-details"><span><small>Actualització</small><b>Cada 5 minuts de dia · cada 15 de nit</b></span><span><small>Lectura visual</small><b>Núvols · boira · visibilitat</b></span><span><small>Orientació</small><b>Nord · Baix Montseny</b></span></div>
           <section class="nearby-webcams" aria-labelledby="nearby-webcams-title">
             <div><p class="eyebrow">Altres mirades</p><h3 id="nearby-webcams-title">Webcams properes al Montseny</h3><p>Accessos externs seleccionats per consultar altres orientacions quan hi hagi imatge disponible.</p></div>
@@ -924,6 +924,18 @@
 
       <section id="medi-ambient" class="environment-section section-block" aria-labelledby="environment-summary-title" data-portal-page="medi-ambient">
         <div class="environment-status"><p><span></span><b id="environment-status-copy">Carregant indicadors ambientals…</b></p><time id="environment-updated">—</time></div>
+        <section class="environment-official panel" aria-labelledby="environment-official-title">
+          <header><div><p class="eyebrow">Mesures oficials · XVPCA</p><h2 id="environment-official-title">Aire mesurat a Sant Celoni</h2><p id="environment-official-status" role="status">Consultant l’estació de C. de Carles Damm…</p></div><a href="https://mediambient.gencat.cat/ca/05_ambits_dactuacio/atmosfera/qualitat_de_laire/vols-saber-que-respires/visor-de-dades/" target="_blank" rel="noopener noreferrer">Veure l’estació al visor oficial ↗</a></header>
+          <div class="environment-official__grid" aria-label="Mesures de l’estació oficial de Sant Celoni">
+            <div><span>NO₂</span><strong id="environment-official-no2">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-no2-level">Carregant</em></div>
+            <div><span>O₃</span><strong id="environment-official-o3">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-o3-level">Carregant</em></div>
+            <div><span>PM10</span><strong id="environment-official-pm10">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-pm10-level">Carregant</em></div>
+            <div><span>PM2,5</span><strong id="environment-official-pm25">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-pm25-level">Carregant</em></div>
+            <div><span>SO₂</span><strong id="environment-official-so2">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-so2-level">Carregant</em></div>
+            <div><span>H₂S</span><strong id="environment-official-h2s">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-h2s-level">Carregant</em></div>
+          </div>
+          <p class="environment-official__note">Dades provisionals de l’estació XVPCA ES1275A, pendents de validació. PM10 és la mitjana de les darreres 24 hores; la resta són lectures horàries. Si la font no s’actualitza, no mostrem xifres antigues.</p>
+        </section>
         <div class="environment-overview">
           <article class="environment-aqi panel" id="environment-aqi-card">
             <header><div><p class="eyebrow">Qualitat de l’aire · estimació CAMS</p><h2 id="environment-summary-title">Índex europeu de qualitat de l’aire</h2></div><span class="tag">Model · 11 km</span></header>
@@ -933,7 +945,8 @@
           </article>
           <article class="environment-health panel"><p class="eyebrow">Lectura pràctica</p><h2 id="environment-health-title">Esperant dades</h2><p id="environment-health-copy">La recomanació s’adaptarà a l’índex europeu actual.</p><div class="environment-health__meta"><span><small>Radiació UV · <em id="environment-uv-source">No disponible</em></small><b id="environment-uv">—</b><small id="environment-uv-time">—</small></span><span><small>Pol·len dominant</small><b id="environment-pollen-main">—</b></span></div></article>
         </div>
-        <div class="environment-metrics" aria-label="Contaminants atmosfèrics actuals">
+        <p class="environment-model-source">Estimacions CAMS Europe via Open-Meteo per a una cel·la d’uns 11 km. Són diferents de les mesures de l’estació de Sant Celoni; l’índex europeu de sobre també és una estimació de model.</p>
+        <div class="environment-metrics" aria-label="Concentracions estimades pel model CAMS">
           <article class="panel"><span>PM10</span><strong><b id="environment-pm10" class="is-placeholder" aria-busy="true">—</b><small> µg/m³</small></strong><p>Partícules de menys de 10 µm</p><span class="environment-level" id="environment-pm10-level">Calculant</span><div class="environment-mini-meter"><i id="environment-pm10-meter"></i></div></article>
           <article class="panel"><span>PM2,5</span><strong><b id="environment-pm25">—</b><small> µg/m³</small></strong><p>Partícules fines</p><span class="environment-level" id="environment-pm25-level">Calculant</span><div class="environment-mini-meter"><i id="environment-pm25-meter"></i></div></article>
           <article class="panel"><span>NO₂</span><strong><b id="environment-no2">—</b><small> µg/m³</small></strong><p>Diòxid de nitrogen</p><span class="environment-level" id="environment-no2-level">Calculant</span><div class="environment-mini-meter"><i id="environment-no2-meter"></i></div></article>

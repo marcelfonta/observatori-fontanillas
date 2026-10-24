@@ -1,5 +1,11 @@
 # Registre de decisions
 
+## ADR — Estació oficial XVPCA de Sant Celoni per a les mesures d'aire (2026-10-24)
+
+- El fitxer públic que alimenta el visor oficial de la Generalitat conté l'estació `ES1275A` de Sant Celoni, data d'actualització i mesures provisionals per contaminant. La pàgina de medi ambient mostra aquestes lectures separades de l'índex i les estimacions CAMS.
+- La càmera només dibuixa NO₂, O₃ i PM10 si el registre de l'estació té menys de tres hores i la lectura de cada component correspon a l'hora publicada. No substitueix una absència amb CAMS. El color representa la categoria `qualitat` publicada pel visor, no un llindar recalculat per nosaltres.
+- PM10 és una mitjana de les darreres 24 hores segons el visor oficial; la resta són lectures horàries. Les dades són provisionals i poden ser revisades. El CO₂ de Mauna Loa continua completament separat.
+
 ## ADR — Colors dels contaminants a la càmera (2026-10-24)
 
 - Els cercles NO₂, O₃ i PM10 classifiquen la concentració horària estimada per CAMS Europe via Open-Meteo segons els llindars per contaminant de l'índex europeu de qualitat de l'aire revisats el 2024. S'empren sis franges, de bona a extremadament dolenta, sense calcular un índex agregat amb només tres contaminants.

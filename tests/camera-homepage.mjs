@@ -49,10 +49,11 @@ assert.match(variants,/text='CO₂'/);
 assert.match(variants,/w=1110:h=155/);
 assert.match(variants,/text='●'/);
 assert.match(variants,/300-text_w/);
-assert.match(variants,/limits=\(\(10,25,60,100,150\),\(60,100,120,160,180\),\(15,45,120,195,270\)\)/);
+assert.match(variants,/feature\.get\("id"\)=="ES1275A"/);
+assert.match(variants,/https:\/\/www\.gencat\.cat\/territori\/quaire\/json\/estat\.json/);
 assert.doesNotMatch(variants,/text='CAMS · µg\/m³'/);
 assert.doesNotMatch(variants,/textfile='\$CO2_DATE'/);
-assert.match(html,/Els cercles NO₂, O₃ i PM10 mostren concentracions horàries estimades per CAMS Europe/);
+assert.match(html,/Els cercles NO₂, O₃ i PM10 mostren mesures provisionals/);
 assert.match(variants,/SANT CELONI  ·  BAIX MONTSENY/);
 
 console.log('Portada de la càmera: imatge pròpia, frescor i reserva correctes');
