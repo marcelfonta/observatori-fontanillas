@@ -145,8 +145,11 @@ adverteix que aquesta estació no és equivalent a una mitjana mundial. Les
 etiquetes públiques indicaran sempre «Mauna Loa» i evitaran dir «mitjana global».
 
 La ingestió diària, el resum compartit al Worker i les connexions locals amb
-webcam i peces diàries estan desplegats. La validació visual amb imatges reals
-i la comparació editorial de les peces continuen pendents.
+webcam i peces diàries estan desplegats. El disseny de la webcam passa d'una
+línia petita a una càpsula de CO₂ amb valor, font i data, i a una etiqueta local
+curta. Cal instal·lar aquesta nova composició a la Raspberry i validar-la amb
+imatges reals de dia i de nit; la comparació editorial de les peces continua
+pendent.
 
 - [ ] Crear una ingestió diària al Worker de les sèries oficials de NOAA, amb
   validació de data, unitats, rang, valors absents, atribució i últim valor bo.

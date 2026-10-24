@@ -41,6 +41,9 @@ assert.match(worker,/latest-preview\.jpg/);
 const variants=fs.readFileSync(new URL('../scripts/camera-public-variants.sh',import.meta.url),'utf8');
 assert.match(variants,/scale=960:-2/);
 assert.match(variants,/camera\/nord\/upload-preview/);
-assert.match(variants,/fontsize=74/);
+assert.match(variants,/CO₂ ATMOSFÈRIC/);
+assert.match(variants,/MAUNA LOA · NOAA/);
+assert.match(variants,/textfile='\$CO2_DATE'/);
+assert.match(variants,/SANT CELONI  ·  BAIX MONTSENY/);
 
 console.log('Portada de la càmera: imatge pròpia, frescor i reserva correctes');
