@@ -26,6 +26,7 @@ test('el menú lateral conserva la posició després de canviar de pàgina',asyn
   await nav.evaluate(element=>{element.scrollTop=element.scrollHeight;});
   await expect.poll(()=>nav.evaluate(element=>element.scrollTop)).toBeGreaterThan(100);
   const before=await nav.evaluate(element=>element.scrollTop);
+  await expect.poll(()=>page.evaluate(()=>Number(sessionStorage.getItem('fontanillas:sidebar-scroll')))).toBeGreaterThanOrEqual(before-2);
   await page.reload();
   await expect.poll(()=>nav.evaluate(element=>element.scrollTop)).toBeGreaterThanOrEqual(before-2);
 });
