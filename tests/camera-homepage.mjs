@@ -45,12 +45,12 @@ assert.match(worker,/latest-preview\.jpg/);
 const variants=fs.readFileSync(new URL('../scripts/camera-public-variants.sh',import.meta.url),'utf8');
 assert.match(variants,/scale=960:-2/);
 assert.match(variants,/camera\/nord\/upload-preview/);
-assert.match(variants,/CO₂ ATMOSFÈRIC/);
-assert.match(variants,/MAUNA LOA/);
-assert.match(variants,/NOAA/);
-assert.match(variants,/w=1680:h=250/);
-assert.match(variants,/w=3020:h=250/);
-assert.match(variants,/textfile='\$CO2_DATE'/);
+assert.match(variants,/text='CO₂'/);
+assert.match(variants,/w=1110:h=155/);
+assert.match(variants,/text='CAMS · µg\/m³'/);
+assert.match(variants,/text='●'/);
+assert.doesNotMatch(variants,/textfile='\$CO2_DATE'/);
+assert.match(html,/Els cercles NO₂, O₃ i PM10 de la imatge són estimacions CAMS Europe/);
 assert.match(variants,/SANT CELONI  ·  BAIX MONTSENY/);
 
 console.log('Portada de la càmera: imatge pròpia, frescor i reserva correctes');

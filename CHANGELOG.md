@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-24 — Dades de la càmera amb cercles discrets
+
+- El CO₂ queda en una etiqueta mínima amb valor i unitat; la data i Mauna Loa continuen a la fitxa de la webcam, però no tapen la imatge.
+- NO₂, O₃ i PM10 passen de la franja superior a tres cercles petits a la part inferior dreta. Porten una atribució CAMS i unitats discretes; tots comparteixen el mateix color decoratiu, sense fingir un semàfor de risc.
+- La fitxa explica que les concentracions són estimacions de model, no sensors locals. Cal validar una nova mostra real abans d'instal·lar aquesta versió a la Raspberry.
+
 ## 2026-10-24 — Etiquetes compactes a la càmera
 
 - La mostra de la Raspberry mostrava dues capses molt grans damunt del cel. Es redueixen a dues franges translúcides de 250 píxels d'altura a la imatge original de 2.160 píxels, amb fonts, data i unitats visibles.
