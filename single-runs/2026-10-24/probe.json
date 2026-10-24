@@ -1,0 +1,32 @@
+{
+  "startedAt": "2026-10-24T12:43:56.931Z",
+  "finishedAt": "2026-10-24T12:44:22.493Z",
+  "policy": {
+    "issuePolicy": "fonta-first-prospective-08-18z-v2",
+    "run": "2026-10-24T00:00",
+    "targetDate": "2026-10-25",
+    "maxRequests": 3,
+    "retries": 0
+  },
+  "results": [
+    {
+      "model": "ecmwf_ifs025",
+      "complete": true,
+      "validHours": 25,
+      "expectedHours": 25,
+      "prospective": true
+    },
+    {
+      "model": "icon_eu",
+      "complete": true,
+      "validHours": 25,
+      "expectedHours": 25,
+      "prospective": true
+    },
+    {
+      "model": "meteofrance_arome_france",
+      "error": "The operation was aborted due to timeout"
+    }
+  ],
+  "activated": false
+}
