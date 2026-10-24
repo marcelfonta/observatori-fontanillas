@@ -6,8 +6,15 @@ set -Eeuo pipefail
 
 BASE="${CAMERA_BASE:-$HOME/meteo-camera}"
 SOURCE="${1:-$BASE/latest.jpg}"
-OUTPUT="$BASE/latest-public.jpg"
-PREVIEW="$BASE/latest-preview.jpg"
+if [[ "${CAMERA_PREVIEW_ONLY:-0}" == 1 ]]; then
+  : "${CAMERA_PREVIEW_DIR:?Indica un directori temporal amb CAMERA_PREVIEW_DIR}"
+  [[ -d "$CAMERA_PREVIEW_DIR" && "$CAMERA_PREVIEW_DIR" != "$BASE" ]] || { echo "El directori de prova ha de ser diferent del directori de la càmera" >&2; exit 1; }
+  OUTPUT="$CAMERA_PREVIEW_DIR/latest-public.jpg"
+  PREVIEW="$CAMERA_PREVIEW_DIR/latest-preview.jpg"
+else
+  OUTPUT="$BASE/latest-public.jpg"
+  PREVIEW="$BASE/latest-preview.jpg"
+fi
 ENV_FILE="${CAMERA_UPLOAD_ENV:-$HOME/.config/meteo-camera/upload.env}"
 FONT="$(fc-match -f '%{file}' 'DejaVu Sans:style=Bold' 2>/dev/null || true)"
 [[ -f "$FONT" ]] || FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
@@ -98,6 +105,11 @@ ffmpeg -nostdin -hide_banner -loglevel error -y -i "$OUTPUT" -vf "scale=960:-2" 
 mv "$PREVIEW_TEMP" "$PREVIEW"
 
 CAPTURED_AT="$(date -r "$SOURCE" --iso-8601=seconds)"
+if [[ "${CAMERA_PREVIEW_ONLY:-0}" == 1 ]]; then
+  echo "Prova local preparada (sense pujada): $OUTPUT"
+  echo "Miniatura local: $PREVIEW"
+  exit 0
+fi
 curl --fail --silent --show-error --max-time 60 --retry 2 --retry-all-errors \
   -X PUT "${CAMERA_UPLOAD_URL%/camera/nord/upload}/camera/nord/upload-branded" \
   -H "Authorization: Bearer $CAMERA_UPLOAD_TOKEN" \

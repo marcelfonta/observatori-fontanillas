@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-24 — Consulta marítima detallada i prova local de la càmera
+
+- El visor del mar destaca l'obertura del mapa ampliable de Copernicus i l'accés independent a mesures de temperatura de boies a Portus. Diferencia clarament els camps modelitzats de les observacions puntuals.
+- El generador de la càmera admet `CAMERA_PREVIEW_ONLY=1` amb un directori temporal obligatori: crea les imatges localment sense pujar-les, per validar la franja de contaminants abans d'instal·lar-la.
+
 ## 2026-10-24 — Alternativa oficial quan el mapa de sequera és en manteniment
 
 - La pestanya de sequera deixa d'incrustar la pàgina de manteniment de l'ACA i ofereix l'estat actual, les reserves dels embassaments i l'accés al mapa interactiu oficial. No infereix cap escenari de sequera ni reutilitza una dada antiga.

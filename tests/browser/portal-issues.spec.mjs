@@ -44,6 +44,9 @@ test('la sequera ofereix alternatives oficials i el mapa marí apunta a Copernic
   await expect(page.locator('#environment-panel-drought iframe')).toHaveCount(0);
   await page.locator('#environment-tab-marine').click();
   await expect(page.locator('#environment-panel-marine iframe')).toHaveAttribute('src','https://data.marine.copernicus.eu/viewer');
+  await expect(page.locator('#environment-panel-marine .environment-marine-options a[href="https://data.marine.copernicus.eu/viewer"]')).toBeVisible();
+  await expect(page.locator('#environment-panel-marine a[href="https://portus.puertos.es/?locale=es"]')).toBeVisible();
+  await expect(page.locator('#environment-panel-marine')).toContainText('mesurada per boies');
 });
 
 test('al mòbil el mapa del mar s’obre en pantalla completa',async({page})=>{

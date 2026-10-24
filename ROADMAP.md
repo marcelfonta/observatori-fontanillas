@@ -176,6 +176,9 @@ Europe via Open-Meteo. No són lectures de cap sensor de Fontanillas ni de la
 xarxa XVPCA. El visor de Copernicus Marine s'ha preparat com a pestanya de Medi
 Ambient, carregada només quan se selecciona; representa temperatura superficial
 analitzada i prevista, no mesures instantànies de cada punt del mar.
+El visor ara destaca l'obertura a pantalla completa per fer zoom i enllaça
+separadament a Portus per consultar temperatura de l'aigua mesurada per boies.
+La càmera disposa d'un mode de prova local que no publica les imatges.
 
 - [ ] Provar amb llum de dia i de nit la nova franja de contaminants a la
   Raspberry, comprovar hora, font, valors, unitats i absència segura quan el
