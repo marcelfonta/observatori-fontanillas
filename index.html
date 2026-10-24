@@ -74,11 +74,11 @@
     <link rel="stylesheet" href="css/variables.css?v=6.0" />
     <link rel="stylesheet" href="css/layout.css?v=6.0" />
     <link rel="stylesheet" href="css/style.css?v=22.39.2-stellarium-controls" />
-    <link rel="stylesheet" href="css/portal.css?v=22.42.3-mobile-home-now" />
+    <link rel="stylesheet" href="css/portal.css?v=22.42.4-camera-co2" />
     <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="src/features/push.js?v=22.31.6"></script>
     <script type="module" src="src/features/pwa.js?v=22.31.6"></script>
-    <script type="module" src="src/app.js?v=22.39.2-stellarium-controls"></script>
+    <script type="module" src="src/app.js?v=22.39.3-camera-co2"></script>
     <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","license":"https://creativecommons.org/licenses/by/4.0/","creditText":"Observatori Meteorològic Fontanillas — meteo.fontanillas.cat","isAccessibleForFree":true,"creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -789,6 +789,7 @@
           <header><div><p class="eyebrow">Mirada al territori</p><h2>Càmera nord de l’Observatori</h2><span class="source-link">Font: Observatori Fontanillas</span></div><span class="live-pill"><span></span><b data-webcam-status>Comprovant imatge</b></span></header>
           <div class="webcam-frame"><img id="webcam-image" alt="Vista actual cap al nord des de la càmera meteorològica de l’Observatori Fontanillas" loading="lazy" decoding="async" /><em class="webcam-fallback">La imatge no està disponible ara mateix. Les dades meteorològiques continuen actualitzant-se.</em><button class="webcam-expand" id="webcam-expand" type="button" aria-haspopup="dialog" aria-controls="webcam-dialog">⛶ Ampliar imatge</button><div class="webcam-overlay"><span data-webcam-time>Hora de captura pendent</span><b>Sant Celoni · vista nord</b></div></div>
           <div class="webcam-actions"><a href="https://fonta-meteo.marcelfonta.workers.dev/camera/nord/latest.jpg" target="_blank" rel="noreferrer">Obrir imatge amb privacitat ↗</a><a href="https://fonta-meteo.marcelfonta.workers.dev/camera/nord/latest-branded.jpg" target="_blank" rel="noreferrer">Versió amb marca ↗</a></div>
+          <p class="webcam-co2" id="webcam-co2" hidden></p>
           <div class="webcam-details"><span><small>Actualització</small><b>Cada 5 minuts de dia · cada 15 de nit</b></span><span><small>Lectura visual</small><b>Núvols · boira · visibilitat</b></span><span><small>Orientació</small><b>Nord · Baix Montseny</b></span></div>
           <section class="nearby-webcams" aria-labelledby="nearby-webcams-title">
             <div><p class="eyebrow">Altres mirades</p><h3 id="nearby-webcams-title">Webcams properes al Montseny</h3><p>Accessos externs seleccionats per consultar altres orientacions quan hi hagi imatge disponible.</p></div>

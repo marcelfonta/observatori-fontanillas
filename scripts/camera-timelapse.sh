@@ -50,6 +50,30 @@ fi
 
 FONT="$(fc-match -f '%{file}' 'DejaVu Sans:style=Bold' 2>/dev/null || true)"
 [[ -f "$FONT" ]] || FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+CO2_LANDSCAPE="$TMP_DIR/co2-landscape.txt"
+CO2_VALUE="$TMP_DIR/co2-value.txt"
+CO2_SOURCE="$TMP_DIR/co2-source.txt"
+# La dada és opcional: si NOAA no és recent, el vídeo continua sense càpsula.
+if command -v curl >/dev/null && command -v python3 >/dev/null; then
+  curl --fail --silent --max-time 5 "${CAMERA_CO2_URL:-https://fonta-meteo.marcelfonta.workers.dev/climate/co2}" | \
+    python3 -c '
+import datetime,json,pathlib,sys
+try:
+    value=json.load(sys.stdin).get("co2") or {}
+    date=datetime.date.fromisoformat(value["date"])
+    age=(datetime.datetime.now(datetime.timezone.utc).date()-date).days
+    ppm=float(value["ppm"])
+    if value.get("fresh") is not True or not 0<=age<=3 or not 250<=ppm<=650:
+        raise ValueError("CO2 absent o antic")
+    number=f"{ppm:.2f}".replace(".",",")
+    date_label=date.strftime("%d/%m/%Y")
+    pathlib.Path(sys.argv[1]).write_text(f"CO₂ atmosfèric · Mauna Loa, NOAA · {number} ppm · {date.isoformat()}",encoding="utf-8")
+    pathlib.Path(sys.argv[2]).write_text(f"CO₂ · {number} ppm",encoding="utf-8")
+    pathlib.Path(sys.argv[3]).write_text(f"Mauna Loa · NOAA · {date_label}",encoding="utf-8")
+except (ValueError,KeyError,TypeError,json.JSONDecodeError):
+    pass
+' "$CO2_LANDSCAPE" "$CO2_VALUE" "$CO2_SOURCE" || true
+fi
 # La versió principal selecciona el centre panoràmic en 16:9 i elimina el 10%
 # inferior, on apareixen les cases més pròximes. El retall substitueix els
 # desenfocaments i redueix fortament el consum de memòria de la Raspberry.
@@ -69,9 +93,14 @@ done
 printf "file '%s'\n" "${frame//\'/\'\\\'\'}" >> "$LIST"
 
 rm -f "$OUTPUT_TMP"
+LANDSCAPE_FILTER="format=yuv420p"
+if [[ -s "$CO2_LANDSCAPE" ]] && ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
+  LANDSCAPE_FILTER="drawbox=x=12:y=h-56:w=936:h=44:color=black@0.7:t=fill,drawtext=fontfile='$FONT':textfile='$CO2_LANDSCAPE':fontcolor=white:fontsize=19:x=24:y=h-43"
+fi
 MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
   -threads 1 -f concat -safe 0 -i "$LIST" \
   -filter_threads 1 -filter_complex_threads 1 \
+  -vf "$LANDSCAPE_FILTER" \
   -r 20 -an -c:v libx264 -threads 1 -preset ultrafast -crf 22 \
   -pix_fmt yuv420p -movflags +faststart -f mp4 "$OUTPUT_TMP"
 [[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
@@ -83,6 +112,9 @@ mv "$OUTPUT_TMP" "$OUTPUT"
 SOCIAL_FILTER="scale=540:304,pad=540:960:0:(oh-ih)/2:color=#101820"
 if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
   SOCIAL_FILTER+=",drawbox=x=18:y=33:w=504:h=66:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=24:x=34:y=52,drawbox=x=18:y=h-92:w=504:h=59:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='PANORÀMICA COMPLETA':fontcolor=white@0.86:fontsize=14:x=34:y=h-76,drawtext=fontfile='$FONT':text='meteo.fontanillas.cat':fontcolor=white:fontsize=18:x=34:y=h-56"
+  if [[ -s "$CO2_VALUE" ]]; then
+    SOCIAL_FILTER+=",drawbox=x=18:y=112:w=504:h=67:color=black@0.56:t=fill,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=20:x=34:y=122,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.86:fontsize=14:x=34:y=151"
+  fi
 fi
 
 rm -f "$SOCIAL_TMP"

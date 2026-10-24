@@ -46,6 +46,33 @@ async function refreshCameraMetadata() {
   }
 }
 
+async function refreshWebcamCo2() {
+  const node=document.getElementById('webcam-co2');
+  if(!node)return;
+  try {
+    const response=await fetch(`${CONFIG.apiUrl}/climate/co2`,{cache:'no-store'});
+    if(!response.ok)throw new Error('CO₂ no disponible');
+    const value=(await response.json())?.co2;
+    const date=typeof value?.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value.date)?new Date(`${value.date}T00:00:00Z`):null;
+    const age=date?(Date.now()-date.getTime())/86400000:Infinity;
+    if(value?.fresh!==true||!Number.isFinite(value.ppm)||value.ppm<250||value.ppm>650||!date||!Number.isFinite(age)||age<0||age>4)throw new Error('CO₂ antic o invàlid');
+    const locale=getLocale();
+    const ppm=value.ppm.toLocaleString(locale,{minimumFractionDigits:2,maximumFractionDigits:2});
+    const dated=new Intl.DateTimeFormat(locale,{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(date);
+    const labels={
+      'ca-ES':['CO₂ atmosfèric','No és una mesura local ni de qualitat de l’aire.'],
+      'es-ES':['CO₂ atmosférico','No es una medición local ni de calidad del aire.'],
+      'en-GB':['Atmospheric CO₂','Not a local or air-quality measurement.'],
+      'fr-FR':['CO₂ atmosphérique','Ce n’est pas une mesure locale ni de la qualité de l’air.']
+    }[locale]||['CO₂ atmosfèric','No és una mesura local ni de qualitat de l’aire.'];
+    node.textContent=`${labels[0]} · Mauna Loa (NOAA): ${ppm} ppm · ${dated}. ${labels[1]}`;
+    node.hidden=false;
+  } catch {
+    node.hidden=true;
+    node.textContent='';
+  }
+}
+
 export function initWebcam() {
   const webcamUrl=`${CONFIG.cameraPreviewUrl || CONFIG.cameraUrl}?t=${Date.now()}`;
   document.querySelectorAll('#webcam-image, #hero-webcam-image').forEach(image => {
@@ -58,6 +85,7 @@ export function initWebcam() {
     if(image.getClientRects().length)image.src=webcamUrl;
   });
   refreshCameraMetadata();
+  refreshWebcamCo2();
   const dialog=document.querySelector('#webcam-dialog');
   const dialogImage=document.querySelector('#webcam-dialog-image');
   document.querySelector('#webcam-expand')?.addEventListener('click',()=>{
