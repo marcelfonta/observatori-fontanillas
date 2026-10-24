@@ -73,3 +73,24 @@ test('la fitxa ambiental mostra l’ICQA i les targetes de l’estació de Sant 
   await expect(page.locator('.environment-model-source')).toContainText('Dades provisionals');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
+
+test('la portada diferencia absència d’avisos de consulta fallida',async({page})=>{
+  await page.route('**/alerts?**',route=>route.fulfill({json:{ok:true,alerts:[],checkedAt:new Date().toISOString()}}));
+  await page.goto('/');
+  await expect(page.locator('#quick-alert-title')).toHaveText('Sense avisos oficials actius ara');
+  await page.evaluate(async()=>{const {renderAlertsUnavailable}=await import('/src/modules/avisos.js');renderAlertsUnavailable();});
+  await expect(page.locator('#quick-alert-title')).toHaveText('Verificació no disponible');
+});
+
+test('el mapa d’estacions d’aire té font i alternativa oficial',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await openEnvironment(page);
+  const tab=page.locator('#environment-tab-air');
+  await tab.scrollIntoViewIfNeeded();
+  await expect(tab).toBeVisible();
+  await tab.click();
+  await expect(page.locator('#environment-panel-air')).toBeVisible();
+  await expect(page.locator('#environment-air-stations-filter')).toHaveValue('all');
+  await expect(page.locator('#environment-panel-air a')).toHaveAttribute('href',/visor-de-dades/);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});

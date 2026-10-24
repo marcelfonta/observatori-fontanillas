@@ -1,5 +1,11 @@
 # Registre de decisions
 
+## ADR — Mapa XVPCA sota demanda i avisos de portada (2026-10-24)
+
+- El mapa d'estacions consulta directament el fitxer públic del visor de la Generalitat quan l'usuari obre la pestanya, sense duplicar dades a Worker o D1. Les coordenades, lectures, hores i categories provenen de la font oficial; el mapa s'actualitza en tornar-hi després de quinze minuts. Si la font falla, queda l'enllaç al visor complet.
+- Les estacions amb registres de més de tres hores no mostren lectures antigues. Un contaminant sense categoria ICQA no es transforma en categoria inventada.
+- La drecera d'avisos de portada es rendeix independentment de la pàgina de detall. Només una resposta oficial correcta i sense avisos pot produir l'estat «Sense avisos»; un error es mostra com a verificació no disponible.
+
 ## ADR — ICQA local i mesures oficials a la fitxa ambiental (2026-10-24)
 
 - La fitxa principal de Medi Ambient substitueix els camps de concentració CAMS per les sis lectures disponibles de l'estació XVPCA ES1275A. La font, l'hora, les unitats i el caràcter provisional queden visibles al costat de les targetes.
