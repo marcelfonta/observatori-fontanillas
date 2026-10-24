@@ -174,8 +174,9 @@ clarament diferenciada dels contaminants locals PM10, NO₂ i O₃.
 La franja de NO₂, O₃ i PM10 de la webcam va començar amb estimacions CAMS.
 La nova proposta consulta les mesures provisionals de l'estació XVPCA ES1275A
 de Sant Celoni. La pàgina de medi ambient presenta les mesures d'aquesta
-estació en un bloc propi, mentre que l'índex i els camps CAMS es mantenen
-separats i identificats. El visor de Copernicus Marine és una pestanya de Medi
+estació a les targetes visuals principals. El resum ICQA adopta la pitjor
+categoria oficial mesurada, sense barrejar-la amb un índex numèric de CAMS.
+El visor de Copernicus Marine és una pestanya de Medi
 Ambient, carregada només quan se selecciona; representa temperatura superficial
 analitzada i prevista, no mesures instantànies de cada punt del mar.
 El visor ara destaca l'obertura a pantalla completa per fer zoom i enllaça

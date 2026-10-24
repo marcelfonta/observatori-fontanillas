@@ -58,16 +58,18 @@ test('al mòbil el mapa del mar s’obre en pantalla completa',async({page})=>{
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
 
-test('la fitxa ambiental separa la mesura oficial de Sant Celoni del model',async({page})=>{
+test('la fitxa ambiental mostra l’ICQA i les targetes de l’estació de Sant Celoni',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Madrid',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).map(part=>[part.type,part.value]));
   const updated=`${parts.day}/${parts.month}/${parts.year} ${parts.hour}:00`;
-  const contaminant=(abbr,valor)=>({abbr,dadesHoraries:[{hora:parts.hour,qualitat:'bona',valor}]});
-  await page.route('**/territori/quaire/json/estat.json',route=>route.fulfill({json:{features:[{id:'ES1275A',properties:{localitat:'Sant Celoni',dataActualitzacio:updated,contaminants:[contaminant('NO2','26'),contaminant('O3','16'),contaminant('PM10','17'),contaminant('PM2.5','8'),contaminant('SO2','3'),contaminant('H2S','1,2')]}}]}}));
+  const contaminant=(abbr,valor,qualitat='bona')=>({abbr,dadesHoraries:[{hora:parts.hour,qualitat,valor}]});
+  await page.route('**/territori/quaire/json/estat.json',route=>route.fulfill({json:{features:[{id:'ES1275A',properties:{localitat:'Sant Celoni',dataActualitzacio:updated,contaminants:[contaminant('NO2','26'),contaminant('O3','16','regular'),contaminant('PM10','17'),contaminant('PM2.5','8'),contaminant('SO2','3'),contaminant('H2S','1,2')]}}]}}));
   await page.goto('/medi-ambient');
-  await expect(page.locator('#environment-official-no2')).toHaveText('26');
-  await expect(page.locator('#environment-official-h2s')).toHaveText('1,2');
+  await expect(page.locator('#environment-no2')).toHaveText('26');
+  await expect(page.locator('#environment-h2s')).toHaveText('1,2');
+  await expect(page.locator('#environment-aqi')).toHaveText('Regular');
+  await expect(page.locator('#environment-o3-level')).toHaveText('Regular');
   await expect(page.locator('#environment-official-status')).toContainText(updated);
-  await expect(page.locator('.environment-model-source')).toContainText('Estimacions CAMS Europe');
+  await expect(page.locator('.environment-model-source')).toContainText('Dades provisionals');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });

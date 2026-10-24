@@ -74,7 +74,7 @@
     <link rel="stylesheet" href="/css/variables.css?v=6.0" />
     <link rel="stylesheet" href="/css/layout.css?v=6.0" />
     <link rel="stylesheet" href="/css/style.css?v=22.39.2-stellarium-controls" />
-    <link rel="stylesheet" href="/css/portal.css?v=22.42.11-xvpca-air" />
+    <link rel="stylesheet" href="/css/portal.css?v=22.42.12-xvpca-icqa" />
     <script type="module" src="/src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="/src/features/push.js?v=22.31.6"></script>
     <script type="module" src="/src/features/pwa.js?v=22.31.6"></script>
@@ -924,34 +924,21 @@
 
       <section id="medi-ambient" class="environment-section section-block" aria-labelledby="environment-summary-title" data-portal-page="medi-ambient">
         <div class="environment-status"><p><span></span><b id="environment-status-copy">Carregant indicadors ambientals…</b></p><time id="environment-updated">—</time></div>
-        <section class="environment-official panel" aria-labelledby="environment-official-title">
-          <header><div><p class="eyebrow">Mesures oficials · XVPCA</p><h2 id="environment-official-title">Aire mesurat a Sant Celoni</h2><p id="environment-official-status" role="status">Consultant l’estació de C. de Carles Damm…</p></div><a href="https://mediambient.gencat.cat/ca/05_ambits_dactuacio/atmosfera/qualitat_de_laire/vols-saber-que-respires/visor-de-dades/" target="_blank" rel="noopener noreferrer">Veure l’estació al visor oficial ↗</a></header>
-          <div class="environment-official__grid" aria-label="Mesures de l’estació oficial de Sant Celoni">
-            <div><span>NO₂</span><strong id="environment-official-no2">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-no2-level">Carregant</em></div>
-            <div><span>O₃</span><strong id="environment-official-o3">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-o3-level">Carregant</em></div>
-            <div><span>PM10</span><strong id="environment-official-pm10">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-pm10-level">Carregant</em></div>
-            <div><span>PM2,5</span><strong id="environment-official-pm25">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-pm25-level">Carregant</em></div>
-            <div><span>SO₂</span><strong id="environment-official-so2">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-so2-level">Carregant</em></div>
-            <div><span>H₂S</span><strong id="environment-official-h2s">—</strong><small>µg/m³</small><em class="environment-level" id="environment-official-h2s-level">Carregant</em></div>
-          </div>
-          <p class="environment-official__note">Dades provisionals de l’estació XVPCA ES1275A, pendents de validació. PM10 és la mitjana de les darreres 24 hores; la resta són lectures horàries. Si la font no s’actualitza, no mostrem xifres antigues.</p>
-        </section>
         <div class="environment-overview">
           <article class="environment-aqi panel" id="environment-aqi-card">
-            <header><div><p class="eyebrow">Qualitat de l’aire · estimació CAMS</p><h2 id="environment-summary-title">Índex europeu de qualitat de l’aire</h2></div><span class="tag">Model · 11 km</span></header>
-            <div class="environment-aqi__reading"><strong id="environment-aqi" class="is-placeholder" aria-busy="true">—</strong><div><b id="environment-aqi-label" class="is-placeholder" aria-busy="true">Calculant</b><p id="environment-aqi-copy" class="is-placeholder" aria-busy="true">Comprovant partícules i gasos atmosfèrics.</p></div></div>
-            <div class="environment-aqi__scale" aria-label="Escala europea de qualitat de l’aire"><i></i><i></i><i></i><i></i><i></i><i></i><span id="environment-aqi-marker"></span></div>
-            <small>0–20 bona · 20–40 raonablement bona · 40–60 moderada · 60–80 dolenta · 80–100 molt dolenta · més de 100 extremadament dolenta</small>
+            <header><div><p class="eyebrow">Mesures oficials · XVPCA</p><h2 id="environment-summary-title">Qualitat de l’aire a Sant Celoni</h2></div><span class="tag">Estació ES1275A</span></header>
+            <div class="environment-aqi__reading"><strong id="environment-aqi" class="is-placeholder" aria-busy="true">—</strong><div><b id="environment-aqi-label" class="is-placeholder" aria-busy="true">Consultant l’estació</b><p id="environment-aqi-copy" class="is-placeholder" aria-busy="true">Comprovant les categories oficials dels contaminants mesurats.</p></div></div>
+            <small>L’ICQA pren la categoria més desfavorable dels contaminants disponibles; no és un número calculat a partir d’una estimació.</small>
           </article>
-          <article class="environment-health panel"><p class="eyebrow">Lectura pràctica</p><h2 id="environment-health-title">Esperant dades</h2><p id="environment-health-copy">La recomanació s’adaptarà a l’índex europeu actual.</p><div class="environment-health__meta"><span><small>Radiació UV · <em id="environment-uv-source">No disponible</em></small><b id="environment-uv">—</b><small id="environment-uv-time">—</small></span><span><small>Pol·len dominant</small><b id="environment-pollen-main">—</b></span></div></article>
+          <article class="environment-health panel"><p class="eyebrow">Lectura pràctica</p><h2 id="environment-health-title">Esperant dades</h2><p id="environment-health-copy">Consulta els avisos i les recomanacions oficials si tens símptomes.</p><div class="environment-health__meta"><span><small>Radiació UV · <em id="environment-uv-source">No disponible</em></small><b id="environment-uv">—</b><small id="environment-uv-time">—</small></span><span><small>Pol·len dominant</small><b id="environment-pollen-main">—</b></span></div></article>
         </div>
-        <p class="environment-model-source">Estimacions CAMS Europe via Open-Meteo per a una cel·la d’uns 11 km. Són diferents de les mesures de l’estació de Sant Celoni; l’índex europeu de sobre també és una estimació de model.</p>
-        <div class="environment-metrics" aria-label="Concentracions estimades pel model CAMS">
+        <p class="environment-model-source"><span id="environment-official-status" role="status">Consultant l’estació oficial…</span> · Dades provisionals pendents de validació. PM10 és la mitjana de les darreres 24 hores; les altres lectures són horàries. <a href="https://mediambient.gencat.cat/ca/05_ambits_dactuacio/atmosfera/qualitat_de_laire/vols-saber-que-respires/visor-de-dades/" target="_blank" rel="noopener noreferrer">Veure el visor oficial ↗</a></p>
+        <div class="environment-metrics" aria-label="Concentracions mesurades per l’estació oficial de Sant Celoni">
           <article class="panel"><span>PM10</span><strong><b id="environment-pm10" class="is-placeholder" aria-busy="true">—</b><small> µg/m³</small></strong><p>Partícules de menys de 10 µm</p><span class="environment-level" id="environment-pm10-level">Calculant</span><div class="environment-mini-meter"><i id="environment-pm10-meter"></i></div></article>
           <article class="panel"><span>PM2,5</span><strong><b id="environment-pm25">—</b><small> µg/m³</small></strong><p>Partícules fines</p><span class="environment-level" id="environment-pm25-level">Calculant</span><div class="environment-mini-meter"><i id="environment-pm25-meter"></i></div></article>
           <article class="panel"><span>NO₂</span><strong><b id="environment-no2">—</b><small> µg/m³</small></strong><p>Diòxid de nitrogen</p><span class="environment-level" id="environment-no2-level">Calculant</span><div class="environment-mini-meter"><i id="environment-no2-meter"></i></div></article>
           <article class="panel"><span>O₃</span><strong><b id="environment-o3">—</b><small> µg/m³</small></strong><p>Ozó troposfèric</p><span class="environment-level" id="environment-o3-level">Calculant</span><div class="environment-mini-meter"><i id="environment-o3-meter"></i></div></article>
-          <article class="panel"><span>CO</span><strong><b id="environment-co">—</b><small> µg/m³</small></strong><p>Monòxid de carboni</p><span class="environment-level">Sense índex UE</span><div class="environment-mini-meter"><i></i></div></article>
+          <article class="panel"><span>H₂S</span><strong><b id="environment-h2s">—</b><small> µg/m³</small></strong><p>Sulfur d’hidrogen</p><span class="environment-level" id="environment-h2s-level">Carregant</span><div class="environment-mini-meter"><i id="environment-h2s-meter"></i></div></article>
           <article class="panel"><span>SO₂</span><strong><b id="environment-so2">—</b><small> µg/m³</small></strong><p>Diòxid de sofre</p><span class="environment-level" id="environment-so2-level">Calculant</span><div class="environment-mini-meter"><i id="environment-so2-meter"></i></div></article>
         </div>
         <article class="pollen-panel pollen-panel--xac panel">

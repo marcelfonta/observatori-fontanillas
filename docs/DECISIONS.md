@@ -1,5 +1,11 @@
 # Registre de decisions
 
+## ADR — ICQA local i mesures oficials a la fitxa ambiental (2026-10-24)
+
+- La fitxa principal de Medi Ambient substitueix els camps de concentració CAMS per les sis lectures disponibles de l'estació XVPCA ES1275A. La font, l'hora, les unitats i el caràcter provisional queden visibles al costat de les targetes.
+- L'ICQA és categòric: es mostra la categoria més desfavorable publicada entre els contaminants recents mesurats, seguint la metodologia de la Generalitat. No es converteix en un número europeu ni es dedueix a partir de CAMS. Si les mesures falten o caduquen, el resum queda sense dada local.
+- La radiació UV i el pol·len conserven les seves fonts pròpies, etiquetades de forma independent. La càmera continua mostrant els tres contaminants de l'estació i el CO₂ global separat.
+
 ## ADR — Estació oficial XVPCA de Sant Celoni per a les mesures d'aire (2026-10-24)
 
 - El fitxer públic que alimenta el visor oficial de la Generalitat conté l'estació `ES1275A` de Sant Celoni, data d'actualització i mesures provisionals per contaminant. La pàgina de medi ambient mostra aquestes lectures separades de l'índex i les estimacions CAMS.

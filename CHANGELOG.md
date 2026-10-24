@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-24 — ICQA i targetes de l'estació de Sant Celoni
+
+- Les sis targetes visuals de Medi Ambient mostren ara únicament les lectures provisionals de l'estació oficial XVPCA ES1275A (PM10, PM2,5, NO₂, O₃, SO₂ i H₂S); s'elimina el bloc duplicat i les concentracions CAMS de la fitxa principal.
+- El resum de qualitat de l'aire segueix la regla publicada de l'ICQA: la categoria més desfavorable dels contaminants disponibles. S'elimina el número europeu modelitzat per no confondre'l amb una mesura local. Les lectures antigues o absents no es substitueixen amb estimacions.
+
 ## 2026-10-24 — Mesures oficials de qualitat de l'aire de Sant Celoni
 
 - La pàgina de medi ambient incorpora les lectures provisionals de l'estació XVPCA ES1275A amb hora, unitats, categories oficials i accés al visor de la Generalitat. Les estimacions CAMS continuen en un bloc separat i identificat.
