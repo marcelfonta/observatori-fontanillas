@@ -12,7 +12,7 @@ assert.ok(html.includes('role="tabpanel"')&&html.includes('aria-controls="enviro
 assert.ok(html.includes('environment-viewer-mobile-launch__icon')&&html.includes('millor control tàctil'));
 assert.ok(html.includes('id="environment-aqi" class="is-placeholder" aria-busy="true"'));
 assert.ok(environment.includes("compactViewer=window.matchMedia('(max-width: 700px)')"));
-assert.ok(environment.includes('skipEmbeddedJellyfish')&&environment.includes("event.key==='ArrowRight'"));
+assert.ok(environment.includes('skipEmbeddedViewer')&&environment.includes("event.key==='ArrowRight'"));
 assert.ok(environment.includes("node.classList.remove('is-placeholder')")&&environment.includes("node.removeAttribute('aria-busy')"));
 assert.ok(alerts.includes('official-alert-scope')&&alerts.includes('Abast municipal')&&alerts.includes('Abast zonal'));
 assert.ok(style.includes('.official-alert-scope')&&portal.includes('.environment-viewer-mobile-launch__icon'));

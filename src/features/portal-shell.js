@@ -1,7 +1,7 @@
 import { PORTAL_PAGES, portalPageHref } from '../core/portal-routes.js';
 
 const portalPages=new Set(PORTAL_PAGES);
-const navHref=(id,href)=>portalPages.has(id)?portalPageHref(id):href;
+const navHref=(id,href)=>portalPages.has(id)?portalPageHref(id):href.startsWith('./')?`/${href.slice(2)}`:href;
 
 const icon=paths=>`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths}</svg>`;
 const ICONS={
@@ -66,7 +66,7 @@ export function mountPortalShell(activePage){
   let sidebar=document.getElementById('portal-sidebar');
   if(!sidebar){
     sidebar=document.createElement('aside');sidebar.className='portal-sidebar';sidebar.id='portal-sidebar';sidebar.setAttribute('aria-label','Seccions del portal');
-    const brand=document.createElement('a');brand.className='portal-sidebar__brand';brand.href=portalPageHref('inici');brand.setAttribute('aria-label','Fontanillas Sant Celoni: inici');brand.innerHTML='<span class="portal-sidebar__brand-mark" aria-hidden="true"><img src="assets/icons/icon-192.png" alt="" width="52" height="52" decoding="async" /></span><span class="portal-sidebar__brand-copy"><strong>Fontanillas</strong><small>Sant Celoni</small></span>';
+    const brand=document.createElement('a');brand.className='portal-sidebar__brand';brand.href=portalPageHref('inici');brand.setAttribute('aria-label','Fontanillas Sant Celoni: inici');brand.innerHTML='<span class="portal-sidebar__brand-mark" aria-hidden="true"><img src="/assets/icons/icon-192.png" alt="" width="52" height="52" decoding="async" /></span><span class="portal-sidebar__brand-copy"><strong>Fontanillas</strong><small>Sant Celoni</small></span>';
     const nav=document.createElement('nav');
     NAV_GROUPS.forEach(([group,ids])=>{
       const section=document.createElement('div');section.className='portal-nav-group';
@@ -77,13 +77,19 @@ export function mountPortalShell(activePage){
     const footer=document.createElement('div');footer.className='portal-sidebar__footer';footer.innerHTML='<div class="portal-sidebar__copyright"><small>© 2026 Fontanillas</small><span>Observatori meteorològic local</span></div>';
     sidebar.append(brand,nav,footer);document.body.insertBefore(sidebar,document.querySelector('main'));
   }
+  const sidebarNav=sidebar.querySelector('nav');
+  const sidebarPositionKey='fontanillas:sidebar-scroll';
+  const savedSidebarPosition=()=>{try{return Number(sessionStorage.getItem(sidebarPositionKey))||0;}catch{return 0;}};
+  const rememberSidebarPosition=()=>{try{sessionStorage.setItem(sidebarPositionKey,String(sidebarNav?.scrollTop||0));}catch{}};
+  if(sidebarNav)sidebarNav.scrollTop=savedSidebarPosition();
+  sidebarNav?.addEventListener('scroll',rememberSidebarPosition,{passive:true});
   let backdrop=document.getElementById('portal-backdrop');
   if(!backdrop){backdrop=document.createElement('button');backdrop.className='portal-backdrop';backdrop.id='portal-backdrop';backdrop.type='button';backdrop.hidden=true;backdrop.setAttribute('aria-label','Tancar el menú');document.body.insertBefore(backdrop,document.querySelector('main'));}
   document.querySelectorAll('[data-page-link]').forEach(link=>{const active=link.dataset.pageLink===activePage;link.classList.toggle('is-active',active);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
   const button=document.getElementById('portal-menu-button');
   const close=()=>{const restoreFocus=sidebar.classList.contains('is-open')&&sidebar.contains(document.activeElement);sidebar.classList.remove('is-open');backdrop.hidden=true;button?.setAttribute('aria-expanded','false');document.body.classList.remove('has-portal-menu');if(restoreFocus)button?.focus();};
-  button?.addEventListener('click',()=>{const open=!sidebar.classList.contains('is-open');sidebar.classList.toggle('is-open',open);backdrop.hidden=!open;button.setAttribute('aria-expanded',String(open));document.body.classList.toggle('has-portal-menu',open);if(open)requestAnimationFrame(()=>sidebar.querySelector('a')?.focus());});
-  backdrop.addEventListener('click',close);sidebar.querySelectorAll('a').forEach(link=>link.addEventListener('click',close));document.addEventListener('keydown',event=>{if(event.key==='Escape')close();if(event.key==='Tab'&&sidebar.classList.contains('is-open')){const items=[...sidebar.querySelectorAll('a')];const first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}});
+  button?.addEventListener('click',()=>{const open=!sidebar.classList.contains('is-open');sidebar.classList.toggle('is-open',open);backdrop.hidden=!open;button.setAttribute('aria-expanded',String(open));document.body.classList.toggle('has-portal-menu',open);if(open)requestAnimationFrame(()=>{sidebar.querySelector('a')?.focus({preventScroll:true});if(sidebarNav)sidebarNav.scrollTop=savedSidebarPosition();});});
+  backdrop.addEventListener('click',close);sidebar.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{rememberSidebarPosition();close();}));document.addEventListener('keydown',event=>{if(event.key==='Escape')close();if(event.key==='Tab'&&sidebar.classList.contains('is-open')){const items=[...sidebar.querySelectorAll('a')];const first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}});
 
   if(!document.getElementById('portal-mobile-nav')){
     const mobile=document.createElement('nav');mobile.className='portal-mobile-nav';mobile.id='portal-mobile-nav';mobile.setAttribute('aria-label','Navegació principal mòbil');

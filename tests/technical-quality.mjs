@@ -7,7 +7,7 @@ const [html,fonts,headers,worker,app,style]=await Promise.all([
   read('index.html'),read('css/fonts.css'),read('_headers'),read('service-worker.js'),read('src/app.js'),read('css/style.css')
 ]);
 
-assert.ok(html.includes('href="css/fonts.css?v=1.0"'), 'La pàgina ha de carregar el full de tipografies local.');
+assert.ok(html.includes('href="/css/fonts.css?v=1.0"'), 'La pàgina ha de carregar el full de tipografies local també en rutes profundes.');
 assert.ok(!html.includes('fonts.googleapis.com')&&!html.includes('fonts.gstatic.com'), 'L’HTML no ha de contactar Google Fonts.');
 for(const page of ['metodologia.html','municipis.html','comparativa.html','colaboracions.html','historial-avisos.html']){
   const pageHtml=await read(page);
