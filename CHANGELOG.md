@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-24 — Lectura essencial compacta al mòbil
+
+- Les quatre targetes de «Què cal saber ara?» es distribueixen en dues columnes a la portada mòbil, amb text i espais ajustats però amb la font i l’accés al detall visibles.
+- El peu de les targetes deixa d’heretar un espai inferior excessiu de l’estil general del lloc.
+
 ## 2026-10-24 — Dates diàries de Fonta durant el canvi d’hora
 
 - El laboratori Fonta interpreta els dies diaris d’Open-Meteo amb el desplaçament fix que inclou cada resposta. Així evita marcar com a duplicats els dies del canvi d’horari CET/CEST.
