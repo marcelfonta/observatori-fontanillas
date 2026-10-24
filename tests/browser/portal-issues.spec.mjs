@@ -5,7 +5,7 @@ const indexPath=fileURLToPath(new URL('../../index.html',import.meta.url));
 const openEnvironment=async page=>{
   await page.goto('/medi-ambient');
   await page.locator('#environment-tab-drought').scrollIntoViewIfNeeded();
-  await expect(page.locator('#environment-panel-fire img')).toHaveAttribute('src',/pla_alfa\.gif/,{timeout:15000});
+  await expect(page.locator('html')).toHaveAttribute('data-environment-viewers-ready','true',{timeout:15000});
 };
 
 test.beforeEach(async({page})=>{
@@ -84,11 +84,16 @@ test('la portada diferencia absència d’avisos de consulta fallida',async({pag
 
 test('el mapa d’estacions d’aire té font i alternativa oficial',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await openEnvironment(page);
+  await page.route('**/src/features/environment.js',async route=>{
+    await new Promise(resolve=>setTimeout(resolve,600));
+    await route.continue();
+  });
+  await page.goto('/medi-ambient',{waitUntil:'domcontentloaded'});
   const tab=page.locator('#environment-tab-air');
   await tab.scrollIntoViewIfNeeded();
   await expect(tab).toBeVisible();
   await tab.click();
+  await expect(page.locator('html')).toHaveAttribute('data-pending-environment-viewer','air');
   await expect(page.locator('#environment-panel-air')).toBeVisible();
   await expect(page.locator('#environment-air-stations-filter')).toHaveValue('all');
   await expect(page.locator('#environment-panel-air a')).toHaveAttribute('href',/visor-de-dades/);

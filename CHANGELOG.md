@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-24 — Pestanyes de Medi Ambient disponibles en entrar
+
+- La pàgina de Medi Ambient prepara el visor en entrar i conserva la pestanya seleccionada mentre es carrega el mòdul. El mapa d'estacions respon també si es prem immediatament després d'obrir la pàgina.
+- El roadmap distingeix la instal·lació ja feta a la Raspberry de les comprovacions pendents de la pròxima publicació automàtica.
+
 ## 2026-10-24 — Mapa oficial d'estacions i estat dels avisos a la portada
 
 - Medi Ambient incorpora una pestanya amb mapa interactiu de les estacions XVPCA de Catalunya. En seleccionar-la carrega el fitxer oficial, permet filtrar per contaminant i mostra les lectures provisionals i l'hora de cada estació; les dades antigues no es presenten com a actuals.
