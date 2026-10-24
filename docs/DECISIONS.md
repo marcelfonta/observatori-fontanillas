@@ -1,5 +1,10 @@
 # Registre de decisions
 
+## ADR — Colors dels contaminants a la càmera (2026-10-24)
+
+- Els cercles NO₂, O₃ i PM10 classifiquen la concentració horària estimada per CAMS Europe via Open-Meteo segons els llindars per contaminant de l'índex europeu de qualitat de l'aire revisats el 2024. S'empren sis franges, de bona a extremadament dolenta, sense calcular un índex agregat amb només tres contaminants.
+- La imatge mostra només etiqueta, valor i color per no tapar el cel; la pàgina de la webcam manté font, unitats, escala i límits. Els colors no provenen d'un sensor local, no són el mapa oficial de l'EEA ni constitueixen un avís de salut pública. Si la dada és absent o antiga, el cercle no es mostra.
+
 ## ADR — Stellarium oficial i aïllat per al planetari local (2026-10-23)
 
 - El visor principal incrusta l’aplicació oficial de Stellarium Web en un marc

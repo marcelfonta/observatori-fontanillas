@@ -179,11 +179,12 @@ analitzada i prevista, no mesures instantànies de cada punt del mar.
 El visor ara destaca l'obertura a pantalla completa per fer zoom i enllaça
 separadament a Portus per consultar temperatura de l'aigua mesurada per boies.
 La càmera disposa d'un mode de prova local que no publica les imatges.
-Les primeres mostres reals de dia han confirmat les dades, però les capses
-continuaven tapant massa cel. La nova proposta deixa el CO₂ en una etiqueta
-mínima i els contaminants en tres cercles discrets, tots del mateix color
-decoratiu perquè no representen cap classificació sanitària. Cal revisar-ne
-una mostra de dia i una de nit abans de substituir el script del servei.
+Les primeres mostres reals de dia han confirmat les dades. La proposta actual
+deixa el CO₂ en una etiqueta mínima i els contaminants en tres cercles petits
+amb text centrat. El color de cada cercle segueix la franja horària de l'índex
+europeu aplicada a la concentració estimada per CAMS; és una orientació de
+model i no un avís oficial ni una mesura local. Cal revisar-ne una mostra de
+dia i una de nit abans de substituir el script del servei.
 
 - [ ] Provar amb llum de dia i de nit la nova franja de contaminants a la
   Raspberry, comprovar hora, font, valors, unitats i absència segura quan el
