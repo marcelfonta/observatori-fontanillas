@@ -210,13 +210,15 @@ function alertItem(entry,sourceName='AEMET') {
 
 export function renderAlerts(payload) {
   payload=normalizeAlertsPayload(payload);
+  renderAlertShortcuts(payload);
+  scheduleExpiryRefresh(payload);
+  notifyAlertState(payload);
   const card=document.getElementById('alerts-local-card');
   const list=document.getElementById('official-alert-list');
   if(!card||!list)return payload;
   const visibleAlerts=payload?.windows ? [...payload.windows.now,...payload.windows.today,...payload.windows.tomorrow,...payload.windows.later] : (payload?.alerts||[]);
   const visibleLevel=visibleAlerts.reduce((highest,entry)=>(levelRanks[entry?.level]??0)>(levelRanks[highest]??-1)?(entry.level||'unknown'):highest,'none');
   const level=payload?.ok ? (payload.active?payload.maxLevel:visibleLevel) : 'unknown';
-  renderAlertShortcuts(payload);
   card.className=`alerts-local is-${level}`;
   list.replaceChildren();
   if(!payload?.ok){
@@ -247,8 +249,6 @@ export function renderAlerts(payload) {
     list.append(empty);
   }
   setText('alerts-updated',checkedLabel(payload));
-  scheduleExpiryRefresh(payload);
-  notifyAlertState(payload);
   return payload;
 }
 

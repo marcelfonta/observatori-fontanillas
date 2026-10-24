@@ -25,6 +25,11 @@ let firmsLoaded=false;
 let firmsMap;
 let firmsMarkers;
 let firmsLeafletPromise;
+let airStationsMap;
+let airStationsLayer;
+let airStationsPayload=null;
+let airStationsLoading=false;
+let airStationsLoadedAt=0;
 let earthquakesLoaded=false;
 let earthquakesMap;
 let earthquakesMarkers;
@@ -56,6 +61,26 @@ export function parseOfficialAir(payload,now=Date.now()){
   }
   const worst=Object.values(readings).reduce((result,reading)=>reading.rank>result.rank?reading:result,{rank:-1});
   return {time,updated:station.dataActualitzacio,readings,quality:worst.rank>=0?worst:null};
+}
+export function parseAirStations(payload,now=Date.now()){
+  return (Array.isArray(payload?.features)?payload.features:[]).flatMap(feature=>{
+    const properties=feature?.properties;
+    const coordinates=feature?.geometry?.coordinates;
+    const longitude=Number(coordinates?.[0]),latitude=Number(coordinates?.[1]);
+    if(!properties?.nom||![latitude,longitude].every(Number.isFinite)||latitude<39||latitude>43||longitude<0||longitude>5)return [];
+    const match=properties.dataActualitzacio?.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/);
+    const timestamp=match?environmentalTimestamp(`${match[3]}-${match[2]}-${match[1]}T${match[4]}:${match[5]}`):NaN;
+    const fresh=isFresh(timestamp,now,OFFICIAL_AIR_MAX_AGE);
+    const readings=fresh?(properties.contaminants||[]).flatMap(item=>{
+      const row=item.dadesHoraries?.findLast(entry=>entry.hora===match[4]);
+      const value=typeof row?.valor==='string'?finiteValue(row.valor.replace(',','.')):finiteValue(row?.valor);
+      if(value===null||value>1000)return [];
+      const quality=OFFICIAL_AIR_QUALITY[row.qualitat];
+      return [{name:item.abbr,value,unit:item.unitatMida||'µg/m³',label:quality?.[0]||'Sense categoria ICQA',rank:quality?OFFICIAL_AIR_ORDER.indexOf(row.qualitat):-1}];
+    }):[];
+    const rank=readings.reduce((worst,item)=>Math.max(worst,item.rank),-1);
+    return [{id:String(feature.id||properties.id||''),name:properties.nom,latitude,longitude,updated:fresh?properties.dataActualitzacio:null,readings,rank}];
+  });
 }
 function renderOfficialAir(){
   const current=isFresh(officialAir?.time,Date.now(),OFFICIAL_AIR_MAX_AGE)?officialAir:null;
@@ -245,6 +270,7 @@ function initEnvironmentViewers(){
     buttons.forEach(button=>{const active=button.dataset.environmentViewer===name;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});
     panels.forEach(panel=>{const active=panel.dataset.environmentPanel===name;panel.hidden=!active;if(active){const asset=panel.querySelector('[data-src]');const skipEmbeddedViewer=['jellyfish','marine'].includes(name)&&compactViewer.matches&&asset?.tagName==='IFRAME';if(asset&&!skipEmbeddedViewer&&!asset.getAttribute('src')){const suffix=asset.tagName==='IMG'?`?v=${new Date().toISOString().slice(0,13)}`:'';asset.src=`${asset.dataset.src}${suffix}`;}}});
     if(name==='firms'&&!firmsLoaded)void loadFirmsDetections();
+    if(name==='air')void loadAirStationsMap();
     if(name==='earthquakes'&&!earthquakesLoaded)void loadEarthquakes(earthquakesPeriod);
   };
   buttons.forEach((button,index)=>{
@@ -259,6 +285,7 @@ function initEnvironmentViewers(){
       event.preventDefault();activate(buttons[target].dataset.environmentViewer);buttons[target].focus();
     });
   });
+  document.getElementById('environment-air-stations-filter')?.addEventListener('change',renderAirStationsMap);
   activate(buttons[0].dataset.environmentViewer);
 }
 
@@ -272,6 +299,49 @@ function ensureFirmsLeaflet(){
     const script=document.createElement('script');script.id='leaflet-script';script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';script.crossOrigin='';script.async=true;script.addEventListener('load',resolve,{once:true});script.addEventListener('error',reject,{once:true});document.head.append(script);
   });
   return firmsLeafletPromise;
+}
+
+const AIR_STATION_COLORS=['#6fd08c','#b9d96b','#f0c35f','#ed8a5f','#d66568','#9b5c8f'];
+function renderAirStationsMap(){
+  const target=document.getElementById('environment-air-stations-map');
+  const status=document.getElementById('environment-air-stations-results');
+  if(!target||!window.L||!airStationsPayload)return;
+  if(!airStationsMap){
+    airStationsMap=window.L.map(target,{zoomControl:true,scrollWheelZoom:false,minZoom:6,maxZoom:16}).setView([41.72,1.65],8);
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap · XVPCA / Generalitat de Catalunya'}).addTo(airStationsMap);
+    airStationsLayer=window.L.layerGroup().addTo(airStationsMap);
+  }
+  airStationsLayer.clearLayers();
+  const filter=document.getElementById('environment-air-stations-filter')?.value||'all';
+  const stations=parseAirStations(airStationsPayload);
+  const visible=stations.filter(station=>filter==='all'||station.readings.some(reading=>reading.name===filter));
+  for(const station of visible){
+    const selected=filter==='all'?station.readings:station.readings.filter(reading=>reading.name===filter);
+    const rank=selected.reduce((worst,item)=>Math.max(worst,item.rank),-1);
+    const color=rank>=0?AIR_STATION_COLORS[rank]:'#829c93';
+    const rows=station.readings.length?station.readings.map(reading=>`<li><b>${escapeHtml(reading.name)}</b> ${number(reading.value,1)} ${escapeHtml(reading.unit)} · ${escapeHtml(reading.label)}</li>`).join(''):'<li>Sense lectures recents disponibles.</li>';
+    const popup=`<div class="environment-air-stations__popup"><strong>${escapeHtml(station.name)}</strong><small>${station.updated?`Actualitzat ${escapeHtml(station.updated)} · dades provisionals`:'Sense actualització recent'}</small><ul>${rows}</ul></div>`;
+    const marker=window.L.circleMarker([station.latitude,station.longitude],{radius:station.id===OFFICIAL_AIR_STATION?10:7,color:station.id===OFFICIAL_AIR_STATION?'#fff':'#d8e6df',weight:station.id===OFFICIAL_AIR_STATION?2.5:1.2,fillColor:color,fillOpacity:.9}).bindPopup(popup).bindTooltip(station.name);
+    marker.addTo(airStationsLayer);
+  }
+  if(status)status.textContent=`${visible.length} estacions al mapa · ${filter==='all'?'tots els contaminants disponibles':filter} · toca un punt per veure les lectures. Els punts grisos no tenen una categoria ICQA recent.`;
+  requestAnimationFrame(()=>airStationsMap.invalidateSize({pan:false}));
+}
+async function loadAirStationsMap(){
+  if(airStationsPayload&&Date.now()-airStationsLoadedAt<15*60_000){renderAirStationsMap();return;}
+  if(airStationsLoading)return;
+  airStationsLoading=true;
+  const status=document.getElementById('environment-air-stations-results');
+  if(status)status.textContent='Carregant les estacions oficials…';
+  const controller=new AbortController();const timeout=window.setTimeout(()=>controller.abort(),12000);
+  try{
+    const [response]=await Promise.all([fetch(OFFICIAL_AIR_URL,{cache:'no-store',signal:controller.signal}),ensureFirmsLeaflet()]);
+    if(!response.ok)throw new Error(`XVPCA ${response.status}`);
+    const payload=await response.json();
+    if(!Array.isArray(payload.features))throw new Error('XVPCA sense estacions');
+    airStationsPayload=payload;airStationsLoadedAt=Date.now();renderAirStationsMap();
+  }catch(error){if(status)status.textContent='Mapa temporalment no disponible. Obre el visor oficial complet.';console.warn('Mapa XVPCA no disponible.',error);}
+  finally{window.clearTimeout(timeout);airStationsLoading=false;}
 }
 
 function firmsDate(value){return new Intl.DateTimeFormat('ca-ES',{timeZone:'Europe/Madrid',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value));}

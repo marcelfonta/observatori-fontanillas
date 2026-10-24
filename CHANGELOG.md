@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-24 — Mapa oficial d'estacions i estat dels avisos a la portada
+
+- Medi Ambient incorpora una pestanya amb mapa interactiu de les estacions XVPCA de Catalunya. En seleccionar-la carrega el fitxer oficial, permet filtrar per contaminant i mostra les lectures provisionals i l'hora de cada estació; les dades antigues no es presenten com a actuals.
+- La targeta d'avisos de la portada s'actualitza encara que el detall d'avisos no formi part d'aquella pàgina. Diferencia la confirmació de cap avís actiu d'una consulta oficial fallida.
+
 ## 2026-10-24 — ICQA i targetes de l'estació de Sant Celoni
 
 - Les sis targetes visuals de Medi Ambient mostren ara únicament les lectures provisionals de l'estació oficial XVPCA ES1275A (PM10, PM2,5, NO₂, O₃, SO₂ i H₂S); s'elimina el bloc duplicat i les concentracions CAMS de la fitxa principal.
