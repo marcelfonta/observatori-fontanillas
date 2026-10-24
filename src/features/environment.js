@@ -225,7 +225,7 @@ function initEnvironmentViewers(){
   const compactViewer=window.matchMedia('(max-width: 700px)');
   const activate=name=>{
     buttons.forEach(button=>{const active=button.dataset.environmentViewer===name;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});
-    panels.forEach(panel=>{const active=panel.dataset.environmentPanel===name;panel.hidden=!active;if(active){const asset=panel.querySelector('[data-src]');const skipEmbeddedJellyfish=name==='jellyfish'&&compactViewer.matches&&asset?.tagName==='IFRAME';if(asset&&!skipEmbeddedJellyfish&&!asset.getAttribute('src')){const suffix=asset.tagName==='IMG'?`?v=${new Date().toISOString().slice(0,13)}`:'';asset.src=`${asset.dataset.src}${suffix}`;}}});
+    panels.forEach(panel=>{const active=panel.dataset.environmentPanel===name;panel.hidden=!active;if(active){const asset=panel.querySelector('[data-src]');const skipEmbeddedViewer=['jellyfish','marine'].includes(name)&&compactViewer.matches&&asset?.tagName==='IFRAME';if(asset&&!skipEmbeddedViewer&&!asset.getAttribute('src')){const suffix=asset.tagName==='IMG'?`?v=${new Date().toISOString().slice(0,13)}`:'';asset.src=`${asset.dataset.src}${suffix}`;}}});
     if(name==='firms'&&!firmsLoaded)void loadFirmsDetections();
     if(name==='earthquakes'&&!earthquakesLoaded)void loadEarthquakes(earthquakesPeriod);
   };

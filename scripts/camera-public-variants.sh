@@ -23,7 +23,11 @@ TEMP="$(mktemp --suffix=.jpg)"
 PREVIEW_TEMP="$(mktemp --suffix=.jpg)"
 CO2_VALUE="$(mktemp)"
 CO2_DATE="$(mktemp)"
-trap 'rm -f "$TEMP" "$PREVIEW_TEMP" "$CO2_VALUE" "$CO2_DATE"' EXIT
+AIR_NO2="$(mktemp)"
+AIR_O3="$(mktemp)"
+AIR_PM10="$(mktemp)"
+AIR_TIME="$(mktemp)"
+trap 'rm -f "$TEMP" "$PREVIEW_TEMP" "$CO2_VALUE" "$CO2_DATE" "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_TIME"' EXIT
 # El Worker és l'única font normalitzada; una fallada NOAA no atura la càmera.
 CO2_URL="${CAMERA_UPLOAD_URL%/camera/nord/upload}/climate/co2"
 if curl --fail --silent --show-error --max-time 5 "$CO2_URL" | python3 -c '
@@ -49,6 +53,43 @@ except (ValueError,KeyError,TypeError,json.JSONDecodeError):
   if [[ -s "$CO2_VALUE" && -s "$CO2_DATE" ]]; then
     # Càpsula neutral: el valor de Mauna Loa no és cap mesura local de qualitat de l'aire.
     FILTER="${FILTER},drawbox=x=75:y=85:w=2040:h=570:color=black@0.78:t=fill,drawbox=x=75:y=85:w=25:h=570:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂ ATMOSFÈRIC':fontcolor=0xF4CE46:fontsize=100:x=145:y=125,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=260:x=140:y=250,drawtext=fontfile='$FONT':text='ppm':fontcolor=white:fontsize=100:x=1540:y=390,drawtext=fontfile='$FONT':text='MAUNA LOA · NOAA':fontcolor=white:fontsize=80:x=145:y=555,drawtext=fontfile='$FONT':textfile='$CO2_DATE':fontcolor=white:fontsize=65:x=1370:y=565"
+  fi
+fi
+# CAMS Europe és una estimació modelitzada d'una cel·la d'uns 11 km, no una
+# lectura local de l'estació. Sense dades recents, no s'imprimeix cap valor.
+if curl --fail --silent --show-error --max-time 5 \
+  'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=41.6906&longitude=2.4890&current=nitrogen_dioxide,ozone,pm10&domains=cams_europe&timezone=UTC' | python3 -c '
+import datetime,json,math,sys
+from pathlib import Path
+from zoneinfo import ZoneInfo
+try:
+    data=json.load(sys.stdin)
+    current=data["current"]
+    observed=datetime.datetime.fromisoformat(current["time"]+"+00:00")
+    age=(datetime.datetime.now(datetime.timezone.utc)-observed).total_seconds()
+    if not -1800 <= age <= 10800:
+        raise ValueError("stale CAMS time")
+    keys=("nitrogen_dioxide","ozone","pm10")
+    values=[float(current[key]) for key in keys]
+    if any(not math.isfinite(value) or not 0 <= value <= 1000 for value in values):
+        raise ValueError("invalid CAMS value")
+    for path,value in zip(sys.argv[1:4],values):
+        Path(path).write_text(str(round(value)))
+    local=observed.astimezone(ZoneInfo("Europe/Madrid"))
+    Path(sys.argv[4]).write_text(local.strftime("%d/%m %Hh ")+local.tzname())
+except (ValueError,KeyError,TypeError,json.JSONDecodeError):
+    pass
+' "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_TIME"; then
+  if [[ -s "$AIR_NO2" && -s "$AIR_O3" && -s "$AIR_PM10" && -s "$AIR_TIME" ]]; then
+    FILTER="${FILTER},drawbox=x=4530:y=85:w=2910:h=570:color=black@0.78:t=fill,drawbox=x=4530:y=85:w=25:h=570:color=0x77CDA0:t=fill,drawtext=fontfile='$FONT':text='AIRE ESTIMAT · CAMS EUROPE':fontcolor=0x77CDA0:fontsize=82:x=4610:y=120,drawtext=fontfile='$FONT':textfile='$AIR_TIME':fontcolor=white:fontsize=55:x=4610:y=565"
+    for pollutant in NO2 O3 PM10; do
+      case "$pollutant" in
+        NO2) air_x=4610; air_value="$AIR_NO2" ;;
+        O3) air_x=5540; air_value="$AIR_O3" ;;
+        PM10) air_x=6470; air_value="$AIR_PM10" ;;
+      esac
+      FILTER="${FILTER},drawbox=x=$air_x:y=250:w=850:h=280:color=white@0.1:t=fill,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=75:x=$((air_x+40)):y=270,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=150:x=$((air_x+40)):y=355,drawtext=fontfile='$FONT':text='µg/m³':fontcolor=white:fontsize=48:x=$((air_x+465)):y=435"
+    done
   fi
 fi
 ffmpeg -nostdin -hide_banner -loglevel error -y -i "$SOURCE" -vf "$FILTER" -frames:v 1 -q:v 2 "$TEMP"

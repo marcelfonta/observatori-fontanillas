@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-24 — Visors ambientals i navegació de l'arxiu
+
+- El visor de sequera torna a obrir l'entrada vigent de l'ACA. Medi Ambient incorpora el mapa de temperatura superficial de Copernicus Marine sota demanda, identificat com a anàlisi i previsió propera al temps real.
+- Les rutes profundes d'històries i resums carreguen els recursos del web des de l'arrel. Les hores de les històries editorials es converteixen abans de formatar-les, i el menú lateral recorda el punt de lectura dins la sessió.
+- El script de la càmera prepara una franja per a NO₂, O₃ i PM10 a partir de CAMS Europe via Open-Meteo, amb hora i atribució de model. Si la dada és absent o antiga, la franja no es dibuixa. Cal instal·lar-lo i validar-lo amb una captura real a la Raspberry abans de considerar-lo publicat.
+
 ## 2026-10-24 — Panoràmica completa a les previsualitzacions
 
 - La portada i la pàgina de webcams mostren la miniatura sencera en proporció 32:9; el visor ja no retalla la càpsula de CO₂ ni la franja de Sant Celoni.

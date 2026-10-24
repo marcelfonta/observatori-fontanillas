@@ -1,11 +1,11 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
-Actualitzat el 23 d’octubre de 2026. Aquest document conté únicament feina
+Actualitzat el 24 d’octubre de 2026. Aquest document conté únicament feina
 pendent, aplicable i amb un criteri de finalització observable. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
 
-La revisió de producció posterior al PR #296 és a [`docs/POST-MERGE-AUDIT-2026-10-23.md`](docs/POST-MERGE-AUDIT-2026-10-23.md). La ruta de canvi climàtic i l’accés des del menú ja estan publicats. L’única degradació operativa observada durant la revisió va ser temporal: el planificador va passar de `stale` a `healthy` mentre Cloudflare investigava una incidència dels Cron Triggers. Encara cal validar els circuits que depenen de publicacions i dispositius reals.
+La revisió de producció posterior al PR #296 és a [`docs/POST-MERGE-AUDIT-2026-10-23.md`](docs/POST-MERGE-AUDIT-2026-10-23.md). La ruta de canvi climàtic i l’accés des del menú ja estan publicats. El cron de producció es va tornar a crear el 24/10 després d'una aturada; dos cicles consecutius van actualitzar el planificador, la previsió i la càmera. Les proves OneSignal amb la web tancada van arribar a l'iPhone i al Centre de notificacions de l'ordinador. Encara cal validar les publicacions i els avisos oficials reals.
 
 ## Visió
 
@@ -84,8 +84,9 @@ durant una execució automàtica real.
 
 ### Avisos i dispositius
 
-- [ ] Confirmar una notificació OneSignal real amb la web tancada o en segon pla
-  en, com a mínim, un mòbil i un ordinador subscrits.
+Prova completada el 24/10: notificació rebuda a l'iPhone amb la web tancada i
+al Centre de notificacions de macOS amb Chrome i la web tancats. Resta comprovar
+la presentació d'un avís oficial real quan n'hi hagi un.
 - [ ] Verificar durant un avís oficial actiu que territori, nivell, vigència i
   enllaç oficial es mostren correctament.
 - [ ] Validar el primer comunicat CECAT real detectat en mode revisió, comprovant
@@ -167,6 +168,22 @@ peces.
 
 **Fet quan:** la webcam mostra una dada oficial, datada, atribuïda i degradable,
 clarament diferenciada dels contaminants locals PM10, NO₂ i O₃.
+
+### Contaminants i temperatura superficial del mar
+
+La franja de NO₂, O₃ i PM10 de la webcam està preparada amb estimacions CAMS
+Europe via Open-Meteo. No són lectures de cap sensor de Fontanillas ni de la
+xarxa XVPCA. El visor de Copernicus Marine s'ha preparat com a pestanya de Medi
+Ambient, carregada només quan se selecciona; representa temperatura superficial
+analitzada i prevista, no mesures instantànies de cada punt del mar.
+
+- [ ] Provar amb llum de dia i de nit la nova franja de contaminants a la
+  Raspberry, comprovar hora, font, valors, unitats i absència segura quan el
+  model falla; instal·lar el script només després de revisar la mostra.
+- [ ] Validar en staging i en dispositius reals els visors de l'ACA i Copernicus,
+  incloent les versions mòbils, abans de desplegar-los a producció.
+- [ ] Comparar les estimacions CAMS amb una estació oficial XVPCA adequada abans
+  de considerar una presentació d'estat o colors de risc com els de televisió.
 
 ### Pàgina de canvi climàtic de referència
 

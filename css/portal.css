@@ -841,6 +841,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .history-pagination label { justify-content: flex-end; }
   .environment-viewer-frame iframe { height: 520px; }
   .environment-viewer-frame--jellyfish iframe { display: none; }
+  .environment-viewer-frame--marine iframe { display: none; }
   .environment-viewer-mobile-launch { display: flex; min-height: 220px; padding: 28px; align-items: center; justify-content: center; flex-direction: column; gap: 8px; background: linear-gradient(145deg,#0b241c,#174f3c); color: var(--text); text-align: center; text-decoration: none; }
   .environment-viewer-mobile-launch strong { color: var(--green); font: 700 22px/1.15 var(--font-display); }
   .environment-viewer-mobile-launch span { color: var(--muted); font-size: 12px; }

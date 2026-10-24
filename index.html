@@ -39,11 +39,11 @@
     <meta name="twitter:description" content="Dades locals, previsió i radar en directe des de Sant Celoni." />
     <meta name="twitter:image" content="https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-social-v12-2.png" />
     <meta name="twitter:image:alt" content="Observatori Meteorològic Fontanillas davant del Montseny" />
-    <link rel="icon" href="assets/icons/favicon-16.png" sizes="16x16" type="image/png" />
-    <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-v21.png?v=22.0.0" />
-    <link rel="manifest" href="site.webmanifest" />
-    <script src="src/core/page-bootstrap.js?v=22.31.6-morning-publication"></script>
+    <link rel="icon" href="/assets/icons/favicon-16.png" sizes="16x16" type="image/png" />
+    <link rel="icon" href="/assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon-v21.png?v=22.0.0" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <script src="/src/core/page-bootstrap.js?v=22.31.6-morning-publication"></script>
     <style>
       html[data-portal-page="inici"] [data-portal-page]:not([data-portal-page~="inici"]),
       html[data-portal-page="meteo-ia"] [data-portal-page]:not([data-portal-page~="meteo-ia"]),
@@ -70,16 +70,16 @@
       html[data-portal-page="radar"] #territori,
       html[data-portal-page="webcams"] #territori { grid-template-columns:1fr; }
     </style>
-    <link rel="stylesheet" href="css/fonts.css?v=1.0" />
-    <link rel="stylesheet" href="css/variables.css?v=6.0" />
-    <link rel="stylesheet" href="css/layout.css?v=6.0" />
-    <link rel="stylesheet" href="css/style.css?v=22.39.2-stellarium-controls" />
-    <link rel="stylesheet" href="css/portal.css?v=22.42.5-webcam-panorama" />
-    <script type="module" src="src/features/analytics.js?v=7.0-stable"></script>
-    <script type="module" src="src/features/push.js?v=22.31.6"></script>
-    <script type="module" src="src/features/pwa.js?v=22.31.6"></script>
-    <script type="module" src="src/app.js?v=22.39.3-camera-co2"></script>
-    <script type="module" src="src/features/alert-history-init.js?v=7.0-stable"></script>
+    <link rel="stylesheet" href="/css/fonts.css?v=1.0" />
+    <link rel="stylesheet" href="/css/variables.css?v=6.0" />
+    <link rel="stylesheet" href="/css/layout.css?v=6.0" />
+    <link rel="stylesheet" href="/css/style.css?v=22.39.2-stellarium-controls" />
+    <link rel="stylesheet" href="/css/portal.css?v=22.42.6-environment-stories-nav" />
+    <script type="module" src="/src/features/analytics.js?v=7.0-stable"></script>
+    <script type="module" src="/src/features/push.js?v=22.31.6"></script>
+    <script type="module" src="/src/features/pwa.js?v=22.31.6"></script>
+    <script type="module" src="/src/app.js?v=22.39.4-environment-stories-nav"></script>
+    <script type="module" src="/src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","license":"https://creativecommons.org/licenses/by/4.0/","creditText":"Observatori Meteorològic Fontanillas — meteo.fontanillas.cat","isAccessibleForFree":true,"creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
     </script>
@@ -313,7 +313,7 @@
 
       <section class="home-personalization panel" data-portal-page="inici" aria-labelledby="home-personalization-title">
         <div><p class="eyebrow">El teu temps</p><h2 id="home-personalization-title">Desa un municipi i rep només els avisos que t’interessen.</h2><p>Els municipis preferits es guarden només en aquest navegador. Les notificacions són opcionals i es poden canviar quan vulguis.</p></div>
-        <div><a href="./municipis.html">Escollir municipi →</a><a href="/avisos#push-alert-button">Configurar avisos →</a></div>
+        <div><a href="/municipis.html">Escollir municipi →</a><a href="/avisos#push-alert-button">Configurar avisos →</a></div>
       </section>
 
       <aside class="thermal-index-guide panel" data-portal-page="estacio"><div><p class="eyebrow">Lectura tèrmica</p><h2>Quina temperatura he de mirar?</h2></div><p><b>La temperatura</b> és la mesura del sensor. <b>La sensació tèrmica</b> és la referència principal per entendre com es percep combinant humitat i vent. <b>L’Humidex</b> és un índex complementari de xafogor i no s’expressa com una temperatura real.</p></aside>
@@ -433,7 +433,7 @@
         <section class="weather-timeline panel" id="data-center-episodes" role="tabpanel" aria-labelledby="data-center-tab-episodes weather-timeline-title" data-data-center-panel="episodes">
           <header><div><p class="eyebrow">Cronologia meteorològica</p><h2 id="weather-timeline-title">Els episodis, ordenats en el temps.</h2><p>Combina avisos oficials desats, dies de pluja i extrems del període seleccionat, sempre indicant d’on surt cada dada.</p></div><div class="weather-timeline__filters" role="group" aria-label="Filtrar la cronologia"><button type="button" class="is-active" data-timeline-filter="all">Tot</button><button type="button" data-timeline-filter="alert">Avisos</button><button type="button" data-timeline-filter="rain">Pluja</button><button type="button" data-timeline-filter="extreme">Extrems</button></div></header>
           <div class="weather-timeline__list" id="data-weather-timeline" aria-live="polite"><div class="weather-timeline__empty">Preparant la cronologia…</div></div>
-          <footer><span id="data-weather-timeline-status">Dades de Fontanillas i historial oficial</span><a href="./historial-avisos.html">Obrir l’historial d’avisos →</a></footer>
+          <footer><span id="data-weather-timeline-status">Dades de Fontanillas i historial oficial</span><a href="/historial-avisos.html">Obrir l’historial d’avisos →</a></footer>
         </section>
       </section>
 
@@ -530,7 +530,7 @@
           <section class="alert-history-panel" aria-labelledby="alert-history-title">
             <header><div><p class="eyebrow">Memòria d’episodis</p><h3 id="alert-history-title">Historial d’avisos</h3><p>Canvis oficials registrats pel Worker per poder consultar els episodis recents.</p></div><span class="tag" id="alert-history-status">Carregant…</span></header>
             <div id="alert-history-list" class="alert-history-list alert-history-list--preview" data-history-limit="5"><div class="alert-history-empty">Carregant historial…</div></div>
-            <div class="alert-history-panel__actions"><a href="./historial-avisos.html">Veure l’historial complet →</a></div>
+            <div class="alert-history-panel__actions"><a href="/historial-avisos.html">Veure l’historial complet →</a></div>
           </section>
           <p class="alerts-note"><span>i</span> Els organismes publiquen per comarca o zona: Vallès Oriental i Prelitoral de Barcelona inclouen Sant Celoni, però un avís no implica necessàriament afectació a tot el municipi. La web mostra l’àmbit oficial i enllaça sempre amb el detall original. <b id="alerts-updated">Actualitzant…</b></p>
         </div>
@@ -729,7 +729,7 @@
         <section class="verification-transparency" aria-labelledby="verification-transparency-title">
           <header><div><p class="eyebrow">Traçabilitat pública</p><h3 id="verification-transparency-title">Mètode, dades i salut operativa</h3></div><span class="tag" id="verification-public-health">Comprovant serveis</span></header>
           <div class="verification-transparency__grid"><article><strong>Exportació reproduïble</strong><p>Descarrega la mostra visible amb previsió congelada, observació posterior i metadades del mètode.</p><div class="verification-export-actions"><button type="button" id="verification-export-csv" disabled>CSV</button><button type="button" id="verification-export-json" disabled>JSON</button></div><small id="verification-export-status" role="status">Esperant una mostra verificable.</small></article><article><strong>Estat dels processos</strong><p id="verification-health-summary">Consultant únicament estats agregats, sense secrets ni informació privada.</p><ul id="verification-health-services"><li>Dades pendents.</li></ul></article></div>
-          <p class="verification-license">Dades pròpies de l’Observatori Fontanillas i derivats de prediccions Open‑Meteo. Consulta la <a href="./metodologia.html">metodologia completa</a>; les fonts oficials conserven les seves llicències i atribucions.</p>
+          <p class="verification-license">Dades pròpies de l’Observatori Fontanillas i derivats de prediccions Open‑Meteo. Consulta la <a href="/metodologia.html">metodologia completa</a>; les fonts oficials conserven les seves llicències i atribucions.</p>
         </section>
       </section>
 
@@ -768,7 +768,7 @@
           <div class="night-sky-viewer__directions" aria-label="Orientació ràpida"><span>Mira cap a</span><button type="button" data-sky-direction="north" aria-pressed="false">Nord</button><button type="button" data-sky-direction="east" aria-pressed="false">Est</button><button type="button" data-sky-direction="south" aria-pressed="true">Sud</button><button type="button" data-sky-direction="west" aria-pressed="false">Oest</button><button type="button" data-sky-direction="zenith" aria-pressed="false">Zenit</button><button id="night-sky-fullscreen" type="button">Pantalla completa</button></div>
           <p id="night-sky-status" class="night-sky-viewer__status" role="status">El planetari encara no s’ha carregat. Les dades textuals de sota ja estan disponibles.</p>
           <details class="night-sky-viewer__access"><summary>Com utilitzar-lo i alternativa accessible</summary><p>Arrossega per girar el cel, fes pinça o roda per ampliar i usa els botons cardinals per orientar-te. «Posta de sol» i «Nit astronòmica» calculen l’hora per a la localitat i data escollides. Totes les hores es mostren en hora peninsular Europe/Madrid, amb el canvi CET/CEST aplicat automàticament.</p><p>El visor WebGL és complementari: les hores del Sol i la Lluna, les fases, la qualitat prevista i els esdeveniments continuen explicats en text a les targetes següents.</p></details>
-          <footer><span>Visor oficial: Stellarium Web</span><a href="./docs/stellarium-licenses.html">Privacitat, llicència i atribució</a></footer>
+          <footer><span>Visor oficial: Stellarium Web</span><a href="/docs/stellarium-licenses.html">Privacitat, llicència i atribució</a></footer>
         </article>
         <div class="astronomy-overview">
           <article class="night-card panel"><div class="night-score"><span id="night-score">—</span><small>/100</small></div><div><p class="eyebrow">Aquesta nit</p><h3 id="night-rating">Analitzant les condicions</h3><p id="night-best-window">Buscant les hores més favorables.</p><p id="night-summary">Creuant núvols, probabilitat de pluja i llum lunar.</p></div></article>
@@ -960,11 +960,12 @@
         </article>
         <section class="environment-viewers panel" aria-labelledby="environment-viewers-title">
           <header><div><p class="eyebrow">Visors vius del territori i del planeta</p><h2 id="environment-viewers-title">Incendi, satèl·lit, sequera, terratrèmols i costa</h2><p>Consulta fonts ambientals identificades i el catàleg sísmic mundial. Només es carrega el visor que selecciones.</p></div><span class="tag">Fonts identificades</span></header>
-          <div class="environment-viewer-tabs" role="tablist" aria-label="Visor ambiental"><button id="environment-tab-fire" class="is-active" type="button" role="tab" aria-selected="true" aria-controls="environment-panel-fire" data-environment-viewer="fire">Risc · Pla Alfa</button><button id="environment-tab-firms" type="button" role="tab" aria-selected="false" aria-controls="environment-panel-firms" tabindex="-1" data-environment-viewer="firms">Deteccions · NASA</button><button id="environment-tab-drought" type="button" role="tab" aria-selected="false" aria-controls="environment-panel-drought" tabindex="-1" data-environment-viewer="drought">Sequera</button><button id="environment-tab-earthquakes" type="button" role="tab" aria-selected="false" aria-controls="environment-panel-earthquakes" tabindex="-1" data-environment-viewer="earthquakes">Terratrèmols</button><button id="environment-tab-jellyfish" type="button" role="tab" aria-selected="false" aria-controls="environment-panel-jellyfish" tabindex="-1" data-environment-viewer="jellyfish">Meduses</button></div>
+          <div class="environment-viewer-tabs" role="tablist" aria-label="Visor ambiental"><button id="environment-tab-fire" class="is-active" type="button" role="tab" aria-selected="true" aria-controls="environment-panel-fire" data-environment-viewer="fire">Risc · Pla Alfa</button><button id="environment-tab-firms" type="button" role="tab" aria-selected="false" aria-controls="environment-panel-firms" tabindex="-1" data-environment-viewer="firms">Deteccions · NASA</button><button id="environment-tab-drought" type="button" role="tab" aria-selected="false" aria-controls="environment-panel-drought" tabindex="-1" data-environment-viewer="drought">Sequera</button><button id="environment-tab-earthquakes" type="button" role="tab" aria-selected="false" aria-controls="environment-panel-earthquakes" tabindex="-1" data-environment-viewer="earthquakes">Terratrèmols</button><button id="environment-tab-marine" type="button" role="tab" aria-selected="false" aria-controls="environment-panel-marine" tabindex="-1" data-environment-viewer="marine">Temperatura del mar</button><button id="environment-tab-jellyfish" type="button" role="tab" aria-selected="false" aria-controls="environment-panel-jellyfish" tabindex="-1" data-environment-viewer="jellyfish">Meduses</button></div>
           <div id="environment-panel-fire" class="environment-viewer-panel" role="tabpanel" aria-labelledby="environment-tab-fire" tabindex="0" data-environment-panel="fire"><div class="environment-viewer-frame environment-viewer-frame--image"><img alt="Mapa oficial d'avui del Pla Alfa dels Agents Rurals" data-src="https://www.gencat.cat/medinatural/incendis/mapes/pla_alfa.gif" loading="lazy" /><div class="environment-viewer-meta"><span><strong>Pla Alfa · Agents Rurals.</strong> Mapa oficial diari amb nivells municipals, data i possibles restriccions d’accés.</span><span class="environment-viewer-links"><a href="https://interior.gencat.cat/ca/serveis/informacio-geografica/visors-i-aplicacions/pla-alfa/" target="_blank" rel="noreferrer">Obrir visor interactiu ↗</a></span></div></div></div>
           <div id="environment-panel-firms" class="environment-viewer-panel" role="tabpanel" aria-labelledby="environment-tab-firms" tabindex="0" data-environment-panel="firms" hidden><div class="environment-viewer-frame environment-firms"><div class="environment-firms__map-shell"><div id="environment-firms-map" aria-label="Mapa de deteccions tèrmiques de NASA FIRMS a Catalunya i l’entorn"></div><div class="environment-firms__legend" aria-label="Llegenda del mapa"><span><i class="is-recent"></i>Últimes 24 h</span><span><i class="is-older"></i>24–48 h</span><span><i class="is-station"></i>Fontanillas</span></div></div><div id="environment-firms-results" class="environment-firms__results"><p>Selecciona aquesta pestanya per consultar anomalies tèrmiques recents en un radi de 120 km.</p></div><div class="environment-viewer-meta"><span><strong>NASA FIRMS · VIIRS.</strong> Són punts calents observats per satèl·lit, no incendis confirmats ni avisos d’emergència.</span><span class="environment-viewer-links"><a href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noreferrer">Veure el mapa mundial ↗</a><a href="https://view.eumetsat.int/productviewer?v=default" target="_blank" rel="noreferrer">Núvols a EUMETSAT ↗</a></span></div></div></div>
-          <div id="environment-panel-drought" class="environment-viewer-panel" role="tabpanel" aria-labelledby="environment-tab-drought" tabindex="0" data-environment-panel="drought" hidden><div class="environment-viewer-frame"><iframe title="Visor oficial de l'estat actual de sequera de l'ACA" data-src="https://aplicacions.aca.gencat.cat/visseq/estat-actual" loading="lazy"></iframe><div class="environment-viewer-meta"><span><strong>Agència Catalana de l’Aigua.</strong> Escenari vigent per unitat d’explotació i municipi.</span><span class="environment-viewer-links"><a href="https://aplicacions.aca.gencat.cat/visseq/estat-actual" target="_blank" rel="noreferrer">Obrir visor complet ↗</a></span></div></div></div>
+          <div id="environment-panel-drought" class="environment-viewer-panel" role="tabpanel" aria-labelledby="environment-tab-drought" tabindex="0" data-environment-panel="drought" hidden><div class="environment-viewer-frame"><iframe title="Visor oficial de l'estat actual de sequera de l'ACA" data-src="https://aplicacions.aca.gencat.cat/visseq/" loading="lazy"></iframe><div class="environment-viewer-meta"><span><strong>Agència Catalana de l’Aigua.</strong> Escenari vigent per unitat d’explotació i municipi.</span><span class="environment-viewer-links"><a href="https://aplicacions.aca.gencat.cat/visseq/" target="_blank" rel="noopener noreferrer">Obrir visor complet ↗</a></span></div></div></div>
           <div id="environment-panel-earthquakes" class="environment-viewer-panel" role="tabpanel" aria-labelledby="environment-tab-earthquakes" tabindex="0" data-environment-panel="earthquakes" hidden><div class="environment-viewer-frame environment-earthquakes"><div class="environment-earthquakes__map-shell"><div id="environment-earthquakes-map" aria-label="Mapa mundial de terratrèmols recents"></div><div class="environment-earthquakes__controls" aria-label="Controls del mapa sísmic"><button type="button" class="is-active" data-earthquake-period="day">Últimes 24 h</button><button type="button" data-earthquake-period="week">7 dies · totes</button><button type="button" data-earthquake-view="catalonia">Catalunya</button><button type="button" data-earthquake-view="world">Tot el món</button></div><div class="environment-earthquakes__legend" aria-label="Llegenda de magnitud"><span><i class="is-low"></i>M&lt;2,5</span><span><i class="is-medium"></i>M2,5–4,4</span><span><i class="is-high"></i>M≥4,5</span></div></div><div id="environment-earthquakes-results" class="environment-earthquakes__results" aria-live="polite"><p>Selecciona aquesta pestanya per carregar els terratrèmols més recents.</p></div><div class="environment-viewer-meta"><span><strong>USGS + ICGC/SISMOCAT.</strong> Cobertura mundial combinada amb el catàleg local i regional de la Xarxa Sísmica de Catalunya. Els marcadors ICGC tenen contorn blau. Les localitzacions i magnituds poden ser revisades; no és un sistema d’avisos.</span><span class="environment-viewer-links"><a href="https://earthquake.usgs.gov/earthquakes/map/" target="_blank" rel="noreferrer">Mapa mundial USGS ↗</a><a href="https://www.icgc.cat/ca/Ambits-tematics/Riscos-i-emergencies/Terratremols" target="_blank" rel="noreferrer">Terratrèmols ICGC ↗</a><a href="https://sismocat.icgc.cat/sisweb3/ajax.php?lang=ca" target="_blank" rel="noreferrer">Catàleg SISMOCAT ↗</a></span></div></div></div>
+          <div id="environment-panel-marine" class="environment-viewer-panel" role="tabpanel" aria-labelledby="environment-tab-marine" tabindex="0" data-environment-panel="marine" hidden><div class="environment-viewer-frame environment-viewer-frame--marine"><a class="environment-viewer-mobile-launch" href="https://data.marine.copernicus.eu/viewer" target="_blank" rel="noopener noreferrer"><span class="environment-viewer-mobile-launch__icon" aria-hidden="true">↗</span><strong>Explorar la temperatura del mar</strong><span>Obre el visor de Copernicus Marine a pantalla completa.</span></a><iframe title="Mapa de temperatura superficial del mar de Copernicus Marine" data-src="https://data.marine.copernicus.eu/viewer" loading="lazy"></iframe><div class="environment-viewer-meta"><span><strong>Copernicus Marine · MyOcean.</strong> Temperatura superficial en °C, amb dades d'anàlisi i previsió properes al temps real. La data i el producte utilitzat es consulten al mateix visor; no és una mesura instantània de cada platja.</span><span class="environment-viewer-links"><a href="https://data.marine.copernicus.eu/viewer" target="_blank" rel="noopener noreferrer">Obrir el mapa complet ↗</a></span></div></div></div>
           <div id="environment-panel-jellyfish" class="environment-viewer-panel" role="tabpanel" aria-labelledby="environment-tab-jellyfish" tabindex="0" data-environment-panel="jellyfish" hidden><div class="environment-viewer-frame environment-viewer-frame--jellyfish"><a class="environment-viewer-mobile-launch" href="https://www.medusapp.net/mapa/" target="_blank" rel="noreferrer"><span class="environment-viewer-mobile-launch__icon" aria-hidden="true">↗</span><strong>Veure el mapa de meduses</strong><span>Obre MedusApp a pantalla completa, amb més espai i millor control tàctil.</span></a><iframe title="Mapa d'albiraments de meduses de MedusApp" data-src="https://www.medusapp.net/mapa/mapa-portada.php" loading="lazy"></iframe><div class="environment-viewer-meta"><span><strong>MedusApp · UPV i Universitat d’Alacant.</strong> Albiraments ciutadans recents; no substitueix la bandera ni l’avís dels socorristes.</span><span class="environment-viewer-links"><a href="https://www.medusapp.net/mapa/" target="_blank" rel="noreferrer">MedusApp complet ↗</a><a href="https://aplicacions.aca.gencat.cat/platgescat2/" target="_blank" rel="noreferrer">PlatgesCat ↗</a><a href="https://meduseo.com/es/" target="_blank" rel="noreferrer">Meduseo ↗</a></span></div></div></div>
         </section>
         <p class="environment-note"><span>i</span> L’UV prové prioritàriament del sensor de Fontanillas i l’aire és una estimació CAMS via Open‑Meteo. El pol·len i les espores provenen del butlletí setmanal PIA–XAC / UAB amb Bellaterra i Girona com a referències territorials. Pla Alfa i ACA són fonts oficials. Els sismes mundials provenen de l’USGS i l’ICGC aporta el detall català. MedusApp aporta albiraments universitaris i ciutadans; Meduseo queda com a alternativa internacional externa.</p>
@@ -1041,7 +1042,7 @@
         </div>
         <aside class="observatory-about__links panel" aria-label="Documentació i contacte de l’Observatori">
           <div><p class="eyebrow">Comprova el projecte</p><h3>Metodologia, dades i registre públic.</h3></div>
-          <nav><a href="./metodologia.html">Llegir la metodologia →</a><a href="/centre-dades">Consultar dades i qualitat →</a><a href="https://github.com/marcelfonta/observatori-fontanillas/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Veure el registre de canvis ↗</a><a href="/contacte">Comunicar una incidència →</a></nav>
+          <nav><a href="/metodologia.html">Llegir la metodologia →</a><a href="/centre-dades">Consultar dades i qualitat →</a><a href="https://github.com/marcelfonta/observatori-fontanillas/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Veure el registre de canvis ↗</a><a href="/contacte">Comunicar una incidència →</a></nav>
         </aside>
       </section>
 
@@ -1067,13 +1068,13 @@
       </section>
     </main>
 
-    <script src="src/core/route-dom-pruner.js?v=22.39.1-route-dom"></script>
+    <script src="/src/core/route-dom-pruner.js?v=22.39.1-route-dom"></script>
 
     <footer class="shell">
       <span>© 2026 Observatori Meteorològic Fontanillas</span>
       <small>Dades locals · Sant Celoni, Montseny</small>
       <div>
-        <a href="./privacitat.html">Privacitat</a>
+        <a href="/privacitat.html">Privacitat</a>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>
       </div>
