@@ -28,6 +28,10 @@ export function normalizeForecast(raw,{model,capturedAt}){
   if(raw?.timezone!=='Europe/Madrid'||raw?.hourly_units?.time!=='unixtime'||raw?.daily_units?.time!=='unixtime'||
     raw?.hourly_units?.temperature_2m!=='°C'||raw?.daily_units?.temperature_2m_max!=='°C'||raw?.daily_units?.temperature_2m_min!=='°C')throw new Error('Unitats o fus inesperats');
   if(!Array.isArray(raw.hourly?.time)||!Array.isArray(raw.daily?.time))throw new Error('Sèrie absent');
+  // Open-Meteo anchors daily Unix timestamps with one fixed offset for the
+  // entire response, even when Europe/Madrid changes between CET and CEST.
+  const dailyOffset=raw.utc_offset_seconds;
+  if(!Number.isInteger(dailyOffset)||Math.abs(dailyOffset)>14*3600)throw new Error('Desplaçament horari invàlid');
   const hourly=raw.hourly.time.map((epoch,i)=>{
     if(!Number.isFinite(epoch)||epoch<=0)throw new Error('Instant invàlid');
     return {validAt:new Date(epoch*1000).toISOString(),temperature:temp(raw.hourly.temperature_2m?.[i])};
@@ -36,7 +40,7 @@ export function normalizeForecast(raw,{model,capturedAt}){
   const daily=raw.daily.time.map((epoch,i)=>{
     if(!Number.isFinite(epoch)||epoch<=0)throw new Error('Dia invàlid');
     const max=temp(raw.daily.temperature_2m_max?.[i]),min=temp(raw.daily.temperature_2m_min?.[i]);
-    return {date:localDay(epoch*1000),max,min,complete:max!==null&&min!==null&&max>=min};
+    return {date:new Date((epoch+dailyOffset)*1000).toISOString().slice(0,10),max,min,complete:max!==null&&min!==null&&max>=min};
   });
   if(new Set(daily.map(r=>r.date)).size!==daily.length)throw new Error('Dies duplicats');
   return {model,capturedAt,availableAt:capturedAt,modelRunAt:null,runIdentity:'not-provided-by-forecast-api',

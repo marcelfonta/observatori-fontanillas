@@ -72,7 +72,7 @@ assert.deepEqual(probePolicy('2026-12-31T08:10:00Z'),{issuePolicy:FONTA.issuePol
 const temp=await mkdtemp(join(tmpdir(),'fonta-portable-'));
 try{
   const source=join(temp,'source'),dest=join(temp,'export');await mkdir(source);
-  const name='2026-09-20-pm.json',raw={...fixture('2026-09-21'),daily_units:{time:'unixtime',temperature_2m_max:'°C',temperature_2m_min:'°C'},daily:{time:[dayBounds('2026-09-21').start/1000],temperature_2m_max:[1],temperature_2m_min:[0]}};
+  const name='2026-09-20-pm.json',raw={...fixture('2026-09-21'),utc_offset_seconds:7200,daily_units:{time:'unixtime',temperature_2m_max:'°C',temperature_2m_min:'°C'},daily:{time:[dayBounds('2026-09-21').start/1000],temperature_2m_max:[1],temperature_2m_min:[0]}};
   const s={kind:model,receivedAt:'2026-09-20T12:00:00Z',raw,hashFormat:'JSON.stringify',sha256:createHash('sha256').update(JSON.stringify(raw)).digest('hex')};
   const disk={schema:1,id:name.slice(0,-5),station:FONTA.station,capturedAt:'2026-09-20T12:01:00Z',sources:[s]};
   const bytes=JSON.stringify(disk)+'\n';await writeFile(join(source,name),bytes);await writeFile(join(source,'.env'),'not an actual secret');

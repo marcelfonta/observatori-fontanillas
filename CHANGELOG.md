@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-24 — Dates diàries de Fonta durant el canvi d’hora
+
+- El laboratori Fonta interpreta els dies diaris d’Open-Meteo amb el desplaçament fix que inclou cada resposta. Així evita marcar com a duplicats els dies del canvi d’horari CET/CEST.
+- Les previsions continuen sent experimentals i no s’envien a cap publicador. La captura fallida del 24 d’octubre queda arxivada com a evidència parcial; la pròxima franja ha de confirmar la recuperació.
+
 ## 2026-10-23 — Timelapse amb menys memòria i detecció de buits
 
 - El generador de la Raspberry redueix les fotografies de 7680×2160 una a una i desa els fitxers temporals al disc abans de codificar el vídeo. Això evita acumular captures originals dins d'un sol procés FFmpeg en una màquina de 415 MiB de RAM.
