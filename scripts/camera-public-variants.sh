@@ -59,7 +59,7 @@ except (ValueError,KeyError,TypeError,json.JSONDecodeError):
 ' "$CO2_VALUE" "$CO2_DATE"; then
   if [[ -s "$CO2_VALUE" && -s "$CO2_DATE" ]]; then
     # Càpsula neutral: el valor de Mauna Loa no és cap mesura local de qualitat de l'aire.
-    FILTER="${FILTER},drawbox=x=75:y=85:w=1680:h=250:color=black@0.58:t=fill,drawbox=x=75:y=85:w=14:h=250:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂ ATMOSFÈRIC · NOAA':fontcolor=0xF4CE46:fontsize=58:x=120:y=102,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=120:x=120:y=186,drawtext=fontfile='$FONT':text='ppm':fontcolor=white:fontsize=58:x=680:y=240,drawtext=fontfile='$FONT':text='MAUNA LOA':fontcolor=white:fontsize=48:x=1040:y=192,drawtext=fontfile='$FONT':textfile='$CO2_DATE':fontcolor=white:fontsize=48:x=1070:y=265"
+    FILTER="${FILTER},drawbox=x=75:y=85:w=1110:h=155:color=black@0.48:t=fill,drawbox=x=75:y=85:w=11:h=155:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂':fontcolor=0xF4CE46:fontsize=78:x=120:y=119,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=108:x=390:y=100,drawtext=fontfile='$FONT':text='ppm':fontcolor=white:fontsize=50:x=910:y=154"
   fi
 fi
 # CAMS Europe és una estimació modelitzada d'una cel·la d'uns 11 km, no una
@@ -88,14 +88,16 @@ except (ValueError,KeyError,TypeError,json.JSONDecodeError):
     pass
 ' "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_TIME"; then
   if [[ -s "$AIR_NO2" && -s "$AIR_O3" && -s "$AIR_PM10" && -s "$AIR_TIME" ]]; then
-    FILTER="${FILTER},drawbox=x=4420:y=85:w=3020:h=250:color=black@0.58:t=fill,drawbox=x=4420:y=85:w=14:h=250:color=0x77CDA0:t=fill,drawtext=fontfile='$FONT':text='AIRE ESTIMAT · CAMS EUROPE · µg/m³':fontcolor=0x77CDA0:fontsize=55:x=4470:y=105,drawtext=fontfile='$FONT':textfile='$AIR_TIME':fontcolor=white:fontsize=46:x=6990:y=272"
+    # Cercles decoratius del mateix color: no són un semàfor sanitari ni un AQI.
+    # La procedència CAMS i les unitats es mantenen en lletra petita a la imatge.
+    FILTER="${FILTER},drawtext=fontfile='$FONT':text='CAMS · µg/m³':fontcolor=white@0.9:borderw=5:bordercolor=black@0.75:fontsize=50:x=6250:y=1660"
     for pollutant in NO2 O3 PM10; do
       case "$pollutant" in
-        NO2) air_x=4470; air_value="$AIR_NO2" ;;
-        O3) air_x=5360; air_value="$AIR_O3" ;;
-        PM10) air_x=6250; air_value="$AIR_PM10" ;;
+        NO2) air_x=6030; air_value="$AIR_NO2" ;;
+        O3) air_x=6490; air_value="$AIR_O3" ;;
+        PM10) air_x=6950; air_value="$AIR_PM10" ;;
       esac
-      FILTER="${FILTER},drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=66:x=$air_x:y=210,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=112:x=$((air_x+310)):y=185"
+      FILTER="${FILTER},drawtext=fontfile='$FONT':text='●':fontcolor=0x238D5A@0.87:borderw=7:bordercolor=0x07241A@0.7:fontsize=360:x=$air_x:y=1690,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=67:x=$((air_x+94)):y=1790,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=116:x=$((air_x+105)):y=1880"
     done
   fi
 fi
@@ -104,12 +106,12 @@ mv "$TEMP" "$OUTPUT"
 ffmpeg -nostdin -hide_banner -loglevel error -y -i "$OUTPUT" -vf "scale=960:-2" -frames:v 1 -q:v 4 "$PREVIEW_TEMP"
 mv "$PREVIEW_TEMP" "$PREVIEW"
 
-CAPTURED_AT="$(date -r "$SOURCE" --iso-8601=seconds)"
 if [[ "${CAMERA_PREVIEW_ONLY:-0}" == 1 ]]; then
   echo "Prova local preparada (sense pujada): $OUTPUT"
   echo "Miniatura local: $PREVIEW"
   exit 0
 fi
+CAPTURED_AT="$(date -r "$SOURCE" --iso-8601=seconds)"
 curl --fail --silent --show-error --max-time 60 --retry 2 --retry-all-errors \
   -X PUT "${CAMERA_UPLOAD_URL%/camera/nord/upload}/camera/nord/upload-branded" \
   -H "Authorization: Bearer $CAMERA_UPLOAD_TOKEN" \
