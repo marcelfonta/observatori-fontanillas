@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-24 — Panoràmica completa a les previsualitzacions
+
+- La portada i la pàgina de webcams mostren la miniatura sencera en proporció 32:9; el visor ja no retalla la càpsula de CO₂ ni la franja de Sant Celoni.
+- L'estat de la portada es mou al cantó superior dret i s'elimina l'etiqueta superposada que trepitjava la franja inferior.
+
 ## 2026-10-24 — CO₂ visible a la webcam i als pròxims timelapses
 
 - La pàgina de la webcam mostra la lectura recent de Mauna Loa separada de la imatge, amb NOAA, data i avís que no és una mesura local; l’omet si la dada és antiga o invàlida.

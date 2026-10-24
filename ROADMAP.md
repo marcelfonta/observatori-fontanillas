@@ -147,9 +147,10 @@ etiquetes públiques indicaran sempre «Mauna Loa» i evitaran dir «mitjana glo
 La ingestió diària, el resum compartit al Worker i les connexions locals amb
 webcam i peces diàries estan desplegats. El disseny de la webcam passa d'una
 línia petita a una càpsula de CO₂ amb valor, font i data, i a una etiqueta local
-curta. Cal instal·lar aquesta nova composició a la Raspberry i validar-la amb
-imatges reals de dia i de nit; la comparació editorial de les peces continua
-pendent.
+curta. La nova composició ja s'ha instal·lat a la Raspberry i s'ha comprovat
+amb una imatge nocturna. Les previsualitzacions web s'ajusten a la panoràmica
+completa. Queden la validació amb llum de dia i la comparació editorial de les
+peces.
 
 - [ ] Crear una ingestió diària al Worker de les sèries oficials de NOAA, amb
   validació de data, unitats, rang, valors absents, atribució i últim valor bo.
