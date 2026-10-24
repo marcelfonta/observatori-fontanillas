@@ -67,7 +67,11 @@ no és anecdòtica i qualsevol canvi de pesos queda justificat amb mètriques.
 
 ### Publicació social i timelapse
 
-El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) recull la diagnosi. El generador amb reducció fotograma a fotograma ha superat la prova local, però cal instal·lar-lo i provar-lo a la Raspberry abans de considerar resolta la incidència. El panell d'administració ja podrà assenyalar dies programats absents.
+- [ ] Instal·lar a la Raspberry els scripts actualitzats de la webcam i del
+  timelapse, verificar que una captura real mostra el CO₂ recent de Mauna Loa
+  amb font i data, i confirmar la pròxima publicació automàtica sense duplicats.
+
+El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) recull la diagnosi. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El timelapse del 23/10 s’ha publicat a Instagram, però cal verificar la resta de canals i la pròxima execució amb la càpsula de CO₂ abans de tancar la incidència. El panell d'administració pot assenyalar dies programats absents.
 
 - [ ] Confirmar en una jornada real que el timelapse arriba a tots els canals
   habilitats, especialment TikTok, sense duplicats i amb un màxim d’una

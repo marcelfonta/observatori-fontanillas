@@ -25,6 +25,10 @@ assert.match(css,/\.webcam-frame\.is-unavailable/);
 assert.match(html,/id="webcam-expand"/);
 assert.match(html,/id="webcam-dialog"/);
 assert.match(html,/latest-branded\.jpg/);
+assert.match(html,/id="webcam-co2" hidden/);
+assert.match(webcam,/\/climate\/co2/);
+assert.match(webcam,/No és una mesura local ni de qualitat de l’aire/);
+assert.match(css,/\.webcam-co2:not\(\[hidden\]\)/);
 assert.match(html,/Obrir imatge amb privacitat/);
 assert.doesNotMatch(html,/Obrir original net/);
 assert.match(webcam,/dialog\.showModal/);
@@ -37,5 +41,6 @@ assert.match(worker,/latest-preview\.jpg/);
 const variants=fs.readFileSync(new URL('../scripts/camera-public-variants.sh',import.meta.url),'utf8');
 assert.match(variants,/scale=960:-2/);
 assert.match(variants,/camera\/nord\/upload-preview/);
+assert.match(variants,/fontsize=74/);
 
 console.log('Portada de la càmera: imatge pròpia, frescor i reserva correctes');

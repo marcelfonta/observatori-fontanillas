@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-24 — CO₂ visible a la webcam i als pròxims timelapses
+
+- La pàgina de la webcam mostra la lectura recent de Mauna Loa separada de la imatge, amb NOAA, data i avís que no és una mesura local; l’omet si la dada és antiga o invàlida.
+- La variant de webcam amb marca fa llegible la càpsula a la miniatura. El generador dels pròxims timelapses posa el CO₂ al vídeo horitzontal i a la zona superior del vertical, sense aturar la càmera si NOAA no respon.
+- Els scripts de la Raspberry s’han d’instal·lar per separat; els vídeos ja publicats no es reescriuen ni es tornen a enviar.
+
 ## 2026-10-24 — Lectura essencial compacta al mòbil
 
 - Les quatre targetes de «Què cal saber ara?» es distribueixen en dues columnes a la portada mòbil, amb text i espais ajustats però amb la font i l’accés al detall visibles.

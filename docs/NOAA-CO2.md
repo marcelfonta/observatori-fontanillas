@@ -21,6 +21,8 @@ dies no és una taxa de creixement anual corregida pel cicle estacional.
 La resposta indica `ageDays`; a partir de quatre dies, `fresh=false` i els
 mitjans ometen la càpsula. Després de set dies no es retorna cap valor. La
 webcam continua generant-se si NOAA o el Worker no responen. La composició en
-dia i nit, mòbil i imatge compartida s'ha de verificar a staging amb captures
-reals abans del desplegament. La comparació amb fa deu anys s'ha deixat per a
+dia i nit, mòbil i imatge compartida s'ha de verificar amb captures reals a la
+Raspberry després d'instal·lar els scripts actualitzats. El timelapse inclou
+la dada només si és recent i el filtre de text està disponible; els vídeos
+ja publicats no s'editen. La comparació amb fa deu anys s'ha deixat per a
 una sèrie mensual amb una metodologia explícita.
