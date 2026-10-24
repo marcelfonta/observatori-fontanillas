@@ -27,5 +27,4 @@ for(const width of [360,390,1280])test(`ambient: data UV i caducitat sense refre
  await page.clock.fastForward(60*60_000);
  await expect(page.locator('#environment-uv')).toHaveText('—');
  await expect(page.locator('#environment-aqi')).toHaveText('—');
- await expect(page.locator('#environment-aqi-marker')).toBeHidden();
 });

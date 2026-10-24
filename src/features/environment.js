@@ -9,6 +9,7 @@ const OFFICIAL_AIR_STATION='ES1275A';
 const OFFICIAL_AIR_MAX_AGE=3*60*60_000;
 const OFFICIAL_AIR_NAMES={NO2:'no2',O3:'o3',PM10:'pm10','PM2.5':'pm25',SO2:'so2',H2S:'h2s'};
 const OFFICIAL_AIR_QUALITY={bona:['Bona','is-good'],raonablement_bona:['Raonablement bona','is-fair'],regular:['Regular','is-moderate'],desfavorable:['Desfavorable','is-poor'],molt_desfavorable:['Molt desfavorable','is-very-poor'],extremadament_desfavorable:['Extremadament desfavorable','is-extreme']};
+const OFFICIAL_AIR_ORDER=Object.keys(OFFICIAL_AIR_QUALITY);
 let loaded=false;
 let stationUv=null;
 let modelUv=null;
@@ -38,33 +39,6 @@ function put(id,value){
 }
 function number(value,digits=1){const n=finiteValue(value);return n!==null?new Intl.NumberFormat(CONFIG.locale,{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(n):'—';}
 function escapeHtml(value){return String(value??'').replace(/[&<>'"]/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));}
-function aqiReading(value){
-  const n=finiteValue(value);
-  if(n===null)return {label:'No disponible',copy:'No s’ha pogut calcular l’índex actual.',health:'Dades pendents',advice:'Torna-ho a consultar més tard.',position:null};
-  if(n<=20)return {label:'Bona',copy:'La qualitat de l’aire estimada és favorable.',health:'Bona situació ambiental',advice:'Condicions adequades per a l’activitat habitual a l’exterior.',position:n/120*100};
-  if(n<=40)return {label:'Raonablement bona',copy:'La qualitat de l’aire continua dins d’un rang generalment favorable.',health:'Activitat normal',advice:'La majoria de persones poden mantenir l’activitat habitual a l’exterior.',position:n/120*100};
-  if(n<=60)return {label:'Moderada',copy:'Alguns contaminants presenten valors moderats.',health:'Atenció si ets sensible',advice:'Les persones sensibles poden reduir l’esforç intens i prolongat a l’exterior.',position:n/120*100};
-  if(n<=80)return {label:'Dolenta',copy:'La qualitat de l’aire estimada pot afectar persones sensibles.',health:'Limita l’esforç intens',advice:'Redueix l’activitat física intensa a l’exterior, especialment si tens símptomes.',position:n/120*100};
-  if(n<=100)return {label:'Molt dolenta',copy:'Els nivells estimats són desfavorables.',health:'Precaució general',advice:'Evita l’esforç prolongat a l’exterior i segueix les recomanacions oficials.',position:n/120*100};
-  return {label:'Extremadament dolenta',copy:'L’índex europeu supera el llindar de 100.',health:'Evita l’esforç exterior',advice:'Prioritza espais interiors i consulta els avisos de salut pública.',position:100};
-}
-function componentReading(value){
-  const n=finiteValue(value);
-  if(n===null)return {label:'No disponible',className:'',position:null};
-  if(n<=20)return {label:'Baix · bona',className:'is-good',position:n/120*100};
-  if(n<=40)return {label:'Raonable',className:'is-fair',position:n/120*100};
-  if(n<=60)return {label:'Moderat',className:'is-moderate',position:n/120*100};
-  if(n<=80)return {label:'Alt · dolent',className:'is-poor',position:n/120*100};
-  if(n<=100)return {label:'Molt alt',className:'is-very-poor',position:n/120*100};
-  return {label:'Extrem',className:'is-extreme',position:100};
-}
-function renderComponent(prefix,value){
-  const reading=componentReading(value);
-  const label=document.getElementById(`environment-${prefix}-level`);
-  const meter=document.getElementById(`environment-${prefix}-meter`);
-  if(label){label.textContent=reading.label;label.className=`environment-level ${reading.className}`.trim();}
-  if(meter){meter.hidden=reading.position===null;meter.style.width=reading.position===null?'0%':`${Math.max(0,Math.min(100,reading.position))}%`;}
-}
 function finiteValue(value){const n=finiteNumber(value);return n!==null&&n>=0?n:null;}
 export function parseOfficialAir(payload,now=Date.now()){
   const station=payload?.features?.find(feature=>feature?.id===OFFICIAL_AIR_STATION&&feature?.properties?.localitat==='Sant Celoni')?.properties;
@@ -78,19 +52,29 @@ export function parseOfficialAir(payload,now=Date.now()){
     const row=item.dadesHoraries?.findLast(entry=>entry.hora===match[4]);
     const value=typeof row?.valor==='string'?finiteValue(row.valor.replace(',','.')):finiteValue(row?.valor);
     const quality=OFFICIAL_AIR_QUALITY[row?.qualitat];
-    if(value!==null&&value<=1000&&quality)readings[key]={value,label:quality[0],className:quality[1]};
+    if(value!==null&&value<=1000&&quality)readings[key]={value,label:quality[0],className:quality[1],rank:OFFICIAL_AIR_ORDER.indexOf(row.qualitat)};
   }
-  return {time,updated:station.dataActualitzacio,readings};
+  const worst=Object.values(readings).reduce((result,reading)=>reading.rank>result.rank?reading:result,{rank:-1});
+  return {time,updated:station.dataActualitzacio,readings,quality:worst.rank>=0?worst:null};
 }
 function renderOfficialAir(){
   const current=isFresh(officialAir?.time,Date.now(),OFFICIAL_AIR_MAX_AGE)?officialAir:null;
   const status=document.getElementById('environment-official-status');
-  if(status)status.textContent=current?`Estació de Sant Celoni · ${current.updated} · dades provisionals`:'Mesures oficials temporalment no disponibles';
+  if(status)status.textContent=current?`Estació de Sant Celoni · ${current.updated}`:'Mesures oficials temporalment no disponibles';
+  put('environment-aqi',current?.quality?.label||'—');
+  put('environment-aqi-label',current?.quality?'ICQA · pitjor categoria mesurada':'Sense dades recents');
+  put('environment-aqi-copy',current?.quality?'Categoria de l’estació segons el contaminant amb la qualitat de l’aire més desfavorable.':'No mostrem estimacions en lloc de mesures de l’estació.');
+  put('environment-health-title',current?.quality?'Consulta la font oficial':'Mesura local no disponible');
+  put('environment-health-copy',current?.quality?'Dades provisionals. Consulta els avisos i les recomanacions oficials, especialment si tens símptomes.':'Torna-ho a consultar més tard o obre el visor oficial.');
+  put('environment-status-copy',current?'Mesures oficials de l’aire disponibles':'Mesures oficials temporalment no disponibles');
+  put('environment-updated',current?`Estació de Sant Celoni: ${current.updated} · hora local`:'Hora de l’estació no disponible');
   for(const key of Object.values(OFFICIAL_AIR_NAMES)){
     const reading=current?.readings[key];
-    put(`environment-official-${key}`,reading?number(reading.value,key==='h2s'?1:0):'—');
-    const level=document.getElementById(`environment-official-${key}-level`);
+    put(`environment-${key}`,reading?number(reading.value,key==='h2s'?1:0):'—');
+    const level=document.getElementById(`environment-${key}-level`);
     if(level){level.textContent=reading?.label||'Sense dada recent';level.className=`environment-level ${reading?.className||''}`.trim();}
+    const meter=document.getElementById(`environment-${key}-meter`);
+    if(meter){meter.hidden=!reading;meter.style.width=reading?`${(reading.rank+1)/OFFICIAL_AIR_ORDER.length*100}%`:'0%';meter.className=reading?.className||'';}
   }
 }
 async function loadOfficialAir(){
@@ -244,19 +228,11 @@ function render(payload){
   const current=currentEnvironment(payload?.current||{});
   stationUv=stationUvReading(stationCurrent).value;
   modelCurrent=current;
-  const reading=aqiReading(current.european_aqi);
-  put('environment-aqi',number(current.european_aqi,0));put('environment-aqi-label',reading.label);put('environment-aqi-copy',reading.copy);
-  put('environment-health-title',reading.health);put('environment-health-copy',reading.advice);
   modelUv=finiteValue(current.uv_index);renderUv();put('environment-pollen-main',xacPollenName()||'Carregant referència XAC');
-  [['environment-pm10','pm10'],['environment-pm25','pm2_5'],['environment-no2','nitrogen_dioxide'],['environment-o3','ozone'],['environment-co','carbon_monoxide'],['environment-so2','sulphur_dioxide'],['pollen-grass','grass_pollen'],['pollen-olive','olive_pollen'],['pollen-birch','birch_pollen'],['pollen-mugwort','mugwort_pollen'],['pollen-ragweed','ragweed_pollen']].forEach(([id,key])=>put(id,number(current[key])));
-  [['pm10','european_aqi_pm10'],['pm25','european_aqi_pm2_5'],['no2','european_aqi_nitrogen_dioxide'],['o3','european_aqi_ozone'],['so2','european_aqi_sulphur_dioxide']].forEach(([prefix,key])=>renderComponent(prefix,current[key]));
+  [['pollen-grass','grass_pollen'],['pollen-olive','olive_pollen'],['pollen-birch','birch_pollen'],['pollen-mugwort','mugwort_pollen'],['pollen-ragweed','ragweed_pollen']].forEach(([id,key])=>put(id,number(current[key])));
   [['grass','grass',current.grass_pollen],['olive','olive',current.olive_pollen],['birch','birch',current.birch_pollen],['mugwort','mugwort',current.mugwort_pollen],['ragweed','ragweed',current.ragweed_pollen]].forEach(args=>renderPollen(...args));
   renderPollenSummary(current);
-  const marker=document.getElementById('environment-aqi-marker');if(marker){marker.hidden=reading.position===null;marker.style.left=reading.position===null?'0%':`${Math.max(0,Math.min(100,reading.position))}%`;}
-  const time=environmentTime(payload?.current?.time);
-  const hasData=['european_aqi','pm10','pm2_5','nitrogen_dioxide','ozone','carbon_monoxide','sulphur_dioxide','uv_index','grass_pollen','olive_pollen','birch_pollen','mugwort_pollen','ragweed_pollen'].some(key=>finiteValue(current[key])!==null);
-  put('environment-status-copy',hasData?'Indicadors ambientals disponibles':'Indicadors automàtics temporalment no disponibles');
-  put('environment-updated',time?`Validesa del model: ${time.label} · hora local`:'Hora del model no disponible');
+  renderOfficialAir();
   notifyEnvironment(current);
 }
 

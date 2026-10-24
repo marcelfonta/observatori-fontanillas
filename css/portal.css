@@ -407,7 +407,7 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .environment-aqi header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .environment-aqi h2,.environment-health h2,.pollen-panel h2,.environment-official h2 { margin: 6px 0 0; font: 700 25px/1.1 var(--font-display); letter-spacing: -.035em; }
 .environment-aqi__reading { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 24px; margin: 36px 0 24px; }
-.environment-aqi__reading > strong { min-width: 120px; font: 700 clamp(74px,9vw,126px)/.78 var(--font-display); letter-spacing: -.075em; }
+.environment-aqi__reading > strong { min-width: 0; max-width: 260px; font: 700 clamp(34px,4vw,62px)/1.05 var(--font-display); letter-spacing: -.05em; overflow-wrap: anywhere; }
 .environment-aqi__reading b { display: block; color: var(--green); font-size: 18px; }
 .environment-aqi__reading p { max-width: 460px; margin: 8px 0 0; color: var(--muted); line-height: 1.55; }
 .environment-aqi__scale { position: relative; display: grid; grid-template-columns: repeat(6,1fr); gap: 3px; height: 8px; margin: 20px 0 14px; }
@@ -436,6 +436,8 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .environment-level.is-poor,.environment-level.is-very-poor,.environment-level.is-extreme { border-color: rgba(237,138,95,.5); background: rgba(237,138,95,.11); color: #f09a74 !important; }
 .environment-mini-meter { height: 4px; margin-top: 9px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.06); }
 .environment-mini-meter i { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#6fd08c,#f0c35f,#d66568); transition: width .35s ease; }
+.environment-mini-meter i.is-good { background: #6fd08c; }.environment-mini-meter i.is-fair { background: #b9d96b; }.environment-mini-meter i.is-moderate { background: #f0c35f; }.environment-mini-meter i.is-poor,.environment-mini-meter i.is-very-poor,.environment-mini-meter i.is-extreme { background: #ed8a5f; }
+.environment-model-source a { color: var(--green); font-weight: 700; }
 .environment-mini-meter i[hidden],.environment-aqi__scale span[hidden] { display: none; }
 .pollen-panel { padding: 30px; }.pollen-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .pollen-summary { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: rgba(137,214,163,.055); }.pollen-summary > span { display: grid; flex: none; width: 32px; height: 32px; place-items: center; border-radius: 50%; background: rgba(137,214,163,.12); color: var(--green); }.pollen-summary strong,.pollen-summary p { display: block; margin: 0; }.pollen-summary strong { color: var(--text); font-size: 12px; }.pollen-summary p { margin-top: 3px; color: var(--muted); font-size: 10px; line-height: 1.45; }
@@ -879,7 +881,7 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .lightning-integrated__frame iframe { height: 460px; }
   .environment-aqi header { flex-direction: column; }
   .environment-aqi__reading { grid-template-columns: 1fr; gap: 14px; margin-top: 28px; }
-  .environment-aqi__reading > strong { font-size: 86px; }
+  .environment-aqi__reading > strong { font-size: clamp(36px,9vw,50px); }
   .environment-metrics { grid-template-columns: 1fr 1fr; }
   .pollen-grid { grid-template-columns: 1fr 1fr; }
   .pollen-grid div:last-child { grid-column: 1/-1; }
