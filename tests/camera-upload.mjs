@@ -91,6 +91,9 @@ const customHost = 'https://camera.fontanillas.cat';
 for (const method of ['GET', 'HEAD']) {
   const image = await worker.fetch(new Request(`${customHost}/camera/nord/latest.jpg`, { method }), env, context);
   assert.equal(image.status, 200, `La càmera pública ha de respondre a ${method} al subdomini.`);
+  const rootImage = await worker.fetch(new Request(`${customHost}/`, { method }), env, context);
+  assert.equal(rootImage.status, 200, `L'arrel del domini ha de mostrar la càmera amb ${method}.`);
+  assert.equal(rootImage.headers.get('Content-Type'), 'image/jpeg');
 }
 for (const route of ['/admin/camera-timelapses', '/climate/co2', '/camera/nord/upload', '/version']) {
   const denied = await worker.fetch(new Request(`${customHost}${route}`), env, context);

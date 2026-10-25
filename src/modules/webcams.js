@@ -4,6 +4,8 @@ import { getLocale } from '../core/i18n.js';
 const RECENT_MAX_MINUTES = 12;
 const STALE_MAX_MINUTES = 30;
 let activeCameraOrigin = CONFIG.cameraFallbackOrigin;
+let cameraRootAvailable = false;
+let cameraRootChecked = false;
 
 function cameraResource(path) {
   return `${activeCameraOrigin}/camera/nord/${path}`;
@@ -11,8 +13,18 @@ function cameraResource(path) {
 
 function updateCameraLinks() {
   document.querySelectorAll('[data-webcam-public-link]').forEach(link => {
-    link.href = cameraResource(link.dataset.webcamPublicLink === 'branded' ? 'latest-branded.jpg' : 'latest.jpg');
+    link.href = activeCameraOrigin === CONFIG.cameraOrigin && cameraRootAvailable ? `${CONFIG.cameraOrigin}/` : cameraResource('latest.jpg');
   });
+}
+
+async function checkCameraRoot() {
+  if(cameraRootChecked)return;
+  cameraRootChecked=true;
+  try {
+    const response=await fetch(`${CONFIG.cameraOrigin}/`,{method:'HEAD',cache:'no-store'});
+    cameraRootAvailable=response.ok && Boolean(response.headers.get('content-type')?.startsWith('image/jpeg'));
+  } catch { cameraRootAvailable=false; }
+  updateCameraLinks();
 }
 
 function copyFor(state, date) {
@@ -97,6 +109,8 @@ export function initWebcam() {
   document.querySelectorAll('#webcam-image, #hero-webcam-image').forEach(image => {
     image.addEventListener('error', () => {
       if(image.src.startsWith(CONFIG.cameraOrigin)) {
+        activeCameraOrigin=CONFIG.cameraFallbackOrigin;
+        updateCameraLinks();
         image.src=`${CONFIG.cameraFallbackOrigin}/camera/nord/latest-preview.jpg?t=${Date.now()}`;
         return;
       }
@@ -108,6 +122,7 @@ export function initWebcam() {
       if(image.src.startsWith(CONFIG.cameraOrigin)) {
         activeCameraOrigin=CONFIG.cameraOrigin;
         updateCameraLinks();
+        checkCameraRoot();
       }
       refreshCameraMetadata();
     });
