@@ -6,9 +6,11 @@ export const CONFIG = {
   historyCacheMs: 30 * 60 * 1000,
   locale: 'ca-ES',
   station: { latitude: 41.6906, longitude: 2.489, elevation: null },
-  cameraUrl: 'https://fonta-meteo.marcelfonta.workers.dev/camera/nord/latest.jpg',
-  cameraPreviewUrl: 'https://fonta-meteo.marcelfonta.workers.dev/camera/nord/latest-preview.jpg',
-  cameraBrandedUrl: 'https://fonta-meteo.marcelfonta.workers.dev/camera/nord/latest-branded.jpg',
+  cameraOrigin: 'https://camera.fontanillas.cat',
+  cameraFallbackOrigin: 'https://fonta-meteo.marcelfonta.workers.dev',
+  cameraUrl: 'https://camera.fontanillas.cat/camera/nord/latest.jpg',
+  cameraPreviewUrl: 'https://camera.fontanillas.cat/camera/nord/latest-preview.jpg',
+  cameraBrandedUrl: 'https://camera.fontanillas.cat/camera/nord/latest-branded.jpg',
   fallbackWebcam: 'https://www.alvar.cat/WebCam/Imatge-Camera.jpg',
   analyticsMeasurementId: '', // Ex.: G-XXXXXXXXXX
   cloudflareWebAnalyticsEnabled: true, // Activat al domini des del tauler de Cloudflare

@@ -87,6 +87,20 @@ assert.deepEqual(new Uint8Array(await servedPublic.arrayBuffer()), jpeg);
 assert.ok(objects.has('nord/latest.jpg'));
 assert.ok(objects.has('nord/latest-branded.jpg'));
 
+const customHost = 'https://camera.fontanillas.cat';
+for (const method of ['GET', 'HEAD']) {
+  const image = await worker.fetch(new Request(`${customHost}/camera/nord/latest.jpg`, { method }), env, context);
+  assert.equal(image.status, 200, `La càmera pública ha de respondre a ${method} al subdomini.`);
+}
+for (const route of ['/admin/camera-timelapses', '/climate/co2', '/camera/nord/upload', '/version']) {
+  const denied = await worker.fetch(new Request(`${customHost}${route}`), env, context);
+  assert.equal(denied.status, 404, `El subdomini de la càmera no ha de servir ${route}.`);
+}
+const deniedUpload = await worker.fetch(new Request(`${customHost}/camera/nord/upload`, {
+  method:'PUT', headers:{ Authorization:`Bearer ${secret}` }, body:jpeg,
+}), env, context);
+assert.equal(deniedUpload.status, 404, 'Ni un token vàlid no pot publicar a través del subdomini públic.');
+
 const previewFallback = await worker.fetch(new Request('https://fonta-meteo.example/camera/nord/latest-preview.jpg'), env, context);
 assert.equal(previewFallback.status, 200, 'La webcam ha de continuar visible abans de la primera miniatura.');
 assert.equal(previewFallback.headers.get('X-Camera-Preview-Fallback'), 'full');
