@@ -9,8 +9,10 @@ const DAY=86400000;
 let archive=[];
 let alerts=[];
 let stories=[];
+const timelapseChecks=new Map();
 const routeStoryId=()=>decodeURIComponent(location.pathname.match(/^\/histories\/([^/]+)\/?$/)?.[1]||new URLSearchParams(location.search).get('story')||'');
 let selectedId=typeof location==='undefined'?'':routeStoryId();
+let routeDetailFocused=false;
 
 const escapeHtml=(value='')=>String(value).replace(/[&<>"']/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[character]);
 const localDate=value=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Madrid'}).format(new Date(value));
@@ -84,11 +86,18 @@ function renderDetail(story){
     ${editorial?`<section class="weather-story__narrative"><p class="eyebrow">Peça editorial revisada</p><h3>${escapeHtml(story.subtitle)}</h3>${story.narrative.map(paragraph=>`<p>${escapeHtml(paragraph)}</p>`).join('')}${editorialProfile(story)}</section>`:''}
     <section class="weather-story__timeline" aria-label="Cronologia de l’episodi"><article><time>${hour(story.start.t)}</time><i></i><div><span>Inici de la cobertura</span><p>Primera observació disponible del dia.</p></div></article><article><time>${hour(story.peak.t)}</time><i></i><div><span>Moment més actiu</span><p>Pic combinat segons pluja, vent i canvi tèrmic observats.</p></div></article><article><time>${hour(story.end.t)}</time><i></i><div><span>Final de la cobertura</span><p>Darrera observació utilitzada en aquesta reconstrucció.</p></div></article></section>
     <div class="weather-story__evidence"><article><span>Observació</span><strong>Estació Fontanillas</strong><p>${story.sampleCount||story.items?.length||0} franges horàries amb timestamp local i valors conservats a l’arxiu.</p><a href="/centre-dades">Auditar les dades →</a></article><article class="is-context"><span>Context visual</span><strong>Timelapse, radar i Meteosat</strong><p>El vídeo del dia es mostra si està disponible; radar i satèl·lit s’obren sota demanda.</p><div><a href="/radar">Radar →</a><a href="/terra">Satèl·lit →</a></div></article><article class="${warning?'is-warning':'is-neutral'}"><span>Avís oficial</span><strong>${escapeHtml(warning?'Coincidència registrada':editorial?'Context verificat':'Sense coincidència')}</strong><p>${escapeHtml(editorial?story.officialSummary:warningCopy)}</p><a href="/historial-avisos.html">Historial oficial →</a></article></div>
-    <figure class="weather-story__media"><video controls playsinline preload="metadata" data-story-video><source src="${video}" type="video/mp4"></video><figcaption><span><b>Timelapse del ${escapeHtml(story.date)}</b><small data-story-video-status>Comprovant si el derivat diari està disponible.</small></span><a href="${video}" target="_blank" rel="noreferrer">Obrir vídeo →</a></figcaption></figure>
+    <figure class="weather-story__media" data-story-media><video controls playsinline preload="none" data-story-video hidden></video><figcaption><span><b>Timelapse del ${escapeHtml(story.date)}</b><small data-story-video-status>Comprovant si el vídeo d’aquest dia està publicat.</small></span><a href="${video}" target="_blank" rel="noreferrer" data-story-video-link hidden>Obrir vídeo →</a></figcaption></figure>
     <footer><span>Generat a partir de dades existents; cap absència s’ha convertit en zero.</span><a href="/webcams">Arxiu de timelapses →</a></footer>`;
   const videoNode=host.querySelector('[data-story-video]');const status=host.querySelector('[data-story-video-status]');
-  videoNode?.addEventListener('loadedmetadata',()=>{if(status)status.textContent='Vídeo diari disponible · reproducció manual.';},{once:true});
-  videoNode?.addEventListener('error',()=>{videoNode.hidden=true;if(status)status.textContent='Aquest dia no disposa de timelapse publicat; la història manté les dades i les fonts.';},{once:true});
+  const videoLink=host.querySelector('[data-story-video-link]');
+  if(!timelapseChecks.has(video))timelapseChecks.set(video,fetch(video,{method:'HEAD'}).then(response=>response.ok));
+  timelapseChecks.get(video).then(available=>{
+    if(!host.isConnected||!videoNode||!status)return;
+    if(!available){status.textContent='Aquest dia no disposa de timelapse publicat; la història manté les dades i les fonts.';return;}
+    videoNode.src=video;videoNode.hidden=false;
+    if(videoLink)videoLink.hidden=false;
+    status.textContent='Vídeo diari disponible · reproducció manual.';
+  }).catch(()=>{if(status?.isConnected)status.textContent='No s’ha pogut comprovar el vídeo; consulta l’arxiu de timelapses.';});
 }
 
 function render(){
@@ -98,6 +107,10 @@ function render(){
   if(count)count.textContent=`${EDITORIAL_STORIES.length} històries revisades${detected.length?` · ${detected.length} candidat${detected.length===1?'':'s'} automàtic${detected.length===1?'':'s'}`:''}`;
   if(list)list.innerHTML=stories.map(story=>story.narrative?`<a class="${story.id===selectedId?'is-active':''}" href="/histories/${story.id}" aria-current="${story.id===selectedId?'page':'false'}"><time>${escapeHtml(new Intl.DateTimeFormat(getLocale(),{day:'numeric',month:'short'}).format(new Date(`${story.date}T12:00:00`)))}</time><span><strong>${escapeHtml(story.title)}</strong><small>Peça revisada · ${story.sampleCount} franges</small></span></a>`:`<button type="button" class="${story.id===selectedId?'is-active':''}" data-weather-story="${story.id}" aria-pressed="${story.id===selectedId}"><time>${escapeHtml(new Intl.DateTimeFormat(getLocale(),{day:'numeric',month:'short'}).format(new Date(`${story.date}T12:00:00`)))}</time><span><strong>${escapeHtml(story.title)}</strong><small>${story.items.length} mostres · candidat automàtic</small></span></button>`).join('');
   renderDetail(stories.find(story=>story.id===selectedId));
+  if(routeStoryId()===selectedId&&!routeDetailFocused){
+    routeDetailFocused=true;
+    requestAnimationFrame(()=>document.getElementById('weather-story-detail')?.scrollIntoView({block:'start'}));
+  }
 }
 
 export function updateWeatherStories({history=[]}={}){archive=Array.isArray(history)?history:[];render();}

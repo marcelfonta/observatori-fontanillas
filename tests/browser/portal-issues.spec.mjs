@@ -12,16 +12,34 @@ test.beforeEach(async({page})=>{
   await page.route('**/*',route=>{
     const url=new URL(route.request().url());
     if(url.hostname!=='127.0.0.1')return route.abort();
-    if(['/histories/aiguat-4-octubre-2026','/medi-ambient'].includes(url.pathname))return route.fulfill({path:indexPath,contentType:'text/html'});
+    if(['/histories/aiguat-4-octubre-2026','/resums/2026-09','/medi-ambient'].includes(url.pathname))return route.fulfill({path:indexPath,contentType:'text/html'});
     return route.continue();
   });
 });
 
 test('una història editorial carrega els scripts des de la ruta profunda',async({page})=>{
+  await page.route('**/camera/nord/timelapses/2026-10-04.mp4',route=>route.fulfill({status:404,json:{error:'Vídeo no disponible'}}));
   await page.goto('/histories/aiguat-4-octubre-2026');
   await expect(page.locator('#weather-story-detail h2')).toHaveText('La matinada dels 82,6 mm',{timeout:15000});
   await expect(page.locator('#weather-story-detail')).not.toContainText('Preparant la reconstrucció');
   await expect(page.locator('#weather-story-detail .weather-story__timeline time').first()).toContainText('00:05');
+  await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBeGreaterThan(400);
+  await expect(page.locator('[data-story-video]')).toBeHidden();
+  await expect(page.locator('[data-story-video-status]')).toContainText('no disposa de timelapse publicat');
+});
+
+test('un resum permanent s’obre amb les dades visibles',async({page})=>{
+  await page.goto('/resums/2026-09');
+  await expect(page.locator('#monthly-summary .monthly-summary__hero h2')).toBeVisible({timeout:15000});
+  await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBeGreaterThan(100);
+});
+
+test('la primera lectura mòbil manté metadades llegibles sense desbordament',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/');
+  const fontSize=await page.locator('.home-now-card>footer span').first().evaluate(element=>parseFloat(getComputedStyle(element).fontSize));
+  expect(fontSize).toBeGreaterThanOrEqual(12);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
 
 test('el menú lateral conserva la posició després de canviar de pàgina',async({page})=>{

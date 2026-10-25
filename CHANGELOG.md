@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-25 — Correccions verificables de les auditories externes (en revisió)
+
+- Els enllaços directes a històries i resums mostren la peça demanada en arribar; un vídeo de timelapse absent ja no carrega un reproductor trencat.
+- Les metadades de la primera lectura mòbil tenen una mida mínima llegible i la targeta social publicada passa a un JPEG de 242 KB.
+- La pàgina prepara les connexions principals de dades i el middleware força la revalidació de scripts, estils i service workers.
+- `docs/AI-AUDIT-TRIAGE-2026-10-25.md` registra què estava corregit, què entra en aquesta proposta i què depèn de mètriques, contingut o validació real.
+
 ## 2026-10-25 — Previsió més clara i menys consultes a Buffer (en revisió)
 
 - La previsió conserva el detall per hores i els set dies; s'elimina el resum setmanal duplicat de la part superior.

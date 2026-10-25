@@ -16,9 +16,9 @@ continuen funcionant abans de desplegar-ho.
 
 L'auditoria SEO del 25/10 ha detectat canòniques i entrades del mapa del lloc
 que redirigien, variants d'idioma inexistents en documents estàtics i rutes
-desconegudes amb una portada 200. La correcció està preparada per revisar en
-una tercera proposta encadenada. Abans de producció cal validar la resposta de
-les URL netes i dels errors 404 a la previsualització.
+desconegudes amb una portada 200. La correcció es va integrar amb el PR #321 i
+es va verificar en producció. Les propostes de les auditories externes i els
+seus límits consten a `docs/AI-AUDIT-TRIAGE-2026-10-25.md`.
 
 ## Visió
 

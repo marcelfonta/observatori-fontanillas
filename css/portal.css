@@ -1006,3 +1006,9 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
 .environment-air-stations__popup ul{margin:0;padding-left:17px}
 .environment-air-stations__popup li{margin:3px 0}
 @media(max-width:600px){.environment-air-stations__filter{top:8px;left:44px;padding:7px}.environment-air-stations__map-shell{height:440px}}
+.weather-story#weather-story-detail,.monthly-summary#monthly-summary{scroll-margin-top:88px}
+[data-story-video][hidden],[data-story-video-link][hidden]{display:none!important}
+@media(max-width:600px){
+  .home-now>header>p,.home-now-card>small,.home-now-card>p,.home-now-card>footer span,.home-now-card>footer b,.home-now__summary small,.home-now__summary span,.portal-sidebar__copyright>small,.portal-sidebar__copyright>span{font-size:12px;line-height:1.45}
+  .home-now-card{padding:14px}
+}
