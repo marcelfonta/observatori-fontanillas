@@ -23,6 +23,7 @@ assert.ok(sitemap.includes('/llarg-termini')&&sitemap.includes('/llarg-termini?l
 assert.ok(i18n.includes("'Predicció a llarg termini'")&&french.includes("'Predicció a llarg termini':'Prévisions à long terme'"));
 assert.ok(weatherApi.includes('LAST_FORECAST_KEY')&&weatherApi.includes('getLastCachedForecast'));
 assert.ok(app.includes('const cached=getLastCachedForecast()')&&app.includes('const forecastTask=fetchForecast()')&&app.includes('const modelsTask=fetchModelComparison()'));
-assert.ok(forecast.includes("setText('weekly-brief-status','Temporalment no disponible')")&&forecast.includes('Sense dades de model'));
+assert.ok(!html.includes('id="weekly-brief-grid"')&&html.includes('id="forecast-strip"')&&html.includes('id="daily-forecast"'));
+assert.ok(forecast.includes('Sense dades de model'));
 
 console.log('Test V22.32: portada, risc i predicció a llarg termini');

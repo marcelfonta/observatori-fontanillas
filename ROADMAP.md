@@ -80,6 +80,13 @@ no és anecdòtica i qualsevol canvi de pesos queda justificat amb mètriques.
 
 ### Publicació social i timelapse
 
+El 25/10 la revisió de producció ha identificat una resposta 429 de Buffer
+compartida per TikTok i X. El servei ha indicat que no s'hi torni a contactar
+fins al 27/10/2026 a les 10:31 UTC; la resta de canals continuen independents.
+Cal comprovar l'estat real de les primeres publicacions després d'aquesta hora
+abans de considerar TikTok recuperat. Una correcció pendent de revisió evita
+reconsultar repetidament els enviaments d'X ja confirmats.
+
 - [ ] Confirmar la pròxima publicació automàtica del timelapse, amb el CO₂ a la
   imatge, sense duplicats i en tots els canals habilitats.
 

@@ -14,7 +14,7 @@ import { fetchMoon } from '../src/core/lunar-phase.js';
 import { meteofranceMap, meteofranceModels, meteofranceStagingValidation } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.42.15";
+const WORKER_VERSION = "22.42.16";
 const WORKER_BUILT = "2026-10-21";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -5495,6 +5495,7 @@ async function scheduleBufferXSlot(env, localDate, slot) {
     return { ok:true,pending:true,reused:true,rateLimited:true,retryAt:detail.retryAt };
   }
   if (previous?.status === 'healthy' && detail.remoteId) {
+    if (detail.stage === 'sent') return { ok:true,reused:true,sent:true,remoteId:detail.remoteId,externalLink:detail.externalLink || null };
     if (Date.now() < targetTime + 2 * 60_000) return { ok:true, reused:true, pending:true, remoteId:detail.remoteId, dueAt:detail.dueAt || null };
     try {
       const remote = await bufferPostState(env, detail.remoteId);
