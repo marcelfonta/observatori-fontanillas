@@ -18,7 +18,7 @@ for (const [id, route] of [
 for (const link of [
   '/estacio', '/prediccio#models', '/verificacio', '/radar#territori',
   '/avisos',
-  '/metodologia.html#model-fonta'
+  '/metodologia#model-fonta'
 ]) assert.match(index, new RegExp(`href="${link.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
 
 assert.match(index, /Observació és una mesura; predicció és una estimació/);

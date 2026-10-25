@@ -28,37 +28,12 @@
   <url><loc>https://meteo.fontanillas.cat/observatori</loc><xhtml:link rel="alternate" hreflang="ca" href="https://meteo.fontanillas.cat/observatori"/><xhtml:link rel="alternate" hreflang="es" href="https://meteo.fontanillas.cat/observatori?lang=es"/><xhtml:link rel="alternate" hreflang="en" href="https://meteo.fontanillas.cat/observatori?lang=en"/><xhtml:link rel="alternate" hreflang="fr" href="https://meteo.fontanillas.cat/observatori?lang=fr"/><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://meteo.fontanillas.cat/contacte</loc><xhtml:link rel="alternate" hreflang="ca" href="https://meteo.fontanillas.cat/contacte"/><xhtml:link rel="alternate" hreflang="es" href="https://meteo.fontanillas.cat/contacte?lang=es"/><xhtml:link rel="alternate" hreflang="en" href="https://meteo.fontanillas.cat/contacte?lang=en"/><xhtml:link rel="alternate" hreflang="fr" href="https://meteo.fontanillas.cat/contacte?lang=fr"/><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://meteo.fontanillas.cat/models</loc><lastmod>2026-10-20</lastmod><changefreq>hourly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/metodologia.html</loc><lastmod>2026-08-10</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/metodologia.html?lang=es</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/metodologia.html?lang=en</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/metodologia.html?lang=fr</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/comparativa.html</loc><lastmod>2026-08-10</lastmod><changefreq>hourly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/comparativa.html?lang=es</loc><lastmod>2026-09-02</lastmod><changefreq>hourly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/comparativa.html?lang=en</loc><lastmod>2026-09-02</lastmod><changefreq>hourly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/comparativa.html?lang=fr</loc><lastmod>2026-09-02</lastmod><changefreq>hourly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/municipis.html</loc><lastmod>2026-08-26</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/municipis.html?lang=ca</loc><xhtml:link rel="alternate" hreflang="ca" href="https://meteo.fontanillas.cat/municipis.html?lang=ca"/><xhtml:link rel="alternate" hreflang="es" href="https://meteo.fontanillas.cat/municipis.html?lang=es"/><xhtml:link rel="alternate" hreflang="en" href="https://meteo.fontanillas.cat/municipis.html?lang=en"/><xhtml:link rel="alternate" hreflang="fr" href="https://meteo.fontanillas.cat/municipis.html?lang=fr"/><xhtml:link rel="alternate" hreflang="x-default" href="https://meteo.fontanillas.cat/municipis.html"/><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/municipis.html?lang=es</loc><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/municipis.html?lang=en</loc><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/municipis.html?lang=fr</loc><lastmod>2026-09-02</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/historial-avisos.html</loc><lastmod>2026-08-10</lastmod><changefreq>daily</changefreq><priority>0.6</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/historial-avisos.html?lang=es</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/historial-avisos.html?lang=en</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/historial-avisos.html?lang=fr</loc><lastmod>2026-09-02</lastmod><changefreq>daily</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/privacitat.html</loc><lastmod>2026-08-10</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/privacitat.html?lang=es</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/privacitat.html?lang=en</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/privacitat.html?lang=fr</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/condicions.html</loc><lastmod>2026-08-21</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/condicions.html?lang=es</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/condicions.html?lang=en</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/condicions.html?lang=fr</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/xarxes.html</loc><lastmod>2026-08-30</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/xarxes.html?lang=es</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/xarxes.html?lang=en</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/xarxes.html?lang=fr</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/colaboracions.html</loc><lastmod>2026-09-01</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/colaboracions.html?lang=es</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/colaboracions.html?lang=en</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://meteo.fontanillas.cat/colaboracions.html?lang=fr</loc><lastmod>2026-09-02</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://meteo.fontanillas.cat/metodologia</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://meteo.fontanillas.cat/comparativa</loc><lastmod>2026-10-25</lastmod><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://meteo.fontanillas.cat/municipis</loc><lastmod>2026-10-25</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://meteo.fontanillas.cat/historial-avisos</loc><lastmod>2026-10-25</lastmod><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://meteo.fontanillas.cat/privacitat</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://meteo.fontanillas.cat/condicions</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://meteo.fontanillas.cat/xarxes</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://meteo.fontanillas.cat/colaboracions</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 </urlset>

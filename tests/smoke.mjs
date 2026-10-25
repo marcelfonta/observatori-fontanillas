@@ -44,7 +44,7 @@ const comparisonFeature=await readFile(resolve(root,'src/features/stations-compa
 for(const feature of ['ensureLeaflet','renderMap','historySeries','compare-variable-chart'])if(!comparisonFeature.includes(feature))throw new Error(`Comparativa: falta la funció ${feature}.`);
 if(!html.includes('data-portal-page="cel"')||html.match(/id="cel-nocturn"[^>]*data-mobile-advanced/))throw new Error('La pàgina del cel no és independent o pot quedar oculta en mòbil.');
 if((html.match(/class="portal-view-header panel"/g)||[]).length!==19)throw new Error('Les dinou subpàgines principals no comparteixen capçalera.');
-if(!html.includes('data-history-limit="5"')||!html.includes('historial-avisos.html'))throw new Error('La vista principal no limita l’historial o no enllaça amb l’arxiu complet.');
+if(!html.includes('data-history-limit="5"')||!html.includes('href="/historial-avisos"'))throw new Error('La vista principal no limita l’historial o no enllaça amb l’arxiu complet.');
 for(const viewer of ['fire','firms','drought','earthquakes','jellyfish'])if(!html.includes(`data-environment-viewer="${viewer}"`))throw new Error(`Medi Ambient: falta el visor ${viewer}.`);
 if(!html.includes('environment-earthquakes-map')||!html.includes('earthquake.usgs.gov/earthquakes/map/')||!html.includes('sismocat.icgc.cat'))throw new Error('Medi Ambient: falta el mapa sísmic mundial o les fonts USGS i ICGC.');
 if(!html.includes('7 dies · totes')||!environment.includes('summary/all_week.geojson')||environment.includes('summary/2.5_week.geojson'))throw new Error('Medi Ambient: el mapa sísmic setmanal ha d’incloure totes les magnituds disponibles.');
@@ -106,7 +106,7 @@ const staticPortal=await readFile(resolve(root,'src/features/portal-static.js'),
 if(!staticPortal.includes('initMeteoAIWidget'))throw new Error('El xat flotant no està disponible a les pàgines estàtiques.');
 if(!portalCss.includes('.meteo-ai-widget__toggle')||!portalCss.includes('.meteo-ai-sources a'))throw new Error('Falten els estils del xat flotant o dels enllaços de fonts.');
 const sitemap=await readFile(resolve(root,'sitemap.xml'),'utf8');
-for(const page of ['metodologia.html','comparativa.html','historial-avisos.html','privacitat.html'])if(!sitemap.includes(page))throw new Error(`Sitemap: falta ${page}.`);
+for(const page of ['/metodologia</loc>','/comparativa</loc>','/historial-avisos</loc>','/privacitat</loc>'])if(!sitemap.includes(page))throw new Error(`Sitemap: falta ${page}.`);
 for(const page of ['estacio','prediccio','avisos','centre-dades'])if(!sitemap.includes(`/${page}`))throw new Error(`Sitemap: falta la vista indexable ${page}.`);
 if(!weatherApi.includes('ecmwf_ec46_ensemble_mean')||!weatherApi.includes('temperature_2m_anomaly')||!weatherApi.includes('precipitation_anomaly'))throw new Error('Falta la consulta setmanal ECMWF EC46.');
 const share=await readFile(resolve(root,'src/features/share.js'),'utf8');for(const capability of ['buildShareCardModel','updateShareContext','share-card-canvas','download-card','navigator.canShare'])if(!share.includes(capability))throw new Error(`Compartició Premium: falta ${capability}.`);

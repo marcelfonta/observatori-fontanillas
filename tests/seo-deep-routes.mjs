@@ -27,6 +27,14 @@ assert.equal(missing.status,404);
 assert.equal(missing.headers.get('X-Robots-Tag'),'noindex');
 assert.equal(continued,false);
 
+let unknownContinued=false;
+const unknown=await onRequest({request:new Request('https://meteo.fontanillas.cat/pagina-inexistent',{headers:{Accept:'text/html'}}),next:()=>{unknownContinued=true;return new Response('<html><title>Portada</title></html>',{headers:{'Content-Type':'text/html'}});}});
+assert.equal(unknownContinued,true);
+assert.equal(unknown.status,404);
+assert.equal(unknown.headers.get('X-Robots-Tag'),'noindex');
+const knownStatic=await onRequest({request:new Request('https://meteo.fontanillas.cat/metodologia',{headers:{Accept:'text/html'}}),next:()=>new Response('<html><title>Metodologia</title></html>',{headers:{'Content-Type':'text/html'}})});
+assert.equal(knownStatic.status,200);
+
 const worker=await readFile(new URL('../_worker.js',import.meta.url),'utf8');
 assert.match(worker,/env\.ASSETS\.fetch\(request\)/);
 assert.match(worker,/onRequest/);

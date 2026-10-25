@@ -7,6 +7,19 @@ completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 
 La revisió de producció posterior al PR #296 és a [`docs/POST-MERGE-AUDIT-2026-10-23.md`](docs/POST-MERGE-AUDIT-2026-10-23.md). La ruta de canvi climàtic i l’accés des del menú ja estan publicats. El cron de producció es va tornar a crear el 24/10 després d'una aturada; dos cicles consecutius van actualitzar el planificador, la previsió i la càmera. Les proves OneSignal amb la web tancada van arribar a l'iPhone i al Centre de notificacions de l'ordinador. Encara cal validar les publicacions i els avisos oficials reals.
 
+L'auditoria de primera visita del 24/10 va detectar que el mode sense connexió
+no s'activava quan OneSignal encara no havia registrat el servei en segon pla.
+La correcció i les regions accessibles estan preparades. A la previsualització,
+una visita nova sense permís ha instal·lat el servei, creat la memòria cau i
+recarregat la portada sense xarxa. Falta verificar que els avisos push ja actius
+continuen funcionant abans de desplegar-ho.
+
+L'auditoria SEO del 25/10 ha detectat canòniques i entrades del mapa del lloc
+que redirigien, variants d'idioma inexistents en documents estàtics i rutes
+desconegudes amb una portada 200. La correcció està preparada per revisar en
+una tercera proposta encadenada. Abans de producció cal validar la resposta de
+les URL netes i dels errors 404 a la previsualització.
+
 ## Visió
 
 Convertir l’Observatori Meteorològic Fontanillas en la referència digital de

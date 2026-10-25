@@ -77,8 +77,8 @@
     <link rel="stylesheet" href="/css/portal.css?v=22.42.13-air-map-alerts" />
     <script type="module" src="/src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="/src/features/push.js?v=22.31.6"></script>
-    <script type="module" src="/src/features/pwa.js?v=22.31.6"></script>
-    <script type="module" src="/src/app.js?v=22.42.15-home-future"></script>
+    <script type="module" src="/src/features/pwa.js?v=22.42.16-offline-first"></script>
+    <script type="module" src="/src/app.js?v=22.42.16-offline-first"></script>
     <script type="module" src="/src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","license":"https://creativecommons.org/licenses/by/4.0/","creditText":"Observatori Meteorològic Fontanillas — meteo.fontanillas.cat","isAccessibleForFree":true,"creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -190,7 +190,7 @@
         </div>
         <div id="climate-now" class="climate-page__metrics" aria-label="Indicadors climàtics amb període i font">
           <article class="panel climate-page__metric"><span>Atmosfera · Mauna Loa</span><strong id="climate-co2-value" aria-live="polite">Consultant NOAA…</strong><p id="climate-co2-detail">Darrera mitjana diària disponible · parts per milió (ppm).</p><a href="https://gml.noaa.gov/ccgg/trends/data.html" target="_blank" rel="noreferrer">Sèrie original NOAA ↗</a></article>
-          <article class="panel climate-page__metric"><span>Planeta · any 2025</span><strong>+1,39 °C</strong><p>Temperatura mitjana global respecte de 1850–1900. Estimació Copernicus, amb incertesa de ±0,13 °C.</p><a href="https://indicators.climate.copernicus.eu/" target="_blank" rel="noreferrer">Indicadors Copernicus ↗</a></article>
+          <article class="panel climate-page__metric"><span>Planeta · any 2025 · indicador IGCC</span><strong>+1,39 °C</strong><p>Temperatura global observada respecte de 1850–1900, amb incertesa de ±0,13 °C. És la mitjana de diversos conjunts de dades de l'indicador IGCC; la sèrie ERA5 de Copernicus C3S dona +1,47 °C per al mateix any amb un altre mètode.</p><a href="https://indicators.climate.copernicus.eu/" target="_blank" rel="noreferrer">Indicador IGCC ↗</a> · <a href="https://climate.copernicus.eu/copernicus-2025-was-third-hottest-year-record" target="_blank" rel="noreferrer">Sèrie ERA5 ↗</a></article>
           <article class="panel climate-page__metric"><span>Catalunya · any 2025</span><strong>4t més càlid</strong><p>Entre els anys observats des de 1950, segons el butlletí climàtic anual de Meteocat.</p><a href="https://www.meteo.cat/wpweb/climatologia/butlletins-i-episodis-meteorologics/butlleti-anual/" target="_blank" rel="noreferrer">Butlletí Meteocat ↗</a></article>
           <article class="panel climate-page__metric"><span>Sant Celoni · arxiu local</span><strong>Des de 2026</strong><p>L’arxiu propi permet descriure mesos i episodis. Encara no permet afirmar una tendència climàtica local.</p><a href="/resums/2026-09">Primer resum mensual →</a></article>
         </div>
@@ -203,10 +203,10 @@
           <p><a href="/assets/data/climate/co2-annual-mlo.csv" download>Descarregar les mitjanes anuals (CSV) ↓</a> · <a href="https://gml.noaa.gov/ccgg/trends/data.html" target="_blank" rel="noreferrer">Dades i mètode de NOAA ↗</a></p>
         </article>
         <div class="climate-page__chapters">
-          <article id="climate-world" class="panel"><p class="eyebrow">El planeta</p><h3>El CO₂ i la temperatura mesuren coses diferents.</h3><p>Mauna Loa és una estació de referència per seguir el CO₂ atmosfèric; la seva lectura diària no és la mitjana de tot el planeta ni una mesura de la qualitat de l’aire a Sant Celoni. Copernicus resumeix la temperatura global d’un any complet i la compara amb el període preindustrial.</p><p>El valor diari de NOAA es mostra només quan és recent i inclou data. Les xifres anuals de 2025 són dades publicades, no lectures en directe.</p></article>
+          <article id="climate-world" class="panel"><p class="eyebrow">El planeta</p><h3>El CO₂ i la temperatura mesuren coses diferents.</h3><p>Mauna Loa és una estació de referència per seguir el CO₂ atmosfèric; la seva lectura diària no és la mitjana de tot el planeta ni una mesura de la qualitat de l’aire a Sant Celoni. L'indicador IGCC combina diversos conjunts de dades per calcular la temperatura global de 2025; ERA5 és una altra sèrie i pot donar una xifra lleugerament diferent.</p><p>El valor diari de NOAA es mostra només quan és recent i inclou data. Les xifres anuals de 2025 són dades publicades, no lectures en directe.</p></article>
           <article id="climate-catalonia" class="panel"><p class="eyebrow">Catalunya</p><h3>Cal mirar sèries, no només un estiu.</h3><p>El 2025 va ser el quart any més càlid a Catalunya des de 1950 segons Meteocat. Els indicadors climàtics oficials permeten estudiar temperatura, precipitació i altres variables durant dècades; un episodi aïllat no demostra per si sol una tendència.</p><a href="https://meteo.cat/wpweb/climatologia/butlletins-i-episodis-meteorologics/butlleti-anual-dindicadors-climatics/" target="_blank" rel="noreferrer">Explorar els indicadors climàtics de Meteocat ↗</a></article>
           <article id="climate-local" class="panel"><p class="eyebrow">Baix Montseny i l’Observatori</p><h3>Observació local, amb els seus límits.</h3><p>La sèrie Fontanillas és útil per consultar el temps mesurat, els extrems i els resums mensuals de Sant Celoni. Encara és massa curta per comparar-la amb una normal climàtica de 30 anys o atribuir-hi el canvi climàtic.</p><a href="/centre-dades">Consultar cobertura i dades pròpies →</a></article>
-          <article id="climate-method" class="panel"><p class="eyebrow">Entendre les dades</p><h3>Temps, clima i atribució.</h3><p>El temps descriu què passa avui; el clima es calcula amb períodes llargs. La tendència climàtica requereix una sèrie comparable; atribuir un episodi extrem requereix un estudi específic. Aquí cada escala conserva la seva font i el seu període de referència.</p><p>Fonts consultades: NOAA (lectura diària provisional), Copernicus (indicador global de 2025) i Meteocat (butlletí anual de 2025). Contingut revisat el 23 d’octubre de 2026.</p></article>
+          <article id="climate-method" class="panel"><p class="eyebrow">Entendre les dades</p><h3>Temps, clima i atribució.</h3><p>El temps descriu què passa avui; el clima es calcula amb períodes llargs. La tendència climàtica requereix una sèrie comparable; atribuir un episodi extrem requereix un estudi específic. Aquí cada escala conserva la seva font i el seu període de referència.</p><p>Fonts consultades: NOAA (lectura diària provisional), IGCC/Copernicus (indicador global multiserie de 2025), Copernicus C3S (ERA5) i Meteocat (butlletí anual de 2025). Contingut revisat el 25 d’octubre de 2026.</p></article>
         </div>
       </section>
 
@@ -221,7 +221,7 @@
         <header><div><p class="eyebrow">Guia de predicció</p><h2 id="guia-models-title">Models meteorològics i model Fonta</h2></div><span class="service-guide__kind">Estimacions</span></header>
         <div class="service-guide__grid">
           <article><h3>Per què comparem models?</h3><p>ECMWF, GFS, ICON i AROME calculen futurs possibles amb resolucions i actualitzacions diferents. L’acord entre models augmenta la confiança; la discrepància assenyala incertesa, no un error de la web.</p><a href="/prediccio#models">Comparar els models →</a></article>
-          <article><h3>Què aporta Fonta?</h3><p>Fonta contrasta prediccions desades abans de l’episodi amb les observacions reals de l’estació. Només proposa pesos locals quan cada model acumula prou casos comparables; AROME HD continua com a candidat experimental.</p><a href="/verificacio">Veure la verificació →</a><a href="/metodologia.html#model-fonta">Llegir la metodologia →</a></article>
+          <article><h3>Què aporta Fonta?</h3><p>Fonta contrasta prediccions desades abans de l’episodi amb les observacions reals de l’estació. Només proposa pesos locals quan cada model acumula prou casos comparables; AROME HD continua com a candidat experimental.</p><a href="/verificacio">Veure la verificació →</a><a href="/metodologia#model-fonta">Llegir la metodologia →</a></article>
         </div>
         <small>Cap model substitueix els avisos oficials ni garanteix el temps exacte en un carrer concret.</small>
       </section>
@@ -313,7 +313,7 @@
 
       <section class="home-personalization panel" data-portal-page="inici" aria-labelledby="home-personalization-title">
         <div><p class="eyebrow">El teu temps</p><h2 id="home-personalization-title">Desa un municipi i rep només els avisos que t’interessen.</h2><p>Els municipis preferits es guarden només en aquest navegador. Les notificacions són opcionals i es poden canviar quan vulguis.</p></div>
-        <div><a href="/municipis.html">Escollir municipi →</a><a href="/avisos#push-alert-button">Configurar avisos →</a></div>
+        <div><a href="/municipis">Escollir municipi →</a><a href="/avisos#push-alert-button">Configurar avisos →</a></div>
       </section>
 
       <aside class="thermal-index-guide panel" data-portal-page="estacio"><div><p class="eyebrow">Lectura tèrmica</p><h2>Quina temperatura he de mirar?</h2></div><p><b>La temperatura</b> és la mesura del sensor. <b>La sensació tèrmica</b> és la referència principal per entendre com es percep combinant humitat i vent. <b>L’Humidex</b> és un índex complementari de xafogor i no s’expressa com una temperatura real.</p></aside>
@@ -433,7 +433,7 @@
         <section class="weather-timeline panel" id="data-center-episodes" role="tabpanel" aria-labelledby="data-center-tab-episodes weather-timeline-title" data-data-center-panel="episodes">
           <header><div><p class="eyebrow">Cronologia meteorològica</p><h2 id="weather-timeline-title">Els episodis, ordenats en el temps.</h2><p>Combina avisos oficials desats, dies de pluja i extrems del període seleccionat, sempre indicant d’on surt cada dada.</p></div><div class="weather-timeline__filters" role="group" aria-label="Filtrar la cronologia"><button type="button" class="is-active" data-timeline-filter="all">Tot</button><button type="button" data-timeline-filter="alert">Avisos</button><button type="button" data-timeline-filter="rain">Pluja</button><button type="button" data-timeline-filter="extreme">Extrems</button></div></header>
           <div class="weather-timeline__list" id="data-weather-timeline" aria-live="polite"><div class="weather-timeline__empty">Preparant la cronologia…</div></div>
-          <footer><span id="data-weather-timeline-status">Dades de Fontanillas i historial oficial</span><a href="/historial-avisos.html">Obrir l’historial d’avisos →</a></footer>
+          <footer><span id="data-weather-timeline-status">Dades de Fontanillas i historial oficial</span><a href="/historial-avisos">Obrir l’historial d’avisos →</a></footer>
         </section>
       </section>
 
@@ -529,8 +529,8 @@
           </aside>
           <section class="alert-history-panel" aria-labelledby="alert-history-title">
             <header><div><p class="eyebrow">Memòria d’episodis</p><h3 id="alert-history-title">Historial d’avisos</h3><p>Canvis oficials registrats pel Worker per poder consultar els episodis recents.</p></div><span class="tag" id="alert-history-status">Carregant…</span></header>
-            <div id="alert-history-list" class="alert-history-list alert-history-list--preview" data-history-limit="5"><div class="alert-history-empty">Carregant historial…</div></div>
-            <div class="alert-history-panel__actions"><a href="/historial-avisos.html">Veure l’historial complet →</a></div>
+            <div id="alert-history-list" class="alert-history-list alert-history-list--preview" data-history-limit="5" role="region" aria-label="Historial recent d’avisos" tabindex="0"><div class="alert-history-empty">Carregant historial…</div></div>
+            <div class="alert-history-panel__actions"><a href="/historial-avisos">Veure l’historial complet →</a></div>
           </section>
           <p class="alerts-note"><span>i</span> Els organismes publiquen per comarca o zona: Vallès Oriental i Prelitoral de Barcelona inclouen Sant Celoni, però un avís no implica necessàriament afectació a tot el municipi. La web mostra l’àmbit oficial i enllaça sempre amb el detall original. <b id="alerts-updated">Actualitzant…</b></p>
         </div>
@@ -561,11 +561,11 @@
         </div>
         <section class="weekly-brief panel" aria-labelledby="weekly-brief-title">
           <header><div><p class="eyebrow">Resum setmanal</p><h3 id="weekly-brief-title">Què passarà aquesta setmana?</h3><p id="weekly-brief-copy">Una lectura visual dels pròxims set dies a Sant Celoni.</p></div><span class="tag" id="weekly-brief-status">Actualitzant…</span></header>
-          <div class="weekly-brief__grid" id="weekly-brief-grid" aria-live="polite"><span class="forecast-loading">Preparant el resum setmanal…</span></div>
+          <div class="weekly-brief__grid" id="weekly-brief-grid" role="region" aria-label="Resum dels pròxims dies" tabindex="0" aria-live="polite"><span class="forecast-loading">Preparant el resum setmanal…</span></div>
           <p class="weekly-brief__source" id="weekly-brief-source">Font: Open‑Meteo · predicció de model, no avís oficial.</p>
         </section>
         <div class="forecast-subheading forecast-subheading--controls"><div><span>Pròximes 48 hores exactes</span><small>17 punts · intervals de 3 hores · hora local</small></div><div class="forecast-controls"><button id="forecast-prev" type="button" aria-label="Veure hores anteriors">←</button><span>Desplaça o utilitza les fletxes</span><button id="forecast-next" type="button" aria-label="Veure hores posteriors">→</button></div></div>
-        <div class="forecast-strip panel" id="forecast-strip" aria-live="polite">
+        <div class="forecast-strip panel" id="forecast-strip" role="region" aria-label="Previsió per hores" tabindex="0" aria-live="polite">
           <div class="forecast-loading">Carregant la predicció de 48 hores per a Sant Celoni…</div>
         </div>
         <div class="forecast-subheading"><div><span>Previsió de 7 dies</span><small>Màximes, mínimes, pluja, vent i hores de llum</small></div></div>
@@ -731,7 +731,7 @@
         <section class="verification-transparency" aria-labelledby="verification-transparency-title">
           <header><div><p class="eyebrow">Traçabilitat pública</p><h3 id="verification-transparency-title">Mètode, dades i salut operativa</h3></div><span class="tag" id="verification-public-health">Comprovant serveis</span></header>
           <div class="verification-transparency__grid"><article><strong>Exportació reproduïble</strong><p>Descarrega la mostra visible amb previsió congelada, observació posterior i metadades del mètode.</p><div class="verification-export-actions"><button type="button" id="verification-export-csv" disabled>CSV</button><button type="button" id="verification-export-json" disabled>JSON</button></div><small id="verification-export-status" role="status">Esperant una mostra verificable.</small></article><article><strong>Estat dels processos</strong><p id="verification-health-summary">Consultant únicament estats agregats, sense secrets ni informació privada.</p><ul id="verification-health-services"><li>Dades pendents.</li></ul></article></div>
-          <p class="verification-license">Dades pròpies de l’Observatori Fontanillas i derivats de prediccions Open‑Meteo. Consulta la <a href="/metodologia.html">metodologia completa</a>; les fonts oficials conserven les seves llicències i atribucions.</p>
+          <p class="verification-license">Dades pròpies de l’Observatori Fontanillas i derivats de prediccions Open‑Meteo. Consulta la <a href="/metodologia">metodologia completa</a>; les fonts oficials conserven les seves llicències i atribucions.</p>
         </section>
       </section>
 
@@ -1052,7 +1052,7 @@
         </div>
         <aside class="observatory-about__links panel" aria-label="Documentació i contacte de l’Observatori">
           <div><p class="eyebrow">Comprova el projecte</p><h3>Metodologia, dades i registre públic.</h3></div>
-          <nav><a href="/metodologia.html">Llegir la metodologia →</a><a href="/centre-dades">Consultar dades i qualitat →</a><a href="https://github.com/marcelfonta/observatori-fontanillas/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Veure el registre de canvis ↗</a><a href="/contacte">Comunicar una incidència →</a></nav>
+          <nav><a href="/metodologia">Llegir la metodologia →</a><a href="/centre-dades">Consultar dades i qualitat →</a><a href="https://github.com/marcelfonta/observatori-fontanillas/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Veure el registre de canvis ↗</a><a href="/contacte">Comunicar una incidència →</a></nav>
         </aside>
       </section>
 
@@ -1084,7 +1084,7 @@
       <span>© 2026 Observatori Meteorològic Fontanillas</span>
       <small>Dades locals · Sant Celoni, Montseny</small>
       <div>
-        <a href="/privacitat.html">Privacitat</a>
+        <a href="/privacitat">Privacitat</a>
         <a href="#top">Tornar amunt ↑</a>
         <button type="button" id="share-btn" class="footer-link-button" aria-haspopup="dialog" aria-controls="shareModal">Compartir</button>
       </div>

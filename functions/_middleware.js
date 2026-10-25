@@ -8,6 +8,13 @@ import {monthlySummaryById} from '../src/data/monthly-summaries.js';
 const OBSERVATION_URL='https://fonta-meteo.marcelfonta.workers.dev/';
 const BASE_URL='https://meteo.fontanillas.cat/';
 const PAGE_SET=new Set(PORTAL_PAGES);
+const STATIC_PRETTY_PATHS=new Set([
+  '/metodologia','/comparativa','/municipis','/historial-avisos','/privacitat',
+  '/condicions','/xarxes','/colaboracions','/administracio','/fonta',
+  '/models','/models-franca','/docs/stellarium-licenses',
+  '/aula/analisi-aiguat-4-octubre-2026','/aula/analisi-aiguat-4-octubre-2026-solucions',
+  '/aula/analisi-aiguat-4-octubre-2026/solucions'
+]);
 
 const format=(value,digits=1)=>finite(value)===null?'—':finite(value).toLocaleString('ca-ES',{minimumFractionDigits:digits,maximumFractionDigits:digits});
 const escapeHtml=value=>String(value??'').replace(/[&<>"]/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[character]));
@@ -118,6 +125,11 @@ export async function onRequest(context){
   const url=new URL(context.request.url);
   const route=portalRouteFromPath(url.pathname);const page=route?.page;
   if(!route&&/^\/(?:histories|resums)\//.test(url.pathname))return new Response('Pàgina no trobada',{status:404,headers:{'Content-Type':'text/plain; charset=utf-8','X-Robots-Tag':'noindex'}});
+  if(context.request.method==='GET'&&!route&&accepts.includes('text/html')&&!STATIC_PRETTY_PATHS.has(url.pathname)&&!url.pathname.split('/').at(-1).includes('.')){
+    const response=await context.next();
+    if(response.status===200&&response.headers.get('Content-Type')?.includes('text/html'))return new Response('Pàgina no trobada',{status:404,headers:{'Content-Type':'text/plain; charset=utf-8','X-Robots-Tag':'noindex'}});
+    return response;
+  }
   if(context.request.method!=='GET'||!page||!accepts.includes('text/html'))return context.next();
   const requestedLanguage=SUPPORTED_LANGUAGES.includes(url.searchParams.get('lang'))?url.searchParams.get('lang'):'ca';
   const lang=route.storyId||route.summaryId||page==='canvi-climatic'?'ca':requestedLanguage;

@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-10-25 — Mètode de l'indicador climàtic 2025 (en revisió)
+
+- La xifra global de +1,39 °C queda identificada com l'indicador IGCC basat en diversos conjunts de dades. La pàgina explica per què el valor ERA5 de Copernicus C3S és +1,47 °C per al mateix any i enllaça les dues fonts originals.
+
+## 2026-10-25 — Transparència dels visors externs (en revisió)
+
+- La pàgina de privacitat identifica els visors i proveïdors afegits recentment, explica quan el navegador hi pot connectar i diferencia la consulta de CO₂ de NOAA que passa pel servidor de l'Observatori. També actualitza la data de revisió i l'enllaç a Metodologia.
+
+## 2026-10-25 — URL canòniques i rutes inexistents (en revisió)
+
+- Les pàgines estàtiques apunten a l'adreça neta que mostra el navegador; el mapa del lloc i els enllaços interns fan servir la mateixa adreça final. Les variants d'idioma que només retornaven el document català deixen d'anunciar-se com a traduccions.
+- Les rutes de pàgines desconegudes retornen un error 404 i demanen que no s'indexin, en lloc de presentar la portada com una pàgina aparentment vàlida. Les rutes existents i els recursos conserven la resposta habitual.
+- La memòria cau de la PWA conserva els documents estàtics amb els nous camins. La previsualització ha de validar les capçaleres i els enllaços abans de publicar.
+
+## 2026-10-25 — Registre inicial de la PWA i regions accessibles (en revisió)
+
+- La PWA deixa d'esperar indefinidament que OneSignal registri el servei en segon pla: reutilitza el registre existent i, després d'una espera breu, activa el servei propi si és una visita nova sense permís push. OneSignal continua podent registrar el seu worker compartit quan l'usuari activa els avisos.
+- Les franges horàries, el resum setmanal i l'historial d'avisos es poden enfocar i desplaçar amb teclat, amb un nom accessible.
+- Proves del registre inicial, del registre existent i de la cursa amb OneSignal. A la previsualització de Cloudflare, una primera visita ha creat el servei i la memòria cau i ha recarregat la portada sense xarxa. Encara cal confirmar una notificació real en un dispositiu ja subscrit abans de producció.
+
 ## 2026-10-25 — Previsió futura, CO₂ comparat i vídeo més llegible (en revisió)
 
 - La portada calcula la pluja i el vent de les hores que queden del dia; ja no torna a presentar la pluja de matinada com una previsió futura. Si falta la sèrie horària, no reutilitza els màxims diaris. La càrrega periòdica de la previsió continua sent horària.
