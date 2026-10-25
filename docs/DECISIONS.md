@@ -1,5 +1,11 @@
 # Registre de decisions
 
+## ADR — Domini públic propi per a la càmera (proposta, 2026-10-25)
+
+- `camera.fontanillas.cat` apuntarà al Worker `fonta-meteo` existent, sense un segon Worker ni còpia de l'R2. El nom només publica imatges i vídeos de la càmera amb GET o HEAD; rebutja qualsevol altra ruta o mètode abans d'arribar al router general.
+- El web intenta carregar la miniatura des del domini propi. Si no respon, conserva la imatge i els enllaços al domini `workers.dev` actual. Les pujades de la Raspberry, OAuth i les API no canvien d'URL.
+- L'ordre de desplegament és Worker amb la barrera de host, després web, i finalment el domini personalitzat a Cloudflare un cop autoritzat. Si falla, es treu el domini personalitzat: el web continua servint la càmera per la URL anterior. La prova de previsualització ha de comprovar que `/camera/nord/latest.jpg` respon i que `/admin/camera-timelapses` i `/camera/nord/upload` queden rebutjats.
+
 ## ADR — Mapa XVPCA sota demanda i avisos de portada (2026-10-24)
 
 - El mapa d'estacions consulta directament el fitxer públic del visor de la Generalitat quan l'usuari obre la pestanya, sense duplicar dades a Worker o D1. Les coordenades, lectures, hores i categories provenen de la font oficial; el mapa s'actualitza en tornar-hi després de quinze minuts. Si la font falla, queda l'enllaç al visor complet.

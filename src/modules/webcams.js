@@ -3,6 +3,17 @@ import { getLocale } from '../core/i18n.js';
 
 const RECENT_MAX_MINUTES = 12;
 const STALE_MAX_MINUTES = 30;
+let activeCameraOrigin = CONFIG.cameraFallbackOrigin;
+
+function cameraResource(path) {
+  return `${activeCameraOrigin}/camera/nord/${path}`;
+}
+
+function updateCameraLinks() {
+  document.querySelectorAll('[data-webcam-public-link]').forEach(link => {
+    link.href = cameraResource(link.dataset.webcamPublicLink === 'branded' ? 'latest-branded.jpg' : 'latest.jpg');
+  });
+}
 
 function copyFor(state, date) {
   const locale=getLocale();
@@ -34,7 +45,7 @@ function setState(state, capturedAt=null) {
 
 async function refreshCameraMetadata() {
   try {
-    const response=await fetch(CONFIG.cameraUrl,{method:'HEAD',cache:'no-store'});
+    const response=await fetch(cameraResource('latest.jpg'),{method:'HEAD',cache:'no-store'});
     if(!response.ok)throw new Error(`Camera ${response.status}`);
     const capturedAt=new Date(response.headers.get('x-captured-at') || response.headers.get('last-modified'));
     if(!Number.isFinite(capturedAt.getTime()))throw new Error('Hora de captura absent');
@@ -81,14 +92,25 @@ async function refreshWebcamCo2() {
 }
 
 export function initWebcam() {
+  updateCameraLinks();
   const webcamUrl=`${CONFIG.cameraPreviewUrl || CONFIG.cameraUrl}?t=${Date.now()}`;
   document.querySelectorAll('#webcam-image, #hero-webcam-image').forEach(image => {
     image.addEventListener('error', () => {
+      if(image.src.startsWith(CONFIG.cameraOrigin)) {
+        image.src=`${CONFIG.cameraFallbackOrigin}/camera/nord/latest-preview.jpg?t=${Date.now()}`;
+        return;
+      }
       image.removeAttribute('src');
       image.alt = 'La càmera no està disponible temporalment. Les dades de l’estació continuen actualitzant-se.';
       setState('unavailable');
     });
-    image.addEventListener('load', () => refreshCameraMetadata(),{once:true});
+    image.addEventListener('load', () => {
+      if(image.src.startsWith(CONFIG.cameraOrigin)) {
+        activeCameraOrigin=CONFIG.cameraOrigin;
+        updateCameraLinks();
+      }
+      refreshCameraMetadata();
+    });
     if(image.getClientRects().length)image.src=webcamUrl;
   });
   refreshCameraMetadata();
@@ -97,7 +119,7 @@ export function initWebcam() {
   const dialogImage=document.querySelector('#webcam-dialog-image');
   document.querySelector('#webcam-expand')?.addEventListener('click',()=>{
     if(!dialog || !dialogImage)return;
-    dialogImage.src=`${CONFIG.cameraUrl}?t=${Date.now()}`;
+    dialogImage.src=`${cameraResource('latest.jpg')}?t=${Date.now()}`;
     if(typeof dialog.showModal==='function')dialog.showModal();
   });
   document.querySelector('#webcam-dialog-close')?.addEventListener('click',()=>dialog?.close());

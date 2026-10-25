@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-25 — Subdomini públic de la càmera (en revisió)
+
+- La web prova `camera.fontanillas.cat` per a les imatges de la càmera i torna al domini actual quan el nou subdomini encara no respon.
+- El Worker només accepta lectures d'imatges i timelapses públics en aquest host; les rutes d'administració, càrrega i altres API continuen al domini actual.
+- L'activació del subdomini i el desplegament requereixen revisió de la previsualització i aprovació humana.
+
 ## 2026-10-25 — Correccions verificables de les auditories externes (en revisió)
 
 - Els enllaços directes a històries i resums mostren la peça demanada en arribar; un vídeo de timelapse absent ja no carrega un reproductor trencat.

@@ -7433,6 +7433,15 @@ async function contact(request, env) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    // The camera hostname shares this Worker with private API routes. Expose only public media.
+    if (url.hostname === 'camera.fontanillas.cat') {
+      const publicImage = /^\/camera\/nord\/latest(?:-branded|-preview)?\.jpg$/.test(url.pathname);
+      const publicVideo = /^\/camera\/nord\/timelapse(?:-vertical)?-preview\.mp4$/.test(url.pathname)
+        || /^\/camera\/nord\/timelapses(?:-vertical)?\/\d{4}-\d{2}-\d{2}\.mp4$/.test(url.pathname);
+      if (!['GET', 'HEAD'].includes(request.method) || (!publicImage && !publicVideo)) {
+        return new Response('Pàgina no trobada', { status:404, headers:{ 'Cache-Control':'no-store', 'Content-Type':'text/plain; charset=utf-8', 'X-Robots-Tag':'noindex' } });
+      }
+    }
     const origin = request.headers.get("Origin") || "*";
     if (request.method === "OPTIONS") {
       const allowedOrigin = ALLOWED_CONTACT_ORIGINS.has(origin) ? origin : "*";

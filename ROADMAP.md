@@ -612,8 +612,10 @@ els models existents; en cas contrari, el paquet es tanca sense integrar-les.
 
 ## P3 — Evolució condicionada per evidència
 
-- [ ] Valorar un subdomini propi per a la càmera només si simplifica CSP,
-  presentació pública o independència del Worker sense duplicar infraestructura.
+- [ ] Activar `camera.fontanillas.cat` sobre el Worker i l'R2 existents després
+  de revisar la previsualització i autoritzar el desplegament. El codi ja prepara
+  rutes limitades als fitxers públics i retorn automàtic a `workers.dev` mentre
+  no respongui el domini propi.
 - [ ] Valorar una animació lleugera de la webcam només després de mesurar-ne el
   cost, amb preferència de moviment reduït i mantenint la imatge estàtica com a
   opció principal.

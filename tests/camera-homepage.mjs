@@ -7,8 +7,11 @@ const webcam=fs.readFileSync(new URL('../src/modules/webcams.js',import.meta.url
 const css=fs.readFileSync(new URL('../css/portal.css',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../worker/index.js',import.meta.url),'utf8');
 
-assert.match(config,/cameraUrl:\s*'https:\/\/fonta-meteo\.marcelfonta\.workers\.dev\/camera\/nord\/latest\.jpg'/);
-assert.match(config,/cameraPreviewUrl:\s*'https:\/\/fonta-meteo\.marcelfonta\.workers\.dev\/camera\/nord\/latest-preview\.jpg'/);
+assert.match(config,/cameraUrl:\s*'https:\/\/camera\.fontanillas\.cat\/camera\/nord\/latest\.jpg'/);
+assert.match(config,/cameraPreviewUrl:\s*'https:\/\/camera\.fontanillas\.cat\/camera\/nord\/latest-preview\.jpg'/);
+assert.match(config,/cameraFallbackOrigin:\s*'https:\/\/fonta-meteo\.marcelfonta\.workers\.dev'/);
+assert.match(webcam,/image\.src\.startsWith\(CONFIG\.cameraOrigin\)/);
+assert.match(html,/data-webcam-public-link="branded"/);
 assert.match(html,/id="hero-webcam-image"[^>]+Vista actual cap al nord/);
 assert.match(html,/id="hero-webcam-image"[^>]+width="960" height="270"/);
 assert.match(html,/data-webcam-status/);
