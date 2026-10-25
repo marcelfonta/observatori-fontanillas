@@ -78,6 +78,11 @@ per tant, buidar la memòria cau no corregeix la política que rep el navegador.
 El codi de Pages i `_headers` ja indiquen `no-cache`. Cal inspeccionar les
 regles actives de **Browser Cache TTL**, Cache Rules, Page Rules i Response
 Header Rules de la zona Cloudflare del domini abans d'atribuir la causa exacta.
+El patró és coherent amb un Browser Cache TTL de quatre hores: també afecta
+`OneSignalSDKWorker.js`, CSS i JS, però conserva els set dies explícits d'una
+icona. Cloudflare documenta que aquest ajust eleva les capçaleres d'origen més
+curtes i que el valor per defecte és quatre hores. Encara cal confirmar quin
+ajust concret està actiu a la zona.
 
 - [ ] Fer que `/service-worker.js`, `/OneSignalSDKWorker.js` i els mòduls propis
   versionables respectin les capçaleres de l'origen en el domini públic, sense
