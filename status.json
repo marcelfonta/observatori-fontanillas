@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "version": "0.2.0",
-  "generatedAt": "2026-10-25T13:09:45.541Z",
+  "generatedAt": "2026-10-25T22:31:36.774Z",
   "station": "ISANTC198",
   "mode": "shadow",
   "productionEnabled": false,
   "status": "collecting",
-  "latestCaptureAt": "2026-10-25T13:09:44.674Z",
-  "captureCount": 58,
+  "latestCaptureAt": "2026-10-25T22:31:35.685Z",
+  "captureCount": 59,
   "eligibleObservedDays": 32,
   "pairedDays": 17,
   "evaluatedDays": 0,
@@ -17,28 +17,28 @@
     {
       "model": "best_match",
       "date": "2026-10-26",
-      "max": 20.9,
-      "min": 11.2,
+      "max": 21,
+      "min": 10.5,
       "complete": true
     },
     {
       "model": "ecmwf_ifs025",
       "date": "2026-10-26",
       "max": 21.4,
-      "min": 12.9,
+      "min": 13,
       "complete": true
     },
     {
       "model": "icon_eu",
       "date": "2026-10-26",
-      "max": 20.1,
-      "min": 11.5,
+      "max": 20.4,
+      "min": 11.8,
       "complete": true
     },
     {
       "model": "meteofrance_arome_france",
       "date": "2026-10-26",
-      "max": 20.3,
+      "max": 20.4,
       "min": 10.9,
       "complete": true
     }
@@ -284,19 +284,19 @@
     },
     "rows": []
   },
-  "codeRevision": "f9554c0c1cec80e8e7baa86fe2eed3a9b5bfc9bd",
+  "codeRevision": "9a7661268d355fa3968559e13b519910afd29b01",
   "diagnostics": {
     "schema": 1,
-    "asOf": "2026-10-25T13:09:45.541Z",
+    "asOf": "2026-10-25T22:31:36.774Z",
     "execution": {
       "event": "schedule",
-      "runId": "40196332939"
+      "runId": "40240588868"
     },
     "firstCaptureAt": "2026-09-20T12:12:22.031Z",
     "budget": {
-      "captureCount": 58,
+      "captureCount": 59,
       "captureLimit": 180,
-      "bytes": 21862875,
+      "bytes": 22143728,
       "byteLimit": 104857600,
       "reviewNeeded": false
     },
@@ -457,7 +457,7 @@
         },
         {
           "date": "2026-10-24",
-          "availableAt": "2026-10-25T13:09:44.571Z",
+          "availableAt": "2026-10-25T22:31:35.681Z",
           "eligible": false,
           "coverage": 0.598,
           "samples": 185,
@@ -476,45 +476,39 @@
       {
         "model": "best_match",
         "state": "available",
-        "receivedAt": "2026-10-25T13:09:43.553Z",
+        "receivedAt": "2026-10-25T22:31:34.102Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "ecmwf_ifs025",
         "state": "available",
-        "receivedAt": "2026-10-25T13:09:43.602Z",
+        "receivedAt": "2026-10-25T22:31:34.257Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "icon_eu",
         "state": "available",
-        "receivedAt": "2026-10-25T13:09:43.650Z",
+        "receivedAt": "2026-10-25T22:31:34.412Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "meteofrance_arome_france",
         "state": "available",
-        "receivedAt": "2026-10-25T13:09:43.698Z",
+        "receivedAt": "2026-10-25T22:31:34.566Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "observations",
         "state": "available",
-        "receivedAt": "2026-10-25T13:09:44.571Z",
+        "receivedAt": "2026-10-25T22:31:35.681Z",
         "modelRunAt": null
       }
     ],
     "recentCaptures": [
-      {
-        "id": "2026-10-18-pm",
-        "capturedAt": "2026-10-18T22:24:11.228Z",
-        "issueState": "outside-current-policy",
-        "failureCount": 0
-      },
       {
         "id": "2026-10-19-am",
         "capturedAt": "2026-10-19T15:33:50.543Z",
@@ -591,6 +585,12 @@
         "id": "2026-10-25-am",
         "capturedAt": "2026-10-25T13:09:44.674Z",
         "issueState": "eligible-issue",
+        "failureCount": 0
+      },
+      {
+        "id": "2026-10-25-pm",
+        "capturedAt": "2026-10-25T22:31:35.685Z",
+        "issueState": "outside-current-policy",
         "failureCount": 0
       }
     ],
