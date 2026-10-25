@@ -4,7 +4,7 @@
 
 - La PWA deixa d'esperar indefinidament que OneSignal registri el servei en segon pla: reutilitza el registre existent i, després d'una espera breu, activa el servei propi si és una visita nova sense permís push. OneSignal continua podent registrar el seu worker compartit quan l'usuari activa els avisos.
 - Les franges horàries, el resum setmanal i l'historial d'avisos es poden enfocar i desplaçar amb teclat, amb un nom accessible.
-- Proves del registre inicial, del registre existent i de la cursa amb OneSignal. Cal repetir la prova real de primera visita i de notificació push en previsualització abans de producció.
+- Proves del registre inicial, del registre existent i de la cursa amb OneSignal. A la previsualització de Cloudflare, una primera visita ha creat el servei i la memòria cau i ha recarregat la portada sense xarxa. Encara cal confirmar una notificació real en un dispositiu ja subscrit abans de producció.
 
 ## 2026-10-25 — Previsió futura, CO₂ comparat i vídeo més llegible (en revisió)
 

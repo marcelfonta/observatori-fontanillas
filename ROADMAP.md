@@ -9,9 +9,10 @@ La revisió de producció posterior al PR #296 és a [`docs/POST-MERGE-AUDIT-202
 
 L'auditoria de primera visita del 24/10 va detectar que el mode sense connexió
 no s'activava quan OneSignal encara no havia registrat el servei en segon pla.
-La correcció i les regions accessibles estan preparades; falta verificar en una
-previsualització una visita nova sense permís, la recàrrega offline i que els
-avisos push ja actius continuen funcionant abans de desplegar-ho.
+La correcció i les regions accessibles estan preparades. A la previsualització,
+una visita nova sense permís ha instal·lat el servei, creat la memòria cau i
+recarregat la portada sense xarxa. Falta verificar que els avisos push ja actius
+continuen funcionant abans de desplegar-ho.
 
 ## Visió
 
