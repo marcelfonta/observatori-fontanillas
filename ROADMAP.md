@@ -92,8 +92,11 @@ reconsultar repetidament els enviaments d'X ja confirmats.
 
 La millora de qualitat del timelapse a 1280 × 720 i la variant vertical a
 720 × 1280 s’han validat en una mostra sintètica amb límit de taxa i un sol fil.
-Abans d’instal·lar-la a la Raspberry cal una prova amb les captures reals d’un
-dia complet i comprovar mida, memòria, temps de generació i resultat a YouTube.
+El 25/10 la Raspberry també ha generat sense publicar el dia complet del 24/10
+amb 207 fotogrames: fitxers de 6,1 MB i 3,4 MB, dimensions comprovades i servei
+correcte. Els scripts nous han quedat instal·lats i la imatge pública ja mostra
+el CO₂ actual, el de fa un any i el de fa deu anys. Encara cal comprovar el
+resultat d'una publicació automàtica real, inclosa la qualitat a YouTube.
 
 El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) recull la diagnosi. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El script actualitzat de la càmera es va instal·lar el 24/10 i el servei va acabar correctament. El timelapse del 23/10 s’ha publicat a Instagram i el workflow de YouTube del mateix dia va acabar correctament, però cal verificar les publicacions visibles a la resta de canals i la pròxima execució amb la càpsula de CO₂ abans de tancar la incidència. El panell d'administració pot assenyalar dies programats absents.
 
