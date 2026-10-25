@@ -77,8 +77,8 @@
     <link rel="stylesheet" href="/css/portal.css?v=22.42.13-air-map-alerts" />
     <script type="module" src="/src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="/src/features/push.js?v=22.31.6"></script>
-    <script type="module" src="/src/features/pwa.js?v=22.31.6"></script>
-    <script type="module" src="/src/app.js?v=22.42.15-home-future"></script>
+    <script type="module" src="/src/features/pwa.js?v=22.42.16-offline-first"></script>
+    <script type="module" src="/src/app.js?v=22.42.16-offline-first"></script>
     <script type="module" src="/src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","license":"https://creativecommons.org/licenses/by/4.0/","creditText":"Observatori Meteorològic Fontanillas — meteo.fontanillas.cat","isAccessibleForFree":true,"creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -529,7 +529,7 @@
           </aside>
           <section class="alert-history-panel" aria-labelledby="alert-history-title">
             <header><div><p class="eyebrow">Memòria d’episodis</p><h3 id="alert-history-title">Historial d’avisos</h3><p>Canvis oficials registrats pel Worker per poder consultar els episodis recents.</p></div><span class="tag" id="alert-history-status">Carregant…</span></header>
-            <div id="alert-history-list" class="alert-history-list alert-history-list--preview" data-history-limit="5"><div class="alert-history-empty">Carregant historial…</div></div>
+            <div id="alert-history-list" class="alert-history-list alert-history-list--preview" data-history-limit="5" role="region" aria-label="Historial recent d’avisos" tabindex="0"><div class="alert-history-empty">Carregant historial…</div></div>
             <div class="alert-history-panel__actions"><a href="/historial-avisos.html">Veure l’historial complet →</a></div>
           </section>
           <p class="alerts-note"><span>i</span> Els organismes publiquen per comarca o zona: Vallès Oriental i Prelitoral de Barcelona inclouen Sant Celoni, però un avís no implica necessàriament afectació a tot el municipi. La web mostra l’àmbit oficial i enllaça sempre amb el detall original. <b id="alerts-updated">Actualitzant…</b></p>
@@ -561,11 +561,11 @@
         </div>
         <section class="weekly-brief panel" aria-labelledby="weekly-brief-title">
           <header><div><p class="eyebrow">Resum setmanal</p><h3 id="weekly-brief-title">Què passarà aquesta setmana?</h3><p id="weekly-brief-copy">Una lectura visual dels pròxims set dies a Sant Celoni.</p></div><span class="tag" id="weekly-brief-status">Actualitzant…</span></header>
-          <div class="weekly-brief__grid" id="weekly-brief-grid" aria-live="polite"><span class="forecast-loading">Preparant el resum setmanal…</span></div>
+          <div class="weekly-brief__grid" id="weekly-brief-grid" role="region" aria-label="Resum dels pròxims dies" tabindex="0" aria-live="polite"><span class="forecast-loading">Preparant el resum setmanal…</span></div>
           <p class="weekly-brief__source" id="weekly-brief-source">Font: Open‑Meteo · predicció de model, no avís oficial.</p>
         </section>
         <div class="forecast-subheading forecast-subheading--controls"><div><span>Pròximes 48 hores exactes</span><small>17 punts · intervals de 3 hores · hora local</small></div><div class="forecast-controls"><button id="forecast-prev" type="button" aria-label="Veure hores anteriors">←</button><span>Desplaça o utilitza les fletxes</span><button id="forecast-next" type="button" aria-label="Veure hores posteriors">→</button></div></div>
-        <div class="forecast-strip panel" id="forecast-strip" aria-live="polite">
+        <div class="forecast-strip panel" id="forecast-strip" role="region" aria-label="Previsió per hores" tabindex="0" aria-live="polite">
           <div class="forecast-loading">Carregant la predicció de 48 hores per a Sant Celoni…</div>
         </div>
         <div class="forecast-subheading"><div><span>Previsió de 7 dies</span><small>Màximes, mínimes, pluja, vent i hores de llum</small></div></div>

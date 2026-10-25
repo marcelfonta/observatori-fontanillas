@@ -81,6 +81,6 @@ assert.equal((serviceWorkerSource.match(/\bconst CACHE\s*=/g) || []).length, 1, 
 assert.match(serviceWorkerSource, /url\.pathname\.startsWith\('\/api\/'\)/, 'La PWA ha de tractar el proxy meteorològic com una API i no com un fitxer estàtic.');
 assert.match(serviceWorkerSource, /extrems-v4/, 'La correcció ha d’estrenar una memòria cau de la PWA.');
 const oneSignalWorkerSource = await readFile(new URL('../OneSignalSDKWorker.js', import.meta.url), 'utf8');
-assert.match(oneSignalWorkerSource, /service-worker\.js\?v=records-v1/, 'El Worker compartit de OneSignal ha de detectar i instal·lar la nova versió de la PWA.');
+assert.match(oneSignalWorkerSource, /service-worker\.js\?v=offline-first-v1/, 'El Worker compartit de OneSignal ha de detectar i instal·lar la nova versió de la PWA.');
 
 console.log('Extrems del dia: la lectura en directe participa en la màxima i la mínima');

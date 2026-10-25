@@ -32,7 +32,7 @@ assert.match(push,/notifications\.requestPermission\(\)/);
 assert.match(push,/Notification\.permission/);
 assert.match(push,/permission-denied/);
 assert.match(push,/serviceWorkerPath:'\/OneSignalSDKWorker\.js'/);
-assert.match(pwa,/navigator\.serviceWorker\.ready/);
+assert.match(pwa,/ensureAppServiceWorker\(navigator\.serviceWorker/);
 assert.match(pwa,/CONFIG\.oneSignalAppId/);
 assert.match(pwa,/RELOAD_GUARD_KEY/);
 assert.doesNotMatch(pwa,/register\('\/OneSignalSDKWorker\.js'/);
