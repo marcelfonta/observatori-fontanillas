@@ -48,7 +48,7 @@ export function initHeaderTools(){
   };
   const openPlace=place=>{
     if(!place)return;
-    const url=new URL('./municipis.html',window.location.href);
+    const url=new URL('/municipis',window.location.href);
     url.searchParams.set('municipi',place.name);
     url.searchParams.set('lat',place.latitude);
     url.searchParams.set('lon',place.longitude);

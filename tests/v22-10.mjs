@@ -9,7 +9,7 @@ const [page,feature,weather,portal,worker,style,project,serviceWorker]=await Pro
 assert.equal(JSON.parse(project).version,'22.42.15');
 assert.ok(serviceWorker.includes('observatori-fontanillas-v22-42-15-fonta-regional-v1'));
 assert.ok(page.includes('El temps arreu')&&page.includes('MET Norway / Yr')&&page.includes('Meteoblue')&&page.includes('eltiempo.es'));
-assert.ok(portal.includes("['municipis','El temps arreu','./municipis.html']")&&portal.includes("['municipis','Arreu']"));
+assert.ok(portal.includes("['municipis','El temps arreu','/municipis']")&&portal.includes("['municipis','Arreu']"));
 assert.ok(feature.includes('fetchMetNorwayForecast')&&feature.includes('fetchNearbyWebcams')&&feature.includes('renderComparisons')&&feature.includes('renderWebcams')&&feature.includes('www.meteoblue.com/en/weather/search'));
 assert.ok(feature.includes('weatherIcon')&&feature.includes('municipality-weather-icon')&&feature.includes('data-forecast-tab="meteoblue"')&&feature.includes('data-forecast-tab="eltiempo"'));
 assert.ok(weather.includes('export async function fetchMetNorwayForecast')&&weather.includes('export async function fetchNearbyWebcams'));

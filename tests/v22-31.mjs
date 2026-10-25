@@ -9,10 +9,10 @@ const [page,header,shell,worker,sitemap,project,emails]=await Promise.all([
 
 assert.equal(JSON.parse(project).version,'22.42.15');
 assert.ok(header.includes('<option value="fr">FR</option>'));
-assert.ok(shell.includes("['collaboracions','Col·laboracions','./colaboracions.html']"));
+assert.ok(shell.includes("['collaboracions','Col·laboracions','/colaboracions']"));
 assert.ok(worker.includes('observatori-fontanillas-v22-42-15-fonta-regional-v1'));
 assert.ok(worker.includes("'/colaboracions.html'")&&worker.includes("'/src/core/i18n-fr.js'"));
-assert.ok(sitemap.includes('https://meteo.fontanillas.cat/colaboracions.html'));
+assert.ok(sitemap.includes('https://meteo.fontanillas.cat/colaboracions'));
 assert.ok(page.includes('data-portal-static="collaboracions"'));
 assert.ok(page.includes('Actualment no hi ha cap patrocini comercial actiu'));
 assert.ok(page.includes('independència editorial')&&page.includes('Atribució visible'));
