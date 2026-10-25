@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-25 — Mètode de l'indicador climàtic 2025 (en revisió)
+
+- La xifra global de +1,39 °C queda identificada com l'indicador IGCC basat en diversos conjunts de dades. La pàgina explica per què el valor ERA5 de Copernicus C3S és +1,47 °C per al mateix any i enllaça les dues fonts originals.
+
 ## 2026-10-25 — Transparència dels visors externs (en revisió)
 
 - La pàgina de privacitat identifica els visors i proveïdors afegits recentment, explica quan el navegador hi pot connectar i diferencia la consulta de CO₂ de NOAA que passa pel servidor de l'Observatori. També actualitza la data de revisió i l'enllaç a Metodologia.
