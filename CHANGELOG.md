@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-25 — Registre inicial de la PWA i regions accessibles (en revisió)
+
+- La PWA deixa d'esperar indefinidament que OneSignal registri el servei en segon pla: reutilitza el registre existent i, després d'una espera breu, activa el servei propi si és una visita nova sense permís push. OneSignal continua podent registrar el seu worker compartit quan l'usuari activa els avisos.
+- Les franges horàries, el resum setmanal i l'historial d'avisos es poden enfocar i desplaçar amb teclat, amb un nom accessible.
+- Proves del registre inicial, del registre existent i de la cursa amb OneSignal. Cal repetir la prova real de primera visita i de notificació push en previsualització abans de producció.
+
 ## 2026-10-25 — Previsió futura, CO₂ comparat i vídeo més llegible (en revisió)
 
 - La portada calcula la pluja i el vent de les hores que queden del dia; ja no torna a presentar la pluja de matinada com una previsió futura. Si falta la sèrie horària, no reutilitza els màxims diaris. La càrrega periòdica de la previsió continua sent horària.
