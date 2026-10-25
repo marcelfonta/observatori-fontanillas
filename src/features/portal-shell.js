@@ -37,8 +37,8 @@ const NAV_ITEMS=[
   ['inici','Inici','/'],['meteo-ia','Meteo IA','/meteo-ia'],['estacio','Estació','/estacio'],
   ['prediccio','Predicció','/prediccio'],['models','Models francesos','/models'],['llarg-termini','Llarg termini','/llarg-termini'],['videos','Predicció en vídeo','/videos'],['verificacio','Predicció vs realitat','/verificacio'],['avisos','Avisos','/avisos'],
   ['cel','Cel de dia i de nit','/cel'],['radar','Radar','/radar'],['webcams','Webcams','/webcams'],['terra','Observació de la Terra','/terra'],['histories','Històries meteo','/histories'],['resums','Resums mensuals','/resums/2026-09'],
-  ['centre-dades','Centre de Dades','/centre-dades'],['comparar','Comparar','./comparativa.html'],['municipis','El temps arreu','./municipis.html'],
-  ['medi-ambient','Medi Ambient','/medi-ambient'],['canvi-climatic','Canvi climàtic','/canvi-climatic'],['aprendre','Aprendre','/aprendre'],['observatori','Sobre l’Observatori','/observatori'],['contacte','Contacte','/contacte'],['metodologia','Metodologia','./metodologia.html'],['collaboracions','Col·laboracions','./colaboracions.html']
+  ['centre-dades','Centre de Dades','/centre-dades'],['comparar','Comparar','/comparativa'],['municipis','El temps arreu','/municipis'],
+  ['medi-ambient','Medi Ambient','/medi-ambient'],['canvi-climatic','Canvi climàtic','/canvi-climatic'],['aprendre','Aprendre','/aprendre'],['observatori','Sobre l’Observatori','/observatori'],['contacte','Contacte','/contacte'],['metodologia','Metodologia','/metodologia'],['collaboracions','Col·laboracions','/colaboracions']
 ];
 const NAV_GROUPS=[
   ['Ara',['inici','meteo-ia','estacio','municipis']],

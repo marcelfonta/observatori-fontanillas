@@ -73,7 +73,7 @@ function updateMunicipalitySeo(location){
   document.querySelector('meta[name="description"]')?.setAttribute('content',description);
   document.querySelector('meta[property="og:title"]')?.setAttribute('content',title);
   document.querySelector('meta[property="og:description"]')?.setAttribute('content',description);
-  const canonical=new URL('./municipis.html',window.location.href);
+  const canonical=new URL('/municipis',window.location.href);
   canonical.searchParams.set('municipi',place);
   canonical.searchParams.set('lat',String(location.latitude));
   canonical.searchParams.set('lon',String(location.longitude));

@@ -31,8 +31,8 @@ const timeLabel=value=>{
 const sourceLinks={
   'Sensor Fontanillas':'/estacio','Estació Fontanillas':'/estacio','Arxiu Fontanillas':'/centre-dades',
   'Open‑Meteo':'https://open-meteo.com/','CAMS via Open‑Meteo':'/medi-ambient','CAMS · Sensor Fontanillas':'/medi-ambient',
-  'AEMET · Meteocat':'/avisos','Avisos oficials':'/avisos','Comparador de l’Observatori':'./comparativa.html',
-  'Historial d’avisos':'./historial-avisos.html',
+  'AEMET · Meteocat':'/avisos','Avisos oficials':'/avisos','Comparador de l’Observatori':'/comparativa',
+  'Historial d’avisos':'/historial-avisos',
   'Estació i predicció':'/prediccio','Meteo IA':'/meteo-ia',
   'AEMET · MeteoGlosario':'https://www.aemet.es/es/conocermas/meteo_glosario_visual',
   'AEMET · Dades climatològiques':'https://www.aemet.es/ca/serviciosclimaticos/datosclimatologicos',

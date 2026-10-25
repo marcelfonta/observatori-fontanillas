@@ -65,5 +65,5 @@ assert.doesNotMatch(roadmap,/### Meteoclimatic/);
 assert.match(roadmap,/- \[ \]/);
 assert.doesNotMatch(roadmap,/- \[x\]/i);
 assert.match(sitemap,/\/prediccio/);
-assert.match(sitemap,/privacitat\.html/);
+assert.match(sitemap,/\/privacitat<\/loc>/);
 console.log('Test V19 de disseny, privacitat i publicació: correcte');
