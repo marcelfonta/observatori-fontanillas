@@ -1,10 +1,10 @@
 # Changelog
 
-## 2026-10-25 — Subdomini públic de la càmera (en revisió)
+## 2026-10-25 — Subdomini públic de la càmera (desplegat)
 
 - La web prova `camera.fontanillas.cat` per a les imatges de la càmera i torna al domini actual quan el nou subdomini encara no respon.
 - El Worker només accepta lectures d'imatges i timelapses públics en aquest host; les rutes d'administració, càrrega i altres API continuen al domini actual.
-- L'activació del subdomini i el desplegament requereixen revisió de la previsualització i aprovació humana.
+- Després de la fusió del PR #326, Pages ha publicat `4a80dc7`, el Worker `a871e23b` i Cloudflare ha associat `camera.fontanillas.cat`. Les imatges responen 200; les rutes privades, 404. L'API del domini antic continua responent.
 
 ## 2026-10-25 — Correccions verificables de les auditories externes (en revisió)
 
