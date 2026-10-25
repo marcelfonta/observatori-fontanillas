@@ -612,10 +612,9 @@ els models existents; en cas contrari, el paquet es tanca sense integrar-les.
 
 ## P3 — Evolució condicionada per evidència
 
-- [ ] Activar `camera.fontanillas.cat` sobre el Worker i l'R2 existents després
-  de revisar la previsualització i autoritzar el desplegament. El codi ja prepara
-  rutes limitades als fitxers públics i retorn automàtic a `workers.dev` mentre
-  no respongui el domini propi.
+`camera.fontanillas.cat` es va activar el 2026-10-25 sobre el Worker i l'R2
+existents. Les imatges públiques responen al domini propi; les rutes privades
+hi retornen 404 i el web conserva el retorn a `workers.dev` si falla la càrrega.
 - [ ] Valorar una animació lleugera de la webcam només després de mesurar-ne el
   cost, amb preferència de moviment reduït i mantenint la imatge estàtica com a
   opció principal.
