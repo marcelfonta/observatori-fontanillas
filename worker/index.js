@@ -7435,7 +7435,7 @@ export default {
     const url = new URL(request.url);
     // The camera hostname shares this Worker with private API routes. Expose only public media.
     if (url.hostname === 'camera.fontanillas.cat') {
-      const publicImage = /^\/camera\/nord\/latest(?:-branded|-preview)?\.jpg$/.test(url.pathname);
+      const publicImage = url.pathname === '/' || /^\/camera\/nord\/latest(?:-branded|-preview)?\.jpg$/.test(url.pathname);
       const publicVideo = /^\/camera\/nord\/timelapse(?:-vertical)?-preview\.mp4$/.test(url.pathname)
         || /^\/camera\/nord\/timelapses(?:-vertical)?\/\d{4}-\d{2}-\d{2}\.mp4$/.test(url.pathname);
       if (!['GET', 'HEAD'].includes(request.method) || (!publicImage && !publicVideo)) {
@@ -7471,6 +7471,7 @@ export default {
       if (request.method === 'PUT' && url.pathname === '/camera/nord/timelapse-upload') return uploadCameraTimelapse(request, env);
       if (request.method === 'POST' && url.pathname === '/camera/nord/timelapse-publish') return cameraTimelapseAutomaticPublish(request, env);
       if (request.method === 'POST' && url.pathname === '/camera/nord/timelapse-youtube-callback') return cameraTimelapseYoutubeCallback(request, env);
+      if ((request.method === 'GET' || request.method === 'HEAD') && url.hostname === 'camera.fontanillas.cat' && url.pathname === '/') return serveLatestCameraImage(request, env);
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest.jpg') return serveLatestCameraImage(request, env);
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest-branded.jpg') return serveLatestCameraImage(request, env, 'branded');
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/camera/nord/latest-preview.jpg') return serveLatestCameraImage(request, env, 'preview');

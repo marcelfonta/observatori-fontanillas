@@ -10,7 +10,6 @@ export const CONFIG = {
   cameraFallbackOrigin: 'https://fonta-meteo.marcelfonta.workers.dev',
   cameraUrl: 'https://camera.fontanillas.cat/camera/nord/latest.jpg',
   cameraPreviewUrl: 'https://camera.fontanillas.cat/camera/nord/latest-preview.jpg',
-  cameraBrandedUrl: 'https://camera.fontanillas.cat/camera/nord/latest-branded.jpg',
   fallbackWebcam: 'https://www.alvar.cat/WebCam/Imatge-Camera.jpg',
   analyticsMeasurementId: '', // Ex.: G-XXXXXXXXXX
   cloudflareWebAnalyticsEnabled: true, // Activat al domini des del tauler de Cloudflare

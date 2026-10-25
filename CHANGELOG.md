@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-25 — Accés directe i enllaç únic a la càmera (en revisió)
+
+- `camera.fontanillas.cat/` serveix directament la imatge pública de la càmera. Les altres rutes privades continuen bloquejades.
+- A la pàgina de webcams queda un sol enllaç per obrir-la en gran. Quan el domini propi respon, aquest enllaç hi apunta; si falla, conserva la ruta pública anterior.
+
 ## 2026-10-25 — Subdomini públic de la càmera (desplegat)
 
 - La web prova `camera.fontanillas.cat` per a les imatges de la càmera i torna al domini actual quan el nou subdomini encara no respon.
