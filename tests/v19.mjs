@@ -51,7 +51,7 @@ assert.match(css,/\.admin-site-header \{ position: fixed/);
 assert.match(headers,/script-src[^;]*https:\/\/static\.cloudflareinsights\.com/);
 assert.match(headers,/connect-src[^;]*https:\/\/cloudflareinsights\.com/);
 assert.match(privacy,/Cloudflare Web Analytics/);
-assert.match(privacy,/Actualitzat 20 d’octubre de 2026/);
+assert.match(privacy,/Actualitzat 25 d’octubre de 2026/);
 assert.match(privacy,/municipis preferits/);
 assert.match(privacy,/Open-Meteo i MET Norway/);
 assert.match(config,/searchConsoleVerified: true/);
