@@ -5,6 +5,13 @@ const SOURCES={
     description:'Vídeo diari del Servei Meteorològic de Catalunya.',
     embedUrl:'https://www.youtube-nocookie.com/embed/videoseries?list=PLOWaA1TFs5he_kR01X0A23zkhrB7eJwMD&rel=0',
     sourceUrl:'https://www.meteo.cat/wpweb/prediccio/audiovisuals-de-prediccio/'
+  },
+  elnacional:{
+    label:'El temps d’El Nacional',
+    title:'Últims vídeos d’El temps d’El Nacional',
+    description:'Publicacions recents del canal meteorològic. YouTube pot mostrar primer un vídeo curt.',
+    embedUrl:'https://www.youtube-nocookie.com/embed/videoseries?list=UUDnmE1yHT8OcRZs_BCCiTtg&rel=0',
+    sourceUrl:'https://www.youtube.com/@tempselnacional'
   }
 };
 

@@ -4,6 +4,12 @@ const STORAGE_KEY='fontanillas-language-v1';
 export const SUPPORTED_LANGUAGES=['ca','es','en','fr'];
 
 export const PHRASES={
+  'Meteocat i El temps d’El Nacional es reprodueixen dins la web quan els selecciones. La resta d’espais s’obren a la font original.':{es:'Meteocat y El temps d’El Nacional se reproducen aquí cuando los seleccionas. Los demás espacios se abren en la fuente original.',en:'Meteocat and El temps d’El Nacional play here when selected. Other sources open on their own sites.'},
+  'El Nacional · YouTube':{es:'El Nacional · YouTube',en:'El Nacional · YouTube'},
+  'El temps d’El Nacional':{es:'El tiempo de El Nacional',en:'El Nacional Weather'},
+  'Últimes publicacions del canal meteorològic':{es:'Últimas publicaciones del canal meteorológico',en:'Latest uploads from the weather channel'},
+  'Els reproductors mostren les publicacions recents del canal corresponent; la més nova pot ser un vídeo curt. El Nacional és un mitjà, no una font oficial d’avisos.':{es:'Los reproductores muestran las publicaciones recientes de cada canal; la más nueva puede ser un vídeo corto. El Nacional es un medio, no una fuente oficial de avisos.',en:'The players show recent uploads from each channel; the newest may be a Short. El Nacional is a media outlet, not an official warning source.'},
+  'Tria un canal per carregar-ne els vídeos. AEMET i 3Cat s’obren en una pestanya nova.':{es:'Elige un canal para cargar sus vídeos. AEMET y 3Cat se abren en una pestaña nueva.',en:'Choose a channel to load its videos. AEMET and 3Cat open in a new tab.'},
   'Dades obertes':{es:'Datos abiertos',en:'Open data'},
   'Observacions pròpies sota CC BY 4.0':{es:'Observaciones propias bajo CC BY 4.0',en:'First-party observations under CC BY 4.0'},
   'Pots copiar, analitzar i adaptar les observacions de l’estació, també comercialment, sempre que citis l’origen i indiquis els canvis. Els fitxers CSV, Excel, JSON i PDF ja incorporen la llicència o l’atribució.':{es:'Puedes copiar, analizar y adaptar las observaciones de la estación, también comercialmente, siempre que cites el origen e indiques los cambios. Los archivos CSV, Excel, JSON y PDF ya incorporan la licencia o la atribución.',en:'You may copy, analyse and adapt the station observations, including commercially, provided that you credit the source and indicate changes. CSV, Excel, JSON and PDF files already include the licence or attribution.'},

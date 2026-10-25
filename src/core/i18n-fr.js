@@ -1,6 +1,12 @@
 // Catàleg francès separat per mantenir i auditar la quarta llengua sense
 // barrejar-la amb la font catalana i les traduccions castellana i anglesa.
 export const FRENCH_PHRASES={
+  'Meteocat i El temps d’El Nacional es reprodueixen dins la web quan els selecciones. La resta d’espais s’obren a la font original.':'Meteocat et El temps d’El Nacional sont lus ici après sélection. Les autres sources s’ouvrent sur leur site.',
+  'El Nacional · YouTube':'El Nacional · YouTube',
+  'El temps d’El Nacional':'La météo d’El Nacional',
+  'Últimes publicacions del canal meteorològic':'Dernières vidéos de la chaîne météo',
+  'Els reproductors mostren les publicacions recents del canal corresponent; la més nova pot ser un vídeo curt. El Nacional és un mitjà, no una font oficial d’avisos.':'Les lecteurs affichent les vidéos récentes de chaque chaîne ; la plus récente peut être un format court. El Nacional est un média, pas une source officielle d’alertes.',
+  'Tria un canal per carregar-ne els vídeos. AEMET i 3Cat s’obren en una pestanya nova.':'Choisissez une chaîne pour charger ses vidéos. AEMET et 3Cat s’ouvrent dans un nouvel onglet.',
   'Dades obertes':'Données ouvertes',
   'Observacions pròpies sota CC BY 4.0':'Observations propres sous CC BY 4.0',
   'Pots copiar, analitzar i adaptar les observacions de l’estació, també comercialment, sempre que citis l’origen i indiquis els canvis. Els fitxers CSV, Excel, JSON i PDF ja incorporen la llicència o l’atribució.':'Vous pouvez copier, analyser et adapter les observations de la station, y compris à des fins commerciales, à condition de citer la source et d’indiquer les modifications. Les fichiers CSV, Excel, JSON et PDF contiennent déjà la licence ou l’attribution.',

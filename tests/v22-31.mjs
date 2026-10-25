@@ -7,10 +7,10 @@ const [page,header,shell,worker,sitemap,project,emails]=await Promise.all([
   read('service-worker.js'),read('sitemap.xml'),read('project.json'),read('docs/patrocini/correus-personalitzats.md')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.42.15');
+assert.equal(JSON.parse(project).version,'22.42.16');
 assert.ok(header.includes('<option value="fr">FR</option>'));
 assert.ok(shell.includes("['collaboracions','Col·laboracions','/colaboracions']"));
-assert.ok(worker.includes('observatori-fontanillas-v22-42-15-fonta-regional-v1'));
+assert.ok(worker.includes('observatori-fontanillas-v22-42-16-fonta-regional-v1'));
 assert.ok(worker.includes("'/colaboracions.html'")&&worker.includes("'/src/core/i18n-fr.js'"));
 assert.ok(sitemap.includes('https://meteo.fontanillas.cat/colaboracions'));
 assert.ok(page.includes('data-portal-static="collaboracions"'));

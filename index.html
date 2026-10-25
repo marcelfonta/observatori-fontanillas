@@ -559,11 +559,6 @@
             <div class="forecast-next-days" id="forecast-next-days" aria-label="Resum dels dies següents"><span>Preparant els pròxims dies…</span></div>
           </article>
         </div>
-        <section class="weekly-brief panel" aria-labelledby="weekly-brief-title">
-          <header><div><p class="eyebrow">Resum setmanal</p><h3 id="weekly-brief-title">Què passarà aquesta setmana?</h3><p id="weekly-brief-copy">Una lectura visual dels pròxims set dies a Sant Celoni.</p></div><span class="tag" id="weekly-brief-status">Actualitzant…</span></header>
-          <div class="weekly-brief__grid" id="weekly-brief-grid" role="region" aria-label="Resum dels pròxims dies" tabindex="0" aria-live="polite"><span class="forecast-loading">Preparant el resum setmanal…</span></div>
-          <p class="weekly-brief__source" id="weekly-brief-source">Font: Open‑Meteo · predicció de model, no avís oficial.</p>
-        </section>
         <div class="forecast-subheading forecast-subheading--controls"><div><span>Pròximes 48 hores exactes</span><small>17 punts · intervals de 3 hores · hora local</small></div><div class="forecast-controls"><button id="forecast-prev" type="button" aria-label="Veure hores anteriors">←</button><span>Desplaça o utilitza les fletxes</span><button id="forecast-next" type="button" aria-label="Veure hores posteriors">→</button></div></div>
         <div class="forecast-strip panel" id="forecast-strip" role="region" aria-label="Previsió per hores" tabindex="0" aria-live="polite">
           <div class="forecast-loading">Carregant la predicció de 48 hores per a Sant Celoni…</div>
@@ -686,16 +681,15 @@
 
       <section class="forecast-videos section-block" id="forecast-videos" aria-labelledby="forecast-videos-title" data-portal-page="videos">
         <div class="forecast-videos__intro panel">
-          <div><p class="eyebrow">Previsió audiovisual</p><h2 id="forecast-videos-title">Tria qui t’explica la previsió</h2><p>Meteocat es reprodueix dins la web. La resta d’espais s’obren a la font original.</p></div>
+          <div><p class="eyebrow">Previsió audiovisual</p><h2 id="forecast-videos-title">Tria qui t’explica la previsió</h2><p>Meteocat i El temps d’El Nacional es reprodueixen dins la web quan els selecciones. La resta d’espais s’obren a la font original.</p></div>
           <span class="forecast-videos__privacy">Sense reproducció automàtica</span>
         </div>
         <div class="forecast-videos__layout">
           <nav class="forecast-video-sources panel" aria-label="Fonts de predicció en vídeo" id="forecast-video-sources">
             <button type="button" data-video-source="meteocat"><span>Meteocat</span><strong>Predicció general de Catalunya</strong><small>Servei Meteorològic de Catalunya · actualització diària</small></button>
+            <button type="button" data-video-source="elnacional"><span>El Nacional · YouTube</span><strong>El temps d’El Nacional</strong><small>Últimes publicacions del canal meteorològic</small></button>
             <a class="forecast-video-source--external" href="https://www.aemet.es/es/eltiempo/prediccion" target="_blank" rel="noopener noreferrer"><span>AEMET · accés oficial</span><strong>Predicció estatal i per comunitats</strong><small>No té un vídeo diari estable · obrir la predicció oficial ↗</small></a>
             <a class="forecast-video-source--external" href="https://www.3cat.cat/3catinfo/el-temps/" target="_blank" rel="noopener noreferrer"><span>3Cat · accés oficial</span><strong>El temps a 3CatInfo</strong><small>Previsió, vídeos i notícies meteorològiques ↗</small></a>
-            <a class="forecast-video-source--external" href="https://naciodigital.cat/impacte/terra" target="_blank" rel="noopener noreferrer"><span>Nació · mitjà informatiu</span><strong>El temps i el territori</strong><small>Cròniques freqüents amb vídeos de Meteocat · obrir a Nació ↗</small></a>
-            <a class="forecast-video-source--external" href="https://www.youtube.com/@naciodigital" target="_blank" rel="noopener noreferrer"><span>Nació · YouTube</span><strong>Canal de NacióDigital</strong><small>Vídeos del mitjà; la previsió meteorològica pot no ser diària ↗</small></a>
           </nav>
           <article class="forecast-video-player panel" id="forecast-video-player">
             <div class="forecast-video-player__empty" id="forecast-video-empty">
@@ -705,8 +699,8 @@
             <footer id="forecast-video-meta" hidden><div><span id="forecast-video-source-label">Font oficial</span><strong id="forecast-video-title">Predicció en vídeo</strong><small id="forecast-video-description"></small></div><a id="forecast-video-source-link" href="#" target="_blank" rel="noreferrer">Obrir a la font ↗</a></footer>
           </article>
         </div>
-        <p class="forecast-videos__note">Selecciona Meteocat per veure el seu butlletí dins la web. Nació publica cròniques meteorològiques i té un canal de YouTube; no és una font oficial d’avisos.</p>
-        <p class="forecast-videos__note" id="forecast-videos-status" role="status" aria-live="polite">Meteocat està preparat. Les altres fonts s’obren en una pestanya nova.</p>
+        <p class="forecast-videos__note">Els reproductors mostren les publicacions recents del canal corresponent; la més nova pot ser un vídeo curt. El Nacional és un mitjà, no una font oficial d’avisos.</p>
+        <p class="forecast-videos__note" id="forecast-videos-status" role="status" aria-live="polite">Tria un canal per carregar-ne els vídeos. AEMET i 3Cat s’obren en una pestanya nova.</p>
         <section class="global-forecast-directory panel" aria-labelledby="global-forecast-directory-title">
           <header><div><p class="eyebrow">Previsió arreu del món</p><h2 id="global-forecast-directory-title">Sis fonts bones, amb funcions diferents.</h2><p>Cap model és sempre el millor a tot arreu. Comença per la font oficial del país i utilitza els models i comparadors per entendre la incertesa.</p></div><span class="tag">Enllaços verificats</span></header>
           <div class="global-forecast-directory__grid">

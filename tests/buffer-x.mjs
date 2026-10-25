@@ -12,6 +12,7 @@ assert.match(worker, /buffer-x:\$\{localDate\}:\$\{safeSlot\}/);
 assert.match(worker, /BUFFER_X_MAX_ATTEMPTS = 4/);
 assert.match(worker, /observedJob\('buffer-x-recovery'/);
 assert.match(worker, /remote\?\.status === 'sent'/);
+assert.match(worker, /if \(detail\.stage === 'sent'\) return \{ ok:true,reused:true,sent:true/);
 assert.match(worker, /finalAttempts >= BUFFER_X_MAX_ATTEMPTS/);
 assert.match(worker, /detail\.stage === 'rate_limited'/);
 assert.match(worker, /retryInsideWindow/);

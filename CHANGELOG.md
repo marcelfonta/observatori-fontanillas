@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-25 — Previsió més clara i menys consultes a Buffer (en revisió)
+
+- La previsió conserva el detall per hores i els set dies; s'elimina el resum setmanal duplicat de la part superior.
+- Predicció en vídeo retira els dos enllaços de NacióDigital i incorpora, sota demanda, les publicacions recents del canal «El temps d’El Nacional».
+- Un enviament d'X ja confirmat no torna a consultar Buffer cada cinc minuts. TikTok i X continuen respectant la pausa compartida que Buffer ha indicat fins al 27/10; no es força cap publicació ni es creen duplicats.
+
 ## 2026-10-25 — Mètode de l'indicador climàtic 2025 (en revisió)
 
 - La xifra global de +1,39 °C queda identificada com l'indicador IGCC basat en diversos conjunts de dades. La pàgina explica per què el valor ERA5 de Copernicus C3S és +1,47 °C per al mateix any i enllaça les dues fonts originals.
