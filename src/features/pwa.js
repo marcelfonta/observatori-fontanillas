@@ -1,4 +1,5 @@
 import { CONFIG } from '../core/config.js';
+import { ensureAppServiceWorker } from '../core/service-worker-registration.js';
 
 const banner = document.getElementById('app-update-banner');
 const updateButton = document.getElementById('app-update-button');
@@ -85,11 +86,7 @@ async function checkForUpdate() {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
-      // Quan OneSignal està configurat, és l'únic responsable de registrar el
-      // Worker compartit. Registrar-lo també aquí amb una URL sense els seus
-      // paràmetres provocaria un bucle d'actualització i recàrrega.
-      if (CONFIG.oneSignalAppId) registration = await navigator.serviceWorker.ready;
-      else registration = await navigator.serviceWorker.register('/service-worker.js', { updateViaCache: 'none' });
+      registration = await ensureAppServiceWorker(navigator.serviceWorker,{pushConfigured:Boolean(CONFIG.oneSignalAppId)});
       if (registration.waiting) showUpdate();
       registration.addEventListener('updatefound', () => {
         const worker = registration.installing;
