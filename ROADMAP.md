@@ -70,30 +70,19 @@ justifiqui.
 
 ### Caché del domini públic i actualitzacions de la PWA
 
-El 25/10, el mateix `service-worker.js` (mateix ETag) respon amb
-`Cache-Control: no-cache, must-revalidate` a la previsualització de Pages i
-amb `max-age=14400, must-revalidate` a `meteo.fontanillas.cat`. Una petició
-nova amb un paràmetre únic també rep quatre hores i `CF-Cache-Status: MISS`;
-per tant, buidar la memòria cau no corregeix la política que rep el navegador.
-El codi de Pages i `_headers` ja indiquen `no-cache`. Cal inspeccionar les
-regles actives de **Browser Cache TTL**, Cache Rules, Page Rules i Response
-Header Rules de la zona Cloudflare del domini abans d'atribuir la causa exacta.
-El patró és coherent amb un Browser Cache TTL de quatre hores: també afecta
-`OneSignalSDKWorker.js`, CSS i JS, però conserva els set dies explícits d'una
-icona. Cloudflare documenta que aquest ajust eleva les capçaleres d'origen més
-curtes i que el valor per defecte és quatre hores. Encara cal confirmar quin
-ajust concret està actiu a la zona.
+El 25/10 es va confirmar al tauler de Cloudflare que el **Browser Cache TTL** de
+`fontanillas.cat` era de quatre hores. Amb autorització humana es va canviar a
+«Respectar les capçaleres existents». Després, tant `/service-worker.js` com
+`/OneSignalSDKWorker.js`, CSS i JS van respondre al domini públic amb
+`Cache-Control: no-cache, must-revalidate`; la icona va conservar els set dies
+previstos. La URL habitual del service worker, sense paràmetres, també va
+respondre correctament. No es va fer cap purga general ni canviar el codi.
 
-- [ ] Fer que `/service-worker.js`, `/OneSignalSDKWorker.js` i els mòduls propis
-  versionables respectin les capçaleres de l'origen en el domini públic, sense
-  alterar el caché llarg dels actius amb nom immutable.
-- [ ] Comparar producció i previsualització amb una URL nova, comprovar que una
-  actualització de la PWA arriba a un navegador que ja la tenia instal·lada i
-  repetir la recepció d'un avís push després del canvi.
+- [ ] Comprovar que una actualització de la PWA arriba a un navegador que ja la
+  tenia instal·lada i repetir la recepció d'un avís push després del canvi.
 
-**Fet quan:** els dos hosts responen amb `no-cache, must-revalidate` per al
-service worker i una instal·lació existent rep la versió nova sense perdre els
-avisos. Qualsevol canvi de regla de producció s'ha de revisar abans d'aplicar-lo.
+**Fet quan:** una instal·lació existent rep la versió nova sense perdre els
+avisos. La capçalera dels dos hosts ja és correcta.
 
 ### Model Fonta
 
@@ -661,7 +650,7 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **Fiabilitat operativa:** corregir i verificar la política de caché del domini públic; comprovar el proper vespre i timelapse reals sense duplicats a cada canal; mantenir #299 obert fins a aquesta evidència. Les proves push de dispositiu ja han arribat, però falta repetir-les després del canvi de caché i observar un avís oficial real.
+1. **Fiabilitat operativa:** comprovar la PWA i el push en una instal·lació existent després de corregir el caché; observar el proper vespre i timelapse reals sense duplicats a cada canal; mantenir #299 obert fins a aquesta evidència. Falta observar un avís oficial real.
 2. **Clima:** validar visualment el CO₂ ja integrat a webcam i peces diàries; verificar en staging i producció la nova sèrie llarga NOAA, afegir sèries oficials catalanes de temperatura/precipitació amb mètode comparable i completar la revisió editorial i les traduccions reals. La ruta i la primera lectura ja són públiques.
 3. **Qualitat real:** provar en iPhone, Android i ordinador els visors, els controls tàctils, l’accessibilitat i la recuperació sense connexió; repetir l’auditoria SEO a Search Console.
 4. **Contingut:** revisió docent de la primera fitxa d’Aula oberta, guia local estacional i següent resum periòdic només amb cobertura suficient.
