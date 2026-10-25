@@ -66,8 +66,10 @@ function wavBuffer(){
   buffer.writeUInt16LE(channels,22);buffer.writeUInt32LE(RATE,24);
   buffer.writeUInt32LE(RATE*channels*2,28);buffer.writeUInt16LE(channels*2,32);
   buffer.writeUInt16LE(16,34);buffer.write('data',36);buffer.writeUInt32LE(dataSize,40);
+  // Nivell mitjà pròxim a la sintonia anterior, amb marge de pic per a AAC.
+  const gain={current:1,morning:1.53,evening:1.86,event:1.45}[VARIANT];
   for(let frame=0;frame<frames;frame++){
-    const value=Math.round((VARIANT==='current'?sampleAt(frame/RATE):warmSampleAt(frame/RATE,VARIANT))*32767);
+    const value=Math.round(clamp((VARIANT==='current'?sampleAt(frame/RATE):warmSampleAt(frame/RATE,VARIANT))*gain)*32767);
     buffer.writeInt16LE(value,44+frame*4);
     buffer.writeInt16LE(value,46+frame*4);
   }

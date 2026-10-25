@@ -46,7 +46,7 @@ const variants=fs.readFileSync(new URL('../scripts/camera-public-variants.sh',im
 assert.match(variants,/scale=960:-2/);
 assert.match(variants,/camera\/nord\/upload-preview/);
 assert.match(variants,/text='CO₂'/);
-assert.match(variants,/w=1110:h=155/);
+assert.match(variants,/w=1110:h=225/);
 assert.match(variants,/text='●'/);
 assert.match(variants,/300-text_w/);
 assert.match(variants,/feature\.get\("id"\)=="ES1275A"/);

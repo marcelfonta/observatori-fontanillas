@@ -22,13 +22,18 @@ export function parseNoaaCo2(csv, now = Date.now()) {
   rows.sort((a, b) => a.epoch - b.epoch);
   const latest = rows.at(-1);
   if (!latest || now - latest.epoch > MAX_AGE) throw new Error('NOAA CO₂: no hi ha cap lectura recent vàlida.');
-  const target = Date.UTC(Number(latest.date.slice(0, 4)) - 1, Number(latest.date.slice(5, 7)) - 1, Number(latest.date.slice(8, 10)));
-  const previous = rows.filter(row => Math.abs(row.epoch - target) <= 3 * DAY)
-    .sort((a, b) => Math.abs(a.epoch - target) - Math.abs(b.epoch - target))[0];
+  const comparable = years => {
+    const target = Date.UTC(Number(latest.date.slice(0, 4)) - years, Number(latest.date.slice(5, 7)) - 1, Number(latest.date.slice(8, 10)));
+    return rows.filter(row => Math.abs(row.epoch - target) <= 3 * DAY)
+      .sort((a, b) => Math.abs(a.epoch - target) - Math.abs(b.epoch - target))[0];
+  };
+  const previous = comparable(1);
+  const decade = comparable(10);
   return {
     ppm: latest.ppm, date: latest.date,
     yearAgoPpm: previous?.ppm ?? null, yearAgoDate: previous?.date ?? null,
     yearChangePpm: previous ? Math.round((latest.ppm - previous.ppm) * 100) / 100 : null,
+    tenYearsAgoPpm: decade?.ppm ?? null, tenYearsAgoDate: decade?.date ?? null,
     source: 'NOAA Global Monitoring Laboratory', station: 'Mauna Loa',
     sourceUrl: NOAA_CO2_SOURCE, seriesUrl: NOAA_CO2_URL,
     provisional: true, unit: 'ppm',

@@ -1,6 +1,6 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
-Actualitzat el 24 d’octubre de 2026. Aquest document conté únicament feina
+Actualitzat el 25 d’octubre de 2026. Aquest document conté únicament feina
 pendent, aplicable i amb un criteri de finalització observable. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
@@ -69,6 +69,11 @@ no és anecdòtica i qualsevol canvi de pesos queda justificat amb mètriques.
 
 - [ ] Confirmar la pròxima publicació automàtica del timelapse, amb el CO₂ a la
   imatge, sense duplicats i en tots els canals habilitats.
+
+La millora de qualitat del timelapse a 1280 × 720 i la variant vertical a
+720 × 1280 s’han validat en una mostra sintètica amb límit de taxa i un sol fil.
+Abans d’instal·lar-la a la Raspberry cal una prova amb les captures reals d’un
+dia complet i comprovar mida, memòria, temps de generació i resultat a YouTube.
 
 El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) recull la diagnosi. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El script actualitzat de la càmera es va instal·lar el 24/10 i el servei va acabar correctament. El timelapse del 23/10 s’ha publicat a Instagram i el workflow de YouTube del mateix dia va acabar correctament, però cal verificar les publicacions visibles a la resta de canals i la pròxima execució amb la càpsula de CO₂ abans de tancar la incidència. El panell d'administració pot assenyalar dies programats absents.
 
@@ -252,7 +257,7 @@ afirmació, sense confondre temps, contaminació local i clima.
 
 ### Publicacions diàries: nova identitat sonora, CO₂ i vespre complet
 
-El distintiu lunar separat i les mostres musicals estan desplegats. Divuit proves visuals locals cobreixen Shorts i Meta amb set fenòmens, manca del temps i manca de la fase. La franja real del 23/10 es va perdre per una interrupció del cron, ja recuperat; resta confirmar la següent publicació real de vespre, fer la comparació auditiva A/B i aprovar l’activació de la nova música.
+El distintiu lunar separat i les mostres musicals estan desplegats. Les variants de música de matí, vespre i episodi i la icona meteorològica del vespre estan preparades al codi per a revisió. Les proves locals de vídeo i de nivell d’àudio passen; resta confirmar una publicació real, fer una escolta en mòbil i valorar el resultat editorial.
 
 Les peces diàries han de sonar i veure’s com una sola marca, però sense
 convertir una previsió meteorològica en un missatge climàtic confús. La dada de

@@ -24,14 +24,38 @@ function observationCard(current){
   return {key:'observation',state:degraded?'watch':'good',kicker:'Observació local',title:`${format(current.temperature,1)} °C ara mateix`,copy:degraded?'Mostrem l’última lectura fiable disponible.':`Humitat ${format(current.humidity)}% · ratxa ${format(current.windGust)} km/h`,source:age!==null?`Estació · fa ${format(age)} min`:'Estació Fontanillas · en directe',href:'/estacio'};
 }
 
-function forecastCard(forecast){
+function localForecastHour(now){
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date(now));
+  const part=type=>parts.find(item=>item.type===type)?.value;
+  return `${part('year')}-${part('month')}-${part('day')}T${part('hour')}`;
+}
+
+function futureHours(forecast,now,hours=Infinity){
+  const hourly=forecast?.hourly;
+  if(!Array.isArray(hourly?.time))return [];
+  const current=localForecastHour(now);
+  const today=current.slice(0,10);
+  const end=hours===Infinity?null:new Date(`${current}:00Z`).getTime()+hours*3600000;
+  return hourly.time.flatMap((time,index)=>{
+    const hour=String(time).slice(0,13);
+    const stamp=new Date(`${hour}:00Z`).getTime();
+    return hour>=current&&hour.startsWith(today)&&Number.isFinite(stamp)&&(!end||stamp<=end)?[index]:[];
+  });
+}
+
+function forecastCard(forecast,now){
   const daily=forecast?.daily;
-  if(!daily?.time?.[0])return {key:'forecast',state:'pending',kicker:'Avui',title:'Preparant la previsió',copy:'La resta de la portada continua disponible.',source:'Open-Meteo · previsió de model',href:'/prediccio'};
-  const rain=numeric(daily.precipitation_probability_max?.[0]);
-  const gust=numeric(daily.wind_gusts_10m_max?.[0]);
-  const state=(rain??0)>=70||(gust??0)>=60?'warning':(rain??0)>=40||(gust??0)>=40?'watch':'good';
-  const title=(rain??0)>=60?`${format(rain)}% de probabilitat de pluja`:(gust??0)>=40?`Ratxes de fins a ${format(gust)} km/h`:`Entre ${format(daily.temperature_2m_min?.[0])} i ${format(daily.temperature_2m_max?.[0])} °C`;
-  return {key:'forecast',state,kicker:'Avui',title,copy:`Pluja ${format(daily.precipitation_sum?.[0],1)} mm · ratxa ${format(gust)} km/h`,source:'Open-Meteo · predicció, no avís',href:'/prediccio'};
+  if(!daily?.time?.[0]||daily.time[0]!==localForecastHour(now).slice(0,10))return {key:'forecast',state:'pending',kicker:'Avui',title:'Preparant la previsió',copy:'La resta de la portada continua disponible.',source:'Open-Meteo · previsió de model',href:'/prediccio'};
+  const indices=futureHours(forecast,now);
+  const values=(key)=>indices.map(index=>numeric(forecast.hourly[key]?.[index])).filter(value=>value!==null);
+  const rainValues=values('precipitation_probability');
+  const gustValues=values('wind_gusts_10m');
+  const rain=rainValues.length?Math.max(...rainValues):null;
+  const gust=gustValues.length?Math.max(...gustValues):null;
+  const state=rain===null&&gust===null?'pending':(rain??0)>=70||(gust??0)>=60?'warning':(rain??0)>=40||(gust??0)>=40?'watch':'good';
+  const title=(rain??0)>=60?`${format(rain)}% de probabilitat de pluja`:(gust??0)>=40?`Ratxes de fins a ${format(gust)} km/h`:rain!==null?'Sense pluja destacada la resta del dia':'Consulta la previsió actualitzada';
+  const copy=rain!==null?`Resta del dia · ${rain>=30?`pluja fins al ${format(rain)}%`:'sense pluja destacada'}${gust!==null?` · ratxa ${format(gust)} km/h`:''}`:'Sense hores futures disponibles per confirmar la pluja.';
+  return {key:'forecast',state,kicker:'Avui',title,copy,source:'Open-Meteo · predicció, no avís',href:'/prediccio'};
 }
 
 function alertCard(alerts){
@@ -42,20 +66,20 @@ function alertCard(alerts){
   return active?{key:'alerts',state:'warning',kicker:'Vigilància oficial',title:`${active} avís${active===1?'':'os'} actiu${active===1?'':'s'}`,copy:first?.event||first?.title||first?.headline||'Consulta el fenomen i la vigència.',source:'Meteocat · AEMET',href:'/avisos'}:{key:'alerts',state:'good',kicker:'Vigilància oficial',title:'Sense avisos actius',copy:'No consta cap avís oficial vigent per a la zona.',source:'Meteocat · AEMET',href:'/avisos'};
 }
 
-export function buildHomeNowModel(input={}){
+export function buildHomeNowModel(input={},now=Date.now()){
   const confidence=homeModelConfidence(input.models);
-  return [observationCard(input.current),forecastCard(input.forecast),alertCard(input.alerts),{key:'models',state:confidence.level,kicker:'Confiança entre models',title:confidence.label,copy:confidence.detail,source:'ECMWF · GFS · ICON · AROME',href:'/prediccio#models'}];
+  return [observationCard(input.current),forecastCard(input.forecast,now),alertCard(input.alerts),{key:'models',state:confidence.level,kicker:'Confiança entre models',title:confidence.label,copy:confidence.detail,source:'ECMWF · GFS · ICON · AROME',href:'/prediccio#models'}];
 }
 
 function immediateForecast(forecast,now){
   const hourly=forecast?.hourly;if(!Array.isArray(hourly?.time))return null;
-  const indices=hourly.time.map((time,index)=>({index,time:new Date(time).getTime()})).filter(item=>Number.isFinite(item.time)&&item.time>=now-1800000&&item.time<=now+3*60*60*1000).map(item=>item.index);
+  const indices=futureHours(forecast,now,3);
   if(!indices.length)return null;
   const rain=indices.map(index=>numeric(hourly.precipitation_probability?.[index])).filter(value=>value!==null);
   const gusts=indices.map(index=>numeric(hourly.wind_gusts_10m?.[index])).filter(value=>value!==null);
   const temperatures=indices.map(index=>numeric(hourly.temperature_2m?.[index])).filter(value=>value!==null);
   const parts=[];
-  if(rain.length)parts.push(`les pròximes 3 h, probabilitat de pluja fins al ${format(Math.max(...rain))}%`);
+  if(rain.length&&Math.max(...rain)>=30)parts.push(`les pròximes 3 h, probabilitat de pluja fins al ${format(Math.max(...rain))}%`);
   if(gusts.length&&Math.max(...gusts)>=35)parts.push(`ratxes de fins a ${format(Math.max(...gusts))} km/h`);
   if(!parts.length&&temperatures.length)parts.push(`les pròximes 3 h, temperatura entre ${format(Math.min(...temperatures),1)} i ${format(Math.max(...temperatures),1)} °C`);
   return parts.join(' i ')||null;

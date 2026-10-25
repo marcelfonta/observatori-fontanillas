@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-25 — Previsió futura, CO₂ comparat i vídeo més llegible (en revisió)
+
+- La portada calcula la pluja i el vent de les hores que queden del dia; ja no torna a presentar la pluja de matinada com una previsió futura. Si falta la sèrie horària, no reutilitza els màxims diaris. La càrrega periòdica de la previsió continua sent horària.
+- L'API de CO₂ de Mauna Loa conserva el valor recent i afegeix les lectures comparables de fa un i deu anys quan NOAA les ofereix. La webcam les mostra en una càpsula compacta i la fitxa n'explica les dates i la font.
+- El timelapse passa a 1280 × 720 i la versió social a 720 × 1280, amb fotogrames reduïts d'un en un i codificació amb un sol fil per protegir la memòria de la Raspberry. S'ha comprovat la cadena amb captures sintètiques; falta provar una jornada real i la mida dels fitxers a la Raspberry abans d'instal·lar-la.
+- Els vídeos de matí, vespre i episodi trien la nova sintonia original corresponent. El vespre conserva un símbol meteorològic separat de la fase lunar; s'ha validat el disseny amb vuit casos visuals.
+- Predicció en vídeo enllaça l'espai «Terra» i el canal de YouTube de NacióDigital. No s'ha pogut verificar un butlletí meteorològic diari propi de Nació, de manera que el web no el promet.
+
 ## 2026-10-24 — Pestanyes de Medi Ambient disponibles en entrar
 
 - La pàgina de Medi Ambient prepara el visor en entrar i conserva la pestanya seleccionada mentre es carrega el mòdul. El mapa d'estacions respon també si es prem immediatament després d'obrir la pàgina.

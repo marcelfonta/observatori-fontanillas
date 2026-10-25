@@ -77,16 +77,16 @@ fi
 # La versió principal selecciona el centre panoràmic en 16:9 i elimina el 10%
 # inferior, on apareixen les cases més pròximes. El retall substitueix els
 # desenfocaments i redueix fortament el consum de memòria de la Raspberry.
-FILTER="scale=960:-2,crop=ih*0.90*16/9:ih*0.90:(iw-ih*0.90*16/9)/2:0,scale=960:540"
+FILTER="scale=1280:-2,crop=ih*0.90*16/9:ih*0.90:(iw-ih*0.90*16/9)/2:0,scale=1280:720"
 
 # FFmpeg acumulava memòria en descodificar les captures originals durant el
 # concat i el nucli el matava en una Raspberry de 415 MiB. Cada procés tracta
-# una sola foto; el concat només llegeix JPEG de 960×540 ja protegits.
+# una sola foto; el concat només llegeix JPEG de 1280×720 ja protegits.
 for index in "${!IMAGES[@]}"; do
   frame="$(printf '%s/frame-%04d.jpg' "$TMP_DIR" "$index")"
   MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
     -threads 1 -i "${IMAGES[$index]}" -filter_threads 1 -filter_complex_threads 1 \
-    -vf "$FILTER" -frames:v 1 -q:v 4 -f image2 -update 1 "$frame"
+    -vf "$FILTER" -frames:v 1 -q:v 3 -f image2 -update 1 "$frame"
   [[ -s "$frame" ]] || { echo "No s'ha pogut reduir el fotograma $((index + 1))." >&2; exit 1; }
   printf "file '%s'\nduration 0.12\n" "${frame//\'/\'\\\'\'}" >> "$LIST"
 done
@@ -95,13 +95,13 @@ printf "file '%s'\n" "${frame//\'/\'\\\'\'}" >> "$LIST"
 rm -f "$OUTPUT_TMP"
 LANDSCAPE_FILTER="format=yuv420p"
 if [[ -s "$CO2_LANDSCAPE" ]] && ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
-  LANDSCAPE_FILTER="drawbox=x=12:y=h-56:w=936:h=44:color=black@0.7:t=fill,drawtext=fontfile='$FONT':textfile='$CO2_LANDSCAPE':fontcolor=white:fontsize=19:x=24:y=h-43"
+  LANDSCAPE_FILTER="drawbox=x=16:y=h-64:w=1248:h=48:color=black@0.7:t=fill,drawtext=fontfile='$FONT':textfile='$CO2_LANDSCAPE':fontcolor=white:fontsize=23:x=30:y=h-51"
 fi
 MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
   -threads 1 -f concat -safe 0 -i "$LIST" \
   -filter_threads 1 -filter_complex_threads 1 \
   -vf "$LANDSCAPE_FILTER" \
-  -r 20 -an -c:v libx264 -threads 1 -preset ultrafast -crf 22 \
+  -r 20 -an -c:v libx264 -threads 1 -preset superfast -crf 20 -maxrate 5M -bufsize 10M \
   -pix_fmt yuv420p -movflags +faststart -f mp4 "$OUTPUT_TMP"
 [[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
 mv "$OUTPUT_TMP" "$OUTPUT"
@@ -109,11 +109,11 @@ mv "$OUTPUT_TMP" "$OUTPUT"
 # Adaptació vertical lleugera per a Reels i TikTok. Reutilitza el panoràmic
 # protegit, el centra sobre un fons fosc estàtic i no duplica ni desenfoca el
 # vídeo. Així només cal una cadena de filtres i molt poca memòria addicional.
-SOCIAL_FILTER="scale=540:304,pad=540:960:0:(oh-ih)/2:color=#101820"
+SOCIAL_FILTER="scale=720:405,pad=720:1280:0:(oh-ih)/2:color=#101820"
 if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
-  SOCIAL_FILTER+=",drawbox=x=18:y=33:w=504:h=66:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=24:x=34:y=52,drawbox=x=18:y=h-92:w=504:h=59:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='PANORÀMICA COMPLETA':fontcolor=white@0.86:fontsize=14:x=34:y=h-76,drawtext=fontfile='$FONT':text='meteo.fontanillas.cat':fontcolor=white:fontsize=18:x=34:y=h-56"
+  SOCIAL_FILTER+=",drawbox=x=24:y=44:w=672:h=88:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=32:x=45:y=69,drawbox=x=24:y=h-123:w=672:h=79:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='PANORÀMICA COMPLETA':fontcolor=white@0.86:fontsize=19:x=45:y=h-102,drawtext=fontfile='$FONT':text='meteo.fontanillas.cat':fontcolor=white:fontsize=24:x=45:y=h-76"
   if [[ -s "$CO2_VALUE" ]]; then
-    SOCIAL_FILTER+=",drawbox=x=18:y=112:w=504:h=67:color=black@0.56:t=fill,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=20:x=34:y=122,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.86:fontsize=14:x=34:y=151"
+    SOCIAL_FILTER+=",drawbox=x=24:y=149:w=672:h=89:color=black@0.56:t=fill,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=27:x=45:y=163,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.86:fontsize=19:x=45:y=201"
   fi
 fi
 
@@ -122,7 +122,7 @@ MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
   -threads 1 -i "$OUTPUT" \
   -filter_threads 1 -filter_complex_threads 1 \
   -vf "$SOCIAL_FILTER" -r "$SOCIAL_FRAME_RATE" -an -c:v libx264 -threads 1 \
-  -preset ultrafast -crf 22 -pix_fmt yuv420p -movflags +faststart -f mp4 "$SOCIAL_TMP"
+  -preset superfast -crf 20 -maxrate 5M -bufsize 10M -pix_fmt yuv420p -movflags +faststart -f mp4 "$SOCIAL_TMP"
 [[ -s "$SOCIAL_TMP" ]] || { echo "FFmpeg no ha creat la versió social vertical." >&2; exit 1; }
 mv "$SOCIAL_TMP" "$SOCIAL_OUTPUT"
 
