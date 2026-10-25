@@ -5,12 +5,14 @@ import { productionFixture } from './fixtures/social-production.js';
 import { productionMetadata } from '../scripts/social-production.mjs';
 
 const now=Date.parse('2026-10-23T12:00:00Z');
-const csv=`# NOAA GML daily Mauna Loa CO2\n2025,10,22,2025.8,423.10\n2026,10,20,2026.8,-999.99\n2026,10,22,2026.8,426.46\n2026,10,24,2026.8,427.10\n2026,2,30,2026.2,425.00\n`;
+const csv=`# NOAA GML daily Mauna Loa CO2\n2016,10,22,2016.8,401.42\n2025,10,22,2025.8,423.10\n2026,10,20,2026.8,-999.99\n2026,10,22,2026.8,426.46\n2026,10,24,2026.8,427.10\n2026,2,30,2026.2,425.00\n`;
 const parsed=parseNoaaCo2(csv,now);
 assert.equal(parsed.date,'2026-10-22');
 assert.equal(parsed.ppm,426.46);
 assert.equal(parsed.yearAgoDate,'2025-10-22');
 assert.equal(parsed.yearChangePpm,3.36);
+assert.equal(parsed.tenYearsAgoPpm,401.42);
+assert.equal(parsed.tenYearsAgoDate,'2016-10-22');
 assert.equal(publicNoaaCo2(parsed,now).fresh,true);
 assert.equal(publicNoaaCo2(parsed,Date.parse('2026-10-26T12:00:00Z')).fresh,false);
 assert.equal(publicNoaaCo2(parsed,Date.parse('2026-10-30T12:00:00Z')),null);

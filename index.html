@@ -78,7 +78,7 @@
     <script type="module" src="/src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="/src/features/push.js?v=22.31.6"></script>
     <script type="module" src="/src/features/pwa.js?v=22.31.6"></script>
-    <script type="module" src="/src/app.js?v=22.42.14-air-map-ready"></script>
+    <script type="module" src="/src/app.js?v=22.42.15-home-future"></script>
     <script type="module" src="/src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","license":"https://creativecommons.org/licenses/by/4.0/","creditText":"Observatori Meteorològic Fontanillas — meteo.fontanillas.cat","isAccessibleForFree":true,"creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -686,7 +686,7 @@
 
       <section class="forecast-videos section-block" id="forecast-videos" aria-labelledby="forecast-videos-title" data-portal-page="videos">
         <div class="forecast-videos__intro panel">
-          <div><p class="eyebrow">Fonts oficials seleccionades</p><h2 id="forecast-videos-title">Tria qui t’explica la previsió</h2><p>Meteocat es reprodueix dins la web. AEMET i 3Cat s’obren als seus espais oficials per evitar reproductors inestables.</p></div>
+          <div><p class="eyebrow">Previsió audiovisual</p><h2 id="forecast-videos-title">Tria qui t’explica la previsió</h2><p>Meteocat es reprodueix dins la web. La resta d’espais s’obren a la font original.</p></div>
           <span class="forecast-videos__privacy">Sense reproducció automàtica</span>
         </div>
         <div class="forecast-videos__layout">
@@ -694,6 +694,8 @@
             <button type="button" data-video-source="meteocat"><span>Meteocat</span><strong>Predicció general de Catalunya</strong><small>Servei Meteorològic de Catalunya · actualització diària</small></button>
             <a class="forecast-video-source--external" href="https://www.aemet.es/es/eltiempo/prediccion" target="_blank" rel="noopener noreferrer"><span>AEMET · accés oficial</span><strong>Predicció estatal i per comunitats</strong><small>No té un vídeo diari estable · obrir la predicció oficial ↗</small></a>
             <a class="forecast-video-source--external" href="https://www.3cat.cat/3catinfo/el-temps/" target="_blank" rel="noopener noreferrer"><span>3Cat · accés oficial</span><strong>El temps a 3CatInfo</strong><small>Previsió, vídeos i notícies meteorològiques ↗</small></a>
+            <a class="forecast-video-source--external" href="https://naciodigital.cat/impacte/terra" target="_blank" rel="noopener noreferrer"><span>Nació · mitjà informatiu</span><strong>El temps i el territori</strong><small>Cròniques freqüents amb vídeos de Meteocat · obrir a Nació ↗</small></a>
+            <a class="forecast-video-source--external" href="https://www.youtube.com/@naciodigital" target="_blank" rel="noopener noreferrer"><span>Nació · YouTube</span><strong>Canal de NacióDigital</strong><small>Vídeos del mitjà; la previsió meteorològica pot no ser diària ↗</small></a>
           </nav>
           <article class="forecast-video-player panel" id="forecast-video-player">
             <div class="forecast-video-player__empty" id="forecast-video-empty">
@@ -703,8 +705,8 @@
             <footer id="forecast-video-meta" hidden><div><span id="forecast-video-source-label">Font oficial</span><strong id="forecast-video-title">Predicció en vídeo</strong><small id="forecast-video-description"></small></div><a id="forecast-video-source-link" href="#" target="_blank" rel="noreferrer">Obrir a la font ↗</a></footer>
           </article>
         </div>
-        <p class="forecast-videos__note">Selecciona Meteocat per veure el vídeo dins la web. AEMET i 3Cat obren la seva informació oficial en una pestanya nova.</p>
-        <p class="forecast-videos__note" id="forecast-videos-status" role="status" aria-live="polite">Meteocat està preparat. AEMET i 3Cat són accessos externs oficials.</p>
+        <p class="forecast-videos__note">Selecciona Meteocat per veure el seu butlletí dins la web. Nació publica cròniques meteorològiques i té un canal de YouTube; no és una font oficial d’avisos.</p>
+        <p class="forecast-videos__note" id="forecast-videos-status" role="status" aria-live="polite">Meteocat està preparat. Les altres fonts s’obren en una pestanya nova.</p>
         <section class="global-forecast-directory panel" aria-labelledby="global-forecast-directory-title">
           <header><div><p class="eyebrow">Previsió arreu del món</p><h2 id="global-forecast-directory-title">Sis fonts bones, amb funcions diferents.</h2><p>Cap model és sempre el millor a tot arreu. Comença per la font oficial del país i utilitza els models i comparadors per entendre la incertesa.</p></div><span class="tag">Enllaços verificats</span></header>
           <div class="global-forecast-directory__grid">

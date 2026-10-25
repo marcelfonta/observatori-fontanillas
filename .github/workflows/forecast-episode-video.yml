@@ -62,7 +62,7 @@ jobs:
       - name: Genera les pantalles i la música
         run: |
           node scripts/forecast-episode-video.mjs
-          node scripts/youtube-music.mjs
+          VIDEO_MUSIC_VARIANT=event node scripts/youtube-music.mjs
       - name: Renderitza el vídeo vertical
         run: |
           set -euo pipefail

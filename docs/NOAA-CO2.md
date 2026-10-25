@@ -15,8 +15,10 @@ generadors de publicacions, sense consultar NOAA en cada petició.
 
 La diferència interanual compara el darrer dia vàlid amb el dia més proper
 dins d'una finestra de tres dies al voltant de la mateixa data de l'any
-anterior. Si no hi ha un dia comparable, s'omet. Aquesta diferència entre dos
-dies no és una taxa de creixement anual corregida pel cicle estacional.
+anterior. La webcam afegeix el valor equivalent de fa deu anys amb el mateix
+criteri. Si no hi ha un dia comparable, l'etiqueta corresponent s'omet. Aquestes
+comparacions entre dies no són taxes de creixement anual corregides pel cicle
+estacional ni mitjanes anuals.
 
 La resposta indica `ageDays`; a partir de quatre dies, `fresh=false` i els
 mitjans ometen la càpsula. Després de set dies no es retorna cap valor. La
@@ -24,5 +26,6 @@ webcam continua generant-se si NOAA o el Worker no responen. La composició en
 dia i nit, mòbil i imatge compartida s'ha de verificar amb captures reals a la
 Raspberry després d'instal·lar els scripts actualitzats. El timelapse inclou
 la dada només si és recent i el filtre de text està disponible; els vídeos
-ja publicats no s'editen. La comparació amb fa deu anys s'ha deixat per a
-una sèrie mensual amb una metodologia explícita.
+ja publicats no s'editen. El desplegament de l'API s'ha de fer abans
+d'instal·lar el script nou a la Raspberry; el client antic ignora els dos camps
+afegits i el script nou omet els valors històrics mentre no els rebi.

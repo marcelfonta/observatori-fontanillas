@@ -30,6 +30,8 @@ TEMP="$(mktemp --suffix=.jpg)"
 PREVIEW_TEMP="$(mktemp --suffix=.jpg)"
 CO2_VALUE="$(mktemp)"
 CO2_DATE="$(mktemp)"
+CO2_YEAR="$(mktemp)"
+CO2_DECADE="$(mktemp)"
 AIR_NO2="$(mktemp)"
 AIR_O3="$(mktemp)"
 AIR_PM10="$(mktemp)"
@@ -37,12 +39,12 @@ AIR_TIME="$(mktemp)"
 AIR_NO2_COLOR="$(mktemp)"
 AIR_O3_COLOR="$(mktemp)"
 AIR_PM10_COLOR="$(mktemp)"
-trap 'rm -f "$TEMP" "$PREVIEW_TEMP" "$CO2_VALUE" "$CO2_DATE" "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_TIME" "$AIR_NO2_COLOR" "$AIR_O3_COLOR" "$AIR_PM10_COLOR"' EXIT
+trap 'rm -f "$TEMP" "$PREVIEW_TEMP" "$CO2_VALUE" "$CO2_DATE" "$CO2_YEAR" "$CO2_DECADE" "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_TIME" "$AIR_NO2_COLOR" "$AIR_O3_COLOR" "$AIR_PM10_COLOR"' EXIT
 # El Worker és l'única font normalitzada; una fallada NOAA no atura la càmera.
 CO2_URL="${CAMERA_UPLOAD_URL%/camera/nord/upload}/climate/co2"
 if curl --fail --silent --show-error --max-time 5 "$CO2_URL" | python3 -c '
 import json,sys
-value_file,date_file=sys.argv[1:]
+value_file,date_file,year_file,decade_file=sys.argv[1:]
 try:
     value=json.load(sys.stdin).get("co2")
     if not value or not value.get("fresh"):
@@ -57,12 +59,24 @@ try:
         output.write(f"{ppm:.2f}")
     with open(date_file,"w") as output:
         output.write(date)
+    for years,ppm_key,date_key,path in ((1,"yearAgoPpm","yearAgoDate",year_file),(10,"tenYearsAgoPpm","tenYearsAgoDate",decade_file)):
+        historic=value.get(ppm_key)
+        historic_date=value.get(date_key)
+        if isinstance(historic,(float,int)) and 250 <= historic <= 650 and isinstance(historic_date,str) and historic_date[:4]==str(int(date[:4])-years):
+            with open(path,"w") as output:
+                output.write(f"{historic:.2f}")
 except (ValueError,KeyError,TypeError,json.JSONDecodeError):
     pass
-' "$CO2_VALUE" "$CO2_DATE"; then
+' "$CO2_VALUE" "$CO2_DATE" "$CO2_YEAR" "$CO2_DECADE"; then
   if [[ -s "$CO2_VALUE" && -s "$CO2_DATE" ]]; then
-    # Càpsula neutral: el valor de Mauna Loa no és cap mesura local de qualitat de l'aire.
-    FILTER="${FILTER},drawbox=x=75:y=85:w=1110:h=155:color=black@0.48:t=fill,drawbox=x=75:y=85:w=11:h=155:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂':fontcolor=0xF4CE46:fontsize=78:x=120:y=119,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=108:x=390:y=100,drawtext=fontfile='$FONT':text='ppm':fontcolor=white:fontsize=50:x=910:y=154"
+    # Tres lectures diàries comparables de Mauna Loa. La fitxa web n'explica la font i el retard.
+    FILTER="${FILTER},drawbox=x=75:y=85:w=1110:h=225:color=black@0.48:t=fill,drawbox=x=75:y=85:w=11:h=225:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂':fontcolor=0xF4CE46:fontsize=67:x=115:y=104,drawtext=fontfile='$FONT':text='Últim':fontcolor=white:fontsize=52:x=390:y=107,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=74:x=620:y=96,drawtext=fontfile='$FONT':text='ppm':fontcolor=white:fontsize=36:x=1010:y=135"
+    if [[ -s "$CO2_YEAR" ]]; then
+      FILTER="${FILTER},drawtext=fontfile='$FONT':text='Fa 1 any':fontcolor=white@0.85:fontsize=43:x=390:y=181,drawtext=fontfile='$FONT':textfile='$CO2_YEAR':fontcolor=white@0.9:fontsize=48:x=755:y=176"
+    fi
+    if [[ -s "$CO2_DECADE" ]]; then
+      FILTER="${FILTER},drawtext=fontfile='$FONT':text='Fa 10 anys':fontcolor=white@0.85:fontsize=43:x=390:y=244,drawtext=fontfile='$FONT':textfile='$CO2_DECADE':fontcolor=white@0.9:fontsize=48:x=755:y=239"
+    fi
   fi
 fi
 # Mesures provisionals de l'estació oficial XVPCA ES1275A. Si falta un

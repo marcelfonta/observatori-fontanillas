@@ -14,7 +14,7 @@ import { fetchMoon } from '../src/core/lunar-phase.js';
 import { meteofranceMap, meteofranceModels, meteofranceStagingValidation } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.39.1";
+const WORKER_VERSION = "22.42.15";
 const WORKER_BUILT = "2026-10-21";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {

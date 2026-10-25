@@ -60,12 +60,19 @@ async function refreshWebcamCo2() {
     const ppm=value.ppm.toLocaleString(locale,{minimumFractionDigits:2,maximumFractionDigits:2});
     const dated=new Intl.DateTimeFormat(locale,{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(date);
     const labels={
-      'ca-ES':['CO₂ atmosfèric','No és una mesura local ni de qualitat de l’aire.'],
-      'es-ES':['CO₂ atmosférico','No es una medición local ni de calidad del aire.'],
-      'en-GB':['Atmospheric CO₂','Not a local or air-quality measurement.'],
-      'fr-FR':['CO₂ atmosphérique','Ce n’est pas une mesure locale ni de la qualité de l’air.']
-    }[locale]||['CO₂ atmosfèric','No és una mesura local ni de qualitat de l’aire.'];
-    node.textContent=`${labels[0]} · Mauna Loa (NOAA): ${ppm} ppm · ${dated}. ${labels[1]}`;
+      'ca-ES':['CO₂ atmosfèric','Fa 1 any','Fa 10 anys','No és una mesura local ni de qualitat de l’aire.'],
+      'es-ES':['CO₂ atmosférico','Hace 1 año','Hace 10 años','No es una medición local ni de calidad del aire.'],
+      'en-GB':['Atmospheric CO₂','1 year ago','10 years ago','Not a local or air-quality measurement.'],
+      'fr-FR':['CO₂ atmosphérique','Il y a 1 an','Il y a 10 ans','Ce n’est pas une mesure locale ni de la qualité de l’air.']
+    }[locale]||['CO₂ atmosfèric','Fa 1 any','Fa 10 anys','No és una mesura local ni de qualitat de l’aire.'];
+    const comparison=(years,ppmKey,dateKey,label)=>{
+      const historicDate=String(value[dateKey]||'');
+      const historicPpm=Number(value[ppmKey]);
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(historicDate)||Number(historicDate.slice(0,4))!==Number(value.date.slice(0,4))-years||!Number.isFinite(historicPpm)||historicPpm<250||historicPpm>650)return '';
+      const displayDate=new Intl.DateTimeFormat(locale,{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'UTC'}).format(new Date(`${historicDate}T00:00:00Z`));
+      return ` · ${label}: ${historicPpm.toLocaleString(locale,{minimumFractionDigits:2,maximumFractionDigits:2})} ppm (${displayDate})`;
+    };
+    node.textContent=`${labels[0]} · Mauna Loa (NOAA): ${ppm} ppm · ${dated}${comparison(1,'yearAgoPpm','yearAgoDate',labels[1])}${comparison(10,'tenYearsAgoPpm','tenYearsAgoDate',labels[2])}. ${labels[3]}`;
     node.hidden=false;
   } catch {
     node.hidden=true;

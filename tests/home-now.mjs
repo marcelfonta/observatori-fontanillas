@@ -11,10 +11,10 @@ assert.equal(homeModelConfidence({ecmwf:model(21,0),gfs:model(22,0)}).level,'pen
 
 const cards=buildHomeNowModel({
   current:{temperature:18.6,humidity:72,windGust:15,ageMinutes:2},
-  forecast:{daily:{time:['2026-10-18'],temperature_2m_min:[12],temperature_2m_max:[21],precipitation_probability_max:[75],precipitation_sum:[8.4],wind_gusts_10m_max:[32]}},
+  forecast:{daily:{time:['2026-10-18'],temperature_2m_min:[12],temperature_2m_max:[21],precipitation_probability_max:[75],precipitation_sum:[8.4],wind_gusts_10m_max:[32]},hourly:{time:['2026-10-18T14:00'],precipitation_probability:[75],wind_gusts_10m:[32]}},
   alerts:{ok:true,active:1,windows:{now:[{event:'Pluja intensa'}]}},
   models:high
-});
+},new Date('2026-10-18T12:00:00Z').getTime());
 assert.equal(cards.length,4);
 assert.equal(cards[0].state,'good');
 assert.equal(cards[1].state,'warning');
@@ -26,10 +26,18 @@ const summary=buildHomeNowSummary({
   current:{temperature:18.6,humidity:72,ageMinutes:2},
   forecast:{hourly:{time:['2026-10-18T12:00','2026-10-18T13:00'],temperature_2m:[18.6,19.2],precipitation_probability:[20,45],wind_gusts_10m:[12,18]}},
   alerts:{ok:true,active:0}
-},new Date('2026-10-18T12:00').getTime());
+},new Date('2026-10-18T10:00:00Z').getTime());
 assert.match(summary.text,/Ara, 18,6 °C/);assert.match(summary.text,/probabilitat de pluja fins al 45%/);assert.match(summary.text,/no consta cap avís oficial actiu/);assert.match(summary.meta,/Estació Fontanillas/);
 assert.doesNotMatch(buildHomeNowSummary({alerts:{ok:false}}).text,/Sense avisos|no consta/);
 assert.match(buildHomeNowSummary().text,/no hi ha prou dades/);
+
+const overnightRain={daily:{time:['2026-10-18'],precipitation_probability_max:[93],precipitation_sum:[12],wind_gusts_10m_max:[50]},hourly:{time:['2026-10-18T04:00','2026-10-18T05:00','2026-10-18T14:00','2026-10-18T15:00'],precipitation_probability:[93,85,5,10],wind_gusts_10m:[50,45,12,14],temperature_2m:[12,12,18,19]}};
+const midday=new Date('2026-10-18T11:00:00Z').getTime();
+const futureCard=buildHomeNowModel({forecast:overnightRain},midday)[1];
+assert.doesNotMatch(`${futureCard.title} ${futureCard.copy}`,/93%|12 mm|50 km\/h/,'La pluja i el vent de matinada no són una previsió futura.');
+assert.match(futureCard.copy,/sense pluja destacada/);
+assert.doesNotMatch(buildHomeNowSummary({forecast:overnightRain},midday).text,/93%/);
+assert.match(buildHomeNowModel({forecast:{daily:overnightRain.daily}},midday)[1].copy,/Sense hores futures/);
 
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 assert.match(html,/id="home-now-grid"/);

@@ -94,6 +94,11 @@ function forecast(i,t,local){
    for(let row=-r;row<r;row+=.5){const [a,b]=window.moonSpan(row+.25,r,m.percent/100,m.waxing);if(b>a)ctx.fillRect(x+a,y+row,b-a,.6);}
    ctx.restore();
   }
+  // El símbol meteorològic conserva una plaça pròpia; la fase no descriu el cel.
+  if(Number.isFinite(p.weatherCode)){
+   text('TEMPS',866,731,19,C.mint,'DM Sans',75);
+   orb(p.weatherCode,901,795,32,t,true);
+  }
  }else{
   orb(p.weatherCode,779,780,80,t,i===2);
   const uv=i===1&&data.environmentEnabled?data.environment.secondaryUv:null;
@@ -175,7 +180,7 @@ function co2Capsule(){
  const value=data.co2;
  if(!value||!value.fresh||!valid(value.ppm))return;
  text(`CO₂ ATMOSFÈRIC · MAUNA LOA, NOAA`,88,1430,21,C.mint,'DM Sans',838);
- text(`${num(value.ppm,2)} ppm · ${value.date}${valid(value.yearChangePpm)?` · ${value.yearChangePpm>=0?'+':''}${num(value.yearChangePpm,2)} ppm/any`:''}`,88,1473,28,C.paper,'Manrope',838);
+ text(`${num(value.ppm,2)} ppm · ${value.date}${valid(value.yearChangePpm)?` · ${value.yearChangePpm>=0?'+':''}${num(value.yearChangePpm,2)} ppm respecte de fa 1 any`:''}`,88,1473,28,C.paper,'Manrope',838);
 }
 function verify(){
  const errors=boxes.filter(b=>b.x<76||b.x+b.width>946||b.y<185||b.y+b.height>1710);
