@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-25 — URL canòniques i rutes inexistents (en revisió)
+
+- Les pàgines estàtiques apunten a l'adreça neta que mostra el navegador; el mapa del lloc i els enllaços interns fan servir la mateixa adreça final. Les variants d'idioma que només retornaven el document català deixen d'anunciar-se com a traduccions.
+- Les rutes de pàgines desconegudes retornen un error 404 i demanen que no s'indexin, en lloc de presentar la portada com una pàgina aparentment vàlida. Les rutes existents i els recursos conserven la resposta habitual.
+- La memòria cau de la PWA conserva els documents estàtics amb els nous camins. La previsualització ha de validar les capçaleres i els enllaços abans de publicar.
+
 ## 2026-10-25 — Registre inicial de la PWA i regions accessibles (en revisió)
 
 - La PWA deixa d'esperar indefinidament que OneSignal registri el servei en segon pla: reutilitza el registre existent i, després d'una espera breu, activa el servei propi si és una visita nova sense permís push. OneSignal continua podent registrar el seu worker compartit quan l'usuari activa els avisos.

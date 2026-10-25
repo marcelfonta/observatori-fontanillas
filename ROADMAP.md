@@ -14,6 +14,12 @@ una visita nova sense permís ha instal·lat el servei, creat la memòria cau i
 recarregat la portada sense xarxa. Falta verificar que els avisos push ja actius
 continuen funcionant abans de desplegar-ho.
 
+L'auditoria SEO del 25/10 ha detectat canòniques i entrades del mapa del lloc
+que redirigien, variants d'idioma inexistents en documents estàtics i rutes
+desconegudes amb una portada 200. La correcció està preparada per revisar en
+una tercera proposta encadenada. Abans de producció cal validar la resposta de
+les URL netes i dels errors 404 a la previsualització.
+
 ## Visió
 
 Convertir l’Observatori Meteorològic Fontanillas en la referència digital de

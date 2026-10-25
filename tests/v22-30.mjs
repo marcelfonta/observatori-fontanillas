@@ -9,7 +9,7 @@ const [app,portalStatic,headerTools,i18n,weatherApi,portalCss,serviceWorker]=awa
 
 assert.match(app,/initLanguage\(\);[\s\S]*initPortal\(\);[\s\S]*initHeaderTools\(\);/,'La portada ha d’inicialitzar idioma i eines de capçalera');
 assert.match(portalStatic,/initLanguage\(\);[\s\S]*mountPortalShell[\s\S]*initHeaderTools\(\);/,'Les pàgines estàtiques han de compartir les eines de capçalera');
-assert.match(headerTools,/municipis\.html/,'La cerca superior ha de portar a El temps arreu');
+assert.match(headerTools,/\/municipis'/,'La cerca superior ha de portar a El temps arreu');
 assert.match(headerTools,/searchParams\.set\('lat'/,'La navegació ha de conservar la latitud seleccionada');
 assert.match(headerTools,/searchParams\.set\('lon'/,'La navegació ha de conservar la longitud seleccionada');
 assert.match(headerTools,/ArrowDown/,'Els suggeriments han de ser navegables amb teclat');

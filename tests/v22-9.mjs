@@ -16,10 +16,10 @@ assert.ok(feature.includes('No és una estació')&&feature.includes('Cap estaci�
 assert.ok(feature.includes('municipality-stations panel')&&feature.includes("rawLat!==null&&rawLon!==null"));
 assert.ok(weather.includes('export async function searchMunicipalities')&&weather.includes('export async function fetchLocalityForecast'));
 assert.ok(weather.includes('compatibilityWarning:true'));
-assert.ok(portal.includes("['municipis','El temps arreu','./municipis.html']")&&portal.includes("['Ara',['inici','meteo-ia','estacio','municipis']")&&portal.includes("['municipis','Arreu']"));
+assert.ok(portal.includes("['municipis','El temps arreu','/municipis']")&&portal.includes("['Ara',['inici','meteo-ia','estacio','municipis']")&&portal.includes("['municipis','Arreu']"));
 assert.ok(worker.includes('hasCustomCenter')&&worker.includes('[20,50,100,200]')&&worker.includes('searchRadiusKm:discovery.searchRadiusKm'));
 assert.ok(worker.includes('SOCIAL_SCHEDULE_BLUEPRINT')&&worker.includes("time:'14:00'")&&worker.includes("time:'20:30'")&&worker.includes('schedulePlan:socialSchedulePlan(env)'));
 assert.ok(style.includes('.municipality-search')&&style.includes('.municipality-station-grid'));
-assert.ok(sitemap.includes('/municipis.html')&&roadmap.includes('# Roadmap viu')&&!roadmap.match(/- \[x\]/i));
+assert.ok(sitemap.includes('/municipis')&&roadmap.includes('# Roadmap viu')&&!roadmap.match(/- \[x\]/i));
 
 console.log('Test V22.10.0: cercador de municipis, previsió i estacions properes');

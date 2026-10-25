@@ -27,7 +27,7 @@ for(const page of ['meteo-ia','estacio','prediccio','llarg-termini','videos','ve
   assert.ok(sitemap.includes(`/${page}?lang=fr`),`Falta la variant francesa de ${page}.`);
 }
 for(const html of staticPages){
-  assert.match(html,/hreflang="fr"/);assert.match(html,/property="og:title"/);assert.match(html,/name="twitter:card"/);
+  assert.doesNotMatch(html,/hreflang="fr"/);assert.match(html,/property="og:title"/);assert.match(html,/name="twitter:card"/);
 }
 const methodology=staticPages[2];const municipalities=staticPages[3];
 for(const html of [modelsFrance,municipalities]){

@@ -59,7 +59,7 @@ assert.equal(alerts.level,'safe');
 
 const alertHistory=await answerMeteoQuestion('Quants avisos hi ha hagut aquest any?',context,services);
 assert.match(alertHistory.title,/6 episodis/);
-assert.ok(alertHistory.sources.some(item=>item.href==='./historial-avisos.html'));
+assert.ok(alertHistory.sources.some(item=>item.href==='/historial-avisos'));
 
 const redHistory=await answerMeteoQuestion('Quants avisos vermells hi ha hagut aquest any?',context,services);
 assert.match(redHistory.body,/nivell vermell/);
