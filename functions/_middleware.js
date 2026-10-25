@@ -123,6 +123,13 @@ function routeRewriter(meta){
 export async function onRequest(context){
   const accepts=context.request.headers.get('Accept')||'';
   const url=new URL(context.request.url);
+  if((context.request.method==='GET'||context.request.method==='HEAD')&&/^(?:\/src\/|\/js\/|\/modules\/|\/css\/|\/(?:service-worker|OneSignalSDKWorker)\.js$)/.test(url.pathname)){
+    const response=await context.next();
+    if(!response.ok)return response;
+    const headers=new Headers(response.headers);
+    headers.set('Cache-Control','no-cache, must-revalidate');
+    return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+  }
   const route=portalRouteFromPath(url.pathname);const page=route?.page;
   if(!route&&/^\/(?:histories|resums)\//.test(url.pathname))return new Response('Pàgina no trobada',{status:404,headers:{'Content-Type':'text/plain; charset=utf-8','X-Robots-Tag':'noindex'}});
   if(context.request.method==='GET'&&!route&&accepts.includes('text/html')&&!STATIC_PRETTY_PATHS.has(url.pathname)&&!url.pathname.split('/').at(-1).includes('.')){

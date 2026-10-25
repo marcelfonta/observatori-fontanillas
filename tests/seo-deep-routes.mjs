@@ -33,6 +33,8 @@ assert.equal(unknownContinued,true);
 assert.equal(unknown.status,404);
 assert.equal(unknown.headers.get('X-Robots-Tag'),'noindex');
 const knownStatic=await onRequest({request:new Request('https://meteo.fontanillas.cat/metodologia',{headers:{Accept:'text/html'}}),next:()=>new Response('<html><title>Metodologia</title></html>',{headers:{'Content-Type':'text/html'}})});
+const sw=await onRequest({request:new Request('https://meteo.fontanillas.cat/service-worker.js'),next:()=>new Response('self.addEventListener("install",()=>{});',{headers:{'Content-Type':'text/javascript','Cache-Control':'public, max-age=14400'}})});
+assert.equal(sw.headers.get('Cache-Control'),'no-cache, must-revalidate');
 assert.equal(knownStatic.status,200);
 
 const worker=await readFile(new URL('../_worker.js',import.meta.url),'utf8');
