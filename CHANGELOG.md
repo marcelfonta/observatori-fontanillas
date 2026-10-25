@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-25 — Transparència dels visors externs (en revisió)
+
+- La pàgina de privacitat identifica els visors i proveïdors afegits recentment, explica quan el navegador hi pot connectar i diferencia la consulta de CO₂ de NOAA que passa pel servidor de l'Observatori. També actualitza la data de revisió i l'enllaç a Metodologia.
+
 ## 2026-10-25 — URL canòniques i rutes inexistents (en revisió)
 
 - Les pàgines estàtiques apunten a l'adreça neta que mostra el navegador; el mapa del lloc i els enllaços interns fan servir la mateixa adreça final. Les variants d'idioma que només retornaven el document català deixen d'anunciar-se com a traduccions.
