@@ -9,10 +9,10 @@ La revisió de producció posterior al PR #296 és a [`docs/POST-MERGE-AUDIT-202
 
 L'auditoria de primera visita del 24/10 va detectar que el mode sense connexió
 no s'activava quan OneSignal encara no havia registrat el servei en segon pla.
-La correcció i les regions accessibles estan preparades. A la previsualització,
-una visita nova sense permís ha instal·lat el servei, creat la memòria cau i
-recarregat la portada sense xarxa. Falta verificar que els avisos push ja actius
-continuen funcionant abans de desplegar-ho.
+La correcció i les regions accessibles són a producció. A la previsualització,
+una visita nova sense permís va instal·lar el servei, crear la memòria cau i
+recarregar la portada sense xarxa. Resta repetir la prova en dispositius reals
+amb les subscripcions push existents.
 
 L'auditoria SEO del 25/10 ha detectat canòniques i entrades del mapa del lloc
 que redirigien, variants d'idioma inexistents en documents estàtics i rutes
@@ -68,6 +68,33 @@ justifiqui.
 
 ## P0 — Validació operativa real
 
+### Caché del domini públic i actualitzacions de la PWA
+
+El 25/10, el mateix `service-worker.js` (mateix ETag) respon amb
+`Cache-Control: no-cache, must-revalidate` a la previsualització de Pages i
+amb `max-age=14400, must-revalidate` a `meteo.fontanillas.cat`. Una petició
+nova amb un paràmetre únic també rep quatre hores i `CF-Cache-Status: MISS`;
+per tant, buidar la memòria cau no corregeix la política que rep el navegador.
+El codi de Pages i `_headers` ja indiquen `no-cache`. Cal inspeccionar les
+regles actives de **Browser Cache TTL**, Cache Rules, Page Rules i Response
+Header Rules de la zona Cloudflare del domini abans d'atribuir la causa exacta.
+El patró és coherent amb un Browser Cache TTL de quatre hores: també afecta
+`OneSignalSDKWorker.js`, CSS i JS, però conserva els set dies explícits d'una
+icona. Cloudflare documenta que aquest ajust eleva les capçaleres d'origen més
+curtes i que el valor per defecte és quatre hores. Encara cal confirmar quin
+ajust concret està actiu a la zona.
+
+- [ ] Fer que `/service-worker.js`, `/OneSignalSDKWorker.js` i els mòduls propis
+  versionables respectin les capçaleres de l'origen en el domini públic, sense
+  alterar el caché llarg dels actius amb nom immutable.
+- [ ] Comparar producció i previsualització amb una URL nova, comprovar que una
+  actualització de la PWA arriba a un navegador que ja la tenia instal·lada i
+  repetir la recepció d'un avís push després del canvi.
+
+**Fet quan:** els dos hosts responen amb `no-cache, must-revalidate` per al
+service worker i una instal·lació existent rep la versió nova sense perdre els
+avisos. Qualsevol canvi de regla de producció s'ha de revisar abans d'aplicar-lo.
+
 ### Model Fonta
 
 - [ ] Revisar els resultats als 60 i 90 dies, separant temperatura màxima,
@@ -98,7 +125,7 @@ correcte. Els scripts nous han quedat instal·lats i la imatge pública ja mostr
 el CO₂ actual, el de fa un any i el de fa deu anys. Encara cal comprovar el
 resultat d'una publicació automàtica real, inclosa la qualitat a YouTube.
 
-El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) recull la diagnosi. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El script actualitzat de la càmera es va instal·lar el 24/10 i el servei va acabar correctament. El timelapse del 23/10 s’ha publicat a Instagram i el workflow de YouTube del mateix dia va acabar correctament, però cal verificar les publicacions visibles a la resta de canals i la pròxima execució amb la càpsula de CO₂ abans de tancar la incidència. El panell d'administració pot assenyalar dies programats absents.
+El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) continua oberta. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El 25/10 els vídeos del 23 i del 24 responen 200 al Worker, mentre que el del 21 encara respon 404; la generació posterior al canvi, per tant, funciona, però l'episodi perdut no s'ha recuperat. El timelapse del 23/10 s’ha publicat a Instagram i el workflow de YouTube del mateix dia va acabar correctament. Encara falta evidència visible de la següent execució automàtica a cada canal habilitat, sense duplicats i amb la càpsula de CO₂, abans de tancar #299. El panell d'administració pot assenyalar dies programats absents.
 
 - [ ] Confirmar en una jornada real que el timelapse arriba a tots els canals
   habilitats, especialment TikTok, sense duplicats i amb un màxim d’una
@@ -172,26 +199,15 @@ referència de Mauna Loa publicada per NOAA Global Monitoring Laboratory. NOAA
 adverteix que aquesta estació no és equivalent a una mitjana mundial. Les
 etiquetes públiques indicaran sempre «Mauna Loa» i evitaran dir «mitjana global».
 
-La ingestió diària, el resum compartit al Worker i les connexions locals amb
-webcam i peces diàries estan desplegats. El disseny de la webcam passa d'una
-línia petita a una càpsula de CO₂ amb valor, font i data, i a una etiqueta local
-curta. La nova composició ja s'ha instal·lat a la Raspberry i s'ha comprovat
-amb una imatge nocturna. Les previsualitzacions web s'ajusten a la panoràmica
-completa. Queden la validació amb llum de dia i la comparació editorial de les
-peces.
+La ingestió diària, el resum compartit al Worker, la comparació amb fa un i deu
+anys i la càpsula discreta de la webcam estan desplegats. La Raspberry genera
+la imatge pública amb la font NOAA i deixa la dada fora si no és prou recent.
+Hi ha mostres de dia i nit revisades; falta verificar la composició en totes
+les destinacions i la propera publicació automàtica real.
 
-- [ ] Crear una ingestió diària al Worker de les sèries oficials de NOAA, amb
-  validació de data, unitats, rang, valors absents, atribució i últim valor bo.
-- [ ] Exposar el resum necessari a la càmera: CO₂ en ppm, data efectiva i
-  diferència interanual quan hi ha dies comparables. La comparació decennal
-  queda pendent de definir amb una base mensual reproduïble.
-- [ ] Incorporar a `latest-branded.jpg` un bloc llegible del tipus «CO₂
-  atmosfèric global · Mauna Loa, NOAA», sense presentar-lo com a dada de Sant
-  Celoni ni com a indicador de qualitat de l’aire local.
-- [ ] Mostrar l’antiguitat o retirar el valor si supera el límit de frescor; una
-  incidència de NOAA no ha d’impedir generar ni publicar la webcam.
-- [ ] Verificar la composició en dia, nit, mòbil, pantalla gran i imatges
-  compartides, mantenint la privacitat i la llegibilitat de la franja actual.
+- [ ] Revisar la càpsula de CO₂ en mòbil, pantalla gran, miniatures i peces
+  compartides després d'una publicació automàtica, comprovant atribució,
+  frescor, privacitat i llegibilitat.
 
 **Fet quan:** la webcam mostra una dada oficial, datada, atribuïda i degradable,
 clarament diferenciada dels contaminants locals PM10, NO₂ i O₃.
@@ -645,7 +661,7 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-1. **Fiabilitat operativa:** observar la recuperació dels Cron Triggers, comprovar el proper vespre i timelapse reals sense duplicats i completar les proves OneSignal i avisos en dispositius reals.
+1. **Fiabilitat operativa:** corregir i verificar la política de caché del domini públic; comprovar el proper vespre i timelapse reals sense duplicats a cada canal; mantenir #299 obert fins a aquesta evidència. Les proves push de dispositiu ja han arribat, però falta repetir-les després del canvi de caché i observar un avís oficial real.
 2. **Clima:** validar visualment el CO₂ ja integrat a webcam i peces diàries; verificar en staging i producció la nova sèrie llarga NOAA, afegir sèries oficials catalanes de temperatura/precipitació amb mètode comparable i completar la revisió editorial i les traduccions reals. La ruta i la primera lectura ja són públiques.
 3. **Qualitat real:** provar en iPhone, Android i ordinador els visors, els controls tàctils, l’accessibilitat i la recuperació sense connexió; repetir l’auditoria SEO a Search Console.
 4. **Contingut:** revisió docent de la primera fitxa d’Aula oberta, guia local estacional i següent resum periòdic només amb cobertura suficient.
