@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+    <iq:application id="b16b51de-a6f2-4765-898c-04d233cb08ec"
+                    type="widget"
+                    name="@Strings.AppName"
+                    entry="FontanillasApp"
+                    launcherIcon="@Drawables.LauncherIcon"
+                    minApiLevel="5.2.0">
+        <iq:products>
+            <iq:product id="fenix7xpro" />
+            <iq:product id="fenix7xpronowifi" />
+        </iq:products>
+        <iq:permissions>
+            <iq:uses-permission id="Communications" />
+        </iq:permissions>
+        <iq:languages>
+            <iq:language>eng</iq:language>
+        </iq:languages>
+        <iq:barrels />
+    </iq:application>
+</iq:manifest>

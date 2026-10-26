@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-26 — Widget Connect IQ per al fēnix 7X Pro (en revisió)
+
+- Projecte privat Garmin amb vista ràpida i detall d'observació local, consulta limitada i avís de lectures antigues. Pendent de compilació al SDK, simulador i prova física.
+- Confirmada la compatibilitat del widget iOS existent amb l'iPhone 15 Pro; no cal un segon target ni duplicar codi.
+
 ## 2026-10-25 — Accés directe i enllaç únic a la càmera (en revisió)
 
 - `camera.fontanillas.cat/` serveix directament la imatge pública de la càmera. Les altres rutes privades continuen bloquejades.

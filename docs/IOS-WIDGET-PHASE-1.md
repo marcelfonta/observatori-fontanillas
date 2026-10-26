@@ -1,5 +1,9 @@
 # Widget privat d'iPhone — fase 1
 
+El target iOS és universal per a iPhone i inclou l'iPhone 15 Pro i el 16 Pro.
+La mateixa compilació i els mateixos formats de WidgetKit serveixen per a tots
+dos; la instal·lació privada requereix Xcode i signatura al dispositiu concret.
+
 ## Objectiu
 
 Mostrar informació breu de Meteo Fontanillas a la pantalla bloquejada sense
