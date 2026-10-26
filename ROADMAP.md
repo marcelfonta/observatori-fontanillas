@@ -70,8 +70,10 @@ justifiqui.
 
 ### Widgets personals
 
-- [ ] Compilar i provar al simulador Connect IQ el widget del fēnix 7X Pro,
-  instal·lar-lo al rellotge i validar dades recents, antigues i absència de xarxa.
+El widget Garmin ja compila per als dos identificadors del fēnix 7X Pro amb
+l'SDK 9.3.0. Les vistes ràpida i completa s'han comprovat al simulador amb una
+lectura recent.
+- [ ] Instal·lar-lo al rellotge i validar dades antigues i absència de xarxa.
 - [ ] Instal·lar el widget iOS existent a l'iPhone 15 Pro i confirmar les vistes
   de pantalla bloquejada i pantalla d'inici, amb una lectura recent i una de
   guardada.

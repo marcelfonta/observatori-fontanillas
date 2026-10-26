@@ -24,5 +24,12 @@ rellotge, connecta'l per USB, compila per al seu identificador i copia el fitxer
 `.prg` generat a `GARMIN/APPS`. Cal provar tant la vista ràpida com la completa,
 amb i sense connexió al mòbil.
 
+El 26/10/2026 s'ha compilat amb l'SDK 9.3.0 per a `fenix7xpro` i
+`fenix7xpronowifi`. El simulador `fenix7xpro` mostra correctament les dues
+vistes amb una lectura recent. Els fitxers `.prg` signats es generen a `build/`,
+carpeta ignorada per Git. La clau privada és externa al repositori; s'ha de
+conservar per a les actualitzacions. La instal·lació física i la prova sense
+connexió continuen pendents.
+
 La publicació a Connect IQ Store requeriria un paquet `.iq`, una fitxa i revisió
 separades. Aquest projecte no modifica el Worker ni la web, i no s'ha publicat.
