@@ -60,7 +60,7 @@ class StationClient {
         }
     }
 
-    function onResponse(code, data) {
+    function onResponse(code as Number, data as Null or ByteArray or Dictionary or String or Toybox.PersistedContent.Iterator) as Void {
         _requesting = false;
         if (code == 200 && data instanceof Dictionary) {
             var epoch = data["epoch"];
@@ -137,9 +137,9 @@ class StationGlance extends WatchUi.GlanceView {
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
         dc.setColor(0x70D6A1, Graphics.COLOR_BLACK);
-        dc.drawText(8, 4, Graphics.FONT_SMALL, "FONTANILLAS", Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(8, 4, Graphics.FONT_XTINY, "FONTA", Graphics.TEXT_JUSTIFY_LEFT);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-        dc.drawText(dc.getWidth() - 8, 4, Graphics.FONT_MEDIUM,
+        dc.drawText(dc.getWidth() - 30, 4, Graphics.FONT_SMALL,
             _client.usable(reading) ? _client.decimal(reading["temperature"], "°C") : "—",
             Graphics.TEXT_JUSTIFY_RIGHT);
         dc.setColor(0xA0A0A0, Graphics.COLOR_BLACK);
@@ -165,25 +165,25 @@ class StationView extends WatchUi.View {
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
         dc.setColor(0x70D6A1, Graphics.COLOR_BLACK);
-        dc.drawText(width / 2, 26, Graphics.FONT_SMALL, "METEO FONTANILLAS", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(width / 2, 28, Graphics.FONT_XTINY, "FONTANILLAS", Graphics.TEXT_JUSTIFY_CENTER);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-        dc.drawText(width / 2, 64, Graphics.FONT_LARGE,
+        dc.drawText(width / 2, 60, Graphics.FONT_LARGE,
             _client.usable(reading) ? _client.decimal(reading["temperature"], "°C") : "—",
             Graphics.TEXT_JUSTIFY_CENTER);
         dc.setColor(0xA0A0A0, Graphics.COLOR_BLACK);
-        dc.drawText(width / 2, 123, Graphics.FONT_XTINY, _client.status(reading), Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(width / 2, 105, Graphics.FONT_XTINY, _client.status(reading), Graphics.TEXT_JUSTIFY_CENTER);
         dc.setColor(0x70D6A1, Graphics.COLOR_BLACK);
-        dc.drawLine(35, 153, width - 35, 153);
+        dc.drawLine(45, 135, width - 45, 135);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         if (_client.usable(reading)) {
-            dc.drawText(42, 170, Graphics.FONT_SMALL, "Humitat", Graphics.TEXT_JUSTIFY_LEFT);
-            dc.drawText(width - 42, 170, Graphics.FONT_SMALL, _client.whole(reading["humidity"], "%"), Graphics.TEXT_JUSTIFY_RIGHT);
-            dc.drawText(42, 197, Graphics.FONT_SMALL, "Vent", Graphics.TEXT_JUSTIFY_LEFT);
-            dc.drawText(width - 42, 197, Graphics.FONT_SMALL, _client.decimal(reading["windSpeed"], " km/h"), Graphics.TEXT_JUSTIFY_RIGHT);
-            dc.drawText(42, 224, Graphics.FONT_SMALL, "Pluja avui", Graphics.TEXT_JUSTIFY_LEFT);
-            dc.drawText(width - 42, 224, Graphics.FONT_SMALL, _client.decimal(reading["rainToday"], " mm"), Graphics.TEXT_JUSTIFY_RIGHT);
+            dc.drawText(55, 150, Graphics.FONT_XTINY, "Humitat", Graphics.TEXT_JUSTIFY_LEFT);
+            dc.drawText(width - 55, 150, Graphics.FONT_XTINY, _client.whole(reading["humidity"], "%"), Graphics.TEXT_JUSTIFY_RIGHT);
+            dc.drawText(55, 175, Graphics.FONT_XTINY, "Vent", Graphics.TEXT_JUSTIFY_LEFT);
+            dc.drawText(width - 55, 175, Graphics.FONT_XTINY, _client.decimal(reading["windSpeed"], " km/h"), Graphics.TEXT_JUSTIFY_RIGHT);
+            dc.drawText(55, 200, Graphics.FONT_XTINY, "Pluja avui", Graphics.TEXT_JUSTIFY_LEFT);
+            dc.drawText(width - 55, 200, Graphics.FONT_XTINY, _client.decimal(reading["rainToday"], " mm"), Graphics.TEXT_JUSTIFY_RIGHT);
         }
         dc.setColor(0xA0A0A0, Graphics.COLOR_BLACK);
-        dc.drawText(width / 2, 257, Graphics.FONT_XTINY, "Observatori · Sant Celoni", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(width / 2, 235, Graphics.FONT_XTINY, "Sant Celoni", Graphics.TEXT_JUSTIFY_CENTER);
     }
 }

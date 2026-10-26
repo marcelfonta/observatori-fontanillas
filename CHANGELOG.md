@@ -1,8 +1,8 @@
 # Changelog
 
-## 2026-10-26 — Widget Connect IQ per al fēnix 7X Pro (en revisió)
+## 2026-10-26 — Widget Connect IQ per al fēnix 7X Pro (prova al simulador)
 
-- Projecte privat Garmin amb vista ràpida i detall d'observació local, consulta limitada i avís de lectures antigues. Pendent de compilació al SDK, simulador i prova física.
+- Projecte privat Garmin amb vista ràpida i detall d'observació local, consulta limitada i avís de lectures antigues. Compilació amb SDK 9.3.0 i prova visual al simulador superades; corregits el tipus de resposta HTTP i el text que quedava tallat a la pantalla rodona. Pendent de prova física al rellotge.
 - Confirmada la compatibilitat del widget iOS existent amb l'iPhone 15 Pro; no cal un segon target ni duplicar codi.
 
 ## 2026-10-25 — Accés directe i enllaç únic a la càmera (en revisió)
