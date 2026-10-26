@@ -681,6 +681,7 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
+0. **Idiomes:** completar l'auditoria de tots els textos visibles, estats dinàmics, atributs accessibles i metadades dels portals en castellà, anglès i francès. La primera correcció cobreix 199 títols i controls; l'inventari i els límits són a `docs/I18N-AUDIT-2026-10-26.md`. Les pàgines públiques sense motor de traducció requereixen una decisió editorial abans d'anunciar-les com a multilingües.
 1. **Fiabilitat operativa:** comprovar la PWA i el push en una instal·lació existent després de corregir el caché; observar el proper vespre i timelapse reals sense duplicats a cada canal; mantenir #299 obert fins a aquesta evidència. Falta observar un avís oficial real.
 2. **Clima:** validar visualment el CO₂ ja integrat a webcam i peces diàries; verificar en staging i producció la nova sèrie llarga NOAA, afegir sèries oficials catalanes de temperatura/precipitació amb mètode comparable i completar la revisió editorial i les traduccions reals. La ruta i la primera lectura ja són públiques.
 3. **Qualitat real:** provar en iPhone, Android i ordinador els visors, els controls tàctils, l’accessibilitat i la recuperació sense connexió; repetir l’auditoria SEO a Search Console.

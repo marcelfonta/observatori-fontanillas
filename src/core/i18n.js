@@ -1,9 +1,11 @@
 import { FRENCH_PHRASES } from './i18n-fr.js';
+import { UI_HEADING_PHRASES } from './i18n-ui-headings.js';
 
 const STORAGE_KEY='fontanillas-language-v1';
 export const SUPPORTED_LANGUAGES=['ca','es','en','fr'];
 
 export const PHRASES={
+  ...UI_HEADING_PHRASES,
   'Meteocat i El temps d’El Nacional es reprodueixen dins la web quan els selecciones. La resta d’espais s’obren a la font original.':{es:'Meteocat y El temps d’El Nacional se reproducen aquí cuando los seleccionas. Los demás espacios se abren en la fuente original.',en:'Meteocat and El temps d’El Nacional play here when selected. Other sources open on their own sites.'},
   'El Nacional · YouTube':{es:'El Nacional · YouTube',en:'El Nacional · YouTube'},
   'El temps d’El Nacional':{es:'El tiempo de El Nacional',en:'El Nacional Weather'},
@@ -503,7 +505,7 @@ export function getLanguage(){return language;}
 export function getLocale(){return language==='es'?'es-ES':language==='en'?'en-GB':language==='fr'?'fr-FR':'ca-ES';}
 export function t(source){
   if(language==='ca'||typeof source!=='string')return source;
-  const exact=language==='fr'?FRENCH_PHRASES[source]:PHRASES[source]?.[language];
+  const exact=language==='fr'?(FRENCH_PHRASES[source]||UI_HEADING_PHRASES[source]?.fr):PHRASES[source]?.[language];
   if(exact)return exact;
   return (DYNAMIC_REPLACEMENTS[language]||[]).reduce((value,[pattern,replacement])=>value.replace(pattern,replacement),source);
 }
@@ -515,7 +517,7 @@ export function getTranslationCoverage(){
     missing:{
       es:keys.filter(key=>!PHRASES[key]?.es),
       en:keys.filter(key=>!PHRASES[key]?.en),
-      fr:keys.filter(key=>!FRENCH_PHRASES[key])
+      fr:keys.filter(key=>!FRENCH_PHRASES[key]&&!UI_HEADING_PHRASES[key]?.fr)
     }
   };
 }
