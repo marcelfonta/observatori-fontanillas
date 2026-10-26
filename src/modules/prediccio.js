@@ -15,9 +15,7 @@ const codes = {
 
 const dayName = date => new Intl.DateTimeFormat('ca-ES',{weekday:'short'}).format(date).replace('.','');
 const shortTime = value => new Intl.DateTimeFormat('ca-ES',{hour:'2-digit',minute:'2-digit'}).format(new Date(value));
-const sum = values => values.reduce((total,value)=>total+(Number(value)||0),0);
 const max = values => Math.max(...values.map(value=>Number(value)||0));
-const maxIndex = values => values.reduce((best,value,index)=>Number(value)>Number(values[best])?index:best,0);
 const hours = seconds => (Number(seconds)||0)/3600;
 let modelPayload = null;
 let modelDayIndex = 1;
@@ -34,17 +32,6 @@ function timelineLabel(date, position) {
   return `${prefix} · ${shortTime(date)}`;
 }
 
-function forecastNarrative(daily) {
-  const rainTotal=sum(daily.precipitation_sum||[]);
-  const rainChance=max(daily.precipitation_probability_max||[]);
-  const hottest=max(daily.temperature_2m_max||[]);
-  const coldest=Math.min(...(daily.temperature_2m_min||[]).map(Number));
-  if(rainTotal>=25) return ['Setmana marcada per la pluja',`Els models acumulen prop de ${format(rainTotal,1)} mm. Convé seguir l’evolució dels episodis més actius.`];
-  if(rainChance>=65) return ['Ruixats possibles en l’horitzó',`La probabilitat màxima arriba al ${format(rainChance,0)}%, tot i que l’acumulació prevista és moderada.`];
-  if(hottest>=33) return ['Calor com a protagonista',`Les màximes poden enfilar-se fins als ${format(hottest,0)} °C, amb nits que no baixaran dels ${format(coldest,0)} °C.`];
-  return ['Escenari majoritàriament estable',`Pocs canvis bruscos a la vista, amb màximes al voltant dels ${format(hottest,0)} °C.`];
-}
-
 function periodSummary(label,rainChance,gust) {
   if(rainChance>=70)return `${label} amb pluja probable`;
   if(rainChance>=40)return `${label} amb possibilitat de ruixats`;
@@ -55,16 +42,6 @@ function periodSummary(label,rainChance,gust) {
 function renderOverview(data) {
   const daily=data?.daily; const hourly=data?.hourly;
   if(!daily?.time?.length) return;
-  const [headline,copy]=forecastNarrative({
-    ...daily,
-    time:daily.time.slice(2,7),
-    precipitation_sum:daily.precipitation_sum?.slice(2,7),
-    precipitation_probability_max:daily.precipitation_probability_max?.slice(2,7),
-    temperature_2m_max:daily.temperature_2m_max?.slice(2,7),
-    temperature_2m_min:daily.temperature_2m_min?.slice(2,7)
-  });
-  setText('forecast-headline',headline); setText('forecast-headline-copy',copy);
-
   const now=Date.now();
   const todayKey=daily.time[0];
   const remaining=(hourly?.time||[]).map((time,index)=>({time,index,date:new Date(time)})).filter(item=>item.date.getTime()>=now-1800000&&String(hourly.time[item.index]).slice(0,10)===todayKey);
@@ -93,12 +70,6 @@ function renderOverview(data) {
   setText('forecast-tomorrow-temp',`${format(daily.temperature_2m_max?.[tomorrow],0)}° / ${format(daily.temperature_2m_min?.[tomorrow],0)}°`);
   setText('forecast-tomorrow-rain',`${format(daily.precipitation_probability_max?.[tomorrow],0)}%`);
   setText('forecast-tomorrow-wind',`${format(daily.wind_gusts_10m_max?.[tomorrow],0)} km/h`);
-
-  const next=document.getElementById('forecast-next-days');
-  if(next)next.innerHTML=daily.time.slice(2,5).map((value,offset)=>{
-    const index=offset+2; const [symbol,label]=weather(daily.weather_code?.[index]);
-    return `<span><small>${dayName(new Date(value))}</small><i aria-hidden="true">${symbol}</i><b>${format(daily.temperature_2m_max?.[index],0)}°</b><em>${format(daily.precipitation_probability_max?.[index],0)}% pluja</em><span class="sr-only">${label}</span></span>`;
-  }).join('');
 }
 
 function renderDaily(daily) {
@@ -303,11 +274,8 @@ export function initForecastControls() {
 export function renderForecastError() {
   renderHomeForecast(null);
   setText('forecast-status','Predicció temporalment no disponible');
-  setText('forecast-headline','Previsió temporalment no disponible');
-  setText('forecast-headline-copy','Tornarem a consultar el model automàticament. Les dades en directe de l’estació continuen actives.');
   setText('forecast-today-symbol','◌');setText('forecast-today-title','Sense dades de model');setText('forecast-today-copy','La pròxima actualització es farà automàticament.');setText('forecast-today-temp','—');setText('forecast-today-rain','—');setText('forecast-today-wind','—');
   setText('forecast-tomorrow-symbol','◌');setText('forecast-tomorrow-title','Sense dades de model');setText('forecast-tomorrow-copy','La pròxima actualització es farà automàticament.');setText('forecast-tomorrow-temp','—');setText('forecast-tomorrow-rain','—');setText('forecast-tomorrow-wind','—');
-  const next=document.getElementById('forecast-next-days');if(next)next.innerHTML='<span><small>Pròxim intent</small><b>Automàtic</b><em>Sense recarregar la pàgina</em></span>';
   const strip=document.getElementById('forecast-strip'); if(strip) strip.innerHTML='<div class="forecast-loading">La predicció no està disponible ara mateix. Les dades de l’estació continuen actives.</div>';
   const daily=document.getElementById('daily-forecast'); if(daily) daily.innerHTML='<div class="forecast-loading">No s’ha pogut carregar la previsió diària.</div>';
 }

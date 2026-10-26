@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-26 — Previsió sense dies duplicats (en revisió)
+
+- S'elimina el bloc superior «Els pròxims dies», repetit a la previsió de set dies. Es conserven els resums d'avui i demà, la previsió horària i la previsió diària completa.
+
 ## 2026-10-26 — Context recent i guies locals (en revisió)
 
 - L'Estació mostra la diferència entre dues finestres consecutives de 24 hores només amb almenys un 80% de lectures per finestra; identifica l'origen i evita anomenar-la normal climàtica.
