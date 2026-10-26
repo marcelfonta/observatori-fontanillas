@@ -1,6 +1,7 @@
 import { format, cardinal, setText, clamp, isNumber } from '../core/dom.js';
 import { calculateThermalIndices } from './confort.js';
 import { getLocale } from '../core/i18n.js';
+import { recentStationContext } from '../core/recent-station-context.js';
 
 function interpret(data) {
   const t = Number(data.temperature), h = Number(data.humidity), wind = Number(data.windSpeed), rain = Number(data.rainRate);
@@ -94,6 +95,19 @@ function renderLevels(data, thermal) {
 }
 
 export function renderStation(data, context = {}) {
+  const recent=document.getElementById('station-recent-context');
+  if(recent){
+    const observedAt=new Date(data.updated).getTime();
+    const comparison=Number.isFinite(observedAt)&&Date.now()-observedAt<30*60*1000
+      ?recentStationContext(context.history||[],observedAt):null;
+    const difference=comparison?.difference;
+    setText('station-recent-value',!comparison?'Comparació pendent':Math.abs(difference)<.1?'Temperatura semblant':`${difference>0?'+':'−'}${format(Math.abs(difference),1)} °C`);
+    setText('station-recent-copy',!comparison
+      ?'Calen dues finestres de 24 hores amb almenys un 80% de lectures cadascuna.'
+      :`${difference>.1?'Més càlides':difference<-.1?'Més fresques':'Pràcticament iguals'} que les 24 hores anteriors · mitjana de ${format(comparison.current,1)} °C davant ${format(comparison.previous,1)} °C.`);
+    setText('station-recent-source',!comparison?'Sense comparació fiable · estació Fontanillas'
+      :`Estació Fontanillas · cobertura ${format(comparison.currentCoverage,0)}% i ${format(comparison.previousCoverage,0)}% · comparació recent, no normal climàtica`);
+  }
   const thermal = calculateThermalIndices(data);
   setText('temperature', format(data.temperature, 1)); setText('metric-temperature', format(data.temperature, 1)); setText('feels-like', `${format(thermal.apparent, 1)} °C`);
   setText('humidity', format(data.humidity)); setText('dew-point', `${format(data.dewPoint, 1)} °C`); setText('wind-speed', format(data.windSpeed, 1)); setText('wind-gust', `${format(data.windGust, 1)} km/h`);

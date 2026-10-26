@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-26 — Context recent i guies locals (en revisió)
+
+- L'Estació mostra la diferència entre dues finestres consecutives de 24 hores només amb almenys un 80% de lectures per finestra; identifica l'origen i evita anomenar-la normal climàtica.
+- El resum mensual concentra quatre xifres clau i adapta l'escala del gràfic a les temperatures del mes. Cada dia es pot llegir amb teclat i lector de pantalla.
+- Aprendre incorpora tres guies breus sobre inversions, relleu i tempestes al Baix Montseny. Cada explicació separa el procés general de les mesures puntuals i remet a observació, radar o avisos oficials.
+
 ## 2026-10-26 — Nom clar per al giny d'iPhone (en revisió)
 
 - El giny compartit pels iPhone 15 Pro i 16 Pro es presenta a la galeria com a «Observatori Fontanillas», amb la marca visible a les targetes de pantalla d'inici. Es conserven els identificadors perquè els ginys existents puguin actualitzar-se.

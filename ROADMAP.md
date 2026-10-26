@@ -1,6 +1,6 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
-Actualitzat el 25 d’octubre de 2026. Aquest document conté únicament feina
+Actualitzat el 26 d’octubre de 2026. Aquest document conté únicament feina
 pendent, aplicable i amb un criteri de finalització observable. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
@@ -156,6 +156,19 @@ la presentació d'un avís oficial real quan n'hi hagi un.
 L’autopublicació CECAT requerirà una autorització posterior explícita.
 
 ## P1 — Confiança, autoria i dades obertes
+
+### Context local i lectura mensual
+
+La comparació de les dues darreres finestres de 24 hores, el resum mensual visual
+i tres guies introductòries del Baix Montseny s'han preparat en un únic PR.
+Encara no s'ha establert cap «índex de normalitat»: l'arxiu local és massa curt.
+
+- [ ] Identificar una sèrie climàtica externa adequada per a Sant Celoni i
+  validar-ne període, ubicació, cobertura i mètode abans de comparar-la amb
+  les lectures pròpies.
+
+**Fet quan:** les diferències respecte d'una referència climàtica tenen font,
+període i límits visibles; les comparacions recents continuen diferenciades.
 
 ### Sobre l’Observatori
 
