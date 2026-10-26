@@ -194,6 +194,11 @@ struct MeteoWidgetView: View {
             HStack {
                 Image(systemName: MeteoFormatting.symbol(for: snapshot.forecast?.weatherCode))
                     .symbolRenderingMode(.multicolor)
+                Text("FONTANILLAS")
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .tracking(0.4)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                 Spacer()
                 if snapshot.isDegraded || entry.cached {
                     Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
@@ -213,7 +218,7 @@ struct MeteoWidgetView: View {
     private func medium(_ snapshot: MeteoSnapshot) -> some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 7) {
-                Text("SANT CELONI")
+                Text("FONTANILLAS")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .tracking(1.1)
@@ -293,7 +298,7 @@ struct MeteoWidgetView: View {
         return VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("SANT CELONI · ARA")
+                    Text("FONTANILLAS · ARA")
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .tracking(1.1)
@@ -443,8 +448,8 @@ struct MeteoFontanillasWidget: Widget {
                     .padding()
             }
         }
-        .configurationDisplayName("Meteo Fontanillas")
-        .description("Dades de l’estació i previsió fins als pròxims quatre dies a Sant Celoni.")
+        .configurationDisplayName("Observatori Fontanillas")
+        .description("Estació pròpia de Sant Celoni: temperatura observada i previsió dels pròxims dies.")
 #if os(macOS)
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
 #else

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-26 — Nom clar per al giny d'iPhone (en revisió)
+
+- El giny compartit pels iPhone 15 Pro i 16 Pro es presenta a la galeria com a «Observatori Fontanillas», amb la marca visible a les targetes de pantalla d'inici. Es conserven els identificadors perquè els ginys existents puguin actualitzar-se.
+- Xcode queda configurat amb l'equip de desenvolupament disponible al Mac. La compilació per a simulador i iPhone físic passa; l'app s'ha instal·lat i obert al simulador iPhone 15 Pro. La instal·lació física requereix connectar el telèfon.
+
 ## 2026-10-26 — Widget Connect IQ per al fēnix 7X Pro (prova al simulador)
 
 - Projecte privat Garmin amb vista ràpida i detall d'observació local, consulta limitada i avís de lectures antigues. Compilació amb SDK 9.3.0 i prova visual al simulador superades; corregits el tipus de resposta HTTP i el text que quedava tallat a la pantalla rodona. Pendent de prova física al rellotge.

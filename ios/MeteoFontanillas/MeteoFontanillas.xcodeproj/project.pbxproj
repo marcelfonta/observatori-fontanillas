@@ -299,7 +299,7 @@
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = MeteoFontanillas/MeteoFontanillasMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = W5VK9BAD69;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MeteoFontanillas/Info.plist;
 				"INFOPLIST_FILE[sdk=macosx*]" = MeteoFontanillas/Info-macOS.plist;
@@ -322,7 +322,7 @@
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = MeteoFontanillas/MeteoFontanillasMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = W5VK9BAD69;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MeteoFontanillas/Info.plist;
 				"INFOPLIST_FILE[sdk=macosx*]" = MeteoFontanillas/Info-macOS.plist;
@@ -345,7 +345,7 @@
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = MeteoFontanillasWidget/MeteoFontanillasWidgetMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = W5VK9BAD69;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MeteoFontanillasWidget/Info.plist;
 				"INFOPLIST_FILE[sdk=macosx*]" = MeteoFontanillasWidget/Info-macOS.plist;
@@ -369,7 +369,7 @@
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = MeteoFontanillasWidget/MeteoFontanillasWidgetMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = W5VK9BAD69;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MeteoFontanillasWidget/Info.plist;
 				"INFOPLIST_FILE[sdk=macosx*]" = MeteoFontanillasWidget/Info-macOS.plist;

@@ -164,9 +164,9 @@ struct ContentView: View {
 
     private var widgetGuideDescription: String {
 #if os(macOS)
-        "Fes clic dret a l’escriptori, tria Edita els ginys, cerca Meteo Fontanillas i afegeix el format que prefereixis."
+        "Fes clic dret a l’escriptori, tria Edita els ginys, cerca Observatori Fontanillas i afegeix el format que prefereixis."
 #else
-        "Mantén premuda la pantalla bloquejada, toca Personalitza → Pantalla bloquejada → Afegeix widgets i tria Meteo Fontanillas."
+        "Mantén premuda la pantalla bloquejada, toca Personalitza → Pantalla bloquejada → Afegeix widgets i tria Observatori Fontanillas."
 #endif
     }
 }
