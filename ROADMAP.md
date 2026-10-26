@@ -68,6 +68,17 @@ justifiqui.
 
 ## P0 — Validació operativa real
 
+### Widgets personals
+
+- [ ] Compilar i provar al simulador Connect IQ el widget del fēnix 7X Pro,
+  instal·lar-lo al rellotge i validar dades recents, antigues i absència de xarxa.
+- [ ] Instal·lar el widget iOS existent a l'iPhone 15 Pro i confirmar les vistes
+  de pantalla bloquejada i pantalla d'inici, amb una lectura recent i una de
+  guardada.
+
+**Fet quan:** els dos dispositius mostren l'observació amb hora o antiguitat
+correctes, sense presentar una lectura antiga com a actual.
+
 ### Caché del domini públic i actualitzacions de la PWA
 
 El 25/10 es va confirmar al tauler de Cloudflare que el **Browser Cache TTL** de

@@ -28,7 +28,9 @@ quan acaba d'actualitzar-se correctament.
 
 ## Instal·lació privada
 
-Cal un Mac amb la versió completa d'Xcode instal·lada i l'iPhone connectat:
+El mateix widget i la mateixa app serveixen per a l'iPhone 15 Pro i el 16 Pro:
+no hi ha una compilació diferent per model. Cal un Mac amb la versió completa
+d'Xcode instal·lada i l'iPhone connectat:
 
 1. Obre `MeteoFontanillas.xcodeproj` amb Xcode.
 2. Selecciona el projecte i, a **Signing & Capabilities**, tria el teu equip a
