@@ -1012,3 +1012,21 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
   .home-now>header>p,.home-now-card>small,.home-now-card>p,.home-now-card>footer span,.home-now-card>footer b,.home-now__summary small,.home-now__summary span,.portal-sidebar__copyright>small,.portal-sidebar__copyright>span{font-size:12px;line-height:1.45}
   .home-now-card{padding:14px}
 }
+
+.station-recent{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 28px;align-items:center;padding:clamp(22px,3vw,34px)}
+.station-recent h2,.learning-microclimate h3{margin:6px 0 8px;font:700 clamp(23px,2.5vw,32px)/1.15 var(--font-display)}
+.station-recent p:not(.eyebrow){margin:0;color:var(--text);line-height:1.55}.station-recent small{display:block;margin-top:10px;color:var(--muted);line-height:1.5}
+.station-recent>strong{color:var(--green);font:800 clamp(20px,3vw,34px)/1.1 var(--font-display);text-align:right}
+.station-recent>a{grid-column:1/-1;color:var(--green);font-size:12px;font-weight:700;text-decoration:none}
+.learning-microclimate{padding:clamp(22px,3vw,36px)}.learning-microclimate>header>p:last-child{max-width:760px;color:var(--muted);line-height:1.6}
+.learning-microclimate__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:22px}
+.learning-microclimate article{display:flex;flex-direction:column;gap:10px;padding:20px;border:1px solid var(--line);border-radius:16px;background:rgba(6,27,21,.55)}
+.learning-microclimate article>span{color:var(--green);font-size:11px;font-weight:800;letter-spacing:.04em}.learning-microclimate h4{margin:0;font-size:18px;line-height:1.25}
+.learning-microclimate article p{flex:1;margin:0;color:var(--muted);font-size:13px;line-height:1.6}.learning-microclimate a{color:var(--green);font-size:12px;font-weight:700;text-decoration:none}
+.learning-microclimate__method{margin:20px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
+.monthly-summary__metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.monthly-summary__metrics article{gap:8px;padding:20px}.monthly-summary__metrics strong{font-size:clamp(20px,2vw,28px)}
+.monthly-summary__chart>div:focus-visible{outline:2px solid var(--green);outline-offset:2px}.monthly-summary__chart>div:focus-visible em{display:block}
+.monthly-summary__scale{color:var(--muted);font-size:11px}
+@media(max-width:900px){.learning-microclimate__grid{grid-template-columns:1fr}}
+@media(max-width:760px){.station-recent{grid-template-columns:1fr}.station-recent>strong{text-align:left}.monthly-summary__metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.monthly-summary__metrics{grid-template-columns:1fr}}

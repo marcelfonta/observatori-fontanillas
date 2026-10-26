@@ -160,6 +160,12 @@
       <a class="home-records-link panel" href="/centre-dades#records" data-portal-page="inici"><span aria-hidden="true">↗</span><div><b>Rècords de l’Observatori</b><small>Màximes i mínimes de tot l’arxiu disponible, amb data i hora.</small></div><strong>Veure rècords històrics →</strong></a>
       <section class="portal-view-header panel" aria-labelledby="station-page-title" data-portal-page="estacio"><div><p class="eyebrow">Estació Fontanillas</p><h1 id="station-page-title">L’estació, sensor a sensor.</h1><p>Lectures actuals, valors calculats i resum del dia des de Sant Celoni.</p></div><span class="tag">Cada 5 minuts</span></section>
 
+      <section class="station-recent panel" id="station-recent-context" aria-labelledby="station-recent-title" data-portal-page="estacio">
+        <div><p class="eyebrow">Context de l’observació</p><h2 id="station-recent-title">Les darreres 24 hores</h2><p id="station-recent-copy">Comprovant si hi ha prou lectures comparables…</p><small id="station-recent-source">Estació Fontanillas · pendent de cobertura</small></div>
+        <strong id="station-recent-value">Comparació pendent</strong>
+        <a href="/centre-dades">Veure les dades →</a>
+      </section>
+
       <section class="station-records-summary panel" aria-labelledby="station-records-summary-title" data-portal-page="estacio">
         <header><div><p class="eyebrow">Tot l’arxiu disponible</p><h2 id="station-records-summary-title">Rècords principals de l’Observatori</h2></div><a href="/centre-dades#records">Veure la taula completa →</a></header>
         <div class="station-records-grid station-records-grid--main" id="station-records-main" aria-live="polite"><p class="station-records-empty">Preparant els rècords històrics…</p></div>
@@ -989,6 +995,15 @@
           <nav aria-label="Materials de Quan va ploure més?"><a class="learning-own__primary" href="/aula/analisi-aiguat-4-octubre-2026">Obrir la fitxa →</a><a href="/assets/data/aula/aiguat-fontanillas-2026-10-04.csv" download>Descarregar el CSV</a><a href="/aula/analisi-aiguat-4-octubre-2026-solucions">Guia docent i solucions</a></nav>
         </article>
         <section class="learning-local panel" aria-labelledby="learning-local-title"><div><p class="eyebrow">Laboratori Fontanillas</p><h3 id="learning-local-title">Aprèn amb el temps que tens davant.</h3><p>Observa una variable real, compara-la amb la predicció i explica què ha canviat. La meteorologia s’entén millor quan les dades tenen lloc i hora.</p></div><div><a href="/estacio">Llegir els sensors →</a><a href="/radar">Interpretar el radar →</a><a href="/centre-dades">Analitzar l’històric →</a><a href="/avisos">Entendre els avisos →</a></div></section>
+        <section class="learning-microclimate panel" aria-labelledby="learning-microclimate-title">
+          <header><p class="eyebrow">Guia del Baix Montseny</p><h3 id="learning-microclimate-title">Tres claus per entendre el temps local.</h3><p>Són explicacions de processos meteorològics, no diagnòstics automàtics de tot el territori. Contrasta cada situació amb observacions, radar i avisos oficials.</p></header>
+          <div class="learning-microclimate__grid">
+            <article><span>01 · Nits fredes</span><h4>Per què una fondalada pot ser més freda?</h4><p>Amb cel serè i poc vent, el sòl es refreda i l’aire fred, més dens, pot acumular-se a les zones baixes. Això afavoreix una inversió tèrmica; la temperatura de l’estació descriu només el seu emplaçament.</p><a href="/estacio">Veure l’observació local →</a></article>
+            <article><span>02 · Relleu i pluja</span><h4>Què canvia quan l’aire troba el Montseny?</h4><p>L’ascens de l’aire sobre el relleu pot afavorir núvols i precipitació, però la direcció del vent, la humitat i la situació atmosfèrica en determinen l’efecte. La pluja pot variar molt entre valls i vessants.</p><a href="/radar">Comparar amb el radar →</a></article>
+            <article><span>03 · Tempestes</span><h4>Per què no plou igual a tots els barris?</h4><p>Els ruixats convectius poden ser molt localitzats i canviar de trajectòria o intensitat ràpidament. Una lectura puntual no descriu tota la tempesta; segueix el radar i, si n’hi ha, els avisos oficials vigents.</p><a href="/avisos">Consultar avisos oficials →</a></article>
+          </div>
+          <p class="learning-microclimate__method">Exemples generals aplicats al territori · sense atribuir fenòmens no verificats a una data concreta. <a href="/metodologia">Com distingim mesura, interpretació i previsió →</a></p>
+        </section>
         <section class="weather-utility panel" aria-labelledby="weather-utility-title">
           <header><div><p class="eyebrow">Respostes clares</p><h3 id="weather-utility-title">Entendre les dades abans de decidir.</h3><p>Mesura local, predicció i avís oficial són peces diferents. Aquí n’expliquem l’abast i els límits.</p></div><a href="/avisos">Consultar avisos vigents →</a></header>
           <div class="weather-faq">
