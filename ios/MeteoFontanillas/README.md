@@ -30,17 +30,25 @@ quan acaba d'actualitzar-se correctament.
 
 El mateix widget i la mateixa app serveixen per a l'iPhone 15 Pro i el 16 Pro:
 no hi ha una compilació diferent per model. Cal un Mac amb la versió completa
-d'Xcode instal·lada i l'iPhone connectat:
+d'Xcode instal·lada i l'iPhone connectat.
+
+El giny apareix a la galeria com a **Observatori Fontanillas** i porta la marca
+Fontanillas a les targetes de pantalla d'inici. Conserva l'identificador i el
+`kind` anteriors: els ginys ja afegits a l'iPhone 16 Pro poden actualitzar-se
+sense crear-ne un segon. El projecte té seleccionat l'equip de desenvolupament
+del Mac; si Xcode demana iniciar sessió, cal completar-ho al mateix Xcode.
+
+Per instal·lar-lo:
 
 1. Obre `MeteoFontanillas.xcodeproj` amb Xcode.
-2. Selecciona el projecte i, a **Signing & Capabilities**, tria el teu equip a
-   `MeteoFontanillas` i `MeteoFontanillasWidgetExtension`.
+2. Selecciona el projecte i comprova a **Signing & Capabilities** que el teu
+   equip apareix a `MeteoFontanillas` i `MeteoFontanillasWidgetExtension`.
 3. Si Xcode indica que l'identificador ja existeix, substitueix
    `cat.fontanillas.meteo` per un identificador propi i conserva `.widget` al
    final de l'extensió.
 4. Connecta l'iPhone, selecciona'l com a destinació i prem **Run**.
 5. A l'iPhone, mantén premuda la pantalla bloquejada i entra a
-   **Personalitza → Pantalla bloquejada → Afegeix widgets → Meteo Fontanillas**.
+   **Personalitza → Pantalla bloquejada → Afegeix widgets → Observatori Fontanillas**.
 
 ## Instal·lació privada al Mac
 
@@ -49,7 +57,7 @@ d'Xcode instal·lada i l'iPhone connectat:
 3. Comprova que el teu equip estigui seleccionat als dos targets i prem
    **Run**. No cal activar **Ginys de l'iPhone**.
 4. Obre l'app almenys una vegada. Després fes clic dret a l'escriptori, tria
-   **Edita els ginys**, cerca **Meteo Fontanillas** i afegeix el format que
+   **Edita els ginys**, cerca **Observatori Fontanillas** i afegeix el format que
    prefereixis.
 
 Aquest és un giny real de macOS: consulta les dades des del Mac i, quan es toca,

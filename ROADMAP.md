@@ -78,6 +78,10 @@ lectura recent.
   de pantalla bloquejada i pantalla d'inici, amb una lectura recent i una de
   guardada.
 
+El projecte iOS ja compila per al simulador i per a iPhone físic, i l'app s'ha
+instal·lat i obert al simulador iPhone 15 Pro el 26/10. El nom distingible del
+giny i l'equip de signatura estan preparats; resta connectar el telèfon real.
+
 **Fet quan:** els dos dispositius mostren l'observació amb hora o antiguitat
 correctes, sense presentar una lectura antiga com a actual.
 
