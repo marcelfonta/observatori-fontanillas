@@ -2,7 +2,7 @@
 
 Paquet V12.2 generat des de `scripts/build-brand-assets.py`:
 
-- favicons de 16 i 32 px;
+- favicons de 16 i 32 px, reduïts del mateix avatar circular V21 que la icona PWA;
 - Apple Touch Icon de 180 px;
 - icones PWA normals de 192 i 512 px;
 - icones PWA maskable de 192 i 512 px amb zona segura específica.
