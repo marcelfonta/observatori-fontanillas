@@ -304,6 +304,21 @@ function initEnvironmentViewers(){
     const first=buttons.find(button=>button.dataset.environmentTopicName===name);
     if(first)activate(first.dataset.environmentViewer);
   }));
+  const droughtImage=document.getElementById('environment-drought-image');
+  const droughtError=document.getElementById('environment-drought-error');
+  const droughtPeriods=[...document.querySelectorAll('[data-drought-period]')];
+  if(droughtImage){
+    droughtImage.addEventListener('error',()=>{droughtImage.hidden=true;if(droughtError)droughtError.hidden=false;});
+    droughtImage.addEventListener('load',()=>{droughtImage.hidden=false;if(droughtError)droughtError.hidden=true;});
+    droughtPeriods.forEach(period=>period.addEventListener('click',()=>{
+      const value=Number(period.dataset.droughtPeriod);
+      if(![6,9,12,24,36].includes(value))return;
+      droughtPeriods.forEach(item=>{const active=item===period;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active));});
+      if(droughtError)droughtError.hidden=true;
+      droughtImage.hidden=false;
+      droughtImage.src=`https://static-m.meteo.cat/content/climatologia/cartografia/ipe/2026/09/png/IPE${value}_1km_20260930_w.png`;
+    }));
+  }
   document.getElementById('environment-air-stations-filter')?.addEventListener('change',renderAirStationsMap);
   selectTopic(currentTopic);
   activate(buttons[0].dataset.environmentViewer);

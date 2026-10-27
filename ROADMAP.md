@@ -15,10 +15,12 @@ els continguts nous es tradueixen a català, castellà, anglès i francès.
   actualització, llicència i estabilitat de cada servei. Els accessos a
   Resource Watch, Living Atlas, MapX i Lemuriant són exploració externa,
   no lectures locals ni dades importades al Worker.
-- [ ] Reavaluar el mapa de sequera de l'ACA quan torni del manteniment, sense
-  alterar mentrestant la consulta oficial disponible.
+- [ ] Reavaluar el mapa de sequera de l'ACA quan torni del manteniment. Mentrestant,
+  la web mostra cartografia mensual IPE de Meteocat, separada explícitament de
+  les fases administratives de l'ACA i datada setembre de 2026. Actualitzar la
+  cartografia quan Meteocat publiqui un nou mes, sense assumir cap URL futura.
 
-Actualitzat el 26 d’octubre de 2026. Aquest document conté únicament feina
+Actualitzat el 27 d’octubre de 2026. Aquest document conté únicament feina
 pendent, aplicable i amb un criteri de finalització observable. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.

@@ -510,7 +510,21 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 @media (max-width: 640px) { .environment-marine-options { grid-template-columns: 1fr; } }
 .environment-viewer-frame--image { background: #07110f; }
 .environment-viewer-frame--drought { background: #0a2119; }
-.environment-drought-fallback { display: grid; align-content: center; gap: 14px; min-height: 300px; padding: clamp(24px,4vw,48px); color: var(--text); }
+.environment-drought-map { display:grid; gap:18px; padding:clamp(20px,3vw,40px); }
+.environment-drought-map__header { display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:16px; }
+.environment-drought-map__header :is(h3,p) { margin:0; }
+.environment-drought-map__header h3 { margin:8px 0; font:700 clamp(22px,3vw,34px)/1.15 var(--font-display); }
+.environment-drought-map__header p:not(.eyebrow),.environment-drought-map__note { color:var(--muted); line-height:1.5; }
+.environment-drought-map__header a { color:var(--green); font-weight:700; }
+.environment-drought-map__periods { display:flex; flex-wrap:wrap; gap:8px; }
+.environment-drought-map__periods button { min-height:40px; padding:8px 16px; border:1px solid rgba(137,214,163,.38); border-radius:999px; background:transparent; color:var(--text); cursor:pointer; font:700 13px var(--font-body); }
+.environment-drought-map__periods button.is-active { border-color:var(--green); background:rgba(137,214,163,.18); color:var(--green); }
+.environment-drought-map__periods button:focus-visible,.environment-drought-map__header a:focus-visible { outline:3px solid var(--green); outline-offset:3px; }
+.environment-drought-map__image { display:grid; place-items:center; min-height:260px; padding:16px; border:1px solid rgba(137,214,163,.2); border-radius:20px; background:#ecf0ea; color:#193026; }
+.environment-drought-map__image img { display:block; width:min(100%,550px); height:auto; }
+.environment-drought-map__image [hidden] { display:none; }
+.environment-drought-map__note { margin:0; font-size:13px; }
+.environment-drought-fallback { display: grid; align-content: center; gap: 14px; padding: clamp(20px,3vw,40px); border-top:1px solid var(--line); color: var(--text); }
 .environment-drought-fallback :is(h3,p) { margin: 0; }
 .environment-drought-fallback h3 { font: 700 clamp(22px,3vw,32px)/1.15 var(--font-display); }
 .environment-drought-fallback > p:not(.eyebrow) { max-width: 660px; color: var(--muted); line-height: 1.55; }
