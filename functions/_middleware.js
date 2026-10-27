@@ -61,7 +61,7 @@ export function portalPageFromPath(pathname='/'){return portalRouteFromPath(path
 
 export function routeSeo(page='inici',lang='ca',context={}){
   const safePage=PAGE_SET.has(page)?page:'inici';
-  const safeLanguage=safePage==='canvi-climatic'?'ca':SUPPORTED_LANGUAGES.includes(lang)?lang:'ca';
+  const safeLanguage=SUPPORTED_LANGUAGES.includes(lang)?lang:'ca';
   const presentation=seoPagePresentation(safePage,safeLanguage,context);
   return {...presentation,page:safePage,lang:safeLanguage,locale:SEO_LANGUAGE_META[safeLanguage].locale,url:seoPageUrl(safePage,safeLanguage,context),schema:buildSeoStructuredGraph(safePage,null,safeLanguage,context),context};
 }
@@ -115,7 +115,7 @@ function routeRewriter(meta){
     .on('link[rel="canonical"]',new AttributeHandler('href',meta.url))
     .on('#seo-structured-data',new SchemaHandler(meta.schema))
     .on('.noscript-weather',new RouteNoscriptHandler(meta));
-  if(meta.story||meta.summary||meta.page==='canvi-climatic')return rewriter.on('link[rel="alternate"]',new RemoveHandler());
+  if(meta.story||meta.summary)return rewriter.on('link[rel="alternate"]',new RemoveHandler());
   for(const language of SUPPORTED_LANGUAGES)rewriter=rewriter.on(`link[rel="alternate"][hreflang="${language}"]`,new AttributeHandler('href',seoPageUrl(meta.page,language,meta.context)));
   return rewriter.on('link[rel="alternate"][hreflang="x-default"]',new AttributeHandler('href',seoPageUrl(meta.page,'ca',meta.context)));
 }
@@ -139,7 +139,7 @@ export async function onRequest(context){
   }
   if(context.request.method!=='GET'||!page||!accepts.includes('text/html'))return context.next();
   const requestedLanguage=SUPPORTED_LANGUAGES.includes(url.searchParams.get('lang'))?url.searchParams.get('lang'):'ca';
-  const lang=route.storyId||route.summaryId||page==='canvi-climatic'?'ca':requestedLanguage;
+  const lang=route.storyId||route.summaryId?'ca':requestedLanguage;
   const [response,observation]=await Promise.all([context.next(),page==='inici'?fetchObservation():Promise.resolve(null)]);
   if(!response.headers.get('Content-Type')?.includes('text/html'))return response;
   const meta=routeSeo(page,lang,route);

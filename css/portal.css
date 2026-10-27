@@ -1030,3 +1030,5 @@ body[data-page="webcams"] #territori { grid-template-columns: 1fr; }
 @media(max-width:900px){.learning-microclimate__grid{grid-template-columns:1fr}}
 @media(max-width:760px){.station-recent{grid-template-columns:1fr}.station-recent>strong{text-align:left}.monthly-summary__metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.monthly-summary__metrics{grid-template-columns:1fr}}
+@media(max-width:600px){.weather-stories,.monthly-summary,.weather-stories__intro,.weather-stories__layout{grid-template-columns:minmax(0,1fr);min-width:0}.weather-stories__intro>*,.weather-stories__layout>*,.monthly-summary__hero>*{min-width:0}.weather-stories__intro,.monthly-summary__hero{overflow-wrap:anywhere}}
+@media(max-width:600px){.environment-section{grid-template-columns:minmax(0,1fr)}.environment-status{min-width:0}.environment-overview{grid-template-columns:minmax(0,1fr);min-width:0}.environment-overview>*,.environment-aqi__reading>*{min-width:0}.environment-aqi{overflow-wrap:anywhere}.environment-viewers>header{flex-wrap:wrap}.environment-viewers>header>div{min-width:0}}

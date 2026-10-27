@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-27 — Auditoria completa dels idiomes (en revisió)
+
+- S'amplia el catàleg en castellà, anglès i francès als textos visibles de 13 documents públics, als atributs accessibles i als missatges de les rutes del portal.
+- Les pàgines independents incorporen selector d'idioma i metadades segons la llengua; la PWA disposa de manifestos traduïts. La ruta de canvi climàtic conserva les metadades de cada idioma també al servidor.
+- S'afegeixen una prova de cobertura dels 1.605 textos inventariats i proves de navegació i amplada mòbil. La revisió editorial final i la validació en producció corresponen a després de la fusió.
+
 ## 2026-10-26 — Previsió sense dies duplicats (en revisió)
 
 - S'elimina el bloc superior «Els pròxims dies», repetit a la previsió de set dies. Es conserven els resums d'avui i demà, la previsió horària i la previsió diària completa.
