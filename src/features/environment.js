@@ -264,28 +264,48 @@ function render(payload){
 function initEnvironmentViewers(){
   const buttons=[...document.querySelectorAll('[data-environment-viewer]')];
   const panels=[...document.querySelectorAll('[data-environment-panel]')];
+  const topics=[...document.querySelectorAll('[data-environment-topic]')];
+  const sourceCards=[...document.querySelectorAll('[data-environment-source-topic]')];
   if(!buttons.length)return;
   const compactViewer=window.matchMedia('(max-width: 700px)');
+  let currentTopic='forest';
+  const selectTopic=name=>{
+    currentTopic=name;
+    topics.forEach(button=>{const active=button.dataset.environmentTopic===name;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active));});
+    buttons.forEach(button=>{button.hidden=button.dataset.environmentTopicName!==name;});
+    sourceCards.forEach(card=>{card.hidden=card.dataset.environmentSourceTopic!==name;});
+  };
   const activate=name=>{
+    const selected=buttons.find(button=>button.dataset.environmentViewer===name);
+    if(!selected)return;
+    if(selected.dataset.environmentTopicName!==currentTopic)selectTopic(selected.dataset.environmentTopicName);
     buttons.forEach(button=>{const active=button.dataset.environmentViewer===name;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});
     panels.forEach(panel=>{const active=panel.dataset.environmentPanel===name;panel.hidden=!active;if(active){const asset=panel.querySelector('[data-src]');const skipEmbeddedViewer=['jellyfish','marine'].includes(name)&&compactViewer.matches&&asset?.tagName==='IFRAME';if(asset&&!skipEmbeddedViewer&&!asset.getAttribute('src')){const suffix=asset.tagName==='IMG'?`?v=${new Date().toISOString().slice(0,13)}`:'';asset.src=`${asset.dataset.src}${suffix}`;}}});
     if(name==='firms'&&!firmsLoaded)void loadFirmsDetections();
     if(name==='air')void loadAirStationsMap();
     if(name==='earthquakes'&&!earthquakesLoaded)void loadEarthquakes(earthquakesPeriod);
   };
-  buttons.forEach((button,index)=>{
+  buttons.forEach(button=>{
     button.addEventListener('click',()=>activate(button.dataset.environmentViewer));
     button.addEventListener('keydown',event=>{
-      let target=index;
-      if(event.key==='ArrowRight'||event.key==='ArrowDown')target=(index+1)%buttons.length;
-      else if(event.key==='ArrowLeft'||event.key==='ArrowUp')target=(index-1+buttons.length)%buttons.length;
+      const visible=buttons.filter(item=>!item.hidden);
+      const position=visible.indexOf(button);
+      let target=position;
+      if(event.key==='ArrowRight'||event.key==='ArrowDown')target=(position+1)%visible.length;
+      else if(event.key==='ArrowLeft'||event.key==='ArrowUp')target=(position-1+visible.length)%visible.length;
       else if(event.key==='Home')target=0;
-      else if(event.key==='End')target=buttons.length-1;
+      else if(event.key==='End')target=visible.length-1;
       else return;
-      event.preventDefault();activate(buttons[target].dataset.environmentViewer);buttons[target].focus();
+      event.preventDefault();activate(visible[target].dataset.environmentViewer);visible[target].focus();
     });
   });
+  topics.forEach(topic=>topic.addEventListener('click',()=>{
+    const name=topic.dataset.environmentTopic;
+    const first=buttons.find(button=>button.dataset.environmentTopicName===name);
+    if(first)activate(first.dataset.environmentViewer);
+  }));
   document.getElementById('environment-air-stations-filter')?.addEventListener('change',renderAirStationsMap);
+  selectTopic(currentTopic);
   activate(buttons[0].dataset.environmentViewer);
 }
 

@@ -17,6 +17,37 @@ test.beforeEach(async({page})=>{
   });
 });
 
+test('l’atles ambiental canvia de tema i conserva els enllaços directes',async({page})=>{
+  await page.goto('/medi-ambient');
+  await expect(page.locator('html')).toHaveAttribute('data-environment-viewers-ready','true',{timeout:15000});
+  await page.locator('[data-environment-topic="air"]').click();
+  await expect(page.locator('#environment-tab-air')).toBeVisible();
+  await expect(page.locator('#environment-tab-fire')).toBeHidden();
+  await page.locator('.environment-atlas-sources summary').click();
+  await expect(page.getByText('Pol·len i espores',{exact:true})).toBeVisible();
+  await expect(page.getByText('Coberta arbòria',{exact:true})).toBeHidden();
+  await page.locator('[data-environment-topic="forest"]').click();
+  await expect(page.getByText('Coberta arbòria',{exact:true})).toBeVisible();
+  await page.locator('[data-environment-topic="water"]').click();
+  await expect(page.locator('#environment-tab-drought')).toBeVisible();
+  await expect(page.locator('#environment-panel-drought')).toContainText('manteniment');
+});
+
+test('l’atles manté els textos traduïts i els temes accessibles al mòbil',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/medi-ambient');
+  await expect(page.locator('html')).toHaveAttribute('data-environment-viewers-ready','true',{timeout:15000});
+  const selector=page.locator('#header-language-select');
+  for(const [language,label] of [['es','Aire y salud'],['en','Air and health'],['fr','Air et santé']]){
+    await selector.selectOption(language);
+    await expect(page.locator('[data-environment-topic="air"]')).toHaveText(label);
+  }
+  await page.locator('[data-environment-topic="sea"]').click();
+  await expect(page.locator('#environment-tab-marine')).toBeVisible();
+  const width=await page.locator('.environment-viewers').evaluate(node=>node.getBoundingClientRect().width);
+  expect(width).toBeLessThanOrEqual(390);
+});
+
 test('una història editorial carrega els scripts des de la ruta profunda',async({page})=>{
   await page.route('**/camera/nord/timelapses/2026-10-04.mp4',route=>route.fulfill({status:404,json:{error:'Vídeo no disponible'}}));
   await page.goto('/histories/aiguat-4-octubre-2026');
