@@ -1,5 +1,11 @@
 # Registre de decisions
 
+## ADR — Sequera pluviomètrica visible mentre VISSEQ és en manteniment (proposta, 2026-10-27)
+
+- L'antic iframe de VISSEQ no es restaura perquè la font oficial encara mostra manteniment. El conjunt obert municipal de l'ACA `i5n8-43cw` té l'última actualització de files el maig de 2025, de manera que no es pot presentar com a estat administratiu actual.
+- La pestanya de sequera mostra directament els cinc mapes mensuals d'Índex de Precipitació Estàndard de Meteocat, datats setembre de 2026 i identificats com a sequera pluviomètrica. Les imatges es carreguen només en seleccionar la pestanya i les cinc URL s'han comprovat abans d'incorporar-les.
+- Les fases i restriccions oficials continuen enllaçades al portal de l'ACA. La data del mapa és explícita i l'enllaç a Meteocat permet consultar si hi ha una publicació posterior. No s'infereix cap fase ACA a partir de l'IPE.
+
 ## ADR — Dades de tancament al timelapse, sense atribució a cada fotograma (proposta, 2026-10-27)
 
 - El vídeo mostra una targeta final de tres segons amb la data de la peça, la font i l'hora de la lectura. Una dada puntual no es presenta com si descrivís tot el dia.

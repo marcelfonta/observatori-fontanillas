@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-27 — Mapes de sequera pluviomètrica dins de Medi Ambient (en revisió)
+
+- La pestanya «Aigua i sequera» mostra dins la web els cinc mapes mensuals d'IPE de Meteocat (6, 9, 12, 24 i 36 mesos), amb el mes de la cartografia i un control accessible per canviar de període.
+- El mapa pluviomètric es diferencia de les fases administratives de l'ACA. El visor VISSEQ continua en manteniment i les dades obertes municipals no reben files noves des del maig de 2025; no se'n presenta cap fase com si fos actual.
+- Es conserven els enllaços a l'estat oficial i a les reserves, més un accés al mapa més recent de Meteocat. Els textos nous es tradueixen als quatre idiomes del portal.
+
 ## 2026-10-27 — Atles ambiental dins de Medi Ambient (en revisió)
 
 - Els set visors ambientals es mantenen dins de la mateixa pàgina i s'ordenen

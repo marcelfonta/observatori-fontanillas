@@ -39,10 +39,13 @@ test('l’atles manté els textos traduïts i els temes accessibles al mòbil',a
   await page.goto('/medi-ambient');
   await expect(page.locator('html')).toHaveAttribute('data-environment-viewers-ready','true',{timeout:15000});
   const selector=page.locator('#header-language-select');
-  for(const [language,label] of [['es','Aire y salud'],['en','Air and health'],['fr','Air et santé']]){
+  for(const [language,label,period] of [['es','Aire y salud','6 meses'],['en','Air and health','6 months'],['fr','Air et santé','6 mois']]){
     await selector.selectOption(language);
     await expect(page.locator('[data-environment-topic="air"]')).toHaveText(label);
+    await expect(page.locator('[data-drought-period="6"]')).toHaveText(period);
   }
+  await page.locator('[data-environment-topic="water"]').click();
+  await expect(page.locator('.environment-drought-map')).toBeVisible();
   await page.locator('[data-environment-topic="sea"]').click();
   await expect(page.locator('#environment-tab-marine')).toBeVisible();
   const width=await page.locator('.environment-viewers').evaluate(node=>node.getBoundingClientRect().width);
@@ -89,9 +92,13 @@ test('el menú lateral conserva la posició després de canviar de pàgina',asyn
 test('la sequera ofereix alternatives oficials i el mapa marí apunta a Copernicus',async({page})=>{
   await openEnvironment(page);
   await page.locator('#environment-tab-drought').click();
-  await expect(page.locator('#environment-panel-drought')).toContainText('El mapa interactiu de l’ACA pot estar temporalment en manteniment');
+  await expect(page.locator('#environment-panel-drought')).toContainText('el visor de l’ACA era en manteniment');
   await expect(page.locator('#environment-panel-drought a[href="https://aca.gencat.cat/ca/laigua/portal-sequera/estat-actual/"]')).toBeVisible();
   await expect(page.locator('#environment-panel-drought iframe')).toHaveCount(0);
+  await expect(page.locator('#environment-drought-image')).toHaveAttribute('src',/IPE6_1km_20260930_w\.png/);
+  await page.locator('[data-drought-period="12"]').click();
+  await expect(page.locator('#environment-drought-image')).toHaveAttribute('src',/IPE12_1km_20260930_w\.png/);
+  await expect(page.locator('[data-drought-period="12"]')).toHaveAttribute('aria-pressed','true');
   await page.locator('[data-environment-topic="sea"]').click();
   await page.locator('#environment-tab-marine').click();
   await expect(page.locator('#environment-panel-marine iframe')).toHaveAttribute('src','https://data.marine.copernicus.eu/viewer');
