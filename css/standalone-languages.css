@@ -1,0 +1,5 @@
+.standalone-languages{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.35rem;padding:.5rem 1rem;background:#09231d;color:#fff;font:600 .82rem/1.4 system-ui,sans-serif}
+.standalone-languages button{border:1px solid #6d9583;border-radius:999px;background:transparent;color:inherit;padding:.3rem .7rem;cursor:pointer}
+.standalone-languages button[aria-pressed="true"]{background:#78ce9a;border-color:#78ce9a;color:#062018}
+.standalone-languages button:focus-visible{outline:2px solid #f7d46d;outline-offset:2px}
+@media print{.standalone-languages{display:none}}

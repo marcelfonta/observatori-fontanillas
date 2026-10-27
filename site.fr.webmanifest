@@ -1,0 +1,95 @@
+{
+  "name": "Observatoire météorologique Fontanillas",
+  "short_name": "Observatoire",
+  "description": "Observations météo locales, prévisions, alertes officielles et radar en direct à Sant Celoni.",
+  "lang": "fr",
+  "start_url": "/?lang=fr&source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#205846",
+  "theme_color": "#286d55",
+  "categories": [
+    "weather",
+    "utilities",
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "id": "/",
+  "shortcuts": [
+    {
+      "name": "Demander à Meteo IA",
+      "short_name": "Meteo IA",
+      "url": "/?page=meteo-ia&lang=fr&source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Station en direct",
+      "short_name": "Station",
+      "url": "/?page=estacio&lang=fr&source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Alertes officielles",
+      "short_name": "Alertes",
+      "url": "/?page=avisos&lang=fr&source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Radar et éclairs",
+      "short_name": "Radar",
+      "url": "/?page=radar&lang=fr&source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ]
+}

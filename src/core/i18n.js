@@ -1,11 +1,13 @@
 import { FRENCH_PHRASES } from './i18n-fr.js';
 import { UI_HEADING_PHRASES } from './i18n-ui-headings.js';
+import { CONTENT_PHRASES } from './i18n-content.js';
 
 const STORAGE_KEY='fontanillas-language-v1';
 export const SUPPORTED_LANGUAGES=['ca','es','en','fr'];
 
 export const PHRASES={
   ...UI_HEADING_PHRASES,
+  ...CONTENT_PHRASES,
   'Meteocat i El temps d’El Nacional es reprodueixen dins la web quan els selecciones. La resta d’espais s’obren a la font original.':{es:'Meteocat y El temps d’El Nacional se reproducen aquí cuando los seleccionas. Los demás espacios se abren en la fuente original.',en:'Meteocat and El temps d’El Nacional play here when selected. Other sources open on their own sites.'},
   'El Nacional · YouTube':{es:'El Nacional · YouTube',en:'El Nacional · YouTube'},
   'El temps d’El Nacional':{es:'El tiempo de El Nacional',en:'El Nacional Weather'},
@@ -493,6 +495,7 @@ const DYNAMIC_REPLACEMENTS={
 };
 
 const TEXT_SOURCES=new WeakMap();
+const ATTRIBUTE_SOURCES=new WeakMap();
 let language='ca';
 let observer;
 let languageChangeInProgress=false;
@@ -503,9 +506,13 @@ function safeStoredLanguage(){
 
 export function getLanguage(){return language;}
 export function getLocale(){return language==='es'?'es-ES':language==='en'?'en-GB':language==='fr'?'fr-FR':'ca-ES';}
+function syncManifest(){
+  const link=document.querySelector?.('link[rel="manifest"]');
+  if(link)link.href=language==='ca'?'/site.webmanifest':`/site.${language}.webmanifest`;
+}
 export function t(source){
   if(language==='ca'||typeof source!=='string')return source;
-  const exact=language==='fr'?(FRENCH_PHRASES[source]||UI_HEADING_PHRASES[source]?.fr):PHRASES[source]?.[language];
+  const exact=language==='fr'?(FRENCH_PHRASES[source]||PHRASES[source]?.fr):PHRASES[source]?.[language];
   if(exact)return exact;
   return (DYNAMIC_REPLACEMENTS[language]||[]).reduce((value,[pattern,replacement])=>value.replace(pattern,replacement),source);
 }
@@ -517,13 +524,13 @@ export function getTranslationCoverage(){
     missing:{
       es:keys.filter(key=>!PHRASES[key]?.es),
       en:keys.filter(key=>!PHRASES[key]?.en),
-      fr:keys.filter(key=>!FRENCH_PHRASES[key]&&!UI_HEADING_PHRASES[key]?.fr)
+      fr:keys.filter(key=>!FRENCH_PHRASES[key]&&!PHRASES[key]?.fr)
     }
   };
 }
 
 function translateTextNode(node){
-  if(!node?.parentElement||['SCRIPT','STYLE','NOSCRIPT','CODE','PRE'].includes(node.parentElement.tagName))return;
+  if(!node?.parentElement||['SCRIPT','STYLE','NOSCRIPT','CODE','PRE'].includes(node.parentElement.tagName)||node.parentElement.closest('[data-i18n-ignore]'))return;
   const match=node.nodeValue.match(/^(\s*)(.*?)(\s*)$/s);
   const current=match?.[2]||'';
   if(!current)return;
@@ -544,19 +551,28 @@ export function translateDocument(root=document.body){
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   let node;
   while((node=walker.nextNode()))translateTextNode(node);
-  root.querySelectorAll?.('[data-i18n-placeholder]').forEach(element=>{
-    if(!element.dataset.i18nSourcePlaceholder)element.dataset.i18nSourcePlaceholder=element.getAttribute('placeholder')||'';
-    element.setAttribute('placeholder',t(element.dataset.i18nSourcePlaceholder));
-  });
-  root.querySelectorAll?.('[data-i18n-label]').forEach(element=>{
-    if(!element.dataset.i18nSourceLabel)element.dataset.i18nSourceLabel=element.getAttribute('aria-label')||'';
-    element.setAttribute('aria-label',t(element.dataset.i18nSourceLabel));
-  });
+  const translateAttributes=element=>{
+    if(element?.nodeType!==Node.ELEMENT_NODE||element.closest('[data-i18n-ignore]'))return;
+    let sources=ATTRIBUTE_SOURCES.get(element);
+    if(!sources){sources={};ATTRIBUTE_SOURCES.set(element,sources);}
+    for(const attribute of ['placeholder','aria-label','title','alt']){
+      const explicit=attribute==='placeholder'?element.dataset.i18nSourcePlaceholder:attribute==='aria-label'?element.dataset.i18nSourceLabel:null;
+      if(!element.hasAttribute(attribute)&&!explicit)continue;
+      const current=element.getAttribute(attribute)||'';
+      if(explicit)sources[attribute]=explicit;
+      else if(!sources[attribute]||(!languageChangeInProgress&&current!==sources[attribute]&&current!==t(sources[attribute])))sources[attribute]=current;
+      const translated=t(sources[attribute]);
+      if(current!==translated)element.setAttribute(attribute,translated);
+    }
+  };
+  translateAttributes(root);
+  root.querySelectorAll?.('[placeholder],[aria-label],[title],[alt],[data-i18n-placeholder],[data-i18n-label]').forEach(translateAttributes);
 }
 
 export function setLanguage(nextLanguage,{persist=true}={}){
   language=SUPPORTED_LANGUAGES.includes(nextLanguage)?nextLanguage:'ca';
   document.documentElement.lang=language;
+  syncManifest();
   if(persist){try{localStorage.setItem(STORAGE_KEY,language);}catch{}}
   languageChangeInProgress=true;
   translateDocument();
@@ -570,11 +586,13 @@ export function initLanguage(){
   const requested=new URLSearchParams(window.location.search).get('lang')?.toLowerCase();
   language=SUPPORTED_LANGUAGES.includes(requested)?requested:SUPPORTED_LANGUAGES.includes(stored)?stored:'ca';
   document.documentElement.lang=language;
+  syncManifest();
   translateDocument();
   observer?.disconnect();
   observer=new MutationObserver(records=>records.forEach(record=>{
     if(record.type==='characterData')translateTextNode(record.target);
-    record.addedNodes.forEach(node=>translateDocument(node));
+    else if(record.type==='attributes')translateDocument(record.target);
+    else record.addedNodes.forEach(node=>translateDocument(node));
   }));
-  if(document.body)observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+  if(document.body)observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','aria-label','title','alt']});
 }
