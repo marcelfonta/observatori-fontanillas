@@ -1,5 +1,16 @@
 # Registre de decisions
 
+## ADR — Dades de tancament al timelapse, sense atribució a cada fotograma (proposta, 2026-10-27)
+
+- El vídeo mostra una targeta final de tres segons amb la data de la peça, la font i l'hora de la lectura. Una dada puntual no es presenta com si descrivís tot el dia.
+- El CO₂ global prové de NOAA a través del Worker; les comparacions d'un i deu anys només apareixen quan la sèrie en publica els valors. Les concentracions d'aire provenen exclusivament de l'estació XVPCA `ES1275A` de Sant Celoni i només apareixen si l'hora oficial és del mateix dia que el vídeo i té menys de tres hores. Si falta la lectura, no hi ha substitució amb CAMS.
+- El mateix fotograma final forma part de les variants horitzontal i vertical, sense una tercera pujada. Es manté la reducció fotograma a fotograma i un sol fil de FFmpeg perquè la Raspberry té memòria limitada. Si la prova física detecta un problema, el rollback és restaurar la còpia anterior de `camera-timelapse.sh`; el Worker i els vídeos antics no canvien.
+
+## ADR — Pauses compartides de Buffer (proposta, 2026-10-27)
+
+- `Retry-After` continua sent l'autoritat per reprendre peticions a Buffer. La comprovació social registra la finestra de quota retornada a `RateLimit` sense desar identificadors de client o credencials.
+- Una pausa compartida ja notificada no envia més correus idèntics fins al desbloqueig. La resta de canals es mantenen independents. Si el canvi degrada la detecció, es reverteix només el commit del Worker i es conserva l'estat D1 existent.
+
 ## ADR — Domini públic propi per a la càmera (acceptada, 2026-10-25)
 
 - `camera.fontanillas.cat` apuntarà al Worker `fonta-meteo` existent, sense un segon Worker ni còpia de l'R2. El nom només publica imatges i vídeos de la càmera amb GET o HEAD; rebutja qualsevol altra ruta o mètode abans d'arribar al router general.
