@@ -5058,6 +5058,10 @@ export function parseBufferRetryAfter(value, now = Date.now()) {
   return Math.max(1,Math.ceil((retryAt-Number(now))/1000));
 }
 
+export function bufferRateLimitWindow(header) {
+  return String(header || '').match(/"\d+-in-(15min|24h|30d)"/i)?.[1]?.toLowerCase() || null;
+}
+
 export function bufferRateLimitRetryAt(detail, now = Date.now()) {
   const value=typeof detail==='string'?parseYoutubeShortRunDetail(detail):detail;
   const retryAt=Date.parse(value?.retryAt || '');
@@ -5073,11 +5077,11 @@ async function activeBufferRateLimit(env, now = Date.now()) {
   return retryAt?{retryAt,rateLimited:true,sharedCooldown:true}:null;
 }
 
-async function rememberBufferRateLimit(env, retryAt, error) {
+async function rememberBufferRateLimit(env, retryAt, error, window = null) {
   if (!(await ensureOperationsSchema(env))) return;
   await recordOperationalState(env,BUFFER_RATE_LIMIT_SERVICE_KEY,'running',{
     stage:'rate_limited',rateLimited:true,retryAt,
-    responseCode:429,error:cleanText(error,500),
+    responseCode:429,error:cleanText(error,500),window,
   });
 }
 
@@ -5097,11 +5101,12 @@ async function bufferGraphql(env, query, variables = {}) {
   if (!response.ok || payload.errors?.length) {
     const message = cleanText(payload.errors?.[0]?.message || `Buffer ha respost ${response.status}.`, 500);
     const rateLimited=response.status===429;
+    const limitWindow=rateLimited?bufferRateLimitWindow(response.headers.get('RateLimit')):null;
     const retryAfterSeconds=rateLimited
       ? (parseBufferRetryAfter(response.headers.get('Retry-After')) || BUFFER_RATE_LIMIT_FALLBACK_SECONDS)
       : null;
     const retryAt=retryAfterSeconds ? new Date(Date.now()+retryAfterSeconds*1000).toISOString() : null;
-    if(rateLimited)await rememberBufferRateLimit(env,retryAt,message).catch(()=>{});
+    if(rateLimited)await rememberBufferRateLimit(env,retryAt,message,limitWindow).catch(()=>{});
     throw Object.assign(new Error(message), {
       status:rateLimited?429:502,
       responseCode:response.status,
@@ -5109,6 +5114,7 @@ async function bufferGraphql(env, query, variables = {}) {
       retryAfterSeconds,
       retryAt,
       sharedCooldown:rateLimited,
+      limitWindow,
     });
   }
   return payload.data || {};
@@ -6781,6 +6787,13 @@ export function socialPreflightFailureSignature(failed) {
   return JSON.stringify(failed.map(item=>({channel:item.channel,detail:cleanText(item.detail,240),rateLimited:Boolean(item.rateLimited)})).sort((a,b)=>a.channel.localeCompare(b.channel)));
 }
 
+export function shouldNotifySocialPreflightFailure(notice, signature, now = Date.now(), retryAt = null) {
+  if (notice?.detail !== signature) return true;
+  const notifiedAt=Date.parse(notice?.last_notified_at || '');
+  if (Number.isFinite(Date.parse(retryAt || '')) && Date.parse(retryAt) > now) return false;
+  return !Number.isFinite(notifiedAt) || now-notifiedAt>=6*60*60_000;
+}
+
 async function adminSocialDiagnostics(request, env) {
   const auth = await authorizeAdminRequest(request, env);
   if (auth.response) return auth.response;
@@ -6817,10 +6830,9 @@ async function runDailyIntegrationPreflight(env, date = new Date()) {
     const notificationKey='social-preflight-notification';
     const signature=socialPreflightFailureSignature(failed);
     const notice=await env.DB.prepare('SELECT last_notified_at,detail FROM monitor_state WHERE service_key = ?').bind(notificationKey).first();
-    const notifiedAt=Date.parse(notice?.last_notified_at || '');
-    const sameRecent=notice?.detail===signature&&Number.isFinite(notifiedAt)&&date.getTime()-notifiedAt<6*60*60_000;
-    if(!sameRecent){
-      const rateLimitNote=failed.some(item=>item.rateLimited)?' Buffer ha indicat una pausa temporal compartida; X i TikTok no tornaran a contactar el servei fins que finalitzi el període indicat.':'';
+    const cooldown=failed.some(item=>item.rateLimited)?await activeBufferRateLimit(env).catch(()=>null):null;
+    if(shouldNotifySocialPreflightFailure(notice,signature,date.getTime(),cooldown?.retryAt)){
+      const rateLimitNote=cooldown?.retryAt?` Buffer ha indicat una pausa temporal compartida fins al ${cooldown.retryAt}; X i TikTok no tornaran a contactar el servei abans d'aquesta hora.`:'';
       await sendOperationalEmail(env,'[Observatori] Connexió social no preparada',`La comprovació preventiva de les ${slot} ha detectat ${failed.length} connexió/ns activa/es amb incidències abans de la publicació automàtica.\n\n${failed.map(item=>`${item.channel}: ${item.detail}`).join('\n')}\n\nEls canals no configurats s’han omès i la resta podran continuar publicant de manera independent.${rateLimitNote}`,'social_preflight_failed');
       await env.DB.prepare(`INSERT INTO monitor_state (service_key,status,consecutive_failures,last_checked_at,last_failure_at,last_success_at,last_notified_at,detail)
         VALUES (?,?,?,?,?,?,?,?)

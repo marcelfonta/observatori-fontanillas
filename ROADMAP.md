@@ -120,6 +120,15 @@ Cal comprovar l'estat real de les primeres publicacions després d'aquesta hora
 abans de considerar TikTok recuperat. Una correcció pendent de revisió evita
 reconsultar repetidament els enviaments d'X ja confirmats.
 
+El 27/10 la comprovació de les 06:45 ha tornat a avisar de la mateixa pausa,
+abans de les 10:31 UTC: aquest correu no demostra un segon bloqueig. El paquet
+de seguiment evita correus repetits durant la pausa i conservarà la finestra
+de quota que indiqui Buffer en el pròxim 429. Després de les 10:31 UTC cal
+verificar una sola consulta i l'estat real dels canals; si torna a esgotar-se
+la finestra de 30 dies, estudiar la reducció de consultes o el pla de Buffer.
+Per TikTok, l'alternativa immediata és la càrrega manual del vídeo vertical;
+Direct Post exigeix aprovació de l'app i del permís abans d'automatitzar-la.
+
 - [ ] Confirmar la pròxima publicació automàtica del timelapse, amb el CO₂ a la
   imatge, sense duplicats i en tots els canals habilitats.
 
@@ -130,6 +139,10 @@ amb 207 fotogrames: fitxers de 6,1 MB i 3,4 MB, dimensions comprovades i servei
 correcte. Els scripts nous han quedat instal·lats i la imatge pública ja mostra
 el CO₂ actual, el de fa un any i el de fa deu anys. Encara cal comprovar el
 resultat d'una publicació automàtica real, inclosa la qualitat a YouTube.
+Un paquet pendent de revisió afegeix una targeta final amb les mateixes famílies
+de dades que la webcam: CO₂ NOAA amb comparacions, i NO₂, O₃ i PM10 de XVPCA
+només amb lectura recent del dia del vídeo. Cal provar-la visualment a la
+Raspberry i instal·lar la nova versió de l'script després de la fusió.
 
 El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) continua oberta. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El 25/10 els vídeos del 23 i del 24 responen 200 al Worker, mentre que el del 21 encara respon 404; la generació posterior al canvi, per tant, funciona, però l'episodi perdut no s'ha recuperat. El timelapse del 23/10 s’ha publicat a Instagram i el workflow de YouTube del mateix dia va acabar correctament. Encara falta evidència visible de la següent execució automàtica a cada canal habilitat, sense duplicats i amb la càpsula de CO₂, abans de tancar #299. El panell d'administració pot assenyalar dies programats absents.
 

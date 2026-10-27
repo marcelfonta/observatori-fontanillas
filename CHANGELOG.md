@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-27 — Context al timelapse i pausa de Buffer (en revisió)
+
+- El timelapse afegeix una targeta final de tres segons amb el CO₂ actual i comparacions anuals disponibles, i amb NO₂, O₃ i PM10 de l'estació oficial XVPCA de Sant Celoni només si corresponen al dia del vídeo i tenen menys de tres hores. L'hora, les fonts i el caràcter provisional queden visibles; una dada absent no es substitueix per una estimació.
+- El Worker deixa de repetir correus idèntics de comprovació social mentre segueix vigent una pausa compartida de Buffer i registra quina finestra de límit (`15min`, `24h` o `30d`) s'ha esgotat quan Buffer ho indica. X i TikTok continuen aturats fins a `Retry-After`; els altres canals segueixen independents.
+- La generació de vídeo continua sense publicar durant la prova local. Cal revisar el PR, comprovar el filtre de text a la Raspberry i instal·lar-hi l'script després de la fusió.
+
 ## 2026-10-27 — Auditoria completa dels idiomes (en revisió)
 
 - S'amplia el catàleg en castellà, anglès i francès als textos visibles de 13 documents públics, als atributs accessibles i als missatges de les rutes del portal.

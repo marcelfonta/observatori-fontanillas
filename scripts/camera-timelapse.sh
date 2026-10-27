@@ -53,6 +53,7 @@ FONT="$(fc-match -f '%{file}' 'DejaVu Sans:style=Bold' 2>/dev/null || true)"
 CO2_LANDSCAPE="$TMP_DIR/co2-landscape.txt"
 CO2_VALUE="$TMP_DIR/co2-value.txt"
 CO2_SOURCE="$TMP_DIR/co2-source.txt"
+CO2_COMPARE="$TMP_DIR/co2-compare.txt"
 # La dada és opcional: si NOAA no és recent, el vídeo continua sense càpsula.
 if command -v curl >/dev/null && command -v python3 >/dev/null; then
   curl --fail --silent --max-time 5 "${CAMERA_CO2_URL:-https://fonta-meteo.marcelfonta.workers.dev/climate/co2}" | \
@@ -70,9 +71,63 @@ try:
     pathlib.Path(sys.argv[1]).write_text(f"CO₂ atmosfèric · Mauna Loa, NOAA · {number} ppm · {date.isoformat()}",encoding="utf-8")
     pathlib.Path(sys.argv[2]).write_text(f"CO₂ · {number} ppm",encoding="utf-8")
     pathlib.Path(sys.argv[3]).write_text(f"Mauna Loa · NOAA · {date_label}",encoding="utf-8")
+    history=[]
+    for label,key,date_key,years in (("Fa 1 any","yearAgoPpm","yearAgoDate",1),("Fa 10 anys","tenYearsAgoPpm","tenYearsAgoDate",10)):
+        past=value.get(key)
+        past_date=value.get(date_key)
+        if isinstance(past,(int,float)) and 250<=past<=650 and isinstance(past_date,str) and past_date[:4]==str(date.year-years):
+            history.append(f"{label} {past:.2f}".replace(".",","))
+    pathlib.Path(sys.argv[4]).write_text(" · ".join(history)+" ppm" if history else "",encoding="utf-8")
 except (ValueError,KeyError,TypeError,json.JSONDecodeError):
     pass
-' "$CO2_LANDSCAPE" "$CO2_VALUE" "$CO2_SOURCE" || true
+' "$CO2_LANDSCAPE" "$CO2_VALUE" "$CO2_SOURCE" "$CO2_COMPARE" || true
+fi
+# La targeta final només admet una lectura oficial del mateix dia del vídeo.
+# En regenerar dies antics no s'hi incrusta l'estat de l'aire d'avui.
+AIR_TIME="$TMP_DIR/air-time.txt"
+AIR_NO2="$TMP_DIR/air-no2.txt"
+AIR_O3="$TMP_DIR/air-o3.txt"
+AIR_PM10="$TMP_DIR/air-pm10.txt"
+AIR_NO2_COLOR="$TMP_DIR/air-no2-color.txt"
+AIR_O3_COLOR="$TMP_DIR/air-o3-color.txt"
+AIR_PM10_COLOR="$TMP_DIR/air-pm10-color.txt"
+if command -v curl >/dev/null && command -v python3 >/dev/null; then
+  curl --fail --silent --max-time 8 "${CAMERA_AIR_URL:-https://www.gencat.cat/territori/quaire/json/estat.json}" | python3 -c '
+import datetime,json,math,re,sys
+from pathlib import Path
+from zoneinfo import ZoneInfo
+try:
+    day,time_path,*paths=sys.argv[1:]
+    data=json.load(sys.stdin)
+    station=next((item.get("properties",{}) for item in data["features"] if item.get("id")=="ES1275A" and item.get("properties",{}).get("localitat")=="Sant Celoni"),None)
+    if station is None:
+        raise ValueError("station missing")
+    stamp=station["dataActualitzacio"]
+    if not re.fullmatch(r"\d{2}/\d{2}/\d{4} \d{2}:\d{2}",stamp):
+        raise ValueError("invalid station time")
+    local=datetime.datetime.strptime(stamp,"%d/%m/%Y %H:%M").replace(tzinfo=ZoneInfo("Europe/Madrid"))
+    age=(datetime.datetime.now(datetime.timezone.utc)-local.astimezone(datetime.timezone.utc)).total_seconds()
+    if local.date().isoformat()!=day or local.replace(fold=0).utcoffset()!=local.replace(fold=1).utcoffset() or not -300<=age<10800:
+        raise ValueError("stale or different day")
+    colors={"bona":"0x238D5A","raonablement_bona":"0x8CAC34","regular":"0xB8891F","desfavorable":"0xB73535","molt_desfavorable":"0x873F93","extremadament_desfavorable":"0x5F275B"}
+    components={item.get("abbr"):item for item in station.get("contaminants",[])}
+    found=0
+    for label,value_path,color_path in zip(("NO2","O3","PM10"),paths[:3],paths[3:]):
+        row=next((row for row in components.get(label,{}).get("dadesHoraries",[]) if row.get("hora")==local.strftime("%H")),None)
+        color=colors.get(row.get("qualitat")) if row else None
+        try:
+            value=float(str(row.get("valor","")).replace(",",".")) if row else math.nan
+        except (ValueError,TypeError):
+            continue
+        if color and math.isfinite(value) and 0<=value<=1000:
+            Path(value_path).write_text(str(round(value)),encoding="utf-8")
+            Path(color_path).write_text(color,encoding="utf-8")
+            found+=1
+    if found:
+        Path(time_path).write_text(stamp,encoding="utf-8")
+except (ValueError,KeyError,TypeError,json.JSONDecodeError):
+    pass
+' "$DATE" "$AIR_TIME" "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_NO2_COLOR" "$AIR_O3_COLOR" "$AIR_PM10_COLOR" || true
 fi
 # La versió principal selecciona el centre panoràmic en 16:9 i elimina el 10%
 # inferior, on apareixen les cases més pròximes. El retall substitueix els
@@ -91,6 +146,40 @@ for index in "${!IMAGES[@]}"; do
   printf "file '%s'\nduration 0.12\n" "${frame//\'/\'\\\'\'}" >> "$LIST"
 done
 printf "file '%s'\n" "${frame//\'/\'\\\'\'}" >> "$LIST"
+
+# Una targeta final conserva l'hora i la font de cada lectura. Les mesures
+# representen el tancament del dia, no tots els fotogrames del timelapse.
+if [[ -s "$CO2_LANDSCAPE" || -s "$AIR_TIME" ]] && ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
+  CARD="$TMP_DIR/context-card.jpg"
+  CARD_FILTER="drawtext=fontfile='$FONT':text='SANT CELONI · RESUM DEL DIA $DATE':fontcolor=white:fontsize=48:x=60:y=50"
+  if [[ -s "$CO2_LANDSCAPE" ]]; then
+    CARD_FILTER+=",drawbox=x=60:y=145:w=1160:h=160:color=white@0.08:t=fill,drawtext=fontfile='$FONT':text='CO₂ ATMOSFÈRIC':fontcolor=0xF4CE46:fontsize=36:x=88:y=163,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=55:x=88:y=205,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.78:fontsize=25:x=310:y=223"
+    if [[ -s "$CO2_COMPARE" ]]; then
+      CARD_FILTER+=",drawtext=fontfile='$FONT':textfile='$CO2_COMPARE':fontcolor=white@0.9:fontsize=32:x=88:y=268"
+    fi
+  fi
+  if [[ -s "$AIR_TIME" ]]; then
+    CARD_FILTER+=",drawtext=fontfile='$FONT':text='AIRE MESURAT · XVPCA SANT CELONI':fontcolor=white:fontsize=36:x=88:y=359,drawtext=fontfile='$FONT':textfile='$AIR_TIME':fontcolor=white@0.78:fontsize=26:x=88:y=407"
+    for pollutant in NO2 O3 PM10; do
+      case "$pollutant" in
+        NO2) card_x=180; air_value="$AIR_NO2"; air_color="$AIR_NO2_COLOR" ;;
+        O3) card_x=530; air_value="$AIR_O3"; air_color="$AIR_O3_COLOR" ;;
+        PM10) card_x=880; air_value="$AIR_PM10"; air_color="$AIR_PM10_COLOR" ;;
+      esac
+      [[ -s "$air_value" && -s "$air_color" ]] || continue
+      CARD_FILTER+=",drawtext=fontfile='$FONT':text='●':fontcolor=$(cat "$air_color"):fontsize=155:x=$card_x:y=446,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=30:x=$card_x+(130-text_w)/2:y=478,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=45:x=$card_x+(130-text_w)/2:y=520"
+    done
+    CARD_FILTER+=",drawtext=fontfile='$FONT':text='µg/m³ · dades provisionals · PM10 mitjana de 24 h':fontcolor=white@0.78:fontsize=25:x=88:y=620"
+  fi
+  if MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
+    -threads 1 -f lavfi -i 'color=c=#101820:s=1280x720:d=1' \
+    -filter_threads 1 -filter_complex_threads 1 \
+    -vf "$CARD_FILTER" -frames:v 1 -q:v 3 -f image2 -update 1 "$CARD" && [[ -s "$CARD" ]]; then
+    printf "file '%s'\nduration 3\nfile '%s'\n" "$CARD" "$CARD" >> "$LIST"
+  else
+    echo 'Targeta de context omesa: la creació ha fallat; el timelapse continuarà sense les dades addicionals.' >&2
+  fi
+fi
 
 rm -f "$OUTPUT_TMP"
 LANDSCAPE_FILTER="format=yuv420p"

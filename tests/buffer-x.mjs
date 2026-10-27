@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { bufferRateLimitRetryAt, bufferXRecoverySlot, parseBufferRetryAfter, truncateBufferXText, xWeightedLength } from '../worker/index.js';
+import { bufferRateLimitRetryAt, bufferRateLimitWindow, bufferXRecoverySlot, parseBufferRetryAfter, truncateBufferXText, xWeightedLength } from '../worker/index.js';
 
 const worker = await readFile(new URL('../worker/index.js', import.meta.url), 'utf8');
 const workflow = await readFile(new URL('../.github/workflows/youtube-short-private.yml', import.meta.url), 'utf8');
@@ -18,7 +18,7 @@ assert.match(worker, /detail\.stage === 'rate_limited'/);
 assert.match(worker, /retryInsideWindow/);
 assert.match(worker, /BUFFER_RATE_LIMIT_SERVICE_KEY = 'buffer:rate-limit'/);
 assert.match(worker, /skipped:'shared_buffer_cooldown'/);
-assert.match(worker, /await rememberBufferRateLimit\(env,retryAt,message\)/);
+assert.match(worker, /await rememberBufferRateLimit\(env,retryAt,message,limitWindow\)/);
 assert.match(worker, /await validateBufferStoredAsset\(env, key, 'video\/mp4', SOCIAL_VIDEO_MAX_BYTES\)/);
 assert.doesNotMatch(worker, /assets = \[\{ video:\{ url:await bufferVideoUrl\(key, env\), metadata/);
 assert.match(worker, /ensureSocialCardUrl\(socialDraft, env, 'jpeg'\)/);
@@ -60,6 +60,9 @@ assert.ok(shortened.endsWith('…'));
 assert.equal(parseBufferRetryAfter('120',Date.parse('2026-10-15T12:00:00Z')),120);
 assert.equal(parseBufferRetryAfter('Thu, 15 Oct 2026 12:05:00 GMT',Date.parse('2026-10-15T12:00:00Z')),300);
 assert.equal(parseBufferRetryAfter('cap valor'),null);
+assert.equal(bufferRateLimitWindow('"100-in-15min"; r=0; t=753'),'15min');
+assert.equal(bufferRateLimitWindow('"3000-in-30d"; r=0; t=180000'),'30d');
+assert.equal(bufferRateLimitWindow('private-token'),null);
 assert.equal(bufferRateLimitRetryAt({stage:'rate_limited',retryAt:'2026-10-15T12:05:00.000Z'},Date.parse('2026-10-15T12:00:00Z')),'2026-10-15T12:05:00.000Z');
 assert.equal(bufferRateLimitRetryAt({stage:'rate_limited',retryAt:'2026-10-15T12:05:00.000Z'},Date.parse('2026-10-15T12:06:00Z')),null);
 assert.equal(bufferRateLimitRetryAt({stage:'healthy',retryAt:'2026-10-15T12:05:00.000Z'},Date.parse('2026-10-15T12:00:00Z')),null);
