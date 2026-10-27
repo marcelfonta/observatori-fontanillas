@@ -1,5 +1,23 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
+
+## Atles ambiental de Medi Ambient (proposta en revisió, 27-10-2026)
+
+Els set visors existents es presenten sota cinc temes dins de la mateixa pàgina.
+Un catàleg complementari, plegat d'entrada i filtrat pel tema, dona accés a
+fonts catalanes, europees i globals sense carregar-les automàticament. Cada
+accés diferencia mesura, model, previsió, anàlisi històrica o mapa de risc;
+els continguts nous es tradueixen a català, castellà, anglès i francès.
+
+- [ ] Revisar visualment la previsualització en mòbil i ordinador abans de la
+  fusió, especialment les pestanyes, el catàleg desplegable i els enllaços.
+- [ ] Afegir capes natives només després de validar cobertura local, escala,
+  actualització, llicència i estabilitat de cada servei. Els accessos a
+  Resource Watch, Living Atlas, MapX i Lemuriant són exploració externa,
+  no lectures locals ni dades importades al Worker.
+- [ ] Reavaluar el mapa de sequera de l'ACA quan torni del manteniment, sense
+  alterar mentrestant la consulta oficial disponible.
+
 Actualitzat el 26 d’octubre de 2026. Aquest document conté únicament feina
 pendent, aplicable i amb un criteri de finalització observable. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de

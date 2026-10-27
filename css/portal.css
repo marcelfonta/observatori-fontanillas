@@ -480,6 +480,19 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .environment-viewers h2 { margin: 5px 0 8px; font: 700 27px/1.08 var(--font-display); }
 .environment-viewers header p:last-child { max-width: 720px; margin: 0; color: var(--muted); line-height: 1.55; }
 .environment-viewer-tabs { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+.environment-topic-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.environment-topic-tabs button{min-height:44px;padding:10px 15px;border:1px solid var(--line);border-radius:12px;background:rgba(137,214,163,.04);color:var(--text);font:700 12px var(--font-body);cursor:pointer}
+.environment-topic-tabs button.is-active{border-color:var(--green);background:rgba(137,214,163,.16);color:var(--green)}
+.environment-topic-tabs button:focus-visible,.environment-atlas-sources a:focus-visible,.environment-atlas-sources summary:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+.environment-atlas-hint{margin:0 0 14px;color:var(--muted);font-size:11px;line-height:1.5}
+.environment-viewer-tabs button[hidden],.environment-atlas-source-grid a[hidden]{display:none}
+.environment-atlas-sources{margin:0 0 16px;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(9,24,19,.5)}
+.environment-atlas-sources summary{color:var(--green);font-size:12px;font-weight:700;cursor:pointer}
+.environment-atlas-sources>p{color:var(--muted);font-size:11px;line-height:1.5}
+.environment-atlas-source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:9px}
+.environment-atlas-source-grid a{display:flex;flex-direction:column;gap:7px;min-height:128px;padding:15px;border:1px solid var(--line);border-radius:12px;background:rgba(137,214,163,.04);color:var(--text);text-decoration:none}
+.environment-atlas-source-grid a:hover{border-color:rgba(137,214,163,.6);background:rgba(137,214,163,.1)}
+.environment-atlas-source-grid span{color:var(--green);font-size:10px}.environment-atlas-source-grid strong{font-size:13px}.environment-atlas-source-grid small{color:var(--muted);font-size:10px;line-height:1.4}
 .environment-viewer-tabs button { min-height: 40px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); font: 700 11px var(--font-body); cursor: pointer; }
 .environment-viewer-tabs button:hover,.environment-viewer-tabs button.is-active { border-color: rgba(137,214,163,.48); background: rgba(137,214,163,.1); color: var(--green); }
 .environment-viewer-tabs button:focus-visible,.environment-viewer-panel:focus-visible { outline: 3px solid rgba(137,214,163,.65); outline-offset: 3px; }

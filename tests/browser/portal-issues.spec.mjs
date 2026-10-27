@@ -4,8 +4,9 @@ import {fileURLToPath} from 'node:url';
 const indexPath=fileURLToPath(new URL('../../index.html',import.meta.url));
 const openEnvironment=async page=>{
   await page.goto('/medi-ambient');
-  await page.locator('#environment-tab-drought').scrollIntoViewIfNeeded();
   await expect(page.locator('html')).toHaveAttribute('data-environment-viewers-ready','true',{timeout:15000});
+  await page.locator('[data-environment-topic="water"]').click();
+  await page.locator('#environment-tab-drought').scrollIntoViewIfNeeded();
 };
 
 test.beforeEach(async({page})=>{
@@ -15,6 +16,37 @@ test.beforeEach(async({page})=>{
     if(['/histories/aiguat-4-octubre-2026','/resums/2026-09','/medi-ambient'].includes(url.pathname))return route.fulfill({path:indexPath,contentType:'text/html'});
     return route.continue();
   });
+});
+
+test('l’atles ambiental canvia de tema i conserva els enllaços directes',async({page})=>{
+  await page.goto('/medi-ambient');
+  await expect(page.locator('html')).toHaveAttribute('data-environment-viewers-ready','true',{timeout:15000});
+  await page.locator('[data-environment-topic="air"]').click();
+  await expect(page.locator('#environment-tab-air')).toBeVisible();
+  await expect(page.locator('#environment-tab-fire')).toBeHidden();
+  await page.locator('.environment-atlas-sources summary').click();
+  await expect(page.getByText('Pol·len i espores',{exact:true})).toBeVisible();
+  await expect(page.getByText('Coberta arbòria',{exact:true})).toBeHidden();
+  await page.locator('[data-environment-topic="forest"]').click();
+  await expect(page.getByText('Coberta arbòria',{exact:true})).toBeVisible();
+  await page.locator('[data-environment-topic="water"]').click();
+  await expect(page.locator('#environment-tab-drought')).toBeVisible();
+  await expect(page.locator('#environment-panel-drought')).toContainText('manteniment');
+});
+
+test('l’atles manté els textos traduïts i els temes accessibles al mòbil',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/medi-ambient');
+  await expect(page.locator('html')).toHaveAttribute('data-environment-viewers-ready','true',{timeout:15000});
+  const selector=page.locator('#header-language-select');
+  for(const [language,label] of [['es','Aire y salud'],['en','Air and health'],['fr','Air et santé']]){
+    await selector.selectOption(language);
+    await expect(page.locator('[data-environment-topic="air"]')).toHaveText(label);
+  }
+  await page.locator('[data-environment-topic="sea"]').click();
+  await expect(page.locator('#environment-tab-marine')).toBeVisible();
+  const width=await page.locator('.environment-viewers').evaluate(node=>node.getBoundingClientRect().width);
+  expect(width).toBeLessThanOrEqual(390);
 });
 
 test('una història editorial carrega els scripts des de la ruta profunda',async({page})=>{
@@ -60,6 +92,7 @@ test('la sequera ofereix alternatives oficials i el mapa marí apunta a Copernic
   await expect(page.locator('#environment-panel-drought')).toContainText('El mapa interactiu de l’ACA pot estar temporalment en manteniment');
   await expect(page.locator('#environment-panel-drought a[href="https://aca.gencat.cat/ca/laigua/portal-sequera/estat-actual/"]')).toBeVisible();
   await expect(page.locator('#environment-panel-drought iframe')).toHaveCount(0);
+  await page.locator('[data-environment-topic="sea"]').click();
   await page.locator('#environment-tab-marine').click();
   await expect(page.locator('#environment-panel-marine iframe')).toHaveAttribute('src','https://data.marine.copernicus.eu/viewer');
   await expect(page.locator('#environment-panel-marine .environment-marine-options a[href="https://data.marine.copernicus.eu/viewer"]')).toBeVisible();
@@ -70,6 +103,7 @@ test('la sequera ofereix alternatives oficials i el mapa marí apunta a Copernic
 test('al mòbil el mapa del mar s’obre en pantalla completa',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await openEnvironment(page);
+  await page.locator('[data-environment-topic="sea"]').click();
   await page.locator('#environment-tab-marine').click();
   await expect(page.locator('#environment-panel-marine .environment-viewer-mobile-launch')).toBeVisible();
   await expect(page.locator('#environment-panel-marine iframe')).not.toHaveAttribute('src',/.+/);

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-27 — Atles ambiental dins de Medi Ambient (en revisió)
+
+- Els set visors ambientals es mantenen dins de la mateixa pàgina i s'ordenen
+  per aire, aigua, bosc, mar i territori, amb controls de teclat i càrrega
+  sota demanda. Els enllaços directes a una pestanya continuen funcionant.
+- Un catàleg plegable dona accés a fonts locals, europees i globals; no
+  presenta mapes estàtics, models o fonts externes com a mesures locals.
+- Els textos nous es tradueixen a català, castellà, anglès i francès. No hi ha
+  canvis al Worker, a D1, a les rutes ni als permisos del navegador.
+
 ## 2026-10-27 — Context al timelapse i pausa de Buffer (en revisió)
 
 - El timelapse afegeix una targeta final de tres segons amb el CO₂ actual i comparacions anuals disponibles, i amb NO₂, O₃ i PM10 de l'estació oficial XVPCA de Sant Celoni només si corresponen al dia del vídeo i tenen menys de tres hores. L'hora, les fonts i el caràcter provisional queden visibles; una dada absent no es substitueix per una estimació.
