@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-27 — Icona petita coherent amb la marca actual (en revisió)
+
+- Els favicons de 16 i 32 px es generen des del mateix avatar circular de l’Observatori que utilitza la PWA. Se substitueix el símbol rectangular antic que encara apareixia a la pestanya i als marcadors del navegador.
+- Les pàgines HTML incorporen una versió nova de la icona i la memòria cau de la PWA es renova perquè els navegadors en demanin el fitxer actualitzat.
+
 ## 2026-10-27 — Mapes de sequera pluviomètrica dins de Medi Ambient (en revisió)
 
 - La pestanya «Aigua i sequera» mostra dins la web els cinc mapes mensuals d'IPE de Meteocat (6, 9, 12, 24 i 36 mesos), amb el mes de la cartografia i un control accessible per canviar de període.

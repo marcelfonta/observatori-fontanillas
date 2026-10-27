@@ -76,8 +76,8 @@ def save_avatar(size, name):
 
 
 OUT.mkdir(parents=True, exist_ok=True)
-save(16, "favicon-16.png")
-save(32, "favicon-32.png")
+save_avatar(16, "favicon-16.png")
+save_avatar(32, "favicon-32.png")
 save_avatar(180, "apple-touch-icon.png")
 save_avatar(180, "apple-touch-icon-v21.png")
 save_avatar(192, "icon-192.png")
