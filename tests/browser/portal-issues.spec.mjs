@@ -4,8 +4,9 @@ import {fileURLToPath} from 'node:url';
 const indexPath=fileURLToPath(new URL('../../index.html',import.meta.url));
 const openEnvironment=async page=>{
   await page.goto('/medi-ambient');
-  await page.locator('#environment-tab-drought').scrollIntoViewIfNeeded();
   await expect(page.locator('html')).toHaveAttribute('data-environment-viewers-ready','true',{timeout:15000});
+  await page.locator('[data-environment-topic="water"]').click();
+  await page.locator('#environment-tab-drought').scrollIntoViewIfNeeded();
 };
 
 test.beforeEach(async({page})=>{
@@ -91,6 +92,7 @@ test('la sequera ofereix alternatives oficials i el mapa marí apunta a Copernic
   await expect(page.locator('#environment-panel-drought')).toContainText('El mapa interactiu de l’ACA pot estar temporalment en manteniment');
   await expect(page.locator('#environment-panel-drought a[href="https://aca.gencat.cat/ca/laigua/portal-sequera/estat-actual/"]')).toBeVisible();
   await expect(page.locator('#environment-panel-drought iframe')).toHaveCount(0);
+  await page.locator('[data-environment-topic="sea"]').click();
   await page.locator('#environment-tab-marine').click();
   await expect(page.locator('#environment-panel-marine iframe')).toHaveAttribute('src','https://data.marine.copernicus.eu/viewer');
   await expect(page.locator('#environment-panel-marine .environment-marine-options a[href="https://data.marine.copernicus.eu/viewer"]')).toBeVisible();
@@ -101,6 +103,7 @@ test('la sequera ofereix alternatives oficials i el mapa marí apunta a Copernic
 test('al mòbil el mapa del mar s’obre en pantalla completa',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await openEnvironment(page);
+  await page.locator('[data-environment-topic="sea"]').click();
   await page.locator('#environment-tab-marine').click();
   await expect(page.locator('#environment-panel-marine .environment-viewer-mobile-launch')).toBeVisible();
   await expect(page.locator('#environment-panel-marine iframe')).not.toHaveAttribute('src',/.+/);
