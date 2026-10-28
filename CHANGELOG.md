@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-28 — Context discret al timelapse i lectures absents de l’aire (en revisió)
+
+- La pantalla final del timelapse reutilitza el darrer fotograma de la càmera i situa el CO₂, les comparacions i les lectures oficials de l’aire en capses compactes sense textos superposats. S’elimina la franja de CO₂ repetida durant tot el vídeo i la versió vertical.
+- La webcam conserva les tres posicions NO₂, O₃ i PM10 quan l’estació oficial és recent. Una lectura sense valor o categoria es marca amb un guió gris; no es converteix en una estimació ni en una categoria favorable.
+- Les dades de l’aire del timelapse continuen exigint la mateixa data i una antiguitat inferior a tres hores. Els vídeos antics i els serveis de publicació no es modifiquen.
+
 ## 2026-10-27 — Icona petita coherent amb la marca actual (en revisió)
 
 - Els favicons de 16 i 32 px es generen des del mateix avatar circular de l’Observatori que utilitza la PWA. Se substitueix el símbol rectangular antic que encara apareixia a la pestanya i als marcadors del navegador.

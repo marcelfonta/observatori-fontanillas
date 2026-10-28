@@ -53,6 +53,7 @@ assert.match(variants,/camera\/nord\/upload-preview/);
 assert.match(variants,/text='CO₂'/);
 assert.match(variants,/w=1110:h=225/);
 assert.match(variants,/text='●'/);
+assert.match(variants,/text='—'/,'Una lectura oficial absent ha de conservar la posició de la rodona amb un guió gris.');
 assert.match(variants,/300-text_w/);
 assert.match(variants,/feature\.get\("id"\)=="ES1275A"/);
 assert.match(variants,/https:\/\/www\.gencat\.cat\/territori\/quaire\/json\/estat\.json/);
