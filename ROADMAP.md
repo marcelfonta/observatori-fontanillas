@@ -3,10 +3,13 @@
 
 ## Feina que es pot fer ara (28-10-2026)
 
-- **Agent:** repetir l'auditoria tècnica de producció després de cada paquet fusionat i registrar separadament proves de codi, previsualització i producció.
+- **Fet:** el PR #343 és a `main` i la referència climàtica ja es veu a `/canvi-climatic`; l'auditoria SEO de producció ha tornat a passar el 28/10. No hi havia canvis del Worker ni dels scripts de la Raspberry en aquest PR.
+- **Agent:** repetir l'auditoria tècnica de producció després dels pròxims paquets fusionats i registrar separadament proves de codi, previsualització i producció.
 - **Agent i usuari:** seguir la pauta editorial i visual dels quatre idiomes i l'auditoria d'accessibilitat en dispositius reals de [`docs/SITE-AUDIT-2026-10-28.md`](docs/SITE-AUDIT-2026-10-28.md).
 - **Agent:** dissenyar una comparació climàtica només si es pot corregir la diferència entre la capital municipal de l'Atles i el sensor Fontanillas; la referència oficial 1991–2020 i els seus límits ja estan documentats.
 - **Tots dos:** revisar el pròxim timelapse automàtic amb la targeta de CO₂ corregida i les lectures XVPCA guardades durant el dia; confirmar canals i absència de duplicats.
+
+La revisió visual i editorial dels quatre idiomes, l'accessibilitat amb lector de pantalla, l'índex real a Search Console i el pròxim timelapse automàtic continuen pendents d'evidència en dispositius o serveis reals. Les proves de codi i un HTTP 200 no tanquen aquests punts.
 
 ## Atles ambiental de Medi Ambient (publicat, pendent de validació real)
 
