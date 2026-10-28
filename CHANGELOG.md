@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-28 — Roadmap després de la instal·lació a la Raspberry (en revisió)
+
+- El pla recull la instal·lació verificada del PR #341, les proves físiques ja fetes dels ginys i la represa de TikTok comunicada per l'usuari.
+- S'afegeix una llista de feina que es pot iniciar ara, separada de la validació de la pròxima publicació real.
+
 ## 2026-10-28 — Targeta final sense solapament i aire del dia del vídeo (en revisió)
 
 - La capsa de CO₂ del darrer fotograma es fa més estreta i separa les comparacions d'un i deu anys en dues línies; deixa lliure la marca horària de la càmera.
