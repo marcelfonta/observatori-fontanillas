@@ -1,9 +1,9 @@
 {
   "schema": 2,
   "protocol": "fonta-hourly-nearest-150s-v1",
-  "generatedAt": "2026-10-27T14:35:06.530Z",
+  "generatedAt": "2026-10-28T15:10:03.755Z",
   "station": "ISANTC198",
-  "forecastDays": 30,
+  "forecastDays": 31,
   "pairedDays": 22,
   "excludedGroups": 7,
   "scores": {
@@ -1390,6 +1390,50 @@
       "receivedAt": "2026-10-27T14:25:10.160Z",
       "complete": false,
       "validHours": 22,
+      "expectedHours": 24,
+      "reasons": [
+        "coverage",
+        "missing-hourly-samples"
+      ]
+    },
+    {
+      "date": "2026-10-26",
+      "receivedAt": "2026-10-27T23:44:44.965Z",
+      "complete": false,
+      "validHours": 21,
+      "expectedHours": 24,
+      "reasons": [
+        "coverage",
+        "missing-hourly-samples"
+      ]
+    },
+    {
+      "date": "2026-10-27",
+      "receivedAt": "2026-10-27T23:44:44.965Z",
+      "complete": false,
+      "validHours": 21,
+      "expectedHours": 24,
+      "reasons": [
+        "coverage",
+        "missing-hourly-samples"
+      ]
+    },
+    {
+      "date": "2026-10-26",
+      "receivedAt": "2026-10-28T15:04:11.660Z",
+      "complete": false,
+      "validHours": 21,
+      "expectedHours": 24,
+      "reasons": [
+        "coverage",
+        "missing-hourly-samples"
+      ]
+    },
+    {
+      "date": "2026-10-27",
+      "receivedAt": "2026-10-28T15:04:11.660Z",
+      "complete": false,
+      "validHours": 21,
       "expectedHours": 24,
       "reasons": [
         "coverage",
