@@ -75,7 +75,7 @@ try:
         past_date=value.get(date_key)
         if isinstance(past,(int,float)) and 250<=past<=650 and isinstance(past_date,str) and past_date[:4]==str(date.year-years):
             history.append(f"{label} {past:.2f}".replace(".",","))
-    pathlib.Path(sys.argv[3]).write_text(" · ".join(history)+" ppm" if history else "",encoding="utf-8")
+    pathlib.Path(sys.argv[3]).write_text("\n".join(item+" ppm" for item in history),encoding="utf-8")
 except (ValueError,KeyError,TypeError,json.JSONDecodeError):
     pass
 ' "$CO2_VALUE" "$CO2_SOURCE" "$CO2_COMPARE" || true
@@ -127,6 +127,36 @@ except (ValueError,KeyError,TypeError,json.JSONDecodeError):
     pass
 ' "$DATE" "$AIR_TIME" "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_NO2_COLOR" "$AIR_O3_COLOR" "$AIR_PM10_COLOR" || true
 fi
+# La càmera conserva l'última lectura oficial vàlida de cada dia. Això permet
+# generar l'endemà el vídeo sense atribuir-hi la lectura d'un altre dia.
+AIR_SNAPSHOT="$BASE/air-observations/$DATE.json"
+if [[ ! -s "$AIR_TIME" && -r "$AIR_SNAPSHOT" ]] && command -v python3 >/dev/null; then
+  python3 -c '
+import datetime,json,pathlib,re,sys
+try:
+    day,snapshot,time_path,*paths=sys.argv[1:]
+    data=json.loads(pathlib.Path(snapshot).read_text(encoding="utf-8"))
+    stamp=data["time"]
+    if data.get("station")!="ES1275A" or not re.fullmatch(r"\d{2}/\d{2}/\d{4} \d{2}:\d{2}",stamp):
+        raise ValueError("invalid station snapshot")
+    if datetime.datetime.strptime(stamp,"%d/%m/%Y %H:%M").date().isoformat()!=day:
+        raise ValueError("different day")
+    allowed={"0x238D5A","0x8CAC34","0xB8891F","0xB73535","0x873F93","0x5F275B"}
+    found=0
+    for label,value_path,color_path in zip(("NO2","O3","PM10"),paths[:3],paths[3:]):
+        item=data.get("pollutants",{}).get(label,{})
+        value=item.get("value")
+        color=item.get("color")
+        if isinstance(value,int) and not isinstance(value,bool) and 0<=value<=1000 and color in allowed:
+            pathlib.Path(value_path).write_text(str(value),encoding="utf-8")
+            pathlib.Path(color_path).write_text(color,encoding="utf-8")
+            found+=1
+    if found:
+        pathlib.Path(time_path).write_text(stamp,encoding="utf-8")
+except (ValueError,KeyError,TypeError,AttributeError,json.JSONDecodeError,OSError):
+    pass
+' "$DATE" "$AIR_SNAPSHOT" "$AIR_TIME" "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_NO2_COLOR" "$AIR_O3_COLOR" "$AIR_PM10_COLOR"
+fi
 # La versió principal selecciona el centre panoràmic en 16:9 i elimina el 10%
 # inferior, on apareixen les cases més pròximes. El retall substitueix els
 # desenfocaments i redueix fortament el consum de memòria de la Raspberry.
@@ -151,9 +181,9 @@ if [[ -s "$CO2_VALUE" || -s "$AIR_TIME" ]] && ffmpeg -hide_banner -filters 2>/de
   CARD="$TMP_DIR/context-card.jpg"
   CARD_FILTER="drawbox=x=20:y=650:w=375:h=45:color=0xF4CE46@0.93:t=fill,drawtext=fontfile='$FONT':text='SANT CELONI · $DATE':fontcolor=0x14211D:fontsize=22:x=33:y=656,drawtext=fontfile='$FONT':text='METEO FONTANILLAS · CÀMERA NORD':fontcolor=0x14211D:fontsize=12:x=34:y=682"
   if [[ -s "$CO2_VALUE" ]]; then
-    CARD_FILTER+=",drawbox=x=20:y=18:w=400:h=133:color=black@0.65:t=fill,drawbox=x=20:y=18:w=5:h=133:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂ · DADA DE TANCAMENT':fontcolor=0xF4CE46:fontsize=18:x=33:y=27,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=35:x=34:y=52,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.86:fontsize=13:x=34:y=125"
+    CARD_FILTER+=",drawbox=x=20:y=18:w=330:h=150:color=black@0.65:t=fill,drawbox=x=20:y=18:w=5:h=150:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂ · DADA DE TANCAMENT':fontcolor=0xF4CE46:fontsize=16:x=33:y=27,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=32:x=34:y=49,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.86:fontsize=11:x=34:y=147"
     if [[ -s "$CO2_COMPARE" ]]; then
-      CARD_FILTER+=",drawtext=fontfile='$FONT':textfile='$CO2_COMPARE':fontcolor=white@0.9:fontsize=15:x=34:y=97"
+      CARD_FILTER+=",drawtext=fontfile='$FONT':textfile='$CO2_COMPARE':fontcolor=white@0.9:fontsize=14:line_spacing=2:x=34:y=91"
     fi
   fi
   if [[ -s "$AIR_TIME" ]]; then

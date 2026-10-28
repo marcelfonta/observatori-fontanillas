@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, mkdtempSync, existsSync, readFileSync as read } from 'node:fs';
+import { readFileSync, mkdtempSync, existsSync, readFileSync as read, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -30,3 +30,22 @@ assert.deepEqual(values.slice(4),['0x238D5A','0xB8891F','0x238D5A']);
 assert.deepEqual(run('2020-01-01',fixture),Array(7).fill(null),'No s’han d’atribuir lectures actuals a un vídeo antic.');
 assert.deepEqual(run(day,{features:[{...fixture.features[0],id:'OTHER'}]}),Array(7).fill(null),'No es poden substituir les dades de Sant Celoni per una altra estació.');
 console.log('Timelapse: lectures XVPCA exactes, fresques i del dia corresponent.');
+const snapshotParser=generator.match(/AIR_SNAPSHOT="[^"]+"[\s\S]*?python3 -c '\n([\s\S]*?)\n' "\$DATE" "\$AIR_SNAPSHOT"/)?.[1];
+assert.ok(snapshotParser,'Cal trobar el lector de la captura oficial guardada.');
+const snapshotFolder=mkdtempSync(join(tmpdir(),'fonta-air-snapshot-'));
+const snapshotPath=join(snapshotFolder,'snapshot.json');
+const snapshotFiles=Array.from({length:7},(_,index)=>join(snapshotFolder,String(index)));
+const readSnapshot=(date,payload)=>{
+  writeFileSync(snapshotPath,JSON.stringify(payload));
+  const result=spawnSync('python3',['-c',snapshotParser,date,snapshotPath,...snapshotFiles],{encoding:'utf8'});
+  assert.equal(result.status,0,result.stderr);
+  return snapshotFiles.map(path=>existsSync(path)?read(path,'utf8'):null);
+};
+const previous='2026-10-27';
+const official={station:'ES1275A',time:'27/10/2026 23:00',pollutants:{NO2:{value:26,color:'0x238D5A'},O3:{value:13,color:'0xB8891F'}}};
+assert.deepEqual(readSnapshot(previous,official),['27/10/2026 23:00','26','13',null,'0x238D5A','0xB8891F',null]);
+for (const [date,payload] of [['2026-10-26',official],[previous,{...official,station:'OTHER'}],[previous,{...official,pollutants:{NO2:{value:26,color:'red'}}}]]) {
+  for (const path of snapshotFiles) rmSync(path,{force:true});
+  assert.deepEqual(readSnapshot(date,payload),Array(7).fill(null),'Una captura errònia no pot contaminar el vídeo.');
+}
+console.log('Timelapse: captura XVPCA del dia correcte validada.');
