@@ -1,7 +1,15 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
 
-## Atles ambiental de Medi Ambient (proposta en revisió, 27-10-2026)
+## Feina que es pot fer ara (28-10-2026)
+
+- **Agent:** comprovar en producció les rutes, metadades i degradació de les fonts del visor; documentar els resultats sense modificar dades ni publicar contingut.
+- **Agent:** actualitzar aquest roadmap després de cada paquet fusionat i separar proves de codi, proves de previsualització i evidència real de producció.
+- **Agent:** preparar una pauta curta de revisió editorial i visual dels quatre idiomes, i una llista de dispositius i fluxos per a l'auditoria d'accessibilitat.
+- **Agent:** investigar una referència climàtica oficial comparable per a Sant Celoni i definir període, cobertura i mètode abans de mostrar cap anomalia.
+- **Tots dos:** revisar el pròxim timelapse automàtic amb la targeta de CO₂ corregida i les lectures XVPCA guardades durant el dia; confirmar canals i absència de duplicats.
+
+## Atles ambiental de Medi Ambient (publicat, pendent de validació real)
 
 Els set visors existents es presenten sota cinc temes dins de la mateixa pàgina.
 Un catàleg complementari, plegat d'entrada i filtrat pel tema, dona accés a
@@ -9,8 +17,8 @@ fonts catalanes, europees i globals sense carregar-les automàticament. Cada
 accés diferencia mesura, model, previsió, anàlisi històrica o mapa de risc;
 els continguts nous es tradueixen a català, castellà, anglès i francès.
 
-- [ ] Revisar visualment la previsualització en mòbil i ordinador abans de la
-  fusió, especialment les pestanyes, el catàleg desplegable i els enllaços.
+- [ ] Revisar visualment en producció mòbil i ordinador les pestanyes, el
+  catàleg desplegable i els enllaços.
 - [ ] Afegir capes natives només després de validar cobertura local, escala,
   actualització, llicència i estabilitat de cada servei. Els accessos a
   Resource Watch, Living Atlas, MapX i Lemuriant són exploració externa,
@@ -20,8 +28,8 @@ els continguts nous es tradueixen a català, castellà, anglès i francès.
   les fases administratives de l'ACA i datada setembre de 2026. Actualitzar la
   cartografia quan Meteocat publiqui un nou mes, sense assumir cap URL futura.
 
-Actualitzat el 27 d’octubre de 2026. Aquest document conté únicament feina
-pendent, aplicable i amb un criteri de finalització observable. Les fases
+Actualitzat el 28 d’octubre de 2026. Aquest document recull feina pendent i el
+context necessari per entendre-la. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
 
@@ -90,17 +98,12 @@ justifiqui.
 
 ### Widgets personals
 
-El widget Garmin ja compila per als dos identificadors del fēnix 7X Pro amb
-l'SDK 9.3.0. Les vistes ràpida i completa s'han comprovat al simulador amb una
-lectura recent.
-- [ ] Instal·lar-lo al rellotge i validar dades antigues i absència de xarxa.
-- [ ] Instal·lar el widget iOS existent a l'iPhone 15 Pro i confirmar les vistes
-  de pantalla bloquejada i pantalla d'inici, amb una lectura recent i una de
-  guardada.
-
-El projecte iOS ja compila per al simulador i per a iPhone físic, i l'app s'ha
-instal·lat i obert al simulador iPhone 15 Pro el 26/10. El nom distingible del
-giny i l'equip de signatura estan preparats; resta connectar el telèfon real.
+El widget Garmin està instal·lat al fēnix 7X Pro i va mostrar una lectura
+recent després de reconnectar Garmin Connect per Bluetooth. L'app de l'iPhone
+15 Pro també es va instal·lar i l'usuari va confirmar que funciona. Queden les
+proves de dades antigues i de manca de xarxa als dos dispositius.
+- [ ] Validar al Garmin i als iPhone les lectures antigues, l'absència de xarxa
+  i l'hora visible de l'última actualització.
 
 **Fet quan:** els dos dispositius mostren l'observació amb hora o antiguitat
 correctes, sense presentar una lectura antiga com a actual.
@@ -133,12 +136,11 @@ no és anecdòtica i qualsevol canvi de pesos queda justificat amb mètriques.
 
 ### Publicació social i timelapse
 
-El 25/10 la revisió de producció ha identificat una resposta 429 de Buffer
+El 25/10 la revisió de producció va identificar una resposta 429 de Buffer
 compartida per TikTok i X. El servei ha indicat que no s'hi torni a contactar
 fins al 27/10/2026 a les 10:31 UTC; la resta de canals continuen independents.
-Cal comprovar l'estat real de les primeres publicacions després d'aquesta hora
-abans de considerar TikTok recuperat. Una correcció pendent de revisió evita
-reconsultar repetidament els enviaments d'X ja confirmats.
+L'usuari va confirmar que TikTok va reprendre una publicació automàtica el
+27/10 al vespre. Encara falta verificar-ne la continuïtat i els altres canals.
 
 El 27/10 la comprovació de les 06:45 ha tornat a avisar de la mateixa pausa,
 abans de les 10:31 UTC: aquest correu no demostra un segon bloqueig. El paquet
@@ -159,10 +161,13 @@ amb 207 fotogrames: fitxers de 6,1 MB i 3,4 MB, dimensions comprovades i servei
 correcte. Els scripts nous han quedat instal·lats i la imatge pública ja mostra
 el CO₂ actual, el de fa un any i el de fa deu anys. Encara cal comprovar el
 resultat d'una publicació automàtica real, inclosa la qualitat a YouTube.
-Un paquet pendent de revisió afegeix una targeta final amb les mateixes famílies
-de dades que la webcam: CO₂ NOAA amb comparacions, i NO₂, O₃ i PM10 de XVPCA
-només amb lectura recent del dia del vídeo. Cal provar-la visualment a la
-Raspberry i instal·lar la nova versió de l'script després de la fusió.
+La targeta final del PR #340 es va provar a la Raspberry. El PR #341 en va
+corregir el solapament amb l'hora de la càmera i va afegir una captura local de
+lectures XVPCA vàlides del dia per generar el vídeo l'endemà. Els dos scripts
+es van instal·lar el 28/10: les sumes de verificació van coincidir, el servei
+va acabar amb `Result=success` i els dos temporitzadors eren actius. La nova
+composició i les lectures guardades encara s'han de verificar en un vídeo
+automàtic posterior a aquesta instal·lació.
 
 El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) continua oberta. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El 25/10 els vídeos del 23 i del 24 responen 200 al Worker, mentre que el del 21 encara respon 404; la generació posterior al canvi, per tant, funciona, però l'episodi perdut no s'ha recuperat. El timelapse del 23/10 s’ha publicat a Instagram i el workflow de YouTube del mateix dia va acabar correctament. Encara falta evidència visible de la següent execució automàtica a cada canal habilitat, sense duplicats i amb la càpsula de CO₂, abans de tancar #299. El panell d'administració pot assenyalar dies programats absents.
 
@@ -714,9 +719,9 @@ benefici demostrat:
 
 ## Ordre recomanat de pròxims paquets
 
-0. **Idiomes (implementat, pendent de revisió humana i publicació):** catàleg dels 1.605 textos inventariats en 13 documents públics, atributs accessibles, metadades, pàgines independents i manifestos de la PWA en castellà, anglès i francès. Vegeu `docs/I18N-AUDIT-2026-10-27.md` per a l'abast i els límits. Després de la fusió, cal la validació visual i editorial als dispositius reals.
+0. **Idiomes (publicats, pendents de revisió editorial real):** catàleg dels 1.605 textos inventariats en 13 documents públics, atributs accessibles, metadades, pàgines independents i manifestos de la PWA en castellà, anglès i francès. Vegeu `docs/I18N-AUDIT-2026-10-27.md` per a l'abast i els límits. Cal la validació visual i editorial als dispositius reals.
 1. **Fiabilitat operativa:** comprovar la PWA i el push en una instal·lació existent després de corregir el caché; observar el proper vespre i timelapse reals sense duplicats a cada canal; mantenir #299 obert fins a aquesta evidència. Falta observar un avís oficial real.
-2. **Clima:** validar visualment el CO₂ ja integrat a webcam i peces diàries; verificar en staging i producció la nova sèrie llarga NOAA, afegir sèries oficials catalanes de temperatura/precipitació amb mètode comparable i completar la revisió editorial. Les traduccions ja són al paquet d'idiomes, pendents de revisió humana i publicació. La ruta i la primera lectura ja són públiques.
+2. **Clima:** validar visualment el CO₂ ja integrat a webcam i peces diàries; verificar la nova sèrie llarga NOAA, afegir sèries oficials catalanes de temperatura/precipitació amb mètode comparable i completar la revisió editorial. Les traduccions publicades continuen pendents de revisió humana. La ruta i la primera lectura ja són públiques.
 3. **Qualitat real:** provar en iPhone, Android i ordinador els visors, els controls tàctils, l’accessibilitat i la recuperació sense connexió; repetir l’auditoria SEO a Search Console.
 4. **Contingut:** revisió docent de la primera fitxa d’Aula oberta, guia local estacional i següent resum periòdic només amb cobertura suficient.
 5. **Cel i experiments:** completar la guia d’objectes del cel nocturn i la prova física; continuar acumulant mostres prospectives de Fonta, XEMA i nowcasting. OPERA continua condicionat a la credencial i al catàleg privat real.
