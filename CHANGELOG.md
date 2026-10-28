@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-28 — Targeta final sense solapament i aire del dia del vídeo (en revisió)
+
+- La capsa de CO₂ del darrer fotograma es fa més estreta i separa les comparacions d'un i deu anys en dues línies; deixa lliure la marca horària de la càmera.
+- La càmera desa una petita captura local de les lectures oficials XVPCA vàlides del dia. Quan el timelapse es genera l'endemà, utilitza aquesta captura només si la data i l'estació coincideixen. No barreja lectures d'un altre dia ni substitueix dades absents.
+- No canvia la publicació automàtica. Cal comprovar una previsualització física a la Raspberry abans d'instal·lar aquesta versió.
+
 ## 2026-10-28 — Context discret al timelapse i lectures absents de l’aire (en revisió)
 
 - La pantalla final del timelapse reutilitza el darrer fotograma de la càmera i situa el CO₂, les comparacions i les lectures oficials de l’aire en capses compactes sense textos superposats. S’elimina la franja de CO₂ repetida durant tot el vídeo i la versió vertical.

@@ -118,6 +118,29 @@ except (ValueError,KeyError,TypeError,json.JSONDecodeError):
     pass
 ' "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_TIME" "$AIR_NO2_COLOR" "$AIR_O3_COLOR" "$AIR_PM10_COLOR"; then
   if [[ -s "$AIR_TIME" ]]; then
+    if [[ "${CAMERA_PREVIEW_ONLY:-0}" != 1 ]]; then
+      python3 -c '
+import datetime,json,os,pathlib,sys,tempfile
+base,stamp_path,*paths=sys.argv[1:]
+stamp=pathlib.Path(stamp_path).read_text(encoding="utf-8")
+day=datetime.datetime.strptime(stamp,"%d/%m/%Y %H:%M").date().isoformat()
+pollutants={}
+for label,value_path,color_path in zip(("NO2","O3","PM10"),paths[:3],paths[3:]):
+    value_file,color_file=pathlib.Path(value_path),pathlib.Path(color_path)
+    if value_file.stat().st_size and color_file.stat().st_size:
+        pollutants[label]={"value":int(value_file.read_text()),"color":color_file.read_text()}
+if pollutants:
+    directory=pathlib.Path(base)/"air-observations"
+    directory.mkdir(parents=True,exist_ok=True)
+    fd,temp=tempfile.mkstemp(prefix=".air-",dir=directory)
+    try:
+        with os.fdopen(fd,"w",encoding="utf-8") as output:
+            json.dump({"station":"ES1275A","time":stamp,"pollutants":pollutants},output)
+        os.replace(temp,directory/f"{day}.json")
+    finally:
+        if os.path.exists(temp): os.unlink(temp)
+' "$BASE" "$AIR_TIME" "$AIR_NO2" "$AIR_O3" "$AIR_PM10" "$AIR_NO2_COLOR" "$AIR_O3_COLOR" "$AIR_PM10_COLOR" || true
+    fi
     for pollutant in NO2 O3 PM10; do
       case "$pollutant" in
         NO2) air_x=6030; air_value="$AIR_NO2"; air_color="$AIR_NO2_COLOR" ;;

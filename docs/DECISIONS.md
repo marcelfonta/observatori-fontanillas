@@ -10,6 +10,7 @@
 
 - El vídeo mostra una targeta final de tres segons amb la data de la peça, la font i l'hora de la lectura. Una dada puntual no es presenta com si descrivís tot el dia.
 - El CO₂ global prové de NOAA a través del Worker; les comparacions d'un i deu anys només apareixen quan la sèrie en publica els valors. Les concentracions d'aire provenen exclusivament de l'estació XVPCA `ES1275A` de Sant Celoni i només apareixen si l'hora oficial és del mateix dia que el vídeo i té menys de tres hores. Si falta la lectura, no hi ha substitució amb CAMS.
+- La càmera conserva localment l'última lectura XVPCA que supera aquesta comprovació en un JSON per dia. El generador de l'endemà valida de nou l'estació, la data, els valors i els colors abans d'usar-la. La previsualització no desa cap captura. Si manca el fitxer o no és vàlid, el vídeo omet les dades d'aire. El rollback és restaurar els dos scripts anteriors; els JSON locals es poden ignorar i no canvien cap API.
 - El mateix fotograma final forma part de les variants horitzontal i vertical, sense una tercera pujada. Es manté la reducció fotograma a fotograma i un sol fil de FFmpeg perquè la Raspberry té memòria limitada. Si la prova física detecta un problema, el rollback és restaurar la còpia anterior de `camera-timelapse.sh`; el Worker i els vídeos antics no canvien.
 
 ## ADR — Pauses compartides de Buffer (proposta, 2026-10-27)
