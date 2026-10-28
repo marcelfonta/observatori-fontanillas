@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-28 — Verificació de producció del PR #343
+
+- Confirmada la publicació de la referència climàtica a `/canvi-climatic` i repetida amb èxit l'auditoria SEO de producció.
+- Roadmap actualitzat amb la distinció entre verificacions fetes i validacions que requereixen dispositius o serveis reals.
+
 ## 2026-10-28 — Auditoria del web i referència climàtica
 
 - Verificada en producció la sortida SEO de les rutes prioritàries i la resposta de les fonts principals del visor ambiental.

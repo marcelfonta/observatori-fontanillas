@@ -19,4 +19,6 @@ L'[Atles Climàtic de Catalunya de Meteocat](https://www.meteo.cat/wpweb/climato
 
 ## Seguiment
 
-Després de fusionar: comprovar la previsualització publicada als quatre idiomes, repetir l'auditoria SEO en producció quan s'autoritzi el desplegament i observar a Search Console l'estat real d'indexació. Revisar el visor de l'ACA quan acabi el manteniment i actualitzar l'IPE només quan Meteocat publiqui el mes següent.
+El PR #343 es va fusionar el 28/10/2026 (`7cea30a`). La ruta pública `/canvi-climatic` ja retorna HTTP 200 amb els valors 16,0 °C i 731,4 mm i l'enllaç a l'Atles. `npm run audit:seo` va tornar a passar en producció després de la fusió. Aquest PR només canviava la web; no hi havia res a instal·lar al Worker ni a la Raspberry.
+
+Continua pendent la lectura visual en dispositius reals i en els quatre idiomes, així com observar a Search Console l'estat real d'indexació. Revisar el visor de l'ACA quan acabi el manteniment i actualitzar l'IPE només quan Meteocat publiqui el mes següent.
