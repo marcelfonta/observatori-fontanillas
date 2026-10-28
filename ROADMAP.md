@@ -3,10 +3,9 @@
 
 ## Feina que es pot fer ara (28-10-2026)
 
-- **Agent:** comprovar en producció les rutes, metadades i degradació de les fonts del visor; documentar els resultats sense modificar dades ni publicar contingut.
-- **Agent:** actualitzar aquest roadmap després de cada paquet fusionat i separar proves de codi, proves de previsualització i evidència real de producció.
-- **Agent:** preparar una pauta curta de revisió editorial i visual dels quatre idiomes, i una llista de dispositius i fluxos per a l'auditoria d'accessibilitat.
-- **Agent:** investigar una referència climàtica oficial comparable per a Sant Celoni i definir període, cobertura i mètode abans de mostrar cap anomalia.
+- **Agent:** repetir l'auditoria tècnica de producció després de cada paquet fusionat i registrar separadament proves de codi, previsualització i producció.
+- **Agent i usuari:** seguir la pauta editorial i visual dels quatre idiomes i l'auditoria d'accessibilitat en dispositius reals de [`docs/SITE-AUDIT-2026-10-28.md`](docs/SITE-AUDIT-2026-10-28.md).
+- **Agent:** dissenyar una comparació climàtica només si es pot corregir la diferència entre la capital municipal de l'Atles i el sensor Fontanillas; la referència oficial 1991–2020 i els seus límits ja estan documentats.
 - **Tots dos:** revisar el pròxim timelapse automàtic amb la targeta de CO₂ corregida i les lectures XVPCA guardades durant el dia; confirmar canals i absència de duplicats.
 
 ## Atles ambiental de Medi Ambient (publicat, pendent de validació real)
@@ -201,9 +200,11 @@ La comparació de les dues darreres finestres de 24 hores, el resum mensual visu
 i tres guies introductòries del Baix Montseny s'han preparat en un únic PR.
 Encara no s'ha establert cap «índex de normalitat»: l'arxiu local és massa curt.
 
-- [ ] Identificar una sèrie climàtica externa adequada per a Sant Celoni i
-  validar-ne període, ubicació, cobertura i mètode abans de comparar-la amb
-  les lectures pròpies.
+La referència externa ja s'ha identificat: Atles Climàtic de Meteocat 1991–2020
+per a la capital municipal de Sant Celoni. La pàgina de canvi climàtic mostra
+el context anual i adverteix que encara no hi ha mètode validat per
+comparar-lo diàriament amb l'estació Fontanillas. Detall a
+[`docs/SITE-AUDIT-2026-10-28.md`](docs/SITE-AUDIT-2026-10-28.md).
 
 **Fet quan:** les diferències respecte d'una referència climàtica tenen font,
 període i límits visibles; les comparacions recents continuen diferenciades.
