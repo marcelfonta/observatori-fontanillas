@@ -50,7 +50,6 @@ fi
 
 FONT="$(fc-match -f '%{file}' 'DejaVu Sans:style=Bold' 2>/dev/null || true)"
 [[ -f "$FONT" ]] || FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-CO2_LANDSCAPE="$TMP_DIR/co2-landscape.txt"
 CO2_VALUE="$TMP_DIR/co2-value.txt"
 CO2_SOURCE="$TMP_DIR/co2-source.txt"
 CO2_COMPARE="$TMP_DIR/co2-compare.txt"
@@ -68,19 +67,18 @@ try:
         raise ValueError("CO2 absent o antic")
     number=f"{ppm:.2f}".replace(".",",")
     date_label=date.strftime("%d/%m/%Y")
-    pathlib.Path(sys.argv[1]).write_text(f"CO₂ atmosfèric · Mauna Loa, NOAA · {number} ppm · {date.isoformat()}",encoding="utf-8")
-    pathlib.Path(sys.argv[2]).write_text(f"CO₂ · {number} ppm",encoding="utf-8")
-    pathlib.Path(sys.argv[3]).write_text(f"Mauna Loa · NOAA · {date_label}",encoding="utf-8")
+    pathlib.Path(sys.argv[1]).write_text(f"{number} ppm",encoding="utf-8")
+    pathlib.Path(sys.argv[2]).write_text(f"Mauna Loa · NOAA · {date_label}",encoding="utf-8")
     history=[]
     for label,key,date_key,years in (("Fa 1 any","yearAgoPpm","yearAgoDate",1),("Fa 10 anys","tenYearsAgoPpm","tenYearsAgoDate",10)):
         past=value.get(key)
         past_date=value.get(date_key)
         if isinstance(past,(int,float)) and 250<=past<=650 and isinstance(past_date,str) and past_date[:4]==str(date.year-years):
             history.append(f"{label} {past:.2f}".replace(".",","))
-    pathlib.Path(sys.argv[4]).write_text(" · ".join(history)+" ppm" if history else "",encoding="utf-8")
+    pathlib.Path(sys.argv[3]).write_text(" · ".join(history)+" ppm" if history else "",encoding="utf-8")
 except (ValueError,KeyError,TypeError,json.JSONDecodeError):
     pass
-' "$CO2_LANDSCAPE" "$CO2_VALUE" "$CO2_SOURCE" "$CO2_COMPARE" || true
+' "$CO2_VALUE" "$CO2_SOURCE" "$CO2_COMPARE" || true
 fi
 # La targeta final només admet una lectura oficial del mateix dia del vídeo.
 # En regenerar dies antics no s'hi incrusta l'estat de l'aire d'avui.
@@ -149,30 +147,33 @@ printf "file '%s'\n" "${frame//\'/\'\\\'\'}" >> "$LIST"
 
 # Una targeta final conserva l'hora i la font de cada lectura. Les mesures
 # representen el tancament del dia, no tots els fotogrames del timelapse.
-if [[ -s "$CO2_LANDSCAPE" || -s "$AIR_TIME" ]] && ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
+if [[ -s "$CO2_VALUE" || -s "$AIR_TIME" ]] && ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
   CARD="$TMP_DIR/context-card.jpg"
-  CARD_FILTER="drawtext=fontfile='$FONT':text='SANT CELONI · RESUM DEL DIA $DATE':fontcolor=white:fontsize=48:x=60:y=50"
-  if [[ -s "$CO2_LANDSCAPE" ]]; then
-    CARD_FILTER+=",drawbox=x=60:y=145:w=1160:h=160:color=white@0.08:t=fill,drawtext=fontfile='$FONT':text='CO₂ ATMOSFÈRIC':fontcolor=0xF4CE46:fontsize=36:x=88:y=163,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=55:x=88:y=205,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.78:fontsize=25:x=310:y=223"
+  CARD_FILTER="drawbox=x=20:y=650:w=375:h=45:color=0xF4CE46@0.93:t=fill,drawtext=fontfile='$FONT':text='SANT CELONI · $DATE':fontcolor=0x14211D:fontsize=22:x=33:y=656,drawtext=fontfile='$FONT':text='METEO FONTANILLAS · CÀMERA NORD':fontcolor=0x14211D:fontsize=12:x=34:y=682"
+  if [[ -s "$CO2_VALUE" ]]; then
+    CARD_FILTER+=",drawbox=x=20:y=18:w=400:h=133:color=black@0.65:t=fill,drawbox=x=20:y=18:w=5:h=133:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂ · DADA DE TANCAMENT':fontcolor=0xF4CE46:fontsize=18:x=33:y=27,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=35:x=34:y=52,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.86:fontsize=13:x=34:y=125"
     if [[ -s "$CO2_COMPARE" ]]; then
-      CARD_FILTER+=",drawtext=fontfile='$FONT':textfile='$CO2_COMPARE':fontcolor=white@0.9:fontsize=32:x=88:y=268"
+      CARD_FILTER+=",drawtext=fontfile='$FONT':textfile='$CO2_COMPARE':fontcolor=white@0.9:fontsize=15:x=34:y=97"
     fi
   fi
   if [[ -s "$AIR_TIME" ]]; then
-    CARD_FILTER+=",drawtext=fontfile='$FONT':text='AIRE MESURAT · XVPCA SANT CELONI':fontcolor=white:fontsize=36:x=88:y=359,drawtext=fontfile='$FONT':textfile='$AIR_TIME':fontcolor=white@0.78:fontsize=26:x=88:y=407"
+    CARD_FILTER+=",drawbox=x=963:y=532:w=290:h=46:color=black@0.55:t=fill,drawtext=fontfile='$FONT':text='XVPCA · SANT CELONI':fontcolor=white:fontsize=13:x=976:y=536,drawtext=fontfile='$FONT':textfile='$AIR_TIME':fontcolor=white@0.85:fontsize=12:x=976:y=556"
     for pollutant in NO2 O3 PM10; do
       case "$pollutant" in
-        NO2) card_x=180; air_value="$AIR_NO2"; air_color="$AIR_NO2_COLOR" ;;
-        O3) card_x=530; air_value="$AIR_O3"; air_color="$AIR_O3_COLOR" ;;
-        PM10) card_x=880; air_value="$AIR_PM10"; air_color="$AIR_PM10_COLOR" ;;
+        NO2) card_x=966; air_value="$AIR_NO2"; air_color="$AIR_NO2_COLOR" ;;
+        O3) card_x=1061; air_value="$AIR_O3"; air_color="$AIR_O3_COLOR" ;;
+        PM10) card_x=1156; air_value="$AIR_PM10"; air_color="$AIR_PM10_COLOR" ;;
       esac
-      [[ -s "$air_value" && -s "$air_color" ]] || continue
-      CARD_FILTER+=",drawtext=fontfile='$FONT':text='●':fontcolor=$(cat "$air_color"):fontsize=155:x=$card_x:y=446,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=30:x=$card_x+(130-text_w)/2:y=478,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=45:x=$card_x+(130-text_w)/2:y=520"
+      if [[ -s "$air_value" && -s "$air_color" ]]; then
+        card_color="$(cat "$air_color")"
+        CARD_FILTER+=",drawtext=fontfile='$FONT':text='●':fontcolor=$card_color:fontsize=110:x=$card_x:y=577,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=17:x=$card_x+(79-text_w)/2:y=599,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=26:x=$card_x+(79-text_w)/2:y=622"
+      else
+        CARD_FILTER+=",drawtext=fontfile='$FONT':text='●':fontcolor=0x555D5B:fontsize=110:x=$card_x:y=577,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=17:x=$card_x+(79-text_w)/2:y=599,drawtext=fontfile='$FONT':text='—':fontcolor=white:fontsize=26:x=$card_x+(79-text_w)/2:y=622"
+      fi
     done
-    CARD_FILTER+=",drawtext=fontfile='$FONT':text='µg/m³ · dades provisionals · PM10 mitjana de 24 h':fontcolor=white@0.78:fontsize=25:x=88:y=620"
   fi
   if MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
-    -threads 1 -f lavfi -i 'color=c=#101820:s=1280x720:d=1' \
+    -threads 1 -i "$frame" \
     -filter_threads 1 -filter_complex_threads 1 \
     -vf "$CARD_FILTER" -frames:v 1 -q:v 3 -f image2 -update 1 "$CARD" && [[ -s "$CARD" ]]; then
     printf "file '%s'\nduration 3\nfile '%s'\n" "$CARD" "$CARD" >> "$LIST"
@@ -182,14 +183,10 @@ if [[ -s "$CO2_LANDSCAPE" || -s "$AIR_TIME" ]] && ffmpeg -hide_banner -filters 2
 fi
 
 rm -f "$OUTPUT_TMP"
-LANDSCAPE_FILTER="format=yuv420p"
-if [[ -s "$CO2_LANDSCAPE" ]] && ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
-  LANDSCAPE_FILTER="drawbox=x=16:y=h-64:w=1248:h=48:color=black@0.7:t=fill,drawtext=fontfile='$FONT':textfile='$CO2_LANDSCAPE':fontcolor=white:fontsize=23:x=30:y=h-51"
-fi
 MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
   -threads 1 -f concat -safe 0 -i "$LIST" \
   -filter_threads 1 -filter_complex_threads 1 \
-  -vf "$LANDSCAPE_FILTER" \
+  -vf format=yuv420p \
   -r 20 -an -c:v libx264 -threads 1 -preset superfast -crf 20 -maxrate 5M -bufsize 10M \
   -pix_fmt yuv420p -movflags +faststart -f mp4 "$OUTPUT_TMP"
 [[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
@@ -201,9 +198,6 @@ mv "$OUTPUT_TMP" "$OUTPUT"
 SOCIAL_FILTER="scale=720:405,pad=720:1280:0:(oh-ih)/2:color=#101820"
 if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
   SOCIAL_FILTER+=",drawbox=x=24:y=44:w=672:h=88:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='TIMELAPSE DEL CEL':fontcolor=white:fontsize=32:x=45:y=69,drawbox=x=24:y=h-123:w=672:h=79:color=black@0.42:t=fill,drawtext=fontfile='$FONT':text='PANORÀMICA COMPLETA':fontcolor=white@0.86:fontsize=19:x=45:y=h-102,drawtext=fontfile='$FONT':text='meteo.fontanillas.cat':fontcolor=white:fontsize=24:x=45:y=h-76"
-  if [[ -s "$CO2_VALUE" ]]; then
-    SOCIAL_FILTER+=",drawbox=x=24:y=149:w=672:h=89:color=black@0.56:t=fill,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=27:x=45:y=163,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.86:fontsize=19:x=45:y=201"
-  fi
 fi
 
 rm -f "$SOCIAL_TMP"

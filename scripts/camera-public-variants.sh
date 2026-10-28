@@ -124,8 +124,12 @@ except (ValueError,KeyError,TypeError,json.JSONDecodeError):
         O3) air_x=6490; air_value="$AIR_O3"; air_color="$AIR_O3_COLOR" ;;
         PM10) air_x=6950; air_value="$AIR_PM10"; air_color="$AIR_PM10_COLOR" ;;
       esac
-      [[ -s "$air_value" && -s "$air_color" ]] || continue
-      FILTER="${FILTER},drawtext=fontfile='$FONT':text='●':fontcolor=$(cat "$air_color")@0.9:borderw=7:bordercolor=0x07241A@0.7:fontsize=360:x=$air_x:y=1690,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=64:x=$air_x+(300-text_w)/2:y=1755,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=98:x=$air_x+(300-text_w)/2:y=1830"
+      if [[ -s "$air_value" && -s "$air_color" ]]; then
+        FILTER="${FILTER},drawtext=fontfile='$FONT':text='●':fontcolor=$(cat "$air_color")@0.9:borderw=7:bordercolor=0x07241A@0.7:fontsize=360:x=$air_x:y=1690,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=64:x=$air_x+(300-text_w)/2:y=1755,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=98:x=$air_x+(300-text_w)/2:y=1830"
+      else
+        # Conserva les tres posicions; el guió gris indica una lectura no publicada.
+        FILTER="${FILTER},drawtext=fontfile='$FONT':text='●':fontcolor=0x555D5B@0.9:borderw=7:bordercolor=0x07241A@0.7:fontsize=360:x=$air_x:y=1690,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=64:x=$air_x+(300-text_w)/2:y=1755,drawtext=fontfile='$FONT':text='—':fontcolor=white:fontsize=98:x=$air_x+(300-text_w)/2:y=1830"
+      fi
     done
   fi
 fi

@@ -33,9 +33,11 @@ assert.equal((generator.match(/-f concat -safe 0 -i "\$LIST"/g) || []).length,1)
 assert.match(generator,/TIMELAPSE DEL CEL/);
 assert.match(generator,/\/climate\/co2/);
 assert.match(generator,/value\.get\("fresh"\) is not True/);
-assert.match(generator,/CO₂ atmosfèric · Mauna Loa, NOAA/);
+assert.match(generator,/CO₂ · DADA DE TANCAMENT/);
+assert.doesNotMatch(generator,/CO2_LANDSCAPE|LANDSCAPE_FILTER/,'La lectura de tancament no s’ha de repetir sobre tots els fotogrames.');
 assert.match(generator,/local\.date\(\)\.isoformat\(\)!=day/);
-assert.match(generator,/AIRE MESURAT · XVPCA SANT CELONI/);
+assert.match(generator,/XVPCA · SANT CELONI/);
+assert.match(generator,/-threads 1 -i "\$frame"[\s\S]*-vf "\$CARD_FILTER"/,'La targeta de tancament ha de conservar el cel del darrer fotograma.');
 assert.match(generator,/duration 3/);
 assert.match(generator,/Targeta de context omesa/);
 assert.match(generator,/textfile='\$CO2_VALUE'/);
