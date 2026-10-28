@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-28 — Auditoria del web i referència climàtica
+
+- Verificada en producció la sortida SEO de les rutes prioritàries i la resposta de les fonts principals del visor ambiental.
+- Incorporada a Canvi climàtic la referència territorial oficial 1991–2020 de Sant Celoni, diferenciada de les lectures Fontanillas i traduïda als quatre idiomes.
+- Documentades la pauta de revisió editorial, la matriu de dispositius i els límits de la comparació climàtica.
+
 ## 2026-10-28 — Roadmap després de la instal·lació a la Raspberry (en revisió)
 
 - El pla recull la instal·lació verificada del PR #341, les proves físiques ja fetes dels ginys i la represa de TikTok comunicada per l'usuari.
