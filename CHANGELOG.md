@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-29 — Tendència del pol·len sense color d'alerta (en revisió)
+
+- La pastilla «Estable» del butlletí XAC utilitza un color neutre, independent del nivell de pol·len o espores. Així, un nivell «Màxim» continua explícit en el text sense que el color de la tendència suggereixi que està augmentant.
+
 ## 2026-10-29 — Mapa hidrològic complet de l’ACA (en revisió)
 
 - El visor «Aigua i rius» recupera tres consultes dins del mateix mapa: cabals i nivells de la Tordera, intensitat dels pluviòmetres propers i reserves dels embassaments de Sau i Susqueda.

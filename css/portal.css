@@ -465,6 +465,7 @@ body[data-page="estacio"] .metrics-grid { margin-top: 16px; }
 .xac-taxon > span { overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .xac-taxon > strong { margin: 7px 0 0; font-size: 17px; }
 .xac-taxon > .environment-level { margin-top: 9px; }
+.xac-taxon > .xac-trend { border-color: rgba(140,185,195,.38); background: rgba(140,185,195,.08); color: #a8d3dc; }
 .xac-taxon > small { margin-top: 7px; color: var(--muted); font-size: 8px; }
 .xac-empty { grid-column: 1/-1; margin: 0; padding: 16px; color: var(--muted); font-size: 10px; }
 .xac-station details { border-top: 1px solid var(--line); }
