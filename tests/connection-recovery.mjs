@@ -13,8 +13,8 @@ assert.match(app,/await wait\(1200\)/);
 assert.match(app,/navigator\.onLine===false/);
 assert.match(app,/Servei temporalment no disponible/);
 assert.match(app,/window\.addEventListener\('online',\(\)=>refreshAfterResume\(true\)\)/);
-assert.match(html,/src\/app\.js\?v=22\.42\.16-offline-first/);
+assert.match(html,/src\/app\.js\?v=22\.42\.17-offline-first/);
 assert.match(workerCache,/verification-reputation-v1-connection-recovery-v1/);
-assert.equal(pkg.version,'22.42.16');
+assert.equal(pkg.version,'22.42.17');
 
 console.log('Recuperació de connexió transitòria: correcta');

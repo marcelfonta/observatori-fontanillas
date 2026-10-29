@@ -14,7 +14,7 @@ import { fetchMoon } from '../src/core/lunar-phase.js';
 import { meteofranceMap, meteofranceModels, meteofranceStagingValidation } from './meteofrance.js';
 
 const STATION_ID = "ISANTC198";
-const WORKER_VERSION = "22.42.16";
+const WORKER_VERSION = "22.42.17";
 const WORKER_BUILT = "2026-10-21";
 const TIME_ZONE = "Europe/Madrid";
 const MADRID_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat("en-CA", {
@@ -56,6 +56,16 @@ const ACA_HYDROLOGY_DATA_URL = 'https://aplicacions.aca.gencat.cat/sdim2/apirest
 const ACA_HYDROLOGY_STATIONS = [
   { id:'sant-celoni', name:'Sant Celoni', detail:'Tordera · TO-10', latitude:41.680341221, longitude:2.488976096, levelSensor:'082021-001-ANA002', flowSensor:'CALC001210' },
   { id:'montseny', name:'Montseny', detail:'Tordera · La Llavina · TO-05', latitude:41.752629836, longitude:2.39745801, levelSensor:'081379-001-ANA01', flowSensor:'CALC001554' },
+];
+const ACA_RAIN_STATIONS = [
+  {id:'rain-sant-celoni',name:'Sant Celoni',detail:'Tordera',latitude:41.680341221,longitude:2.488976096,sensor:'082021-001-ANA001'},
+  {id:'rain-fogars',name:'Fogars de la Selva',detail:'Tordera',latitude:41.738958347,longitude:2.693885954,sensor:'080826-002-ANA010'},
+  {id:'rain-arbucies',name:'Sant Feliu de Buixalleu',detail:'Riera d’Arbúcies',latitude:41.759972,longitude:2.5987,sensor:'171595-001-ANA001'},
+  {id:'rain-tordera',name:'Tordera',detail:'Tordera',latitude:41.64416,longitude:2.6755,sensor:'082845-004-ANA01'},
+];
+const ACA_RESERVOIRS = [
+  {id:'sau',name:'Sau',detail:'Ter',latitude:41.968624956,longitude:2.413554059,percentSensor:'CALC000152',volumeSensor:'CALC000145'},
+  {id:'susqueda',name:'Susqueda',detail:'Ter',latitude:41.979075237,longitude:2.527357457,percentSensor:'CALC000168',volumeSensor:'CALC000158'},
 ];
 const runtimeStateCache = new Map();
 const STATION_LATITUDE = 41.6906;
@@ -539,8 +549,9 @@ function normalizeAcaObservations(payload) {
     .sort((a,b)=>a.observedAt-b.observedAt);
 }
 
-async function acaSensorHistory(sensor) {
-  const response=await fetch(`${ACA_HYDROLOGY_DATA_URL}/${encodeURIComponent(sensor)}?limit=25`,{
+async function acaSensorHistory(sensor,provider='AFORAMENT-EST') {
+  const source=provider==='AFORAMENT-EST'?ACA_HYDROLOGY_DATA_URL:`https://aplicacions.aca.gencat.cat/sdim2/apirest/data/${provider}`;
+  const response=await fetch(`${source}/${encodeURIComponent(sensor)}?limit=25`,{
     headers:{Accept:'application/json'},signal:AbortSignal.timeout(12_000),
     cf:{cacheEverything:true,cacheTtl:300},
   });
@@ -548,9 +559,33 @@ async function acaSensorHistory(sensor) {
   return normalizeAcaObservations(await response.json());
 }
 
-async function acaHydrology() {
+async function acaHydrology(kind='river') {
+  if(kind==='rain'||kind==='reservoir'){
+    const definitions=kind==='rain'?ACA_RAIN_STATIONS:ACA_RESERVOIRS;
+    const provider=kind==='rain'?'PLUVIOMETREACA-EST':'EMBASSAMENT-EST';
+    const stations=await Promise.all(definitions.map(async station=>{
+      const [primary,secondary]=await Promise.all([
+        acaSensorHistory(kind==='rain'?station.sensor:station.percentSensor,provider).catch(()=>[]),
+        kind==='rain'?Promise.resolve([]):acaSensorHistory(station.volumeSensor,provider).catch(()=>[]),
+      ]);
+      const latest=primary.at(-1);
+      const valid=latest&&Date.now()-latest.observedAt>=0&&Date.now()-latest.observedAt<6*60*60*1000;
+      const volume=secondary.at(-1);
+      const volumeValid=volume&&Date.now()-volume.observedAt>=0&&Date.now()-volume.observedAt<6*60*60*1000;
+      return {id:station.id,name:station.name,detail:station.detail,latitude:station.latitude,longitude:station.longitude,
+        observedAt:latest?.observedAt??null,
+        primary:{unit:kind==='rain'?'mm/h':'%',current:valid?latest.value:null,series:primary},
+        secondary:kind==='rain'?null:{unit:'hm³',current:volumeValid?volume.value:null,observedAt:volume?.observedAt??null,series:secondary},
+      };
+    }));
+    if(stations.every(station=>station.primary.current===null&&station.secondary?.current==null))return json({error:'Lectures ACA temporalment no disponibles'},502,'no-store');
+    return json({source:'Agència Catalana de l’Aigua',sourceType:'Dades obertes en temps real',kind,
+      sourceUrl:'https://aplicacions.aca.gencat.cat/sentilo-catalog-web/component/map',
+      caveat:'Dades automàtiques en temps real, encara no revisades ni validades per l’ACA. No indiquen la fase administrativa de sequera.',
+      fetchedAt:Date.now(),stations},200,'public, max-age=300, stale-while-revalidate=900');
+  }
   const stations=await Promise.all(ACA_HYDROLOGY_STATIONS.map(async station=>{
-    const [level,flow]=await Promise.all([acaSensorHistory(station.levelSensor),acaSensorHistory(station.flowSensor)]);
+    const [level,flow]=await Promise.all([acaSensorHistory(station.levelSensor).catch(()=>[]),acaSensorHistory(station.flowSensor).catch(()=>[])]);
     return {
       id:station.id,name:station.name,detail:station.detail,
       latitude:station.latitude,longitude:station.longitude,
@@ -559,6 +594,7 @@ async function acaHydrology() {
       observedAt:Math.max(level.at(-1)?.observedAt||0,flow.at(-1)?.observedAt||0)||null,
     };
   }));
+  if(stations.every(station=>station.flow.current===null&&station.level.current===null))return json({error:'Lectures ACA temporalment no disponibles'},502,'no-store');
   return json({
     source:'Agència Catalana de l’Aigua',sourceType:'Dades obertes en temps real',
     sourceUrl:'https://aplicacions.aca.gencat.cat/aetr/vishid/',
@@ -7535,7 +7571,7 @@ export default {
         return json(await widgetObservation(env), 200, "public, max-age=60");
       }
       if (url.pathname === "/pollen-xac") return xacPollenProxy(url);
-      if (url.pathname === "/aca-hydrology") return acaHydrology();
+      if (url.pathname === "/aca-hydrology") return acaHydrology(url.searchParams.get('kind'));
       if (url.pathname === "/civil-protection-plans") return civilProtectionPlans(env);
       if (url.pathname === "/history") return history(url, env, ctx);
       if (url.pathname === "/temperature-trend") return temperatureTrend(env);

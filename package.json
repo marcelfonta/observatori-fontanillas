@@ -1,6 +1,6 @@
 {
   "name": "observatori-fontanillas",
-  "version": "22.42.16",
+  "version": "22.42.17",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.19.0",

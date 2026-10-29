@@ -6,8 +6,8 @@ const [i18n,dom,station,style,project,serviceWorker]=await Promise.all([
   read('src/core/i18n.js'),read('src/core/dom.js'),read('src/modules/estacio.js'),read('css/style.css'),read('project.json'),read('service-worker.js')
 ]);
 
-assert.equal(JSON.parse(project).version,'22.42.16');
-assert.ok(serviceWorker.includes('observatori-fontanillas-v22-42-16-fonta-regional-v1'));
+assert.equal(JSON.parse(project).version,'22.42.17');
+assert.ok(serviceWorker.includes('observatori-fontanillas-v22-42-17-fonta-regional-v1'));
 assert.ok(i18n.includes("'Sense avisos oficials actius':{es:'Sin avisos oficiales activos',en:'No active official alerts'}"));
 assert.ok(i18n.includes("'Lectura ràpida':{es:'Lectura rápida',en:'Quick view'}"));
 assert.ok(i18n.includes('DYNAMIC_REPLACEMENTS')&&i18n.includes('Comprovat a les'));
