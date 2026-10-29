@@ -4,16 +4,19 @@ import assert from 'node:assert/strict';
 import worker from '../worker/index.js';
 
 const root=resolve(import.meta.dirname,'..');
-const [html,radar,hydrology,backend,serviceWorker,css]=await Promise.all([
+const [html,radar,environment,hydrology,backend,serviceWorker,css]=await Promise.all([
   readFile(resolve(root,'index.html'),'utf8'),readFile(resolve(root,'src/modules/radar.js'),'utf8'),
+  readFile(resolve(root,'src/features/environment.js'),'utf8'),
   readFile(resolve(root,'src/modules/hydrology.js'),'utf8'),readFile(resolve(root,'worker/index.js'),'utf8'),
   readFile(resolve(root,'service-worker.js'),'utf8'),readFile(resolve(root,'css/portal.css'),'utf8'),
 ]);
 
-for(const id of ['radar-tab-hydrology','radar-panel-hydrology','hydrology-map','hydrology-stations','hydrology-detail','hydrology-status'])if(!html.includes(`id="${id}"`))throw new Error(`Falta ${id} al visor hidrològic.`);
-if(!html.includes('data-radar-mode="hydrology"')||!html.includes('https://aplicacions.aca.gencat.cat/sentilo-catalog-web/component/map'))throw new Error('Falta la pestanya o l’enllaç oficial de l’ACA.');
+for(const id of ['environment-tab-hydrology','environment-panel-hydrology','hydrology-map','hydrology-stations','hydrology-detail','hydrology-status'])if(!html.includes(`id="${id}"`))throw new Error(`Falta ${id} al visor hidrològic.`);
+if(!html.includes('data-environment-topic-name="water" data-environment-viewer="hydrology"')||!html.includes('https://aplicacions.aca.gencat.cat/sentilo-catalog-web/component/map'))throw new Error('Falta la pestanya o l’enllaç oficial de l’ACA.');
+assert.doesNotMatch(html,/data-radar-mode="hydrology"/);
 for(const kind of ['river','rain','reservoir'])if(!html.includes(`data-hydrology-kind="${kind}"`))throw new Error(`Falta el selector ${kind}.`);
-for(const value of ['initHydrology',"mode==='hydrology'"])if(!radar.includes(value))throw new Error(`Radar: falta ${value}.`);
+if(!environment.includes("name==='hydrology'")||!environment.includes("import('../modules/hydrology.js')"))throw new Error('Medi ambient no inicia el visor hidrològic.');
+assert.doesNotMatch(radar,/initHydrology/);
 for(const value of ['/aca-hydrology','ACA_HYDROLOGY_STATIONS','CALC001210','082021-001-ANA002','public, max-age=300','encara no revisades ni validades'])if(!backend.includes(value))throw new Error(`Worker ACA: falta ${value}.`);
 for(const value of ['PLUVIOMETREACA-EST','EMBASSAMENT-EST','082021-001-ANA001','CALC000152','CALC000168','mm/h','hm³'])if(!backend.includes(value))throw new Error(`Worker ACA: falta ${value}.`);
 for(const value of ['CONFIG.apiUrl','/aca-hydrology','trend(series)','invalidateSize','Dades hidrològiques no disponibles'])if(!hydrology.includes(value))throw new Error(`Frontend ACA: falta ${value}.`);

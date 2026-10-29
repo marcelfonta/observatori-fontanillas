@@ -6,10 +6,26 @@ let hydrologyMap;
 let markers=[];
 let activeKind='river';
 let requestId=0;
+let leafletPromise;
 const cache=new Map();
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const number=(value,digits=1)=>Number.isFinite(value)?new Intl.NumberFormat(getLocale(),{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(value):'—';
 const time=value=>value?new Intl.DateTimeFormat(getLocale(),{timeZone:'Europe/Madrid',hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'}).format(new Date(value)):'—';
+
+function ensureLeaflet(){
+  if(window.L)return Promise.resolve();
+  if(leafletPromise)return leafletPromise;
+  leafletPromise=new Promise((resolve,reject)=>{
+    if(!document.getElementById('leaflet-styles')){
+      const styles=document.createElement('link');styles.id='leaflet-styles';styles.rel='stylesheet';styles.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';styles.crossOrigin='';document.head.appendChild(styles);
+    }
+    const existing=document.getElementById('leaflet-script');
+    if(existing){existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',reject,{once:true});return;}
+    const script=document.createElement('script');script.id='leaflet-script';script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';script.crossOrigin='';script.async=true;
+    script.addEventListener('load',resolve,{once:true});script.addEventListener('error',reject,{once:true});document.head.appendChild(script);
+  }).catch(error=>{leafletPromise=null;throw error;});
+  return leafletPromise;
+}
 
 function trend(series) {
   if(!Array.isArray(series)||series.length<2)return {label:t('Sense prou historial'),kind:'steady'};
@@ -101,6 +117,7 @@ async function loadKind(kind) {
 }
 
 export async function initHydrology() {
+  await ensureLeaflet();
   if(!started){
     started=true;
     document.querySelectorAll('[data-hydrology-kind]').forEach(button=>button.addEventListener('click',()=>loadKind(button.dataset.hydrologyKind)));
