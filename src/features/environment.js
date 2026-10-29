@@ -151,7 +151,6 @@ function pollenName(current){
 }
 function xacPollenName(){const highest=xacReference?.highest;return highest?`${highest.name} · ${highest.levelLabel} · ${highest.stationName}`:null;}
 
-const xacLevelClass=level=>level>=4?'is-extreme':level===3?'is-poor':level===2?'is-moderate':level===1?'is-good':'is-none';
 const xacTrendSymbol=trend=>({A:'↑','D':'↓','=':'→','!':'!'})[trend]||'—';
 const xacDate=value=>validXacDate(value)?new Intl.DateTimeFormat(CONFIG.locale,{day:'numeric',month:'short',timeZone:'Europe/Madrid'}).format(new Date(`${value}T12:00:00Z`)):'—';
 const validXacDate=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value);
@@ -159,7 +158,7 @@ function appendXacTaxon(container,taxon){
   const item=document.createElement('div');item.className='xac-taxon';
   const title=document.createElement('span');title.textContent=taxon.name;
   const value=document.createElement('strong');value.textContent=taxon.levelLabel??'No disponible';
-  const trend=document.createElement('em');trend.className=`environment-level ${xacLevelClass(taxon.level)}`;trend.textContent=`${xacTrendSymbol(taxon.trend)} ${taxon.trendLabel??'Sense tendència'}`;
+  const trend=document.createElement('em');trend.className='environment-level xac-trend';trend.textContent=`${xacTrendSymbol(taxon.trend)} ${taxon.trendLabel??'Sense tendència'}`;
   const type=document.createElement('small');type.textContent=taxon.group==='spores'?'Espora de fong':'Pol·len';
   item.append(title,value,trend,type);container.append(item);
 }
