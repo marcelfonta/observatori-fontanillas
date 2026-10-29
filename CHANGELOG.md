@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-29 — CO₂ visible durant el timelapse (en revisió)
+
+- La referència global de CO₂ apareix durant tot el vídeo en una capsa més petita, amb data i font; les lectures XVPCA continuen només a la targeta final.
+- Es manté una sola passada de codificació i la variant vertical deriva del vídeo horitzontal. Cal validar una mostra real a la Raspberry abans d'instal·lar el canvi.
+
 ## 2026-10-28 — Verificació de producció del PR #343
 
 - Confirmada la publicació de la referència climàtica a `/canvi-climatic` i repetida amb èxit l'auditoria SEO de producció.

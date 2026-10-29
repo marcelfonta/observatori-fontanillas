@@ -175,17 +175,12 @@ for index in "${!IMAGES[@]}"; do
 done
 printf "file '%s'\n" "${frame//\'/\'\\\'\'}" >> "$LIST"
 
-# Una targeta final conserva l'hora i la font de cada lectura. Les mesures
-# representen el tancament del dia, no tots els fotogrames del timelapse.
+# La targeta final conserva les mesures XVPCA del tancament del dia. El CO₂
+# global, amb data i font, es dibuixa una sola vegada en codificar el vídeo:
+# no s'atribueix a cap hora de les captures ni es repeteix el cost per JPEG.
 if [[ -s "$CO2_VALUE" || -s "$AIR_TIME" ]] && ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
   CARD="$TMP_DIR/context-card.jpg"
   CARD_FILTER="drawbox=x=20:y=650:w=375:h=45:color=0xF4CE46@0.93:t=fill,drawtext=fontfile='$FONT':text='SANT CELONI · $DATE':fontcolor=0x14211D:fontsize=22:x=33:y=656,drawtext=fontfile='$FONT':text='METEO FONTANILLAS · CÀMERA NORD':fontcolor=0x14211D:fontsize=12:x=34:y=682"
-  if [[ -s "$CO2_VALUE" ]]; then
-    CARD_FILTER+=",drawbox=x=20:y=18:w=330:h=150:color=black@0.65:t=fill,drawbox=x=20:y=18:w=5:h=150:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂ · DADA DE TANCAMENT':fontcolor=0xF4CE46:fontsize=16:x=33:y=27,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=32:x=34:y=49,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.86:fontsize=11:x=34:y=147"
-    if [[ -s "$CO2_COMPARE" ]]; then
-      CARD_FILTER+=",drawtext=fontfile='$FONT':textfile='$CO2_COMPARE':fontcolor=white@0.9:fontsize=14:line_spacing=2:x=34:y=91"
-    fi
-  fi
   if [[ -s "$AIR_TIME" ]]; then
     CARD_FILTER+=",drawbox=x=963:y=532:w=290:h=46:color=black@0.55:t=fill,drawtext=fontfile='$FONT':text='XVPCA · SANT CELONI':fontcolor=white:fontsize=13:x=976:y=536,drawtext=fontfile='$FONT':textfile='$AIR_TIME':fontcolor=white@0.85:fontsize=12:x=976:y=556"
     for pollutant in NO2 O3 PM10; do
@@ -212,11 +207,19 @@ if [[ -s "$CO2_VALUE" || -s "$AIR_TIME" ]] && ffmpeg -hide_banner -filters 2>/de
   fi
 fi
 
+VIDEO_FILTER="format=yuv420p"
+if [[ -s "$CO2_VALUE" ]] && ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
+  VIDEO_FILTER+=",drawbox=x=20:y=18:w=300:h=120:color=black@0.62:t=fill,drawbox=x=20:y=18:w=4:h=120:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂ · REFERÈNCIA GLOBAL':fontcolor=0xF4CE46:fontsize=14:x=31:y=25,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=25:x=31:y=44,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.86:fontsize=9:x=31:y=119"
+  if [[ -s "$CO2_COMPARE" ]]; then
+    VIDEO_FILTER+=",drawtext=fontfile='$FONT':textfile='$CO2_COMPARE':fontcolor=white@0.9:fontsize=11:line_spacing=1:x=31:y=77"
+  fi
+fi
+
 rm -f "$OUTPUT_TMP"
 MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
   -threads 1 -f concat -safe 0 -i "$LIST" \
   -filter_threads 1 -filter_complex_threads 1 \
-  -vf format=yuv420p \
+  -vf "$VIDEO_FILTER" \
   -r 20 -an -c:v libx264 -threads 1 -preset superfast -crf 20 -maxrate 5M -bufsize 10M \
   -pix_fmt yuv420p -movflags +faststart -f mp4 "$OUTPUT_TMP"
 [[ -s "$OUTPUT_TMP" ]] || { echo "FFmpeg no ha creat un vídeo vàlid." >&2; exit 1; }
