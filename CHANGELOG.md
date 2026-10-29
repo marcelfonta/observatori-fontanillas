@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-29 — Mapes sinòptics WXCharts a Predicció (en revisió)
+
+- S'afegeix un accés compacte a WXCharts centrat en la península Ibèrica dins del comparador de models, amb pressió, temperatura, precipitació i vent. S'obre en una pestanya nova i no carrega imatges al web.
+- La consulta és complementària: no altera el càlcul local ni substitueix els avisos oficials. L'accés i l'explicació tenen traducció als quatre idiomes.
+
 ## 2026-10-29 — «Aigua i rius» dins de Medi ambient (en revisió)
 
 - El mapa hidrològic de l’ACA passa del Radar al tema «Aigua i sequera» de Medi ambient. La pestanya «Aigua i rius» apareix abans de «Sequera» i conserva les consultes de cabals, pluviòmetres i embassaments, amb la mateixa font i les mateixes advertències.
