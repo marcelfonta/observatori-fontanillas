@@ -13,7 +13,8 @@ La revisió visual i editorial dels quatre idiomes, l'accessibilitat amb lector 
 
 ## Atles ambiental de Medi Ambient (publicat, pendent de validació real)
 
-El mapa hidrològic de «Aigua i rius» incorpora, en revisió, les pestanyes de
+El mapa hidrològic de «Aigua i rius» és la primera pestanya del tema «Aigua i sequera»
+de Medi ambient (abans era dins del Radar) i incorpora, en revisió, les pestanyes de
 pluviòmetres, cabals i nivells, i embassaments amb lectures oficials ACA.
 Cal comprovar-ne la presentació en previsualització i en dispositius reals
 abans de publicar-lo. La fase administrativa de sequera continua enllaçada

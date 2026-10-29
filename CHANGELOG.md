@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-29 — «Aigua i rius» dins de Medi ambient (en revisió)
+
+- El mapa hidrològic de l’ACA passa del Radar al tema «Aigua i sequera» de Medi ambient. La pestanya «Aigua i rius» apareix abans de «Sequera» i conserva les consultes de cabals, pluviòmetres i embassaments, amb la mateixa font i les mateixes advertències.
+- Les dades es carreguen en obrir la pestanya. El Radar queda centrat en precipitació i llamps.
+
 ## 2026-10-29 — Tendència del pol·len sense color d'alerta (en revisió)
 
 - La pastilla «Estable» del butlletí XAC utilitza un color neutre, independent del nivell de pol·len o espores. Així, un nivell «Màxim» continua explícit en el text sense que el color de la tendència suggereixi que està augmentant.

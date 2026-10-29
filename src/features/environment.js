@@ -282,6 +282,7 @@ function initEnvironmentViewers(){
     panels.forEach(panel=>{const active=panel.dataset.environmentPanel===name;panel.hidden=!active;if(active){const asset=panel.querySelector('[data-src]');const skipEmbeddedViewer=['jellyfish','marine'].includes(name)&&compactViewer.matches&&asset?.tagName==='IFRAME';if(asset&&!skipEmbeddedViewer&&!asset.getAttribute('src')){const suffix=asset.tagName==='IMG'?`?v=${new Date().toISOString().slice(0,13)}`:'';asset.src=`${asset.dataset.src}${suffix}`;}}});
     if(name==='firms'&&!firmsLoaded)void loadFirmsDetections();
     if(name==='air')void loadAirStationsMap();
+    if(name==='hydrology')void import('../modules/hydrology.js').then(module=>module.initHydrology()).catch(()=>put('hydrology-status','Temporalment no disponible'));
     if(name==='earthquakes'&&!earthquakesLoaded)void loadEarthquakes(earthquakesPeriod);
   };
   buttons.forEach(button=>{
