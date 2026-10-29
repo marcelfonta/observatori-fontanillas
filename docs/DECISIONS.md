@@ -1,5 +1,12 @@
 # Registre de decisions
 
+## ADR — Recuperació del mapa d’aigua de l’ACA (proposta, 2026-10-29)
+
+- El visor hidrològic existent amplia `/aca-hydrology` amb `kind=rain` i `kind=reservoir`; sense paràmetre conserva el contracte anterior de cabals i nivells. Les tres famílies consulten els sensors públics Sentilo de l’ACA només quan s’obre el visor, amb memòria cau breu.
+- La pluja es presenta com a intensitat instantània en mm/h; el percentatge i el volum dels embassaments són mesures diferents i mostren cadascun la seva hora. Cap dada equival a un avís, a un acumulat de pluja ni a la fase administrativa de sequera.
+- Les lectures noves de més de sis hores no es mostren com a actuals. Un sensor indisponible no impedeix veure les altres estacions; si no queda cap lectura recent, la resposta és d’error i el web remet al mapa oficial. No es guarden dades a D1 ni es canvia el mapa de sequera.
+- La previsualització ha de provar les tres pestanyes i un error parcial. El rollback és revertir el Worker i el frontal junts; la consulta sense `kind` es manté compatible durant la transició.
+
 ## ADR — Context visible al timelapse sense confondre hores (proposta, 2026-10-29)
 
 - La prova física del PR #345 ha mostrat el CO₂ durant tot el vídeo, però les comparacions eren petites al format vertical i la franja inferior només apareixia al final. S'amplien les comparacions i la franja inferior es dibuixa en totes les captures.

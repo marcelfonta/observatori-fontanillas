@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-29 — Mapa hidrològic complet de l’ACA (en revisió)
+
+- El visor «Aigua i rius» recupera tres consultes dins del mateix mapa: cabals i nivells de la Tordera, intensitat dels pluviòmetres propers i reserves dels embassaments de Sau i Susqueda.
+- Les lectures provenen dels sensors oficials de l’ACA, indiquen unitat i hora, i queden en blanc quan són antigues o un sensor falla. La pluja en mm/h no s’interpreta com a acumulació i les reserves no s’interpreten com a fase de sequera.
+- Els textos s’han traduït als quatre idiomes. El canvi amplia la resposta existent de `/aca-hydrology` mitjançant el paràmetre opcional `kind`, sense alterar la consulta anterior.
+
 ## 2026-10-29 — Context llegible durant tot el timelapse (en revisió)
 
 - La franja groga de Sant Celoni es manté en totes les captures, inclosa la pausa final; la comparació de CO₂ usa una lletra més gran en una capsa encara compacta.

@@ -79,8 +79,8 @@
     <link rel="stylesheet" href="/css/portal.css?v=22.42.17-drought-map" />
     <script type="module" src="/src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="/src/features/push.js?v=22.31.6"></script>
-    <script type="module" src="/src/features/pwa.js?v=22.42.16-offline-first"></script>
-    <script type="module" src="/src/app.js?v=22.42.16-offline-first"></script>
+    <script type="module" src="/src/features/pwa.js?v=22.42.17-offline-first"></script>
+    <script type="module" src="/src/app.js?v=22.42.17-offline-first"></script>
     <script type="module" src="/src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","license":"https://creativecommons.org/licenses/by/4.0/","creditText":"Observatori Meteorològic Fontanillas — meteo.fontanillas.cat","isAccessibleForFree":true,"creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -815,10 +815,11 @@
           </div>
           <div class="radar-panel" id="radar-panel-hydrology" role="tabpanel" aria-labelledby="radar-tab-hydrology" tabindex="0" hidden data-radar-panel="hydrology">
             <div class="hydrology-integrated">
-              <header><div><p class="eyebrow">ACA · conca de la Tordera</p><h3>Aigua i rius en temps real</h3><p>Lectures automàtiques de cabal i nivell a Sant Celoni i aigües amunt, al Montseny.</p></div><span class="tag" id="hydrology-status">Carregant dades</span></header>
-              <div class="hydrology-layout"><div id="hydrology-map" aria-label="Mapa d’estacions d’aforament de la Tordera"></div><div><nav id="hydrology-stations" aria-label="Estacions de la Tordera"><span class="hydrology-loading">Connectant amb l’ACA…</span></nav><section id="hydrology-detail" aria-live="polite"><p class="hydrology-loading">Preparant les darreres lectures.</p></section></div></div>
+              <header><div><p class="eyebrow">ACA · dades hidrològiques</p><h3>Aigua i rius en temps real</h3><p>Pluviòmetres, cabals de la Tordera i reserves d’embassaments, amb hora i font oficial.</p></div><span class="tag" id="hydrology-status">Carregant dades</span></header>
+              <div class="hydrology-kind-tabs" role="group" aria-label="Tipus de dades de l’aigua"><button type="button" class="is-active" aria-pressed="true" data-hydrology-kind="river">Cabals i nivells</button><button type="button" aria-pressed="false" data-hydrology-kind="rain">Pluviòmetres</button><button type="button" aria-pressed="false" data-hydrology-kind="reservoir">Embassaments</button></div>
+              <div class="hydrology-layout"><div id="hydrology-map" aria-label="Mapa d’estacions hidrològiques de l’ACA"></div><div><nav id="hydrology-stations" aria-label="Estacions hidrològiques de l’ACA"><span class="hydrology-loading">Connectant amb l’ACA…</span></nav><section id="hydrology-detail" aria-live="polite"><p class="hydrology-loading">Preparant les darreres lectures.</p></section></div></div>
             </div>
-            <div class="radar-actions"><p>Dades oficials automàtiques: no equivalen a un avís ni a una validació definitiva. En episodis adversos segueix Protecció Civil i els avisos oficials.</p><a href="https://aplicacions.aca.gencat.cat/aetr/vishid/" target="_blank" rel="noreferrer">Obrir el visor complet de l’ACA ↗</a></div>
+            <div class="radar-actions"><p>Dades oficials automàtiques encara no validades. La intensitat de pluja és en mm/h, no acumulació. Les reserves no indiquen la fase de sequera. En episodis adversos segueix Protecció Civil i els avisos oficials.</p><a href="https://aplicacions.aca.gencat.cat/sentilo-catalog-web/component/map" target="_blank" rel="noopener noreferrer">Obrir el mapa de sensors de l’ACA ↗</a></div>
           </div>
         </article>
       </section>
