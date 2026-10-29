@@ -45,6 +45,9 @@ test('l’atles manté els textos traduïts i els temes accessibles al mòbil',a
     await expect(page.locator('[data-drought-period="6"]')).toHaveText(period);
   }
   await page.locator('[data-environment-topic="water"]').click();
+  await expect(page.locator('#environment-tab-hydrology')).toBeVisible();
+  await expect(page.locator('#environment-panel-hydrology')).toBeVisible();
+  await page.locator('#environment-tab-drought').click();
   await expect(page.locator('.environment-drought-map')).toBeVisible();
   await page.locator('[data-environment-topic="sea"]').click();
   await expect(page.locator('#environment-tab-marine')).toBeVisible();
