@@ -1,5 +1,11 @@
 # Registre de decisions
 
+## ADR — CO₂ global discret durant el timelapse (proposta, 2026-10-29)
+
+- La mateixa lectura de referència global de NOAA, amb font i data explícites, es mostra en una capsa compacta durant tot el vídeo. És context del vídeo, no una lectura local ni una observació de cada hora de la càmera. Les comparacions d'un i deu anys continuen sent opcionals.
+- Les mesures XVPCA de Sant Celoni es mantenen només a la targeta final, amb l'hora de la lectura; mostrar la lectura de les 23 h sobre captures de les 08 h seria enganyós.
+- FFmpeg dibuixa el CO₂ durant la codificació única del vídeo horitzontal. La variant vertical el reutilitza, sense tractar de nou les captures ni afegir un segon procés. Si la prova física mostra massa càrrega, es restaura la còpia anterior de `camera-timelapse.sh`. No canvien el Worker, les API ni els vídeos ja publicats.
+
 ## ADR — Sequera pluviomètrica visible mentre VISSEQ és en manteniment (proposta, 2026-10-27)
 
 - L'antic iframe de VISSEQ no es restaura perquè la font oficial encara mostra manteniment. El conjunt obert municipal de l'ACA `i5n8-43cw` té l'última actualització de files el maig de 2025, de manera que no es pot presentar com a estat administratiu actual.

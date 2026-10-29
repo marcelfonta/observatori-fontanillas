@@ -33,8 +33,11 @@ assert.equal((generator.match(/-f concat -safe 0 -i "\$LIST"/g) || []).length,1)
 assert.match(generator,/TIMELAPSE DEL CEL/);
 assert.match(generator,/\/climate\/co2/);
 assert.match(generator,/value\.get\("fresh"\) is not True/);
-assert.match(generator,/CO₂ · DADA DE TANCAMENT/);
-assert.doesNotMatch(generator,/CO2_LANDSCAPE|LANDSCAPE_FILTER/,'La lectura de tancament no s’ha de repetir sobre tots els fotogrames.');
+assert.match(generator,/CO₂ · REFERÈNCIA GLOBAL/);
+assert.match(generator,/VIDEO_FILTER\+=.*textfile='\$CO2_VALUE'/);
+assert.match(generator,/-vf "\$VIDEO_FILTER"/);
+assert.doesNotMatch(generator,/CARD_FILTER\+=.*textfile='\$CO2_VALUE'/,'El CO₂ persistent no s’ha de duplicar a la targeta final.');
+assert.doesNotMatch(generator,/^\s*FILTER\+=.*textfile='\$CO2_VALUE'/m,'El CO₂ no s’ha de dibuixar individualment en cada JPEG.');
 assert.match(generator,/local\.date\(\)\.isoformat\(\)!=day/);
 assert.match(generator,/XVPCA · SANT CELONI/);
 assert.match(generator,/-threads 1 -i "\$frame"[\s\S]*-vf "\$CARD_FILTER"/,'La targeta de tancament ha de conservar el cel del darrer fotograma.');
