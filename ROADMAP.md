@@ -170,6 +170,11 @@ es van instal·lar el 28/10: les sumes de verificació van coincidir, el servei
 va acabar amb `Result=success` i els dos temporitzadors eren actius. La nova
 composició i les lectures guardades encara s'han de verificar en un vídeo
 automàtic posterior a aquesta instal·lació.
+El PR #345 es va instal·lar el 29/10 i la mostra vertical confirma el CO₂
+des del primer fotograma. La comparació anual es llegeix massa petita i la
+franja groga i XVPCA només apareixen a la pausa final. El paquet següent
+amplia el text i manté aquests elements durant tot el vídeo amb l'etiqueta
+«lectura de tancament» per a XVPCA; queda pendent la prova visual física.
 
 El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) continua oberta. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El 25/10 els vídeos del 23 i del 24 responen 200 al Worker, mentre que el del 21 encara respon 404; la generació posterior al canvi, per tant, funciona, però l'episodi perdut no s'ha recuperat. El timelapse del 23/10 s’ha publicat a Instagram i el workflow de YouTube del mateix dia va acabar correctament. Encara falta evidència visible de la següent execució automàtica a cada canal habilitat, sense duplicats i amb la càpsula de CO₂, abans de tancar #299. El panell d'administració pot assenyalar dies programats absents.
 
