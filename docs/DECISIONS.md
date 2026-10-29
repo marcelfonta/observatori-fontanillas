@@ -1,5 +1,11 @@
 # Registre de decisions
 
+## ADR — Context visible al timelapse sense confondre hores (proposta, 2026-10-29)
+
+- La prova física del PR #345 ha mostrat el CO₂ durant tot el vídeo, però les comparacions eren petites al format vertical i la franja inferior només apareixia al final. S'amplien les comparacions i la franja inferior es dibuixa en totes les captures.
+- Les mesures XVPCA provenen d'una captura oficial validada del mateix dia del vídeo. Per tenir-les visibles sempre sense atribuir-les a cada hora de càmera, s'etiqueten «lectura de tancament» i se'n mostra l'hora. No es mostren si la captura no supera la validació existent; les absències mantenen un guió.
+- Es conserva l'últim fotograma tres segons, amb els mateixos rètols, sense una codificació addicional. La composició es fa en el vídeo horitzontal i la variant vertical el reutilitza. Si el rendiment o la llegibilitat fallen a la Raspberry, es restaura la còpia anterior de `camera-timelapse.sh`.
+
 ## ADR — CO₂ global discret durant el timelapse (proposta, 2026-10-29)
 
 - La mateixa lectura de referència global de NOAA, amb font i data explícites, es mostra en una capsa compacta durant tot el vídeo. És context del vídeo, no una lectura local ni una observació de cada hora de la càmera. Les comparacions d'un i deu anys continuen sent opcionals.

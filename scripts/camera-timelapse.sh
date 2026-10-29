@@ -175,14 +175,21 @@ for index in "${!IMAGES[@]}"; do
 done
 printf "file '%s'\n" "${frame//\'/\'\\\'\'}" >> "$LIST"
 
-# La targeta final conserva les mesures XVPCA del tancament del dia. El CO₂
-# global, amb data i font, es dibuixa una sola vegada en codificar el vídeo:
-# no s'atribueix a cap hora de les captures ni es repeteix el cost per JPEG.
-if [[ -s "$CO2_VALUE" || -s "$AIR_TIME" ]] && ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
-  CARD="$TMP_DIR/context-card.jpg"
-  CARD_FILTER="drawbox=x=20:y=650:w=375:h=45:color=0xF4CE46@0.93:t=fill,drawtext=fontfile='$FONT':text='SANT CELONI · $DATE':fontcolor=0x14211D:fontsize=22:x=33:y=656,drawtext=fontfile='$FONT':text='METEO FONTANILLAS · CÀMERA NORD':fontcolor=0x14211D:fontsize=12:x=34:y=682"
+# El darrer fotograma es manté tres segons. Els rètols es dibuixen després
+# del concat, de manera que són idèntics al principi i al final del vídeo.
+printf "file '%s'\nduration 3\nfile '%s'\n" "$frame" "$frame" >> "$LIST"
+
+VIDEO_FILTER="format=yuv420p"
+if ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
+  VIDEO_FILTER+=",drawbox=x=20:y=650:w=375:h=45:color=0xF4CE46@0.93:t=fill,drawtext=fontfile='$FONT':text='SANT CELONI · $DATE':fontcolor=0x14211D:fontsize=22:x=33:y=656,drawtext=fontfile='$FONT':text='METEO FONTANILLAS · CÀMERA NORD':fontcolor=0x14211D:fontsize=12:x=34:y=682"
+  if [[ -s "$CO2_VALUE" ]]; then
+    VIDEO_FILTER+=",drawbox=x=20:y=18:w=300:h=132:color=black@0.62:t=fill,drawbox=x=20:y=18:w=4:h=132:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂ · REFERÈNCIA GLOBAL':fontcolor=0xF4CE46:fontsize=14:x=31:y=25,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=27:x=31:y=44,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.86:fontsize=11:x=31:y=131"
+    if [[ -s "$CO2_COMPARE" ]]; then
+      VIDEO_FILTER+=",drawtext=fontfile='$FONT':textfile='$CO2_COMPARE':fontcolor=white@0.9:fontsize=16:line_spacing=2:x=31:y=79"
+    fi
+  fi
   if [[ -s "$AIR_TIME" ]]; then
-    CARD_FILTER+=",drawbox=x=963:y=532:w=290:h=46:color=black@0.55:t=fill,drawtext=fontfile='$FONT':text='XVPCA · SANT CELONI':fontcolor=white:fontsize=13:x=976:y=536,drawtext=fontfile='$FONT':textfile='$AIR_TIME':fontcolor=white@0.85:fontsize=12:x=976:y=556"
+    VIDEO_FILTER+=",drawbox=x=963:y=532:w=290:h=46:color=black@0.55:t=fill,drawtext=fontfile='$FONT':text='XVPCA · LECTURA DE TANCAMENT':fontcolor=white:fontsize=12:x=976:y=536,drawtext=fontfile='$FONT':textfile='$AIR_TIME':fontcolor=white@0.85:fontsize=12:x=976:y=556"
     for pollutant in NO2 O3 PM10; do
       case "$pollutant" in
         NO2) card_x=966; air_value="$AIR_NO2"; air_color="$AIR_NO2_COLOR" ;;
@@ -191,27 +198,11 @@ if [[ -s "$CO2_VALUE" || -s "$AIR_TIME" ]] && ffmpeg -hide_banner -filters 2>/de
       esac
       if [[ -s "$air_value" && -s "$air_color" ]]; then
         card_color="$(cat "$air_color")"
-        CARD_FILTER+=",drawtext=fontfile='$FONT':text='●':fontcolor=$card_color:fontsize=110:x=$card_x:y=577,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=17:x=$card_x+(79-text_w)/2:y=599,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=26:x=$card_x+(79-text_w)/2:y=622"
+        VIDEO_FILTER+=",drawtext=fontfile='$FONT':text='●':fontcolor=$card_color:fontsize=110:x=$card_x:y=577,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=17:x=$card_x+(79-text_w)/2:y=599,drawtext=fontfile='$FONT':textfile='$air_value':fontcolor=white:fontsize=26:x=$card_x+(79-text_w)/2:y=622"
       else
-        CARD_FILTER+=",drawtext=fontfile='$FONT':text='●':fontcolor=0x555D5B:fontsize=110:x=$card_x:y=577,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=17:x=$card_x+(79-text_w)/2:y=599,drawtext=fontfile='$FONT':text='—':fontcolor=white:fontsize=26:x=$card_x+(79-text_w)/2:y=622"
+        VIDEO_FILTER+=",drawtext=fontfile='$FONT':text='●':fontcolor=0x555D5B:fontsize=110:x=$card_x:y=577,drawtext=fontfile='$FONT':text='$pollutant':fontcolor=white:fontsize=17:x=$card_x+(79-text_w)/2:y=599,drawtext=fontfile='$FONT':text='—':fontcolor=white:fontsize=26:x=$card_x+(79-text_w)/2:y=622"
       fi
     done
-  fi
-  if MALLOC_ARENA_MAX=1 ffmpeg -nostdin -hide_banner -loglevel error -y \
-    -threads 1 -i "$frame" \
-    -filter_threads 1 -filter_complex_threads 1 \
-    -vf "$CARD_FILTER" -frames:v 1 -q:v 3 -f image2 -update 1 "$CARD" && [[ -s "$CARD" ]]; then
-    printf "file '%s'\nduration 3\nfile '%s'\n" "$CARD" "$CARD" >> "$LIST"
-  else
-    echo 'Targeta de context omesa: la creació ha fallat; el timelapse continuarà sense les dades addicionals.' >&2
-  fi
-fi
-
-VIDEO_FILTER="format=yuv420p"
-if [[ -s "$CO2_VALUE" ]] && ffmpeg -hide_banner -filters 2>/dev/null | grep ' drawtext ' >/dev/null; then
-  VIDEO_FILTER+=",drawbox=x=20:y=18:w=300:h=120:color=black@0.62:t=fill,drawbox=x=20:y=18:w=4:h=120:color=0xF4CE46:t=fill,drawtext=fontfile='$FONT':text='CO₂ · REFERÈNCIA GLOBAL':fontcolor=0xF4CE46:fontsize=14:x=31:y=25,drawtext=fontfile='$FONT':textfile='$CO2_VALUE':fontcolor=white:fontsize=25:x=31:y=44,drawtext=fontfile='$FONT':textfile='$CO2_SOURCE':fontcolor=white@0.86:fontsize=9:x=31:y=119"
-  if [[ -s "$CO2_COMPARE" ]]; then
-    VIDEO_FILTER+=",drawtext=fontfile='$FONT':textfile='$CO2_COMPARE':fontcolor=white@0.9:fontsize=11:line_spacing=1:x=31:y=77"
   fi
 fi
 

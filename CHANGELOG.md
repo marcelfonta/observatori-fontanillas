@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-29 — Context llegible durant tot el timelapse (en revisió)
+
+- La franja groga de Sant Celoni es manté en totes les captures, inclosa la pausa final; la comparació de CO₂ usa una lletra més gran en una capsa encara compacta.
+- Les lectures XVPCA del dia del vídeo també es mantenen visibles, amb l'etiqueta explícita «lectura de tancament» i l'hora oficial. Sense dades vàlides no apareixen; no es substitueixen amb un model.
+- Es dibuixen els rètols en una sola codificació, sense processar cada JPEG per separat ni generar una imatge de tancament addicional. Cal validar la composició i el rendiment en una previsualització de la Raspberry abans d'instal·lar-la.
+
 ## 2026-10-29 — CO₂ visible durant el timelapse (en revisió)
 
 - La referència global de CO₂ apareix durant tot el vídeo en una capsa més petita, amb data i font; les lectures XVPCA continuen només a la targeta final.
