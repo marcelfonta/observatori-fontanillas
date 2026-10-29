@@ -292,6 +292,10 @@ predicció congelada i verificació prospectiva. Els visors directes de
 Météo-France es mantenen com a circuit tècnic independent i totes les vistes
 externes conserven l’atribució i l’enllaç a la font original.
 
+**Ampliació, 2026-10-29:** WXCharts s'ofereix com a enllaç extern de context
+sinòptic centrat en la península Ibèrica. No se n'insereixen ni se'n copien
+mapes al web; el visor i el càlcul local continuen com fins ara.
+
 ## ADR-011 — ESTOFEX geomètric i WMS EUMETSAT restringit
 
 **Estat:** acceptada, 2026-10-18.
