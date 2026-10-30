@@ -84,6 +84,12 @@ async function showAromeLocal({reset=false}={}){
 }
 
 function stopPlayback(){if(playback)clearTimeout(playback);playback=null;const button=document.getElementById('arome-play');if(button){button.textContent='▶';button.setAttribute('aria-pressed','false');}}
+function syncTimeControls(){
+  const isArome=model==='arome'||model==='aromeHd';
+  const timeline=document.getElementById('arome-timeline');
+  if(timeline)timeline.hidden=!isArome;
+  setText('model-viewer-time-hint',isArome?'Tria una hora amb el control o reprodueix l’evolució del model.':model==='harmonie'?'A AEMET, tria la variable i l’hora dins del visor oficial.':'A Windy, mou la barra d’hores situada dins del mapa per veure l’evolució.');
+}
 function togglePlayback(){
   if(playback){stopPlayback();return;}
   const button=document.getElementById('arome-play');if(button){button.textContent='Ⅱ';button.setAttribute('aria-pressed','true');}
@@ -94,7 +100,9 @@ function showWindy(){stopPlayback();mapRequest+=1;const frame=document.getElemen
 function showHarmonie(){stopPlayback();mapRequest+=1;const frame=document.getElementById('model-viewer-frame');const viewer=document.getElementById('arome-viewer');if(viewer)viewer.hidden=true;if(frame){frame.hidden=false;frame.src=HARMONIE_URL;}markLoading('Carregant el visor oficial HARMONIE-AROME d’AEMET…');setText('model-viewer-caption','HARMONIE-AROME · Península i Balears · 0–48 h');setText('model-viewer-state','Visor oficial AEMET; selecciona la variable i l’hora dins del mapa.');}
 function selectModel(button){
   model=button.dataset.viewerModel;document.querySelectorAll('[data-viewer-model]').forEach(item=>item.classList.toggle('is-active',item.dataset.viewerModel===model));
-  const isArome=model==='arome'||model==='aromeHd';const isHarmonie=model==='harmonie';const pressure=document.getElementById('model-layer-pressure');if(pressure){pressure.disabled=isArome;pressure.title=isArome?'AROME no ofereix aquesta capa en aquest visor':'';}
+  const isArome=model==='arome'||model==='aromeHd';const isHarmonie=model==='harmonie';const pressure=document.getElementById('model-layer-pressure');
+  document.querySelectorAll('[data-viewer-layer]').forEach(item=>{item.disabled=isHarmonie||(item===pressure&&isArome);item.title=isHarmonie?'Selecciona la variable dins del visor oficial AEMET.':item===pressure&&isArome?'AROME no ofereix aquesta capa en aquest visor':'';});
+  syncTimeControls();
   const completeLink=document.getElementById('arome-complete-link');if(completeLink)completeLink.hidden=!isArome;
   const source=document.getElementById('model-viewer-source');if(source){source.href=model==='arome'?'https://portail-api.meteofrance.fr/web/fr/api/DonneesPubliquesPaquetAROME':model==='aromeHd'?'https://open-meteo.com/en/docs/meteofrance-api':isHarmonie?HARMONIE_URL:windyPublicUrl();source.textContent=model==='arome'?'Font: Météo-France · WMS ↗':model==='aromeHd'?'Dades: Open-Meteo · Météo-France ↗':isHarmonie?'Font oficial: AEMET ↗':'Font: Windy · obrir complet ↗';}
   setText('model-viewer-title',model==='arome'?'AROME oficial · Catalunya':model==='aromeHd'?'AROME HD · Baix Montseny':isHarmonie?'HARMONIE-AROME oficial · AEMET':'Mapa temporal interactiu');
@@ -103,6 +111,7 @@ function selectModel(button){
 }
 
 export function initModelViewer(){
+  syncTimeControls();
   const frame=document.getElementById('model-viewer-frame');
   frame?.addEventListener('load',()=>{if(model==='arome'||model==='aromeHd')return;markReady();setText('model-viewer-state',model==='harmonie'?'Visor oficial HARMONIE-AROME d’AEMET · resolució 2,5 km · horitzó màxim 48 h.':'Visor temporal de Windy centrat a Sant Celoni.');});
   if(frame&&!frame.getAttribute('src')&&frame.dataset.src){markLoading();frame.src=frame.dataset.src;}

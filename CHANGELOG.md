@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-30 — Evolució temporal visible al visor de models (en revisió)
+
+- El control d’hora d’AROME i AROME HD queda visible al costat dels selectors de model i variable. Windy i AEMET indiquen on es controla l’evolució dins del seu visor.
+- En triar AEMET es desactiven els botons de variable propis, que no governaven el visor oficial. Els textos nous es tradueixen als quatre idiomes.
+
 ## 2026-10-29 — Mapes sinòptics WXCharts a Predicció (en revisió)
 
 - S'afegeix un accés compacte a WXCharts centrat en la península Ibèrica dins del comparador de models, amb pressió, temperatura, precipitació i vent. S'obre en una pestanya nova i no carrega imatges al web.
