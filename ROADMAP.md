@@ -1,15 +1,15 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
 
-## Feina que es pot fer ara (28-10-2026)
+## Feina que es pot fer ara (30-10-2026)
 
 - **Fet:** el PR #343 és a `main` i la referència climàtica ja es veu a `/canvi-climatic`; l'auditoria SEO de producció ha tornat a passar el 28/10. No hi havia canvis del Worker ni dels scripts de la Raspberry en aquest PR.
 - **Agent:** repetir l'auditoria tècnica de producció després dels pròxims paquets fusionats i registrar separadament proves de codi, previsualització i producció.
 - **Agent i usuari:** seguir la pauta editorial i visual dels quatre idiomes i l'auditoria d'accessibilitat en dispositius reals de [`docs/SITE-AUDIT-2026-10-28.md`](docs/SITE-AUDIT-2026-10-28.md).
 - **Agent:** dissenyar una comparació climàtica només si es pot corregir la diferència entre la capital municipal de l'Atles i el sensor Fontanillas; la referència oficial 1991–2020 i els seus límits ja estan documentats.
-- **Tots dos:** revisar el pròxim timelapse automàtic amb la targeta de CO₂ corregida i les lectures XVPCA guardades durant el dia; confirmar canals i absència de duplicats.
+- **Fet:** l'usuari ha validat visualment el timelapse del 29/10 amb el CO₂ i les tres lectures XVPCA visibles durant el vídeo. Encara cal confirmar les publicacions de cada canal i l'absència de duplicats.
 
-La revisió visual i editorial dels quatre idiomes, l'accessibilitat amb lector de pantalla, l'índex real a Search Console i el pròxim timelapse automàtic continuen pendents d'evidència en dispositius o serveis reals. Les proves de codi i un HTTP 200 no tanquen aquests punts.
+La revisió visual i editorial dels quatre idiomes, l'accessibilitat amb lector de pantalla, l'índex real a Search Console i les publicacions automàtiques del timelapse a cada canal continuen pendents d'evidència en dispositius o serveis reals. Les proves de codi i un HTTP 200 no tanquen aquests punts.
 
 ## Atles ambiental de Medi Ambient (publicat, pendent de validació real)
 
@@ -160,8 +160,7 @@ la finestra de 30 dies, estudiar la reducció de consultes o el pla de Buffer.
 Per TikTok, l'alternativa immediata és la càrrega manual del vídeo vertical;
 Direct Post exigeix aprovació de l'app i del permís abans d'automatitzar-la.
 
-- [ ] Confirmar la pròxima publicació automàtica del timelapse, amb el CO₂ a la
-  imatge, sense duplicats i en tots els canals habilitats.
+- [ ] Confirmar-ne la publicació sense duplicats en tots els canals habilitats.
 
 La millora de qualitat del timelapse a 1280 × 720 i la variant vertical a
 720 × 1280 s’han validat en una mostra sintètica amb límit de taxa i un sol fil.
@@ -175,15 +174,18 @@ corregir el solapament amb l'hora de la càmera i va afegir una captura local de
 lectures XVPCA vàlides del dia per generar el vídeo l'endemà. Els dos scripts
 es van instal·lar el 28/10: les sumes de verificació van coincidir, el servei
 va acabar amb `Result=success` i els dos temporitzadors eren actius. La nova
-composició i les lectures guardades encara s'han de verificar en un vídeo
-automàtic posterior a aquesta instal·lació.
-El PR #345 es va instal·lar el 29/10 i la mostra vertical confirma el CO₂
-des del primer fotograma. La comparació anual es llegeix massa petita i la
-franja groga i XVPCA només apareixen a la pausa final. El paquet següent
-amplia el text i manté aquests elements durant tot el vídeo amb l'etiqueta
-«lectura de tancament» per a XVPCA; queda pendent la prova visual física.
+composició i les lectures guardades s'han validat visualment en el timelapse
+automàtic del 29/10.
+El PR #345 es va instal·lar el 29/10 i la mostra vertical va confirmar el CO₂
+des del primer fotograma, però la comparació anual era petita i la franja groga
+i XVPCA només apareixien a la pausa final. El PR #346 va ampliar el text i va
+mantenir aquests elements durant tot el vídeo amb l'etiqueta «lectura de
+tancament» per a XVPCA. La captura del timelapse automàtic del 29/10, revisada
+per l'usuari el 30/10, confirma visualment el CO₂, la franja inferior i les tres
+lectures XVPCA visibles. Aquesta validació no acredita per si sola la publicació
+a cada xarxa ni l'absència de duplicats.
 
-El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) continua oberta. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El 25/10 els vídeos del 23 i del 24 responen 200 al Worker, mentre que el del 21 encara respon 404; la generació posterior al canvi, per tant, funciona, però l'episodi perdut no s'ha recuperat. El timelapse del 23/10 s’ha publicat a Instagram i el workflow de YouTube del mateix dia va acabar correctament. Encara falta evidència visible de la següent execució automàtica a cada canal habilitat, sense duplicats i amb la càpsula de CO₂, abans de tancar #299. El panell d'administració pot assenyalar dies programats absents.
+El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) continua oberta. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El 25/10 els vídeos del 23 i del 24 responen 200 al Worker, mentre que el del 21 encara respon 404; la generació posterior al canvi, per tant, funciona, però l'episodi perdut no s'ha recuperat. El timelapse del 23/10 s’ha publicat a Instagram i el workflow de YouTube del mateix dia va acabar correctament. El vídeo automàtic del 29/10 ja té validació visual amb CO₂ i XVPCA; encara falta evidència de la seva publicació a cada canal habilitat, sense duplicats, abans de tancar #299. El panell d'administració pot assenyalar dies programats absents.
 
 - [ ] Confirmar en una jornada real que el timelapse arriba a tots els canals
   habilitats, especialment TikTok, sense duplicats i amb un màxim d’una
