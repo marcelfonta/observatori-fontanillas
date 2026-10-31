@@ -1,12 +1,12 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
 
-## Feina que es pot fer ara (31-10-2026)
+## Estat contrastat i feina executable (31-10-2026)
 
-- **Meteo IA, en revisió:** preguntes combinades, context consultat al servidor, fonts i vigència visibles, suggeriments contextuals i quatre idiomes. Abans d'activar un altre model, comparar en previsualització respostes, omissions, latència i consum de neurones amb el mateix conjunt de preguntes. La veu, la resposta progressiva i les targetes gràfiques resten idees opcionals després de validar l'experiència real; no són requisit per publicar aquesta correcció.
+- **Meteo IA, publicada:** el PR #353 ja és a `main`, amb preguntes combinades, context consultat al servidor, fonts i vigència visibles, suggeriments contextuals i quatre idiomes. Abans d'activar un altre model, cal comparar en previsualització respostes, omissions, latència i consum de neurones amb el mateix conjunt de preguntes. La veu, la resposta progressiva i les targetes gràfiques són opcions, no incidències obertes.
 
 - **Fet:** el PR #343 és a `main` i la referència climàtica ja es veu a `/canvi-climatic`; l'auditoria SEO de producció ha tornat a passar el 28/10. No hi havia canvis del Worker ni dels scripts de la Raspberry en aquest PR.
-- **Agent:** repetir l'auditoria tècnica de producció després dels pròxims paquets fusionats i registrar separadament proves de codi, previsualització i producció.
+- **Fet:** l'auditoria SEO de producció s'ha repetit el 31/10 i ha passat per les rutes de mostra i el 404 editorial. Les proves de codi, producció i els límits de la comprovació consten a [`docs/ROADMAP-AUDIT-2026-10-31.md`](docs/ROADMAP-AUDIT-2026-10-31.md). La indexació real continua pendent de Search Console.
 - **Agent i usuari:** seguir la pauta editorial i visual dels quatre idiomes i l'auditoria d'accessibilitat en dispositius reals de [`docs/SITE-AUDIT-2026-10-28.md`](docs/SITE-AUDIT-2026-10-28.md).
 - **Agent:** dissenyar una comparació climàtica només si es pot corregir la diferència entre la capital municipal de l'Atles i el sensor Fontanillas; la referència oficial 1991–2020 i els seus límits ja estan documentats.
 - **Fet:** l'usuari ha validat visualment el timelapse del 29/10 amb el CO₂ i les tres lectures XVPCA visibles durant el vídeo. El 31/10 ha confirmat que les publicacions del dia i el timelapse han sortit bé, amb el format desitjat. Encara cal conservar una comprovació per canal i d'absència de duplicats abans de tancar la incidència #299.
@@ -18,8 +18,8 @@ La revisió visual i editorial dels quatre idiomes, l'accessibilitat amb lector 
 El mapa hidrològic de «Aigua i rius» és la primera pestanya del tema «Aigua i sequera»
 de Medi ambient (abans era dins del Radar) i incorpora, en revisió, les pestanyes de
 pluviòmetres, cabals i nivells, i embassaments amb lectures oficials ACA.
-Cal comprovar-ne la presentació en previsualització i en dispositius reals
-abans de publicar-lo. La fase administrativa de sequera continua enllaçada
+Cal comprovar-ne la presentació en dispositius reals després de publicar-lo.
+La fase administrativa de sequera continua enllaçada
 al portal oficial mentre VISSEQ sigui en manteniment.
 
 Els set visors existents es presenten sota cinc temes dins de la mateixa pàgina.
@@ -39,7 +39,7 @@ els continguts nous es tradueixen a català, castellà, anglès i francès.
   les fases administratives de l'ACA i datada setembre de 2026. Actualitzar la
   cartografia quan Meteocat publiqui un nou mes, sense assumir cap URL futura.
 
-Actualitzat el 28 d’octubre de 2026. Aquest document recull feina pendent i el
+Actualitzat el 31 d’octubre de 2026. Aquest document recull feina pendent i el
 context necessari per entendre-la. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
@@ -420,7 +420,7 @@ persona pot distingir d’un cop d’ull quin temps farà i quina fase lunar hi 
 
 ### Llenguatge i criteri editorial
 
-- [ ] Definir una guia curta de marca i terminologia per a «predicció»,
+- **Fet:** [guia curta de marca i terminologia](docs/EDITORIAL-TERMS.md) per a «predicció»,
   «previsió», «avís», «alerta», «observació», «Fonta» i noms del projecte.
 - [ ] Revisar advertiments repetits: conservar cada advertiment necessari al
   costat del risc, però evitar repetir el mateix paràgraf sense valor nou.
