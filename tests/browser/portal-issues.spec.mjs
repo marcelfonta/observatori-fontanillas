@@ -55,6 +55,26 @@ test('l’atles manté els textos traduïts i els temes accessibles al mòbil',a
   expect(width).toBeLessThanOrEqual(390);
 });
 
+test('les pestanyes de l’atles funcionen amb el teclat',async({page})=>{
+  await page.goto('/medi-ambient');
+  await expect(page.locator('html')).toHaveAttribute('data-environment-viewers-ready','true',{timeout:15000});
+  const water=page.locator('[data-environment-topic="water"]');
+  await water.focus();
+  await page.keyboard.press('Enter');
+  const hydrology=page.locator('#environment-tab-hydrology');
+  const drought=page.locator('#environment-tab-drought');
+  await expect(hydrology).toBeVisible();
+  await hydrology.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(drought).toBeFocused();
+  await expect(drought).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#environment-panel-drought')).toBeVisible();
+  await page.keyboard.press('ArrowLeft');
+  await expect(hydrology).toBeFocused();
+  await expect(hydrology).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#environment-panel-hydrology')).toBeVisible();
+});
+
 test('una història editorial carrega els scripts des de la ruta profunda',async({page})=>{
   await page.route('**/camera/nord/timelapses/2026-10-04.mp4',route=>route.fulfill({status:404,json:{error:'Vídeo no disponible'}}));
   await page.goto('/histories/aiguat-4-octubre-2026');
