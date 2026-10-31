@@ -2,15 +2,15 @@
   "schema": 1,
   "kind": "fonta-xema-public-status",
   "policy": "fonta-xema-daily-regional-shadow-v1",
-  "publishedAt": "2026-10-30T15:18:13.496Z",
+  "publishedAt": "2026-10-31T14:42:57.149Z",
   "mode": "regional-shadow",
   "productionEnabled": false,
   "promotionAllowed": false,
   "source": "Generalitat de Catalunya · Servei Meteorològic de Catalunya (Meteocat)",
   "terms": "https://www.meteo.cat/wpweb/avis-legal/",
   "progress": {
-    "captureCount": 32,
-    "pairedStationDays": 150,
+    "captureCount": 33,
+    "pairedStationDays": 156,
     "status": "contrasting"
   },
   "stations": [
