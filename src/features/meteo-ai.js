@@ -1,6 +1,7 @@
 import { fetchAdvancedMeteoAI, fetchAlertHistory, fetchAlerts, fetchCurrentWeather, fetchForecast, fetchLocalityWeather, fetchNearbyStations } from '../services/weather-api.js';
 import { ephemerisDateLabel, meteorologicalEphemeridesForDate } from '../data/meteorological-ephemerides.js';
 import { finiteNumber } from '../core/numeric.js';
+import { t } from '../core/i18n.js';
 
 const state={current:null,history:[],forecast:null,alerts:null,environment:null};
 let initialized=false;
@@ -42,6 +43,27 @@ const sourceLinks={
 };
 const source=(label,detail,href=sourceLinks[label]||'')=>({label,detail,href});
 const response=(title,body,{facts=[],sources=[],level='info',followups=[]}={})=>({title,body,facts,sources,level,followups});
+
+export function isCompositeMeteoQuestion(question){
+  const q=normalize(question);
+  const topics=[/plou|pluja|lluv|rain|pleuv|pluie|precipit|paraigua|paraguas|umbrella/,/vent|viento|wind|ratxa|racha|gust/,/avis|aviso|alert|warning|alerte|perill|riesgo|risk|risque/,/temperatur|calor|fred|frio|cold|heat|chaleur|graus|degree|grado/,/aire|air|contamin|pollut|pm2|pm10|pol len|pollen|uv|radiacio|radiation/];
+  return topics.filter(pattern=>pattern.test(q)).length>=2&&(/\bi\b|\by\b|\band\b|\bet\b|\bo\b|\bor\b|\bou\b|\bpero\b|\bbut\b|\bmais\b|\bcompar|\bmillor|\bmejor|\bbest\b|\bfranja|\bentre|\bbetween\b|\bmentre|\bwhile\b/.test(q)||q.length>95);
+}
+
+export function suggestedMeteoQuestions(context=state,now=new Date()){
+  const hour=Number(new Intl.DateTimeFormat('en-GB',{hour:'2-digit',hourCycle:'h23',timeZone:'Europe/Madrid'}).format(now));
+  const rainRate=n(context.current?.rainRate);
+  const tomorrowRain=n(context.forecast?.daily?.precipitation_probability_max?.[1]);
+  const prompts=[];
+  if(context.alerts?.ok)prompts.push({label:'Avisos oficials',question:'Hi ha avisos oficials actius a Sant Celoni?'});
+  if(rainRate!==null&&rainRate>0)prompts.push({label:'Quan pararà?',question:'Quan es preveu que pari de ploure i hi ha avisos actius?'});
+  else if(tomorrowRain!==null&&tomorrowRain>=50)prompts.push({label:'Pluja de demà',question:'Quina franja de demà té més probabilitat de pluja i vent?'});
+  if(hour>=17||hour<7)prompts.push({label:'Demà al matí',question:'Quin temps farà demà al matí i hi ha avisos?'});
+  else prompts.push({label:'Les pròximes hores',question:'Com evolucionaran la pluja i el vent durant les pròximes hores?'});
+  prompts.push({label:'Sortir a caminar',question:'Quina franja és millor per caminar a Sant Celoni, segons pluja, vent i avisos?'});
+  prompts.push({label:'Lectura actual',question:'Quina temperatura fa ara i quina es preveu per a demà?'});
+  return prompts.slice(0,4);
+}
 
 function activeAlerts(context){
   const payload=context.alerts;
@@ -485,17 +507,14 @@ export async function answerMeteoQuestion(question,context=state,services={fetch
   return {...response('Ampliant la consulta','Interpretaré la pregunta amb el model avançat i les dades meteorològiques disponibles.',{sources:[source('Meteo IA','Processament avançat protegit')]}),needsAI:true};
 }
 
-function advancedContext(context){
-  const current=context.current?Object.fromEntries(['updated','temperature','feelsLike','humidity','pressure','windSpeed','windGust','windDirection','rainToday','rainRate','solarRadiation','uv','degraded','stale','ageMinutes'].map(key=>[key,context.current[key]])):null;
-  const daily=context.forecast?.daily||null;
-  const hourly=context.forecast?.hourly||null;
-  return {station:'Fontanillas · Sant Celoni',current,forecast:daily?{time:daily.time,weather_code:daily.weather_code,temperature_2m_max:daily.temperature_2m_max,temperature_2m_min:daily.temperature_2m_min,precipitation_probability_max:daily.precipitation_probability_max,precipitation_sum:daily.precipitation_sum,wind_gusts_10m_max:daily.wind_gusts_10m_max,hourly:hourly?{time:hourly.time?.slice(0,48),precipitation_probability:hourly.precipitation_probability?.slice(0,48),precipitation:hourly.precipitation?.slice(0,48),temperature_2m:hourly.temperature_2m?.slice(0,48),wind_gusts_10m:hourly.wind_gusts_10m?.slice(0,48)}:null}:null,alerts:context.alerts?{active:context.alerts.active,maxLevel:context.alerts.maxLevel,alerts:context.alerts.alerts}:null,environment:context.environment||null};
-}
-
 export async function answerMeteoQuestionAdvanced(question,context=state,services={fetchLocalityWeather,fetchNearbyStations,fetchAlertHistory},memory=null){
+  if(isCompositeMeteoQuestion(question)){
+    try{return await fetchAdvancedMeteoAI(question);}
+    catch(error){console.warn('Meteo IA avançada no disponible.',error);return response('Consulta combinada no disponible','Ara no puc creuar totes les fonts de manera fiable. Torna-ho a provar d’aquí uns instants o consulta cada tema per separat.',{level:'warning',sources:[source('Meteo IA','No s’ha generat cap conclusió sense verificar')]});}
+  }
   const local=await answerMeteoQuestion(question,context,services,memory);
   if(!local.needsAI)return local;
-  try{return await fetchAdvancedMeteoAI(question,advancedContext(context));}
+  try{return await fetchAdvancedMeteoAI(question);}
   catch(error){console.warn('Meteo IA avançada no disponible.',error);return response('Puc ajudar-te amb les dades disponibles','No vull inventar una resposta que les fonts no permeten verificar. Puc respondre ara mateix sobre la situació actual, la predicció de 14 dies, els avisos, activitats a l’exterior, altres poblacions o conceptes meteorològics.',{level:'info',sources:[source('Meteo IA','Mode local fiable')],followups:['Quin temps farà demà?','Hi ha avisos actius?','Explica’m què és la boira']});}
 }
 
@@ -516,6 +535,14 @@ function updateStatus(){
   const status=document.getElementById('meteo-ai-data-status');if(status)status.textContent=available>=4?'Dades principals connectades':`${available}/5 fonts preparades`;
 }
 
+function updateSuggestions(){
+  const container=document.querySelector('.meteo-ai-guide > .meteo-ai-suggestions');if(!container)return;
+  for(const [index,item] of suggestedMeteoQuestions().entries()){
+    const button=container.querySelectorAll('button')[index];if(!button)break;
+    button.textContent=t(item.label);button.dataset.aiQuestion=t(item.question);
+  }
+}
+
 function updateConversationUi(){
   const bar=document.getElementById('meteo-ai-context');if(!bar)return;
   const parts=[conversationMemory.location?.label,conversationMemory.period?.label,conversationMemory.activity?.label].filter(Boolean);
@@ -524,10 +551,10 @@ function updateConversationUi(){
 
 function resetConversation(){conversationMemory=emptyMemory();saveMemory(conversationMemory);updateConversationUi();}
 
-export function updateMeteoAIContext(patch){Object.assign(state,patch||{});updateStatus();}
+export function updateMeteoAIContext(patch){Object.assign(state,patch||{});updateStatus();updateSuggestions();}
 
 async function ask(question){
-  const text=String(question||'').trim().slice(0,160);if(!text)return;
+  const text=String(question||'').trim().slice(0,500);if(!text)return;
   const log=document.getElementById('meteo-ai-messages');const input=document.getElementById('meteo-ai-input');const submit=document.getElementById('meteo-ai-submit');
   log?.append(createMessage('user',text));if(input)input.value='';if(submit){submit.disabled=true;submit.textContent='Consultant…';}
   const pending=document.createElement('div');pending.className='meteo-ai-typing';pending.textContent='Creuant les dades disponibles…';log?.append(pending);log?.scrollTo({top:log.scrollHeight,behavior:'smooth'});
@@ -545,7 +572,8 @@ export function initMeteoAI(){
   document.querySelector('[data-ai-clear-context]')?.addEventListener('click',()=>{resetConversation();input?.focus();});
   document.addEventListener('observatori:alerts-updated',event=>updateMeteoAIContext({alerts:event.detail}));
   document.addEventListener('observatori:environment-updated',event=>updateMeteoAIContext({environment:event.detail}));
-  updateStatus();updateConversationUi();
+  document.addEventListener('observatori:language-change',updateSuggestions);
+  updateStatus();updateConversationUi();updateSuggestions();
 }
 
 async function hydrateWidgetContext(){
@@ -561,7 +589,7 @@ export function initMeteoAIWidget(){
   const root=document.createElement('aside');root.className='meteo-ai-widget';root.id='meteo-ai-widget';
   const toggle=document.createElement('button');toggle.className='meteo-ai-widget__toggle';toggle.type='button';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','meteo-ai-widget-panel');toggle.setAttribute('aria-label','Pregunta al temps amb Meteo IA');toggle.innerHTML='<span>IA</span><b>Pregunta al temps</b>';
   const panel=document.createElement('div');panel.className='meteo-ai-widget__panel';panel.id='meteo-ai-widget-panel';panel.hidden=true;
-  panel.innerHTML='<header><span><i></i><b>Meteo IA</b><small>Una pregunta ràpida</small></span><button type="button" aria-label="Tancar el xat">×</button></header><div class="meteo-ai-widget__messages"><p>Pregunta pel temps, una data concreta o qualsevol ciutat del món.</p></div><form><label for="meteo-ai-widget-input">Pregunta meteorològica</label><div><input id="meteo-ai-widget-input" type="text" maxlength="160" autocomplete="off" placeholder="Ex.: Demà plourà a Sant Celoni?" required><button type="submit">Enviar</button></div></form><a class="meteo-ai-widget__continue" href="/meteo-ia" hidden>Continuar a Meteo IA →</a>';
+  panel.innerHTML='<header><span><i></i><b>Meteo IA</b><small>Una pregunta ràpida</small></span><button type="button" aria-label="Tancar el xat">×</button></header><div class="meteo-ai-widget__messages"><p>Pregunta pel temps, una data concreta o qualsevol ciutat del món.</p></div><form><label for="meteo-ai-widget-input">Pregunta meteorològica</label><div><input id="meteo-ai-widget-input" type="text" maxlength="500" autocomplete="off" placeholder="Ex.: Demà plourà a Sant Celoni?" required><button type="submit">Enviar</button></div></form><a class="meteo-ai-widget__continue" href="/meteo-ia" hidden>Continuar a Meteo IA →</a>';
   root.append(panel,toggle);document.body.append(root);
   const close=()=>{panel.hidden=true;toggle.setAttribute('aria-expanded','false');};
   const open=()=>{panel.hidden=false;toggle.setAttribute('aria-expanded','true');panel.querySelector('input')?.focus();};

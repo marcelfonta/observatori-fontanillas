@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-31 — Meteo IA: preguntes combinades i fonts comprovades (en revisió)
+
+- Les preguntes sobre diversos fenòmens es resolen conjuntament. El servidor consulta de nou l'observació Fontanillas, la predicció Open-Meteo i els avisos AEMET/Meteocat; no tracta dades enviades pel navegador com a verificades.
+- La resposta indica les fonts disponibles, la data de consulta i les absències; les observacions de més de trenta minuts no es presenten com a actuals.
+- Els suggeriments s'adapten a la pluja, la predicció i l'hora del dia, amb textos als quatre idiomes. Les preguntes poden ser més llargues.
+- Llama 3.3 continua per defecte. Qwen3 i gpt-oss queden disponibles només per avaluació configurada; cap candidat substitueix el model públic sense comparació de qualitat i cost.
+
 ## 2026-10-30 — Evolució temporal visible al visor de models (en revisió)
 
 - El control d’hora d’AROME i AROME HD queda visible al costat dels selectors de model i variable. Windy i AEMET indiquen on es controla l’evolució dins del seu visor.

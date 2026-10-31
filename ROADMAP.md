@@ -1,15 +1,17 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
 
-## Feina que es pot fer ara (30-10-2026)
+## Feina que es pot fer ara (31-10-2026)
+
+- **Meteo IA, en revisió:** preguntes combinades, context consultat al servidor, fonts i vigència visibles, suggeriments contextuals i quatre idiomes. Abans d'activar un altre model, comparar en previsualització respostes, omissions, latència i consum de neurones amb el mateix conjunt de preguntes. La veu, la resposta progressiva i les targetes gràfiques resten idees opcionals després de validar l'experiència real; no són requisit per publicar aquesta correcció.
 
 - **Fet:** el PR #343 és a `main` i la referència climàtica ja es veu a `/canvi-climatic`; l'auditoria SEO de producció ha tornat a passar el 28/10. No hi havia canvis del Worker ni dels scripts de la Raspberry en aquest PR.
 - **Agent:** repetir l'auditoria tècnica de producció després dels pròxims paquets fusionats i registrar separadament proves de codi, previsualització i producció.
 - **Agent i usuari:** seguir la pauta editorial i visual dels quatre idiomes i l'auditoria d'accessibilitat en dispositius reals de [`docs/SITE-AUDIT-2026-10-28.md`](docs/SITE-AUDIT-2026-10-28.md).
 - **Agent:** dissenyar una comparació climàtica només si es pot corregir la diferència entre la capital municipal de l'Atles i el sensor Fontanillas; la referència oficial 1991–2020 i els seus límits ja estan documentats.
-- **Fet:** l'usuari ha validat visualment el timelapse del 29/10 amb el CO₂ i les tres lectures XVPCA visibles durant el vídeo. Encara cal confirmar les publicacions de cada canal i l'absència de duplicats.
+- **Fet:** l'usuari ha validat visualment el timelapse del 29/10 amb el CO₂ i les tres lectures XVPCA visibles durant el vídeo. El 31/10 ha confirmat que les publicacions del dia i el timelapse han sortit bé, amb el format desitjat. Encara cal conservar una comprovació per canal i d'absència de duplicats abans de tancar la incidència #299.
 
-La revisió visual i editorial dels quatre idiomes, l'accessibilitat amb lector de pantalla, l'índex real a Search Console i les publicacions automàtiques del timelapse a cada canal continuen pendents d'evidència en dispositius o serveis reals. Les proves de codi i un HTTP 200 no tanquen aquests punts.
+La revisió visual i editorial dels quatre idiomes, l'accessibilitat amb lector de pantalla, l'índex real a Search Console i la comprovació per canal de les publicacions continuen pendents d'evidència en dispositius o serveis reals. La confirmació de l'usuari del 31/10 acredita el resultat visible d'avui, però no substitueix una revisió per canal ni descarta duplicats. Les proves de codi i un HTTP 200 no tanquen aquests punts.
 
 ## Atles ambiental de Medi Ambient (publicat, pendent de validació real)
 
