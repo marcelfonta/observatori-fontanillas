@@ -131,6 +131,14 @@ assert.equal(externalAlerts.level,'warning');
 assert.match(externalAlerts.body,/no disposa/i);
 
 const montseny=await answerMeteoQuestion('És bon moment per anar al Montseny?',context,services);
+const montserratMemory={location:{query:'Sant Celoni',local:true},period:null,activity:null};
+const montserrat=await answerMeteoQuestion('Fer trekking demà a Montserrat?',context,services,montserratMemory);
+assert.match(montserrat.title,/Montserrat/);
+assert.match(montserrat.body,/no serveix/);
+assert.doesNotMatch(montserrat.body,/màxima de|mínima de/);
+assert.equal(montserratMemory.location.query,'Montserrat');
+const montserratFollowup=await answerMeteoQuestion('I plourà?',context,services,montserratMemory);
+assert.match(montserratFollowup.title,/Montserrat/);
 assert.ok(['safe','caution','warning'].includes(montseny.level));
 
 const conversation={location:null,period:null,activity:null};

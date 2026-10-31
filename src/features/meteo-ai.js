@@ -406,7 +406,7 @@ function localityFromQuestion(question){
     /(?:temps|temperatura)\s+(?:a les|a la|al|a|de)\s+([^?!.]{2,100})/i
   ];
   for(const pattern of patterns){const match=raw.match(pattern);if(match){const value=clean(match[1]);if(value&&!/^partir de/i.test(value))return value;}}
-  if(/temps|previsi|plour|temperatura|avis|alert|bici|bicicleta|excurs|correr|córrer|muntanya/i.test(raw)){
+  if(/temps|previsi|plour|temperatura|avis|alert|bici|bicicleta|excurs|sender|trekking|caminar|correr|córrer|muntanya/i.test(raw)){
     const candidates=[...raw.matchAll(/\s(?:a les|a la|a l['’]|al|a|per(?!\s+(?:anar|fer|sortir))|cap a)\s+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'’\- ]{1,100}?)(?=\s+(?:avui|dem[aà]|aquest|aquesta|el cap|la setmana|per\s+(?:anar|fer|sortir))|[?!.]|$)/gi)]
       .map(match=>clean(match[1]))
       .filter(value=>value&&!/^(?:anar|fer|sortir|correr|córrer|bici|bicicleta|una? activitat|partir de)\b/i.test(value));
@@ -451,6 +451,10 @@ function activityAdvice(daily,question,activity){
 const localityAlias=name=>['vall daran','val daran'].includes(normalize(name).replace(/['’]/g,''))?'Vielha e Mijaran':name;
 
 async function localityAnswer(name,services,question,{memory=null,activity=null}={}){
+  if(normalize(name)==='montserrat'&&activity?.key==='hike'){
+    if(memory){memory.location={query:'Montserrat',label:'Montserrat · ubicació pendent',local:false};saveMemory(memory);}
+    return response('Montserrat: lloc pendent de concretar','No tinc una predicció verificada per al recorregut de Montserrat. La previsió de Sant Celoni no serveix per a aquesta excursió, i una cerca pel nom «Montserrat» podria correspondre a un altre municipi. Indica el punt de sortida o el sector de la muntanya per consultar-ne la predicció; abans de sortir, comprova també els avisos oficials i les condicions del recorregut.',{level:'warning',sources:[source('Meteo IA','Ubicació de muntanya no resolta')],followups:['Quin temps farà demà a Monistrol de Montserrat?']});
+  }
   try{
     const requestedName=String(name||'').trim();const lookup=localityAlias(requestedName);
     const {location,weather}=await services.fetchLocalityWeather(lookup);
