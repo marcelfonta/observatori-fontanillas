@@ -235,11 +235,11 @@ export async function fetchNearbyStations(period = 'now', center=null) {
   return payload;
 }
 
-export async function fetchAdvancedMeteoAI(question, context) {
+export async function fetchAdvancedMeteoAI(question) {
   const response=await request(`${CONFIG.apiUrl}/meteo-ai`,{
     method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},cache:'no-store',
-    body:JSON.stringify({question,context})
-  },20000);
+    body:JSON.stringify({question,locale:document.documentElement.lang||'ca'})
+  },30000);
   if(!response.ok)throw new Error(`Meteo AI API ${response.status}`);
   return response.json();
 }

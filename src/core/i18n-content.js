@@ -1,5 +1,18 @@
 // Translations of public content from the Catalan source.
 export const CONTENT_PHRASES = {
+  "Quan pararà?": {"es":"¿Cuándo parará?","en":"When will it stop?","fr":"Quand cela s'arrêtera-t-il ?"},
+  "Hi ha avisos oficials actius a Sant Celoni?": {"es":"¿Hay avisos oficiales activos en Sant Celoni?","en":"Are there active official alerts in Sant Celoni?","fr":"Y a-t-il des alertes officielles actives à Sant Celoni ?"},
+  "Quan es preveu que pari de ploure i hi ha avisos actius?": {"es":"¿Cuándo se prevé que deje de llover y hay avisos activos?","en":"When is the rain expected to stop, and are there active alerts?","fr":"Quand la pluie devrait-elle cesser et y a-t-il des alertes actives ?"},
+  "Pluja de demà": {"es":"Lluvia de mañana","en":"Tomorrow's rain","fr":"Pluie de demain"},
+  "Quina franja de demà té més probabilitat de pluja i vent?": {"es":"¿Qué franja de mañana tiene mayor probabilidad de lluvia y viento?","en":"Which period tomorrow has the greatest chance of rain and wind?","fr":"Quelle période demain présente le plus de risque de pluie et de vent ?"},
+  "Demà al matí": {"es":"Mañana por la mañana","en":"Tomorrow morning","fr":"Demain matin"},
+  "Quin temps farà demà al matí i hi ha avisos?": {"es":"¿Qué tiempo hará mañana por la mañana y hay avisos?","en":"What will the weather be tomorrow morning, and are there alerts?","fr":"Quel temps fera-t-il demain matin et y a-t-il des alertes ?"},
+  "Les pròximes hores": {"es":"Las próximas horas","en":"The next few hours","fr":"Les prochaines heures"},
+  "Com evolucionaran la pluja i el vent durant les pròximes hores?": {"es":"¿Cómo evolucionarán la lluvia y el viento durante las próximas horas?","en":"How will rain and wind change over the next few hours?","fr":"Comment la pluie et le vent évolueront-ils dans les prochaines heures ?"},
+  "Sortir a caminar": {"es":"Salir a caminar","en":"Go for a walk","fr":"Faire une promenade"},
+  "Quina franja és millor per caminar a Sant Celoni, segons pluja, vent i avisos?": {"es":"¿Qué franja es mejor para caminar en Sant Celoni según la lluvia, el viento y los avisos?","en":"When is best for a walk in Sant Celoni given rain, wind and alerts?","fr":"Quel est le meilleur moment pour se promener à Sant Celoni selon la pluie, le vent et les alertes ?"},
+  "Lectura actual": {"es":"Lectura actual","en":"Current reading","fr":"Lecture actuelle"},
+  "Quina temperatura fa ara i quina es preveu per a demà?": {"es":"¿Qué temperatura hace ahora y cuál se prevé para mañana?","en":"What is the temperature now and what is forecast for tomorrow?","fr":"Quelle est la température actuelle et quelle est la prévision pour demain ?"},
   "% il·luminada": {
     "es": "% iluminada",
     "en": "% illuminated",

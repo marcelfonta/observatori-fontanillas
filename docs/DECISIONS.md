@@ -1,5 +1,12 @@
 # Registre de decisions
 
+## ADR — Meteo IA amb dades consultades al servidor (proposta, 2026-10-31)
+
+- La resposta avançada ignora el context meteorològic enviat pel client. El Worker consulta la lectura Fontanillas, Open-Meteo i el canal oficial d'avisos, i identifica fonts indisponibles i hores. Una observació de més de 30 minuts no es tracta com a actual; un avís no verificat no es converteix en «sense avisos».
+- Les preguntes que combinen pluja, vent, temperatura, qualitat de l'aire o avisos passen pel model avançat per evitar que la primera regla local oculti la resta. Les preguntes senzilles continuen amb la resposta local. No s'afegeix memòria persistent ni es desa el text de la consulta.
+- El model per defecte continua sent Llama 3.3 70B. `METEO_AI_MODEL=qwen` o `gptoss` només s'ha de provar en previsualització: cal comparar un conjunt fix de preguntes meteorològiques i de fonts absents, errors factuels, latència, consum i cobertura dels quatre idiomes. No hi ha evidència suficient per declarar un candidat millor o gratuït per a qualsevol volum.
+- La consulta avançada amplia la mida màxima de pregunta; el camp `context` antic es pot enviar però s'ignora. El contracte de resposta manté `title`, `body`, `facts` i `sources`. Rollback: revertir Worker i frontal conjuntament.
+
 ## ADR — Recuperació del mapa d’aigua de l’ACA (proposta, 2026-10-29)
 
 - El visor hidrològic existent amplia `/aca-hydrology` amb `kind=rain` i `kind=reservoir`; sense paràmetre conserva el contracte anterior de cabals i nivells. Les tres famílies consulten els sensors públics Sentilo de l’ACA només quan s’obre el visor, amb memòria cau breu.

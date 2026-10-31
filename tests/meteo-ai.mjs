@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { answerMeteoQuestion } from '../src/features/meteo-ai.js';
+import { answerMeteoQuestion, isCompositeMeteoQuestion, suggestedMeteoQuestions } from '../src/features/meteo-ai.js';
 
 const now=Date.now();
 const dates=Array.from({length:14},(_,index)=>`2026-08-${String(10+index).padStart(2,'0')}`);
@@ -12,6 +12,13 @@ const context={
   alerts:{ok:true,active:0,maxLevel:'none',alerts:[],checkedAt:new Date(now).toISOString()},
   environment:{european_aqi:18,pm25:7.2,pm10:13.4,uv:4,uvSource:'Sensor Fontanillas',pollenMain:'Gramínies · 2,0',time:new Date(now).toISOString()}
 };
+assert.equal(isCompositeMeteoQuestion('Hi ha avisos i plourà demà?'),true);
+assert.equal(isCompositeMeteoQuestion('¿Hay avisos y lluvia mañana?'),true);
+assert.equal(isCompositeMeteoQuestion('Will it rain and be windy tomorrow?'),true);
+assert.equal(isCompositeMeteoQuestion('Y aura-t-il de la pluie et du vent demain ?'),true);
+assert.equal(isCompositeMeteoQuestion('Quina temperatura fa ara?'),false);
+assert.equal(isCompositeMeteoQuestion('Quina franja és millor per caminar segons la pluja, el vent i els avisos?'),true);
+assert.equal(suggestedMeteoQuestions(context,new Date('2026-10-31T20:00:00Z')).length,4);
 const services={
   fetchNearbyStations:async()=>({stations:[{id:'fontanillas',name:'Fontanillas',status:'online',temperature:24.2,rainToday:0},{id:'nearby',name:'Vallgorguina',status:'online',temperature:26.1,rainToday:1.4}],sourcePolicy:{note:'Mostra de prova'}}),
   fetchAlertHistory:async filters=>({items:[{level:filters.level||'orange',phenomenon:'Vent',source:'AEMET',started_at:'2026-08-07T18:50:00Z',expires_at:'2026-08-08T00:00:00Z'}],pagination:{total:6},stats:{total:filters.level==='red'?1:6,alertDays:4,severe:3,red:1,topPhenomenon:'Vent'}}),

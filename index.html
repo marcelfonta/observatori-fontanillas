@@ -80,7 +80,7 @@
     <script type="module" src="/src/features/analytics.js?v=7.0-stable"></script>
     <script type="module" src="/src/features/push.js?v=22.31.6"></script>
     <script type="module" src="/src/features/pwa.js?v=22.42.17-offline-first"></script>
-    <script type="module" src="/src/app.js?v=22.42.17-hydrology-location"></script>
+    <script type="module" src="/src/app.js?v=22.42.17-meteo-ai-composite"></script>
     <script type="module" src="/src/features/alert-history-init.js?v=7.0-stable"></script>
     <script type="application/ld+json" id="seo-structured-data">
       {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://meteo.fontanillas.cat/#website","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","inLanguage":["ca","es","en","fr"]},{"@type":"Organization","@id":"https://meteo.fontanillas.cat/#organization","name":"Observatori Meteorològic Fontanillas","url":"https://meteo.fontanillas.cat/","logo":{"@type":"ImageObject","url":"https://meteo.fontanillas.cat/assets/images/observatori-fontanillas-avatar-v21.png"},"sameAs":["https://www.facebook.com/meteofontanillas/","https://www.instagram.com/meteo_fontanillas/","https://www.threads.com/@meteo_fontanillas","https://x.com/meteo_fonta","https://bsky.app/profile/meteofontanillas.bsky.social","https://t.me/meteofontanillas","https://www.tiktok.com/@meteo_fontanillas","https://www.youtube.com/@MeteoFontanillas"]},{"@type":"Dataset","@id":"https://meteo.fontanillas.cat/#dataset","name":"Observacions meteorològiques de l’estació Fontanillas","description":"Dades meteorològiques locals verificades des de Sant Celoni.","url":"https://meteo.fontanillas.cat/centre-dades","inLanguage":["ca","es","en","fr"],"temporalCoverage":"2026-08-04/..","measurementTechnique":"Estació meteorològica automàtica","license":"https://creativecommons.org/licenses/by/4.0/","creditText":"Observatori Meteorològic Fontanillas — meteo.fontanillas.cat","isAccessibleForFree":true,"creator":{"@id":"https://meteo.fontanillas.cat/#organization"},"spatialCoverage":{"@type":"Place","name":"Sant Celoni, Vallès Oriental"}}]}
@@ -285,7 +285,7 @@
             </div>
             <form class="meteo-ai-form" id="meteo-ai-form">
               <label for="meteo-ai-input">Escriu una pregunta meteorològica</label>
-              <div><input id="meteo-ai-input" name="question" type="text" maxlength="160" autocomplete="off" placeholder="Ex.: És bon moment per anar al Montseny?" required /><button type="submit" id="meteo-ai-submit">Preguntar</button></div>
+              <div><input id="meteo-ai-input" name="question" type="text" maxlength="500" autocomplete="off" placeholder="Ex.: És bon moment per anar al Montseny?" required /><button type="submit" id="meteo-ai-submit">Preguntar</button></div>
             </form>
             <p class="meteo-ai-disclaimer"><span>i</span> No és un servei d’emergències. En situacions de risc prevalen Meteocat, AEMET, Protecció Civil i el 112.</p>
           </article>
