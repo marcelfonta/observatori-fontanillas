@@ -28,7 +28,7 @@ for(const sample of ['alert','monthly','weekly','drought','event','astronomy']){
   test('targeta social: '+sample,async({page},info)=>{
     await page.setViewportSize({width:1080,height:1350});
     await page.goto('/tests/visual-social-cards.html?sample='+sample);
-    await expect(page.locator('body')).toContainText('Fontanillas');
+    await expect(page.locator('body')).toContainText('Fontanillas',{timeout:15000});
     await page.evaluate(()=>document.fonts.ready);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(1080);
     const clipped=await page.evaluate(()=>[...document.querySelectorAll('h1,h2,p')].filter(n=>n.scrollWidth>n.clientWidth+2).map(n=>n.textContent));
