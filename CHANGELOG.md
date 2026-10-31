@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-31 — Meteo IA: excursions fora de Sant Celoni (en revisió)
+
+- «Trekking demà a Montserrat?» ja no reutilitza la predicció de Sant Celoni. L'assistent detecta el lloc i demana un punt o sector concret de la muntanya abans d'atribuir-hi dades meteorològiques.
+- El context de la conversa conserva Montserrat com a ubicació pendent, de manera que una pregunta de seguiment tampoc torna silenciosament a Sant Celoni.
+
 ## 2026-10-31 — Meteo IA: preguntes combinades i fonts comprovades (en revisió)
 
 - Les preguntes sobre diversos fenòmens es resolen conjuntament. El servidor consulta de nou l'observació Fontanillas, la predicció Open-Meteo i els avisos AEMET/Meteocat; no tracta dades enviades pel navegador com a verificades.
