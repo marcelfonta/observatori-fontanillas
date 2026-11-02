@@ -1,7 +1,7 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
 
-## Estat contrastat i feina executable (31-10-2026)
+## Estat contrastat i feina executable (02-11-2026)
 
 - **Meteo IA, publicada:** el PR #353 ja és a `main`, amb preguntes combinades, context consultat al servidor, fonts i vigència visibles, suggeriments contextuals i quatre idiomes. Abans d'activar un altre model, cal comparar en previsualització respostes, omissions, latència i consum de neurones amb el mateix conjunt de preguntes. La veu, la resposta progressiva i les targetes gràfiques són opcions, no incidències obertes.
 
@@ -39,7 +39,7 @@ els continguts nous es tradueixen a català, castellà, anglès i francès.
   les fases administratives de l'ACA i datada setembre de 2026. Actualitzar la
   cartografia quan Meteocat publiqui un nou mes, sense assumir cap URL futura.
 
-Actualitzat el 31 d’octubre de 2026. Aquest document recull feina pendent i el
+Actualitzat el 2 de novembre de 2026. Aquest document recull feina pendent i el
 context necessari per entendre-la. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
@@ -146,6 +146,18 @@ avisos. La capçalera dels dos hosts ja és correcta.
 no és anecdòtica i qualsevol canvi de pesos queda justificat amb mètriques.
 
 ### Publicació social i timelapse
+
+**Canal de WhatsApp — flux semiautomàtic:** preparar a partir de les dades
+verificades el text i la peça visual, avisar l'administrador i deixar-li la
+revisió i l'enviament manual dins del canal. No hi ha una API oficial confirmada
+per publicar automàticament actualitzacions en canals des del compte personal;
+no s'empraran clients no oficials ni automatitzacions que simulin tocs. Aquesta
+família no entra a la cua de publicació automàtica fins que WhatsApp ofereixi
+una via oficial adequada i se'n revisin les condicions.
+
+- [ ] Definir el format de l'esborrany, el destinatari de l'avís i la cadència;
+  preparar una mostra sense enviar-la al canal.
+- [ ] Validar amb l'usuari el circuit de revisió i publicació manual.
 
 El 25/10 la revisió de producció va identificar una resposta 429 de Buffer
 compartida per TikTok i X. El servei ha indicat que no s'hi torni a contactar
@@ -627,16 +639,23 @@ posicions han superat les proves astronòmiques definides.
 
 ### Radar europeu EUMETNET OPERA
 
-Estat confirmat el 22 d’octubre de 2026: Météo-France ha aprovat el cas
-`T#169758` i ha activat per a l’usuari `meteofontanillas` tots els compostos
-OPERA, tant en temps real com arxivats. La llicència i l’alta ja no són un
-bloqueig. El contracte oficial —autenticació, endpoints, formats, límits i
-retenció— està verificat a `docs/METEOFRANCE-OPERA.md`; la integració continuarà
-tancada al públic fins a validar el catàleg real i la degradació segura.
+Météo-France va aprovar el cas `T#169758` el 22 d’octubre de 2026. El 2 de
+novembre va aclarir que la producció d'**Odyssey** va acabar el gener de 2025:
+no s'ha de consultar `/archive/odyssey` per a períodes posteriors al 31 de
+gener de 2025. El sistema successor és **Cirrus/Nimbus**. Els errors 401/403
+obtinguts amb la prova Odyssey no acrediten per si sols si l'accés als
+productes actuals funciona; la subscripció visible al portal tampoc no ho
+demostra. La correcció consta també a `docs/METEOFRANCE-OPERA.md`. La
+integració romandrà tancada al públic fins
+a validar l'accés real, la cobertura i la degradació segura.
 
-- [ ] Validar amb una prova privada el catàleg real: cobertura geogràfica,
-  productes disponibles, resolució, passos temporals, retard, valors absents i
-  accés a l’arxiu.
+- [ ] Adaptar la sonda privada perquè consulti un recurs Cirrus/Nimbus recent
+  amb una petició petita i no destructiva; reservar Odyssey només per a dates
+  fins al 31/01/2025. Comprovar per separat els permisos de temps real i arxiu.
+- [ ] Validar amb aquesta prova cobertura geogràfica, productes disponibles,
+  resolució, passos temporals, retard, valors absents i accés a l’arxiu. Si
+  Cirrus/Nimbus encara retorna 401/403, comunicar la ruta, l'estat i la
+  referència `T#169758` a Météo-France, sense compartir credencials.
 - [ ] Guardar la credencial exclusivament com a secret de Cloudflare i crear un
   proxy del Worker amb llista tancada de productes i temps, validació de
   paràmetres, límits de mida, temps d’espera i memòria cau adequada.
