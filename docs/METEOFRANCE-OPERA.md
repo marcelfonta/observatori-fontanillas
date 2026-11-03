@@ -2,6 +2,12 @@
 
 ## Estat verificat
 
+**Aclariment del 2 de novembre de 2026 (cas T#169758):** Météo-France ha
+confirmat que la producció Odyssey va acabar el gener de 2025 i que el sistema
+successor és Cirrus/Nimbus. No s'ha de consultar l'arxiu Odyssey per a períodes
+posteriors al 31/01/2025. Els errors 401/403 de la prova feta amb Odyssey no
+permeten concloure si la subscripció dona accés als productes actuals.
+
 El 22 d’octubre de 2026, Météo-France va confirmar l’activació del cas
 `T#169758` per a l’usuari del projecte. La sessió autenticada del portal permet
 obrir **Utiliser**, consultar la consola i descarregar l’especificació OpenAPI
@@ -45,7 +51,8 @@ les condicions ECOMET. Abans d’ampliar l’ús cal revisar aquestes condicions
   2 km × 2 km i pas de 15 minuts. El temps real conserva els darrers **5 dies**.
   El portal adverteix que Nimbus és preoperacional i no disposa de fitxa de
   producte.
-- **Odyssey**: el catàleg declara `REFLECTIVITY`, `RAINFALL_RATE` i
+- **Odyssey**: producte històric sense dades noves després del gener de 2025.
+  El catàleg declara `REFLECTIVITY`, `RAINFALL_RATE` i
   `RAINFALL_ACCUMULATION`; els compostos es poden obtenir en HDF5 o BUFR.
 - Les dates de temps real segueixen `YYYY-MM-DDTHHMMSSZ`; els arxius diaris,
   `YYYY-MM-DD`.
@@ -68,8 +75,9 @@ síncrona del visor.
 
 ## Següent paquet: prova privada del catàleg
 
-La primera petició real haurà de ser petita i no destructiva: consultar
-`/archive/odyssey` i, després, obtenir un únic compost Cirrus recent. Cal
+La prova següent ha de ser petita i no destructiva: consultar un recurs
+Cirrus/Nimbus recent i verificar per separat el temps real i l'arxiu. Odyssey
+només és apropiat per a dates fins al 31/01/2025. Cal
 registrar només metadades no sensibles: cobertura, productes, mida, temps de
 resposta, antiguitat, valors absents i capçaleres de memòria cau. No es
 publicarà cap capa fins que aquesta prova confirmi el comportament real.
@@ -83,8 +91,10 @@ d’octubre de 2031. Tot i això, la passarel·la no accepta encara la subscripc
 - OAuth2: HTTP `401`, codi `900909`, subscripció de l’API inactiva.
 - API key temporal: HTTP `403`, codi `900908`, recurs prohibit.
 
-La discrepància és externa i s’ha de comunicar a Météo-France amb la referència
-`T#169758`. No s’ha intentat descarregar cap HDF5 després d’aquests errors. La
+La resposta posterior de Météo-France explica que Odyssey no té dades noves
+des del gener de 2025. Cal comprovar Cirrus/Nimbus abans d'atribuir aquests
+errors a l'activació de la subscripció. No s’ha intentat descarregar cap HDF5
+després d’aquests errors. La
 sonda reproduïble `scripts/opera-private-probe.mjs` només emet estat HTTP,
 latència, tipus de contingut i un resum del catàleg; mai imprimeix la
 credencial. Exemples d’ús privat:
@@ -94,5 +104,5 @@ OPERA_ACCESS_TOKEN='…' OPERA_AUTH_MODE=oauth2 node scripts/opera-private-probe
 OPERA_ACCESS_TOKEN='…' OPERA_AUTH_MODE=apikey node scripts/opera-private-probe.mjs
 ```
 
-La validació del catàleg i del compost Cirrus continuarà pendent fins que la
-passarel·la reconegui la subscripció activa.
+La validació del producte Cirrus/Nimbus real continuarà pendent fins que la
+prova privada en confirmi l'accés i el contingut.
