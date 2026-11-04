@@ -1,7 +1,25 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
 
-## Estat contrastat i feina executable (02-11-2026)
+## Estat contrastat i feina executable (04-11-2026)
+
+- **PR #358 desplegat:** l'accés directe de l'escriptori per actualitzar l'app
+  d'iPhone és a `main`. Cloudflare Pages i les proves Node 22 del commit de fusió
+  han acabat correctament. El canvi només afecta l'eina local i la seva guia;
+  no requereix cap actualització del Worker ni de la Raspberry. La primera
+  instal·lació amb l'accés directe encara necessita una prova física amb
+  l'iPhone connectat.
+- **WhatsApp, implementació existent verificada al codi:** el panell d'administració
+  ja ofereix «Preparar per al canal de WhatsApp» per als esborranys aprovats o
+  publicats. El Worker prepara el text i una imatge JPEG; el navegador obre el
+  diàleg de compartir si és compatible o copia el text i l'enllaç de la imatge i
+  obre el canal. L'enviament continua sent manual. Queden per definir l'avís a
+  l'administrador i la cadència amb l'usuari, i provar el circuit en un dispositiu
+  real sense publicar cap mostra.
+- **Auditoria SEO de producció del 04/11 no concloent:** des d'aquest entorn la
+  connexió a `meteo.fontanillas.cat` ha esgotat el temps d'espera. Cal repetir
+  `npm run audit:seo` des d'una connexió que arribi al domini; això no implica
+  que la web pública estigui caiguda.
 
 - **Meteo IA, publicada:** el PR #353 ja és a `main`, amb preguntes combinades, context consultat al servidor, fonts i vigència visibles, suggeriments contextuals i quatre idiomes. Abans d'activar un altre model, cal comparar en previsualització respostes, omissions, latència i consum de neurones amb el mateix conjunt de preguntes. La veu, la resposta progressiva i les targetes gràfiques són opcions, no incidències obertes.
 
@@ -155,8 +173,10 @@ no s'empraran clients no oficials ni automatitzacions que simulin tocs. Aquesta
 família no entra a la cua de publicació automàtica fins que WhatsApp ofereixi
 una via oficial adequada i se'n revisin les condicions.
 
-- [ ] Definir el format de l'esborrany, el destinatari de l'avís i la cadència;
-  preparar una mostra sense enviar-la al canal.
+El format bàsic de l'esborrany ja està definit: text editorial i imatge JPEG
+preparats des del panell per a la revisió manual, sense enviament automàtic.
+- [ ] Acordar el destinatari de l'avís i la cadència; preparar una mostra sense
+  enviar-la al canal.
 - [ ] Validar amb l'usuari el circuit de revisió i publicació manual.
 
 El 25/10 la revisió de producció va identificar una resposta 429 de Buffer
