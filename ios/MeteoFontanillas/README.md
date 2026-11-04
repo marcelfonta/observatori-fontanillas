@@ -44,7 +44,9 @@ Si tens l’accés directe **Actualitza Meteo Fontanillas iPhone** a l’escript
 connecta i desbloqueja l’iPhone i fes-hi doble clic. L’accés detecta el telèfon,
 compila l’app i la instal·la; si n’hi ha més d’un, permet triar-lo. En acabar,
 obre l’app a l’iPhone perquè demani la renovació dels ginys. Mostra l’error si
-la compilació o la instal·lació no es poden completar.
+la compilació o la instal·lació no es poden completar. A Xcode ha d’haver-hi
+iniciada la sessió del mateix equip de signatura configurat al projecte; un
+compte personal diferent no pot renovar l’app instal·lada amb aquell equip.
 
 Instal·lació manual amb Xcode:
 

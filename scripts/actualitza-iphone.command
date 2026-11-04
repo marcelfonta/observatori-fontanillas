@@ -31,10 +31,16 @@ import json, sys
 data = json.load(open(sys.argv[1]))
 for device in data.get('result', {}).get('devices', []):
     props = device.get('deviceProperties') or device.get('properties') or {}
+    hardware = device.get('hardwareProperties') or {}
+    connection = device.get('connectionProperties') or {}
     name = props.get('name') or device.get('name') or ''
-    state = str(device.get('connectionState') or props.get('connectionState') or '').lower()
     identifier = device.get('identifier') or ''
-    if 'iphone' in name.lower() and state == 'connected' and identifier:
+    if (hardware.get('deviceType') == 'iPhone'
+            and hardware.get('reality') == 'physical'
+            and props.get('bootState') == 'booted'
+            and connection.get('pairingState') == 'paired'
+            and connection.get('tunnelState') != 'unavailable'
+            and identifier):
         print(f'{name}\t{identifier}')
 PY
 )
@@ -61,6 +67,9 @@ xcodebuild -project "$project" -scheme MeteoFontanillas -configuration Debug \
   -destination "platform=iOS,id=$identifier" -derivedDataPath "$build_dir" \
   -allowProvisioningUpdates build >"$build_dir.log" 2>&1 || {
     tail -n 35 "$build_dir.log"
+    if grep -q 'No Account for Team' "$build_dir.log"; then
+      echo 'Obre Xcode → Settings → Apple Accounts i inicia sessió amb el compte que té l’equip de signatura del projecte. Després torna a prémer l’accés directe.'
+    fi
     exit 1
   }
 
