@@ -19,6 +19,9 @@
   obre el canal. L'enviament continua sent manual. Queden per definir l'avís a
   l'administrador i la cadència amb l'usuari, i provar el circuit en un dispositiu
   real sense publicar cap mostra.
+  La drecera «Publicació del dia» preparada al panell permet recuperar amb un botó
+  l'última peça revisada d'avui. Cal validar-la al mòbil després del merge;
+  l'enviament al canal continua sent manual.
 - **Auditoria SEO de producció del 04/11:** `npm run audit:seo` ha passat per
   les rutes de mostra, les metadades i el 404 editorial. Search Console encara
   mostra 55 URL no indexats i cap d'indexat, amb dades actualitzades el 23/10;
