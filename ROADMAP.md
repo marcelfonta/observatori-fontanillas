@@ -3,6 +3,10 @@
 
 ## Estat contrastat i feina executable (04-11-2026)
 
+- **App d'iPhone:** compilació signada amb l'únic equip personal d'Xcode i
+  instal·lació física al 16 Pro verificades el 04/11; l'usuari ha confirmat que
+  l'app s'obre i mostra dades. Queda provar l'accés directe de l'escriptori amb
+  la configuració de signatura actualitzada i validar el 15 Pro quan es connecti.
 - **PR #358 desplegat:** l'accés directe de l'escriptori per actualitzar l'app
   d'iPhone és a `main`. Cloudflare Pages i les proves Node 22 del commit de fusió
   han acabat correctament. El canvi només afecta l'eina local i la seva guia;

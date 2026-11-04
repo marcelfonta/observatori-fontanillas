@@ -47,6 +47,10 @@ obre l’app a l’iPhone perquè demani la renovació dels ginys. Mostra l’er
 la compilació o la instal·lació no es poden completar. A Xcode ha d’haver-hi
 iniciada la sessió del mateix equip de signatura configurat al projecte; un
 compte personal diferent no pot renovar l’app instal·lada amb aquell equip.
+El projecte utilitza l'equip personal de `marcelfonta@hotmail.com` per a l'app
+i el giny. La primera vegada que s'instal·la amb aquest equip, iOS pot demanar
+que es confirmi la confiança a **Configuració → General → VPN i gestió de
+dispositius** abans d'obrir-la.
 
 Instal·lació manual amb Xcode:
 
