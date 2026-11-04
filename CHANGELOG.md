@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-04 — Signatura de l'app d'iPhone (en revisió)
+
+- L'app i el giny fan servir l'equip personal disponible a Xcode. La compilació signada i la instal·lació a l'iPhone 16 Pro han passat; després de confiar en el perfil, l'usuari confirma que l'app mostra dades.
+
 ## 2026-10-31 — Meteo IA: excursions fora de Sant Celoni (en revisió)
 
 - «Trekking demà a Montserrat?» ja no reutilitza la predicció de Sant Celoni. L'assistent detecta el lloc i demana un punt o sector concret de la muntanya abans d'atribuir-hi dades meteorològiques.
