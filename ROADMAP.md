@@ -5,14 +5,13 @@
 
 - **App d'iPhone:** compilació signada amb l'únic equip personal d'Xcode i
   instal·lació física al 16 Pro verificades el 04/11; l'usuari ha confirmat que
-  l'app s'obre i mostra dades. Queda provar l'accés directe de l'escriptori amb
-  la configuració de signatura actualitzada i validar el 15 Pro quan es connecti.
+  l'app s'obre i mostra dades. Queda validar el 15 Pro amb la configuració de
+  signatura actual quan es connecti.
 - **PR #358 desplegat:** l'accés directe de l'escriptori per actualitzar l'app
   d'iPhone és a `main`. Cloudflare Pages i les proves Node 22 del commit de fusió
   han acabat correctament. El canvi només afecta l'eina local i la seva guia;
-  no requereix cap actualització del Worker ni de la Raspberry. La primera
-  instal·lació amb l'accés directe encara necessita una prova física amb
-  l'iPhone connectat.
+  no requereix cap actualització del Worker ni de la Raspberry. L'accés directe
+  s'ha provat físicament amb el 16 Pro i l'app s'obre amb dades.
 - **WhatsApp, implementació existent verificada al codi:** el panell d'administració
   ja ofereix «Preparar per al canal de WhatsApp» per als esborranys aprovats o
   publicats. El Worker prepara el text i una imatge JPEG; el navegador obre el
@@ -20,10 +19,11 @@
   obre el canal. L'enviament continua sent manual. Queden per definir l'avís a
   l'administrador i la cadència amb l'usuari, i provar el circuit en un dispositiu
   real sense publicar cap mostra.
-- **Auditoria SEO de producció del 04/11 no concloent:** des d'aquest entorn la
-  connexió a `meteo.fontanillas.cat` ha esgotat el temps d'espera. Cal repetir
-  `npm run audit:seo` des d'una connexió que arribi al domini; això no implica
-  que la web pública estigui caiguda.
+- **Auditoria SEO de producció del 04/11:** `npm run audit:seo` ha passat per
+  les rutes de mostra, les metadades i el 404 editorial. Search Console encara
+  mostra 55 URL no indexats i cap d'indexat, amb dades actualitzades el 23/10;
+  cal esperar un rastreig nou. Detalls i límits a
+  [`docs/VALIDATION-2026-11-04.md`](docs/VALIDATION-2026-11-04.md).
 
 - **Meteo IA, publicada:** el PR #353 ja és a `main`, amb preguntes combinades, context consultat al servidor, fonts i vigència visibles, suggeriments contextuals i quatre idiomes. Abans d'activar un altre model, cal comparar en previsualització respostes, omissions, latència i consum de neurones amb el mateix conjunt de preguntes. La veu, la resposta progressiva i les targetes gràfiques són opcions, no incidències obertes.
 
