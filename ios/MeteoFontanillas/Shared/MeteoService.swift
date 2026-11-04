@@ -68,6 +68,8 @@ actor MeteoService {
         components.queryItems = [
             URLQueryItem(name: "latitude", value: "41.6906"),
             URLQueryItem(name: "longitude", value: "2.489"),
+            URLQueryItem(name: "current", value: "weather_code"),
+            URLQueryItem(name: "hourly", value: "precipitation_probability"),
             URLQueryItem(name: "daily", value: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"),
             URLQueryItem(name: "timezone", value: "Europe/Madrid"),
             URLQueryItem(name: "forecast_days", value: String(max(1, min(7, days))))
@@ -76,13 +78,20 @@ actor MeteoService {
         let data = try await request(url)
         let response = try decoder.decode(OpenMeteoForecast.self, from: data)
         guard !response.daily.time.isEmpty else { throw MeteoError.invalidResponse }
+        let localNow = DateFormatter()
+        localNow.calendar = Calendar(identifier: .gregorian)
+        localNow.locale = Locale(identifier: "en_US_POSIX")
+        localNow.timeZone = TimeZone(identifier: "Europe/Madrid")
+        localNow.dateFormat = "yyyy-MM-dd'T'HH:00"
+        let currentHour = localNow.string(from: Date())
+        let remaining = response.remainingToday(at: currentHour)
         return response.daily.time.enumerated().map { index, date in
             DailyForecast(
                 date: date,
-                weatherCode: response.daily.weatherCode[safe: index] ?? nil,
+                weatherCode: index == 0 ? remaining.weatherCode : (response.daily.weatherCode[safe: index] ?? nil),
                 temperatureMax: response.daily.temperatureMax[safe: index] ?? nil,
                 temperatureMin: response.daily.temperatureMin[safe: index] ?? nil,
-                precipitationProbability: response.daily.precipitationProbability[safe: index] ?? nil
+                precipitationProbability: index == 0 ? remaining.rainProbability : (response.daily.precipitationProbability[safe: index] ?? nil)
             )
         }
     }

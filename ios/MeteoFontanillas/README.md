@@ -8,7 +8,7 @@ dades i components, però cada plataforma genera una app i una extensió pròpie
 
 - Temperatura observada per l'estació Fontanillas.
 - Condició prevista per a avui amb Open-Meteo.
-- Màxima, mínima i probabilitat màxima de pluja prevista.
+- Màxima i mínima del dia; per avui, estat actual i probabilitat màxima de pluja només de les hores que queden.
 - Previsió dels quatre dies següents al format gran, amb símbol, màxima, mínima
   i probabilitat màxima de pluja de cada dia.
 - Indicació explícita quan el Worker retorna l'última lectura fiable en mode
