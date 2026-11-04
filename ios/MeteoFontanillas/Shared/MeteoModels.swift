@@ -15,6 +15,26 @@ struct StationObservation: Codable, Equatable {
 }
 
 struct OpenMeteoForecast: Codable, Equatable {
+    struct Current: Codable, Equatable {
+        let time: String
+        let weatherCode: Int?
+
+        enum CodingKeys: String, CodingKey {
+            case time
+            case weatherCode = "weather_code"
+        }
+    }
+
+    struct Hourly: Codable, Equatable {
+        let time: [String]
+        let precipitationProbability: [Int?]
+
+        enum CodingKeys: String, CodingKey {
+            case time
+            case precipitationProbability = "precipitation_probability"
+        }
+    }
+
     struct Daily: Codable, Equatable {
         let time: [String]
         let weatherCode: [Int?]
@@ -32,6 +52,19 @@ struct OpenMeteoForecast: Codable, Equatable {
     }
 
     let daily: Daily
+    let current: Current?
+    let hourly: Hourly?
+
+    func remainingToday(at localTime: String) -> (weatherCode: Int?, rainProbability: Int?) {
+        let today = String(localTime.prefix(10))
+        let remaining = hourly?.time.enumerated().compactMap { index, time -> Int? in
+            guard time.hasPrefix(today), time >= localTime else { return nil }
+            guard let probabilities = hourly?.precipitationProbability,
+                  probabilities.indices.contains(index) else { return nil }
+            return probabilities[index]
+        }
+        return (current?.weatherCode, remaining?.max())
+    }
 }
 
 struct DailyForecast: Codable, Equatable {

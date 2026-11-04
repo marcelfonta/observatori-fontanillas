@@ -66,6 +66,30 @@ import Testing
     #expect(MeteoFormatting.shortDay("data-incorrecta") == "—")
 }
 
+@Test func todaysRainDoesNotIncludePastHours() throws {
+    let json = """
+    {
+      "current": {"time": "2026-11-04T18:00", "weather_code": 2},
+      "hourly": {
+        "time": ["2026-11-04T08:00", "2026-11-04T18:00", "2026-11-04T19:00", "2026-11-05T00:00"],
+        "precipitation_probability": [98, 4, 8, 70]
+      },
+      "daily": {
+        "time": ["2026-11-04", "2026-11-05"],
+        "weather_code": [61, 3],
+        "temperature_2m_max": [15, 17],
+        "temperature_2m_min": [7, 8],
+        "precipitation_probability_max": [98, 70]
+      }
+    }
+    """.data(using: .utf8)!
+    let forecast = try JSONDecoder().decode(OpenMeteoForecast.self, from: json)
+    let remaining = forecast.remainingToday(at: "2026-11-04T18:00")
+    #expect(remaining.weatherCode == 2)
+    #expect(remaining.rainProbability == 8)
+    #expect(forecast.daily.precipitationProbability[1] == 70)
+}
+
 @Test func marksFallbackAsDegraded() {
     let observation = StationObservation(
         station: "Observatori Meteorològic Fontanillas",

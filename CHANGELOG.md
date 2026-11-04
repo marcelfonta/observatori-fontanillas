@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-04 — Ginys: pluja restant del dia (en revisió)
+
+- La condició «ara» dels ginys d’iPhone i Mac utilitza el codi meteorològic actual i la probabilitat de pluja d’avui només considera les hores futures. Els dies següents conserven la previsió diària.
+
 ## 2026-11-04 — Accés ràpid al canal de WhatsApp (en revisió)
 
 - El panell d'administració incorpora un botó destacat per preparar la peça revisada més recent del dia, amb text i imatge per compartir des del mòbil. No publica res al canal automàticament.
