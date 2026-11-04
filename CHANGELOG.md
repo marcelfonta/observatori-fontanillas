@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-04 — Accés ràpid al canal de WhatsApp (en revisió)
+
+- El panell d'administració incorpora un botó destacat per preparar la peça revisada més recent del dia, amb text i imatge per compartir des del mòbil. No publica res al canal automàticament.
+
 ## 2026-11-04 — Signatura de l'app d'iPhone (en revisió)
 
 - L'app i el giny fan servir l'equip personal disponible a Xcode. La compilació signada i la instal·lació a l'iPhone 16 Pro han passat; després de confiar en el perfil, l'usuari confirma que l'app mostra dades.
