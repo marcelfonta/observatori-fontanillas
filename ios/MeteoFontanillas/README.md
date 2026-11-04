@@ -40,6 +40,14 @@ del Mac; si Xcode demana iniciar sessió, cal completar-ho al mateix Xcode.
 
 Per instal·lar-lo:
 
+Si tens l’accés directe **Actualitza Meteo Fontanillas iPhone** a l’escriptori,
+connecta i desbloqueja l’iPhone i fes-hi doble clic. L’accés detecta el telèfon,
+compila l’app i la instal·la; si n’hi ha més d’un, permet triar-lo. En acabar,
+obre l’app a l’iPhone perquè demani la renovació dels ginys. Mostra l’error si
+la compilació o la instal·lació no es poden completar.
+
+Instal·lació manual amb Xcode:
+
 1. Obre `MeteoFontanillas.xcodeproj` amb Xcode.
 2. Selecciona el projecte i comprova a **Signing & Capabilities** que el teu
    equip apareix a `MeteoFontanillas` i `MeteoFontanillasWidgetExtension`.
