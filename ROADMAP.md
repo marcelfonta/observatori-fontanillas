@@ -3,6 +3,10 @@
 
 ## Estat contrastat i feina executable (04-11-2026)
 
+- **PR #359 fusionat i publicat:** el roadmap del flux manual de WhatsApp i de
+  l'accés directe per a l'iPhone ja és a `main`. Cloudflare Pages del commit de
+  fusió ha acabat correctament. Aquest PR només contenia documentació; no cal
+  desplegar cap Worker, script de càmera o app als dispositius.
 - **PR #358 desplegat:** l'accés directe de l'escriptori per actualitzar l'app
   d'iPhone és a `main`. Cloudflare Pages i les proves Node 22 del commit de fusió
   han acabat correctament. El canvi només afecta l'eina local i la seva guia;
@@ -57,7 +61,7 @@ els continguts nous es tradueixen a català, castellà, anglès i francès.
   les fases administratives de l'ACA i datada setembre de 2026. Actualitzar la
   cartografia quan Meteocat publiqui un nou mes, sense assumir cap URL futura.
 
-Actualitzat el 2 de novembre de 2026. Aquest document recull feina pendent i el
+Actualitzat el 4 de novembre de 2026. Aquest document recull feina pendent i el
 context necessari per entendre-la. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
@@ -777,6 +781,13 @@ benefici demostrat:
   subdominis.
 
 ## Ordre recomanat de pròxims paquets
+
+**Pròxima passada curta (04/11):** provar l'accés directe amb un iPhone connectat;
+repetir l'auditoria SEO des d'una connexió que arribi al domini; revisar una
+jornada social al registre per canal i conciliar-hi els identificadors abans de
+tancar #299. Per a WhatsApp, acordar primer amb l'usuari l'avís i la cadència i
+provar la preparació d'un esborrany sense enviar-lo. Cap d'aquestes comprovacions
+requereix desplegar un Worker nou.
 
 0. **Idiomes (publicats, pendents de revisió editorial real):** catàleg dels 1.605 textos inventariats en 13 documents públics, atributs accessibles, metadades, pàgines independents i manifestos de la PWA en castellà, anglès i francès. Vegeu `docs/I18N-AUDIT-2026-10-27.md` per a l'abast i els límits. Cal la validació visual i editorial als dispositius reals.
 1. **Fiabilitat operativa:** comprovar la PWA i el push en una instal·lació existent després de corregir el caché; observar el proper vespre i timelapse reals sense duplicats a cada canal; mantenir #299 obert fins a aquesta evidència. Falta observar un avís oficial real.
