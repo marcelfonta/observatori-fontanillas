@@ -1,7 +1,13 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
 
-## Estat contrastat i feina executable (04-11-2026)
+## Estat contrastat i feina executable (08-11-2026)
+
+- **Confirmació de l'usuari del 08/11:** els ginys del Garmin i dels iPhone
+  funcionen, i les publicacions tornen a sortir bé. Es tanca el seguiment del
+  funcionament ordinari dels ginys i de la continuïtat de les publicacions.
+  Aquesta confirmació no és una prova específica sense xarxa, amb lectures
+  antigues o d'absència de duplicats a cada canal.
 
 - **App d'iPhone:** compilació signada amb l'únic equip personal d'Xcode i
   instal·lació física al 16 Pro verificades el 04/11; l'usuari ha confirmat que
@@ -136,8 +142,8 @@ justifiqui.
 
 El widget Garmin està instal·lat al fēnix 7X Pro i va mostrar una lectura
 recent després de reconnectar Garmin Connect per Bluetooth. L'app de l'iPhone
-15 Pro també es va instal·lar i l'usuari va confirmar que funciona. Queden les
-proves de dades antigues i de manca de xarxa als dos dispositius.
+15 Pro també es va instal·lar. El 08/11 l'usuari confirma que Garmin i iPhone
+funcionen. Queden només les proves de dades antigues i de manca de xarxa.
 - [ ] Validar al Garmin i als iPhone les lectures antigues, l'absència de xarxa
   i l'hora visible de l'última actualització.
 
@@ -201,7 +207,8 @@ la finestra de 30 dies, estudiar la reducció de consultes o el pla de Buffer.
 Per TikTok, l'alternativa immediata és la càrrega manual del vídeo vertical;
 Direct Post exigeix aprovació de l'app i del permís abans d'automatitzar-la.
 
-- [ ] Confirmar-ne la publicació sense duplicats en tots els canals habilitats.
+- [ ] Confirmar específicament l'absència de duplicats en tots els canals
+  habilitats. El 08/11 l'usuari confirma que les publicacions funcionen bé.
 
 La millora de qualitat del timelapse a 1280 × 720 i la variant vertical a
 720 × 1280 s’han validat en una mostra sintètica amb límit de taxa i un sol fil.
