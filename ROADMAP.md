@@ -50,8 +50,9 @@ El mapa hidrològic de «Aigua i rius» és la primera pestanya del tema «Aigua
 de Medi ambient (abans era dins del Radar) i incorpora, en revisió, les pestanyes de
 pluviòmetres, cabals i nivells, i embassaments amb lectures oficials ACA.
 Cal comprovar-ne la presentació en dispositius reals després de publicar-lo.
-La fase administrativa de sequera continua enllaçada
-al portal oficial mentre VISSEQ sigui en manteniment.
+La fase administrativa de sequera torna a ser consultable al nou VISSEQ
+`https://sequera.aca.gencat.cat/visseq/`. La web hi enllaça directament;
+la incrustació del visor dins de la pàgina encara no està validada.
 
 Els set visors existents es presenten sota cinc temes dins de la mateixa pàgina.
 Un catàleg complementari, plegat d'entrada i filtrat pel tema, dona accés a
@@ -65,9 +66,10 @@ els continguts nous es tradueixen a català, castellà, anglès i francès.
   actualització, llicència i estabilitat de cada servei. Els accessos a
   Resource Watch, Living Atlas, MapX i Lemuriant són exploració externa,
   no lectures locals ni dades importades al Worker.
-- [ ] Reavaluar el mapa de sequera de l'ACA quan torni del manteniment. Mentrestant,
-  la web mostra cartografia mensual IPE de Meteocat, separada explícitament de
-  les fases administratives de l'ACA i datada setembre de 2026. Actualitzar la
+- [ ] Validar si el nou VISSEQ de l'ACA autoritza i admet una incrustació
+  funcional abans d'afegir-lo a la pàgina. La web mostra cartografia mensual
+  IPE de Meteocat, separada explícitament de les fases administratives de
+  l'ACA i datada setembre de 2026. Actualitzar la
   cartografia quan Meteocat publiqui un nou mes, sense assumir cap URL futura.
 
 Actualitzat el 2 de novembre de 2026. Aquest document recull feina pendent i el
