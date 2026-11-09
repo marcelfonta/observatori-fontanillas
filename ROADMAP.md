@@ -1,7 +1,14 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
 
-## Estat contrastat i feina executable (08-11-2026)
+## Estat contrastat i feina executable (09-11-2026)
+
+- **Visor de sequera ACA verificat en producció (09/11):** el PR #367 és a
+  `main`. A `/medi-ambient`, la pestanya «Aigua i sequera → Sequera» enllaça
+  al nou `https://sequera.aca.gencat.cat/visseq/`. El destí obre la pàgina
+  oficial «Visor de la Sequera» amb l'accés al visor. Ja no es presenta
+  l'antiga pàgina de manteniment com a mapa. Queda pendent comprovar si l'ACA
+  autoritza i permet la incrustació funcional; l'enllaç extern és operatiu.
 
 - **Confirmació de l'usuari del 08/11:** els ginys del Garmin i dels iPhone
   funcionen, i les publicacions tornen a sortir bé. Es tanca el seguiment del
@@ -72,7 +79,7 @@ els continguts nous es tradueixen a català, castellà, anglès i francès.
   l'ACA i datada setembre de 2026. Actualitzar la
   cartografia quan Meteocat publiqui un nou mes, sense assumir cap URL futura.
 
-Actualitzat el 2 de novembre de 2026. Aquest document recull feina pendent i el
+Actualitzat el 9 de novembre de 2026. Aquest document recull feina pendent i el
 context necessari per entendre-la. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
@@ -363,9 +370,9 @@ de la Raspberry va acabar amb resultat correcte.
   en producció l'absència segura quan la font oficial falla.
 - [ ] Validar en staging i en dispositius reals els visors de l'ACA i Copernicus,
   incloent les versions mòbils, abans de desplegar-los a producció.
-- [ ] Quan l'ACA retorni el mapa interactiu al servei, comprovar-ne el contingut
-  real i decidir si es pot recuperar la vista incrustada. Mentrestant, la pestanya
-  ha de mostrar accessos oficials sense presentar la pàgina de manteniment com un mapa.
+- [ ] Decidir si es pot recuperar la vista incrustada després de validar els
+  permisos i el funcionament de l'iframe del nou VISSEQ. Fins aleshores,
+  mantenir l'accés extern oficial verificat.
 
 ### Pàgina de canvi climàtic de referència
 
