@@ -31,7 +31,7 @@ test('l’atles ambiental canvia de tema i conserva els enllaços directes',asyn
   await expect(page.getByText('Coberta arbòria',{exact:true})).toBeVisible();
   await page.locator('[data-environment-topic="water"]').click();
   await expect(page.locator('#environment-tab-drought')).toBeVisible();
-  await expect(page.locator('#environment-panel-drought')).toContainText('manteniment');
+  await expect(page.locator('#environment-panel-drought a[href="https://sequera.aca.gencat.cat/visseq/"]')).toHaveCount(1);
 });
 
 test('l’atles manté els textos traduïts i els temes accessibles al mòbil',async({page})=>{
@@ -115,8 +115,8 @@ test('el menú lateral conserva la posició després de canviar de pàgina',asyn
 test('la sequera ofereix alternatives oficials i el mapa marí apunta a Copernicus',async({page})=>{
   await openEnvironment(page);
   await page.locator('#environment-tab-drought').click();
-  await expect(page.locator('#environment-panel-drought')).toContainText('el visor de l’ACA era en manteniment');
-  await expect(page.locator('#environment-panel-drought a[href="https://aca.gencat.cat/ca/laigua/portal-sequera/estat-actual/"]')).toBeVisible();
+  await expect(page.locator('#environment-panel-drought')).toContainText('El visor oficial de l’ACA torna a mostrar les fases');
+  await expect(page.locator('#environment-panel-drought a[href="https://sequera.aca.gencat.cat/visseq/"]')).toBeVisible();
   await expect(page.locator('#environment-panel-drought iframe')).toHaveCount(0);
   await expect(page.locator('#environment-drought-image')).toHaveAttribute('src',/IPE6_1km_20260930_w\.png/);
   await page.locator('[data-drought-period="12"]').click();
