@@ -1,5 +1,12 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
+## Visor independent `visor.fontanillas.cat` (primera versió en revisió)
+
+Aplicació estàtica separada preparada amb radar temporal, AROME, hidrologia ACA i comparació puntual dels cinc models ja presents al projecte.
+- [ ] Validar previsualització en ordinador i mòbil, fonts actives i comportament amb errors; revisar i fusionar el PR.
+- [ ] Publicar el projecte Pages separat i assignar `visor.fontanillas.cat` només amb aprovació humana explícita. Mantenir-lo fora dels menús de la web principal durant l’avaluació.
+- [ ] Després de la primera prova real, prioritzar noves capes segons qualitat de la font, llicència i utilitat, sense confondre mesures amb prediccions.
+
 
 ## Estat contrastat i feina executable (09-11-2026)
 
