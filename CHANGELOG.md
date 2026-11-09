@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-09 — Visor oficial de la sequera (en revisió)
+
+- L'accés a les fases administratives de l'ACA apunta a la nova ubicació de VISSEQ, comprovada amb mapa i dades actuals. Es retira l'avís de manteniment desfasat i es manté separada la cartografia pluviomètrica de Meteocat. La incrustació del visor encara no està validada.
+
 ## 2026-11-04 — Ginys: pluja restant del dia (en revisió)
 
 - La condició «ara» dels ginys d’iPhone i Mac utilitza el codi meteorològic actual i la probabilitat de pluja d’avui només considera les hores futures. Els dies següents conserven la previsió diària.
