@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-09 — Visor del territori independent (en revisió)
+
+- Primera versió de `visor/`: radar temporal, mapes AROME, lectures de l’ACA i comparació puntual dels models Best Match, ECMWF, GFS, ICON i AROME HD.
+- Cada vista distingeix observació i predicció, mostra font i hora, i informa quan una font no respon. Encara no està enllaçada ni publicada a `visor.fontanillas.cat`.
+
 ## 2026-11-09 — Visor oficial de la sequera (en revisió)
 
 - L'accés a les fases administratives de l'ACA apunta a la nova ubicació de VISSEQ, comprovada amb mapa i dades actuals. Es retira l'avís de manteniment desfasat i es manté separada la cartografia pluviomètrica de Meteocat. La incrustació del visor encara no està validada.
