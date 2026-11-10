@@ -1,5 +1,12 @@
 const valid = value => typeof value === 'number' && Number.isFinite(value);
 
+export function localForecastHour(value) {
+  return new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  }).format(new Date(value)).replace(' ', 'T');
+}
+
 export function independentModels(readings, variable) {
   const families = new Map();
   for (const reading of readings) {
