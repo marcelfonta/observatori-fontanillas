@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-10 — Comparació multimodel del visor (en revisió)
+
+- El visor compara vuit sortides d’Open-Meteo a la mateixa hora i mostra mediana, interval i nombre de fonts per temperatura, pluja, vent i núvols. El recompte evita duplicar Best Match i la família Météo-France; l’acord no es presenta com a probabilitat d’encert.
+- Es conserva l’absència de dades com a absència i es reutilitzen durant cinc minuts les sèries per punt per no repetir peticions en canviar l’hora o la variable.
+
 ## 2026-11-09 — Visor del territori independent (en revisió)
 
 - Primera versió de `visor/`: radar temporal, mapes AROME, lectures de l’ACA i comparació puntual dels models Best Match, ECMWF, GFS, ICON i AROME HD.

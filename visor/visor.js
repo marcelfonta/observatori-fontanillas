@@ -1,3 +1,5 @@
+import { readingAt, summarize } from './consensus.js';
+
 const API = 'https://fonta-meteo.marcelfonta.workers.dev';
 const STATION = [41.6906, 2.489];
 const PLACES = {
@@ -8,18 +10,27 @@ const PLACES = {
   girona: { name: 'Girona', point: [41.979, 2.821] }
 };
 const MODELS = [
-  { name: 'Best Match', path: '/v1/forecast', horizon: 7 },
-  { name: 'ECMWF', path: '/v1/ecmwf', horizon: 7 },
-  { name: 'GFS', path: '/v1/gfs', horizon: 7 },
-  { name: 'ICON', path: '/v1/dwd-icon', horizon: 7 },
-  { name: 'AROME HD', path: '/v1/meteofrance', model: 'meteofrance_arome_france_hd', horizon: 2 }
+  { name: 'Best Match', path: '/v1/forecast', horizon: 7, reference: true },
+  { name: 'ECMWF IFS', path: '/v1/ecmwf', horizon: 7, family: 'ecmwf' },
+  { name: 'GFS', path: '/v1/gfs', horizon: 7, family: 'gfs' },
+  { name: 'ICON', path: '/v1/dwd-icon', horizon: 7, family: 'icon' },
+  { name: 'AROME HD', path: '/v1/meteofrance', model: 'meteofrance_arome_france_hd', horizon: 2, family: 'meteofrance', priority: 2 },
+  { name: 'ARPEGE Europa', path: '/v1/meteofrance', model: 'meteofrance_arpege_europe', horizon: 4, family: 'meteofrance', priority: 1 },
+  { name: 'GEM global', path: '/v1/gem', horizon: 7, family: 'gem' },
+  { name: 'UKMO global', path: '/v1/forecast', model: 'ukmo_seamless', horizon: 7, family: 'ukmo' }
 ];
+const MODEL_VARIABLES = {
+  temperature: { label: 'Temperatura', unit: '°C', digits: 1 },
+  rain: { label: 'Pluja', unit: 'mm', digits: 1 },
+  wind: { label: 'Vent', unit: 'km/h', digits: 0 },
+  clouds: { label: 'Núvols', unit: '%', digits: 0 }
+};
 const AROME_LAYERS = [
   ['precipitation', 'Precipitació'], ['temperature', 'Temperatura'],
   ['wind', 'Vent'], ['clouds', 'Núvols']
 ];
 const $ = selector => document.querySelector(selector);
-const state = { mode: 'radar', layer: 'precipitation', waterKind: 'river', frames: [], index: 0, place: 'fontanillas', point: STATION, mapLayer: null, stationMarker: null, queryMarker: null, markers: [], timer: null, request: 0, forecastRequest: 0, catalog: null };
+const state = { mode: 'radar', layer: 'precipitation', waterKind: 'river', frames: [], index: 0, place: 'fontanillas', point: STATION, mapLayer: null, stationMarker: null, queryMarker: null, markers: [], timer: null, request: 0, forecastRequest: 0, catalog: null, modelVariable: 'temperature', forecastCache: new Map() };
 const format = (value, digits = 1) => Number.isFinite(Number(value)) ? new Intl.NumberFormat('ca-ES', { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(Number(value)) : '—';
 const dateLabel = (value, options = {}) => {
   const localHour = typeof value === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(value);
@@ -196,29 +207,32 @@ async function forecasts() {
   const request = ++state.forecastRequest;
   const [latitude, longitude] = state.point;
   const target = selectedTime();
-  $('#model-list').innerHTML = '<p class="muted">Consultant cinc models per a aquest punt…</p>';
-  $('#model-hour').textContent = `Prop de ${dateLabel(target)}`;
-  const results = await Promise.allSettled(MODELS.map(async model => {
+  const targetIso = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit' }).format(new Date(target)).replace(' ', 'T');
+  $('#model-list').innerHTML = '<p class="muted">Consultant els models per a aquest punt…</p>';
+  $('#model-hour').textContent = dateLabel(targetIso);
+  const results = await Promise.all(MODELS.map(async model => {
     const params = new URLSearchParams({ latitude: String(latitude), longitude: String(longitude), hourly: 'temperature_2m,precipitation,wind_speed_10m,cloud_cover', timezone: 'Europe/Madrid', forecast_days: String(model.horizon) });
     if (model.model) params.set('models', model.model);
-    const data = await json(`https://api.open-meteo.com${model.path}?${params}`, 17000);
-    const times = data.hourly?.time || [];
-    if (!times.length) throw new Error('Sense hores');
-    const targetIso = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit' }).format(new Date(target)).replace(' ', 'T');
-    const index = times.findIndex(time => time >= targetIso);
-    if (index < 0) throw new Error('Fora de termini');
-    const hourly = data.hourly;
-    return { model, time: times[index], temperature: finite(hourly.temperature_2m?.[index]), rain: finite(hourly.precipitation?.[index]), wind: finite(hourly.wind_speed_10m?.[index]), clouds: finite(hourly.cloud_cover?.[index]) };
+    const key = `${model.name}:${latitude.toFixed(4)},${longitude.toFixed(4)}`;
+    let cached = state.forecastCache.get(key);
+    if (!cached || Date.now() - cached.at > 5 * 60000) {
+      const promise = json(`https://api.open-meteo.com${model.path}?${params}`, 17000);
+      cached = { at: Date.now(), promise };
+      state.forecastCache.set(key, cached);
+      if (state.forecastCache.size > 120) state.forecastCache.delete(state.forecastCache.keys().next().value);
+    }
+    try { return readingAt(await cached.promise, model, targetIso); }
+    catch { state.forecastCache.delete(key); return null; }
   }));
   if (request !== state.forecastRequest) return;
-  $('#model-list').replaceChildren(...results.map((result, index) => {
+  $('#model-list').replaceChildren(...results.map((item, index) => {
     const row = document.createElement('div'); row.className = 'model-row';
     const name = document.createElement('span'); name.textContent = MODELS[index].name;
     const value = document.createElement('strong');
-    if (result.status === 'fulfilled') {
-      const item = result.value;
-      value.textContent = item.temperature === null ? '—' : `${format(item.temperature)} °C`;
-      const detail = document.createElement('small'); detail.textContent = `${item.rain === null ? 'Pluja —' : `Pluja ${format(item.rain)} mm`} · ${dateLabel(item.time)}`;
+    if (item) {
+      const variable = MODEL_VARIABLES[state.modelVariable];
+      value.textContent = item[state.modelVariable] === null ? '—' : `${format(item[state.modelVariable], variable.digits)} ${variable.unit}`;
+      const detail = document.createElement('small'); detail.textContent = MODELS[index].reference ? 'Selecció automàtica · fora del consens' : (MODELS[index].family === 'meteofrance' ? 'Météo-France · una veu al consens' : 'Família de model');
       name.append(detail);
     } else {
       value.textContent = 'No disponible';
@@ -226,11 +240,18 @@ async function forecasts() {
     }
     row.append(name, value); return row;
   }));
-  const first = results.find(result => result.status === 'fulfilled')?.value;
-  $('#forecast-temp').textContent = first?.temperature === null || !first ? '—' : `${format(first.temperature)} °C`;
-  $('#forecast-rain').textContent = first?.rain === null || !first ? '—' : `${format(first.rain)} mm`;
-  $('#forecast-wind').textContent = first?.wind === null || !first ? '—' : `${format(first.wind, 0)} km/h`;
-  $('#forecast-cloud').textContent = first?.clouds === null || !first ? '—' : `${format(first.clouds, 0)} %`;
+  const readings = results.filter(Boolean);
+  for (const [key, id] of [['temperature', 'temp'], ['rain', 'rain'], ['wind', 'wind'], ['clouds', 'cloud']]) {
+    const summary = summarize(readings, key);
+    const variable = MODEL_VARIABLES[key];
+    $(`#forecast-${id}`).textContent = summary.count ? `${format(summary.median, variable.digits)} ${variable.unit}` : '—';
+  }
+  const selected = summarize(readings, state.modelVariable);
+  const variable = MODEL_VARIABLES[state.modelVariable];
+  $('#consensus-count').textContent = `${selected.count} de ${new Set(MODELS.map(model => model.family).filter(Boolean)).size} famílies de models amb dades`;
+  $('#consensus-value').textContent = selected.count ? `${format(selected.median, variable.digits)} ${variable.unit}` : 'Sense dades comparables';
+  $('#consensus-range').textContent = selected.count ? `Interval dels models: ${format(selected.min, variable.digits)}–${format(selected.max, variable.digits)} ${variable.unit}` : 'Cap model disponible per a aquesta hora.';
+  $('#consensus-rain').textContent = state.modelVariable === 'rain' && selected.count ? `${selected.wet} de ${selected.count} famílies preveuen ≥0,2 mm en aquesta hora.` : '';
 }
 async function station() {
   try {
@@ -263,6 +284,7 @@ function setPoint(point, name) {
 $('#mode-buttons').addEventListener('click', event => { const button = event.target.closest('[data-mode]'); if (button) selectMode(button.dataset.mode); });
 $('#layer-buttons').addEventListener('click', event => { const button = event.target.closest('[data-layer]'); if (!button) return; state.layer = button.dataset.layer; buttons(AROME_LAYERS, state.layer); stop(); redrawArome(); forecasts(); });
 $('#water-select').addEventListener('change', event => { state.waterKind = event.target.value; water(); });
+$('#model-variable').addEventListener('change', event => { state.modelVariable = event.target.value; forecasts(); });
 $('#place-select').addEventListener('change', event => { const place = PLACES[event.target.value]; if (!place) return; map.flyTo(place.point, 9); setPoint(place.point, place.name); });
 map.on('click', event => { const point = [event.latlng.lat, event.latlng.lng]; setPoint(point, 'Punt triat al mapa'); });
 $('#refresh').addEventListener('click', () => selectMode(state.mode));
