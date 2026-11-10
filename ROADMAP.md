@@ -5,7 +5,7 @@
 Aplicació estàtica separada amb radar temporal, AROME, hidrologia ACA i comparació puntual de vuit sortides de model. L’ampliació afegeix una vista de consens descriptiu per variable i hora, sense expressar probabilitats d’encert. No canvia el model operatiu Fonta ni el Worker.
 - [ ] Revisar en previsualització la cobertura real dels nous models (ARPEGE Europa, GEM global i UKMO global), la resposta en mòbil i la latència amb vuit peticions per punt. Mantenir una sortida absent com a «No disponible».
 - [ ] Validar previsualització en ordinador i mòbil, fonts actives i comportament amb errors; revisar i fusionar el PR.
-- [ ] Publicar el projecte Pages separat i assignar `visor.fontanillas.cat` només amb aprovació humana explícita. Mantenir-lo fora dels menús de la web principal durant l’avaluació.
+- **Publicat el 10/11:** el projecte Pages separat serveix `visor.fontanillas.cat` després de l’aprovació humana del PR #370. Es manté fora dels menús de la web principal durant l’avaluació. La primera prova real ha detectat un desajust en el format de l’hora dels models; correcció en curs.
 - [ ] Després de la primera prova real, prioritzar noves capes segons qualitat de la font, llicència i utilitat, sense confondre mesures amb prediccions.
 
 

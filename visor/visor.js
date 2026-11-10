@@ -1,4 +1,4 @@
-import { readingAt, summarize } from './consensus.js';
+import { localForecastHour, readingAt, summarize } from './consensus.js';
 
 const API = 'https://fonta-meteo.marcelfonta.workers.dev';
 const STATION = [41.6906, 2.489];
@@ -207,7 +207,7 @@ async function forecasts() {
   const request = ++state.forecastRequest;
   const [latitude, longitude] = state.point;
   const target = selectedTime();
-  const targetIso = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit' }).format(new Date(target)).replace(' ', 'T');
+  const targetIso = localForecastHour(target);
   $('#model-list').innerHTML = '<p class="muted">Consultant els models per a aquest punt…</p>';
   $('#model-hour').textContent = dateLabel(targetIso);
   const results = await Promise.all(MODELS.map(async model => {
