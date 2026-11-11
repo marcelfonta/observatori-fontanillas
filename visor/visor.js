@@ -30,7 +30,7 @@ const AROME_LAYERS = [
   ['wind', 'Vent'], ['clouds', 'Núvols']
 ];
 const $ = selector => document.querySelector(selector);
-const state = { mode: 'radar', layer: 'precipitation', waterKind: 'river', frames: [], index: 0, place: 'fontanillas', point: STATION, mapLayer: null, stationMarker: null, queryMarker: null, markers: [], timer: null, request: 0, forecastRequest: 0, catalog: null, modelVariable: 'temperature', forecastCache: new Map() };
+const state = { mode: 'radar', modelMap: 'consensus', layer: 'precipitation', frames: [], index: 0, place: 'fontanillas', point: STATION, mapLayer: null, stationMarker: null, queryMarker: null, markers: [], timer: null, request: 0, forecastRequest: 0, catalog: null, modelVariable: 'temperature', forecastCache: new Map() };
 const format = (value, digits = 1) => Number.isFinite(Number(value)) ? new Intl.NumberFormat('ca-ES', { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(Number(value)) : '—';
 const dateLabel = (value, options = {}) => {
   const localHour = typeof value === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(value);
@@ -100,7 +100,7 @@ function redrawRadar() {
   if (!item) return;
   if (state.mapLayer) map.removeLayer(state.mapLayer);
   state.mapLayer = L.tileLayer(`${item.host}${item.path}/256/{z}/{x}/{y}/2/1_1.png`, { opacity: .82, maxNativeZoom: 7, maxZoom: 13, attribution: 'Radar © RainViewer' }).addTo(map);
-  source({ heading: 'Precipitació al radar', explanation: `${item.kind === 'observat' ? 'Radar observat' : 'Extrapolació del radar'}: ${dateLabel(item.time)}. La capa representa precipitació estimada; no és un avís oficial.`, link: 'https://www.rainviewer.com/', key: item.kind === 'observat' ? 'Observació radar' : 'Extrapolació · no observació', updated: dateLabel(item.time) });
+  source({ heading: 'Precipitació al radar', explanation: `Radar observat: ${dateLabel(item.time)}. La capa representa precipitació estimada pel radar; no és un avís oficial ni una predicció.`, link: 'https://www.rainviewer.com/', key: 'Observació radar', updated: dateLabel(item.time) });
   message('', false); timeline();
 }
 async function radar() {
@@ -111,8 +111,7 @@ async function radar() {
     if (request !== state.request) return;
     const host = data.host;
     const past = (data.radar?.past || []).map(frame => ({ ...frame, host, kind: 'observat', time: frame.time * 1000 }));
-    const future = (data.radar?.nowcast || []).map(frame => ({ ...frame, host, kind: 'previst', time: frame.time * 1000 }));
-    state.frames = [...past, ...future];
+    state.frames = past;
     if (!state.frames.length) throw new Error('No hi ha fotogrames');
     state.index = Math.max(0, past.length - 1);
     redrawRadar();
@@ -130,15 +129,32 @@ function aromeUrl(time) {
 }
 function redrawArome() {
   const item = state.frames[state.index];
+  if (state.modelMap === 'consensus') {
+    if (state.mapLayer) map.removeLayer(state.mapLayer);
+    state.mapLayer = null;
+    source({ heading: 'Coincidència dels models al punt', explanation: `Comparació puntual per al ${dateLabel(item?.time || selectedTime())}. Tria un punt al mapa i consulta les barres de la dreta. No és una capa de consens territorial.`, link: 'https://open-meteo.com/en/docs', key: 'Prediccions al punt · no observació', updated: dateLabel(item?.time || selectedTime()) });
+    message('', false); timeline(); return;
+  }
   const time = item?.raw || '';
   const image = L.imageOverlay(aromeUrl(time), [[40.4, 0], [43.6, 4.5]], { opacity: .76, crossOrigin: true });
-  image.on('load', () => { if (state.mode === 'arome' && state.mapLayer === image) message('', false); });
-  image.on('error', () => { if (state.mode === 'arome' && state.mapLayer === image) message('El mapa AROME no respon per a aquesta hora. Prova un altre instant.'); });
+  image.on('load', () => { if (state.mode === 'models' && state.mapLayer === image) message('', false); });
+  image.on('error', () => { if (state.mode === 'models' && state.mapLayer === image) message('El mapa AROME no respon per a aquesta hora. Prova un altre instant.'); });
   if (state.mapLayer) map.removeLayer(state.mapLayer);
   state.mapLayer = image.addTo(map);
   const layerLabel = AROME_LAYERS.find(([id]) => id === state.layer)?.[1] || 'Variable';
   source({ heading: `AROME · ${layerLabel.toLowerCase()}`, explanation: `Predicció de Météo-France${item ? ` vàlida per al ${dateLabel(item.time)}` : ' de l’edició activa'}. Els colors són un camp del model, no una mesura local.`, link: 'https://meteofrance.com/', key: 'Predicció de model', updated: item ? `Vàlid: ${dateLabel(item.time)}` : 'Edició activa' });
   message('Carregant el mapa AROME…'); timeline();
+}
+function consensusFrames() {
+  const first = Math.ceil(Date.now() / 3600000) * 3600000;
+  state.frames = Array.from({ length: 25 }, (_, index) => ({ time: first + index * 3600000 }));
+  state.index = 0;
+  redrawArome();
+  forecasts();
+}
+function showModels() {
+  if (state.modelMap === 'arome') arome();
+  else { ++state.request; consensusFrames(); }
 }
 async function arome() {
   const request = ++state.request;
@@ -158,49 +174,20 @@ async function arome() {
     if (request !== state.request) return;
     state.frames = []; timeline(); message('AROME no està disponible ara mateix. El radar i les altres fonts continuen accessibles.');
     source({ heading: 'AROME no disponible', explanation: 'El servidor oficial no ha retornat cap producte verificat.', link: 'https://meteofrance.com/', key: 'Sense dades', updated: 'Sense edició' });
-  }
-}
-function waterValue(station) {
-  const data = state.waterKind === 'river' ? station.flow : station.primary;
-  return { value: finite(data?.current), unit: data?.unit || (state.waterKind === 'river' ? 'm³/s' : state.waterKind === 'rain' ? 'mm/h' : '%'), at: data?.observedAt || station.observedAt };
-}
-async function water() {
-  const request = ++state.request;
-  message('Carregant les lectures de l’ACA…');
-  try {
-    const data = await json(`${API}/aca-hydrology?kind=${state.waterKind}`);
-    if (request !== state.request) return;
-    const stations = (data.stations || []).filter(item => finite(item.latitude) !== null && finite(item.longitude) !== null);
-    if (!stations.length) throw new Error('Sense estacions');
-    clearMapLayer(); state.frames = []; timeline();
-    for (const station of stations) {
-      const reading = waterValue(station);
-      const point = [Number(station.latitude), Number(station.longitude)];
-      const marker = L.circleMarker(point, { radius: 8, color: '#b4e6f5', fillColor: reading.value === null ? '#455b60' : '#187891', fillOpacity: .9, weight: 2, bubblingMouseEvents: false }).addTo(map);
-      const popup = document.createElement('div');
-      const heading = document.createElement('strong'); heading.textContent = station.name || 'Estació ACA'; popup.append(heading);
-      const value = document.createElement('p'); value.textContent = reading.value === null ? 'Sense lectura recent' : `${format(reading.value)} ${reading.unit}`; popup.append(value);
-      const date = document.createElement('small'); date.textContent = `Lectura: ${dateLabel(reading.at)} · ACA`; popup.append(date);
-      marker.bindPopup(popup); state.markers.push(marker);
-    }
-    source({ heading: state.waterKind === 'river' ? 'Cabals i nivells' : state.waterKind === 'rain' ? 'Pluja mesurada' : 'Estat dels embassaments', explanation: `Lectures de l’ACA de ${stations.length} estacions. Obre un punt per veure’n el valor i l’hora. Les dades poden ser provisionals.`, link: 'https://aplicacions.aca.gencat.cat/sentilo-catalog-web/component/map', key: 'Mesura ACA', updated: `${stations.length} estacions` });
-    message('', false);
-    if (state.waterKind === 'reservoir') map.fitBounds(L.featureGroup(state.markers).getBounds(), { padding: [35, 35], maxZoom: 9 });
-  } catch {
-    if (request !== state.request) return;
-    state.frames = []; timeline(); message('No podem carregar les lectures de l’ACA. Obre el visor oficial i torna-ho a provar més tard.');
-    source({ heading: 'Aigua no disponible', explanation: 'El servei no ha retornat lectures verificades.', link: 'https://aplicacions.aca.gencat.cat/sentilo-catalog-web/component/map', key: 'Sense dades', updated: 'Sense lectura' });
+    forecasts();
   }
 }
 function selectMode(mode) {
   stop(); state.mode = mode; state.request++; clearMapLayer();
   document.querySelectorAll('[data-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === mode)));
-  $('#layer-field').hidden = mode !== 'arome'; $('#water-field').hidden = mode !== 'water';
-  if (mode === 'arome') { buttons(AROME_LAYERS, state.layer); arome(); }
-  else if (mode === 'water') { water(); forecasts(); } else { radar(); forecasts(); }
+  $('#model-map-field').hidden = mode !== 'models';
+  $('#next-rain-box').hidden = mode !== 'radar';
+  $('#layer-field').hidden = mode !== 'models' || state.modelMap !== 'arome';
+  if (mode === 'models') { buttons(AROME_LAYERS, state.layer); showModels(); }
+  else { radar(); forecasts(); }
 }
 function selectedTime() {
-  if (state.mode === 'arome' && state.frames[state.index]?.time) return state.frames[state.index].time;
+  if (state.mode === 'models' && state.frames[state.index]?.time) return state.frames[state.index].time;
   return Date.now() + 3600000;
 }
 async function forecasts() {
@@ -225,12 +212,15 @@ async function forecasts() {
     catch { state.forecastCache.delete(key); return null; }
   }));
   if (request !== state.forecastRequest) return;
+  const variable = MODEL_VARIABLES[state.modelVariable];
+  const values = results.map(item => item?.[state.modelVariable]).filter(value => value !== null && value !== undefined);
+  const maxValue = Math.max(...values, 0);
   $('#model-list').replaceChildren(...results.map((item, index) => {
     const row = document.createElement('div'); row.className = 'model-row';
+    if ($('#model-focus').value === MODELS[index].name) row.classList.add('is-focused');
     const name = document.createElement('span'); name.textContent = MODELS[index].name;
     const value = document.createElement('strong');
     if (item) {
-      const variable = MODEL_VARIABLES[state.modelVariable];
       value.textContent = item[state.modelVariable] === null ? '—' : `${format(item[state.modelVariable], variable.digits)} ${variable.unit}`;
       const detail = document.createElement('small'); detail.textContent = MODELS[index].reference ? 'Selecció automàtica · fora del consens' : (MODELS[index].family === 'meteofrance' ? 'Météo-France · una veu al consens' : 'Família de model');
       name.append(detail);
@@ -238,7 +228,10 @@ async function forecasts() {
       value.textContent = 'No disponible';
       const detail = document.createElement('small'); detail.textContent = 'Sense predicció per a aquesta hora'; name.append(detail);
     }
-    row.append(name, value); return row;
+    const bar = document.createElement('span'); bar.className = 'model-bar';
+    const fill = document.createElement('span'); fill.className = 'model-bar-fill';
+    fill.style.width = item?.[state.modelVariable] !== null && item?.[state.modelVariable] !== undefined && maxValue > 0 ? `${Math.max(2, Math.min(100, 100 * item[state.modelVariable] / maxValue))}%` : '0%';
+    bar.append(fill); row.append(name, value, bar); return row;
   }));
   const readings = results.filter(Boolean);
   for (const [key, id] of [['temperature', 'temp'], ['rain', 'rain'], ['wind', 'wind'], ['clouds', 'cloud']]) {
@@ -247,11 +240,15 @@ async function forecasts() {
     $(`#forecast-${id}`).textContent = summary.count ? `${format(summary.median, variable.digits)} ${variable.unit}` : '—';
   }
   const selected = summarize(readings, state.modelVariable);
-  const variable = MODEL_VARIABLES[state.modelVariable];
   $('#consensus-count').textContent = `${selected.count} de ${new Set(MODELS.map(model => model.family).filter(Boolean)).size} famílies de models amb dades`;
   $('#consensus-value').textContent = selected.count ? `${format(selected.median, variable.digits)} ${variable.unit}` : 'Sense dades comparables';
   $('#consensus-range').textContent = selected.count ? `Interval dels models: ${format(selected.min, variable.digits)}–${format(selected.max, variable.digits)} ${variable.unit}` : 'Cap model disponible per a aquesta hora.';
   $('#consensus-rain').textContent = state.modelVariable === 'rain' && selected.count ? `${selected.wet} de ${selected.count} famílies preveuen ≥0,2 mm en aquesta hora.` : '';
+  if (state.mode === 'radar') {
+    const nextRain = summarize(readings, 'rain');
+    $('#next-rain').textContent = nextRain.count ? `${format(nextRain.median)} mm` : 'Sense previsió disponible';
+    $('#next-rain-detail').textContent = nextRain.count ? `${nextRain.wet} de ${nextRain.count} famílies preveuen ≥0,2 mm · ${dateLabel(targetIso)} · Open-Meteo` : 'Predicció, no radar observat.';
+  }
 }
 async function station() {
   try {
@@ -283,15 +280,16 @@ function setPoint(point, name) {
 
 $('#mode-buttons').addEventListener('click', event => { const button = event.target.closest('[data-mode]'); if (button) selectMode(button.dataset.mode); });
 $('#layer-buttons').addEventListener('click', event => { const button = event.target.closest('[data-layer]'); if (!button) return; state.layer = button.dataset.layer; buttons(AROME_LAYERS, state.layer); stop(); redrawArome(); forecasts(); });
-$('#water-select').addEventListener('change', event => { state.waterKind = event.target.value; water(); });
+$('#model-map-select').addEventListener('change', event => { stop(); state.modelMap = event.target.value; $('#layer-field').hidden = state.modelMap !== 'arome'; showModels(); });
 $('#model-variable').addEventListener('change', event => { state.modelVariable = event.target.value; forecasts(); });
+$('#model-focus').addEventListener('change', () => forecasts());
 $('#place-select').addEventListener('change', event => { const place = PLACES[event.target.value]; if (!place) return; map.flyTo(place.point, 9); setPoint(place.point, place.name); });
 map.on('click', event => { const point = [event.latlng.lat, event.latlng.lng]; setPoint(point, 'Punt triat al mapa'); });
 $('#refresh').addEventListener('click', () => selectMode(state.mode));
-$('#time-range').addEventListener('input', event => { stop(); state.index = Number(event.target.value); if (state.mode === 'arome') { redrawArome(); forecasts(); } else redrawRadar(); });
-$('#prev').addEventListener('click', () => { stop(); state.index--; if (state.mode === 'arome') { redrawArome(); forecasts(); } else redrawRadar(); });
-$('#next').addEventListener('click', () => { stop(); state.index++; if (state.mode === 'arome') { redrawArome(); forecasts(); } else redrawRadar(); });
-$('#play').addEventListener('click', () => { if (state.timer) { stop(); return; } if (state.frames.length < 2) return; $('#play').textContent = 'Ⅱ'; $('#play').setAttribute('aria-label', 'Atura l’evolució'); state.timer = setInterval(() => { state.index = (state.index + 1) % state.frames.length; if (state.mode === 'arome') redrawArome(); else redrawRadar(); }, 1400); });
+$('#time-range').addEventListener('input', event => { stop(); state.index = Number(event.target.value); if (state.mode === 'models') { redrawArome(); forecasts(); } else redrawRadar(); });
+$('#prev').addEventListener('click', () => { stop(); state.index--; if (state.mode === 'models') { redrawArome(); forecasts(); } else redrawRadar(); });
+$('#next').addEventListener('click', () => { stop(); state.index++; if (state.mode === 'models') { redrawArome(); forecasts(); } else redrawRadar(); });
+$('#play').addEventListener('click', () => { if (state.timer) { stop(); return; } if (state.frames.length < 2) return; $('#play').textContent = 'Ⅱ'; $('#play').setAttribute('aria-label', 'Atura l’evolució'); state.timer = setInterval(() => { state.index = (state.index + 1) % state.frames.length; if (state.mode === 'models') { redrawArome(); forecasts(); } else redrawRadar(); }, 1400); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
 setInterval(() => { $('#clock').textContent = new Intl.DateTimeFormat('ca-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' }).format(new Date()); }, 30000);
 $('#clock').textContent = new Intl.DateTimeFormat('ca-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' }).format(new Date());
