@@ -2,7 +2,7 @@
 
 ## Visor independent `visor.fontanillas.cat` (ampliació multimodel en revisió)
 
-Aplicació estàtica separada amb radar temporal, AROME, hidrologia ACA i comparació puntual de vuit sortides de model. L’ampliació afegeix una vista de consens descriptiu per variable i hora, sense expressar probabilitats d’encert. No canvia el model operatiu Fonta ni el Worker.
+Aplicació estàtica separada amb radar observat, mapa AROME HD i comparació puntual de vuit sortides de model. L'ampliació en revisió afegeix una vista de coincidència per variable i hora, sense expressar probabilitats d'encert; la pluja de la pròxima hora s'etiqueta com a previsió de models. Les lectures ACA continuen al mapa «Aigua i rius» de Medi ambient. No canvia el model operatiu Fonta ni el Worker.
 - [ ] Revisar en previsualització la cobertura real dels nous models (ARPEGE Europa, GEM global i UKMO global), la resposta en mòbil i la latència amb vuit peticions per punt. Mantenir una sortida absent com a «No disponible».
 - [ ] Validar previsualització en ordinador i mòbil, fonts actives i comportament amb errors; revisar i fusionar el PR.
 - **Publicat el 10/11:** el projecte Pages separat serveix `visor.fontanillas.cat` després de l’aprovació humana del PR #370. Es manté fora dels menús de la web principal durant l’avaluació. La primera prova real ha detectat un desajust en el format de l’hora dels models; correcció en curs.

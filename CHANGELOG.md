@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-11 — Radar i models del visor (en revisió)
+
+- El radar queda limitat als fotogrames observats; al costat es mostra, amb etiqueta de previsió, la pluja estimada per les famílies de models durant la pròxima hora.
+- La pestanya AROME passa a dir-se «Models»: per defecte mostra la coincidència puntual de vuit sortides i una línia temporal pròpia, i permet obrir el mapa territorial AROME HD. El detall permet destacar un model i compara els valors amb barres.
+- Es retira «Aigua» d'aquest visor perquè el mapa de cabals, pluja i embassaments ja és a Medi ambient. La coincidència puntual no es representa com una capa territorial ni com una probabilitat d'encert.
+
 ## 2026-11-11 — Hora disponible per a la comparació del visor (en revisió)
 
 - La comparació selecciona el primer pas horari disponible quan el radar o un fotograma AROME tenen minuts; així les sèries horàries no queden buides per una coincidència exacta impossible.
