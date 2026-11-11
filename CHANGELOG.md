@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-11 — Comparació del visor visible en entrar
+
+- Les dues files de models es mostren obertes d'entrada, amb la variable, l'hora i les fonts a la vista. El bloc encara es pot plegar quan cal més espai per al mapa.
+
 ## 2026-11-11 — Models del visor en dues files
 
 - La comparació desplegable passa sota el mapa i mostra els vuit models en dues files de quatre a l'ordinador. En pantalles més estretes es distribueix en dues columnes o una, sense desplaçament lateral.
