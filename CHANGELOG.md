@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-11 — Comparació de models més compacta al visor
+
+- El visor mostra la síntesi de coincidència i manté la llista dels vuit models dins d'un desplegable accessible. Les dades i els filtres continuen disponibles sense imposar una columna llarga al mapa.
+
 ## 2026-11-11 — Radar i models del visor (en revisió)
 
 - El radar queda limitat als fotogrames observats; al costat es mostra, amb etiqueta de previsió, la pluja estimada per les famílies de models durant la pròxima hora.
