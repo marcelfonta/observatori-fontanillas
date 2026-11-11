@@ -1,9 +1,9 @@
 {
   "schema": 2,
   "protocol": "fonta-hourly-nearest-150s-v1",
-  "generatedAt": "2026-11-10T16:27:17.027Z",
+  "generatedAt": "2026-11-11T16:14:16.838Z",
   "station": "ISANTC198",
-  "forecastDays": 42,
+  "forecastDays": 43,
   "pairedDays": 31,
   "excludedGroups": 9,
   "scores": {
@@ -1869,6 +1869,28 @@
         "gap",
         "missing-hourly-samples"
       ]
+    },
+    {
+      "date": "2026-11-09",
+      "receivedAt": "2026-11-11T00:37:57.975Z",
+      "complete": false,
+      "validHours": 13,
+      "expectedHours": 24,
+      "reasons": [
+        "coverage",
+        "samples",
+        "hours",
+        "gap",
+        "missing-hourly-samples"
+      ]
+    },
+    {
+      "date": "2026-11-10",
+      "receivedAt": "2026-11-11T00:37:57.975Z",
+      "complete": true,
+      "validHours": 24,
+      "expectedHours": 24,
+      "reasons": []
     }
   ]
 }
