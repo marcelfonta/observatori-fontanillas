@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-11 — Models del visor en dues files
+
+- La comparació desplegable passa sota el mapa i mostra els vuit models en dues files de quatre a l'ordinador. En pantalles més estretes es distribueix en dues columnes o una, sense desplaçament lateral.
+
 ## 2026-11-11 — Comparació de models més compacta al visor
 
 - El visor mostra la síntesi de coincidència i manté la llista dels vuit models dins d'un desplegable accessible. Les dades i els filtres continuen disponibles sense imposar una columna llarga al mapa.

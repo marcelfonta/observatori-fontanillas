@@ -36,3 +36,15 @@
 .model-section .model-row small{display:none}
 .model-section .model-bar{height:3px}
 @media(max-width:1170px) and (min-width:701px){.insight-panel .model-section{margin-top:20px}}
+
+/* Comparació completa sota el mapa: quatre models per fila en pantalles amples. */
+.workspace>.model-section{grid-column:1/-1;margin:0;border:0;border-top:1px solid var(--line);border-radius:0;background:#102a22}
+.workspace>.model-section summary{padding:18px 24px;font-size:15px}
+.workspace>.model-section .model-section-content{padding:18px 24px 22px}
+.workspace>.model-section .model-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}
+.workspace>.model-section .model-row,.workspace>.model-section .model-row.is-focused{margin:0;padding:14px;border:1px solid #375b48;border-radius:10px;background:#112b22;align-content:start;min-width:0}
+.workspace>.model-section .model-row.is-focused{border-color:#85d3a4;background:#1b4030}
+.workspace>.model-section .model-row span{overflow-wrap:anywhere}
+.workspace>.model-section .model-note{max-width:90ch}
+@media(max-width:900px){.workspace>.model-section .model-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.workspace>.model-section .model-list{grid-template-columns:1fr}.workspace>.model-section summary,.workspace>.model-section .model-section-content{padding-left:18px;padding-right:18px}}
