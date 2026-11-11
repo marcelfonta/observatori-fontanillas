@@ -51,3 +51,23 @@ export function readingAt(data, model, targetIso) {
     clouds: numberAt('cloud_cover')
   };
 }
+
+export function hourlyComparison(datasets, models, hours, variable) {
+  return hours.map(time => {
+    const readings = datasets.map((data, index) => readingAt(data, models[index], time)).filter(Boolean);
+    return { time, readings, summary: summarize(readings, variable) };
+  });
+}
+
+export function retrospectiveErrors(observations, forecasts) {
+  const actual = new Map(observations.filter(row => row.temperature !== null && row.temperature !== '' && Number.isFinite(Number(row.temperature)) && Number.isFinite(Number(row.epoch))).map(row => [Math.floor(Number(row.epoch) / 3600), Number(row.temperature)]));
+  return forecasts.map(({ name, hourly }) => {
+    const errors = (hourly?.time || []).flatMap((time, index) => {
+      const predicted = hourly.temperature_2m_previous_day1?.[index];
+      const utcTime = /(?:Z|[+-]\d\d:\d\d)$/.test(time) ? time : `${time}Z`;
+      const observed = actual.get(Math.floor(new Date(utcTime).getTime() / 3600000));
+      return Number.isFinite(predicted) && Number.isFinite(observed) ? [Math.abs(predicted - observed)] : [];
+    });
+    return { name, count: errors.length, mae: errors.length ? errors.reduce((sum, error) => sum + error, 0) / errors.length : null };
+  });
+}
