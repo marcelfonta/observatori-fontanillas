@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-11 — Evolució i comprovació del visor (en revisió)
+
+- Gràfic de 24 hores amb mediana, interval i model destacat; cinc punts territorials amb valors puntuals, sense interpolar-los en un mapa continu.
+- Comparació opcional de la temperatura observada per l'estació amb la previsió Open-Meteo arxivada 24 hores abans de cada hora; s'indica el nombre d'hores comparables i l'error absolut mitjà.
+- Radar limitat als fotogrames observats de RainViewer, que ja no ofereix fotogrames futurs en l'API pública. La pluja de la pròxima hora continua indicada separadament com a previsió de models.
+
 ## 2026-11-11 — Comparació del visor visible en entrar
 
 - Les dues files de models es mostren obertes d'entrada, amb la variable, l'hora i les fonts a la vista. El bloc encara es pot plegar quan cal més espai per al mapa.

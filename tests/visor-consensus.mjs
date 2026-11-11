@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { localForecastHour, readingAt, summarize } from '../visor/consensus.js';
+import { hourlyComparison, localForecastHour, readingAt, retrospectiveErrors, summarize } from '../visor/consensus.js';
 
 assert.equal(localForecastHour('2026-11-10T11:00:00Z'), '2026-11-10T12:00');
 assert.equal(localForecastHour('2026-07-10T11:00:00Z'), '2026-07-10T13:00');
@@ -21,4 +21,8 @@ const readings = [
 assert.deepEqual(summarize(readings, 'temperature'), { count: 2, available: 3, min: 14, max: 18, median: 16, wet: null });
 assert.deepEqual(summarize(readings, 'rain'), { count: 2, available: 3, min: 0, max: 0.2, median: 0.1, wet: 1 });
 assert.equal(summarize(readings, 'clouds').count, 0);
+assert.deepEqual(hourlyComparison([data, data], [{ family: 'gfs' }, { family: 'gfs' }], [hour], 'temperature')[0].summary, { count: 1, available: 1, min: 14, max: 14, median: 14, wet: null }, 'one model family contributes once');
+const epoch = Date.parse('2026-11-10T12:00:00Z') / 1000;
+const retrospective = retrospectiveErrors([{ epoch: epoch + 40 * 60, temperature: 13 }, { epoch: epoch + 3600, temperature: null }], [{ name: 'Best Match', hourly: { time: ['2026-11-10T12:00', '2026-11-10T13:00'], temperature_2m_previous_day1: [15, 17] } }]);
+assert.deepEqual(retrospective, [{ name: 'Best Match', count: 1, mae: 2 }], 'observations stay in their measured hour and nulls are omitted');
 console.log('visor consensus: OK');
