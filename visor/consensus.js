@@ -1,10 +1,12 @@
 const valid = value => typeof value === 'number' && Number.isFinite(value);
 
 export function localForecastHour(value) {
+  const instant = new Date(value);
+  const nextHourlyStep = new Date(Math.ceil(instant.getTime() / 3600000) * 3600000);
   return new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
-  }).format(new Date(value)).replace(' ', 'T');
+  }).format(nextHourlyStep).replace(' ', 'T');
 }
 
 export function independentModels(readings, variable) {

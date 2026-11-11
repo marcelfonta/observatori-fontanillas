@@ -3,6 +3,8 @@ import { localForecastHour, readingAt, summarize } from '../visor/consensus.js';
 
 assert.equal(localForecastHour('2026-11-10T11:00:00Z'), '2026-11-10T12:00');
 assert.equal(localForecastHour('2026-07-10T11:00:00Z'), '2026-07-10T13:00');
+assert.equal(localForecastHour('2026-11-11T04:55:00Z'), '2026-11-11T06:00', 'the live forecast must use an available hourly slot');
+assert.equal(localForecastHour('2026-11-11T05:00:00Z'), '2026-11-11T06:00', 'an exact hour stays unchanged');
 
 const hour = '2026-11-10T12:00';
 const data = { hourly: { time: [hour], temperature_2m: [14], precipitation: [0], wind_speed_10m: [null], cloud_cover: [60] } };

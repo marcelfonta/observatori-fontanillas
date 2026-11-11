@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-11 — Hora disponible per a la comparació del visor (en revisió)
+
+- La comparació selecciona el primer pas horari disponible quan el radar o un fotograma AROME tenen minuts; així les sèries horàries no queden buides per una coincidència exacta impossible.
+
 ## 2026-11-10 — Comparació multimodel del visor (en revisió)
 
 - El visor compara vuit sortides d’Open-Meteo a la mateixa hora i mostra mediana, interval i nombre de fonts per temperatura, pluja, vent i núvols. El recompte evita duplicar Best Match i la família Météo-France; l’acord no es presenta com a probabilitat d’encert.
