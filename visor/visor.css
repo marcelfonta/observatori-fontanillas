@@ -23,3 +23,16 @@
 .model-row.is-focused{margin:0 -9px;padding:12px 9px;border:1px solid #85d3a488;border-radius:9px;background:#1b4030}
 .model-filter select{width:165px}
 .near-rain[hidden],#model-map-field[hidden],#layer-field[hidden]{display:none}
+
+.model-section{margin-top:22px;border:1px solid #456a55;border-radius:12px;background:#102a22;align-self:start}
+.model-section summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;cursor:pointer;color:var(--mint);font-size:13px;font-weight:700;list-style:none}
+.model-section summary::-webkit-details-marker{display:none}
+.model-section summary::after{content:'⌄';font-size:20px;line-height:1;transition:transform .2s}
+.model-section[open] summary::after{transform:rotate(180deg)}
+.model-section summary:focus-visible{outline:2px solid var(--mint);outline-offset:3px;border-radius:10px}
+.model-section summary #model-hour{margin-left:auto;color:var(--soft);font-size:10px;font-weight:500}
+.model-section-content{padding:0 14px 14px;border-top:1px solid #375243}
+.model-section .model-row{padding:8px 0;row-gap:5px}
+.model-section .model-row small{display:none}
+.model-section .model-bar{height:3px}
+@media(max-width:1170px) and (min-width:701px){.insight-panel .model-section{margin-top:20px}}
