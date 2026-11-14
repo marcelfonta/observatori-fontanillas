@@ -1,5 +1,11 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
+## Incidències de les captures privades (14-11-2026)
+
+- El laboratori Fonta va fallar en quatre consultes Open-Meteo per un error de connexió; va conservar l’informe de fallada i no va promocionar cap model. El pressupost limitat de consultes impedeix reintents automàtics indiscriminats.
+- Un YouTube Short va fallar en una consulta externa i la següent execució va acabar correctament. No s’ha relançat la publicació per evitar duplicats.
+- La captura XEMA no indicava quin pas fallava. Una correcció en revisió afegeix el pas i el tipus d’error als logs sense exposar dades; cal observar una nova execució per identificar la causa exacta.
+
 ## Visor independent `visor.fontanillas.cat` (ampliació multimodel en revisió)
 
 Aplicació estàtica separada amb radar observat, mapa AROME HD i comparació puntual de vuit sortides de model. L'ampliació en revisió afegeix una vista de coincidència per variable i hora, sense expressar probabilitats d'encert; la pluja de la pròxima hora s'etiqueta com a previsió de models. Les lectures ACA continuen al mapa «Aigua i rius» de Medi ambient. No canvia el model operatiu Fonta ni el Worker.

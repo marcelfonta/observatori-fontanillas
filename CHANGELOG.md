@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-14 — Diagnosi privada de la captura regional XEMA (en revisió)
+
+- La captura regional informa del pas que falla (R2, estacions, lectures, model, validació o còpia) i d’una categoria segura d’error. No escriu URL, credencials ni dades meteorològiques als logs.
+- Els límits de consultes i el comportament de publicació no canvien.
+
 ## 2026-11-11 — Evolució i comprovació del visor (en revisió)
 
 - Gràfic de 24 hores amb mediana, interval i model destacat; cinc punts territorials amb valors puntuals, sense interpolar-los en un mapa continu.

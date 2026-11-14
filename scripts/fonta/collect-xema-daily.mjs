@@ -7,18 +7,33 @@ import {readRegionalCaptures,uploadRegionalEvidence,REGIONAL_CAPTURE_LIMIT} from
 import {localDay,nextDay} from '../../src/core/fonta-model.js';
 import {XEMA_DAILY_MODELS,evaluateRegionalDaily,normalizeXemaStations,regionalCapture,regionalForecastRequest,xemaDailyRequest,xemaStationMetadataRequest} from '../../src/core/fonta-xema-daily.js';
 
+function failureKind(error){
+  const message=String(error?.message||'');
+  if(/^HTTP (429|5\d\d)$/.test(message))return `HTTP ${message.slice(5)}`;
+  if(/^HTTP 4\d\d$/.test(message))return 'HTTP client';
+  if(error?.name==='TimeoutError'||error?.name==='AbortError')return 'temps esgotat';
+  if(error instanceof TypeError&&/fetch failed/i.test(message))return 'connexió';
+  if(/S3 R2/.test(message))return 'magatzem R2';
+  return 'dades o integritat';
+}
+
+export async function regionalStep(label,operation){
+  try{return await operation();}
+  catch(error){throw new Error(`Pas ${label}: ${failureKind(error)}`,{cause:error});}
+}
+
 export async function collectRegionalSources({now=new Date().toISOString(),fetcher=fetch}={}){
   const today=localDay(now),start=nextDay(today,-10);
-  const stations=await publicSource(xemaStationMetadataRequest(),{fetcher,maxBytes:256*1024});
-  const catalog=normalizeXemaStations(stations.raw);
-  const daily=await publicSource(xemaDailyRequest(start,today),{fetcher,maxBytes:1024*1024});
+  const stations=await regionalStep('estacions XEMA',()=>publicSource(xemaStationMetadataRequest(),{fetcher,maxBytes:256*1024}));
+  const catalog=await regionalStep('catàleg XEMA',()=>normalizeXemaStations(stations.raw));
+  const daily=await regionalStep('lectures diàries XEMA',()=>publicSource(xemaDailyRequest(start,today),{fetcher,maxBytes:1024*1024}));
   const forecasts=[];
   for(const model of XEMA_DAILY_MODELS){
-    const source=await publicSource(regionalForecastRequest(model,catalog),{fetcher,maxBytes:512*1024});
+    const source=await regionalStep(`model ${model}`,()=>publicSource(regionalForecastRequest(model,catalog),{fetcher,maxBytes:512*1024}));
     forecasts.push({model,...source});
   }
   const capturedAt=new Date().toISOString();
-  return regionalCapture({capturedAt,sources:{stations,daily,forecasts}});
+  return regionalStep('validació de captura',()=>regionalCapture({capturedAt,sources:{stations,daily,forecasts}}));
 }
 
 export async function runRegionalCollection({mode='plan',workspace,transport,now=new Date().toISOString(),fetcher=fetch}){
@@ -27,18 +42,18 @@ export async function runRegionalCollection({mode='plan',workspace,transport,now
   // where the conventional build/ parent has not been created yet.
   await mkdir(dirname(workspace),{recursive:true});
   await mkdir(workspace);
-  const existing=await readRegionalCaptures(transport);
+  const existing=await regionalStep('lectura R2',()=>readRegionalCaptures(transport));
   if(existing.captures.length>=REGIONAL_CAPTURE_LIMIT)throw new Error('Pilot regional complet: revisar abans de continuar');
   const today=localDay(now);
   if(existing.captures.some(capture=>localDay(capture.capturedAt)===today)){
-    const report=evaluateRegionalDaily(existing.captures,{now});
+    const report=await regionalStep('avaluació regional',()=>evaluateRegionalDaily(existing.captures,{now}));
     const receipt={schema:1,kind:'fonta-xema-daily-receipt',committed:false,uploaded:0,duplicateDay:true,productionEnabled:false,
       report:{generatedAt:report.generatedAt,captureCount:report.captureCount,pairedStationDays:report.pairedStationDays,productionEnabled:false,promotionAllowed:false}};
     await writeFile(join(workspace,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});return receipt;
   }
   const capture=await collectRegionalSources({now,fetcher});
-  const report=evaluateRegionalDaily([...existing.captures,capture],{now:capture.capturedAt});
-  const receipt=await uploadRegionalEvidence(capture,report,transport,{commit:mode==='run',inventory:existing.inventory});
+  const report=await regionalStep('avaluació regional',()=>evaluateRegionalDaily([...existing.captures,capture],{now:capture.capturedAt}));
+  const receipt=await regionalStep('còpia R2',()=>uploadRegionalEvidence(capture,report,transport,{commit:mode==='run',inventory:existing.inventory}));
   receipt.report={generatedAt:report.generatedAt,captureCount:report.captureCount,pairedStationDays:report.pairedStationDays,productionEnabled:false,promotionAllowed:false};
   await writeFile(join(workspace,'receipt.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
   return receipt;
@@ -53,7 +68,7 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).hr
       secretAccessKey:process.env.FONTA_R2_SECRET_ACCESS_KEY,jurisdiction:process.env.FONTA_R2_JURISDICTION||'default'},{scope:'regional'});
     console.log(JSON.stringify(await runRegionalCollection({mode,workspace:resolve(destination),transport})));
   }catch(error){
-    console.error('Captura regional Fonta no completada: '+(error?.message?.startsWith('S3 R2')?error.message:'comprova fonts, credencials, integritat i límits; cap previsió ni publicació modificada'));
+    console.error('Captura regional Fonta no completada: '+(error?.message?.startsWith('Pas ')?error.message:'comprova configuració i límits; cap previsió ni publicació modificada'));
     process.exitCode=1;
   }finally{transport?.close();}
 }
