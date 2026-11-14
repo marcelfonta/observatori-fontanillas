@@ -12,6 +12,7 @@ import hashlib
 import io
 import json
 import math
+import re
 import sys
 import urllib.parse
 import urllib.request
@@ -154,6 +155,12 @@ def extract_map_risks(pdf: bytes) -> list[MapRisk]:
                 raise ValueError("Estructura de mapes oficials no reconeguda: panells d'imatge ambigus.")
             images[window] = item.image.convert("RGBA")
         if len(panels) != 4 or len(images) != 4:
+            # Some live bulletins contain just one dated, hourly map. It is
+            # official context, but cannot supply the four 6-hour panels
+            # required by the card. Keep malformed multi-panel pages fatal.
+            if (len(images) == 1 and not panels and
+                    re.search(r"Dia:\s*\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}h", text)):
+                continue
             # Some CECAT updates start the annex with a carry-over page that
             # only contains the remaining two panels from the previous day.
             # Ignore only pages where both the extracted labels and colour

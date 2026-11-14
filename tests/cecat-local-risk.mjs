@@ -46,6 +46,7 @@ assert.match(script,/except NoSupportedRiskMaps as error:[\s\S]*?return 0/);
 assert.match(script,/extract_panel_layout\(text\)/);
 assert.match(script,/image_window\(item\.name\)/);
 assert.match(script,/if 0 < len\(images\) < 4 and len\(panels\) == len\(images\):\s+continue/);
+assert.match(script,/len\(images\) == 1 and not panels/);
 assert.match(script,/Les franges i els panells oficials no coincideixen/);
 assert.match(script,/official-raster-local-patch-v1/);
 assert.match(script,/documents\.dadesobertes\.gencat\.cat/);

@@ -35,6 +35,10 @@ Aportar una informació oficial addicional quan Protecció Civil publica un mapa
 - Els comunicats oficials només textuals són un resultat normal sense peça: es
   conserven a l'auditoria com a `no_supported_risk_maps`, no publiquen i no
   provoquen una falsa alarma de GitHub Actions.
+- Els annexos amb un únic mapa datat per hora, com el comunicat INUNCAT del
+  14/11/2026, tampoc permeten construir les quatre franges de la targeta.
+  Queden registrats com a `no_supported_risk_maps` sense publicació. Les
+  discrepàncies en pàgines de quatre franges continuen fallant tancades.
 - Qualsevol canvi de plantilla, franges no consecutives, discrepància entre etiquetes i imatges o resultat geogràfic insuficientment segur falla tancat.
 - El workflow no rep credencials de xarxes; només el token de retorn ja utilitzat per les automatitzacions socials.
 - El Worker torna a validar totes les metadades, la vigència, el nivell i les dues imatges abans de crear l'esborrany.
