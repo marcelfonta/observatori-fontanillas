@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const root=resolve(import.meta.dirname,'..');
 const program=String.raw`
 import json
-from scripts.cecat_map_layout import extract_panel_layout, image_window
+from scripts.cecat_map_layout import extract_panel_layout, image_window, is_single_day_map
 
 legacy = """Mapa Risc - Meteor:Intensitat de pluja
 Dia: 17/10/2026
@@ -22,6 +22,11 @@ print(json.dumps({
   "legacy": extract_panel_layout(legacy),
   "split": extract_panel_layout(split),
   "images": [image_window(name) for name in ("img1.png", "img3.png", "img5.png", "img7.png", "img9.png", "img11.png", "img13.png", "img15.png")],
+  "single_day": [
+    is_single_day_map("Mapa Perill - Meteor: Intensitat de pluja\nDia: 14/11/2026 15:00\nDe 00 a 24 hores", 1, 0),
+    is_single_day_map("Dia: 14/11/2026\nDe 00 a 24 hores", 2, 0),
+    is_single_day_map("Dia: 14/11/2026\nDe 00 a 24 hores", 1, 1),
+  ],
 }))
 `;
 const result=spawnSync('python3',['-c',program],{cwd:root,encoding:'utf8'});
@@ -34,5 +39,6 @@ assert.deepEqual(parsed.split,[
   ['2026-10-17',12,18],['2026-10-17',18,24],['2026-10-18',0,6],['2026-10-18',6,12],
 ]);
 assert.deepEqual(parsed.images,[[0,6],[6,12],[12,18],[18,24],[0,6],[6,12],[12,18],[18,24]]);
+assert.deepEqual(parsed.single_day,[true,false,false]);
 
 console.log('Disposicions CECAT antigues i dividides: correctes');
