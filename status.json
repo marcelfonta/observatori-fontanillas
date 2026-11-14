@@ -1,18 +1,18 @@
 {
   "schema": 1,
   "version": "0.2.0",
-  "generatedAt": "2026-11-14T15:00:12.386Z",
+  "generatedAt": "2026-11-14T23:52:41.299Z",
   "station": "ISANTC198",
   "mode": "shadow",
   "productionEnabled": false,
   "status": "collecting",
-  "latestCaptureAt": "2026-11-14T00:53:33.711Z",
-  "captureCount": 88,
-  "eligibleObservedDays": 48,
+  "latestCaptureAt": "2026-11-14T23:52:40.257Z",
+  "captureCount": 89,
+  "eligibleObservedDays": 49,
   "pairedDays": 24,
   "evaluatedDays": 0,
   "trainingAvailableDays": 24,
-  "targetDate": "2026-11-15",
+  "targetDate": "2026-11-16",
   "forecast": [],
   "scores": {
     "best_match": {
@@ -255,19 +255,19 @@
     },
     "rows": []
   },
-  "codeRevision": "afaee807a7cae9b2cb94a3c7922a18ad59168cf0",
+  "codeRevision": "36c7ddf06aff12051416aeb690c2b4da75a10add",
   "diagnostics": {
     "schema": 1,
-    "asOf": "2026-11-14T15:00:12.386Z",
+    "asOf": "2026-11-14T23:52:41.299Z",
     "execution": {
       "event": "schedule",
-      "runId": "43607753120"
+      "runId": "43655385088"
     },
     "firstCaptureAt": "2026-09-20T12:12:22.031Z",
     "budget": {
-      "captureCount": 88,
+      "captureCount": 89,
       "captureLimit": 180,
-      "bytes": 32621794,
+      "bytes": 32924652,
       "byteLimit": 104857600,
       "reviewNeeded": false
     },
@@ -279,20 +279,10 @@
       "exploratoryRequired": 14
     },
     "quality": {
-      "daysSeen": 57,
-      "accepted": 48,
+      "daysSeen": 58,
+      "accepted": 49,
       "rejected": 9,
       "recent": [
-        {
-          "date": "2026-10-31",
-          "availableAt": "2026-11-02T18:16:18.302Z",
-          "eligible": true,
-          "coverage": 0.946,
-          "samples": 288,
-          "expectedSamples": 288,
-          "maxGapMinutes": 6.517,
-          "reasons": []
-        },
         {
           "date": "2026-11-01",
           "availableAt": "2026-11-03T02:15:43.886Z",
@@ -424,12 +414,22 @@
         },
         {
           "date": "2026-11-13",
-          "availableAt": "2026-11-14T00:53:33.697Z",
+          "availableAt": "2026-11-14T23:52:40.212Z",
           "eligible": true,
           "coverage": 0.941,
           "samples": 288,
           "expectedSamples": 288,
           "maxGapMinutes": 7.6,
+          "reasons": []
+        },
+        {
+          "date": "2026-11-14",
+          "availableAt": "2026-11-14T23:52:40.212Z",
+          "eligible": true,
+          "coverage": 0.943,
+          "samples": 288,
+          "expectedSamples": 288,
+          "maxGapMinutes": 6.667,
           "reasons": []
         }
       ]
@@ -466,17 +466,11 @@
       {
         "model": "observations",
         "state": "available",
-        "receivedAt": "2026-11-14T00:53:33.697Z",
+        "receivedAt": "2026-11-14T23:52:40.212Z",
         "modelRunAt": null
       }
     ],
     "recentCaptures": [
-      {
-        "id": "2026-11-03-am",
-        "capturedAt": "2026-11-03T02:15:43.896Z",
-        "issueState": "outside-current-policy",
-        "failureCount": 0
-      },
       {
         "id": "2026-11-04-am",
         "capturedAt": "2026-11-04T00:35:04.194Z",
@@ -552,6 +546,12 @@
       {
         "id": "2026-11-14-am",
         "capturedAt": "2026-11-14T00:53:33.711Z",
+        "issueState": "outside-current-policy",
+        "failureCount": 4
+      },
+      {
+        "id": "2026-11-14-pm",
+        "capturedAt": "2026-11-14T23:52:40.257Z",
         "issueState": "outside-current-policy",
         "failureCount": 4
       }
