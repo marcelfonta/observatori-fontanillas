@@ -24,7 +24,7 @@ from zoneinfo import ZoneInfo
 from PIL import Image, ImageDraw, ImageFont
 from pypdf import PdfReader
 
-from cecat_map_layout import extract_panel_layout, image_window
+from cecat_map_layout import extract_panel_layout, image_window, is_single_day_map
 
 
 TIME_ZONE = ZoneInfo("Europe/Madrid")
@@ -155,6 +155,10 @@ def extract_map_risks(pdf: bytes) -> list[MapRisk]:
                 raise ValueError("Estructura de mapes oficials no reconeguda: panells d'imatge ambigus.")
             images[window] = item.image.convert("RGBA")
         if len(panels) != 4 or len(images) != 4:
+            # Some activation notices carry one all-day map. It is official,
+            # but cannot substantiate the four time slots required by our card.
+            if is_single_day_map(text, len(images), len(panels)):
+                continue
             # Some live bulletins contain just one dated, hourly map. It is
             # official context, but cannot supply the four 6-hour panels
             # required by the card. Keep malformed multi-panel pages fatal.

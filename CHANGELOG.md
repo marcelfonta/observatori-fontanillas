@@ -2,7 +2,7 @@
 
 ## 2026-11-14 — Annex CECAT d'un sol mapa (en revisió)
 
-- Un butlletí oficial amb un únic mapa horari queda sense peça i es registra com a format no compatible, sense marcar el workflow com a error. La targeta de quatre franges i la detecció estricta de discrepàncies es mantenen.
+- Els annexos amb un únic mapa de 24 hores, com el comunicat INUNCAT del 14/11 a les 17:03, queden sense peça i es registren com a format no compatible, sense marcar el workflow com a error. La targeta de quatre franges i la detecció estricta de discrepàncies es mantenen.
 
 ## 2026-11-14 — Diagnosi privada de la captura regional XEMA (en revisió)
 

@@ -28,6 +28,17 @@ def image_window(name: str) -> tuple[int, int] | None:
     return WINDOW_BY_IMAGE_SLOT.get(int(match.group(1)) % 8)
 
 
+def is_single_day_map(text: str, image_count: int, panel_count: int) -> bool:
+    """Recognise a valid 24-hour annex that cannot support four time slots."""
+
+    return (
+        image_count == 1
+        and panel_count == 0
+        and re.search(r"Dia:\s*\d{2}/\d{2}/\d{4}", text, re.IGNORECASE) is not None
+        and re.search(r"De\s*00\s*a\s*24\s*hores", text, re.IGNORECASE) is not None
+    )
+
+
 def extract_panel_layout(text: str) -> list[tuple[str, int, int]]:
     """Read each map date and UTC window in visual/text extraction order."""
 
