@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-14 — Annex CECAT d'un sol mapa (en revisió)
+
+- Un butlletí oficial amb un únic mapa horari queda sense peça i es registra com a format no compatible, sense marcar el workflow com a error. La targeta de quatre franges i la detecció estricta de discrepàncies es mantenen.
+
 ## 2026-11-14 — Diagnosi privada de la captura regional XEMA (en revisió)
 
 - La captura regional informa del pas que falla (R2, estacions, lectures, model, validació o còpia) i d’una categoria segura d’error. No escriu URL, credencials ni dades meteorològiques als logs.
