@@ -3,7 +3,7 @@ import {readFile,mkdtemp,rm,access} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {sha256} from '../scripts/fonta/io.mjs';
-import {runRegionalCollection} from '../scripts/fonta/collect-xema-daily.mjs';
+import {collectRegionalSources,regionalStep,runRegionalCollection} from '../scripts/fonta/collect-xema-daily.mjs';
 import {readRegionalCaptures,uploadRegionalEvidence} from '../scripts/fonta/regional-archive.mjs';
 import {XEMA_DAILY_MODELS,XEMA_DAILY_STATIONS,XEMA_DAILY_STATION_CAPABILITIES,evaluateRegionalDaily,normalizeRegionalForecast,normalizeXemaDaily,normalizeXemaStations,publicRegionalStatus,regionalCapture,regionalForecastRequest,xemaDailyRequest,xemaStationMetadataRequest} from '../src/core/fonta-xema-daily.js';
 import {regionalStatusFromReceipt} from '../scripts/fonta/publish-regional-status.mjs';
@@ -74,6 +74,12 @@ const workflow=await readFile('.github/workflows/fonta-xema-daily.yml','utf8');
 for(const required of ["cron: '35 8 * * *'","github.event_name == 'workflow_dispatch' || vars.FONTA_XEMA_DAILY_ENABLED == 'true'",'contents: write','group: fonta-r2-archive','persist-credentials: false','default: plan','regional-status.json','publish-regional-status.mjs','retention-days: 30'])assert(workflow.includes(required),required);
 for(const forbidden of ['wrangler deploy','CLOUDFLARE_API_TOKEN','regional/captures/','regional/reports/'])assert(!workflow.includes(forbidden),forbidden);
 assert((await readFile('.github/workflows/fonta-r2-backup.yml','utf8')).includes('group: fonta-r2-archive'));
+
+await assert.rejects(()=>regionalStep('lectura R2',()=>{throw new Error('secret=do-not-log');}),error=>
+  error.message==='Pas lectura R2: dades o integritat'&&!error.message.includes('secret'));
+await assert.rejects(()=>collectRegionalSources({fetcher:async()=>{throw new TypeError('fetch failed https://private.example/token');}}),error=>
+  error.message==='Pas estacions XEMA: connexió'&&!error.message.includes('private.example'));
+await assert.rejects(()=>collectRegionalSources({fetcher:async()=>new Response('',{status:503})}),/Pas estacions XEMA: HTTP 503/);
 
 const temp=await mkdtemp(join(tmpdir(),'fonta-regional-parent-')),nested=join(temp,'missing-parent','receipt');
 try{

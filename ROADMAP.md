@@ -1,6 +1,12 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
 
+## Incidències de les captures privades (14-11-2026)
+
+- El laboratori Fonta va fallar en quatre consultes Open-Meteo per un error de connexió; va conservar l’informe de fallada i no va promocionar cap model. El pressupost limitat de consultes impedeix reintents automàtics indiscriminats.
+- Un YouTube Short va fallar en una consulta externa i la següent execució va acabar correctament. No s’ha relançat la publicació per evitar duplicats.
+- La captura XEMA no indicava quin pas fallava. Una correcció en revisió afegeix el pas i el tipus d’error als logs sense exposar dades; cal observar una nova execució per identificar la causa exacta.
+
 ## Estat contrastat i feina executable (08-11-2026)
 
 - **Confirmació de l'usuari del 08/11:** els ginys del Garmin i dels iPhone

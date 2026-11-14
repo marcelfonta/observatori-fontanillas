@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-14 — Diagnosi privada de la captura regional XEMA (en revisió)
+
+- La captura regional informa del pas que falla (R2, estacions, lectures, model, validació o còpia) i d’una categoria segura d’error. No escriu URL, credencials ni dades meteorològiques als logs.
+- Els límits de consultes i el comportament de publicació no canvien.
+
 ## 2026-11-09 — Visor oficial de la sequera (en revisió)
 
 - L'accés a les fases administratives de l'ACA apunta a la nova ubicació de VISSEQ, comprovada amb mapa i dades actuals. Es retira l'avís de manteniment desfasat i es manté separada la cartografia pluviomètrica de Meteocat. La incrustació del visor encara no està validada.
