@@ -1,13 +1,30 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
-
 ## Incidències de les captures privades (14-11-2026)
 
 - El laboratori Fonta va fallar en quatre consultes Open-Meteo per un error de connexió; va conservar l’informe de fallada i no va promocionar cap model. El pressupost limitat de consultes impedeix reintents automàtics indiscriminats.
 - Un YouTube Short va fallar en una consulta externa i la següent execució va acabar correctament. No s’ha relançat la publicació per evitar duplicats.
 - La captura XEMA no indicava quin pas fallava. Una correcció en revisió afegeix el pas i el tipus d’error als logs sense exposar dades; cal observar una nova execució per identificar la causa exacta.
 
-## Estat contrastat i feina executable (08-11-2026)
+## Visor independent `visor.fontanillas.cat` (ampliació multimodel en revisió)
+
+Aplicació estàtica separada amb radar observat, mapa AROME HD i comparació puntual de vuit sortides de model. L'ampliació en revisió afegeix una vista de coincidència per variable i hora, sense expressar probabilitats d'encert; la pluja de la pròxima hora s'etiqueta com a previsió de models. Les lectures ACA continuen al mapa «Aigua i rius» de Medi ambient. No canvia el model operatiu Fonta ni el Worker.
+- **Nova ampliació en PR:** evolució de 24 hores amb mediana i dispersió de les famílies de models, comparació en cinc punts del territori i comprovació retrospectiva de temperatura amb l'estació i una previsió arxivada emesa 24 hores abans. La darrera comparació es carrega només a petició. El radar continua mostrant exclusivament observacions: RainViewer va retirar els fotogrames futurs de l'API pública l'1/1/2026. La pluja pròxima és una previsió de models separada.
+- [ ] Validar amb dades reals a la previsualització la cobertura dels cinc punts, els temps de càrrega i la sèrie de 48 hores abans de publicar. Si falta una font, mostrar absència en lloc d'inferir valors.
+- [ ] Revisar en previsualització la cobertura real dels nous models (ARPEGE Europa, GEM global i UKMO global), la resposta en mòbil i la latència amb vuit peticions per punt. Mantenir una sortida absent com a «No disponible».
+- [ ] Validar previsualització en ordinador i mòbil, fonts actives i comportament amb errors; revisar i fusionar el PR.
+- **Publicat el 10/11:** el projecte Pages separat serveix `visor.fontanillas.cat` després de l’aprovació humana del PR #370. Es manté fora dels menús de la web principal durant l’avaluació. La primera prova real ha detectat un desajust en el format de l’hora dels models; correcció en curs.
+- [ ] Després de la primera prova real, prioritzar noves capes segons qualitat de la font, llicència i utilitat, sense confondre mesures amb prediccions.
+
+
+## Estat contrastat i feina executable (09-11-2026)
+
+- **Visor de sequera ACA verificat en producció (09/11):** el PR #367 és a
+  `main`. A `/medi-ambient`, la pestanya «Aigua i sequera → Sequera» enllaça
+  al nou `https://sequera.aca.gencat.cat/visseq/`. El destí obre la pàgina
+  oficial «Visor de la Sequera» amb l'accés al visor. Ja no es presenta
+  l'antiga pàgina de manteniment com a mapa. Queda pendent comprovar si l'ACA
+  autoritza i permet la incrustació funcional; l'enllaç extern és operatiu.
 
 - **Confirmació de l'usuari del 08/11:** els ginys del Garmin i dels iPhone
   funcionen, i les publicacions tornen a sortir bé. Es tanca el seguiment del
@@ -78,7 +95,7 @@ els continguts nous es tradueixen a català, castellà, anglès i francès.
   l'ACA i datada setembre de 2026. Actualitzar la
   cartografia quan Meteocat publiqui un nou mes, sense assumir cap URL futura.
 
-Actualitzat el 2 de novembre de 2026. Aquest document recull feina pendent i el
+Actualitzat el 9 de novembre de 2026. Aquest document recull feina pendent i el
 context necessari per entendre-la. Les fases
 completades es documenten a [`CHANGELOG.md`](CHANGELOG.md), als informes de
 `docs/` i a l’historial Git.
@@ -369,9 +386,9 @@ de la Raspberry va acabar amb resultat correcte.
   en producció l'absència segura quan la font oficial falla.
 - [ ] Validar en staging i en dispositius reals els visors de l'ACA i Copernicus,
   incloent les versions mòbils, abans de desplegar-los a producció.
-- [ ] Quan l'ACA retorni el mapa interactiu al servei, comprovar-ne el contingut
-  real i decidir si es pot recuperar la vista incrustada. Mentrestant, la pestanya
-  ha de mostrar accessos oficials sense presentar la pàgina de manteniment com un mapa.
+- [ ] Decidir si es pot recuperar la vista incrustada després de validar els
+  permisos i el funcionament de l'iframe del nou VISSEQ. Fins aleshores,
+  mantenir l'accés extern oficial verificat.
 
 ### Pàgina de canvi climàtic de referència
 

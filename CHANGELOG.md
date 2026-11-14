@@ -5,6 +5,44 @@
 - La captura regional informa del pas que falla (R2, estacions, lectures, model, validació o còpia) i d’una categoria segura d’error. No escriu URL, credencials ni dades meteorològiques als logs.
 - Els límits de consultes i el comportament de publicació no canvien.
 
+## 2026-11-11 — Evolució i comprovació del visor (en revisió)
+
+- Gràfic de 24 hores amb mediana, interval i model destacat; cinc punts territorials amb valors puntuals, sense interpolar-los en un mapa continu.
+- Comparació opcional de la temperatura observada per l'estació amb la previsió Open-Meteo arxivada 24 hores abans de cada hora; s'indica el nombre d'hores comparables i l'error absolut mitjà.
+- Radar limitat als fotogrames observats de RainViewer, que ja no ofereix fotogrames futurs en l'API pública. La pluja de la pròxima hora continua indicada separadament com a previsió de models.
+
+## 2026-11-11 — Comparació del visor visible en entrar
+
+- Les dues files de models es mostren obertes d'entrada, amb la variable, l'hora i les fonts a la vista. El bloc encara es pot plegar quan cal més espai per al mapa.
+
+## 2026-11-11 — Models del visor en dues files
+
+- La comparació desplegable passa sota el mapa i mostra els vuit models en dues files de quatre a l'ordinador. En pantalles més estretes es distribueix en dues columnes o una, sense desplaçament lateral.
+
+## 2026-11-11 — Comparació de models més compacta al visor
+
+- El visor mostra la síntesi de coincidència i manté la llista dels vuit models dins d'un desplegable accessible. Les dades i els filtres continuen disponibles sense imposar una columna llarga al mapa.
+
+## 2026-11-11 — Radar i models del visor (en revisió)
+
+- El radar queda limitat als fotogrames observats; al costat es mostra, amb etiqueta de previsió, la pluja estimada per les famílies de models durant la pròxima hora.
+- La pestanya AROME passa a dir-se «Models»: per defecte mostra la coincidència puntual de vuit sortides i una línia temporal pròpia, i permet obrir el mapa territorial AROME HD. El detall permet destacar un model i compara els valors amb barres.
+- Es retira «Aigua» d'aquest visor perquè el mapa de cabals, pluja i embassaments ja és a Medi ambient. La coincidència puntual no es representa com una capa territorial ni com una probabilitat d'encert.
+
+## 2026-11-11 — Hora disponible per a la comparació del visor (en revisió)
+
+- La comparació selecciona el primer pas horari disponible quan el radar o un fotograma AROME tenen minuts; així les sèries horàries no queden buides per una coincidència exacta impossible.
+
+## 2026-11-10 — Comparació multimodel del visor (en revisió)
+
+- El visor compara vuit sortides d’Open-Meteo a la mateixa hora i mostra mediana, interval i nombre de fonts per temperatura, pluja, vent i núvols. El recompte evita duplicar Best Match i la família Météo-France; l’acord no es presenta com a probabilitat d’encert.
+- Es conserva l’absència de dades com a absència i es reutilitzen durant cinc minuts les sèries per punt per no repetir peticions en canviar l’hora o la variable.
+
+## 2026-11-09 — Visor del territori independent (en revisió)
+
+- Primera versió de `visor/`: radar temporal, mapes AROME, lectures de l’ACA i comparació puntual dels models Best Match, ECMWF, GFS, ICON i AROME HD.
+- Cada vista distingeix observació i predicció, mostra font i hora, i informa quan una font no respon. Encara no està enllaçada ni publicada a `visor.fontanillas.cat`.
+
 ## 2026-11-09 — Visor oficial de la sequera (en revisió)
 
 - L'accés a les fases administratives de l'ACA apunta a la nova ubicació de VISSEQ, comprovada amb mapa i dades actuals. Es retira l'avís de manteniment desfasat i es manté separada la cartografia pluviomètrica de Meteocat. La incrustació del visor encara no està validada.
