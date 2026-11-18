@@ -1,45 +1,24 @@
 {
   "schema": 1,
   "version": "0.2.0",
-  "generatedAt": "2026-11-17T17:35:27.162Z",
+  "generatedAt": "2026-11-18T02:24:30.188Z",
   "station": "ISANTC198",
   "mode": "shadow",
   "productionEnabled": false,
   "status": "collecting",
-  "latestCaptureAt": "2026-11-17T02:54:03.435Z",
-  "captureCount": 93,
-  "eligibleObservedDays": 51,
+  "latestCaptureAt": "2026-11-18T02:24:28.490Z",
+  "captureCount": 94,
+  "eligibleObservedDays": 52,
   "pairedDays": 25,
   "evaluatedDays": 0,
   "trainingAvailableDays": 25,
-  "targetDate": "2026-11-18",
+  "targetDate": "2026-11-19",
   "forecast": [
     {
-      "model": "best_match",
-      "date": "2026-11-18",
-      "max": 22.2,
-      "min": 16.9,
-      "complete": true
-    },
-    {
-      "model": "ecmwf_ifs025",
-      "date": "2026-11-18",
-      "max": 21.8,
-      "min": 15.5,
-      "complete": true
-    },
-    {
-      "model": "icon_eu",
-      "date": "2026-11-18",
-      "max": 21.5,
-      "min": 16.8,
-      "complete": true
-    },
-    {
       "model": "meteofrance_arome_france",
-      "date": "2026-11-18",
-      "max": 21.8,
-      "min": 14,
+      "date": "2026-11-19",
+      "max": 19.7,
+      "min": 13.9,
       "complete": true
     }
   ],
@@ -287,16 +266,16 @@
   "codeRevision": "36c7ddf06aff12051416aeb690c2b4da75a10add",
   "diagnostics": {
     "schema": 1,
-    "asOf": "2026-11-17T17:35:27.162Z",
+    "asOf": "2026-11-18T02:24:30.188Z",
     "execution": {
       "event": "schedule",
-      "runId": "44138638569"
+      "runId": "44222927393"
     },
     "firstCaptureAt": "2026-09-20T12:12:22.031Z",
     "budget": {
-      "captureCount": 93,
+      "captureCount": 94,
       "captureLimit": 180,
-      "bytes": 34479938,
+      "bytes": 34812624,
       "byteLimit": 104857600,
       "reviewNeeded": false
     },
@@ -308,20 +287,10 @@
       "exploratoryRequired": 14
     },
     "quality": {
-      "daysSeen": 60,
-      "accepted": 51,
+      "daysSeen": 61,
+      "accepted": 52,
       "rejected": 9,
       "recent": [
-        {
-          "date": "2026-11-03",
-          "availableAt": "2026-11-05T00:51:28.672Z",
-          "eligible": true,
-          "coverage": 0.947,
-          "samples": 289,
-          "expectedSamples": 288,
-          "maxGapMinutes": 6.517,
-          "reasons": []
-        },
         {
           "date": "2026-11-04",
           "availableAt": "2026-11-06T00:56:57.891Z",
@@ -453,12 +422,22 @@
         },
         {
           "date": "2026-11-16",
-          "availableAt": "2026-11-17T02:54:03.423Z",
+          "availableAt": "2026-11-18T02:24:28.391Z",
           "eligible": true,
           "coverage": 0.946,
           "samples": 288,
           "expectedSamples": 288,
           "maxGapMinutes": 6.517,
+          "reasons": []
+        },
+        {
+          "date": "2026-11-17",
+          "availableAt": "2026-11-18T02:24:28.391Z",
+          "eligible": true,
+          "coverage": 0.943,
+          "samples": 288,
+          "expectedSamples": 288,
+          "maxGapMinutes": 7.6,
           "reasons": []
         }
       ]
@@ -466,46 +445,40 @@
     "sources": [
       {
         "model": "best_match",
-        "state": "available",
-        "receivedAt": "2026-11-17T02:54:02.546Z",
+        "state": "missing",
+        "receivedAt": null,
         "modelRunAt": null,
-        "runIdentity": "not-provided-by-forecast-api"
+        "runIdentity": "unknown"
       },
       {
         "model": "ecmwf_ifs025",
-        "state": "available",
-        "receivedAt": "2026-11-17T02:54:02.565Z",
+        "state": "missing",
+        "receivedAt": null,
         "modelRunAt": null,
-        "runIdentity": "not-provided-by-forecast-api"
+        "runIdentity": "unknown"
       },
       {
         "model": "icon_eu",
-        "state": "available",
-        "receivedAt": "2026-11-17T02:54:02.583Z",
+        "state": "missing",
+        "receivedAt": null,
         "modelRunAt": null,
-        "runIdentity": "not-provided-by-forecast-api"
+        "runIdentity": "unknown"
       },
       {
         "model": "meteofrance_arome_france",
         "state": "available",
-        "receivedAt": "2026-11-17T02:54:02.601Z",
+        "receivedAt": "2026-11-18T02:24:27.323Z",
         "modelRunAt": null,
         "runIdentity": "not-provided-by-forecast-api"
       },
       {
         "model": "observations",
         "state": "available",
-        "receivedAt": "2026-11-17T02:54:03.423Z",
+        "receivedAt": "2026-11-18T02:24:28.391Z",
         "modelRunAt": null
       }
     ],
     "recentCaptures": [
-      {
-        "id": "2026-11-07-pm",
-        "capturedAt": "2026-11-07T23:37:14.804Z",
-        "issueState": "outside-current-policy",
-        "failureCount": 0
-      },
       {
         "id": "2026-11-08-am",
         "capturedAt": "2026-11-08T15:08:03.010Z",
@@ -583,9 +556,25 @@
         "capturedAt": "2026-11-17T02:54:03.435Z",
         "issueState": "outside-current-policy",
         "failureCount": 0
+      },
+      {
+        "id": "2026-11-18-am",
+        "capturedAt": "2026-11-18T02:24:28.490Z",
+        "issueState": "outside-current-policy",
+        "failureCount": 3
       }
     ],
-    "latestFailures": [],
+    "latestFailures": [
+      {
+        "source": "best_match"
+      },
+      {
+        "source": "ecmwf_ifs025"
+      },
+      {
+        "source": "icon_eu"
+      }
+    ],
     "cadence": {
       "utcHours": [
         8,
