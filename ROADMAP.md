@@ -1,10 +1,10 @@
 # Roadmap viu — cap a un observatori meteorològic local de referència
 
-## Incidències de les captures privades (14-11-2026)
+## Estat operatiu contrastat (18-11-2026)
 
-- El laboratori Fonta va fallar en quatre consultes Open-Meteo per un error de connexió; va conservar l’informe de fallada i no va promocionar cap model. El pressupost limitat de consultes impedeix reintents automàtics indiscriminats.
-- Un YouTube Short va fallar en una consulta externa i la següent execució va acabar correctament. No s’ha relançat la publicació per evitar duplicats.
-- La captura XEMA no indicava quin pas fallava. Una correcció en revisió afegeix el pas i el tipus d’error als logs sense exposar dades; cal observar una nova execució per identificar la causa exacta.
+- L'usuari confirma que el timelapse i les publicacions ordinàries funcionen i considera resolta la incidència #299, que ja estava tancada a GitHub. Garmin i les apps d'iPhone també funcionen en ús normal. Les proves de lectura antiga, falta de xarxa i avís oficial real són controls de qualitat separats, no incidències operatives obertes.
+- El PR #381 és a `main`: les captures privades Fonta i XEMA reintenten una vegada errors transitoris de font. Encara falta observar una captura posterior a la fusió. L'últim resum públic Fonta registra 94 captures i 25 dies aparellats, però 0 dies avaluats; XEMA registra 47 captures i 244 parelles estació-dia. Cap model s'ha promocionat.
+- L'auditoria SEO pública del 18/11 passa a sis rutes representatives i al 404 editorial. Els dos service workers i els quatre manifestos utilitzats per la PWA responen 200; les capçaleres dels service workers i del manifest català indiquen `no-cache, must-revalidate`. Això no substitueix la prova d'actualització d'una instal·lació existent ni un rastreig nou de Search Console. Vegeu `docs/VALIDATION-2026-11-18.md`.
 
 ## Visor independent `visor.fontanillas.cat` (ampliació multimodel en revisió)
 
@@ -63,9 +63,9 @@ Aplicació estàtica separada amb radar observat, mapa AROME HD i comparació pu
 - **Fet:** l'auditoria SEO de producció s'ha repetit el 31/10 i ha passat per les rutes de mostra i el 404 editorial. Les 82 proves locals de navegador i `npm run check` també passen. Les proves i els seus límits consten a [`docs/ROADMAP-AUDIT-2026-10-31.md`](docs/ROADMAP-AUDIT-2026-10-31.md). L'informe d'indexació de Search Console (actualitzat el 23/10) mostra 55 URL sense indexar i cap d'indexada; el sitemap es va llegir correctament el 30/10 i una prova en viu del 31/10 confirma que la portada actual es pot indexar. Cal esperar un rastreig nou abans d'atribuir les exclusions actuals a les correccions recents.
 - **Agent i usuari:** seguir la pauta editorial i visual dels quatre idiomes i l'auditoria d'accessibilitat en dispositius reals de [`docs/SITE-AUDIT-2026-10-28.md`](docs/SITE-AUDIT-2026-10-28.md).
 - **Agent:** dissenyar una comparació climàtica només si es pot corregir la diferència entre la capital municipal de l'Atles i el sensor Fontanillas; la referència oficial 1991–2020 i els seus límits ja estan documentats.
-- **Fet:** l'usuari ha validat visualment el timelapse del 29/10 amb el CO₂ i les tres lectures XVPCA visibles durant el vídeo. El 31/10 ha confirmat que les publicacions del dia i el timelapse han sortit bé, amb el format desitjat. Encara cal conservar una comprovació per canal i d'absència de duplicats abans de tancar la incidència #299.
+- **Fet:** l'usuari ha validat visualment el timelapse del 29/10 amb el CO₂ i les tres lectures XVPCA visibles durant el vídeo. Ha seguit revisant les publicacions i el 18/11 confirma que tot funciona bé. La incidència #299 és tancada; qualsevol regressió nova es documentarà per separat.
 
-La revisió visual i editorial dels quatre idiomes, l'accessibilitat amb lector de pantalla, l'índex real a Search Console i la comprovació per canal de les publicacions continuen pendents d'evidència en dispositius o serveis reals. La confirmació de l'usuari del 31/10 acredita el resultat visible d'avui, però no substitueix una revisió per canal ni descarta duplicats. Les proves de codi i un HTTP 200 no tanquen aquests punts.
+La revisió visual i editorial dels quatre idiomes, l'accessibilitat amb lector de pantalla i l'índex real a Search Console continuen pendents d'evidència en dispositius o serveis reals. L'usuari considera satisfactori el funcionament ordinari de les publicacions; les proves de codi i un HTTP 200, per si soles, no acreditarien aquest resultat.
 
 ## Atles ambiental de Medi Ambient (publicat, pendent de validació real)
 
@@ -165,10 +165,8 @@ justifiqui.
 
 ### Widgets personals
 
-El widget Garmin està instal·lat al fēnix 7X Pro i va mostrar una lectura
-recent després de reconnectar Garmin Connect per Bluetooth. L'app de l'iPhone
-15 Pro també es va instal·lar. El 08/11 l'usuari confirma que Garmin i iPhone
-funcionen. Queden només les proves de dades antigues i de manca de xarxa.
+El 18/11 l'usuari confirma que Garmin i les apps d'iPhone funcionen bé en ús
+normal. Queden només les proves específiques de dades antigues i de manca de xarxa.
 - [ ] Validar al Garmin i als iPhone les lectures antigues, l'absència de xarxa
   i l'hora visible de l'última actualització.
 
@@ -232,8 +230,9 @@ la finestra de 30 dies, estudiar la reducció de consultes o el pla de Buffer.
 Per TikTok, l'alternativa immediata és la càrrega manual del vídeo vertical;
 Direct Post exigeix aprovació de l'app i del permís abans d'automatitzar-la.
 
-- [ ] Confirmar específicament l'absència de duplicats en tots els canals
-  habilitats. El 08/11 l'usuari confirma que les publicacions funcionen bé.
+Funcionament ordinari confirmat per l'usuari, sense duplicats detectats als
+canals que revisa. Si apareix un duplicat nou, s'obrirà una incidència nova amb
+el canal i l'hora.
 
 La millora de qualitat del timelapse a 1280 × 720 i la variant vertical a
 720 × 1280 s’han validat en una mostra sintètica amb límit de taxa i un sol fil.
@@ -258,13 +257,11 @@ per l'usuari el 30/10, confirma visualment el CO₂, la franja inferior i les tr
 lectures XVPCA visibles. Aquesta validació no acredita per si sola la publicació
 a cada xarxa ni l'absència de duplicats.
 
-El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) continua oberta. El generador amb reducció fotograma a fotograma va superar la prova real i es va instal·lar el 23/10. El 25/10 els vídeos del 23 i del 24 responen 200 al Worker, mentre que el del 21 encara respon 404; la generació posterior al canvi, per tant, funciona, però l'episodi perdut no s'ha recuperat. El timelapse del 23/10 s’ha publicat a Instagram i el workflow de YouTube del mateix dia va acabar correctament. El vídeo automàtic del 29/10 ja té validació visual amb CO₂ i XVPCA; encara falta evidència de la seva publicació a cada canal habilitat, sense duplicats, abans de tancar #299. El panell d'administració pot assenyalar dies programats absents.
+El 21 d'octubre, dia programat, no es va preparar cap vídeo complet: FFmpeg va acabar amb `Killed` en una Raspberry de 415 MiB. La incidència [#299](https://github.com/marcelfonta/observatori-fontanillas/issues/299) es va tancar el 04/11 després d'instal·lar el generador amb menys memòria i observar les publicacions següents. El vídeo perdut del 21/10 no es republica per evitar duplicats. L'usuari ha revisat el timelapse i les publicacions posteriors i el 18/11 en confirma el funcionament. El panell d'administració pot assenyalar dies programats absents.
 
-- [ ] Confirmar en una jornada real que el timelapse arriba a tots els canals
-  habilitats, especialment TikTok, sense duplicats i amb un màxim d’una
-  publicació diària.
-- [ ] Validar una franja automàtica completa de Meta abans de retirar els
-  controls manuals de recuperació.
+Funcionament real del timelapse i dels canals habilitats confirmat per la
+revisió ordinària de l'usuari. Els controls manuals de recuperació es conserven
+per a futures incidències puntuals.
 
 **Fet quan:** hi ha evidència d’una publicació completa i correcta a cada canal
 durant una execució automàtica real.
@@ -819,7 +816,7 @@ benefici demostrat:
 ## Ordre recomanat de pròxims paquets
 
 0. **Idiomes (publicats, pendents de revisió editorial real):** catàleg dels 1.605 textos inventariats en 13 documents públics, atributs accessibles, metadades, pàgines independents i manifestos de la PWA en castellà, anglès i francès. Vegeu `docs/I18N-AUDIT-2026-10-27.md` per a l'abast i els límits. Cal la validació visual i editorial als dispositius reals.
-1. **Fiabilitat operativa:** comprovar la PWA i el push en una instal·lació existent després de corregir el caché; observar el proper vespre i timelapse reals sense duplicats a cada canal; mantenir #299 obert fins a aquesta evidència. Falta observar un avís oficial real.
+1. **Fiabilitat operativa:** comprovar la PWA i el push en una instal·lació existent després de corregir el caché; observar les pròximes captures Fonta i XEMA amb el reintent del PR #381 i un avís oficial real quan n'hi hagi. La #299 ja és tancada.
 2. **Clima:** validar visualment el CO₂ ja integrat a webcam i peces diàries; verificar la nova sèrie llarga NOAA, afegir sèries oficials catalanes de temperatura/precipitació amb mètode comparable i completar la revisió editorial. Les traduccions publicades continuen pendents de revisió humana. La ruta i la primera lectura ja són públiques.
 3. **Qualitat real:** provar en iPhone, Android i ordinador els visors, els controls tàctils, l’accessibilitat i la recuperació sense connexió; repetir l’auditoria SEO a Search Console.
 4. **Contingut:** revisió docent de la primera fitxa d’Aula oberta, guia local estacional i següent resum periòdic només amb cobertura suficient.

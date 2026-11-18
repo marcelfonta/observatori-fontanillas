@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-18 — Validació operativa i roadmap (en revisió)
+
+- La incidència #299 ja tancada queda reflectida al roadmap després de la confirmació de l'usuari sobre timelapse, publicacions, Garmin i apps d'iPhone. Les proves de lectura antiga, falta de xarxa i avís oficial real es mantenen com a controls de qualitat.
+- L'auditoria SEO pública i les capçaleres dels service workers i manifestos s'han comprovat sense modificar producció. Es documenten els límits d'aquesta prova i l'estat de les captures Fonta i XEMA a `docs/VALIDATION-2026-11-18.md`.
+
 ## 2026-11-18 — Reintents acotats de les captures Fonta i XEMA (en revisió)
 
 - Les captures privades reintenten una vegada les consultes públiques que fallen per connexió, temps esgotat, limitació temporal o error de servidor. Els errors de dades, de validació i els HTTP 4xx no recuperables continuen aturant o degradant la captura; no es substitueixen valors ni es fan publicacions.
