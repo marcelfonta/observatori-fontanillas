@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-18 — Reintents acotats de les captures Fonta i XEMA (en revisió)
+
+- Les captures privades reintenten una vegada les consultes públiques que fallen per connexió, temps esgotat, limitació temporal o error de servidor. Els errors de dades, de validació i els HTTP 4xx no recuperables continuen aturant o degradant la captura; no es substitueixen valors ni es fan publicacions.
+- Els avisos dels dies 15–18/11 corresponen a fallades de connexió d'Open-Meteo. El laboratori Fonta ha desat les captures parcials abans d'avisar; XEMA no ha desat una captura nova en les execucions fallides.
+
 ## 2026-11-14 — Annex CECAT d'un sol mapa (en revisió)
 
 - Els annexos amb un únic mapa de 24 hores, com el comunicat INUNCAT del 14/11 a les 17:03, queden sense peça i es registren com a format no compatible, sense marcar el workflow com a error. La targeta de quatre franges i la detecció estricta de discrepàncies es mantenen.

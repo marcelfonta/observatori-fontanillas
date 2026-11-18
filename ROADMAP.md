@@ -751,6 +751,7 @@ publicació automàtica requerirà autorització específica.
 
 ### Model Fonta i qualitat de l’estació
 
+- [ ] Observar les primeres captures Fonta i XEMA després dels reintents acotats del 18/11. Si Open-Meteo continua fallant, conservar l'error visible i investigar disponibilitat i horari de la font abans d'ampliar el pilot.
 - [ ] Avaluar AROME HD i AROME France sobre els mateixos dies prospectius abans
   de decidir una nova versió del model Fonta.
 - [ ] Activar el pilot regional XEMA només després d’una captura manual
