@@ -24,12 +24,12 @@ export async function regionalStep(label,operation){
 
 export async function collectRegionalSources({now=new Date().toISOString(),fetcher=fetch}={}){
   const today=localDay(now),start=nextDay(today,-10);
-  const stations=await regionalStep('estacions XEMA',()=>publicSource(xemaStationMetadataRequest(),{fetcher,maxBytes:256*1024}));
+  const stations=await regionalStep('estacions XEMA',()=>publicSource(xemaStationMetadataRequest(),{fetcher,maxBytes:256*1024,retries:1}));
   const catalog=await regionalStep('catàleg XEMA',()=>normalizeXemaStations(stations.raw));
-  const daily=await regionalStep('lectures diàries XEMA',()=>publicSource(xemaDailyRequest(start,today),{fetcher,maxBytes:1024*1024}));
+  const daily=await regionalStep('lectures diàries XEMA',()=>publicSource(xemaDailyRequest(start,today),{fetcher,maxBytes:1024*1024,retries:1}));
   const forecasts=[];
   for(const model of XEMA_DAILY_MODELS){
-    const source=await regionalStep(`model ${model}`,()=>publicSource(regionalForecastRequest(model,catalog),{fetcher,maxBytes:512*1024}));
+    const source=await regionalStep(`model ${model}`,()=>publicSource(regionalForecastRequest(model,catalog),{fetcher,maxBytes:512*1024,retries:1}));
     forecasts.push({model,...source});
   }
   const capturedAt=new Date().toISOString();

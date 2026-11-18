@@ -2,6 +2,7 @@ import {mkdir,readdir,writeFile,stat} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {FONTA,normalizeForecast,observedDays,evaluateFonta} from '../../src/core/fonta-model.js';
+import {publicSource} from './io.mjs';
 import {readArchive} from './archive.mjs';
 import {freezeComparison} from '../../src/core/fonta-prospective.js';
 import {FONTA_ISSUE_POLICY,fontaArchiveSlot} from '../../src/core/fonta-issue-policy.js';
@@ -17,11 +18,7 @@ if(names.length>=180)throw new Error('Límit pilot de 180 captures. Revisar arxi
 const total=(await Promise.all(names.map(n=>stat(join(directory,n))))).reduce((s,x)=>s+x.size,0);
 if(total>100*1024*1024)throw new Error('Pressupost pilot de 100 MiB assolit; cap arxiu eliminat.');
 async function get(url){
-  const response=await fetch(url,{signal:AbortSignal.timeout(25000),redirect:'error'});
-  if(!response.ok)throw new Error('HTTP '+response.status);
-  const text=await response.text();if(text.length>2*1024*1024)throw new Error('Resposta massa gran');
-  const raw=JSON.parse(text);
-  return {raw,sha256:createHash('sha256').update(JSON.stringify(raw)).digest('hex'),hashFormat:'JSON.stringify',receivedAt:new Date().toISOString(),url};
+  return publicSource(url,{retries:1});
 }
 const forecasts=[],sources=[],failures=[],experimentalFailures=[];
 for(const model of [...FONTA.models,...FONTA.experimentalModels]){

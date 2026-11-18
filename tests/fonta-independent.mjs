@@ -55,6 +55,19 @@ for(const date of ['2026-03-29','2026-10-25','2026-09-19']){
   assert(xemaRequest(date).includes('%24301')===false);assert(new URL(xemaRequest(date)).searchParams.get('$limit')==='301');
 }
 await assert.rejects(()=>publicSource('https://example.invalid',{maxBytes:4,fetcher:async()=>new Response('12345')}),/gran/);
+let attempts=0,waits=[];
+const recovered=await publicSource('https://example.invalid',{retries:1,
+  fetcher:async()=>{attempts++;if(attempts===1)throw new TypeError('fetch failed');return Response.json({ok:true});},
+  wait:async ms=>waits.push(ms)});
+assert.equal(attempts,2);assert.deepEqual(waits,[1000]);assert.deepEqual(recovered.raw,{ok:true});
+attempts=0;
+await assert.rejects(()=>publicSource('https://example.invalid',{retries:1,
+  fetcher:async()=>{attempts++;return new Response('missing',{status:404});},wait:async()=>{}}),/HTTP 404/);
+assert.equal(attempts,1);
+attempts=0;
+await assert.rejects(()=>publicSource('https://example.invalid',{retries:1,
+  fetcher:async()=>{attempts++;return Response.json({bad:true},{status:503});},wait:async()=>{}}),/HTTP 503/);
+assert.equal(attempts,2);
 assert.throws(()=>checkSource({raw:{},receivedAt:'bad'}));
 
 const temp=await mkdtemp(join(tmpdir(),'fonta-independent-'));
