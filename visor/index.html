@@ -18,7 +18,7 @@
   <main>
     <section class="tools" aria-labelledby="title">
       <div class="heading"><span>OBSERVATORI FONTANILLAS</span><h1 id="title">Atles de previsió</h1></div>
-      <label>Model<select id="model"><optgroup label="Camps regionals · Météo-France"><option value="native-arome">AROME · Catalunya</option><option value="native-arpege">ARPEGE · Catalunya</option></optgroup><optgroup label="Comparació per famílies"><option value="combined">Consens multimodel</option><option value="agreement">Coincidència dels models</option></optgroup><optgroup id="local-models" label="Models individuals · mostreig"></optgroup></select></label>
+      <label>Model<select id="model"><optgroup label="Camps regionals · Météo-France"><option value="native-compare">Comparar AROME i ARPEGE</option><option value="native-arome">AROME · Catalunya</option><option value="native-arpege">ARPEGE · Catalunya</option></optgroup><optgroup label="Comparació per famílies"><option value="combined">Consens multimodel</option><option value="agreement">Coincidència dels models</option></optgroup><optgroup id="local-models" label="Models individuals · mostreig"></optgroup></select></label>
       <div class="variable"><span id="variable-label">Variable</span><div role="group" aria-labelledby="variable-label" id="variables">
         <button data-variable="temperature" aria-pressed="true">Temperatura</button><button data-variable="rain" aria-pressed="false">Pluja</button><button data-variable="wind" aria-pressed="false">Vent</button><button data-variable="clouds" aria-pressed="false">Núvols</button>
       </div></div>
@@ -26,6 +26,11 @@
     </section>
     <section class="canvas" aria-label="Predicció al territori">
       <div id="map" aria-label="Mapa interactiu de previsió"></div>
+      <div id="curtain" hidden>
+        <div class="curtain-line"></div><div class="curtain-labels"><span>AROME</span><span>ARPEGE</span></div>
+        <input type="range" min="0" max="100" value="50" id="divider" aria-label="Posició de la cortina entre AROME i ARPEGE">
+      </div>
+      <div id="frame-time" hidden></div>
       <div class="map-status"><span role="status" id="status">Carregant la predicció…</span> <button id="retry" hidden>Reintenta</button></div>
       <button class="recenter" id="center" aria-label="Centra la cobertura del model" title="Centra el mapa">⌖</button>
       <div class="legend"><strong id="legend-title"></strong><div id="scale"></div></div>

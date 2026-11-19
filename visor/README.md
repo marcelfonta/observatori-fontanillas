@@ -14,3 +14,5 @@ El radar, el mapa natiu AROME, els meteogrames i la verificació retrospectiva e
 - Estació Fontanillas: lectura local via `widget-observation`. Si té més de 30 minuts, s’etiqueta com a no recent.
 
 No hi ha avisos oficials, predicció de tempestes ni índex de risc derivat en aquesta primera versió. Les fallades de font es mostren com a absència de dades, mai com a zero. Mapa base: OpenStreetMap.
+
+La cortina compara les dues imatges regionals de Météo-France. L’hora escrita sobre el mapa correspon al fotograma visible. En avançar el temps, les dues imatges noves es carreguen abans de substituir les anteriors. Si una font falla, el visor retira la parella i permet reintentar.

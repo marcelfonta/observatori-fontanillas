@@ -98,17 +98,24 @@ function draw() {
     if(key===nativeKey)return;
     nativeKey=key;loadingImage=true;
     el('retry').hidden=true;
-    el('status').textContent='Carregant el camp de '+model.slice(7).toUpperCase()+'…';
+    const name=model==='native-compare'?'AROME i ARPEGE':model.slice(7).toUpperCase();
+    el('status').textContent='Carregant '+name+' · '+clock.format(valid)+'…';
     el('play').disabled=el('hour').disabled=false;
     el('prev').disabled=index===0;el('next').disabled=index===24;
     regional.show(model.slice(7),variable,valid.toISOString()).then(shown=>{
-      if(shown && nativeKey===key)el('status').textContent=model.slice(7).toUpperCase()+' · camp regional';
+      if(shown && nativeKey===key){
+        el('frame-time').textContent=clock.format(valid);
+        el('frame-time').hidden=false;
+        el('curtain').hidden=model!=='native-compare';
+        el('status').textContent=name+' · '+MODEL_VARIABLES[variable].label;
+      }
     }).catch(()=>{
       if(nativeKey!==key)return;
-      stop();el('retry').hidden=false;el('status').textContent='Capa no disponible per a aquesta hora.';
+      el('curtain').hidden=true;el('frame-time').hidden=true;stop();el('retry').hidden=false;el('status').textContent='Capa no disponible per a aquesta hora.';
     }).finally(()=>{if(nativeKey===key)loadingImage=false;});
     return;
   }
+  el('frame-time').textContent=clock.format(valid);el('frame-time').hidden=false;
   let coverage = 0;
   const values = [];
   markers.forEach((marker,point) => {
@@ -198,6 +205,7 @@ function start() {
   const samples=L.layerGroup([overlay,...markers]);
   let wasNative=false;
   function switchModel(){
+    el('curtain').hidden=true;el('frame-time').hidden=true;
     stop();regional.clear();nativeKey='';loadingImage=false;
     if(native()!==wasNative){
       if(native()){for(const layer of samples.getLayers())map.removeLayer(layer);map.removeLayer(samples);}
@@ -212,6 +220,8 @@ function start() {
   el('variables').addEventListener('click',event=>{
     const button = event.target.closest('[data-variable]');
     if (!button) return;
+    if(variable===button.dataset.variable)return;
+    if(native()){regional.clear();nativeKey='';el('curtain').hidden=true;el('frame-time').hidden=true;}
     variable = button.dataset.variable;
     for(const b of el('variables').children) b.setAttribute('aria-pressed',String(b===button));
     legend(); draw();
@@ -224,6 +234,12 @@ function start() {
   el('hour').oninput=()=>{stop();index=Number(el('hour').value);draw();};
   el('prev').onclick=()=>{stop();index=Math.max(0,index-1);draw();};
   el('next').onclick=()=>{stop();index=Math.min(24,index+1);draw();};
+  el('divider').oninput=event=>{
+    const value=Number(event.target.value);
+    regional.setSplit(value);
+    el('curtain').style.setProperty('--split',value+'%');
+    event.target.setAttribute('aria-valuetext','AROME '+value+' %, ARPEGE '+(100-value)+' %');
+  };
   el('center').onclick=setExtent;
   el('retry').onclick=()=>{if(native()){nativeKey='';draw();}else void load();};
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
