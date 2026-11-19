@@ -161,3 +161,11 @@ body.map-expanded{overflow:hidden}
 .hourly-time-link{background:none;border:0;color:#94dcfb;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-align:left;font:inherit;padding:3px 0}
 .hourly-time-link:hover{color:#fff}
 @media(max-width:700px){.meteogram-models{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.meteogram-model-option{padding:8px;font-size:11px;min-width:0}.meteogram-variables button{flex:1 1 43%}}
+
+/* Verification laboratory: three metrics, clear signed-bias interpretation. */
+.verification-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:15px 0 20px}
+.verification-metrics>div{display:flex;flex-direction:column;gap:7px;background:#102f3b;border:1px solid #3a6472;border-radius:12px;padding:16px;min-width:0}
+.verification-metrics span{color:#b6d4dc;font-size:12px;font-weight:700}
+.verification-metrics strong{font-size:clamp(21px,2.4vw,32px);line-height:1.2;font-variant-numeric:tabular-nums}
+.verification-metrics small{font-size:11px;line-height:1.5;color:#a9c6d1}
+@media(max-width:700px){.verification-metrics{grid-template-columns:1fr;gap:9px}.verification-metrics>div{padding:12px}}
