@@ -12,6 +12,11 @@ test.describe('Visor Fontanillas 2.0 · regressió de navegador', () => {
     expect(controlsBox).toBeTruthy();
     expect(mapBox.y).toBeLessThan(controlsBox.y);
     const expand = page.locator('#map-expand');
+    for (const id of ['refresh', 'map-expand', 'prev', 'play', 'next']) {
+      const box = await page.locator('#' + id).boundingBox();
+      expect(box.width).toBeGreaterThanOrEqual(44);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
     await expand.click();
     await expect(map).toHaveClass(/is-expanded/);
     await expect(expand).toHaveAttribute('aria-pressed', 'true');

@@ -108,6 +108,8 @@ body.map-expanded{overflow:hidden}
   .map-toolbar{height:68px;padding:11px 13px}
   .map-toolbar h2{font-size:17px}
   .map-toolbar-actions{gap:5px;font-size:10px}
+  .map-toolbar-actions button,.timeline-controls button{min-width:44px;min-height:44px}
+  .timeline-controls input{min-width:0}
   .map-wrap{height:min(53vh,530px);min-height:300px}
   .timeline{padding:12px 13px}
   .timeline-controls{margin:13px 0 8px}
