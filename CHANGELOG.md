@@ -1,5 +1,11 @@
 # Changelog
 
+## En preparació · Visor 2.0
+
+- Els controls del mapa i de la línia temporal tenen una zona tàctil mínima de 44 × 44 píxels en pantalles estretes.
+- El meteograma busca el primer fotograma de cada hora una sola vegada per redibuix i indica l’hora seleccionada als lectors de pantalla.
+
+
 ## 2026-11-18 — Validació operativa i roadmap (en revisió)
 
 - La incidència #299 ja tancada queda reflectida al roadmap després de la confirmació de l'usuari sobre timelapse, publicacions, Garmin i apps d'iPhone. Les proves de lectura antiga, falta de xarxa i avís oficial real es mantenen com a controls de qualitat.
