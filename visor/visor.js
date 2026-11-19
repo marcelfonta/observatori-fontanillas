@@ -237,11 +237,33 @@ function renderEvolution() {
   const host = $('#evolution-chart');
   const legend = $('#evolution-legend');
   host.replaceChildren(); legend.replaceChildren();
-  if (state.mode !== 'models' || !state.comparison.length) { host.textContent = 'Tria «Models» per veure l’evolució dels pròxims instants.'; return; }
+  const tableBody = $('#hourly-table-body');
+  tableBody.replaceChildren();
+  if (state.mode !== 'models' || !state.comparison.length) { host.textContent = 'Tria «Models» per veure l’evolució dels pròxims instants.'; const td=document.createElement('td'); td.colSpan=5;td.textContent='Selecciona Models per consultar les dades.'; const tr=document.createElement('tr');tr.append(td);tableBody.append(tr);return; }
   const variable = MODEL_VARIABLES[state.modelVariable];
   const rows = state.comparison;
+  const totalFamilies = new Set(MODELS.map(model => model.family).filter(Boolean)).size;
+  rows.forEach(row => {
+    const tr = document.createElement('tr');
+    const summary = row.summary;
+    const cells = [
+      dateLabel(row.time, { weekday: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      summary.count ? `${format(summary.median, variable.digits)} ${variable.unit}` : 'No disponible',
+      summary.count ? `${format(summary.min, variable.digits)} ${variable.unit}` : '—',
+      summary.count ? `${format(summary.max, variable.digits)} ${variable.unit}` : '—',
+      `${summary.count} / ${totalFamilies}`
+    ];
+    cells.forEach((value, index) => {
+      const cell = document.createElement(index === 0 ? 'th' : 'td');
+      if (index === 0) cell.scope = 'row';
+      cell.textContent = value; tr.append(cell);
+    });
+    if (!summary.count) tr.classList.add('is-missing');
+    if (row.time === localForecastHour(selectedTime())) tr.classList.add('is-current-hour');
+    tableBody.append(tr);
+  });
   const available = rows.flatMap(row => row.summary.count ? [row.summary.min, row.summary.max] : []);
-  if (!available.length) { host.textContent = 'No hi ha prou dades per dibuixar l’evolució.'; return; }
+  if (!available.length) { host.textContent = 'No hi ha prou dades per dibuixar l’evolució.';legend.textContent='Cap família de models amb dades disponibles en aquest període.'; return; }
   const low = Math.min(...available), high = Math.max(...available);
   const pad = Math.max((high - low) * .12, state.modelVariable === 'temperature' ? .5 : 1);
   const y = value => 220 - (value - low + pad) / (high - low + 2 * pad) * 180;
@@ -250,25 +272,44 @@ function renderEvolution() {
   svg.setAttribute('viewBox', '0 0 920 260'); svg.setAttribute('aria-hidden', 'true');
   const add = (tag, attrs, content = '') => { const node = document.createElementNS(svg.namespaceURI, tag); Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value))); if (content) node.textContent = content; svg.append(node); return node; };
   for (let i = 0; i < 4; i++) { const value = low - pad + i * (high - low + 2 * pad) / 3; add('line', { x1: 48, x2: 872, y1: y(value), y2: y(value), stroke: '#547c67', 'stroke-width': .7 }); add('text', { x: 2, y: y(value) + 4, fill: '#b9d5c4', 'font-size': 12 }, format(value, variable.digits)); }
-  const valid = rows.map((row, index) => ({ ...row, index })).filter(row => row.summary.count);
-  if (valid.length) {
-    const upper = valid.map(row => `${x(row.index)},${y(row.summary.max)}`).join(' ');
-    const lower = [...valid].reverse().map(row => `${x(row.index)},${y(row.summary.min)}`).join(' ');
-    add('polygon', { points: `${upper} ${lower}`, fill: '#68ba8b', opacity: .2 });
-    add('polyline', { points: valid.map(row => `${x(row.index)},${y(row.summary.median)}`).join(' '), fill: 'none', stroke: '#a2eab5', 'stroke-width': 3 });
-  }
+  // Segmentem per discontinuïtats: mai connectem punts separats per hores sense dades.
+  const segments = [];
+  rows.forEach((row, index) => {
+    if (!row.summary.count) return;
+    if (!index || !rows[index - 1].summary.count) segments.push([]);
+    segments[segments.length - 1].push({ ...row, index });
+  });
+  segments.forEach(segment => {
+    if (segment.length > 1) {
+      const upper = segment.map(row => `${x(row.index)},${y(row.summary.max)}`).join(' ');
+      const lower = [...segment].reverse().map(row => `${x(row.index)},${y(row.summary.min)}`).join(' ');
+      add('polygon', { points: `${upper} ${lower}`, fill: '#68ba8b', opacity: .2 });
+      add('polyline', { points: segment.map(row => `${x(row.index)},${y(row.summary.median)}`).join(' '), fill: 'none', stroke: '#a2eab5', 'stroke-width': 3 });
+    } else add('circle', { cx: x(segment[0].index), cy: y(segment[0].summary.median), r: 4, fill: '#a2eab5' });
+  });
   const focused = $('#model-focus').value;
   if (focused) {
     const model = MODELS.find(item => item.name === focused);
-    const points = rows.map((row, index) => ({ index, value: row.readings.find(reading => reading.model === model)?.[state.modelVariable] })).filter(item => Number.isFinite(item.value));
-    add('polyline', { points: points.map(item => `${x(item.index)},${y(item.value)}`).join(' '), fill: 'none', stroke: '#f0bd64', 'stroke-width': 2 });
+    let continuous = [];
+    const drawFocus = () => {
+      if (continuous.length > 1) add('polyline', { points: continuous.map(item => `${x(item.index)},${y(item.value)}`).join(' '), fill: 'none', stroke: '#f0bd64', 'stroke-width': 2 });
+      else if (continuous.length === 1) add('circle', { cx: x(continuous[0].index), cy: y(continuous[0].value), r: 4, fill: '#f0bd64' });
+      continuous = [];
+    };
+    rows.forEach((row, index) => {
+      const value = row.readings.find(reading => reading.model === model)?.[state.modelVariable];
+      if (Number.isFinite(value)) continuous.push({ index, value });
+      else drawFocus();
+    });
+    drawFocus();
   }
   const chosen = rows.findIndex(row => row.time === localForecastHour(selectedTime()));
   if (chosen >= 0) add('line', { x1: x(chosen), x2: x(chosen), y1: 25, y2: 220, stroke: '#fff3b4', 'stroke-width': 1.5, 'stroke-dasharray': '4 4' });
   [0, Math.floor((rows.length - 1) / 2), rows.length - 1].forEach(index => add('text', { x: x(index), y: 249, fill: '#b9d5c4', 'font-size': 12, 'text-anchor': 'middle' }, dateLabel(rows[index].time, { hour: '2-digit', minute: '2-digit' })));
   host.append(svg);
   host.setAttribute('aria-label', `Evolució de ${variable.label.toLowerCase()}: mediana i interval de les famílies de models durant 24 hores. ${focused ? `Model destacat: ${focused}.` : ''}`);
-  legend.textContent = `Franja: interval · línia verda: mediana${focused ? ` · línia groga: ${focused}` : ''} · ${variable.unit}. És una dispersió de models, no una probabilitat.`;
+  const covered = rows.filter(row => row.summary.count).length;
+  legend.textContent = `Cobertura: ${covered} de ${rows.length} hores · ${totalFamilies} famílies possibles. Franja: interval · línia verda: mediana${focused ? ` · línia groga: ${focused}` : ''} · ${variable.unit}. Dispersió descriptiva, no probabilitat.`;
 }
 async function forecasts() {
   const request = ++state.forecastRequest;
