@@ -28,6 +28,35 @@ raster.width = raster.height = 161;
 const context = raster.getContext('2d');
 const frame = context.createImageData(raster.width,raster.height);
 let overlay;
+const cityMarkers = [];
+let displayedCityHour = null;
+function showCityTemperatures(hour) {
+  displayedCityHour = hour;
+  const selection = el('model').value;
+  const divider = map.getSize().x * Number(el('divider').value) / 100;
+  for (const marker of cityMarkers) {
+    const label = marker.getElement().querySelector('.city-temperature');
+    label.textContent = '';
+    if (!hour || variable !== 'temperature') continue;
+    const location = marker.getLatLng();
+    const row = latitudes.findIndex((v,i)=>v<=location.lat && location.lat<=latitudes[i+1]);
+    const col = longitudes.findIndex((v,i)=>v<=location.lng && location.lng<=longitudes[i+1]);
+    if (row<0 || col<0) continue;
+    let model = selection;
+    if (native()) {
+      const left = map.latLngToContainerPoint(location).x < divider;
+      model = selection==='native-arome' || (selection==='native-compare' && left) ? 'AROME HD' : 'ARPEGE Europa';
+    }
+    const width = longitudes.length, pos = row*width+col;
+    const values = [pos,pos+1,pos+width,pos+width+1].map(i=>pointReading(i,hour,model).value);
+    if (!values.every(Number.isFinite)) continue;
+    const dx=(location.lng-longitudes[col])/(longitudes[col+1]-longitudes[col]);
+    const dy=(location.lat-latitudes[row])/(latitudes[row+1]-latitudes[row]);
+    const [a,b,c,d]=values;
+    const value=(1-dy)*(a*(1-dx)+b*dx)+dy*(c*(1-dx)+d*dx);
+    label.textContent = (agreement()?'Δ ':'')+format(value)+' °C';
+  }
+}
 
 
 let synopticLayer, regional, nativeKey='', loadingImage=false;
@@ -106,6 +135,7 @@ function draw() {
     regional.show(model.slice(7),variable,valid.toISOString()).then(shown=>{
       if(shown && nativeKey===key){
         synopticLayer.show(hour);
+    showCityTemperatures(hour);
         el('frame-time').textContent=clock.format(valid);
         el('frame-time').hidden=false;
         el('curtain').hidden=model!=='native-compare';
@@ -113,13 +143,14 @@ function draw() {
       }
     }).catch(()=>{
       if(nativeKey!==key)return;
-      synopticLayer.show(null);
+      showCityTemperatures(null);synopticLayer.show(null);
       el('curtain').hidden=true;el('frame-time').hidden=true;stop();el('retry').hidden=false;el('status').textContent='Capa no disponible per a aquesta hora.';
     }).finally(()=>{if(nativeKey===key)loadingImage=false;});
     return;
   }
   el('frame-time').textContent=clock.format(valid);el('frame-time').hidden=false;
   synopticLayer.show(hour);
+    showCityTemperatures(hour);
   let coverage = 0;
   const values = [];
   markers.forEach((marker,point) => {
@@ -208,10 +239,11 @@ function start() {
     ['Vielha',42.702,.795],['La Seu d’Urgell',42.358,1.461]
   ];
   for(const [name,lat,lon] of cities){
-    L.marker([lat,lon],{pane:'placeLabels',keyboard:false,interactive:false,
-      icon:L.divIcon({className:'city-label',html:name,iconSize:null,iconAnchor:[0,8]})
-    }).addTo(map);
+    cityMarkers.push(L.marker([lat,lon],{pane:'placeLabels',keyboard:false,interactive:false,
+      icon:L.divIcon({className:'city-label',html:name+'<span class="city-temperature"></span>',iconSize:null,iconAnchor:[0,8]})
+    }).addTo(map));
   }
+  map.on('moveend zoomend resize',()=>showCityTemperatures(displayedCityHour));
   overlay = L.imageOverlay(raster.toDataURL(),L.latLngBounds(coordinates),{className:'forecast-field',opacity:0.74,interactive:false}).addTo(map);
   markers = coordinates.map((point,i)=>{
     const icon = L.divIcon({className:'sample missing',html:'<span>—</span>',iconSize:[39,26],iconAnchor:[19,13]});
@@ -232,7 +264,7 @@ function start() {
   const samples=L.layerGroup([overlay,...markers]);
   let wasNative=false;
   function switchModel(){
-    synopticLayer.show(null);
+    showCityTemperatures(null);synopticLayer.show(null);
     el('curtain').hidden=true;el('frame-time').hidden=true;
     stop();regional.clear();nativeKey='';loadingImage=false;
     if(native()!==wasNative){
@@ -249,7 +281,7 @@ function start() {
     const button = event.target.closest('[data-variable]');
     if (!button) return;
     if(variable===button.dataset.variable)return;
-    if(native()){synopticLayer.show(null);regional.clear();nativeKey='';el('curtain').hidden=true;el('frame-time').hidden=true;}
+    if(native()){showCityTemperatures(null);synopticLayer.show(null);regional.clear();nativeKey='';el('curtain').hidden=true;el('frame-time').hidden=true;}
     variable = button.dataset.variable;
     for(const b of el('variables').children) b.setAttribute('aria-pressed',String(b===button));
     legend(); draw();
@@ -265,6 +297,7 @@ function start() {
   el('divider').oninput=event=>{
     const value=Number(event.target.value);
     regional.setSplit(value);
+    showCityTemperatures(displayedCityHour);
     el('curtain').style.setProperty('--split',value+'%');
     event.target.setAttribute('aria-valuetext','AROME '+value+' %, ARPEGE '+(100-value)+' %');
   };

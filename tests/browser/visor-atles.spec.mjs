@@ -18,6 +18,8 @@ for (const width of [390, 1280]) {
     await expect(page.locator('#model')).toHaveValue('native-compare');
     await expect(page.locator('#curtain')).toBeVisible();
     await expect(page.locator('#legend-title')).toHaveText('Temperatura a 2 m · °C');
+    const city = page.locator('.city-label').filter({hasText:'Sant Celoni'}).locator('.city-temperature');
+    await expect(city).toHaveText('0 °C');
     await page.locator('#model').selectOption('combined');
     const points = page.locator('.sample');
     await expect(page.locator('#status')).toContainText('49/49');
@@ -28,8 +30,10 @@ for (const width of [390, 1280]) {
     await expect(points.first()).toHaveText('10');
     await page.locator('#next').click();
     await expect(points.first()).toHaveText('11');
+    await expect(city).toHaveText('11 °C');
     await page.getByRole('button',{name:'Pluja',exact:true}).click();
     await expect(points.first()).toHaveText('—');
+    await expect(city).toBeEmpty();
     await expect(page.locator('#status')).toContainText('0/49');
     await page.locator('#play').click();
     await expect.poll(()=>page.locator('#hour').inputValue()).not.toBe('1');

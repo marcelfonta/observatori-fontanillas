@@ -57,3 +57,5 @@ select{display:block;min-height:44px;margin-top:3px;padding:0 8px;font-size:15px
 .wind-vector path{fill:none;stroke:#172c23;stroke-width:2.3;stroke-linejoin:round;stroke-linecap:round;filter:drop-shadow(0 0 1.2px white)}
 .pressure-label{font:bold 11px/16px system-ui;text-align:center;color:#152b20;background:#ffffffe8;border-radius:5px}
 @media(max-width:750px){.synoptic-tools{grid-column:1/-1}.synoptic-tools>div{position:absolute;top:100%;left:0;min-width:200px;z-index:700;box-shadow:0 4px 16px #0007}.synoptic-tools summary{padding:5px 0}}
+
+.city-temperature:not(:empty){display:table;margin:1px 0 0 8px;padding:1px 5px;border-radius:4px;background:#10291fee;color:#fff;font:700 12px/16px system-ui;text-shadow:none;font-variant-numeric:tabular-nums}
