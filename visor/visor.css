@@ -171,3 +171,10 @@ body.map-expanded{overflow:hidden}
 .verification-metrics strong{font-size:clamp(21px,2.4vw,32px);line-height:1.2;font-variant-numeric:tabular-nums}
 .verification-metrics small{font-size:11px;line-height:1.5;color:#a9c6d1}
 @media(max-width:700px){.verification-metrics{grid-template-columns:1fr;gap:9px}.verification-metrics>div{padding:12px}}
+
+/* Paleta compartida amb la portada de l'observatori. */
+body{background:#0a1710;color:#edf5ed;--v2-accent:#a9e9aa;--v2-border:#36513e}
+.topbar,.workspace,.map-column,.analysis-section,.map-toolbar,.timeline,.visor-nav-button{background:#10251a;border-color:#36513e}
+.visor-nav-button.is-active,.panel-header,.meteogram-variables button[aria-pressed=true]{background:#254b32;color:#ecf6ea}
+.intro h1 em,.eyebrow,.brand-mark,.atlas-return{color:#ade7ab}
+.atlas-return{margin-left:auto;margin-right:12px}

@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 
 const [html, css, js] = await Promise.all([
-  readFile(new URL('../visor/index.html', import.meta.url), 'utf8'),
+  readFile(new URL('../visor/analisi.html', import.meta.url), 'utf8'),
   readFile(new URL('../visor/visor.css', import.meta.url), 'utf8'),
   readFile(new URL('../visor/visor.js', import.meta.url), 'utf8')
 ]);

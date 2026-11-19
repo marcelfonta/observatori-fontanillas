@@ -1,3 +1,4 @@
+import { MODELS, MODEL_VARIABLES } from './models.js';
 import { hourlyComparison, localForecastHour, readingAt, retrospectiveMetrics, summarize } from './consensus.js';
 
 const API = 'https://fonta-meteo.marcelfonta.workers.dev';
@@ -8,22 +9,6 @@ const PLACES = {
   tordera: { name: 'Vall de la Tordera', point: [41.696, 2.598] },
   granollers: { name: 'Granollers', point: [41.608, 2.288] },
   girona: { name: 'Girona', point: [41.979, 2.821] }
-};
-const MODELS = [
-  { name: 'Best Match', path: '/v1/forecast', horizon: 7, reference: true },
-  { name: 'ECMWF IFS', path: '/v1/ecmwf', horizon: 7, family: 'ecmwf' },
-  { name: 'GFS', path: '/v1/gfs', horizon: 7, family: 'gfs' },
-  { name: 'ICON', path: '/v1/dwd-icon', horizon: 7, family: 'icon' },
-  { name: 'AROME HD', path: '/v1/meteofrance', model: 'meteofrance_arome_france_hd', horizon: 2, family: 'meteofrance', priority: 2 },
-  { name: 'ARPEGE Europa', path: '/v1/meteofrance', model: 'meteofrance_arpege_europe', horizon: 4, family: 'meteofrance', priority: 1 },
-  { name: 'GEM global', path: '/v1/gem', horizon: 7, family: 'gem' },
-  { name: 'UKMO global', path: '/v1/forecast', model: 'ukmo_seamless', horizon: 7, family: 'ukmo' }
-];
-const MODEL_VARIABLES = {
-  temperature: { label: 'Temperatura', unit: '°C', digits: 1 },
-  rain: { label: 'Pluja', unit: 'mm', digits: 1 },
-  wind: { label: 'Vent', unit: 'km/h', digits: 0 },
-  clouds: { label: 'Núvols', unit: '%', digits: 0 }
 };
 // Colors constants per model; els càlculs del consens no depenen de la selecció visual.
 const MODEL_COLORS = ['#f1bd68', '#66c4ff', '#ef81b1', '#cbb3ff', '#ffc874', '#69d5ca', '#e9a6ff', '#f49985'];

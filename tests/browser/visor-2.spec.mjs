@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Visor Fontanillas 2.0 · regressió de navegador', () => {
   test('mapa prioritari al mòbil i control de pantalla ampliada', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/visor/');
+    await page.goto('/visor/analisi.html');
     await expect(page.locator('#map')).toBeVisible();
     const map = page.locator('#map-workspace');
     const controls = page.locator('.control-panel');
@@ -26,7 +26,7 @@ test.describe('Visor Fontanillas 2.0 · regressió de navegador', () => {
   });
 
   test('selectors del meteograma no alteren el nombre de models marcats', async ({ page }) => {
-    await page.goto('/visor/');
+    await page.goto('/visor/analisi.html');
     await expect(page.locator('#meteogram-models input')).toHaveCount(8);
     const visible = page.locator('#meteogram-models input:checked');
     await expect(visible).toHaveCount(3);
