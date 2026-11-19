@@ -1,3 +1,4 @@
+import { synoptic } from './synoptic.js';
 import { regionalLayer } from './regional.js';
 import { paintField, palettes } from './color-field.js';
 import { MODELS, MODEL_VARIABLES } from './models.js';
@@ -29,7 +30,7 @@ const frame = context.createImageData(raster.width,raster.height);
 let overlay;
 
 
-let regional, nativeKey='', loadingImage=false;
+let synopticLayer, regional, nativeKey='', loadingImage=false;
 const native = () => el('model').value.startsWith('native-');
 const agreement = () => el('model').value==='agreement';
 const palette = () => agreement() ? ({temperature:'spreadTemperature',wind:'spreadWind',rain:'wetFraction',clouds:'spreadClouds'})[variable] : variable;
@@ -104,6 +105,7 @@ function draw() {
     el('prev').disabled=index===0;el('next').disabled=index===24;
     regional.show(model.slice(7),variable,valid.toISOString()).then(shown=>{
       if(shown && nativeKey===key){
+        synopticLayer.show(hour);
         el('frame-time').textContent=clock.format(valid);
         el('frame-time').hidden=false;
         el('curtain').hidden=model!=='native-compare';
@@ -111,11 +113,13 @@ function draw() {
       }
     }).catch(()=>{
       if(nativeKey!==key)return;
+      synopticLayer.show(null);
       el('curtain').hidden=true;el('frame-time').hidden=true;stop();el('retry').hidden=false;el('status').textContent='Capa no disponible per a aquesta hora.';
     }).finally(()=>{if(nativeKey===key)loadingImage=false;});
     return;
   }
   el('frame-time').textContent=clock.format(valid);el('frame-time').hidden=false;
+  synopticLayer.show(hour);
   let coverage = 0;
   const values = [];
   markers.forEach((marker,point) => {
@@ -170,6 +174,7 @@ function start() {
   el('zone').textContent=local?'Obre Catalunya':'Detall del Baix Montseny';
   el('zone').href=local?'./':'?zona=montseny';
   regional=regionalLayer(map);
+  synopticLayer=synoptic(map,coordinates,longitudes.length);
   L.control.zoom({position:'topright'}).addTo(map);
   setExtent();
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
@@ -205,6 +210,7 @@ function start() {
   const samples=L.layerGroup([overlay,...markers]);
   let wasNative=false;
   function switchModel(){
+    synopticLayer.show(null);
     el('curtain').hidden=true;el('frame-time').hidden=true;
     stop();regional.clear();nativeKey='';loadingImage=false;
     if(native()!==wasNative){
@@ -221,7 +227,7 @@ function start() {
     const button = event.target.closest('[data-variable]');
     if (!button) return;
     if(variable===button.dataset.variable)return;
-    if(native()){regional.clear();nativeKey='';el('curtain').hidden=true;el('frame-time').hidden=true;}
+    if(native()){synopticLayer.show(null);regional.clear();nativeKey='';el('curtain').hidden=true;el('frame-time').hidden=true;}
     variable = button.dataset.variable;
     for(const b of el('variables').children) b.setAttribute('aria-pressed',String(b===button));
     legend(); draw();

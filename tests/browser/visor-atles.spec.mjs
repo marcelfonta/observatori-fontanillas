@@ -77,3 +77,28 @@ test('Cortina sincronitzada i canvi atòmic de fotograma',async({page})=>{
   await page.locator('#model').selectOption('native-arome');
   await expect(curtain).toBeHidden();
 });
+
+test('Capes GFS segueixen el fotograma i respecten les dades absents', async ({page}) => {
+  const first = Math.ceil(Date.now()/3600000)*3600000;
+  const time = [0,1].map(h => new Date(first+h*3600000).toISOString().slice(0,16));
+  await page.route('**/api.open-meteo.com/**',async route => {
+    const params = new URL(route.request().url()).searchParams;
+    const count = params.get('latitude').split(',').length;
+    await route.fulfill({json:Array.from({length:count},(_,i)=>({hourly:{
+      time,wind_speed_10m:[12,null],wind_direction_10m:[0,null],pressure_msl:[1001+i%7,null],
+      temperature_2m:[15,16],precipitation:[0,0],cloud_cover:[40,35]
+    }}))});
+  });
+  await page.goto('/visor/');
+  await page.selectOption('#model','combined');
+  await page.locator('.synoptic-tools summary').click();
+  await page.check('#wind-arrows');
+  await page.check('#isobars');
+  await expect(page.locator('.wind-vector')).toHaveCount(49);
+  await expect(page.locator('.wind-vector g').first()).toHaveAttribute('transform','rotate(180 18 18)');
+  await expect(page.locator('.pressure-label')).toHaveCount(3);
+  await page.click('#next');
+  await expect(page.locator('.wind-vector')).toHaveCount(0);
+  await expect(page.locator('.pressure-label')).toHaveCount(0);
+  await expect(page.locator('#synoptic-status')).toContainText('Sense pressió');
+});
