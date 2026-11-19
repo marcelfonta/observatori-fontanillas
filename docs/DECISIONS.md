@@ -358,3 +358,7 @@ manera visible sense convertir una absència d’imatge en una absència de feno
 ## Visor del Baix Montseny · representació per colors en previsualització
 
 Per a cada hora, es calcula primer el resultat a cadascuna de les 25 coordenades amb la metodologia existent. La capa gràfica interpola temperatura, velocitat del vent i nuvolositat només dins del rectangle mostrejat, amb quatre mostres vàlides per quadrícula. La precipitació es pinta per cel·les, sense suavitzar-la. La imatge és una estimació visual regional. No representa el ràster natiu dels models ni s'utilitza en càlculs científics. La finestra de consulta mostra el valor puntual original.
+
+## Comparació regional i coincidència per famílies
+
+El visor pot demanar les mateixes variables a 49 coordenades sobre Catalunya o a les 25 del detall del Montseny. Comparteix l’hora UTC entre capes. Els camps regionals natius disponibles són AROME i ARPEGE mitjançant el WMS del projecte. Les altres capes mantenen explícit el mostreig. La dispersió és màxim menys mínim entre famílies. Per pluja, la coincidència és el percentatge de famílies disponibles amb almenys 0,2 mm en aquella hora. S’exigeixen dues famílies amb dada. Aquest percentatge no és una probabilitat.

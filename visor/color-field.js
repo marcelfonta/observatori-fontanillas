@@ -1,5 +1,9 @@
 // These stops drive both the raster and its legend. Rain is an hourly total.
 export const palettes = {
+  spreadTemperature:[[0,'#68be91'],[3,'#efda79'],[8,'#d68a6a'],[15,'#93478a']],
+  spreadWind:[[0,'#68be91'],[8,'#efda79'],[20,'#d68a6a'],[40,'#93478a']],
+  spreadClouds:[[0,'#68be91'],[20,'#efda79'],[50,'#d68a6a'],[100,'#93478a']],
+  wetFraction:[[0,'#f1eee0'],[25,'#b3dfce'],[50,'#71b2c4'],[75,'#577db0'],[100,'#663d97']],
   temperature: [[-8,'#5840a0'],[0,'#306fc1'],[6,'#37a5bd'],[12,'#74bd78'],[18,'#f0d15c'],[24,'#ef9445'],[32,'#c33e48']],
   rain: [[0,'#e6efe8'],[0.1,'#93d8b6'],[1,'#43bac5'],[3,'#267dc4'],[8,'#6647b1'],[20,'#c33783']],
   wind: [[0,'#d1e9bc'],[10,'#80ccac'],[20,'#33a9b3'],[35,'#5980bd'],[50,'#ad61ab'],[75,'#dd565e']],
@@ -20,18 +24,19 @@ for (const [variable, stops] of Object.entries(palettes)) {
 }
 export function paintField(pixels, size, values, variable) {
   const stops = palettes[variable], min=stops[0][0], max=stops.at(-1)[0];
+  const side=Math.sqrt(values.length), last=side-1;
   pixels.fill(0);
   for (let y=0;y<size;y++) {
-    const gy=4*(1-y/(size-1)), row=Math.min(3,Math.floor(gy)), dy=gy-row;
+    const gy=last*(1-y/(size-1)), row=Math.min(last-1,Math.floor(gy)), dy=gy-row;
     for (let x=0;x<size;x++) {
-      const gx=4*x/(size-1), col=Math.min(3,Math.floor(gx)), dx=gx-col;
-      const pos=row*5+col;
+      const gx=last*x/(size-1), col=Math.min(last-1,Math.floor(gx)), dx=gx-col;
+      const pos=row*side+col;
       let value;
-      if (variable==='rain') {
+      if (variable==='rain'||variable==='wetFraction') {
         // Preserve wet/dry boundaries of the samples. Do not create a rain band between them.
-        value=values[Math.round(gy)*5+Math.round(gx)];
+        value=values[Math.round(gy)*side+Math.round(gx)];
       } else {
-        const a=values[pos],b=values[pos+1],c=values[pos+5],d=values[pos+6];
+        const a=values[pos],b=values[pos+1],c=values[pos+side],d=values[pos+side+1];
         if (![a,b,c,d].every(Number.isFinite)) continue;
         value=(1-dy)*(a*(1-dx)+b*dx)+dy*(c*(1-dx)+d*dx);
       }

@@ -1,11 +1,15 @@
+import { regionalLayer } from './regional.js';
 import { paintField, palettes } from './color-field.js';
 import { MODELS, MODEL_VARIABLES } from './models.js';
 import { readingAt, summarize } from './consensus.js';
 
 const el = id => document.getElementById(id);
 const coordinates = [];
-for (const latitude of [41.57, 41.65, 41.73, 41.81, 41.89]) {
-  for (const longitude of [2.27, 2.38, 2.49, 2.60, 2.71]) coordinates.push([latitude, longitude]);
+const local = new URLSearchParams(location.search).get('zona')==='montseny';
+const latitudes = local ? [41.57,41.65,41.73,41.81,41.89] : [40.5,40.9,41.3,41.7,42.1,42.5,42.9];
+const longitudes = local ? [2.27,2.38,2.49,2.60,2.71] : [0,0.6,1.2,1.8,2.4,3,3.6];
+for(const latitude of latitudes){
+  for(const longitude of longitudes)coordinates.push([latitude,longitude]);
 }
 const datasets = new Map();
 const firstHour = Math.ceil(Date.now()/3600000)*3600000;
@@ -25,7 +29,13 @@ const frame = context.createImageData(raster.width,raster.height);
 let overlay;
 
 
+let regional, nativeKey='', loadingImage=false;
+const native = () => el('model').value.startsWith('native-');
+const agreement = () => el('model').value==='agreement';
+const palette = () => agreement() ? ({temperature:'spreadTemperature',wind:'spreadWind',rain:'wetFraction',clouds:'spreadClouds'})[variable] : variable;
+const unit = () => agreement() && variable==='rain' ? '%' : MODEL_VARIABLES[variable].unit;
 function setExtent() {
+  if(!local){map.fitBounds([[41.0,0.9],[42.55,3.0]],{animate:false});return;}
   map.fitBounds(L.latLngBounds(coordinates),{paddingTopLeft:[30,60],paddingBottomRight:[30,64],animate:false});
 }
 function stop() {
@@ -37,6 +47,12 @@ function stop() {
 }
 function pointReading(point, hour, selected) {
   const readings = MODELS.map(model => readingAt(datasets.get(model.name)?.[point],model,hour)).filter(Boolean);
+  if (selected === 'agreement') {
+    const group=summarize(readings,variable);
+    if(group.count<2)return {detail:'Calen dues famílies amb dades'};
+    const detail=variable==='rain' ? group.wet+' de '+group.count+' famílies amb ≥0,2 mm/h' : 'Rang entre '+group.count+' famílies';
+    return {value:variable==='rain' ? 100*group.wet/group.count : group.max-group.min,detail};
+  }
   if (selected === 'combined') {
     const summary = summarize(readings,variable);
     return {value:summary.median, detail:summary.count ? summary.count+' famílies · interval '+format(summary.min)+' – '+format(summary.max):'Sense dades comparables'};
@@ -48,8 +64,14 @@ function format(value) {
   return numbers[MODEL_VARIABLES[variable].digits].format(value);
 }
 function legend() {
-  const options = palettes[variable];
-  el('legend-title').textContent = MODEL_VARIABLES[variable].label+' · '+MODEL_VARIABLES[variable].unit;
+  if(native()){
+    el('legend-title').textContent=MODEL_VARIABLES[variable].label+' · Météo-France';
+    el('scale').hidden=true;
+    return;
+  }
+  el('scale').hidden=false;
+  const options = palettes[palette()];
+  el('legend-title').textContent = (agreement()?(variable==='rain'?'Famílies amb pluja':'Diferència màx.–mín.') : MODEL_VARIABLES[variable].label)+' · '+unit();
   el('scale').style.setProperty('--gradient','linear-gradient(90deg,'+options.map(([v,c])=>c+' '+((v-options[0][0])*100/(options.at(-1)[0]-options[0][0]))+'%').join(',')+')');
   el('scale').replaceChildren(...[options[0],options.at(-1)].map(([bound]) => {
     const span = document.createElement('span');
@@ -60,7 +82,7 @@ function legend() {
 function popupContent(point, reading) {
   const content = document.createElement('div');
   const heading = document.createElement('strong');
-  heading.textContent = Number.isFinite(reading.value) ? format(reading.value)+' '+MODEL_VARIABLES[variable].unit : 'Sense dada';
+  heading.textContent = Number.isFinite(reading.value) ? format(reading.value)+' '+unit() : 'Sense dada';
   content.append(heading,document.createElement('br'),reading.detail,document.createElement('br'),coordinates[point].join('°, ')+'° · '+el('valid').textContent);
   return content;
 }
@@ -71,6 +93,22 @@ function draw() {
   el('valid').textContent = clock.format(valid);
   el('hour').value = index;
   el('hour').setAttribute('aria-valuetext',el('valid').textContent);
+  if(native()){
+    const key=[model,variable,hour].join('|');
+    if(key===nativeKey)return;
+    nativeKey=key;loadingImage=true;
+    el('retry').hidden=true;
+    el('status').textContent='Carregant el camp de '+model.slice(7).toUpperCase()+'…';
+    el('play').disabled=el('hour').disabled=false;
+    el('prev').disabled=index===0;el('next').disabled=index===24;
+    regional.show(model.slice(7),variable,valid.toISOString()).then(shown=>{
+      if(shown && nativeKey===key)el('status').textContent=model.slice(7).toUpperCase()+' · camp regional';
+    }).catch(()=>{
+      if(nativeKey!==key)return;
+      stop();el('retry').hidden=false;el('status').textContent='Capa no disponible per a aquesta hora.';
+    }).finally(()=>{if(nativeKey===key)loadingImage=false;});
+    return;
+  }
   let coverage = 0;
   const values = [];
   markers.forEach((marker,point) => {
@@ -82,14 +120,14 @@ function draw() {
     node.classList.toggle('missing',!available);
     badge.textContent = value;
     values.push(reading.value);
-    node.setAttribute('aria-label',coordinates[point].join(', ')+', '+(available ? value+' '+MODEL_VARIABLES[variable].unit : 'sense dada'));
+    node.setAttribute('aria-label',coordinates[point].join(', ')+', '+(available ? value+' '+unit() : 'sense dada'));
     if (selectedPoint === point && marker.isPopupOpen()) marker.setPopupContent(popupContent(point,reading));
     if (available) coverage++;
   });
-  paintField(frame.data,raster.width,values,variable);
+  paintField(frame.data,raster.width,values,palette());
   context.putImageData(frame,0,0);
   overlay.setUrl(raster.toDataURL());
-  const label = model==='combined' ? 'Consens' : model;
+  const label = model==='combined' ? 'Consens' : agreement() ? 'Coincidència' : model;
   el('status').textContent = pending ? 'Carregant · '+(MODELS.length-pending)+'/'+MODELS.length+' models' : label+' · '+(variable==='rain'?'per cel·les':'interpolació visual')+' · '+coverage+'/'+coordinates.length+' punts amb dades';
   el('retry').hidden = pending > 0 || datasets.size===MODELS.length;
   el('play').disabled = el('hour').disabled = datasets.size===0;
@@ -121,9 +159,17 @@ async function load() {
 function start() {
   if (!window.L) { el('status').textContent='No s’ha pogut carregar el mapa. Torna a carregar la pàgina.'; return; }
   map = L.map('map',{zoomControl:false,zoomSnap:0.25,maxZoom:15,minZoom:6});
+  if(local)el('model').value='combined';
+  el('zone').textContent=local?'Obre Catalunya':'Detall del Baix Montseny';
+  el('zone').href=local?'./':'?zona=montseny';
+  regional=regionalLayer(map);
   L.control.zoom({position:'topright'}).addTo(map);
   setExtent();
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+  const labels=map.createPane('placeLabels');labels.style.zIndex=450;labels.style.pointerEvents='none';
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png',{
+    pane:'placeLabels',attribution:'© <a href="https://carto.com/attributions">CARTO</a>',maxZoom:19
+  }).addTo(map);
   overlay = L.imageOverlay(raster.toDataURL(),L.latLngBounds(coordinates),{className:'forecast-field',opacity:0.74,interactive:false}).addTo(map);
   markers = coordinates.map((point,i)=>{
     const icon = L.divIcon({className:'sample missing',html:'<span>—</span>',iconSize:[39,26],iconAnchor:[19,13]});
@@ -133,15 +179,28 @@ function start() {
     return marker;
   });
   map.on('click',event=>{
-    if (!overlay.getBounds().contains(event.latlng)) return;
+    if (native() || !overlay.getBounds().contains(event.latlng)) return;
     let nearest=0;
     coordinates.forEach((point,i)=>{
       if (event.latlng.distanceTo(point)<event.latlng.distanceTo(coordinates[nearest])) nearest=i;
     });
     markers[nearest].openPopup();
   });
-  MODELS.forEach(model=>el('model').add(new Option(model.name,model.name)));
-  el('model').addEventListener('change',draw);
+  MODELS.forEach(model=>el('local-models').append(new Option(model.name,model.name)));
+  const samples=L.layerGroup([overlay,...markers]);
+  let wasNative=false;
+  function switchModel(){
+    stop();regional.clear();nativeKey='';loadingImage=false;
+    if(native()!==wasNative){
+      if(native()){for(const layer of samples.getLayers())map.removeLayer(layer);map.removeLayer(samples);}
+      else samples.addTo(map);
+    }
+    wasNative=native();
+    legend();
+    if(!wasNative && !datasets.size && !pending)void load();
+    else draw();
+  }
+  el('model').addEventListener('change',switchModel);
   el('variables').addEventListener('click',event=>{
     const button = event.target.closest('[data-variable]');
     if (!button) return;
@@ -152,15 +211,15 @@ function start() {
   el('play').onclick=()=>{
     if(timer){stop();return;}
     el('play').textContent='Ⅱ';el('play').setAttribute('aria-pressed','true');el('play').setAttribute('aria-label','Atura la previsió');
-    timer=setInterval(()=>{index=(index+1)%25;draw();},1000);
+    timer=setInterval(()=>{if(loadingImage)return;index=(index+1)%25;draw();},1000);
   };
   el('hour').oninput=()=>{stop();index=Number(el('hour').value);draw();};
   el('prev').onclick=()=>{stop();index=Math.max(0,index-1);draw();};
   el('next').onclick=()=>{stop();index=Math.min(24,index+1);draw();};
   el('center').onclick=setExtent;
-  el('retry').onclick=load;
+  el('retry').onclick=()=>{if(native()){nativeKey='';draw();}else void load();};
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
-  legend();void load();
+  switchModel();
 }
 el('info').onclick=()=>el('method').showModal();
 start();
