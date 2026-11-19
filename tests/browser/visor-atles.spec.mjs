@@ -16,6 +16,8 @@ for (const width of [390, 1280]) {
     });
     await page.goto('/visor/');
     await expect(page.locator('#model')).toHaveValue('native-compare');
+    await expect(page.locator('#curtain')).toBeVisible();
+    await expect(page.locator('#legend-title')).toHaveText('Temperatura a 2 m · °C');
     await page.locator('#model').selectOption('combined');
     const points = page.locator('.sample');
     await expect(page.locator('#status')).toContainText('49/49');
@@ -41,6 +43,7 @@ for (const width of [390, 1280]) {
 test('Un camp regional absent mostra la fallada i conserva l’hora en comparar',async({page})=>{
   await page.route('**/meteofrance/map?**',route=>route.fulfill({status:502,body:'Unavailable'}));
   await page.goto('/visor/');
+  await page.getByRole('button',{name:'Pluja',exact:true}).click();
   await expect(page.locator('#status')).toContainText('Capa no disponible');
   await expect(page.locator('#retry')).toBeVisible();
   await page.locator('#next').click();
@@ -62,6 +65,7 @@ test('Cortina sincronitzada i canvi atòmic de fotograma',async({page})=>{
     await route.fulfill({contentType:'image/png',body:png});
   });
   await page.goto('/visor/');
+  await page.getByRole('button',{name:'Pluja',exact:true}).click();
   const curtain=page.locator('#curtain'),clock=page.locator('#frame-time');
   await expect(curtain).toBeVisible();
   const before=await clock.innerText();

@@ -65,7 +65,7 @@ function format(value) {
   return numbers[MODEL_VARIABLES[variable].digits].format(value);
 }
 function legend() {
-  if(native()){
+  if(native() && variable !== 'temperature'){
     el('legend-title').textContent=MODEL_VARIABLES[variable].label+' · Météo-France';
     el('scale').hidden=true;
     return;
@@ -109,7 +109,7 @@ function draw() {
         el('frame-time').textContent=clock.format(valid);
         el('frame-time').hidden=false;
         el('curtain').hidden=model!=='native-compare';
-        el('status').textContent=name+' · '+MODEL_VARIABLES[variable].label;
+        el('status').textContent=name+' · '+MODEL_VARIABLES[variable].label+(variable==='temperature'?' · mostreig interpolat':'');
       }
     }).catch(()=>{
       if(nativeKey!==key)return;
@@ -145,13 +145,35 @@ function draw() {
   el('prev').disabled = !index || !datasets.size;
   el('next').disabled = index===24 || !datasets.size;
 }
-async function fetchModel(model) {
+const requests = new Map();
+function fetchModel(model) {
+  if (datasets.has(model.name)) return Promise.resolve();
+  if (!requests.has(model.name)) {
+    requests.set(model.name, readModel(model).finally(()=>requests.delete(model.name)));
+  }
+  return requests.get(model.name);
+}
+async function temperatureFrame(name,time) {
+  const model = MODELS.find(item=>item.name === (name==='arome'?'AROME HD':'ARPEGE Europa'));
+  await fetchModel(model);
+  const hour = time.slice(0,16);
+  const values = datasets.get(model.name).map(row=>readingAt(row,model,hour)?.temperature);
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 161;
+  const ctx = canvas.getContext('2d');
+  const pixels = ctx.createImageData(canvas.width,canvas.height);
+  paintField(pixels.data,canvas.width,values,'temperature');
+  if (!pixels.data.some((value,i)=>i%4===3 && value)) throw new Error('Sense temperatura a 2 m');
+  ctx.putImageData(pixels,0,0);
+  return canvas;
+}
+async function readModel(model) {
   const params = new URLSearchParams({
     latitude:coordinates.map(p=>p[0]).join(','),longitude:coordinates.map(p=>p[1]).join(','),
     hourly:'temperature_2m,precipitation,wind_speed_10m,cloud_cover',timezone:'GMT',forecast_days:String(Math.min(3,model.horizon))
   });
   if (model.model) params.set('models',model.model);
-  const response = await fetch('https://api.open-meteo.com'+model.path+'?'+params,{signal:AbortSignal.timeout(18000)});
+  const response = await fetch('https://api.open-meteo.com'+(model.model ? '/v1/forecast' : model.path)+'?'+params,{signal:AbortSignal.timeout(18000)});
   if (!response.ok) throw new Error('Font no disponible');
   const data = await response.json();
   if (!Array.isArray(data) || data.length!==coordinates.length || !data.some(item=>item?.hourly?.time?.length)) throw new Error('Cobertura incompleta');
@@ -173,7 +195,7 @@ function start() {
   if(local)el('model').value='combined';
   el('zone').textContent=local?'Obre Catalunya':'Detall del Baix Montseny';
   el('zone').href=local?'./':'?zona=montseny';
-  regional=regionalLayer(map);
+  regional=regionalLayer(map,temperatureFrame,[coordinates[0],coordinates.at(-1)]);
   synopticLayer=synoptic(map,coordinates,longitudes.length);
   L.control.zoom({position:'topright'}).addTo(map);
   setExtent();
@@ -219,7 +241,7 @@ function start() {
     }
     wasNative=native();
     legend();
-    if(!wasNative && !datasets.size && !pending)void load();
+    if(!wasNative && datasets.size<MODELS.length && !pending)void load();
     else draw();
   }
   el('model').addEventListener('change',switchModel);

@@ -16,3 +16,5 @@ El radar, el mapa natiu AROME, els meteogrames i la verificació retrospectiva e
 No hi ha avisos oficials, predicció de tempestes ni índex de risc derivat en aquesta primera versió. Les fallades de font es mostren com a absència de dades, mai com a zero. Mapa base: OpenStreetMap.
 
 La cortina compara les dues imatges regionals de Météo-France. L’hora escrita sobre el mapa correspon al fotograma visible. En avançar el temps, les dues imatges noves es carreguen abans de substituir les anteriors. Si una font falla, el visor retira la parella i permet reintentar.
+
+En la cortina regional, la temperatura prové exclusivament del camp horari temperature_2m dels models AROME HD i ARPEGE Europa via Open-Meteo. La graella mostrejada i interpolada té la mateixa escala en °C als dos costats. Les altres variables regionals conserven les imatges WMS.

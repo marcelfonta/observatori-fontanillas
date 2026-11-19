@@ -9,7 +9,7 @@ export const MODELS = [
   { name: 'UKMO global', path: '/v1/forecast', model: 'ukmo_seamless', horizon: 7, family: 'ukmo' }
 ];
 export const MODEL_VARIABLES = {
-  temperature: { label: 'Temperatura', unit: '°C', digits: 1 },
+  temperature: { label: 'Temperatura a 2 m', unit: '°C', digits: 1 },
   rain: { label: 'Pluja', unit: 'mm', digits: 1 },
   wind: { label: 'Vent', unit: 'km/h', digits: 0 },
   clouds: { label: 'Núvols', unit: '%', digits: 0 }
