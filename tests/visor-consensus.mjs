@@ -46,3 +46,16 @@ assert.equal(emptyMetrics.count, 0);
 assert.equal(emptyMetrics.mae, null);
 assert.equal(emptyMetrics.rmse, null);
 assert.equal(emptyMetrics.bias, null);
+
+const localOffset = retrospectiveMetrics([
+  { epoch: Date.parse('2026-11-10T11:00:00Z') / 1000, temperature: 10 }
+], [{ name: 'Zona', hourly: {
+  time: ['2026-11-10T12:00:00+01:00'],
+  temperature_2m_previous_day1: [12]
+} }])[0];
+assert.equal(localOffset.count, 1, 'ISO timestamp with an explicit timezone offset must match the observed UTC hour');
+assert.equal(localOffset.mae, 2);
+const missingEpoch = retrospectiveMetrics([{ epoch: '', temperature: 12 }, { epoch: null, temperature: 13 }], [{
+  name: 'Falta hora', hourly: { time: ['1970-01-01T00:00'], temperature_2m_previous_day1: [15] }
+}])[0];
+assert.equal(missingEpoch.count, 0, 'missing epoch is never silently treated as 1970');
