@@ -68,6 +68,7 @@ export function retrospectiveMetrics(observations, forecasts) {
   const hourlyObserved = new Map();
   for (const row of observations) {
     if (row.temperature === null || row.temperature === undefined || row.temperature === '') continue;
+    if (row.epoch === null || row.epoch === undefined || row.epoch === '') continue;
     const temperature = Number(row.temperature), epoch = Number(row.epoch);
     if (!Number.isFinite(temperature) || !Number.isFinite(epoch)) continue;
     const hour = Math.floor(epoch / 3600);
@@ -84,7 +85,7 @@ export function retrospectiveMetrics(observations, forecasts) {
       const predicted = hourly?.temperature_2m_previous_day1?.[index];
       const time = times[index];
       if (!Number.isFinite(predicted) || typeof time !== 'string') continue;
-      const utcTime = /(?:Z|[+-]\\d\\d:\\d\\d)$/.test(time) ? time : `${time}Z`;
+      const utcTime = /(?:Z|[+-]\d\d:\d\d)$/.test(time) ? time : `${time}Z`;
       const instant = Date.parse(utcTime);
       if (!Number.isFinite(instant)) continue;
       const observed = actual.get(Math.floor(instant / 3600000));
