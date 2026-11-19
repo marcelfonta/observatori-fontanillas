@@ -167,9 +167,17 @@ function start() {
   setExtent();
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
   const labels=map.createPane('placeLabels');labels.style.zIndex=450;labels.style.pointerEvents='none';
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png',{
-    pane:'placeLabels',attribution:'© <a href="https://carto.com/attributions">CARTO</a>',maxZoom:19
-  }).addTo(map);
+  const cities=[
+    ['Barcelona',41.388,2.17],['Girona',41.979,2.821],['Lleida',41.617,.62],
+    ['Tarragona',41.118,1.245],['Tortosa',40.812,.521],['Manresa',41.728,1.826],
+    ['Sant Celoni',41.69,2.489],['Vic',41.93,2.254],['Puigcerdà',42.432,1.929],
+    ['Vielha',42.702,.795],['La Seu d’Urgell',42.358,1.461]
+  ];
+  for(const [name,lat,lon] of cities){
+    L.marker([lat,lon],{pane:'placeLabels',keyboard:false,interactive:false,
+      icon:L.divIcon({className:'city-label',html:name,iconSize:null,iconAnchor:[0,8]})
+    }).addTo(map);
+  }
   overlay = L.imageOverlay(raster.toDataURL(),L.latLngBounds(coordinates),{className:'forecast-field',opacity:0.74,interactive:false}).addTo(map);
   markers = coordinates.map((point,i)=>{
     const icon = L.divIcon({className:'sample missing',html:'<span>—</span>',iconSize:[39,26],iconAnchor:[19,13]});
