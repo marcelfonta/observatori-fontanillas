@@ -59,15 +59,48 @@ export function hourlyComparison(datasets, models, hours, variable) {
   });
 }
 
-export function retrospectiveErrors(observations, forecasts) {
-  const actual = new Map(observations.filter(row => row.temperature !== null && row.temperature !== '' && Number.isFinite(Number(row.temperature)) && Number.isFinite(Number(row.epoch))).map(row => [Math.floor(Number(row.epoch) / 3600), Number(row.temperature)]));
+/**
+ * Verification of archived +24 h temperature predictions against observed hourly readings.
+ * Signed error = forecast minus observed. Duplicate observations are averaged in each UTC hour;
+ * never treat missing or non-finite values as zero.
+ */
+export function retrospectiveMetrics(observations, forecasts) {
+  const hourlyObserved = new Map();
+  for (const row of observations) {
+    if (row.temperature === null || row.temperature === undefined || row.temperature === '') continue;
+    const temperature = Number(row.temperature), epoch = Number(row.epoch);
+    if (!Number.isFinite(temperature) || !Number.isFinite(epoch)) continue;
+    const hour = Math.floor(epoch / 3600);
+    const values = hourlyObserved.get(hour) || [];
+    values.push(temperature);
+    hourlyObserved.set(hour, values);
+  }
+  const actual = new Map([...hourlyObserved].map(([hour, values]) =>
+    [hour, values.reduce((total, value) => total + value, 0) / values.length]));
   return forecasts.map(({ name, hourly }) => {
-    const errors = (hourly?.time || []).flatMap((time, index) => {
-      const predicted = hourly.temperature_2m_previous_day1?.[index];
-      const utcTime = /(?:Z|[+-]\d\d:\d\d)$/.test(time) ? time : `${time}Z`;
-      const observed = actual.get(Math.floor(new Date(utcTime).getTime() / 3600000));
-      return Number.isFinite(predicted) && Number.isFinite(observed) ? [Math.abs(predicted - observed)] : [];
-    });
-    return { name, count: errors.length, mae: errors.length ? errors.reduce((sum, error) => sum + error, 0) / errors.length : null };
+    const errors = [];
+    const times = hourly?.time || [];
+    for (let index = 0; index < times.length; index++) {
+      const predicted = hourly?.temperature_2m_previous_day1?.[index];
+      const time = times[index];
+      if (!Number.isFinite(predicted) || typeof time !== 'string') continue;
+      const utcTime = /(?:Z|[+-]\\d\\d:\\d\\d)$/.test(time) ? time : `${time}Z`;
+      const instant = Date.parse(utcTime);
+      if (!Number.isFinite(instant)) continue;
+      const observed = actual.get(Math.floor(instant / 3600000));
+      if (Number.isFinite(observed)) errors.push(predicted - observed);
+    }
+    const count = errors.length;
+    return {
+      name, count,
+      mae: count ? errors.reduce((sum, error) => sum + Math.abs(error), 0) / count : null,
+      rmse: count ? Math.sqrt(errors.reduce((sum, error) => sum + error ** 2, 0) / count) : null,
+      bias: count ? errors.reduce((sum, error) => sum + error, 0) / count : null
+    };
   });
+}
+
+// Backward-compatible public contract used by older visualizations and tests.
+export function retrospectiveErrors(observations, forecasts) {
+  return retrospectiveMetrics(observations, forecasts).map(({ name, count, mae }) => ({ name, count, mae }));
 }
