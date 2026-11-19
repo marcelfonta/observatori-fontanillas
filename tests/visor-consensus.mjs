@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { hourlyComparison, localForecastHour, readingAt, retrospectiveErrors, summarize } from '../visor/consensus.js';
+import { hourlyComparison, localForecastHour, readingAt, retrospectiveErrors, retrospectiveMetrics, summarize } from '../visor/consensus.js';
 
 assert.equal(localForecastHour('2026-11-10T11:00:00Z'), '2026-11-10T12:00');
 assert.equal(localForecastHour('2026-07-10T11:00:00Z'), '2026-07-10T13:00');
@@ -26,3 +26,36 @@ const epoch = Date.parse('2026-11-10T12:00:00Z') / 1000;
 const retrospective = retrospectiveErrors([{ epoch: epoch + 40 * 60, temperature: 13 }, { epoch: epoch + 3600, temperature: null }], [{ name: 'Best Match', hourly: { time: ['2026-11-10T12:00', '2026-11-10T13:00'], temperature_2m_previous_day1: [15, 17] } }]);
 assert.deepEqual(retrospective, [{ name: 'Best Match', count: 1, mae: 2 }], 'observations stay in their measured hour and nulls are omitted');
 console.log('visor consensus: OK');
+
+const metrics = retrospectiveMetrics([
+  { epoch, temperature: 10 }, { epoch: epoch + 1200, temperature: 14 },
+  { epoch: epoch + 3600, temperature: 20 },
+  { epoch: epoch + 7200, temperature: null }
+], [{ name: 'Test +24 h', hourly: {
+  time: ['2026-11-10T12:00', '2026-11-10T13:00', '2026-11-10T14:00'],
+  temperature_2m_previous_day1: [14, 17, 5]
+} }])[0];
+assert.equal(metrics.count, 2);
+assert.equal(metrics.mae, 2.5, 'absolute errors 2 and 3');
+assert.equal(metrics.rmse, Math.sqrt(6.5), 'squared errors 4 and 9');
+assert.equal(metrics.bias, -0.5, 'signed errors 2 and -3');
+const emptyMetrics = retrospectiveMetrics([{ epoch, temperature: null }], [{
+  name: 'Absent', hourly: { time: ['2026-11-10T12:00'], temperature_2m_previous_day1: [10] }
+}])[0];
+assert.equal(emptyMetrics.count, 0);
+assert.equal(emptyMetrics.mae, null);
+assert.equal(emptyMetrics.rmse, null);
+assert.equal(emptyMetrics.bias, null);
+
+const localOffset = retrospectiveMetrics([
+  { epoch: Date.parse('2026-11-10T11:00:00Z') / 1000, temperature: 10 }
+], [{ name: 'Zona', hourly: {
+  time: ['2026-11-10T12:00:00+01:00'],
+  temperature_2m_previous_day1: [12]
+} }])[0];
+assert.equal(localOffset.count, 1, 'ISO timestamp with an explicit timezone offset must match the observed UTC hour');
+assert.equal(localOffset.mae, 2);
+const missingEpoch = retrospectiveMetrics([{ epoch: '', temperature: 12 }, { epoch: null, temperature: 13 }], [{
+  name: 'Falta hora', hourly: { time: ['1970-01-01T00:00'], temperature_2m_previous_day1: [15] }
+}])[0];
+assert.equal(missingEpoch.count, 0, 'missing epoch is never silently treated as 1970');
