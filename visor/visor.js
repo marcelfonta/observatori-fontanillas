@@ -360,6 +360,40 @@ $('#model-focus').addEventListener('change', () => forecasts());
 $('#place-select').addEventListener('change', event => { const place = PLACES[event.target.value]; if (!place) return; map.flyTo(place.point, 9); setPoint(place.point, place.name); });
 map.on('click', event => { const point = [event.latlng.lat, event.latlng.lng]; setPoint(point, 'Punt triat al mapa'); });
 $('#refresh').addEventListener('click', () => selectMode(state.mode));
+const expandedMap = $('#map-workspace');
+const expandButton = $('#map-expand');
+function setMapExpanded(expanded) {
+  expandedMap.classList.toggle('is-expanded', expanded);
+  document.body.classList.toggle('map-expanded', expanded);
+  expandButton.setAttribute('aria-pressed', String(expanded));
+  expandButton.setAttribute('aria-label', expanded ? 'Tanca el mapa ampliat' : 'Amplia el mapa');
+  expandButton.textContent = expanded ? '✕' : '⛶';
+  requestAnimationFrame(() => map.invalidateSize({ pan: false }));
+}
+expandButton.addEventListener('click', () => setMapExpanded(!expandedMap.classList.contains('is-expanded')));
+document.addEventListener('keydown', event => { if (event.key === 'Escape' && expandedMap.classList.contains('is-expanded')) { setMapExpanded(false); expandButton.focus(); } });
+function activateView(view) {
+  document.querySelectorAll('[data-visor-view]').forEach(button => {
+    const active = button.dataset.visorView === view;
+    button.classList.toggle('is-active', active);
+    if (active) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
+  if (view === 'models' || view === 'territory') {
+    if (state.mode !== 'models') selectMode('models');
+    if (view === 'territory' && state.modelMap !== 'territory') {
+      state.modelMap = 'territory'; $('#model-map-select').value = 'territory';
+      $('#layer-field').hidden = true; showModels();
+    }
+  }
+  const target = view === 'models' ? $('#models') : view === 'verification' ? $('#verification') : view === 'territory' ? $('#map-workspace') : $('#explora');
+  if (view === 'models') target.open = true;
+  target?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+}
+document.querySelector('.visor-nav').addEventListener('click', event => {
+  const button = event.target.closest('[data-visor-view]');
+  if (button) activateView(button.dataset.visorView);
+});
 $('#time-range').addEventListener('input', event => { stop(); state.index = Number(event.target.value); if (state.mode === 'models') { redrawArome(); forecasts(); } else redrawRadar(); });
 $('#prev').addEventListener('click', () => { stop(); state.index--; if (state.mode === 'models') { redrawArome(); forecasts(); } else redrawRadar(); });
 $('#next').addEventListener('click', () => { stop(); state.index++; if (state.mode === 'models') { redrawArome(); forecasts(); } else redrawRadar(); });
