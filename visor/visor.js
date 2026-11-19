@@ -1,4 +1,4 @@
-import { hourlyComparison, localForecastHour, readingAt, retrospectiveErrors, summarize } from './consensus.js';
+import { hourlyComparison, localForecastHour, readingAt, retrospectiveMetrics, summarize } from './consensus.js';
 
 const API = 'https://fonta-meteo.marcelfonta.workers.dev';
 const STATION = [41.6906, 2.489];
@@ -534,14 +534,27 @@ $('#verification-load').addEventListener('click', async () => {
     const observations = Array.isArray(history) ? history : (history.observations || history.rows || history.data || []);
     const cutoff = Date.now() / 1000 - 48 * 3600;
     const rows = observations.filter(row => Number(row.epoch) >= cutoff);
-    const result = retrospectiveErrors(rows, [{ name: 'Open-Meteo · Best Match, 24 h abans', hourly: previous.hourly }])[0];
+    const result = retrospectiveMetrics(rows, [{ name: 'Open-Meteo · Best Match, 24 h abans', hourly: previous.hourly }])[0];
     if (!result || result.count < 6) { output.textContent = 'No hi ha prou hores comparables amb lectures reals. Torna-ho a provar més tard.'; return; }
     output.replaceChildren();
-    const metric = document.createElement('strong'); metric.textContent = `${format(result.mae, 1)} °C`;
-    const info = document.createElement('p'); info.textContent = `Error absolut mitjà de temperatura · ${result.count} hores comparables de les últimes 48. Pronòstic Best Match emès 24 hores abans de cada hora vàlida. No és una classificació de models.`;
+    const heading = document.createElement('p');
+    heading.textContent = `Pronòstic Open-Meteo Best Match (+24 h) versus mesures de l'estació Fontanillas · ${result.count} hores comparables de les darreres 48.`;
+    const metrics = document.createElement('div'); metrics.className = 'verification-metrics';
+    for (const [label, value, meaning] of [
+      ['MAE', result.mae, 'Error absolut mitjà; més petit és millor'],
+      ['RMSE', result.rmse, 'Penalitza els errors més grans'],
+      ['Biaix', result.bias, 'Positiu: preveu massa calor; negatiu: massa fred']
+    ]) {
+      const item = document.createElement('div');
+      const title = document.createElement('span'); title.textContent = label;
+      const number = document.createElement('strong'); number.textContent = `${format(value, 2)} °C`;
+      const detail = document.createElement('small'); detail.textContent = meaning;
+      item.append(title, number, detail); metrics.append(item);
+    }
+    const info = document.createElement('p'); info.textContent = 'Només temperatura i +24 h. Mostra curta i parcial: aquestes mètriques no certifiquen quin model és millor. Les observacions horàries amb valors absents s’exclouen.';
     const links = document.createElement('p');
     links.innerHTML = '<a href="https://open-meteo.com/en/docs/previous-runs-api" target="_blank" rel="noopener noreferrer">Previsions arxivades · Open-Meteo ↗</a> · <a href="https://meteo.fontanillas.cat/estacio.html" target="_blank" rel="noopener noreferrer">Lectures · Estació Fontanillas ↗</a>';
-    output.append(metric, info, links);
+    output.append(heading, metrics, info, links);
   } catch { output.textContent = 'No s’ha pogut completar la comparació. Les fonts poden estar temporalment no disponibles.'; }
   finally { button.disabled = false; }
 });
