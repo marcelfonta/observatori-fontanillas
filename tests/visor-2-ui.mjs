@@ -32,3 +32,18 @@ assert.ok(js.includes('const selected = summarize(readings, state.modelVariable)
 assert.ok(css.includes('.meteogram-model-option') && css.includes('.hourly-time-link'));
 assert.ok(css.includes('.map-column{order:0}'), 'El mòbil ha de prioritzar el mapa');
 console.log('visor 2.0 UI: selectors, sintaxi i invariants bàsics OK');
+
+const {paintField} = await import('../visor/color-field.js');
+const pixels = new Uint8ClampedArray(9*9*4);
+const samples = Array.from({length:25},(_,i)=>i%5*6);
+paintField(pixels,9,samples,'temperature');
+assert.equal(pixels[3],255);
+assert.notDeepEqual(pixels.slice(0,3),pixels.slice(4,7), 'El degradat ha de canviar entre mostres');
+samples[20]=null;
+paintField(pixels,9,samples,'temperature');
+assert.equal(pixels[3],0,'Una cel·la sense dades queda transparent');
+samples.fill(0);
+samples[20]=10;
+paintField(pixels,9,samples,'rain');
+assert.notDeepEqual(pixels.slice(0,3),pixels.slice(8,11),'La pluja conserva el contrast entre cel·les');
+assert.equal(pixels[11],255,'El zero de pluja és una dada vàlida');

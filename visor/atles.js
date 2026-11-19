@@ -1,3 +1,4 @@
+import { paintField, palettes } from './color-field.js';
 import { MODELS, MODEL_VARIABLES } from './models.js';
 import { readingAt, summarize } from './consensus.js';
 
@@ -6,12 +7,6 @@ const coordinates = [];
 for (const latitude of [41.57, 41.65, 41.73, 41.81, 41.89]) {
   for (const longitude of [2.27, 2.38, 2.49, 2.60, 2.71]) coordinates.push([latitude, longitude]);
 }
-const scales = {
-  temperature: [[-Infinity,'#ccc5ef'],[0,'#9bcff2'],[8,'#a8e5c1'],[16,'#f4e395'],[24,'#f9b27e'],[32,'#ef929e']],
-  rain: [[-Infinity,'#e1e7dc'],[0.1,'#b5e3cc'],[1,'#85cfcc'],[3,'#80b4e3'],[8,'#ac9ee6'],[20,'#ed98bf']],
-  wind: [[-Infinity,'#dae9c8'],[10,'#a6dbbc'],[20,'#81cfce'],[35,'#f4d68e'],[50,'#f6ab82'],[75,'#ec9bbe']],
-  clouds: [[-Infinity,'#fff3a9'],[20,'#e6ebbd'],[40,'#ceddcd'],[60,'#b8ccce'],[80,'#9bb2c0'],[95,'#99a2b8']]
-};
 const datasets = new Map();
 const firstHour = Math.ceil(Date.now()/3600000)*3600000;
 const clock = new Intl.DateTimeFormat('ca-ES',{timeZone:'Europe/Madrid',weekday:'short',hour:'2-digit',minute:'2-digit'});
@@ -23,6 +18,12 @@ let pending = 0;
 let map;
 let markers = [];
 let selectedPoint = null;
+const raster = document.createElement('canvas');
+raster.width = raster.height = 161;
+const context = raster.getContext('2d');
+const frame = context.createImageData(raster.width,raster.height);
+let overlay;
+
 
 function setExtent() {
   map.fitBounds(L.latLngBounds(coordinates),{paddingTopLeft:[30,60],paddingBottomRight:[30,64],animate:false});
@@ -47,12 +48,12 @@ function format(value) {
   return numbers[MODEL_VARIABLES[variable].digits].format(value);
 }
 function legend() {
-  const options = scales[variable];
+  const options = palettes[variable];
   el('legend-title').textContent = MODEL_VARIABLES[variable].label+' · '+MODEL_VARIABLES[variable].unit;
-  el('scale').replaceChildren(...options.map(([bound,color],i) => {
+  el('scale').style.setProperty('--gradient','linear-gradient(90deg,'+options.map(([v,c])=>c+' '+((v-options[0][0])*100/(options.at(-1)[0]-options[0][0]))+'%').join(',')+')');
+  el('scale').replaceChildren(...[options[0],options.at(-1)].map(([bound]) => {
     const span = document.createElement('span');
-    span.style.borderColor = color;
-    span.textContent = i ? '≥'+format(bound) : '<'+format(options[1][0]);
+    span.textContent = format(bound);
     return span;
   }));
 }
@@ -71,6 +72,7 @@ function draw() {
   el('hour').value = index;
   el('hour').setAttribute('aria-valuetext',el('valid').textContent);
   let coverage = 0;
+  const values = [];
   markers.forEach((marker,point) => {
     const reading = pointReading(point,hour,model);
     const available = Number.isFinite(reading.value);
@@ -79,13 +81,16 @@ function draw() {
     const badge = node.firstElementChild;
     node.classList.toggle('missing',!available);
     badge.textContent = value;
-    badge.style.backgroundColor = available ? scales[variable].findLast(([min])=>reading.value>=min)[1] : '';
+    values.push(reading.value);
     node.setAttribute('aria-label',coordinates[point].join(', ')+', '+(available ? value+' '+MODEL_VARIABLES[variable].unit : 'sense dada'));
     if (selectedPoint === point && marker.isPopupOpen()) marker.setPopupContent(popupContent(point,reading));
     if (available) coverage++;
   });
+  paintField(frame.data,raster.width,values,variable);
+  context.putImageData(frame,0,0);
+  overlay.setUrl(raster.toDataURL());
   const label = model==='combined' ? 'Consens' : model;
-  el('status').textContent = pending ? 'Carregant · '+(MODELS.length-pending)+'/'+MODELS.length+' models' : label+' · '+coverage+'/'+coordinates.length+' punts amb dades';
+  el('status').textContent = pending ? 'Carregant · '+(MODELS.length-pending)+'/'+MODELS.length+' models' : label+' · '+(variable==='rain'?'per cel·les':'interpolació visual')+' · '+coverage+'/'+coordinates.length+' punts amb dades';
   el('retry').hidden = pending > 0 || datasets.size===MODELS.length;
   el('play').disabled = el('hour').disabled = datasets.size===0;
   el('prev').disabled = !index || !datasets.size;
@@ -115,16 +120,25 @@ async function load() {
 }
 function start() {
   if (!window.L) { el('status').textContent='No s’ha pogut carregar el mapa. Torna a carregar la pàgina.'; return; }
-  map = L.map('map',{zoomControl:false,maxZoom:15,minZoom:6});
+  map = L.map('map',{zoomControl:false,zoomSnap:0.25,maxZoom:15,minZoom:6});
   L.control.zoom({position:'topright'}).addTo(map);
   setExtent();
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+  overlay = L.imageOverlay(raster.toDataURL(),L.latLngBounds(coordinates),{className:'forecast-field',opacity:0.74,interactive:false}).addTo(map);
   markers = coordinates.map((point,i)=>{
     const icon = L.divIcon({className:'sample missing',html:'<span>—</span>',iconSize:[39,26],iconAnchor:[19,13]});
     const marker = L.marker(point,{icon}).addTo(map);
     marker.bindPopup(()=>popupContent(i,pointReading(i,new Date(firstHour+index*3600000).toISOString().slice(0,16),el('model').value)));
     marker.on('popupopen',()=>{selectedPoint=i;});
     return marker;
+  });
+  map.on('click',event=>{
+    if (!overlay.getBounds().contains(event.latlng)) return;
+    let nearest=0;
+    coordinates.forEach((point,i)=>{
+      if (event.latlng.distanceTo(point)<event.latlng.distanceTo(coordinates[nearest])) nearest=i;
+    });
+    markers[nearest].openPopup();
   });
   MODELS.forEach(model=>el('model').add(new Option(model.name,model.name)));
   el('model').addEventListener('change',draw);

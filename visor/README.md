@@ -1,6 +1,6 @@
 # Mapa multimodel del Baix Montseny
 
-La portada ocupa una pantalla. Mostra 25 punts mostrejats en una graella de cinc per cinc, amb la mediana per família o una de les vuit sortides seleccionada. Les consultes demanen les quatre variables en UTC i la interfície mostra l’hora d’Europa/Madrid. El reproductor avança entre l’hora inicial i +24 h amb les mateixes sèries. Cada punt mostra el valor de la coordenada sol·licitada sense interpolació. Un guió indica absència de dades.
+La portada ocupa una pantalla. Mostra 25 punts mostrejats en una graella de cinc per cinc, amb la mediana per família o una de les vuit sortides seleccionada. Les consultes demanen les quatre variables en UTC i la interfície mostra l’hora d’Europa/Madrid. El reproductor avança entre l’hora inicial i +24 h amb les mateixes sèries. El mapa acoloreix exclusivament el rectangle mostrejat. Temperatura, vent i nuvolositat utilitzen interpolació bilineal visual entre quatre mostres vàlides. La pluja es representa per cel·les de mostra més propera. Els detalls puntuals conserven el valor consultat. Un guió indica absència de dades.
 
 El radar, el mapa natiu AROME, els meteogrames i la verificació retrospectiva es consulten a `analisi.html`. El projecte Pages publica només el directori `visor/`. Per tornar a la portada anterior es pot restaurar el desplegament anterior del visor.
 

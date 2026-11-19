@@ -14,3 +14,11 @@ select{display:block;min-height:44px;margin-top:3px;padding:0 8px;font-size:15px
 .transport{border-top:1px solid var(--edge);gap:16px}.playback{display:flex;gap:4px}.playback button,#info{min-width:44px;font-size:20px}.track{flex:1;min-width:0}.track label{display:flex;justify-content:space-between;gap:4px}.track strong{color:#f0f6f0}input[type=range]{width:100%;accent-color:#a5e49f;margin:0;height:28px}dialog{width:min(420px,92vw);border:1px solid var(--edge);border-radius:14px;background:var(--panel);color:#fff;padding:22px}dialog::backdrop{background:#0009}dialog h2{margin:0}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #f4ca6d;outline-offset:2px}
 @media(max-width:750px){header{padding:6px 12px}.identity strong{font-size:16px}.identity small,nav a:last-child{display:none}nav{font-size:13px}.tools{display:grid;grid-template-columns:1fr auto;gap:5px 10px;padding:6px 12px}.heading{margin:0}h1{font-size:21px}.variable{grid-column:1/-1}.variable>span{position:absolute;clip-path:inset(100%)}#variables{margin:0}#variables button{flex:1;padding:0 4px;font-size:13px}.tools select{font-size:13px;max-width:48vw}.transport{gap:7px;padding:6px 8px max(6px,env(safe-area-inset-bottom))}.track label{display:block;font-size:0}.track strong{font-size:12px}#scale{gap:6px}.legend{left:8px}.map-status{font-size:11px}}
 @media(max-height:450px){.identity small,.heading span{display:none}header,.tools,.transport{padding-top:3px;padding-bottom:3px}main{grid-template-rows:auto minmax(125px,1fr) auto}}
+
+/* Keep exact sample values available on focus or touch. */
+.sample span,.sample.missing span{opacity:0}
+.sample:focus span,.sample:hover span{opacity:1;background:#fff;color:#14251a}
+.leaflet-tile-pane{filter:saturate(.48)}
+#scale{display:flex;justify-content:space-between;gap:8px;position:relative;padding-top:9px}
+#scale::before{content:'';position:absolute;inset:0 0 auto;height:6px;background:var(--gradient);border-radius:4px}
+#scale span{border:0;min-width:0}

@@ -354,3 +354,7 @@ manera visible sense convertir una absència d’imatge en una absència de feno
 - La marca no controla el text, les dades ni les conclusions, i no se li promet una ressenya positiva ni xifres d’audiència no acreditades.
 - Abans d’integrar un producte es revisen compatibilitat, manteniment, propietat de les dades, llicències, atribució i condicions de retorn.
 - La pàgina pública de col·laboracions manté l’estat actualitzat, inclosa l’absència de patrocinis comercials actius.
+
+## Visor del Baix Montseny · representació per colors en previsualització
+
+Per a cada hora, es calcula primer el resultat a cadascuna de les 25 coordenades amb la metodologia existent. La capa gràfica interpola temperatura, velocitat del vent i nuvolositat només dins del rectangle mostrejat, amb quatre mostres vàlides per quadrícula. La precipitació es pinta per cel·les, sense suavitzar-la. La imatge és una estimació visual regional. No representa el ràster natiu dels models ni s'utilitza en càlculs científics. La finestra de consulta mostra el valor puntual original.
