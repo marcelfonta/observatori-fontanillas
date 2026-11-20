@@ -26,6 +26,28 @@ const collected=await collectProductionData({slot:'mati',now,fetcher:async url=>
 },rainFetcher:async()=>({frames:[6,12,18,23].map(h=>({time:snapshot.date+`T${h}:00`,values:[null]})),points:[{latitude:41.69,longitude:2.49}],source:'test',spatial:false})});
 assert.equal(collected.rain.available,false);assert.equal(collected.environment.secondaryUv,null);assert.equal(collected.moon,null);
 assertProductionSnapshot(collected,now);
+let stationAttempts=0,forecastAttempts=0;
+const recovered=await collectProductionData({slot:'mati',now,fetcher:async url=>{
+ if(url==='https://fonta-meteo.marcelfonta.workers.dev'){
+  stationAttempts++;
+  if(stationAttempts===1)throw new TypeError('fetch failed');
+  return Response.json(snapshot.current);
+ }
+ if(url.includes('/v1/forecast')){
+  forecastAttempts++;
+  if(forecastAttempts===1)return new Response('temporary',{status:503});
+  return Response.json(forecast);
+ }
+ throw Error('Optional provider unavailable');
+},rainFetcher:async()=>({frames:[6,12,18,23].map(h=>({time:snapshot.date+`T${h}:00`,values:[null]})),points:[{latitude:41.69,longitude:2.49}],source:'test',spatial:false})});
+assert.equal(stationAttempts,2);assert.equal(forecastAttempts,2);assertProductionSnapshot(recovered,now);
+let badRequests=0;
+await assert.rejects(()=>collectProductionData({slot:'mati',now,fetcher:async url=>{
+ if(url==='https://fonta-meteo.marcelfonta.workers.dev')return Response.json(snapshot.current);
+ if(url.includes('/v1/forecast')){badRequests++;return new Response('bad request',{status:400});}
+ throw Error('Optional provider unavailable');
+}}),/Predicció Open-Meteo: HTTP 400/);
+assert.equal(badRequests,1);
 
 for(const period of ['mati','migdia','vespre']){
  const {card}=productionFixture(period);
