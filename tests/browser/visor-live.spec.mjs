@@ -1,16 +1,16 @@
 import { test, expect } from '@playwright/test';
 
-const preview = process.env.VISOR_PREVIEW_URL || 'https://9f449f47.visor-fontanillas.pages.dev';
+const preview = process.env.VISOR_PREVIEW_URL || 'https://fix-visor-touch-hourly-rende.visor-fontanillas.pages.dev';
 test('Comprovació pública del visor amb fonts reals', async ({page}, info) => {
   test.skip(!preview, 'Indica el desplegament amb VISOR_PREVIEW_URL');
   test.setTimeout(210000);
   const problems = [];
   page.on('pageerror', error => problems.push(error.message));
-  page.on('response', response => {
+  page.on('response', async response => {
     if (response.status() >= 400) {
       const url = new URL(response.url());
       if (/open-meteo|rainviewer|workers\.dev/.test(url.hostname))
-        console.log('Font', url.hostname, url.pathname, response.status());
+        console.log('Font', url.hostname, url.pathname, url.searchParams.get('models') || '', response.status(), (await response.json().catch(()=>null))?.reason || '');
     }
   });
   await page.setViewportSize({width:1280,height:800});

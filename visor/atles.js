@@ -337,7 +337,14 @@ async function readModel(model) {
   });
   if (model.model) params.set('models',model.model);
   const nativeGrid=detail && model.name===(detailStep===.01?'AROME HD':'ARPEGE Europa');
-  if(detail){params.set('cell_selection','nearest');params.set('elevation','nan');}
+  if(detail)params.set('cell_selection','nearest');
+  function requestGridCoordinates(){
+    params.delete('bounding_box');
+    params.set('latitude',coordinates.map(p=>p[0]).join(','));
+    params.set('longitude',coordinates.map(p=>p[1]).join(','));
+    params.set('elevation',coordinates.map(()=>'nan').join(','));
+  }
+  if(detail && !nativeGrid)requestGridCoordinates();
   if(nativeGrid){
     params.delete('latitude');params.delete('longitude');
     params.set('bounding_box',[latitudes[0]-detailStep/3,longitudes[0]-detailStep/3,latitudes.at(-1)+detailStep/3,longitudes.at(-1)+detailStep/3].map(n=>n.toFixed(4)).join(','));
@@ -353,6 +360,10 @@ async function readModel(model) {
       await new Promise(resolve=>setTimeout(resolve,Math.max(1000,wait)));
       response = await request();
     }
+  }
+  if(nativeGrid && response.status===400){
+    requestGridCoordinates();
+    response=await request();
   }
   if (response.status===400) {
     params.set('hourly','temperature_2m,precipitation,wind_speed_10m,cloud_cover');
@@ -374,10 +385,19 @@ async function load() {
   const missing = MODELS.filter(model=>!datasets.has(model.name));
   pending = missing.length;
   draw();
-  await Promise.allSettled(missing.map(async model=>{
-    try { await fetchModel(model); }
-    finally { pending--; draw(); }
-  }));
+  if(detail){
+    const priority=detailStep===.01?'AROME HD':'ARPEGE Europa';
+    missing.sort((a,b)=>Number(b.name===priority)-Number(a.name===priority));
+  }
+  async function nextModel(){
+    while(missing.length){
+      const model=missing.shift();
+      try { await fetchModel(model); }
+      catch { /* Keep the coverage counter and retry control available. */ }
+      finally { pending--; draw(); }
+    }
+  }
+  await Promise.all(Array.from({length:detail?2:missing.length},nextModel));
 }
 function start() {
   if (!window.L) { el('status').textContent='No s’ha pogut carregar el mapa. Torna a carregar la pàgina.'; return; }
