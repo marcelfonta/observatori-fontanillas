@@ -61,13 +61,15 @@ export function stationSkill() {
       async function drain(){
         while(tasks.length&&!current.signal.aborted){
           const {key,start}=tasks.shift();
-          const params=new URLSearchParams({latitude:'41.6906',longitude:'2.489',models:key,run:iso(start),hourly:fields.join(','),timezone:'GMT',start_date:iso(start).slice(0,10),end_date:iso(start+24*hour).slice(0,10)});
+          const params=new URLSearchParams({latitude:'41.6906',longitude:'2.489',models:key,run:iso(start),hourly:fields.join(','),timezone:'GMT'});
           try{const d=await get('https://single-runs-api.open-meteo.com/v1/forecast?'+params);if(d.hourly)output.push({key,start,data:d.hourly});}catch{/* Missing runs are excluded. */}
         }
       }
       await Promise.all([drain(),drain(),drain()]);
       if(current.signal.aborted)return;
-      pairs=output;lead.disabled=false;draw();
+      pairs=output;
+      if(!pairs.length){section.textContent='No s’ha pogut obtenir cap passada arxivada. Torna a obrir la verificació per reintentar-ho.';return;}
+      lead.disabled=false;draw();
     }catch{if(!current.signal.aborted)section.textContent='L’històric de l’estació no està disponible. Torna a obrir la verificació per reintentar-ho.';}
   };
 }

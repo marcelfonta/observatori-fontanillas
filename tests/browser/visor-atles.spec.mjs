@@ -213,7 +213,9 @@ test('Malla AROME, meteograma al punt i passades verificades',async({page})=>{
   const timestamps=[1,2,3].flatMap(d=>[6,12,24].flatMap(h=>Array.from({length:12},(_,i)=>(midnight+(h-d*24)*3600000)/1000-i*300)));
   await page.route('**/history?days=5&resolution=raw',route=>route.fulfill({json:timestamps.map(epoch=>({epoch,temperature:10,windSpeed:5,rainIncrement:0}))}));
   await page.route('https://single-runs-api.open-meteo.com/**',route=>{
-    const run=Date.parse(new URL(route.request().url()).searchParams.get('run')+'Z');
+    const params=new URL(route.request().url()).searchParams;
+    expect(params.has('start_date') || params.has('end_date')).toBe(false);
+    const run=Date.parse(params.get('run')+'Z');
     return route.fulfill({json:{hourly:{time:[6,12,24].map(h=>iso(run+h*3600000)),temperature_2m:[11,12,13],precipitation:[0,0,0],wind_speed_10m:[5,5,5]}}});
   });
   await page.click('#verify-station');

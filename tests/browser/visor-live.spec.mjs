@@ -1,6 +1,14 @@
 import { test, expect } from '@playwright/test';
 
-const preview = process.env.VISOR_PREVIEW_URL || 'https://fix-visor-touch-hourly-rende.visor-fontanillas.pages.dev';
+import { readFileSync } from 'node:fs';
+
+function requestedPreview(){
+  if(process.env.VISOR_PREVIEW_URL)return process.env.VISOR_PREVIEW_URL;
+  if(process.env.GITHUB_EVENT_NAME!=='pull_request')return;
+  const {pull_request:pr}=JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH,'utf8'));
+  return pr?.body?.match(/^Previsualització per a la prova pública: (https:\/\/[a-z0-9-]+\.visor-fontanillas\.pages\.dev)\s*$/m)?.[1];
+}
+const preview=requestedPreview();
 test('Comprovació pública del visor amb fonts reals', async ({page}, info) => {
   test.skip(!preview, 'Indica el desplegament amb VISOR_PREVIEW_URL');
   test.setTimeout(420000);
@@ -33,6 +41,11 @@ test('Comprovació pública del visor amb fonts reals', async ({page}, info) => 
   await page.click('#mode-consensus');
   await page.click('#verify-station');
   await expect(page.locator('#station-skill tbody')).toContainText('(n=',{timeout:100000});
+  for(const lead of ['12','24']){
+    await page.selectOption('#station-skill select',lead);
+    await expect(page.locator('#station-skill tbody')).toContainText('(n=');
+  }
+  console.log('Verificació a 24 h', await page.locator('#station-skill tbody').innerText());
   await info.attach('Verificació real en mòbil', {body:await page.screenshot(),contentType:'image/png'});
   expect(problems).toEqual([]);
 });
