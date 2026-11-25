@@ -407,7 +407,20 @@ function start() {
   overlay = L.imageOverlay(raster.toDataURL(),L.latLngBounds(coordinates),{className:'forecast-field',opacity:0.74,interactive:false}).addTo(map);
   markers = coordinates.map((point,i)=>{
     const icon = L.divIcon({className:'sample missing',html:'<span>—</span>',iconSize:[39,26],iconAnchor:[19,13]});
-    const marker = L.marker(point,{icon}).addTo(map);
+    const marker = L.marker(point,{icon});
+    marker.on('add',()=>{
+      const button=marker.getElement();
+      button.setAttribute('aria-label','Consulta la previsió a '+point.join(', '));
+      button.addEventListener('keydown',event=>{
+        if(event.key!=='Enter' && event.key!==' ')return;
+        event.preventDefault();
+        event.stopPropagation();
+        stop();
+        selectPoint(marker.getLatLng());
+        pointPopup?.getElement()?.querySelector('.outlook-action')?.focus({preventScroll:true});
+      });
+    });
+    marker.addTo(map);
     marker.on('click',event=>{
       const pointer=event.originalEvent;
       selectPoint(pointer?.detail>0 ? map.mouseEventToLatLng(pointer) : marker.getLatLng());
