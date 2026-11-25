@@ -135,9 +135,14 @@ test('El radar reprodueix només observacions i restaura el model i l’hora',as
   await page.selectOption('#model','GFS');
   await page.click('#next');
   await page.click('#mode-radar');
-  await expect(page.locator('#hour')).toHaveAttribute('max','1');
+  await expect(page.locator('#hour')).toHaveAttribute('max','26');
   await expect(page.locator('#hour')).toHaveValue('1');
   await expect(page.locator('.sample')).toHaveCount(0);
+  await page.click('#next');
+  await expect(page.locator('#hour')).toHaveValue('2');
+  await expect(page.locator('#title')).toHaveText('Previsió de precipitació');
+  await page.click('#prev');
+  await expect(page.locator('#title')).toHaveText('Radar observat');
   await page.click('#prev');
   await expect(page.locator('#hour')).toHaveValue('0');
   await page.click('#mode-models');
@@ -172,4 +177,48 @@ test('El floc es distingeix de la pluja i el punt conserva la coordenada del toc
   await expect(page.locator('.leaflet-popup')).toContainText('Sense neu prevista');
   await page.locator('.leaflet-popup-close-button').click();
   await expect(pin).toHaveCount(0);
+});
+
+test('Malla AROME, meteograma al punt i passades verificades',async({page})=>{
+  const start=Math.ceil(Date.now()/3600000)*3600000;
+  const iso=ms=>new Date(ms).toISOString().slice(0,16);
+  const times=Array.from({length:25},(_,i)=>iso(start+i*3600000));
+  const hourly={time:times,temperature_2m:times.map(()=>12),wind_speed_10m:times.map(()=>5),precipitation:times.map((_,i)=>i===3?2:0),cloud_cover:times.map(()=>30)};
+  let boxes=0,points=0;
+  await page.route('https://api.open-meteo.com/**',async route=>{
+    const q=new URL(route.request().url()).searchParams;
+    if(q.has('bounding_box')){
+      boxes++;
+      const cells=Array.from({length:81},(_,i)=>({latitude:41.65+Math.floor(i/9)*.01,longitude:2.45+(i%9)*.01,hourly}));
+      return route.fulfill({json:cells.reverse()});
+    }
+    const n=q.get('latitude').split(',').length;
+    if(n===1)points++;
+    return route.fulfill({json:n===1?{hourly}:Array.from({length:n},()=>({hourly}))});
+  });
+  await page.goto('/visor/?malla=arome&lat=41.69&lon=2.49');
+  await expect(page.locator('#status')).toContainText('81/81 punts amb dades · 8/8');
+  expect(boxes).toBe(1);
+  await page.locator('.sample').nth(40).focus();
+  await page.keyboard.press('Enter');
+  await page.getByRole('button',{name:'Meteograma · 24 h'}).click();
+  const panel=page.locator('#outlook');
+  await expect(panel).toContainText('2 mm de mediana');
+  await expect(panel.locator('tbody tr')).toHaveCount(24);
+  await panel.locator('select[name=model]').selectOption('GFS');
+  await expect(panel.locator('thead')).toContainText('GFS');
+  expect(points).toBe(8);
+  await panel.locator('form button').click();
+  const midnight=Date.parse(new Date().toISOString().slice(0,10)+'T00:00Z');
+  const timestamps=[1,2,3].flatMap(d=>[6,12,24].flatMap(h=>Array.from({length:12},(_,i)=>(midnight+(h-d*24)*3600000)/1000-i*300)));
+  await page.route('**/history?days=5&resolution=raw',route=>route.fulfill({json:timestamps.map(epoch=>({epoch,temperature:10,windSpeed:5,rainIncrement:0}))}));
+  await page.route('https://single-runs-api.open-meteo.com/**',route=>{
+    const run=Date.parse(new URL(route.request().url()).searchParams.get('run')+'Z');
+    return route.fulfill({json:{hourly:{time:[6,12,24].map(h=>iso(run+h*3600000)),temperature_2m:[11,12,13],precipitation:[0,0,0],wind_speed_10m:[5,5,5]}}});
+  });
+  await page.click('#verify-station');
+  const station=page.locator('#station-skill');
+  await expect(station.locator('tbody tr').first()).toContainText('1 (n=3)');
+  await station.locator('select').selectOption('24');
+  await expect(station.locator('tbody tr').first()).toContainText('3 (n=3)');
 });

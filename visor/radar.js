@@ -34,5 +34,5 @@ export function radarHistory(map, onTileError) {
     layer.addTo(map);
     return new Date(frame.time*1000);
   }
-  return {clear,load,show};
+  return {clear,load,show,hide(){layer?.remove();layer=null;}};
 }

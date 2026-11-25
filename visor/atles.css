@@ -107,3 +107,13 @@ body[data-mode=radar] :is(.model-choice,.variable,.synoptic-tools){display:none}
 #phase-key:not([hidden]){display:block;margin-top:5px;line-height:1.35}
 
 .phase-rain{background:#095a79;font-size:10px}.phase-unknown{background:#4c5054}
+
+.outlook-action{display:block;background:#174730;color:white;margin:8px 0 4px;min-height:36px}
+.grid-links{display:flex;gap:8px;flex-wrap:wrap;font-size:12px}.data-dialog{width:min(490px,94vw);max-height:85dvh;overflow:auto}
+.data-dialog form{float:right}.data-dialog form button{font-size:22px}.data-dialog h2{margin-right:48px}
+.data-dialog label{display:inline-block;margin:4px 8px 4px 0}.data-dialog select{max-width:100%;min-height:36px;font-size:13px}
+.data-dialog svg{width:100%;background:#0d2018;border-radius:8px}.data-dialog table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.data-dialog th,.data-dialog td{padding:5px;text-align:right;border-bottom:1px solid #385040}.data-dialog th:first-child,.data-dialog td:first-child{text-align:left}
+#boundary:not([hidden]){display:flex;justify-content:space-between;position:relative;font-size:11px;color:#c9dbd0}#boundary b{position:absolute;left:var(--now);color:#ffe19e}
+#verify-station{min-height:36px;font-size:13px}
+@media(max-width:750px){#verify-station{grid-column:1;grid-row:4;font-size:11px}#zone{grid-column:2!important;grid-row:4}body[data-mode=radar] .tools>*{grid-row:auto!important}}
