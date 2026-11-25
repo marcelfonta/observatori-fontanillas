@@ -11,7 +11,7 @@ for (const width of [390, 1280]) {
       const url = new URL(route.request().url());
       const count = url.searchParams.get('latitude').split(',').length;
       const series = Array.from({length:time.length},(_,i)=>i+(url.pathname.endsWith('/gfs')?10:0));
-      const hourly = {time,temperature_2m:series,precipitation:series.map(()=>null),wind_speed_10m:series,cloud_cover:series};
+      const hourly = {time,temperature_2m:series,precipitation:series.map((_,i)=>i===1?null:i===2?0:2.5),wind_speed_10m:series,cloud_cover:series};
       await route.fulfill({json:Array.from({length:count},()=>({hourly}))});
     });
     await page.goto('/visor/');
@@ -36,8 +36,21 @@ for (const width of [390, 1280]) {
     await expect(points.first()).toHaveText('—');
     await expect(city).toBeEmpty();
     await expect(page.locator('#status')).toContainText('0/49');
+    await page.click('#next');
+    await expect(city).toHaveText('0 mm');
+    await expect(page.locator('#status')).toContainText('0 mm a totes les mostres disponibles');
+    await page.click('#next');
+    await expect(city).toHaveText('2,5 mm');
+    await page.selectOption('#model','native-compare');
+    await expect(city).toHaveText('2,5 mm');
+    await expect(page.locator('#curtain')).toBeVisible();
+    await page.getByRole('button',{name:'Vent',exact:true}).click();
+    await expect(city).toHaveText('3 km/h');
+    await page.getByRole('button',{name:'Núvols',exact:true}).click();
+    await expect(city).toHaveText('3 %');
+    await page.selectOption('#model','combined');
     await page.locator('#play').click();
-    await expect.poll(()=>page.locator('#hour').inputValue()).not.toBe('1');
+    await expect.poll(()=>page.locator('#hour').inputValue()).not.toBe('3');
     await page.locator('#play').click();
     await expect(page.locator('#play')).toHaveAttribute('aria-pressed','false');
     expect(requests).toBe(8);
@@ -50,6 +63,7 @@ test('Un camp regional absent mostra la fallada i conserva l’hora en comparar'
   await page.goto('/visor/');
   await page.locator('#model').selectOption('native-compare');
   await page.getByRole('button',{name:'Pluja i neu',exact:true}).click();
+  await page.check('#original-image');
   await expect(page.locator('#status')).toContainText('Capa no disponible');
   await expect(page.locator('#retry')).toBeVisible();
   await page.locator('#next').click();
@@ -73,6 +87,7 @@ test('Cortina sincronitzada i canvi atòmic de fotograma',async({page})=>{
   await page.goto('/visor/');
   await page.locator('#model').selectOption('native-compare');
   await page.getByRole('button',{name:'Pluja i neu',exact:true}).click();
+  await page.check('#original-image');
   const curtain=page.locator('#curtain'),clock=page.locator('#frame-time');
   await expect(curtain).toBeVisible();
   const before=await clock.innerText();

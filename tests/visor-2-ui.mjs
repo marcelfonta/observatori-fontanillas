@@ -42,8 +42,15 @@ assert.notDeepEqual(pixels.slice(0,3),pixels.slice(4,7), 'El degradat ha de canv
 samples[20]=null;
 paintField(pixels,9,samples,'temperature');
 assert.equal(pixels[3],0,'Una cel·la sense dades queda transparent');
-samples.fill(0);
-samples[20]=10;
-paintField(pixels,9,samples,'rain');
-assert.notDeepEqual(pixels.slice(0,3),pixels.slice(8,11),'La pluja conserva el contrast entre cel·les');
-assert.equal(pixels[11],255,'El zero de pluja és una dada vàlida');
+for (const variable of ['rain','wetFraction','wind','clouds']){
+  samples.fill(0);
+  samples[20]=10;
+  paintField(pixels,9,samples,variable);
+  const wet=pixels.slice(0,3), middle=pixels.slice(4,7), dry=pixels.slice(8,11);
+  assert.notDeepEqual(middle,wet,variable+' interpola el punt intermedi');
+  assert.notDeepEqual(middle,dry,variable+' manté el contrast amb el zero');
+  assert.equal(pixels[11],255,'El zero és una dada vàlida');
+  samples[20]=null;
+  paintField(pixels,9,samples,variable);
+  assert.equal(pixels[7],0,'Una mostra absent deixa el tram transparent');
+}

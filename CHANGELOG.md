@@ -2,6 +2,8 @@
 
 ## En preparació · Visor 2.0
 
+- Pluja, vent i nuvolositat mostren un ràster continu amb valors i unitats sobre les poblacions en consens, models i cortina regional.
+
 - Malles locals AROME HD i ARPEGE, meteograma de 24 h al punt seleccionat, recorregut del radar fins a la previsió i verificació de passades arxivades a 6, 12 i 24 h amb dades de l’estació.
 
 - L’atles anima les línies de flux del vent, traça isòbares cada 1 hPa, marca el toc exacte i identifica la neu horària de cada model.
