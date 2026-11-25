@@ -9,6 +9,11 @@
 - El meteograma busca el primer fotograma de cada hora una sola vegada per redibuix i indica l’hora seleccionada als lectors de pantalla.
 
 
+## 2026-11-20 — Preparació dels vídeos davant d'errors de connexió (en revisió)
+
+- La captura obligatòria de l'observació i la predicció reintenta fins a dues vegades les fallades de connexió, els HTTP 429 i els errors temporals del servidor. Els HTTP 4xx no recuperables i les dades incompletes continuen aturant la publicació.
+- Si la captura acaba fallant, el registre identifica la font afectada sense mostrar URL ni credencials. El reintent només consulta dades; no genera ni envia publicacions duplicades.
+
 ## 2026-11-18 — Validació operativa i roadmap (en revisió)
 
 - La incidència #299 ja tancada queda reflectida al roadmap després de la confirmació de l'usuari sobre timelapse, publicacions, Garmin i apps d'iPhone. Les proves de lectura antiga, falta de xarxa i avís oficial real es mantenen com a controls de qualitat.

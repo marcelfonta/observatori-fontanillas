@@ -27,17 +27,31 @@ export function assertProductionSnapshot(data,now=Date.now()){
 }
 export async function collectProductionData({slot,now=Date.now(),fetcher=fetch,rainFetcher=fetchRainEvolution}={}){
  const date=targetDate(slot,now),publicationDate=localDate(now),api='https://fonta-meteo.marcelfonta.workers.dev';
- const json=async url=>{const r=await fetcher(url,{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error(`Provider HTTP ${r.status}`);return r.json();};
+ const json=async (url,label,{required=false}={})=>{
+  for(let attempt=0;attempt<=(required?2:0);attempt++){
+   let response;
+   try{response=await fetcher(url,{signal:AbortSignal.timeout(20000)});}
+   catch(error){
+    if(attempt===(required?2:0))throw Error(`${label}: connexió fallida després de ${attempt+1} intents`,{cause:error});
+    await new Promise(resolve=>setTimeout(resolve,1000*(attempt+1)));
+    continue;
+   }
+   if(response.ok)return response.json();
+   if(attempt===(required?2:0)||![429,500,502,503,504].includes(response.status))throw Error(`${label}: HTTP ${response.status}`);
+   await response.body?.cancel();
+   await new Promise(resolve=>setTimeout(resolve,1000*(attempt+1)));
+  }
+ };
  const params=new URLSearchParams({latitude:'41.6906',longitude:'2.4890',timezone:'Europe/Madrid',forecast_days:'6',hourly:DAYPART_HOURLY_VARIABLES+',precipitation',daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_gusts_10m_max'});
  const [current,forecast,trend,summary,co2Response]=await Promise.all([
-  json(api),json('https://api.open-meteo.com/v1/forecast?'+params),json(api+'/temperature-trend').catch(()=>({trend:null})),fetchSocialEnvironment({date,now,fetcher}),json(api+'/climate/co2').catch(()=>({co2:null})),
+  json(api,'Estació Fontanillas',{required:true}),json('https://api.open-meteo.com/v1/forecast?'+params,'Predicció Open-Meteo',{required:true}),json(api+'/temperature-trend','Tendència').catch(()=>({trend:null})),fetchSocialEnvironment({date,now,fetcher}),json(api+'/climate/co2','CO₂').catch(()=>({co2:null})),
  ]);
  const days=normalizeSocialForecast(forecast).filter(day=>day.date>=date),day=days[0];
  const co2=co2Response.co2?.fresh&&Date.parse(co2Response.co2.date+'T00:00:00Z')<=now?co2Response.co2:null;
  const data={pilot:false,format:'cinematic-v5',capturedAt:new Date(now).toISOString(),publicationDate,slot,edition:slot==='vespre'?'evening':'morning',date,current,forecast,days,day,trend:trend.trend,environmentEnabled:true,lunarEnabled:true,environment:{summary,selection:chooseEnvironmentScene(),secondaryUv:secondaryUv(summary,{date,now})},co2,moon:null};
  assertProductionSnapshot(data,now);
  const moonUrl='https://aa.usno.navy.mil/api/rstt/oneday?'+new URLSearchParams({date,coords:'41.6906,2.4890',tz:String(madridOffset(date)),ID:'FONTAMET'});
- const [rain,moon]=await Promise.all([rainFetcher({slot,targetDate:date,hourlyFallback:forecast.hourly}),json(moonUrl).catch(()=>null)]);
+ const [rain,moon]=await Promise.all([rainFetcher({slot,targetDate:date,hourlyFallback:forecast.hourly}),json(moonUrl,'Lluna').catch(()=>null)]);
  data.moon=normalizeMoon(moon,date);
  data.rain={...rain,available:rain.frames?.length===4&&rain.frames.some(f=>f.values.some(v=>typeof v==='number'&&Number.isFinite(v))),points:rain.points.map(p=>({...p,...projectRainPoint(p)})),counties:CATALONIA_COUNTY_PATHS};
  return data;

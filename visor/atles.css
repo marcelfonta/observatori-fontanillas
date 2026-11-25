@@ -93,3 +93,7 @@ body[data-mode=radar] :is(.model-choice,.variable,.synoptic-tools){display:none}
   #zone{grid-column:auto;font-size:11px}.synoptic-tools{grid-column:auto}
   .tools .synoptic-tools summary{min-height:36px;display:flex;align-items:center;font-size:12px}
 }
+
+#scale span:nth-child(2){position:absolute;transform:translateX(-50%)}
+.mobile-analysis{display:none}
+@media(max-width:750px){.mobile-analysis{display:inline;font-size:12px}.tools #zone{justify-self:start}.tools .mobile-analysis{justify-self:end;grid-column:2;grid-row:3}.tools #zone{grid-column:1/-1}}

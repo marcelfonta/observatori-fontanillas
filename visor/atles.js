@@ -106,9 +106,11 @@ function legend() {
   const options = palettes[palette()];
   el('legend-title').textContent = (agreement()?(variable==='rain'?'Famílies amb pluja':'Diferència màx.–mín.') : MODEL_VARIABLES[variable].label)+' · '+unit();
   el('scale').style.setProperty('--gradient','linear-gradient(90deg,'+options.map(([v,c])=>c+' '+((v-options[0][0])*100/(options.at(-1)[0]-options[0][0]))+'%').join(',')+')');
-  el('scale').replaceChildren(...[options[0],options.at(-1)].map(([bound]) => {
+  const ticks=[options[0],options[Math.floor(options.length/2)],options.at(-1)];
+  el('scale').replaceChildren(...ticks.map(([bound],i) => {
     const span = document.createElement('span');
     span.textContent = format(bound);
+    if(i===1)span.style.left=((bound-options[0][0])*100/(options.at(-1)[0]-options[0][0]))+'%';
     return span;
   }));
 }
@@ -234,7 +236,18 @@ async function readModel(model) {
     hourly:'temperature_2m,precipitation,wind_speed_10m,cloud_cover',timezone:'GMT',forecast_days:String(Math.min(3,model.horizon))
   });
   if (model.model) params.set('models',model.model);
-  const response = await fetch('https://api.open-meteo.com'+(model.model ? '/v1/forecast' : model.path)+'?'+params,{signal:AbortSignal.timeout(18000)});
+  const url = 'https://api.open-meteo.com'+(model.model ? '/v1/forecast' : model.path)+'?'+params;
+  const request = ()=>fetch(url,{signal:AbortSignal.timeout(18000)});
+  let response = await request();
+  if (response.status===429) {
+    const retry = response.headers.get('Retry-After');
+    const wait = retry === null ? 2500 + MODELS.indexOf(model)*400 :
+      (/^\d+$/.test(retry) ? Number(retry)*1000 : Date.parse(retry)-Date.now());
+    if (Number.isFinite(wait) && wait<=12000) {
+      await new Promise(resolve=>setTimeout(resolve,Math.max(1000,wait)));
+      response = await request();
+    }
+  }
   if (!response.ok) throw new Error('Font no disponible');
   const data = await response.json();
   if (!Array.isArray(data) || data.length!==coordinates.length || !data.some(item=>item?.hourly?.time?.length)) throw new Error('Cobertura incompleta');
