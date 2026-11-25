@@ -14,11 +14,11 @@
   <script type="module" src="./atles.js"></script>
 </head>
 <body>
-  <header><div class="identity"><img src="https://meteo.fontanillas.cat/assets/icons/icon-192.png" width="38" height="38" alt=""><div><strong>Fontanillas</strong><small>Observatori meteorològic</small></div></div><nav aria-label="Altres eines"><a href="./analisi.html">Radar i anàlisi ↗</a><a href="https://meteo.fontanillas.cat/">Observatori ↗</a></nav></header>
+  <header><div class="identity"><img src="https://meteo.fontanillas.cat/assets/icons/icon-192.png" width="38" height="38" alt=""><div><strong>Fontanillas</strong><small>Visor meteorològic</small></div></div><div class="mode-tabs" role="group" aria-label="Vista del mapa"><button id="mode-consensus" aria-pressed="true">Consens</button><button id="mode-models" aria-pressed="false">Models</button><button id="mode-radar" aria-pressed="false">Radar</button></div><nav aria-label="Altres eines"><a href="./analisi.html">Anàlisi ↗</a><a href="https://meteo.fontanillas.cat/">Observatori ↗</a></nav></header>
   <main>
     <section class="tools" aria-labelledby="title">
-      <div class="heading"><span>OBSERVATORI FONTANILLAS</span><h1 id="title">Atles de previsió</h1></div>
-      <label>Model<select id="model"><optgroup label="Camps regionals · Météo-France"><option value="native-compare">Comparar AROME i ARPEGE</option><option value="native-arome">AROME · Catalunya</option><option value="native-arpege">ARPEGE · Catalunya</option></optgroup><optgroup label="Comparació per famílies"><option value="combined">Consens multimodel</option><option value="agreement">Coincidència dels models</option></optgroup><optgroup id="local-models" label="Models individuals · mostreig"></optgroup></select></label>
+      <div class="heading"><h1 id="title">Consens multimodel</h1><p id="mode-help">Mediana de les famílies de models disponibles.</p></div>
+      <label class="model-choice">Producte<select id="model"><optgroup label="Camps regionals · Météo-France"><option value="native-compare">Comparar AROME i ARPEGE</option><option value="native-arome">AROME · Catalunya</option><option value="native-arpege">ARPEGE · Catalunya</option></optgroup><optgroup label="Comparació per famílies"><option selected value="combined">Consens multimodel</option><option value="agreement">Coincidència dels models</option></optgroup><optgroup id="local-models" label="Models individuals · mostreig"></optgroup></select></label>
       <div class="variable"><span id="variable-label">Variable</span><div role="group" aria-labelledby="variable-label" id="variables">
         <button data-variable="temperature" aria-pressed="true">Temperatura a 2 m</button><button data-variable="rain" aria-pressed="false">Pluja</button><button data-variable="wind" aria-pressed="false">Vent</button><button data-variable="clouds" aria-pressed="false">Núvols</button>
       </div></div>
@@ -28,7 +28,7 @@
         <label><input id="isobars" type="checkbox"> Isòbares · 2 hPa</label>
         <small id="synoptic-status" role="status"></small>
       </div></details>
-      <a id="zone" href="?zona=montseny">Detall del Baix Montseny</a>
+      <a class="radar-source" hidden href="https://www.meteo.cat/observacions/radar">Radar oficial de Meteocat ↗</a><a id="zone" href="?zona=montseny">Detall del Baix Montseny</a>
     </section>
     <section class="canvas" aria-label="Predicció al territori">
       <div id="map" aria-label="Mapa interactiu de previsió"></div>
@@ -41,7 +41,7 @@
       <button class="recenter" id="center" aria-label="Centra la cobertura del model" title="Centra el mapa">⌖</button>
       <div class="legend"><strong id="legend-title"></strong><div id="scale"></div></div>
     </section>
-    <section class="transport" aria-label="Animació de la previsió"><div class="playback"><button id="play" aria-label="Reprodueix la previsió" aria-pressed="false" disabled>▶</button><button id="prev" aria-label="Hora anterior" disabled>‹</button><button id="next" aria-label="Hora següent" disabled>›</button></div><div class="track"><label for="hour">Hora de previsió <strong id="valid"></strong></label><input id="hour" type="range" min="0" max="24" value="0" disabled></div><button id="info" aria-label="Fonts i metodologia">ⓘ</button></section>
+    <section class="transport" aria-label="Animació de la previsió"><div class="playback"><button id="play" aria-label="Reprodueix la previsió" aria-pressed="false" disabled>▶</button><button id="prev" aria-label="Hora anterior" disabled>‹</button><button id="next" aria-label="Hora següent" disabled>›</button></div><div class="track"><label for="hour"><span id="time-label">Hora de previsió</span> <strong id="valid"></strong></label><input id="hour" type="range" min="0" max="24" value="0" disabled></div><button id="info" aria-label="Fonts i metodologia">ⓘ</button></section>
   </main>
   <dialog id="method"><h2>Com llegir el mapa</h2><p>La temperatura és la previsió de l’aire a 2 m en °C, inclosa la cortina AROME–ARPEGE. Els colors s’interpolen entre mostres horàries de cada model. Per a la resta de variables, les vistes regionals mostren imatges de predicció de Météo-France amb els colors originals del proveïdor. En la comparació, la coincidència de pluja indica la fracció de famílies amb almenys 0,2 mm per hora. Per a les altres variables es mostra la diferència entre màxim i mínim. Calen dues famílies com a mínim.</p><p>Les capes comparades representen 49 mostres a Catalunya o 25 al detall del Baix Montseny. En temperatura, vent i núvols, la transició entre quatre mostres veïnes és una interpolació visual. La pluja conserva el valor de la mostra més propera per cel·la. La cobertura acaba als límits de la graella. Les zones sense dades queden transparents. Toca la capa per consultar la mostra més propera, o selecciona-la amb el teclat.</p><p>Les capes de referència GFS segueixen l’hora visible sobre qualsevol model. Les fletxes apunten cap on bufa el vent i augmenten de longitud amb la velocitat. Les isòbares uneixen valors iguals de pressió reduïda al nivell del mar, interpolats sobre la graella de mostres.</p><p>El consens és la mediana de les famílies disponibles. AROME i ARPEGE compten com una família i Best Match es pot consultar per separat. Un guió indica que falta la dada. Les hores són locals.</p><p>Prediccions via <a href="https://open-meteo.com/en/terms">Open-Meteo</a>. UKMO i derivats sota <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p><form method="dialog"><button>Tanca</button></form></dialog>
 </body></html>

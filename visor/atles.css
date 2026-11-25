@@ -59,3 +59,37 @@ select{display:block;min-height:44px;margin-top:3px;padding:0 8px;font-size:15px
 @media(max-width:750px){.synoptic-tools{grid-column:1/-1}.synoptic-tools>div{position:absolute;top:100%;left:0;min-width:200px;z-index:700;box-shadow:0 4px 16px #0007}.synoptic-tools summary{padding:5px 0}}
 
 .city-temperature:not(:empty){display:table;margin:1px 0 0 8px;padding:1px 5px;border-radius:4px;background:#10291fee;color:#fff;font:700 12px/16px system-ui;text-shadow:none;font-variant-numeric:tabular-nums}
+
+/* Map workspace */
+:root{--panel:#10291f;--edge:#355447;--mint:#b5ef8e}
+header{display:grid;grid-template-columns:1fr auto 1fr;padding:8px 18px;gap:12px}
+header nav{justify-self:end}
+.mode-tabs{display:flex;gap:4px;padding:3px;border-radius:28px;border:1px solid #436451;background:#13291f}
+.mode-tabs button{background:transparent;border:0;color:#dbebdf;border-radius:22px;padding:0 18px}
+.mode-tabs button[aria-pressed=true]{background:var(--mint);color:#13281b}
+.heading p{font-size:13px;color:#cbdccf;margin:6px 0 0}
+.tools{background:#10291ff5}
+.tools h1{font-size:23px}
+.point-models{display:grid;grid-template-columns:1fr auto;gap:2px 16px;margin:8px 0 0;font-variant-numeric:tabular-nums}
+.point-models dd{margin:0;text-align:right;font-weight:650}
+body[data-mode=radar] :is(.model-choice,.variable,.synoptic-tools){display:none}
+@media(min-width:751px){
+  main{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
+  .canvas{grid-column:1;grid-row:1}
+  .transport{grid-column:1;grid-row:2;padding:10px max(4vw,24px)}
+  .tools{position:absolute;z-index:550;top:14px;left:14px;width:222px;border:1px solid #496455;border-radius:14px;padding:16px;gap:16px;max-height:calc(100% - 94px);overflow:auto;box-shadow:0 5px 22px #06190f40}
+  .map-status,.curtain-labels{left:250px}
+  .map-status{max-width:calc(100% - 330px)}
+  .tools select{max-width:100%;min-width:0}
+  .legend{min-width:205px}
+  .transport .playback button,#info{border-radius:50%}
+}
+@media(max-width:750px){
+  header{grid-template-columns:auto 1fr;padding:5px 10px}
+  header nav{display:none}.identity small{display:none}.identity strong{font-size:14px}
+  .identity img{width:28px;height:28px}
+  .mode-tabs{justify-self:end;gap:1px}.mode-tabs button{padding:0 10px;font-size:13px}
+  .tools h1{font-size:16px}.heading p{display:none}.tools{gap:3px 8px}
+  #zone{grid-column:auto;font-size:11px}.synoptic-tools{grid-column:auto}
+  .tools .synoptic-tools summary{min-height:36px;display:flex;align-items:center;font-size:12px}
+}

@@ -2,6 +2,9 @@
 
 ## En preparació · Visor 2.0
 
+- El visor obre amb el consens per famílies i permet alternar models i radar observat sobre el mateix mapa. La consulta puntual mostra els valors individuals i el radar conserva la seva cronologia.
+
+
 - Els controls del mapa i de la línia temporal tenen una zona tàctil mínima de 44 × 44 píxels en pantalles estretes.
 - El meteograma busca el primer fotograma de cada hora una sola vegada per redibuix i indica l’hora seleccionada als lectors de pantalla.
 

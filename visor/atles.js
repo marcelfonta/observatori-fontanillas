@@ -1,3 +1,4 @@
+import { radarHistory } from './radar.js';
 import { synoptic } from './synoptic.js';
 import { regionalLayer } from './regional.js';
 import { paintField, palettes } from './color-field.js';
@@ -20,7 +21,9 @@ let variable = 'temperature';
 let index = 0;
 let timer;
 let pending = 0;
-let map;
+let map, radar;
+let radarActive = false, radarLength = 0, radarRequest = 0, forecastIndex = 0;
+let lastIndividual = 'ECMWF IFS';
 let markers = [];
 let selectedPoint = null;
 const raster = document.createElement('canvas');
@@ -114,9 +117,36 @@ function popupContent(point, reading) {
   const heading = document.createElement('strong');
   heading.textContent = Number.isFinite(reading.value) ? format(reading.value)+' '+unit() : 'Sense dada';
   content.append(heading,document.createElement('br'),reading.detail,document.createElement('br'),coordinates[point].join('°, ')+'° · '+el('valid').textContent);
+  if (['combined','agreement'].includes(el('model').value)) {
+    const hour=new Date(firstHour+index*3600000).toISOString().slice(0,16);
+    const list=document.createElement('dl');
+    list.className='point-models';
+    for(const model of MODELS){
+      const value=readingAt(datasets.get(model.name)?.[point],model,hour)?.[variable];
+      const dt=document.createElement('dt'),dd=document.createElement('dd');
+      dt.textContent=model.name;
+      dd.textContent=Number.isFinite(value)?format(value)+' '+MODEL_VARIABLES[variable].unit:'—';
+      list.append(dt,dd);
+    }
+    content.append(list);
+  }
   return content;
 }
+function drawRadar() {
+  const time = radar.show(index);
+  if (!time) return;
+  const label = clock.format(time);
+  el('valid').textContent=el('frame-time').textContent=label;
+  el('frame-time').hidden=false;
+  el('hour').value=index;
+  el('hour').setAttribute('aria-valuetext',label);
+  el('play').disabled=el('hour').disabled=radarLength<2;
+  el('prev').disabled=index===0;
+  el('next').disabled=index===radarLength-1;
+  el('status').textContent='Radar observat · RainViewer';
+}
 function draw() {
+  if (radarActive) return;
   const valid = new Date(firstHour+index*3600000);
   const hour = valid.toISOString().slice(0,16);
   const model = el('model').value;
@@ -170,7 +200,7 @@ function draw() {
   context.putImageData(frame,0,0);
   overlay.setUrl(raster.toDataURL());
   const label = model==='combined' ? 'Consens' : agreement() ? 'Coincidència' : model;
-  el('status').textContent = pending ? 'Carregant · '+(MODELS.length-pending)+'/'+MODELS.length+' models' : label+' · '+(variable==='rain'?'per cel·les':'interpolació visual')+' · '+coverage+'/'+coordinates.length+' punts amb dades';
+  el('status').textContent = pending ? 'Carregant · '+(MODELS.length-pending)+'/'+MODELS.length+' models' : label+' · '+(variable==='rain'?'per cel·les':'interpolació visual')+' · '+coverage+'/'+coordinates.length+' punts amb dades · '+datasets.size+'/'+MODELS.length+' sortides';
   el('retry').hidden = pending > 0 || datasets.size===MODELS.length;
   el('play').disabled = el('hour').disabled = datasets.size===0;
   el('prev').disabled = !index || !datasets.size;
@@ -253,7 +283,7 @@ function start() {
     return marker;
   });
   map.on('click',event=>{
-    if (native() || !overlay.getBounds().contains(event.latlng)) return;
+    if (radarActive || native() || !overlay.getBounds().contains(event.latlng)) return;
     let nearest=0;
     coordinates.forEach((point,i)=>{
       if (event.latlng.distanceTo(point)<event.latlng.distanceTo(coordinates[nearest])) nearest=i;
@@ -262,20 +292,65 @@ function start() {
   });
   MODELS.forEach(model=>el('local-models').append(new Option(model.name,model.name)));
   const samples=L.layerGroup([overlay,...markers]);
-  let wasNative=false;
+  samples.addTo(map);
+  radar = radarHistory(map,()=>{
+    if(!radarActive)return;
+    stop();
+    el('status').textContent='Imatge radar incompleta';
+    el('retry').hidden=false;
+  });
+  function setModeUI(mode) {
+    document.body.dataset.mode=mode;
+    for(const name of ['consensus','models','radar']) el('mode-'+name).setAttribute('aria-pressed',String(name===mode));
+    el('title').textContent={consensus:'Consens multimodel',models:'Models de previsió',radar:'Radar observat'}[mode];
+    el('mode-help').textContent=mode==='radar'?'Precipitació observada · RainViewer':mode==='models'?'Sortides individuals i comparació AROME–ARPEGE.':agreement()?'Dispersió entre famílies per a la mateixa hora.':'Mediana de les famílies de models disponibles.';
+    document.querySelector('.radar-source').hidden=mode!=='radar';
+    el('time-label').textContent=mode==='radar'?'Hora d’observació':'Hora de previsió';
+  }
+  async function openRadar(){
+    if (!radarActive) forecastIndex=index;
+    radarActive=true;
+    const request=++radarRequest;
+    stop(); regional.clear(); nativeKey=''; loadingImage=false;
+    samples.remove(); map.closePopup(); showCityTemperatures(null); synopticLayer.show(null);
+    setModeUI('radar');
+    el('curtain').hidden=el('frame-time').hidden=el('retry').hidden=true;
+    el('valid').textContent='—';
+    el('status').textContent='Carregant observacions…';
+    el('legend-title').textContent='Precipitació observada';
+    el('scale').hidden=true;
+    for(const id of ['hour','play','prev','next']) el(id).disabled=true;
+    try {
+      const length=await radar.load();
+      if(request!==radarRequest)return;
+      radarLength=length;
+      index=length-1;
+      el('hour').max=String(index);
+      drawRadar();
+    }catch{
+      if(request!==radarRequest)return;
+      radarLength=0;
+      el('status').textContent='Radar temporalment no disponible';
+      el('retry').hidden=false;
+    }
+  }
   function switchModel(){
+    if(radarActive){radarRequest++;radar.clear();radarActive=false;index=forecastIndex;el('hour').max='24';}
+    const grouped = ['combined','agreement'].includes(el('model').value);
+    if (!grouped) lastIndividual=el('model').value;
+    setModeUI(grouped?'consensus':'models');
     showCityTemperatures(null);synopticLayer.show(null);
     el('curtain').hidden=true;el('frame-time').hidden=true;
     stop();regional.clear();nativeKey='';loadingImage=false;
-    if(native()!==wasNative){
-      if(native()){for(const layer of samples.getLayers())map.removeLayer(layer);map.removeLayer(samples);}
-      else samples.addTo(map);
-    }
-    wasNative=native();
+    if(native())samples.remove();
+    else samples.addTo(map);
     legend();
-    if(!wasNative && datasets.size<MODELS.length && !pending)void load();
+    if(!native() && datasets.size<MODELS.length && !pending)void load();
     else draw();
   }
+  el('mode-radar').onclick=openRadar;
+  el('mode-models').onclick=()=>{el('model').value=lastIndividual;switchModel();};
+  el('mode-consensus').onclick=()=>{el('model').value='combined';switchModel();};
   el('model').addEventListener('change',switchModel);
   el('variables').addEventListener('click',event=>{
     const button = event.target.closest('[data-variable]');
@@ -289,11 +364,11 @@ function start() {
   el('play').onclick=()=>{
     if(timer){stop();return;}
     el('play').textContent='Ⅱ';el('play').setAttribute('aria-pressed','true');el('play').setAttribute('aria-label','Atura la previsió');
-    timer=setInterval(()=>{if(loadingImage)return;index=(index+1)%25;draw();},1000);
+    timer=setInterval(()=>{if(loadingImage)return;index=(index+1)%(radarActive?radarLength:25);if(radarActive)drawRadar();else draw();},1000);
   };
-  el('hour').oninput=()=>{stop();index=Number(el('hour').value);draw();};
-  el('prev').onclick=()=>{stop();index=Math.max(0,index-1);draw();};
-  el('next').onclick=()=>{stop();index=Math.min(24,index+1);draw();};
+  el('hour').oninput=()=>{stop();index=Number(el('hour').value);if(radarActive)drawRadar();else draw();};
+  el('prev').onclick=()=>{stop();index=Math.max(0,index-1);if(radarActive)drawRadar();else draw();};
+  el('next').onclick=()=>{stop();index=Math.min(radarActive?radarLength-1:24,index+1);if(radarActive)drawRadar();else draw();};
   el('divider').oninput=event=>{
     const value=Number(event.target.value);
     regional.setSplit(value);
@@ -302,7 +377,7 @@ function start() {
     event.target.setAttribute('aria-valuetext','AROME '+value+' %, ARPEGE '+(100-value)+' %');
   };
   el('center').onclick=setExtent;
-  el('retry').onclick=()=>{if(native()){nativeKey='';draw();}else void load();};
+  el('retry').onclick=()=>{if(radarActive){void openRadar();return;}if(native()){nativeKey='';draw();}else void load();};
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
   switchModel();
 }
