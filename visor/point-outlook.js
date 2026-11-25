@@ -1,3 +1,4 @@
+import {forecastRequest} from './forecast-request.js';
 import {hourlyComparison, independentModels} from './consensus.js';
 import {MODELS, MODEL_VARIABLES} from './models.js';
 
@@ -70,18 +71,38 @@ export function pointOutlook() {
   }
   variable.onchange=model.onchange=draw;
   dialog.addEventListener('close',()=>controller?.abort());
-  return async function open(location,initial,firstHour) {
+  return async function open(location,initial,firstHour,grid) {
     controller?.abort();const current=new AbortController();controller=current;
     variable.value=initial;model.value='';
     dialog.querySelector('h2').textContent='Previsió al punt';
     dialog.querySelector('.location').textContent=location.lat.toFixed(3)+'°, '+location.lng.toFixed(3)+'° · 24 hores locals';
     hours=Array.from({length:24},(_,i)=>new Date(firstHour+i*3600000).toISOString().slice(0,16));
     datasets=[];output.textContent='Consultant els models al punt…';dialog.showModal();
-    const result=await Promise.all(MODELS.map(async m=>{
+    if(grid?.some(Boolean)){
+      datasets=grid;
+      dialog.querySelector('.location').textContent+=' · mostra carregada del mapa';
+      draw();
+      return;
+    }
+    const queue=MODELS.map((model,index)=>({model,index}));
+    async function drain(){
+      while(queue.length && !current.signal.aborted){
+        const {model:m,index}=queue.shift();
       const params=new URLSearchParams({latitude:location.lat.toFixed(4),longitude:location.lng.toFixed(4),hourly:'temperature_2m,precipitation,wind_speed_10m,cloud_cover',timezone:'GMT',forecast_days:'3'});
       if(m.model)params.set('models',m.model);
-      try{const res=await fetch('https://api.open-meteo.com'+(m.model?'/v1/forecast':m.path)+'?'+params,{signal:AbortSignal.any([current.signal,AbortSignal.timeout(15000)])});return res.ok?await res.json():null;}catch{return null;}
-    }));
-    if(!current.signal.aborted){datasets=result;draw();}
+        const url='https://api.open-meteo.com'+(m.model?'/v1/forecast':m.path)+'?'+params;
+        try{
+          const response=await forecastRequest(url,{signal:current.signal,onWait:active=>{
+            if(active && !datasets.some(Boolean) && !current.signal.aborted)output.textContent='Esperant el reintent que indica la font…';
+          }});
+          if(response.ok){
+            const data=await response.json();
+            if(!current.signal.aborted){datasets[index]=data;draw();}
+          }
+        }catch{/* Each available model can still contribute independently. */}
+      }
+    }
+    await Promise.all([drain(),drain()]);
+    if(!current.signal.aborted)draw();
   };
 }

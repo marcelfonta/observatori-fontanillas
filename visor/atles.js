@@ -1,3 +1,4 @@
+import {forecastRequest} from './forecast-request.js';
 import {pointOutlook} from './point-outlook.js';
 import {stationSkill} from './station-skill.js';
 import { radarHistory } from './radar.js';
@@ -100,7 +101,12 @@ function updatePick() {
   }
   const outlook=document.createElement('button');
   outlook.textContent='Meteograma · 24 h';outlook.className='outlook-action';
-  outlook.onclick=()=>{stop();openOutlook(pick.location,variable,firstHour);};
+  outlook.onclick=()=>{
+    stop();
+    const exact=pick.location.distanceTo(coordinates[pick.nearest])<1;
+    const cached=exact?MODELS.map(m=>datasets.get(m.name)?.[pick.nearest]):null;
+    openOutlook(pick.location,variable,firstHour,cached);
+  };
   body.append(outlook);
   if(pick.location.lat>=40.5 && pick.location.lat<=42.9 && pick.location.lng>=0 && pick.location.lng<=3.6){
     const links=document.createElement('div');links.className='grid-links';
@@ -351,22 +357,10 @@ async function readModel(model) {
     params.set('bounding_box',[latitudes[0]-detailStep/3,longitudes[0]-detailStep/3,latitudes.at(-1)+detailStep/3,longitudes.at(-1)+detailStep/3].map(n=>n.toFixed(4)).join(','));
   }
   const base = 'https://api.open-meteo.com'+(model.model ? '/v1/forecast' : model.path);
-  async function request(){
-    const send=()=>fetch(base+'?'+params,{signal:AbortSignal.timeout(18000)});
-    const response=await send();
-    if(response.status!==429)return response;
-    const hint=response.headers.get('Retry-After');
-    const error=await response.clone().json().catch(()=>({}));
-    const wait=hint!==null ? (/^\d+$/.test(hint)?Number(hint)*1000:Date.parse(hint)-Date.now()) :
-      /minut/i.test(error.reason||'')?61000:3000;
-    if(!Number.isFinite(wait) || wait>90000 || /hourly|daily/i.test(error.reason||''))return response;
-    waiting.add(model.name);
+  const request=()=>forecastRequest(base+'?'+params,{onWait:active=>{
+    if(active)waiting.add(model.name);else waiting.delete(model.name);
     draw();
-    try{
-      await new Promise(resolve=>setTimeout(resolve,Math.max(1000,wait)+MODELS.indexOf(model)*200));
-      return await send();
-    }finally{waiting.delete(model.name);}
-  }
+  }});
   async function fetchRows(){
     let response=await request();
     if(response.status===400 && !params.has('bounding_box')){

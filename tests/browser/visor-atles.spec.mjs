@@ -207,7 +207,13 @@ test('Malla AROME, meteograma al punt i passades verificades',async({page})=>{
   await expect(panel.locator('tbody tr')).toHaveCount(24);
   await panel.locator('select[name=model]').selectOption('GFS');
   await expect(panel.locator('thead')).toContainText('GFS');
-  expect(points).toBe(8);
+  expect(points).toBe(0);
+  await expect(panel.locator('.location')).toContainText('mostra carregada del mapa');
+  await panel.locator('form button').click();
+  await page.locator('#map').click({position:{x:300,y:220}});
+  await page.getByRole('button',{name:'Meteograma · 24 h'}).click();
+  await expect.poll(()=>points).toBe(8);
+  await expect(panel).toContainText('2 mm de mediana');
   await panel.locator('form button').click();
   const midnight=Date.parse(new Date().toISOString().slice(0,10)+'T00:00Z');
   const timestamps=[1,2,3].flatMap(d=>[6,12,24].flatMap(h=>Array.from({length:12},(_,i)=>(midnight+(h-d*24)*3600000)/1000-i*300)));
