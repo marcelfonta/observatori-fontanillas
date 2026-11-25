@@ -14,6 +14,10 @@ test('Comprovació pública del visor amb fonts reals', async ({page}, info) => 
   test.setTimeout(420000);
   const problems = [];
   page.on('pageerror', error => problems.push(error.message));
+  page.on('requestfailed', request => {
+    const {hostname,pathname}=new URL(request.url());
+    if(hostname.endsWith('open-meteo.com'))console.log('Petició incompleta',hostname,pathname,request.failure()?.errorText);
+  });
   page.on('response', async response => {
     if (response.status() >= 400) {
       const url = new URL(response.url());
@@ -24,7 +28,10 @@ test('Comprovació pública del visor amb fonts reals', async ({page}, info) => 
   await page.setViewportSize({width:1280,height:800});
   const response = await page.goto(new URL('/?malla=arome&lat=41.69&lon=2.49', preview).href, {waitUntil:'domcontentloaded'});
   expect(response?.ok()).toBeTruthy();
-  await expect(page.locator('#status')).toContainText('81/81', {timeout:165000});
+  const status=page.locator('#status');
+  await expect(status).toContainText(/81\/81|0\/81 punts amb dades · 0\/8 sortides$/, {timeout:165000});
+  if(!(await status.innerText()).includes('81/81') && await page.locator('#retry').isVisible())await page.click('#retry');
+  await expect(status).toContainText('81/81', {timeout:165000});
   await page.selectOption('#model','AROME HD');
   await expect(page.locator('#status')).toContainText('81/81', {timeout:165000});
   await page.locator('.sample').nth(40).focus();

@@ -460,7 +460,7 @@ function start() {
   });
   map.on('click',event=>selectPoint(event.latlng));
   map.on('popupclose',event=>{
-    event.popup.getElement()?.setAttribute('inert','');
+    event.popup.getElement()?.remove();
     if(event.popup===pointPopup){pin?.remove();pin=null;pick=null;pointPopup=null;}
   });
   MODELS.forEach(model=>el('local-models').append(new Option(model.name,model.name)));
