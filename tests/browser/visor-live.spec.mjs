@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 const preview = process.env.VISOR_PREVIEW_URL || 'https://fix-visor-touch-hourly-rende.visor-fontanillas.pages.dev';
 test('Comprovació pública del visor amb fonts reals', async ({page}, info) => {
   test.skip(!preview, 'Indica el desplegament amb VISOR_PREVIEW_URL');
-  test.setTimeout(210000);
+  test.setTimeout(420000);
   const problems = [];
   page.on('pageerror', error => problems.push(error.message));
   page.on('response', async response => {
@@ -16,9 +16,9 @@ test('Comprovació pública del visor amb fonts reals', async ({page}, info) => 
   await page.setViewportSize({width:1280,height:800});
   const response = await page.goto(new URL('/?malla=arome&lat=41.69&lon=2.49', preview).href, {waitUntil:'domcontentloaded'});
   expect(response?.ok()).toBeTruthy();
-  await expect(page.locator('#status')).toContainText('81/81', {timeout:60000});
+  await expect(page.locator('#status')).toContainText('81/81', {timeout:165000});
   await page.selectOption('#model','AROME HD');
-  await expect(page.locator('#status')).toContainText('81/81', {timeout:30000});
+  await expect(page.locator('#status')).toContainText('81/81', {timeout:165000});
   await page.locator('.sample').nth(40).focus();
   await page.keyboard.press('Enter');
   await page.getByRole('button',{name:'Meteograma · 24 h'}).click();

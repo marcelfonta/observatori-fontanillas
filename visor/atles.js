@@ -302,13 +302,14 @@ function draw() {
   context.putImageData(frame,0,0);
   overlay.setUrl(raster.toDataURL());
   const label = model==='combined' ? 'Consens' : agreement() ? 'Coincidència' : model;
-  el('status').textContent = pending ? 'Carregant · '+(MODELS.length-pending)+'/'+MODELS.length+' models' : label+' · '+(variable==='rain'?'per cel·les':'interpolació visual')+' · '+coverage+'/'+coordinates.length+' punts amb dades · '+datasets.size+'/'+MODELS.length+' sortides';
+  el('status').textContent = (waiting.size?'Límit temporal de la font · reintent en curs · ':pending?'Carregant · ':'')+label+' · '+(variable==='rain'?'per cel·les':'interpolació visual')+' · '+coverage+'/'+coordinates.length+' punts amb dades · '+datasets.size+'/'+MODELS.length+' sortides';
   el('retry').hidden = pending > 0 || datasets.size===MODELS.length;
   el('play').disabled = el('hour').disabled = datasets.size===0;
   el('prev').disabled = (!index && !joined) || !datasets.size;
   el('next').disabled = index===24 || !datasets.size;
 }
 const requests = new Map();
+const waiting = new Set();
 function fetchModel(model) {
   if (datasets.has(model.name)) return Promise.resolve();
   if (!requests.has(model.name)) {
@@ -350,32 +351,48 @@ async function readModel(model) {
     params.set('bounding_box',[latitudes[0]-detailStep/3,longitudes[0]-detailStep/3,latitudes.at(-1)+detailStep/3,longitudes.at(-1)+detailStep/3].map(n=>n.toFixed(4)).join(','));
   }
   const base = 'https://api.open-meteo.com'+(model.model ? '/v1/forecast' : model.path);
-  const request = ()=>fetch(base+'?'+params,{signal:AbortSignal.timeout(18000)});
-  let response = await request();
-  if (response.status===429) {
-    const retry = response.headers.get('Retry-After');
-    const wait = retry === null ? 2500 + MODELS.indexOf(model)*400 :
-      (/^\d+$/.test(retry) ? Number(retry)*1000 : Date.parse(retry)-Date.now());
-    if (Number.isFinite(wait) && wait<=12000) {
-      await new Promise(resolve=>setTimeout(resolve,Math.max(1000,wait)));
-      response = await request();
+  async function request(){
+    const send=()=>fetch(base+'?'+params,{signal:AbortSignal.timeout(18000)});
+    const response=await send();
+    if(response.status!==429)return response;
+    const hint=response.headers.get('Retry-After');
+    const error=await response.clone().json().catch(()=>({}));
+    const wait=hint!==null ? (/^\d+$/.test(hint)?Number(hint)*1000:Date.parse(hint)-Date.now()) :
+      /minut/i.test(error.reason||'')?61000:3000;
+    if(!Number.isFinite(wait) || wait>90000 || /hourly|daily/i.test(error.reason||''))return response;
+    waiting.add(model.name);
+    draw();
+    try{
+      await new Promise(resolve=>setTimeout(resolve,Math.max(1000,wait)+MODELS.indexOf(model)*200));
+      return await send();
+    }finally{waiting.delete(model.name);}
+  }
+  async function fetchRows(){
+    let response=await request();
+    if(response.status===400 && !params.has('bounding_box')){
+      params.set('hourly','temperature_2m,precipitation,wind_speed_10m,cloud_cover');
+      response=await request();
     }
+    if(!response.ok){
+      if(response.status===400 && params.has('bounding_box'))return [];
+      throw new Error('Font no disponible');
+    }
+    return response.json();
   }
-  if(nativeGrid && response.status===400){
-    requestGridCoordinates();
-    response=await request();
-  }
-  if (response.status===400) {
-    params.set('hourly','temperature_2m,precipitation,wind_speed_10m,cloud_cover');
-    response=await request();
-  }
-  if (!response.ok) throw new Error('Font no disponible');
-  let data = await response.json();
-  if(nativeGrid && Array.isArray(data)){
+  function alignGrid(rows){
+    if(!Array.isArray(rows))return [];
     const key=(lat,lon)=>Number(lat).toFixed(3)+','+Number(lon).toFixed(3);
-    const cells=new Map(data.map(cell=>[key(cell.latitude,cell.longitude),cell]));
-    data=coordinates.map(([lat,lon])=>cells.get(key(lat,lon)));
-    if(data.some(cell=>!cell))throw new Error('Malla incompleta');
+    const cells=new Map(rows.map(cell=>[key(cell.latitude,cell.longitude),cell]));
+    return coordinates.map(([lat,lon])=>cells.get(key(lat,lon)));
+  }
+  let data=await fetchRows();
+  if(nativeGrid){
+    data=alignGrid(data);
+    if(data.length!==coordinates.length || data.some(cell=>!cell)){
+      requestGridCoordinates();
+      data=alignGrid(await fetchRows());
+      if(data.some(cell=>!cell))throw new Error('Malla incompleta');
+    }
   }
   if (!Array.isArray(data) || data.length!==coordinates.length || !data.some(item=>item?.hourly?.time?.length)) throw new Error('Cobertura incompleta');
   datasets.set(model.name,data);
