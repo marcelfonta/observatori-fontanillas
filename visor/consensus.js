@@ -47,6 +47,7 @@ export function readingAt(data, model, targetIso) {
     model, time: targetIso,
     temperature: numberAt('temperature_2m'),
     rain: numberAt('precipitation'),
+    snow: numberAt('snowfall'),
     wind: numberAt('wind_speed_10m'),
     clouds: numberAt('cloud_cover')
   };

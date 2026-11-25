@@ -1,5 +1,19 @@
 # Changelog
 
+## En preparació · Visor 2.0
+
+- Malles locals AROME HD i ARPEGE, meteograma de 24 h al punt seleccionat, recorregut del radar fins a la previsió i verificació de passades arxivades a 6, 12 i 24 h amb dades de l’estació.
+
+- L’atles anima les línies de flux del vent, traça isòbares cada 1 hPa, marca el toc exacte i identifica la neu horària de cada model.
+
+
+- El visor obre amb el consens per famílies i permet alternar models i radar observat sobre el mateix mapa. La consulta puntual mostra els valors individuals i el radar conserva la seva cronologia.
+
+
+- Els controls del mapa i de la línia temporal tenen una zona tàctil mínima de 44 × 44 píxels en pantalles estretes.
+- El meteograma busca el primer fotograma de cada hora una sola vegada per redibuix i indica l’hora seleccionada als lectors de pantalla.
+
+
 ## 2026-11-20 — Preparació dels vídeos davant d'errors de connexió (en revisió)
 
 - La captura obligatòria de l'observació i la predicció reintenta fins a dues vegades les fallades de connexió, els HTTP 429 i els errors temporals del servidor. Els HTTP 4xx no recuperables i les dades incompletes continuen aturant la publicació.

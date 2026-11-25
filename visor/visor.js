@@ -1,3 +1,4 @@
+import { MODELS, MODEL_VARIABLES } from './models.js';
 import { hourlyComparison, localForecastHour, readingAt, retrospectiveMetrics, summarize } from './consensus.js';
 
 const API = 'https://fonta-meteo.marcelfonta.workers.dev';
@@ -8,22 +9,6 @@ const PLACES = {
   tordera: { name: 'Vall de la Tordera', point: [41.696, 2.598] },
   granollers: { name: 'Granollers', point: [41.608, 2.288] },
   girona: { name: 'Girona', point: [41.979, 2.821] }
-};
-const MODELS = [
-  { name: 'Best Match', path: '/v1/forecast', horizon: 7, reference: true },
-  { name: 'ECMWF IFS', path: '/v1/ecmwf', horizon: 7, family: 'ecmwf' },
-  { name: 'GFS', path: '/v1/gfs', horizon: 7, family: 'gfs' },
-  { name: 'ICON', path: '/v1/dwd-icon', horizon: 7, family: 'icon' },
-  { name: 'AROME HD', path: '/v1/meteofrance', model: 'meteofrance_arome_france_hd', horizon: 2, family: 'meteofrance', priority: 2 },
-  { name: 'ARPEGE Europa', path: '/v1/meteofrance', model: 'meteofrance_arpege_europe', horizon: 4, family: 'meteofrance', priority: 1 },
-  { name: 'GEM global', path: '/v1/gem', horizon: 7, family: 'gem' },
-  { name: 'UKMO global', path: '/v1/forecast', model: 'ukmo_seamless', horizon: 7, family: 'ukmo' }
-];
-const MODEL_VARIABLES = {
-  temperature: { label: 'Temperatura', unit: '°C', digits: 1 },
-  rain: { label: 'Pluja', unit: 'mm', digits: 1 },
-  wind: { label: 'Vent', unit: 'km/h', digits: 0 },
-  clouds: { label: 'Núvols', unit: '%', digits: 0 }
 };
 // Colors constants per model; els càlculs del consens no depenen de la selecció visual.
 const MODEL_COLORS = ['#f1bd68', '#66c4ff', '#ef81b1', '#cbb3ff', '#ffc874', '#69d5ca', '#e9a6ff', '#f49985'];
@@ -278,6 +263,12 @@ function renderEvolution() {
   syncChartVariableButtons();
   const rows = state.comparison;
   const totalFamilies = new Set(MODELS.map(model => model.family).filter(Boolean)).size;
+  const selectedHour = localForecastHour(selectedTime());
+  const firstFrameByHour = new Map();
+  state.frames.forEach((frame, index) => {
+    const hour = localForecastHour(frame.time);
+    if (!firstFrameByHour.has(hour)) firstFrameByHour.set(hour, index);
+  });
   rows.forEach(row => {
     const tr = document.createElement('tr');
     const summary = row.summary;
@@ -292,10 +283,11 @@ function renderEvolution() {
       const cell = document.createElement(index === 0 ? 'th' : 'td');
       if (index === 0) cell.scope = 'row';
       if (index === 0) {
-        const timeIndex = state.frames.findIndex(frame => localForecastHour(frame.time) === row.time);
-        if (timeIndex >= 0 && state.mode === 'models') {
+        const timeIndex = firstFrameByHour.get(row.time);
+        if (timeIndex !== undefined) {
           const button = document.createElement('button');
           button.type = 'button'; button.className = 'hourly-time-link';
+          if (row.time === selectedHour) button.setAttribute('aria-current', 'time');
           button.textContent = value; button.dataset.hourIndex = String(timeIndex);
           button.setAttribute('aria-label', `Consulta al mapa ${value}`);
           cell.append(button);
@@ -304,7 +296,7 @@ function renderEvolution() {
       tr.append(cell);
     });
     if (!summary.count) tr.classList.add('is-missing');
-    if (row.time === localForecastHour(selectedTime())) tr.classList.add('is-current-hour');
+    if (row.time === selectedHour) tr.classList.add('is-current-hour');
     tableBody.append(tr);
   });
   const available = rows.flatMap(row => row.summary.count ? [row.summary.min, row.summary.max] : []);
@@ -362,7 +354,7 @@ function renderEvolution() {
       else add('circle', { cx: x(group[0].index), cy: y(group[0].value), r: 3.5, fill: color });
     });
   });
-  const chosen = rows.findIndex(row => row.time === localForecastHour(selectedTime()));
+  const chosen = rows.findIndex(row => row.time === selectedHour);
   if (chosen >= 0) add('line', { x1: x(chosen), x2: x(chosen), y1: 25, y2: 220, stroke: '#fff3b4', 'stroke-width': 1.5, 'stroke-dasharray': '4 4' });
   [0, Math.floor((rows.length - 1) / 2), rows.length - 1].forEach(index => add('text', { x: x(index), y: 249, fill: '#b9d5c4', 'font-size': 12, 'text-anchor': 'middle' }, dateLabel(rows[index].time, { hour: '2-digit', minute: '2-digit' })));
   host.append(svg);
