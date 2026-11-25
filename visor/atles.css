@@ -117,3 +117,6 @@ body[data-mode=radar] :is(.model-choice,.variable,.synoptic-tools){display:none}
 #boundary:not([hidden]){display:flex;justify-content:space-between;position:relative;font-size:11px;color:#c9dbd0}#boundary b{position:absolute;left:var(--now);color:#ffe19e}
 #verify-station{min-height:36px;font-size:13px}
 @media(max-width:750px){#verify-station{grid-column:1;grid-row:4;font-size:11px}#zone{grid-column:2!important;grid-row:4}body[data-mode=radar] .tools>*{grid-row:auto!important}}
+
+#original-control[hidden]{display:none}
+#original-control{font-size:13px;grid-column:1/-1}

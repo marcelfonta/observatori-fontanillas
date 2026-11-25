@@ -22,6 +22,11 @@ for (const [variable, stops] of Object.entries(palettes)) {
     return low.map((v,k)=>Math.round(v+(high[k]-v)*t));
   });
 }
+export function interpolateCell(a,b,c,d,dx,dy) {
+  if (!Number.isFinite(a) || !Number.isFinite(b) || !Number.isFinite(c) || !Number.isFinite(d)) return NaN;
+  return (1-dy)*(a*(1-dx)+b*dx)+dy*(c*(1-dx)+d*dx);
+}
+
 export function paintField(pixels, size, values, variable) {
   const stops = palettes[variable], min=stops[0][0], max=stops.at(-1)[0];
   const side=Math.sqrt(values.length), last=side-1;
@@ -31,15 +36,7 @@ export function paintField(pixels, size, values, variable) {
     for (let x=0;x<size;x++) {
       const gx=last*x/(size-1), col=Math.min(last-1,Math.floor(gx)), dx=gx-col;
       const pos=row*side+col;
-      let value;
-      if (variable==='rain'||variable==='wetFraction') {
-        // Preserve wet/dry boundaries of the samples. Do not create a rain band between them.
-        value=values[Math.round(gy)*side+Math.round(gx)];
-      } else {
-        const a=values[pos],b=values[pos+1],c=values[pos+side],d=values[pos+side+1];
-        if (![a,b,c,d].every(Number.isFinite)) continue;
-        value=(1-dy)*(a*(1-dx)+b*dx)+dy*(c*(1-dx)+d*dx);
-      }
+      const value=interpolateCell(values[pos],values[pos+1],values[pos+side],values[pos+side+1],dx,dy);
       if (!Number.isFinite(value)) continue;
       const bin=Math.max(0,Math.min(255,Math.round((value-min)*255/(max-min))));
       const color=lookup[variable][bin], offset=(y*size+x)*4;

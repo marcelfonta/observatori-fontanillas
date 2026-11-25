@@ -4,7 +4,7 @@ import {stationSkill} from './station-skill.js';
 import { radarHistory } from './radar.js';
 import { synoptic } from './synoptic.js';
 import { regionalLayer } from './regional.js';
-import { paintField, palettes } from './color-field.js';
+import { interpolateCell, paintField, palettes } from './color-field.js';
 import { MODELS, MODEL_VARIABLES } from './models.js';
 import { independentModels, readingAt, summarize } from './consensus.js';
 
@@ -94,7 +94,7 @@ function updatePick() {
       sourceAt(pick.location)+' · '+el('frame-time').textContent;
     body.append(note);
   }
-  if(pick.inside && !radarActive && displayedCityHour && (!native() || ['temperature','rain'].includes(variable))) {
+  if(pick.inside && !radarActive && displayedCityHour && (!originalImage() || variable==='rain')) {
     const choice=sourceAt(pick.location);
     body.append(document.createElement('hr'), 'Mostra de la graella més propera',popupContent(pick.nearest,pointReading(pick.nearest,displayedCityHour,choice)));
     if(variable==='rain')body.append(snowAt(pick.nearest,displayedCityHour,choice).text);
@@ -130,7 +130,7 @@ function selectPoint(location) {
   updatePick();
   pointPopup.openOn(map);
 }
-function showCityTemperatures(hour) {
+function showCityValues(hour) {
   displayedCityHour = hour;
   refreshSnow(hour);
   updatePick();
@@ -139,7 +139,7 @@ function showCityTemperatures(hour) {
   for (const marker of cityMarkers) {
     const label = marker.getElement().querySelector('.city-temperature');
     label.textContent = '';
-    if (!hour || variable !== 'temperature') continue;
+    if (!hour || originalImage()) continue;
     const location = marker.getLatLng();
     const row = latitudes.findIndex((v,i)=>v<=location.lat && location.lat<=latitudes[i+1]);
     const col = longitudes.findIndex((v,i)=>v<=location.lng && location.lng<=longitudes[i+1]);
@@ -151,18 +151,17 @@ function showCityTemperatures(hour) {
     }
     const width = longitudes.length, pos = row*width+col;
     const values = [pos,pos+1,pos+width,pos+width+1].map(i=>pointReading(i,hour,model).value);
-    if (!values.every(Number.isFinite)) continue;
     const dx=(location.lng-longitudes[col])/(longitudes[col+1]-longitudes[col]);
     const dy=(location.lat-latitudes[row])/(latitudes[row+1]-latitudes[row]);
-    const [a,b,c,d]=values;
-    const value=(1-dy)*(a*(1-dx)+b*dx)+dy*(c*(1-dx)+d*dx);
-    label.textContent = (agreement()?'Δ ':'')+format(value)+' °C';
+    const value=interpolateCell(...values,dx,dy);
+    if(Number.isFinite(value))label.textContent=(agreement() && variable!=='rain'?'Δ ':'')+format(value)+' '+unit();
   }
 }
 
 
 let synopticLayer, regional, nativeKey='', loadingImage=false;
 const native = () => el('model').value.startsWith('native-');
+const originalImage = () => native() && variable!=='temperature' && el('original-image').checked;
 const agreement = () => el('model').value==='agreement';
 const palette = () => agreement() ? ({temperature:'spreadTemperature',wind:'spreadWind',rain:'wetFraction',clouds:'spreadClouds'})[variable] : variable;
 const unit = () => agreement() && variable==='rain' ? '%' : MODEL_VARIABLES[variable].unit;
@@ -196,7 +195,8 @@ function format(value) {
   return numbers[MODEL_VARIABLES[variable].digits].format(value);
 }
 function legend() {
-  if(native() && variable !== 'temperature'){
+  el('original-control').hidden=joined || !native() || variable==='temperature';
+  if(originalImage()){
     el('legend-title').textContent=MODEL_VARIABLES[variable].label+' · Météo-France';
     el('scale').hidden=true;
     return;
@@ -256,7 +256,7 @@ function draw() {
   el('hour').value = index+(joined?radarLength:0);
   el('hour').setAttribute('aria-valuetext',el('valid').textContent);
   if(native()){
-    const key=[model,variable,hour].join('|');
+    const key=[model,variable,hour,originalImage()].join('|');
     if(key===nativeKey)return;
     nativeKey=key;loadingImage=true;
     el('retry').hidden=true;
@@ -264,9 +264,9 @@ function draw() {
     el('status').textContent='Carregant '+name+' · '+clock.format(valid)+'…';
     el('play').disabled=el('hour').disabled=false;
     el('prev').disabled=index===0;el('next').disabled=index===24;
-    regional.show(model.slice(7),variable,valid.toISOString()).then(shown=>{
+    regional.show(model.slice(7),variable,valid.toISOString(),!originalImage()).then(shown=>{
       if(shown && nativeKey===key){
-        if(variable==='rain'){
+        if(originalImage() && variable==='rain'){
           const names=model==='native-compare'?['AROME HD','ARPEGE Europa']:[sourceAt(map.getCenter())];
           void Promise.allSettled(MODELS.filter(m=>names.includes(m.name)).map(fetchModel)).then(()=>{
             if(nativeKey===key){refreshSnow(hour);updatePick();}
@@ -274,21 +274,21 @@ function draw() {
         }
         el('frame-time').textContent=clock.format(valid);
         synopticLayer.show(hour);
-        showCityTemperatures(hour);
+        showCityValues(hour);
         el('frame-time').hidden=false;
         el('curtain').hidden=model!=='native-compare';
-        el('status').textContent=name+' · '+MODEL_VARIABLES[variable].label+(variable==='temperature'?' · mostreig interpolat':'');
+        el('status').textContent=name+' · '+MODEL_VARIABLES[variable].label+(originalImage()?' · imatge original':' · mostreig interpolat');
       }
     }).catch(()=>{
       if(nativeKey!==key)return;
-      showCityTemperatures(null);synopticLayer.show(null);
+      showCityValues(null);synopticLayer.show(null);
       el('curtain').hidden=true;el('frame-time').hidden=true;stop();el('retry').hidden=false;el('status').textContent='Capa no disponible per a aquesta hora.';
     }).finally(()=>{if(nativeKey===key)loadingImage=false;});
     return;
   }
   el('frame-time').textContent=clock.format(valid);el('frame-time').hidden=false;
   synopticLayer.show(hour);
-    showCityTemperatures(hour);
+    showCityValues(hour);
   let coverage = 0;
   const values = [];
   markers.forEach((marker,point) => {
@@ -308,7 +308,10 @@ function draw() {
   context.putImageData(frame,0,0);
   overlay.setUrl(raster.toDataURL());
   const label = model==='combined' ? 'Consens' : agreement() ? 'Coincidència' : model;
-  el('status').textContent = (waiting.size?'Límit temporal de la font · reintent en curs · ':pending?'Carregant · ':'')+label+' · '+(variable==='rain'?'per cel·les':'interpolació visual')+' · '+coverage+'/'+coordinates.length+' punts amb dades · '+datasets.size+'/'+MODELS.length+' sortides';
+  el('status').textContent = (waiting.size?'Límit temporal de la font · reintent en curs · ':pending?'Carregant · ':'')+label+' · interpolació visual · '+coverage+'/'+coordinates.length+' punts amb dades · '+datasets.size+'/'+MODELS.length+' sortides';
+  if(variable==='rain' && !agreement() && coverage && values.every(v=>!Number.isFinite(v)||v===0)){
+    el('status').textContent+=' · 0 mm a totes les mostres disponibles';
+  }
   el('retry').hidden = pending > 0 || datasets.size===MODELS.length;
   el('play').disabled = el('hour').disabled = datasets.size===0;
   el('prev').disabled = (!index && !joined) || !datasets.size;
@@ -323,17 +326,17 @@ function fetchModel(model) {
   }
   return requests.get(model.name);
 }
-async function temperatureFrame(name,time) {
+async function forecastFrame(name,time,field) {
   const model = MODELS.find(item=>item.name === (name==='arome'?'AROME HD':'ARPEGE Europa'));
   await fetchModel(model);
   const hour = time.slice(0,16);
-  const values = datasets.get(model.name).map(row=>readingAt(row,model,hour)?.temperature);
+  const values = datasets.get(model.name).map(row=>readingAt(row,model,hour)?.[field]);
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 161;
   const ctx = canvas.getContext('2d');
   const pixels = ctx.createImageData(canvas.width,canvas.height);
-  paintField(pixels.data,canvas.width,values,'temperature');
-  if (!pixels.data.some((value,i)=>i%4===3 && value)) throw new Error('Sense temperatura a 2 m');
+  paintField(pixels.data,canvas.width,values,field);
+  if (!pixels.data.some((value,i)=>i%4===3 && value)) throw new Error('Sense dades per a la variable');
   ctx.putImageData(pixels,0,0);
   return canvas;
 }
@@ -416,7 +419,7 @@ function start() {
   if(local || detail)el('model').value='combined';
   el('zone').textContent=local||detail?'Obre Catalunya':'Detall del Baix Montseny';
   el('zone').href=local||detail?'./':'?zona=montseny';
-  regional=regionalLayer(map,temperatureFrame,[coordinates[0],coordinates.at(-1)]);
+  regional=regionalLayer(map,forecastFrame,[coordinates[0],coordinates.at(-1)]);
   synopticLayer=synoptic(map,coordinates,longitudes.length);
   L.control.zoom({position:'topright'}).addTo(map);
   setExtent();
@@ -433,7 +436,7 @@ function start() {
       icon:L.divIcon({className:'city-label',html:name+'<span class="city-temperature"></span>',iconSize:null,iconAnchor:[0,8]})
     }).addTo(map));
   }
-  map.on('moveend zoomend resize',()=>showCityTemperatures(displayedCityHour));
+  map.on('moveend zoomend resize',()=>showCityValues(displayedCityHour));
   snowLayer=L.layerGroup().addTo(map);
   overlay = L.imageOverlay(raster.toDataURL(),L.latLngBounds(coordinates),{className:'forecast-field',opacity:0.74,interactive:false}).addTo(map);
   markers = coordinates.map((point,i)=>{
@@ -487,8 +490,9 @@ function start() {
     radarActive=true;
     const request=++radarRequest;
     stop(); regional.clear(); nativeKey=''; loadingImage=false;
-    samples.remove(); map.closePopup(); showCityTemperatures(null); synopticLayer.show(null);
+    samples.remove(); map.closePopup(); showCityValues(null); synopticLayer.show(null);
     setModeUI('radar');
+    el('original-control').hidden=true;
     el('curtain').hidden=el('frame-time').hidden=el('retry').hidden=true;
     el('valid').textContent='—';
     el('status').textContent='Carregant observacions…';
@@ -520,7 +524,7 @@ function start() {
     const grouped = ['combined','agreement'].includes(el('model').value);
     if (!grouped) lastIndividual=el('model').value;
     setModeUI(grouped?'consensus':'models');
-    showCityTemperatures(null);synopticLayer.show(null);
+    showCityValues(null);synopticLayer.show(null);
     el('curtain').hidden=true;el('frame-time').hidden=true;
     stop();regional.clear();nativeKey='';loadingImage=false;
     if(native())samples.remove();
@@ -533,11 +537,12 @@ function start() {
   el('mode-models').onclick=()=>{el('model').value=lastIndividual;switchModel();};
   el('mode-consensus').onclick=()=>{el('model').value='combined';switchModel();};
   el('model').addEventListener('change',switchModel);
+  el('original-image').addEventListener('change',switchModel);
   el('variables').addEventListener('click',event=>{
     const button = event.target.closest('[data-variable]');
     if (!button) return;
     if(variable===button.dataset.variable)return;
-    if(native()){showCityTemperatures(null);synopticLayer.show(null);regional.clear();nativeKey='';el('curtain').hidden=true;el('frame-time').hidden=true;}
+    if(native()){showCityValues(null);synopticLayer.show(null);regional.clear();nativeKey='';el('curtain').hidden=true;el('frame-time').hidden=true;}
     variable = button.dataset.variable;
     for(const b of el('variables').children) b.setAttribute('aria-pressed',String(b===button));
     legend(); draw();
@@ -546,7 +551,7 @@ function start() {
   function seek(value){
     if(!joined){index=value;draw();return;}
     if(value<radarLength){
-      if(!radarActive){clearPick();samples.remove();showCityTemperatures(null);synopticLayer.show(null);}
+      if(!radarActive){clearPick();samples.remove();showCityValues(null);synopticLayer.show(null);}
       radarActive=true;setModeUI('radar');el('legend-title').textContent='Precipitació observada';el('scale').hidden=el('phase-key').hidden=true;
       index=value;drawRadar();return;
     }
@@ -566,7 +571,7 @@ function start() {
   el('divider').oninput=event=>{
     const value=Number(event.target.value);
     regional.setSplit(value);
-    showCityTemperatures(displayedCityHour);
+    showCityValues(displayedCityHour);
     el('curtain').style.setProperty('--split',value+'%');
     event.target.setAttribute('aria-valuetext','AROME '+value+' %, ARPEGE '+(100-value)+' %');
   };

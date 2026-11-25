@@ -17,7 +17,7 @@ function project(image, extent=bounds) {
   }
   return canvas.toDataURL();
 }
-export function regionalLayer(map, temperatureFrame, sampleBounds) {
+export function regionalLayer(map, forecastFrame, sampleBounds) {
   const cache=new Map();
   let visible=[], controller, split=0.5;
   function position(){
@@ -54,18 +54,17 @@ export function regionalLayer(map, temperatureFrame, sampleBounds) {
       return display;
     }finally{URL.revokeObjectURL(url);}
   }
-  async function show(model,variable,time){
+  async function show(model,variable,time,sampled){
     controller?.abort();
     const request=new AbortController();
     controller=request;
     const models=model==='compare'?['arome','arpege']:[model];
     try{
       const signal=AbortSignal.any([request.signal,AbortSignal.timeout(20000)]);
-      const sampled = variable === 'temperature';
       const extent = sampled ? sampleBounds : bounds;
       const images=await Promise.all(models.map(async name=>{
         if (!sampled) return read(name,variable,time,signal);
-        const canvas = await temperatureFrame(name,time);
+        const canvas = await forecastFrame(name,time,variable);
         signal.throwIfAborted();
         const image = new Image();
         image.src = project(canvas,extent);
