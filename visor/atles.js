@@ -3,7 +3,7 @@ import { synoptic } from './synoptic.js';
 import { regionalLayer } from './regional.js';
 import { paintField, palettes } from './color-field.js';
 import { MODELS, MODEL_VARIABLES } from './models.js';
-import { readingAt, summarize } from './consensus.js';
+import { independentModels, readingAt, summarize } from './consensus.js';
 
 const el = id => document.getElementById(id);
 const coordinates = [];
@@ -25,7 +25,7 @@ let map, radar;
 let radarActive = false, radarLength = 0, radarRequest = 0, forecastIndex = 0;
 let lastIndividual = 'ECMWF IFS';
 let markers = [];
-let selectedPoint = null;
+
 const raster = document.createElement('canvas');
 raster.width = raster.height = 161;
 const context = raster.getContext('2d');
@@ -33,8 +33,77 @@ const frame = context.createImageData(raster.width,raster.height);
 let overlay;
 const cityMarkers = [];
 let displayedCityHour = null;
+let snowLayer, pin, pointPopup, pick=null;
+function sourceAt(location) {
+  const choice=el('model').value;
+  if(!native()) return choice;
+  const left=map.latLngToContainerPoint(location).x<map.getSize().x*Number(el('divider').value)/100;
+  return choice==='native-arome' || (choice==='native-compare' && left) ? 'AROME HD' : 'ARPEGE Europa';
+}
+function snowAt(point,hour,choice) {
+  const readings=MODELS.map(model=>readingAt(datasets.get(model.name)?.[point],model,hour)).filter(Boolean);
+  const grouped=choice==='combined' || choice==='agreement';
+  const available=(grouped?independentModels(readings,'snow'):readings.filter(r=>r.model.name===choice)).filter(r=>Number.isFinite(r.snow));
+  if(!available.length) return {symbol:'?',text:'Fase de precipitació desconeguda'};
+  const snow=available.filter(r=>r.snow>0);
+  if(!snow.length)return {symbol:'●',text:'Sense neu prevista a la mostra'};
+  return {symbol:'❄',text:grouped ? 'Neu prevista per '+snow.length+'/'+available.length+' famílies amb dades' : 'Neu prevista · '+numbers[1].format(snow[0].snow)+' cm en una hora'};
+}
+function refreshSnow(hour) {
+  snowLayer.clearLayers();
+  el('phase-key').hidden=variable!=='rain' || radarActive;
+  if(!hour || variable!=='rain' || radarActive)return;
+  coordinates.forEach((coords,i)=>{
+    const choice=sourceAt(coords);
+    const phase=snowAt(i,hour,choice);
+    if(phase.symbol!=='❄'){
+      const precipitation=pointReading(i,hour,choice==='agreement'?'combined':choice).value;
+      if(!(precipitation>0))return;
+    }
+    L.marker(coords,{interactive:false,keyboard:false,pane:'placeLabels',icon:L.divIcon({
+      className:'phase-symbol '+(phase.symbol==='❄'?'phase-snow':phase.symbol==='●'?'phase-rain':'phase-unknown'),html:phase.symbol,iconSize:[17,17],iconAnchor:[8,8]
+    })}).addTo(snowLayer);
+  });
+}
+function clearPick() {
+  if(pointPopup) map.closePopup(pointPopup);
+  pin?.remove();pin=null;pick=null;pointPopup=null;
+}
+function updatePick() {
+  if(!pick || !pointPopup)return;
+  const heading=document.createElement('strong');
+  heading.textContent='Punt seleccionat · '+pick.location.lat.toFixed(3)+'°, '+pick.location.lng.toFixed(3)+'°';
+  const body=document.createElement('div');body.append(heading);
+  if(radarActive || native() || !pick.inside) {
+    const note=document.createElement('p');
+    note.textContent=!pick.inside && !radarActive && !native() ? 'Fora de la graella de previsió' :
+      radarActive?'Radar observat · '+el('valid').textContent:
+      sourceAt(pick.location)+' · '+el('frame-time').textContent;
+    body.append(note);
+  }
+  if(pick.inside && !radarActive && displayedCityHour && (!native() || ['temperature','rain'].includes(variable))) {
+    const choice=sourceAt(pick.location);
+    body.append(document.createElement('hr'), 'Mostra de la graella més propera',popupContent(pick.nearest,pointReading(pick.nearest,displayedCityHour,choice)));
+    if(variable==='rain')body.append(snowAt(pick.nearest,displayedCityHour,choice).text);
+  }
+  pointPopup.setContent(body);
+}
+function selectPoint(location) {
+  clearPick();
+  let nearest=0;
+  coordinates.forEach((point,i)=>{if(location.distanceTo(point)<location.distanceTo(coordinates[nearest]))nearest=i;});
+  pick={location,nearest,inside:overlay.getBounds().contains(location)};
+  pin=L.marker(location,{interactive:false,keyboard:false,zIndexOffset:1500,icon:L.divIcon({
+    className:'selected-location',iconSize:[22,22],iconAnchor:[11,11]
+  })}).addTo(map);
+  pointPopup=L.popup({offset:[0,-14],autoPan:true}).setLatLng(location);
+  updatePick();
+  pointPopup.openOn(map);
+}
 function showCityTemperatures(hour) {
   displayedCityHour = hour;
+  refreshSnow(hour);
+  updatePick();
   const selection = el('model').value;
   const divider = map.getSize().x * Number(el('divider').value) / 100;
   for (const marker of cityMarkers) {
@@ -118,9 +187,9 @@ function popupContent(point, reading) {
   const content = document.createElement('div');
   const heading = document.createElement('strong');
   heading.textContent = Number.isFinite(reading.value) ? format(reading.value)+' '+unit() : 'Sense dada';
-  content.append(heading,document.createElement('br'),reading.detail,document.createElement('br'),coordinates[point].join('°, ')+'° · '+el('valid').textContent);
+  content.append(heading,document.createElement('br'),reading.detail,document.createElement('br'),coordinates[point].join('°, ')+'° · '+clock.format(new Date(displayedCityHour+'Z')));
   if (['combined','agreement'].includes(el('model').value)) {
-    const hour=new Date(firstHour+index*3600000).toISOString().slice(0,16);
+    const hour=displayedCityHour;
     const list=document.createElement('dl');
     list.className='point-models';
     for(const model of MODELS){
@@ -146,6 +215,7 @@ function drawRadar() {
   el('prev').disabled=index===0;
   el('next').disabled=index===radarLength-1;
   el('status').textContent='Radar observat · RainViewer';
+  updatePick();
 }
 function draw() {
   if (radarActive) return;
@@ -166,9 +236,15 @@ function draw() {
     el('prev').disabled=index===0;el('next').disabled=index===24;
     regional.show(model.slice(7),variable,valid.toISOString()).then(shown=>{
       if(shown && nativeKey===key){
-        synopticLayer.show(hour);
-    showCityTemperatures(hour);
+        if(variable==='rain'){
+          const names=model==='native-compare'?['AROME HD','ARPEGE Europa']:[sourceAt(map.getCenter())];
+          void Promise.allSettled(MODELS.filter(m=>names.includes(m.name)).map(fetchModel)).then(()=>{
+            if(nativeKey===key){refreshSnow(hour);updatePick();}
+          });
+        }
         el('frame-time').textContent=clock.format(valid);
+        synopticLayer.show(hour);
+        showCityTemperatures(hour);
         el('frame-time').hidden=false;
         el('curtain').hidden=model!=='native-compare';
         el('status').textContent=name+' · '+MODEL_VARIABLES[variable].label+(variable==='temperature'?' · mostreig interpolat':'');
@@ -195,7 +271,7 @@ function draw() {
     badge.textContent = value;
     values.push(reading.value);
     node.setAttribute('aria-label',coordinates[point].join(', ')+', '+(available ? value+' '+unit() : 'sense dada'));
-    if (selectedPoint === point && marker.isPopupOpen()) marker.setPopupContent(popupContent(point,reading));
+
     if (available) coverage++;
   });
   paintField(frame.data,raster.width,values,palette());
@@ -233,11 +309,11 @@ async function temperatureFrame(name,time) {
 async function readModel(model) {
   const params = new URLSearchParams({
     latitude:coordinates.map(p=>p[0]).join(','),longitude:coordinates.map(p=>p[1]).join(','),
-    hourly:'temperature_2m,precipitation,wind_speed_10m,cloud_cover',timezone:'GMT',forecast_days:String(Math.min(3,model.horizon))
+    hourly:'temperature_2m,precipitation,snowfall,wind_speed_10m,cloud_cover',timezone:'GMT',forecast_days:String(Math.min(3,model.horizon))
   });
   if (model.model) params.set('models',model.model);
-  const url = 'https://api.open-meteo.com'+(model.model ? '/v1/forecast' : model.path)+'?'+params;
-  const request = ()=>fetch(url,{signal:AbortSignal.timeout(18000)});
+  const base = 'https://api.open-meteo.com'+(model.model ? '/v1/forecast' : model.path);
+  const request = ()=>fetch(base+'?'+params,{signal:AbortSignal.timeout(18000)});
   let response = await request();
   if (response.status===429) {
     const retry = response.headers.get('Retry-After');
@@ -247,6 +323,10 @@ async function readModel(model) {
       await new Promise(resolve=>setTimeout(resolve,Math.max(1000,wait)));
       response = await request();
     }
+  }
+  if (response.status===400) {
+    params.set('hourly','temperature_2m,precipitation,wind_speed_10m,cloud_cover');
+    response=await request();
   }
   if (!response.ok) throw new Error('Font no disponible');
   const data = await response.json();
@@ -287,21 +367,20 @@ function start() {
     }).addTo(map));
   }
   map.on('moveend zoomend resize',()=>showCityTemperatures(displayedCityHour));
+  snowLayer=L.layerGroup().addTo(map);
   overlay = L.imageOverlay(raster.toDataURL(),L.latLngBounds(coordinates),{className:'forecast-field',opacity:0.74,interactive:false}).addTo(map);
   markers = coordinates.map((point,i)=>{
     const icon = L.divIcon({className:'sample missing',html:'<span>—</span>',iconSize:[39,26],iconAnchor:[19,13]});
     const marker = L.marker(point,{icon}).addTo(map);
-    marker.bindPopup(()=>popupContent(i,pointReading(i,new Date(firstHour+index*3600000).toISOString().slice(0,16),el('model').value)));
-    marker.on('popupopen',()=>{selectedPoint=i;});
+    marker.on('click',event=>{
+      const pointer=event.originalEvent;
+      selectPoint(pointer?.detail>0 ? map.mouseEventToLatLng(pointer) : marker.getLatLng());
+    });
     return marker;
   });
-  map.on('click',event=>{
-    if (radarActive || native() || !overlay.getBounds().contains(event.latlng)) return;
-    let nearest=0;
-    coordinates.forEach((point,i)=>{
-      if (event.latlng.distanceTo(point)<event.latlng.distanceTo(coordinates[nearest])) nearest=i;
-    });
-    markers[nearest].openPopup();
+  map.on('click',event=>selectPoint(event.latlng));
+  map.on('popupclose',event=>{
+    if(event.popup===pointPopup){pin?.remove();pin=null;pick=null;pointPopup=null;}
   });
   MODELS.forEach(model=>el('local-models').append(new Option(model.name,model.name)));
   const samples=L.layerGroup([overlay,...markers]);
@@ -321,6 +400,7 @@ function start() {
     el('time-label').textContent=mode==='radar'?'Hora d’observació':'Hora de previsió';
   }
   async function openRadar(){
+    clearPick();
     if (!radarActive) forecastIndex=index;
     radarActive=true;
     const request=++radarRequest;
@@ -332,6 +412,7 @@ function start() {
     el('status').textContent='Carregant observacions…';
     el('legend-title').textContent='Precipitació observada';
     el('scale').hidden=true;
+    el('phase-key').hidden=true;
     for(const id of ['hour','play','prev','next']) el(id).disabled=true;
     try {
       const length=await radar.load();
@@ -348,6 +429,7 @@ function start() {
     }
   }
   function switchModel(){
+    clearPick();
     if(radarActive){radarRequest++;radar.clear();radarActive=false;index=forecastIndex;el('hour').max='24';}
     const grouped = ['combined','agreement'].includes(el('model').value);
     if (!grouped) lastIndividual=el('model').value;

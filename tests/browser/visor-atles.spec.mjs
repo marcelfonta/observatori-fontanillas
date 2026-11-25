@@ -32,7 +32,7 @@ for (const width of [390, 1280]) {
     await page.locator('#next').click();
     await expect(points.first()).toHaveText('11');
     await expect(city).toHaveText('11 °C');
-    await page.getByRole('button',{name:'Pluja',exact:true}).click();
+    await page.getByRole('button',{name:'Pluja i neu',exact:true}).click();
     await expect(points.first()).toHaveText('—');
     await expect(city).toBeEmpty();
     await expect(page.locator('#status')).toContainText('0/49');
@@ -49,7 +49,7 @@ test('Un camp regional absent mostra la fallada i conserva l’hora en comparar'
   await page.route('**/meteofrance/map?**',route=>route.fulfill({status:502,body:'Unavailable'}));
   await page.goto('/visor/');
   await page.locator('#model').selectOption('native-compare');
-  await page.getByRole('button',{name:'Pluja',exact:true}).click();
+  await page.getByRole('button',{name:'Pluja i neu',exact:true}).click();
   await expect(page.locator('#status')).toContainText('Capa no disponible');
   await expect(page.locator('#retry')).toBeVisible();
   await page.locator('#next').click();
@@ -72,7 +72,7 @@ test('Cortina sincronitzada i canvi atòmic de fotograma',async({page})=>{
   });
   await page.goto('/visor/');
   await page.locator('#model').selectOption('native-compare');
-  await page.getByRole('button',{name:'Pluja',exact:true}).click();
+  await page.getByRole('button',{name:'Pluja i neu',exact:true}).click();
   const curtain=page.locator('#curtain'),clock=page.locator('#frame-time');
   await expect(curtain).toBeVisible();
   const before=await clock.innerText();
@@ -107,7 +107,11 @@ test('Capes GFS segueixen el fotograma i respecten les dades absents', async ({p
   await page.check('#isobars');
   await expect(page.locator('.wind-vector')).toHaveCount(49);
   await expect(page.locator('.wind-vector g').first()).toHaveAttribute('transform','rotate(180 18 18)');
-  await expect(page.locator('.pressure-label')).toHaveCount(3);
+  await expect(page.locator('.pressure-label')).toHaveCount(6);
+  const flow=page.locator('.wind-flow').first();
+  await expect(flow).toHaveCSS('animation-name','wind-travel');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await expect(flow).toHaveCSS('animation-name','none');
   await page.click('#next');
   await expect(page.locator('.wind-vector')).toHaveCount(0);
   await expect(page.locator('.pressure-label')).toHaveCount(0);
@@ -140,4 +144,32 @@ test('El radar reprodueix només observacions i restaura el model i l’hora',as
   await expect(page.locator('#model')).toHaveValue('GFS');
   await expect(page.locator('#hour')).toHaveValue('1');
   await expect(page.locator('.sample').first()).toHaveText('9');
+});
+
+test('El floc es distingeix de la pluja i el punt conserva la coordenada del toc',async({page})=>{
+  const start=Math.ceil(Date.now()/3600000)*3600000;
+  const time=[0,1].map(i=>new Date(start+i*3600000).toISOString().slice(0,16));
+  await page.route('https://api.open-meteo.com/**',async route=>{
+    const params=new URL(route.request().url()).searchParams;
+    expect(params.get('hourly')).toContain('snowfall');
+    const n=params.get('latitude').split(',').length;
+    await route.fulfill({json:Array.from({length:n},()=>({hourly:{time,precipitation:[2,2],snowfall:[1,0]}}))});
+  });
+  await page.goto('/visor/');
+  await page.getByRole('button',{name:'Pluja i neu'}).click();
+  await expect(page.locator('.phase-symbol').first()).toHaveText('❄');
+  const map=page.locator('#map');
+  const bounds=await map.boundingBox();
+  const target={x:Math.round(bounds.width*.6),y:Math.round(bounds.height*.5)};
+  await map.click({position:target});
+  const pin=page.locator('.selected-location');
+  await expect(pin).toBeVisible();
+  await expect(page.locator('.leaflet-popup')).toContainText('Punt seleccionat');
+  await expect(page.locator('.leaflet-popup')).toContainText('Neu prevista');
+  await page.click('#next');
+  await expect(page.locator('.phase-snow')).toHaveCount(0);
+  await expect(page.locator('.phase-rain')).toHaveCount(49);
+  await expect(page.locator('.leaflet-popup')).toContainText('Sense neu prevista');
+  await page.locator('.leaflet-popup-close-button').click();
+  await expect(pin).toHaveCount(0);
 });

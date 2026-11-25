@@ -97,3 +97,13 @@ body[data-mode=radar] :is(.model-choice,.variable,.synoptic-tools){display:none}
 #scale span:nth-child(2){position:absolute;transform:translateX(-50%)}
 .mobile-analysis{display:none}
 @media(max-width:750px){.mobile-analysis{display:inline;font-size:12px}.tools #zone{justify-self:start}.tools .mobile-analysis{justify-self:end;grid-column:2;grid-row:3}.tools #zone{grid-column:1/-1}}
+
+.wind-flow{animation:wind-travel var(--travel,1s) linear infinite;filter:drop-shadow(0 0 1px white)}
+@keyframes wind-travel{to{stroke-dashoffset:-12}}
+@media(prefers-reduced-motion:reduce){.wind-flow{animation:none}}
+.selected-location{border:3px solid white;border-radius:50%;background:#e94836;box-shadow:0 0 0 2px #281e1a,0 2px 8px #0009}
+.selected-location::after{content:'';position:absolute;inset:5px;border-radius:100%;background:white}
+.phase-symbol{border-radius:50%;color:white;background:#49265e;text-align:center;font:700 14px/17px system-ui;box-shadow:0 0 0 1px white}
+#phase-key:not([hidden]){display:block;margin-top:5px;line-height:1.35}
+
+.phase-rain{background:#095a79;font-size:10px}.phase-unknown{background:#4c5054}

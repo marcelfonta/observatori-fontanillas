@@ -2,6 +2,9 @@
 
 ## En preparació · Visor 2.0
 
+- L’atles anima les línies de flux del vent, traça isòbares cada 1 hPa, marca el toc exacte i identifica la neu horària de cada model.
+
+
 - El visor obre amb el consens per famílies i permet alternar models i radar observat sobre el mateix mapa. La consulta puntual mostra els valors individuals i el radar conserva la seva cronologia.
 
 
