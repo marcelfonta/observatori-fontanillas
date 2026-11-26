@@ -25,6 +25,13 @@ export function fontaArchiveSlot(instant){
   return new Date(instant).getUTCHours()<FONTA_ISSUE_POLICY.endHourUtc?'am':'pm';
 }
 
+// A delayed scheduled run before 08 UTC must not occupy today's AM file.
+// Evening captures remain useful as observations, but are not issued forecasts.
+export function fontaCaptureAllowed(instant){
+  if(!validTime(instant))throw new Error('Instant de captura invàlid');
+  return new Date(instant).getUTCHours()>=FONTA_ISSUE_POLICY.startHourUtc;
+}
+
 export function isCurrentFontaIssue(capture){
   return capture?.issuePolicy===FONTA_ISSUE_POLICY.id&&fontaIssueState(capture.capturedAt).eligible;
 }

@@ -5,12 +5,16 @@ import {FONTA,normalizeForecast,observedDays,evaluateFonta} from '../../src/core
 import {publicSource} from './io.mjs';
 import {readArchive} from './archive.mjs';
 import {freezeComparison} from '../../src/core/fonta-prospective.js';
-import {FONTA_ISSUE_POLICY,fontaArchiveSlot} from '../../src/core/fonta-issue-policy.js';
+import {FONTA_ISSUE_POLICY,fontaArchiveSlot,fontaCaptureAllowed} from '../../src/core/fonta-issue-policy.js';
 
 // One capture per UTC half-day, create-only files, no D1 or social writes.
 const directory=resolve(process.argv[2]||'build/fonta-archive');
-await mkdir(directory,{recursive:true});
 const startedAt=new Date().toISOString(),id=startedAt.slice(0,10)+'-'+fontaArchiveSlot(startedAt);
+if(!fontaCaptureAllowed(startedAt)){
+  console.log('Fonta: execució abans de les 08 UTC; no ocupa la captura diürna.');
+  process.exit(0);
+}
+await mkdir(directory,{recursive:true});
 const path=join(directory,id+'.json');
 try{await stat(path);console.log('Fonta: franja ja arxivada, no es repeteix.');process.exit(0);}catch(e){if(e.code!=='ENOENT')throw e;}
 const names=(await readdir(directory)).filter(n=>/^\d{4}-\d{2}-\d{2}-(am|pm)\.json$/.test(n));

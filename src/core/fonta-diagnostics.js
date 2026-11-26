@@ -50,7 +50,7 @@ export function diagnoseArchive(captures,report,{bytes=null,execution=null}={}){
     sources,recentCaptures,
     latestFailures:(latest?.failures||[]).map(f=>({source:f.source})),
     // Only expected slots after the archive started; absence is not proof a job failed.
-    cadence:{utcHours:[8,20],minute:10,graceMinutes:600,issuePolicy:FONTA_ISSUE_POLICY.id,
+    cadence:{utcHours:[8,10,12,14,16,20],minute:17,graceMinutes:600,issuePolicy:FONTA_ISSUE_POLICY.id,
       issueWindowUtc:[FONTA_ISSUE_POLICY.startHourUtc,FONTA_ISSUE_POLICY.endHourUtc]},
   };
 }
@@ -64,8 +64,9 @@ export function missingCaptureSlots(diagnostics,now=new Date().toISOString()){
   const present=new Set(captures.map(c=>c.capturedAt.slice(0,10)+'-'+fontaArchiveSlot(c.capturedAt)));
   const missing=[];
   for(let day=Math.floor(start/86400000)*86400000;day<=Date.parse(now);day+=86400000){
+    // Five AM opportunities still represent one expected AM archive file.
     for(const hour of [8,20]){
-      const at=day+(hour*60+10)*60000;
+      const at=day+(hour*60+17)*60000;
       if(at<start||at+600*60000>Date.parse(now))continue;
       const id=new Date(day).toISOString().slice(0,10)+(hour===8?'-am':'-pm');
       if(!present.has(id))missing.push(id);
