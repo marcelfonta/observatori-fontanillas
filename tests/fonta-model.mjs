@@ -7,7 +7,7 @@ import {createHash} from 'node:crypto';
 import {readArchive} from '../scripts/fonta/archive.mjs';
 import {FONTA,dayBounds,localDay,nextDay,normalizeForecast,observedDays,evaluateFonta} from '../src/core/fonta-model.js';
 import {diagnoseArchive,executionMetadata,missingCaptureSlots} from '../src/core/fonta-diagnostics.js';
-import {FONTA_ISSUE_POLICY,fontaArchiveSlot,fontaIssueState} from '../src/core/fonta-issue-policy.js';
+import {FONTA_ISSUE_POLICY,fontaArchiveSlot,fontaIssueState,fontaCaptureAllowed} from '../src/core/fonta-issue-policy.js';
 
 assert.equal(dayBounds('2026-03-29').hours,23);assert.equal(dayBounds('2026-10-25').hours,25);
 assert.equal(nextDay('2026-12-31'),'2027-01-01');assert.throws(()=>dayBounds('2026-02-30'));
@@ -75,6 +75,9 @@ const wrongWindow=structuredClone(captures);wrongWindow.forEach(c=>c.capturedAt=
 const legacyPolicy=structuredClone(captures);legacyPolicy.forEach(c=>{c.version='0.1.0';delete c.issuePolicy;});assert.equal(evaluateFonta(legacyPolicy,{now:'2026-08-01T00:00:00Z'}).pairedDays,0);
 assert.equal(fontaIssueState('2026-09-20T13:10:00Z').eligible,true);assert.equal(fontaIssueState('2026-09-20T18:00:00Z').eligible,false);
 assert.equal(fontaArchiveSlot('2026-09-20T13:10:00Z'),'am');assert.equal(FONTA.issuePolicy,FONTA_ISSUE_POLICY.id);
+assert.equal(fontaCaptureAllowed('2026-11-27T07:59:59Z'),false);
+assert.equal(fontaCaptureAllowed('2026-11-27T08:00:00Z'),true);
+assert.equal(fontaCaptureAllowed('2026-11-27T20:17:00Z'),true);
 const before=evaluateFonta(captures,{now:'2026-05-15T23:00:00Z'});assert.equal(before.captureCount,15);
 assert.deepEqual(evaluateFonta([...captures,...captures],{now:'2026-08-01T00:00:00Z'}).scores,result.scores);
 const changed=structuredClone(captures);changed.at(-1).observed[0].max=40;
@@ -97,7 +100,8 @@ const cadence={firstCaptureAt:'2026-09-20T12:12:00Z',recentCaptures:[{capturedAt
 assert.deepEqual(missingCaptureSlots(cadence,'2026-09-20T23:00:00Z'),[]); // manual pm fills its slot
 assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T10:09:59Z'),['2026-09-20-pm']);
 assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T18:09:59Z'),['2026-09-20-pm']);
-assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T18:10:00Z'),['2026-09-20-pm','2026-09-21-am']);
+assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T18:10:00Z'),['2026-09-20-pm']);
+assert.deepEqual(missingCaptureSlots(cadence,'2026-09-21T18:17:00Z'),['2026-09-20-pm','2026-09-21-am']);
 assert.equal(missingCaptureSlots({},'2026-09-21T10:10:00Z'),null);
 assert(missingCaptureSlots(cadence,'2026-10-29T12:00:00Z').length<=14); // bounded and UTC across DST
 
@@ -119,5 +123,7 @@ try{
 }finally{await rm(temp,{recursive:true});}
 const worker=await readFile('worker/index.js','utf8');assert(!worker.includes('fonta-model.js'));
 const workflow=await readFile('.github/workflows/fonta-shadow.yml','utf8');
+assert(workflow.includes("cron: '17 8,10,12,14,16,20 * * *'"));
+assert.equal((workflow.match(/if: steps\.capture_window\.outputs\.capture == 'true'/g)||[]).length,5);
 assert(workflow.includes("vars.FONTA_SHADOW_ENABLED == 'true'"));assert(workflow.includes('push-fonta-data-with-retry.sh'));assert(!/\$\{\{\s*secrets\./.test(workflow));assert(!workflow.includes('--force'));
 console.log('Fonta: dates/DST, absències, jitter, qualitat, embargament, comparadors, idempotència i aïllament OK.');

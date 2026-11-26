@@ -124,8 +124,13 @@ la mateixa franja am/pm no fa peticions ni sobreescriu el fitxer existent.
 
 ## Automatització independent i pressupost
 
-Workflow `fonta-shadow.yml`, dues captures a les 08:10 i 20:10 UTC (no són
-hores locals fixes). Únicament a main i amb `FONTA_SHADOW_ENABLED=true`.
+Workflow `fonta-shadow.yml`, oportunitats a les 08:17, 10:17, 12:17, 14:17,
+16:17 i 20:17 UTC (no són hores locals fixes). La primera captura de matí i la
+primera de vespre ocupen els dos únics fitxers possibles del dia; les altres
+execucions no els sobreescriuen. Una execució que arribi abans de les 08 UTC
+no reserva el fitxer del matí. Únicament a main i amb `FONTA_SHADOW_ENABLED=true`.
+Aquestes oportunitats consumeixen més minuts de GitHub Actions: cal comprovar
+el primer resultat real i el pressupost del pilot.
 Màxim cinc consultes HTTP per captura, timeout per font 25 s, job 8 min; sense
 reintents agressius, credencials socials, secrets Cloudflare ni escriptures D1.
 L'horari no canvia ni dispara les publicacions de 06:45, 14:00 o 20:30.

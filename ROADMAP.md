@@ -748,6 +748,8 @@ publicació automàtica requerirà autorització específica.
 
 ### Model Fonta i qualitat de l’estació
 
+- [ ] Verificar després de la fusió la primera captura real entre les 08:00 i les 18:00 UTC, amb quatre models complets, i confirmar que queda congelada com a emissió prospectiva quan es compleixin els 30 dies d'entrenament. El 26/11 hi havia 25 dies d'entrenament i cap dia prospectiu congelat; no promocionar encara Fonta.
+- [ ] Revisar el pressupost de 180 captures abans d'arribar a 160; les oportunitats diürnes addicionals no han d'augmentar els fitxers per sobre d'un `am` i un `pm` diaris.
 - [ ] Observar les primeres captures Fonta i XEMA després dels reintents acotats del 18/11. Si Open-Meteo continua fallant, conservar l'error visible i investigar disponibilitat i horari de la font abans d'ampliar el pilot.
 - [ ] Avaluar AROME HD i AROME France sobre els mateixos dies prospectius abans
   de decidir una nova versió del model Fonta.

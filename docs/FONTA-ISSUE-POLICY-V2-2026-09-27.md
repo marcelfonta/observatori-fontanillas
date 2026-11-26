@@ -46,6 +46,14 @@ però no es força dins la mostra.
 
 ## Compatibilitat, observabilitat i rollback
 
+Actualització operativa del 26/11/2026: diverses oportunitats programades dins
+la finestra 08–18 UTC redueixen la dependència d'un únic cron retardat. Una
+execució anterior a les 08 UTC acaba sense reservar l'arxiu `am`; el fitxer
+segueix sent create-only. La política v2 i els llindars d'avaluació no canvien.
+Cal verificar una captura prospectiva real després de la fusió. Per revertir
+només aquesta cadència, tornar al cron anterior i retirar la guarda de captura;
+els arxius ja creats es conserven.
+
 - `status.json` continua amb esquema 1 i `single-runs-status.json` amb esquema 2.
 - Fonta passa d'algoritme `0.1.0` a `0.2.0`; els paquets prospectius nous usen
   `fonta-paired-daily-v2`.

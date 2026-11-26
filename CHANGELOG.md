@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-26 · Captures prospectives de Fonta
+
+- El laboratori Fonta té més oportunitats de captura diürna (08:17, 10:17, 12:17, 14:17 i 16:17 UTC) i conserva la captura vespertina de les 20:17 UTC. L'arxiu continua limitat a una captura `am` i una `pm` per dia.
+- Una execució endarrerida abans de les 08:00 UTC no ocupa el fitxer diürn. No es reclassifiquen captures antigues ni es modifiquen els pesos de la previsió pública.
+
 ## En preparació · Visor 2.0
 
 - Pluja, vent i nuvolositat mostren un ràster continu amb valors i unitats sobre les poblacions en consens, models i cortina regional.
