@@ -3,7 +3,9 @@ name: Fonta · laboratori independent (sense publicacions)
 on:
   workflow_dispatch:
   schedule:
-    - cron: '10 8,20 * * *'
+    # Multiple daytime opportunities tolerate delayed GitHub cron delivery.
+    # collect.mjs keeps at most one create-only AM capture per UTC day.
+    - cron: '17 8,10,12,14,16,20 * * *'
 
 # Activation is separate from merge. No social or Cloudflare secrets.
 permissions:
@@ -24,7 +26,18 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+      - name: Descarta una execució endarrerida abans de les 08 UTC
+        id: capture_window
+        shell: bash
+        run: |
+          if [ "$(date -u +%H)" -lt 8 ]; then
+            echo 'capture=false' >> "$GITHUB_OUTPUT"
+            echo 'Fonta: fora de la finestra de captura; no es reserva el matí.'
+          else
+            echo 'capture=true' >> "$GITHUB_OUTPUT"
+          fi
       - name: Obre l'arxiu independent sense canviar main
+        if: steps.capture_window.outputs.capture == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -38,12 +51,15 @@ jobs:
             git -C build/fonta-data remote add origin "$remote"
           fi
       - name: Captura dades públiques (sis fonts i un reintent per error transitori; AROME HD només en ombra)
+        if: steps.capture_window.outputs.capture == 'true'
         id: collect
         continue-on-error: true
         run: node scripts/fonta/collect.mjs build/fonta-data
       - name: Recalcula l'avaluació sense promocionar cap model
+        if: steps.capture_window.outputs.capture == 'true'
         run: node scripts/fonta/report.mjs build/fonta-data
       - name: Conserva captures i informe a fonta-data
+        if: steps.capture_window.outputs.capture == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -56,5 +72,5 @@ jobs:
             bash scripts/ci/push-fonta-data-with-retry.sh build/fonta-data
           fi
       - name: Assenyala una captura degradada o pressupost esgotat
-        if: steps.collect.outcome == 'failure'
+        if: steps.capture_window.outputs.capture == 'true' && steps.collect.outcome == 'failure'
         run: exit 1
