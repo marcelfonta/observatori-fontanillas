@@ -245,3 +245,73 @@ test('Malla AROME, meteograma al punt i passades verificades',async({page})=>{
   await station.locator('select').selectOption('24');
   await expect(station.locator('tbody tr').first()).toContainText('3 (n=3)');
 });
+
+for(const width of [390,1280]){
+  test('Acumulats, discrepància i referència del model a '+width+' px',async({page})=>{
+    await page.setViewportSize({width,height:800});
+    const first=Math.ceil(Date.now()/3600000)*3600000;
+    const time=Array.from({length:49},(_,i)=>new Date(first+(i-24)*3600000).toISOString().slice(0,16));
+    await page.route('https://api.open-meteo.com/**',async route=>{
+      const url=new URL(route.request().url()), n=url.searchParams.get('latitude')?.split(',').length||81;
+      const gfs=url.pathname.endsWith('/gfs');
+      const hourly={time,temperature_2m:time.map(()=>12),precipitation:time.map((_,i)=>i<24?1:i===(gfs?29:26)?2:0),
+        snowfall:time.map(()=>0),wind_speed_10m:time.map(()=>12),wind_gusts_10m:time.map(()=>32),wind_direction_10m:time.map(()=>90),pressure_msl:time.map(()=>1012)};
+      await route.fulfill({json:Array.from({length:n},()=>({hourly}))});
+    });
+    await page.goto('/visor/');
+    await expect(page.locator('#status')).toContainText('8/8');
+    await page.click('[data-variable=rain]');
+    await page.selectOption('#period','6');
+    await expect(page.locator('.sample').first()).toHaveText('5');
+    await page.selectOption('#hydro','snow');
+    await expect(page.locator('#legend-title')).toContainText('cm / 6 h');
+    await expect(page.locator('.sample').first()).toHaveText('0');
+    await page.selectOption('#model','agreement');
+    await page.selectOption('#discrepancy','timing');
+    await expect(page.locator('.sample').first()).toHaveText('3');
+    await page.selectOption('#discrepancy','footprint');
+    await expect(page.locator('#footprint-key')).toContainText('Cap contorn');
+    await page.selectOption('#model','ICON');
+    await page.click('[data-variable=wind]');
+    await page.selectOption('#wind-kind','gust');
+    await expect(page.locator('.sample').first()).toHaveText('32');
+    await page.click('.synoptic-tools summary');
+    await expect(page.locator('#synoptic-source')).toHaveText('Referència ICON');
+    await page.check('#wind-arrows');
+    await expect(page.locator('.wind-vector')).toHaveCount(49);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  });
+}
+
+test('El zoom conserva hora i model, i l’estació compara la mateixa hora',async({page})=>{
+  const now=Date.now(),target=Math.floor(now/3600000)*3600000,first=Math.ceil(now/3600000)*3600000;
+  const time=Array.from({length:28},(_,i)=>new Date(first+(i-2)*3600000).toISOString().slice(0,16));
+  const hourly={time,temperature_2m:time.map(()=>12)};
+  await page.route('https://api.open-meteo.com/**',async route=>{
+    const q=new URL(route.request().url()).searchParams;
+    if(q.has('bounding_box'))return route.fulfill({json:[]});
+    const lat=q.get('latitude').split(','),lon=q.get('longitude').split(',');
+    return route.fulfill({json:lat.length===1?{hourly}:lat.map((v,i)=>({latitude:+v,longitude:+lon[i],hourly}))});
+  });
+  await page.route('**/history?days=1&resolution=raw',route=>route.fulfill({json:[{epoch:target/1000,temperature:14.5}]}));
+  await page.goto('/visor/');
+  await expect(page.locator('#status')).toContainText('8/8');
+  await page.selectOption('#model','ICON');await page.click('#next');
+  // Click the actual coordinates of the label on the Leaflet map.
+  const city=page.locator('.city-label').filter({hasText:'Sant Celoni'});
+  const box=await city.boundingBox();await page.mouse.click(box.x+2,box.y+8);
+  await page.getByRole('button',{name:'Temperatura observada i prevista · Sant Celoni'}).click();
+  await expect(page.locator('.leaflet-popup-content')).toContainText('14,5 °C | ICON');
+  await expect(page.locator('.leaflet-popup-content')).toContainText('12 °C');
+  await page.locator('.leaflet-popup-close-button').click();
+  const activeUrl=page.url();
+  for(let i=0;i<4;i++){
+    await page.locator('.leaflet-control-zoom-in').click();
+    await page.waitForTimeout(320);
+  }
+  await expect(page.locator('#status')).toContainText('81/81 punts');
+  await expect(page.locator('#model')).toHaveValue('ICON');
+  await expect(page.locator('#hour')).toHaveValue('1');
+  expect(page.url()).toBe(activeUrl);
+  await page.click('#center');await expect(page.locator('#status')).toContainText('49/49 punts');
+});

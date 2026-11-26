@@ -1,5 +1,8 @@
 // These stops drive both the raster and its legend. Rain is an hourly total.
 export const palettes = {
+  snow:[[0,'#eff2f1'],[1,'#c5deef'],[3,'#839bd8'],[8,'#8558b2'],[20,'#713064'],[50,'#4e1847']],
+  rainTotal:[[0,'#e6efe8'],[2,'#93d8b6'],[8,'#43bac5'],[20,'#267dc4'],[45,'#6647b1'],[90,'#c33783']],
+  timing:[[0,'#c6eacb'],[3,'#f5d77f'],[6,'#e89759'],[9,'#bd568c'],[11,'#663d97']],
   spreadTemperature:[[0,'#68be91'],[3,'#efda79'],[8,'#d68a6a'],[15,'#93478a']],
   spreadWind:[[0,'#68be91'],[8,'#efda79'],[20,'#d68a6a'],[40,'#93478a']],
   spreadClouds:[[0,'#68be91'],[20,'#efda79'],[50,'#d68a6a'],[100,'#93478a']],
