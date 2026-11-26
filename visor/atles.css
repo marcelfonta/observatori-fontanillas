@@ -120,3 +120,11 @@ body[data-mode=radar] :is(.model-choice,.variable,.synoptic-tools){display:none}
 
 #original-control[hidden]{display:none}
 #original-control{font-size:13px;grid-column:1/-1}
+
+#product-options:not([hidden]){display:flex;gap:.55rem;flex-wrap:wrap}
+#product-options label:not([hidden]){display:grid;gap:.2rem;font-size:.76rem}
+#product-options select{max-width:100%;min-height:36px}
+.phase-split{background:repeating-linear-gradient(135deg,#284f69 0 3px,#894886 3px 6px)}
+@media(max-width:750px){#product-options{grid-column:1/-1}#product-options label:not([hidden]){display:flex;align-items:center}}
+#footprint-key:not([hidden]){display:block;max-width:190px}
+#footprint-key span{display:inline-block;margin:2px 4px;border-bottom:3px solid var(--line)}

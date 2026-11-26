@@ -1,6 +1,6 @@
 import {traceWind} from './wind-flow.js';
 // Interpolate within each triangle of a sampled cell. Never bridge a missing corner.
-export function contours(points, values, columns, interval = 2) {
+export function contours(points, values, columns, interval = 2, onlyLevel) {
   const lines = new Map();
   for (let i = 0; i + columns + 1 < points.length; i++) {
     if ((i + 1) % columns === 0) continue;
@@ -8,7 +8,7 @@ export function contours(points, values, columns, interval = 2) {
     const pressures = corners.map(k => values[k]);
     if (!pressures.every(Number.isFinite)) continue;
     const top = Math.max(...pressures);
-    for (let level = Math.ceil(Math.min(...pressures) / interval) * interval; level <= top; level += interval) {
+    for (let level = onlyLevel ?? Math.ceil(Math.min(...pressures) / interval) * interval; level <= top && (onlyLevel===undefined || level===onlyLevel); level += interval) {
       for (const triangle of [[0,1,2],[0,2,3]]) {
         const hits = [];
         for (let side = 0; side < 3; side++) {
@@ -26,7 +26,8 @@ export function contours(points, values, columns, interval = 2) {
   return lines;
 }
 
-export function synoptic(map, points, columns) {
+export function synoptic(map, points, columns, model) {
+  const controller=new AbortController();
   const group = L.layerGroup().addTo(map);
   const wind = document.querySelector('#wind-arrows'), pressure = document.querySelector('#isobars');
   const status = document.querySelector('#synoptic-status');
@@ -42,7 +43,7 @@ export function synoptic(map, points, columns) {
     for(let i=0;i<finePoints.length;i+=48) parts.push(await fetchRows(finePoints.slice(i,i+48),'pressure_msl'));
     fineRows=parts.flat();
   }
-  const pane = map.createPane('synoptic');
+  const pane = map.getPane('synoptic') || map.createPane('synoptic');
   pane.style.zIndex = 440;
   pane.style.pointerEvents = 'none';
   const options = {pane:'synoptic',interactive:false,keyboard:false};
@@ -50,16 +51,17 @@ export function synoptic(map, points, columns) {
     L.marker(point,{...options, icon:L.divIcon({className,html,iconSize:size})}).addTo(group);
   }
   function paint() {
+    if(controller.signal.aborted)return;
     group.clearLayers();
     status.textContent = '';
     if ((!wind.checked && !pressure.checked) || !hour) return;
     if (!rows) {
-      status.textContent = 'Carregant GFS…';
+      status.textContent = 'Carregant '+model.name+'…';
       if (!pending) pending = fetchRows().then(data => {
         rows = data;
         paint();
       }).catch(() => {
-        if (hour && (wind.checked || pressure.checked)) status.textContent = 'GFS no disponible. Desactiva i reactiva la capa per reintentar.';
+        if (!controller.signal.aborted && hour && (wind.checked || pressure.checked)) status.textContent = model.name+' no disponible. Desactiva i reactiva la capa per reintentar.';
       }).finally(() => {pending = null;});
       return;
     }
@@ -111,13 +113,15 @@ export function synoptic(map, points, columns) {
   }
   async function fetchRows(coords=points,fields='wind_speed_10m,wind_direction_10m,pressure_msl') {
     const params = new URLSearchParams({latitude:coords.map(p=>p[0]).join(','),longitude:coords.map(p=>p[1]).join(','),
-      hourly:fields,wind_speed_unit:'kmh',timezone:'GMT',forecast_days:'3',models:'gfs_global'});
-    const res = await fetch('https://api.open-meteo.com/v1/forecast?'+params,{signal:AbortSignal.timeout(20000)});
-    if (!res.ok) throw new Error('GFS');
+      hourly:fields,wind_speed_unit:'kmh',timezone:'GMT',forecast_days:String(Math.min(3,model.horizon))});
+    if(model.model)params.set('models',model.model);
+    const base='https://api.open-meteo.com'+(model.model?'/v1/forecast':model.path);
+    const res = await fetch(base+'?'+params,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});
+    if (!res.ok) throw new Error('Model no disponible');
     const data = await res.json();
     if (!Array.isArray(data) || data.length !== coords.length) throw new Error('Cobertura');
     return data;
   }
   wind.onchange = pressure.onchange = paint;
-  return {show(validHour) {if (validHour !== hour) {hour = validHour; paint();}}};
+  return {remove(){controller.abort();group.remove();},show(validHour) {if (validHour !== hour) {hour = validHour; paint();}}};
 }

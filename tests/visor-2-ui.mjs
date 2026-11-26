@@ -54,3 +54,22 @@ for (const variable of ['rain','wetFraction','wind','clouds']){
   paintField(pixels,9,samples,variable);
   assert.equal(pixels[7],0,'Una mostra absent deixa el tram transparent');
 }
+
+const {seriesWindow,rainTiming} = await import('../visor/forecast-products.js');
+const {matchedObservation} = await import('../visor/station-point.js');
+const start=Date.UTC(2026,10,25,22), hour=3600000;
+const time=Array.from({length:24},(_,i)=>new Date(start+i*hour).toISOString().slice(0,16));
+const hourly={time,precipitation:time.map((_,i)=>i===3?.2:0),snowfall:time.map(()=>0)};
+for(const length of [1,3,6,12,24]){
+  assert.equal(seriesWindow(hourly,'snowfall',time.at(-1),length),0);
+}
+assert.equal(seriesWindow(hourly,'precipitation',time[4],3),.2);
+assert.equal(seriesWindow(hourly,'precipitation',time[0],3),null);
+assert.equal(seriesWindow({...hourly,time:time.map((v,i)=>i===2?time[1]:v)},'precipitation',time[4],3),null);
+assert.equal(seriesWindow({...hourly,snowfall:[0,null,0]},'snowfall',time[2],3),null);
+const compare=[{name:'A',family:'mf',priority:2},{name:'B',family:'mf'},{name:'C',family:'gfs'},{name:'D',family:'dry'},{name:'Auto'}];
+const onset=rainTiming(compare,m=>({hourly:{time,precipitation:time.map((_,i)=>i===({A:3,B:5,C:8,D:99}[m.name])?.2:0)}}),time[0]);
+assert.equal(onset.families.length,3);
+assert.equal(onset.spread,5);
+assert.equal(matchedObservation([{epoch:start/1000+60,temperature:0}],start+90000).row.temperature,0);
+assert.equal(matchedObservation([{epoch:start/1000-301,temperature:1}],start),undefined);

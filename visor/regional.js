@@ -61,7 +61,7 @@ export function regionalLayer(map, forecastFrame, sampleBounds) {
     const models=model==='compare'?['arome','arpege']:[model];
     try{
       const signal=AbortSignal.any([request.signal,AbortSignal.timeout(20000)]);
-      const extent = sampled ? sampleBounds : bounds;
+      const extent = sampled ? sampleBounds() : bounds;
       const images=await Promise.all(models.map(async name=>{
         if (!sampled) return read(name,variable,time,signal);
         const canvas = await forecastFrame(name,time,variable);
